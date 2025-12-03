@@ -1,6 +1,4 @@
 # AlloFlow
-AI-powered instructional differentiation engine that runs in Gemini canvas preview mode. Adaptive levels, layers, &amp; outputs ➔ flexible learning options for whole-student education
-# AlloFlow
 **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
