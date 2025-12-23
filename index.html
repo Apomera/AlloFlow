@@ -211,7 +211,7 @@
                             Students receive a personalized "Lesson Pack" that lets them review material at their own pace with built-in accommodations.
                         </p>
                         <ul class="space-y-2 text-sm font-medium text-teal-800">
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> <strong>Student Paced Mode</strong> for independent work</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> <strong>Offline HTML Bundles</strong> for homework equity</li>
                             <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Native Text-to-Speech & Phonics</li>
                             <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Gamified Review (XP & Leveling)</li>
                         </ul>
@@ -244,8 +244,17 @@
                                     <br><br>
                                     <span class="text-teal-700 font-bold text-xs uppercase tracking-wide bg-teal-50 px-2 py-1 rounded border border-teal-200">Safety Control</span>
                                     <span class="block mt-1 text-xs text-slate-500">
-                                        This mode can explicitly <strong>disable</strong> the "Socratic Tutor" and "Adventure Mode"—the only features where students directly interact with an AI chatbot—ensuring a strictly controlled, static review environment.
+                                        Can explicitly <strong>disable</strong> the "Socratic Tutor" or <strong>restrict to Multiple Choice</strong> responses to prevent misuse. Includes "Offline HTML" export.
                                     </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="home" class="h-5 w-5"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800">Parent & Independent Modes</h4>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    Simplified interfaces that transform "Lesson Plans" into "Family Guides" for bedtime reading, or "Study Guides" for self-directed independent learners.
                                 </p>
                             </div>
                         </div>
@@ -254,12 +263,9 @@
                             <div>
                                 <h4 class="font-bold text-slate-800 flex items-center gap-2">
                                     Live Classroom Sync
-                                    <span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full border border-orange-200 uppercase tracking-wide">Config Required</span>
                                 </h4>
                                 <p class="text-sm text-slate-600 mt-1">
-                                    Architected for real-time screen synchronization via Firebase.
-                                    <br>
-                                    <span class="italic text-xs text-slate-500">* Note: Multiplayer Canvas features are currently experimental and may be unavailable in the public demo due to platform infrastructure limitations.</span>
+                                    Utilizes Google Firebase for real-time multiplayer synchronization. Includes <strong>Teacher Lock</strong> to force student screens to the teacher's current view.
                                 </p>
                             </div>
                         </div>
@@ -302,7 +308,7 @@
     <section id="features" class="py-20 bg-slate-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-16">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">The UDL Suite</h2>
+                <h2 class="text-3xl font-black text-slate-900 mb-4">Universal Design for Learning (UDL)</h2>
                 <p class="text-slate-500">15+ interactive tools organized by UDL Principle.</p>
             </div>
 
@@ -315,19 +321,28 @@
                         <h3 class="font-bold text-xl text-slate-800">Engagement</h3>
                     </div>
                     
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
                         <div class="flex items-center gap-2 mb-2 font-bold text-purple-700"><i data-lucide="map" class="h-4 w-4"></i> Adventure Mode</div>
-                        <p class="text-xs text-slate-600">Turns reading into an interactive RPG where student choices impact the story. Tracks XP and Inventory.</p>
+                        <p class="text-xs text-slate-600 mb-2">Turns reading into an interactive RPG where student choices impact the story.</p>
+                        <p class="text-xs text-slate-500">Features <strong>inventory tracking</strong>, <strong>XP progression</strong>, and <strong>deep customizability</strong> to adapt scenarios to any curriculum.</p>
                     </div>
                     
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-orange-700"><i data-lucide="filter" class="h-4 w-4"></i> Concept Sort</div>
-                        <p class="text-xs text-slate-600">Interactive categorization game (drag-and-drop) to test conceptual understanding.</p>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-yellow-700"><i data-lucide="swords" class="h-4 w-4"></i> Multiplayer & Bosses</div>
+                        <p class="text-xs text-slate-600 mb-2"><strong>Boss Battle Mode:</strong> The class cooperatively fights a "Monster" by answering questions.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>Live Pulse</strong> formative checks and <strong>Democracy Mode</strong> for voting on story paths.</p>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-yellow-700"><i data-lucide="gamepad-2" class="h-4 w-4"></i> Interactive Games</div>
-                        <p class="text-xs text-slate-600">Instantly generates Memory Match, Word Search, Crossword, and Matching Worksheets from the lesson vocabulary.</p>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-orange-700"><i data-lucide="gamepad-2" class="h-4 w-4"></i> Interactive Games</div>
+                        <p class="text-xs text-slate-600 mb-2">Instantly generates games from lesson vocabulary.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>Bingo Caller</strong>, <strong>Memory Match</strong>, <strong>Word Search</strong>, <strong>Crossword</strong>, and the <strong>Concept Sort</strong> categorization game.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-indigo-800"><i data-lucide="message-circle" class="h-4 w-4"></i> Interview Mode</div>
+                        <p class="text-xs text-slate-600 mb-2">Simulate real-time interviews with historical figures, fictional characters, or subject matter experts.</p>
+                        <p class="text-xs text-slate-500">Features a <strong>Dynamic Rapport System</strong> where the AI reacts to student politeness and empathy.</p>
                     </div>
                 </div>
 
@@ -338,19 +353,28 @@
                         <h3 class="font-bold text-xl text-slate-800">Representation</h3>
                     </div>
                     
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
                         <div class="flex items-center gap-2 mb-2 font-bold text-green-700"><i data-lucide="book-open" class="h-4 w-4"></i> Leveled Text</div>
-                        <p class="text-xs text-slate-600">Rewrites text for K-12 levels. Includes <strong>Cloze</strong>, <strong>Syntax Scramble</strong>, and formats like <strong>Podcast Script</strong> or <strong>Social Media</strong>.</p>
+                        <p class="text-xs text-slate-600 mb-2">Rewrites text for K-12 levels. Adapt content into creative formats like <strong>Podcast Scripts</strong> or <strong>Narrative Stories</strong>.</p>
+                        <p class="text-xs text-slate-500">Features <strong>Syntax Scramble</strong>, <strong>Cloze</strong> activities, and <strong>Parallel Bilingual Views</strong>.</p>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-700"><i data-lucide="list-ordered" class="h-4 w-4"></i> Sequence & Logic</div>
-                        <p class="text-xs text-slate-600"><strong>Sequence Builder</strong> creates chronological timelines. <strong>Visual Organizers</strong> generate flow charts and Venn diagrams.</p>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-700"><i data-lucide="scan-line" class="h-4 w-4"></i> Visuals & Organizers</div>
+                        <p class="text-xs text-slate-600 mb-2">Generates <strong>Flow Charts</strong>, <strong>Venn Diagrams</strong>, and illustrations.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>"Nano Banana" Eraser Mode</strong> to remove text labels for instant fill-in-the-blank worksheets.</p>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
                         <div class="flex items-center gap-2 mb-2 font-bold text-indigo-700"><i data-lucide="globe" class="h-4 w-4"></i> Glossary & Flashcards</div>
-                        <p class="text-xs text-slate-600">Identifies Tier 2/3 vocabulary. Generates definitions, translations, and printable flashcards.</p>
+                        <p class="text-xs text-slate-600 mb-2">Identifies Tier 2/3 vocabulary automatically.</p>
+                        <p class="text-xs text-slate-500">Generates <strong>context-aware definitions</strong>, translations, and printable flashcards for every term.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-teal-600"><i data-lucide="eye" class="h-4 w-4"></i> Immersive Reader</div>
+                        <p class="text-xs text-slate-600 mb-2">Built-in accessibility suite to support diverse learners.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>Line Focus</strong>, <strong>Dyslexia Fonts</strong>, color overlays, and <strong>Grammar Highlighting</strong> (parts of speech).</p>
                     </div>
                 </div>
 
@@ -361,19 +385,49 @@
                         <h3 class="font-bold text-xl text-slate-800">Action & Expression</h3>
                     </div>
                     
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
                         <div class="flex items-center gap-2 mb-2 font-bold text-teal-700"><i data-lucide="check-square" class="h-4 w-4"></i> Exit Ticket (Quiz)</div>
-                        <p class="text-xs text-slate-600">Generates MCQs and Reflections. Exports to Canvas (QTI) or PDF worksheets. Includes Review Game mode.</p>
+                        <p class="text-xs text-slate-600 mb-2">Generates MCQs and exports to Canvas (QTI).</p>
+                        <p class="text-xs text-slate-500">Features <strong>Depth of Knowledge (DOK) Tuning</strong> and a <strong>Fact-Check Protocol</strong> to verify AI answers.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-rose-700"><i data-lucide="mic" class="h-4 w-4"></i> Oral Fluency Coach</div>
+                        <p class="text-xs text-slate-600 mb-2">Listens to students read aloud to calculate WCPM (Words Correct Per Minute).</p>
+                        <p class="text-xs text-slate-500">Provides a <strong>color-coded heat map</strong> of reading accuracy and highlights missed words.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-600"><i data-lucide="quote" class="h-4 w-4"></i> Writing Scaffolds</div>
+                        <p class="text-xs text-slate-600 mb-2">Generates sentence starters and paragraph frames.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>Smart Synthesis</strong> to pre-fill drafts and an <strong>Iterative Feedback Loop</strong> for AI revision.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col min-h-[11rem]">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-purple-600"><i data-lucide="help-circle" class="h-4 w-4"></i> Socratic Tutor</div>
+                        <p class="text-xs text-slate-600 mb-2">An AI guide that answers questions with guiding hints, never direct answers.</p>
+                        <p class="text-xs text-slate-500">Supports executive function and encourages problem-solving. Can be disabled by teachers.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEM & Multimedia Row -->
+            <div class="mt-12 pt-8 border-t border-slate-200">
+                <h3 class="text-center font-bold text-slate-400 uppercase text-xs tracking-widest mb-6">STEM & Multimedia Expansion</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-800"><i data-lucide="sigma" class="h-4 w-4"></i> Context-Aware STEM</div>
+                        <p class="text-xs text-slate-600">Generates math & science problems linked to the lesson topic (e.g., "Pyramid Geometry"). Renders <strong>SVG Graphs</strong> and scientific diagrams.</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-rose-700"><i data-lucide="quote" class="h-4 w-4"></i> Writing Scaffolds</div>
-                        <p class="text-xs text-slate-600">Generates sentence starters and paragraph frames. Includes AI Auto-Grader.</p>
+                        <div class="flex items-center gap-2 mb-2 font-bold text-pink-700"><i data-lucide="presentation" class="h-4 w-4"></i> Native Exports</div>
+                        <p class="text-xs text-slate-600">One-click generation of editable <strong>PowerPoint (.pptx)</strong> slides and <strong>Podcast (.mp3)</strong> audio files for offline learning.</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-600"><i data-lucide="calculator" class="h-4 w-4"></i> Math Solver</div>
-                        <p class="text-xs text-slate-600">Step-by-step breakdown of math/science problems with SVG graphing.</p>
+                        <div class="flex items-center gap-2 mb-2 font-bold text-indigo-600"><i data-lucide="bot" class="h-4 w-4"></i> AlloBot Guide</div>
+                        <p class="text-xs text-slate-600">An animated AI companion that provides "Show Me" navigation, physically flying to buttons to teach users how to use the interface.</p>
                     </div>
                 </div>
             </div>
@@ -383,10 +437,10 @@
                 <h3 class="text-center font-bold text-slate-400 uppercase text-xs tracking-widest mb-6">Teacher Productivity Tools</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3">
-                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="shield-check" class="h-4 w-4"></i></div>
+                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="users" class="h-4 w-4"></i></div>
                         <div>
-                            <h4 class="font-bold text-indigo-900 text-sm">Alignment Report</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">Audits the lesson against CCSS/NGSS standards to ensure rigor isn't lost.</p>
+                            <h4 class="font-bold text-indigo-900 text-sm">Smart Profiles</h4>
+                            <p class="text-xs text-indigo-800/80 mt-1">Snapshot configurations (e.g., "Grade 5 + ESL") to switch lesson contexts in one click.</p>
                         </div>
                     </div>
                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3">
@@ -400,14 +454,14 @@
                         <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="monitor" class="h-4 w-4"></i></div>
                         <div>
                             <h4 class="font-bold text-indigo-900 text-sm">Teacher Dashboard</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">View student progress and collect grades from offline files.</p>
+                            <p class="text-xs text-indigo-800/80 mt-1">View progress, <strong>track class-wide misconceptions</strong>, and collect grades from offline files.</p>
                         </div>
                     </div>
                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3">
-                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="lightbulb" class="h-4 w-4"></i></div>
+                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="check-circle" class="h-4 w-4"></i></div>
                         <div>
-                            <h4 class="font-bold text-indigo-900 text-sm">Activity Brainstorm</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">Generates hands-on activity ideas connecting topics to student interests.</p>
+                            <h4 class="font-bold text-indigo-900 text-sm">Fact Check Protocol</h4>
+                            <p class="text-xs text-indigo-800/80 mt-1">"Verify & Debunk" button forces AI to critique its own quiz answers to prevent hallucinations.</p>
                         </div>
                     </div>
                 </div>
@@ -453,12 +507,19 @@
                 <p class="text-slate-500">Full compliance with WCAG 2.1 AA standards for keyboard navigation and screen reader support.</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div class="flex gap-4">
                     <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="type" class="h-5 w-5 text-slate-600"></i></div>
                     <div>
                         <h4 class="font-bold text-slate-800 text-sm">Dyslexia Support</h4>
                         <p class="text-xs text-slate-500 mt-1">Toggle the OpenDyslexic font globally or enable Bionic Reading to guide the eye.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="languages" class="h-5 w-5 text-slate-600"></i></div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm">Global Localization</h4>
+                        <p class="text-xs text-slate-500 mt-1">Instantly translate the entire User Interface and content into any language supported by Gemini.</p>
                     </div>
                 </div>
                 <div class="flex gap-4">
@@ -494,6 +555,13 @@
                     <div>
                         <h4 class="font-bold text-slate-800 text-sm">Keyboard Nav</h4>
                         <p class="text-xs text-slate-500 mt-1">All games (Memory, Matching) are playable via Tab/Arrow keys for motor accessibility.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="contrast" class="h-5 w-5 text-slate-600"></i></div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm">High Contrast</h4>
+                        <p class="text-xs text-slate-500 mt-1">Toggle Dark Mode or pure High Contrast Mode (Black/Yellow) for low-vision support.</p>
                     </div>
                 </div>
             </div>
@@ -552,14 +620,19 @@
                     <i data-lucide="alert-triangle" class="h-5 w-5"></i> Do NOT Input PII
                 </h3>
                 <p class="text-sm text-red-800/90 mb-4">
-                    Personally Identifiable Information (PII) is <strong>not required</strong> for AlloFlow to function. The app operates on pedagogical context (Grade, Standards, Interests).
+                    Personally Identifiable Information (PII) is <strong>not required</strong> for AlloFlow to function. 
                 </p>
-                <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-red-800 font-mono">
-                    <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> Student Names</li>
-                    <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> Student ID Numbers</li>
-                    <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> Medical/IEP Records</li>
-                    <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> Parent Contact Info</li>
-                </ul>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ul class="text-sm text-red-800 font-mono space-y-2">
+                        <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> No Student Names</li>
+                        <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> No ID Numbers</li>
+                    </ul>
+                    <div class="bg-white/50 p-3 rounded border border-red-200">
+                        <p class="text-xs text-red-900 font-bold mb-1">Use the Codename Generator:</p>
+                        <p class="text-xs text-red-800 italic">"Cosmic Badger", "Noble Tiger", "Rapid Falcon"</p>
+                        <p class="text-[10px] text-red-700 mt-1">Students are assigned random animal aliases for grading.</p>
+                    </div>
+                </div>
                 
                 <!-- Re-Identification Risk Warning -->
                 <div class="mt-4 pt-4 border-t border-red-200">
@@ -591,7 +664,7 @@
                     </summary>
                     <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
                         <p><strong>Yes.</strong> When a teacher saves a lesson as a <strong>"Student Project"</strong> (JSON), they have the option to disable the "Socratic Tutor" and "Adventure Mode".</p>
-                        <p>When a student loads this specific file, the interface locks. They can access the text, definitions, quizzes, and accessibility tools, but they <strong>cannot</strong> access the chat features or generate new content. This creates a safe, focused review environment.</p>
+                        <p>Alternatively, you can enable <strong>"Strict Mode"</strong>, which forces Adventure and Interview interactions to be <strong>Multiple Choice only</strong>, allowing engagement without open text input. When a student loads this specific file, the interface locks accordingly.</p>
                     </div>
                 </details>
 
@@ -633,6 +706,26 @@
 
                 <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
                     <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
+                        What are Parent and Independent Learner modes?
+                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
+                    </summary>
+                    <p class="text-slate-600 text-sm mt-3 leading-relaxed">
+                        These are simplified interfaces tailored for specific use cases. <strong>Parent Mode</strong> transforms technical lesson plans into "Family Guides" for bedtime reading and home support. <strong>Independent Learner Mode</strong> rephrases tools for self-directed study, turning rubrics into "Self-Checklists" and disabling teacher-only controls.
+                    </p>
+                </details>
+
+                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
+                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
+                        What languages does it support?
+                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
+                    </summary>
+                    <p class="text-slate-600 text-sm mt-3 leading-relaxed">
+                        AlloFlow utilizes Google Gemini's massive language model capabilities. You can type the name of <strong>any supported language</strong> (e.g., 'Swahili', 'Hmong', 'Cantonese', 'Spanish') into the settings to translate both the generated educational content <strong>and the User Interface buttons/menus</strong> instantly.
+                    </p>
+                </details>
+
+                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
+                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
                         Is the code available for review? (Open Source)
                         <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
                     </summary>
@@ -657,7 +750,7 @@
     <!-- Contact / About Section (NEW) -->
     <section id="contact" class="py-20 bg-white border-t border-slate-200">
         <div class="max-w-5xl mx-auto px-4">
-            <div class="bg-indigo-50 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-12 border border-indigo-100 shadow-sm">
+            <div class="bg-indigo-50 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-12 border border-indigo-100 shadow-sm mb-12">
                 <!-- Photo Placeholder -->
                 <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-indigo-200 flex-shrink-0 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden relative bg-black">
                     <img 
@@ -695,6 +788,33 @@
 
                     <a href="mailto:aaron.pomeranz@maine.edu" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg">
                         <i data-lucide="mail" class="h-4 w-4"></i> Contact Me
+                    </a>
+                </div>
+            </div>
+
+            <!-- Community & Feedback Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-yellow-50 p-8 rounded-2xl border border-yellow-100">
+                    <h3 class="font-bold text-yellow-900 text-xl mb-2 flex items-center gap-2">
+                        <i data-lucide="bug" class="h-5 w-5"></i> v0.9 Public Beta
+                    </h3>
+                    <p class="text-sm text-yellow-800/80 mb-4 leading-relaxed">
+                        AlloFlow is in active development. We actively seek community feedback to find bugs, refine features, and improve the experience for everyone.
+                    </p>
+                    <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/issues" target="_blank" class="text-sm font-bold text-yellow-700 hover:text-yellow-900 hover:underline flex items-center gap-1">
+                        Report an Issue <i data-lucide="arrow-right" class="h-3 w-3"></i>
+                    </a>
+                </div>
+
+                <div class="bg-blue-50 p-8 rounded-2xl border border-blue-100">
+                    <h3 class="font-bold text-blue-900 text-xl mb-2 flex items-center gap-2">
+                        <i data-lucide="library" class="h-5 w-5"></i> Community Library
+                    </h3>
+                    <p class="text-sm text-blue-800/80 mb-4 leading-relaxed">
+                        We are building a repository of Open Source Lesson Packs. Created a great unit? Submit your <strong>.json Project file</strong> to be hosted here for other teachers to use.
+                    </p>
+                    <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow Lesson Submission" class="text-sm font-bold text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1">
+                        Submit a Lesson Pack <i data-lucide="arrow-right" class="h-3 w-3"></i>
                     </a>
                 </div>
             </div>
