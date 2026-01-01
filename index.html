@@ -863,9 +863,17 @@
 
                     <!-- Example Downloads Section (How to host files) -->
                     <div class="bg-white/60 rounded-xl p-4 border border-blue-100">
-                        <span class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 block">Featured Downloads (Try these!)</span>
+                        <span class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 block">Featured Downloads</span>
                         <div class="space-y-2">
-                            <!-- Use the 'download' attribute on anchor tags to force download -->
+                            <!-- 
+                                INSTRUCTIONS FOR THE DEVELOPER:
+                                1. Create a folder named 'examples' in the same directory as this HTML file.
+                                2. Place your JSON files inside that folder.
+                                3. Ensure the href below matches your filename exactly.
+                                
+                                The 'download' attribute forces the browser to save the file as a .json 
+                                for the user, ensuring it works with your app.
+                            -->
                             <a href="./examples/civil_war.json" download="Civil_War_Unit.json" class="flex items-center justify-between p-2 hover:bg-white rounded transition-colors group cursor-pointer">
                                 <div class="flex items-center gap-2">
                                     <i data-lucide="file-json" class="h-4 w-4 text-blue-500"></i>
