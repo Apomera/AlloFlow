@@ -6,7 +6,7 @@
 ## 🚀 What is AlloFlow?
 AlloFlow is an open-source, local-first generative AI platform that runs entirely inside Google Gemini Canvas. It allows teachers to instantly differentiate curriculum by generating leveled texts, gamified quizzes, and interactive adventures from a single source text.
 
-[Gemini Canvas link to tool: https://gemini.google.com/share/a02a23eed0f8 ]
+Gemini Canvas link to tool: https://gemini.google.com/share/a02a23eed0f8 
 
 ## ⚠️ Privacy & Compliance
 **This tool is designed to be FERPA-compatible.**
