@@ -9,7 +9,7 @@ AlloFlow is an open-source, local-first generative AI platform that runs entirel
 [Link to Live Demo or Website]
 
 ## ⚠️ Privacy & Compliance
-**This tool is designed to be FERPA-compliant.**
+**This tool is designed to be FERPA-compatible.**
 * **Local-First:** Student data is stored in the browser or downloaded as JSON.
 * **No PII:** Personally Identifiable Information is NOT required.
 * **Sandboxed:** Cloud features use a sandbox environment unless configured by your district. Keep cloud syncing feature off to maximize privacy. Turn it on to allow for resource development across devices (or save and load JSON files with the app). 
@@ -24,4 +24,4 @@ AlloFlow is an open-source, local-first generative AI platform that runs entirel
 2. Open [Google Gemini](https://gemini.google.com).
 3. Paste the code in an empty canvas and press Enter. Alternatively, use this link:
 
-*Important note: It is recommended to log in with your Google Education account and to seek your school/district's administrator approval prior to use. 
+*Important note: While parents and independent learners may use personal google accounts to access AlloFlow, it is highly recommended for educators to use with Google Education accounts and to confirm with administrators that use of AlloFlow is permitted by your school or district's acceptable use policy prior to use with students.
