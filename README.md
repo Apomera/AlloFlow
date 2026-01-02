@@ -19,8 +19,8 @@ AlloFlow is designed to take advantage of your Google account's free daily AI qu
 
 ## 📚 Documentation
 * [**User Manual**] https://docs.google.com/document/d/1ngaK8E351uCWRE9o2Ruf7b8YwaqoZzwPt2igpwnQ7xA/edit?usp=sharing  Full guide on creating resources.
-* [**Accessibility Guide**](docs/ACCESSIBILITY.md): Keyboard shortcuts and UDL features.
-* [**Pedagogical Whitepaper**](docs/WHITEPAPER.md): The "Differentiation Gap" and our philosophy.
+* Includes an Accessibility Guide: Keyboard shortcuts and UDL features.
+* Includes pedagogical whitepaper, The "Differentiation Gap" and our philosophy.
 
 ## 🛠️ Quick Start
 1. Click the Gemini Canvas link: https://gemini.google.com/share/a02a23eed0f8
