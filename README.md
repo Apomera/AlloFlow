@@ -14,7 +14,7 @@ AlloFlow is an open-source, local-first generative AI platform that runs entirel
 * **No PII:** Personally Identifiable Information is NOT required.
 * **Sandboxed:** Cloud features use a sandbox environment unless configured by your district. Keep cloud syncing feature off to maximize privacy. Turn it on to allow for resource development across devices (or save and load JSON files with the app).
 
-## Is it Really Free? 
+## 💵 Is it Really Free? 
 AlloFlow is designed to take advantage of your Google account's free daily AI quota, so it just leverages the resources you already have a available in a package that is ideal for facilitating pedagogy and engaging learning experiences. If you do not have a paid Gemini pro or ultra plan, your access quota may be lower. If your school or district wants to have unlimited usage of Allowflow, they will need to host the code on their own server ( Firebase with Google Cloud is recommended to facilitate FERPA compliance). Free daily quotas are generous and should be sufficient for generating and facilitating at least one lesson per day. Using Gemini canvas, limits are per user and reset daily. 
 
 ## 📚 Documentation
