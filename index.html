@@ -11,6 +11,7 @@
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="og:title" content="AlloFlow | Differentiation on Auto-Pilot">
     <meta property="og:description" content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes. Runs locally in Gemini Canvas.">
+    <!-- TODO: Replace with actual AlloFlow screenshot for better social sharing -->
     <meta property="og:image" content="https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=1200&auto=format&fit=crop">
 
     <!-- Twitter -->
@@ -18,7 +19,34 @@
     <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="twitter:title" content="AlloFlow | Differentiation on Auto-Pilot">
     <meta property="twitter:description" content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes. Runs locally in Gemini Canvas.">
+    <!-- TODO: Replace with actual AlloFlow screenshot for better social sharing -->
     <meta property="twitter:image" content="https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AlloFlow",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web Browser",
+        "description": "Open-source, privacy-first AI tool for differentiated instruction. Transforms curriculum into leveled texts, interactive games, and quizzes.",
+        "url": "https://apomera.github.io/AlloFlow/",
+        "author": {
+            "@type": "Person",
+            "name": "Aaron Pomeranz",
+            "jobTitle": "School Psychologist & EdTech Developer"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+        "isAccessibleForFree": true,
+        "keywords": ["UDL", "differentiated instruction", "AI education", "classroom assistant", "special education", "accessibility"]
+    }
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,7 +106,7 @@
             </div>
 
             <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+            <button id="mobile-menu-btn" aria-label="Open navigation menu" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                 <i data-lucide="menu" class="h-6 w-6"></i>
             </button>
         </div>
@@ -155,7 +183,6 @@
                     </div>
                 </div>
                 <div class="aspect-video bg-black relative">
-                    <!-- Replace 'YOUR_VIDEO_ID' with your actual YouTube ID -->
                     <iframe 
                         class="absolute top-0 left-0 w-full h-full"
                         src="https://www.youtube.com/embed/8Mr-VzWHys8?autoplay=0&rel=0" 
@@ -309,7 +336,7 @@
                                     Live Classroom Sync
                                 </h4>
                                 <p class="text-sm text-slate-600 mt-1">
-                                    Utilizes Google Firebase for real-time multiplayer synchronization. Includes <strong>Teacher Lock</strong> to force student screens to the teacher's current view.
+                                    Real-time Firebase sync with <strong>Teacher Lock</strong>, <strong>team-based Escape Rooms</strong>, and <strong>group differentiation</strong> to push different resources to different student groups.
                                 </p>
                             </div>
                         </div>
@@ -353,7 +380,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-16">
                 <h2 class="text-3xl font-black text-slate-900 mb-4">Universal Design for Learning (UDL)</h2>
-                <p class="text-slate-500">15+ interactive tools organized by UDL Principle.</p>
+                <p class="text-slate-500">18+ interactive tools organized by UDL Principle.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -379,14 +406,20 @@
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
                         <div class="flex items-center gap-2 mb-2 font-bold text-orange-700"><i data-lucide="gamepad-2" class="h-4 w-4"></i> Interactive Games</div>
-                        <p class="text-xs text-slate-600 mb-2">Instantly generates games from lesson vocabulary.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>Bingo Caller</strong>, <strong>Memory Match</strong>, <strong>Word Search</strong>, <strong>Crossword</strong>, and the <strong>Concept Sort</strong> categorization game.</p>
+                        <p class="text-xs text-slate-600 mb-2">Instantly generates games from lesson vocabulary and content.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>Review Game</strong> (Jeopardy-style), <strong>Bingo</strong>, <strong>Memory Match</strong>, <strong>Crossword</strong>, <strong>Word Search</strong>, and <strong>Concept Sort</strong>.</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
                         <div class="flex items-center gap-2 mb-2 font-bold text-indigo-800"><i data-lucide="message-circle" class="h-4 w-4"></i> Interview Mode</div>
                         <p class="text-xs text-slate-600 mb-2">Simulate real-time interviews with historical figures, fictional characters, or subject matter experts.</p>
                         <p class="text-xs text-slate-500">Features a <strong>Dynamic Rapport System</strong> where the AI reacts to student politeness and empathy.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-red-700"><i data-lucide="door-open" class="h-4 w-4"></i> Escape Room</div>
+                        <p class="text-xs text-slate-600 mb-2">Teams solve <strong>6 puzzle types</strong> (MCQ, Sequence, Cipher, Matching, Scramble, Fill-in) to escape a themed room.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>clue chains</strong>, <strong>lives & hints</strong>, <strong>streak bonuses</strong>, and a <strong>Final Door</strong> synthesis challenge.</p>
                     </div>
                 </div>
 
@@ -405,8 +438,8 @@
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
                         <div class="flex items-center gap-2 mb-2 font-bold text-blue-700"><i data-lucide="scan-line" class="h-4 w-4"></i> Visuals & Organizers</div>
-                        <p class="text-xs text-slate-600 mb-2">Generates <strong>Flow Charts</strong>, <strong>Venn Diagrams</strong>, and illustrations.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>"Nano Banana" Eraser Mode</strong> to remove text labels for instant fill-in-the-blank worksheets.</p>
+                        <p class="text-xs text-slate-600 mb-2">Generates <strong>Timelines</strong>, <strong>Venn Diagrams</strong>, <strong>Mind Maps</strong>, <strong>Cause & Effect</strong>, and <strong>Flow Charts</strong>.</p>
+                        <p class="text-xs text-slate-500">Includes <strong>"Nano Banana" Eraser Mode</strong> to remove labels for instant fill-in-the-blank worksheets.</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
@@ -507,6 +540,22 @@
                             <h4 class="font-bold text-indigo-900 text-sm">Fact Check Protocol</h4>
                             <p class="text-xs text-indigo-800/80 mt-1">"Verify & Debunk" button forces AI to critique its own quiz answers to prevent hallucinations.</p>
                         </div>
+                    </div>
+                </div>
+                
+                <!-- Group Differentiation Feature -->
+                <div class="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-5 rounded-xl border border-purple-200 flex items-start gap-4">
+                    <div class="bg-purple-500 text-white p-3 rounded-xl shrink-0 shadow-lg shadow-purple-500/20">
+                        <i data-lucide="git-branch" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-purple-900 text-sm">
+                            Group-Based Differentiation
+                        </h4>
+                        <p class="text-xs text-purple-800/80 mt-1 leading-relaxed">
+                            During live sessions, assign students to groups and <strong>push different resources to each group simultaneously</strong>. 
+                            Ideal for stations, tiered instruction, or language-specific content. Includes group-level language overrides for multilingual classrooms.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -842,12 +891,12 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="bg-yellow-50 p-8 rounded-2xl border border-yellow-100">
                     <h3 class="font-bold text-yellow-900 text-xl mb-2 flex items-center gap-2">
-                        <i data-lucide="bug" class="h-5 w-5"></i> v0.9 Public Beta
+                        <i data-lucide="bug" class="h-5 w-5"></i> v0.95 Public Beta
                     </h3>
                     <p class="text-sm text-yellow-800/80 mb-4 leading-relaxed">
                         AlloFlow is in active development. We actively seek community feedback to find bugs, refine features, and improve the experience for everyone.
                     </p>
-                    <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/issues" target="_blank" class="text-sm font-bold text-yellow-700 hover:text-yellow-900 hover:underline flex items-center gap-1">
+                    <a href="https://docs.google.com/forms/d/e/1yPx2vx526lvqdAxH-xIAPjiUpwH0lKuq4jx1aj56-B0/viewform" target="_blank" class="text-sm font-bold text-yellow-700 hover:text-yellow-900 hover:underline flex items-center gap-1">
                         Report an Issue <i data-lucide="arrow-right" class="h-3 w-3"></i>
                     </a>
                 </div>
@@ -924,10 +973,10 @@
             An open-source project for educators. Not affiliated with Google.
         </p>
         <p class="text-slate-400 text-xs mb-8">
-            Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2025</span> AlloFlow.
+            Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span> AlloFlow.
         </p>
         <div class="flex justify-center gap-6 text-sm font-bold text-slate-600">
-            <a href="#" class="hover:text-indigo-600 transition-colors">Documentation</a>
+            <a href="https://github.com/Apomera/AlloFlow/tree/main/docs" class="hover:text-indigo-600 transition-colors">Documentation</a>
             <a href="https://github.com/Apomera/AlloFlow" class="hover:text-indigo-600 transition-colors">GitHub</a>
             <a href="mailto:aaron.pomeranz@maine.edu" class="hover:text-indigo-600 transition-colors">Contact</a>
         </div>
@@ -990,3 +1039,4 @@
     </script>
 </body>
 </html>
+
