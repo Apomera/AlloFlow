@@ -2,7 +2,7 @@
 **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-[![Accessibility: A+](https://img.shields.io/badge/Accessibility-A%2B-green.svg)](#accessibility)
+[![Accessibility: Prioritized](https://img.shields.io/badge/Accessibility-A%2B-green.svg)](#accessibility)
 [![UDL Aligned](https://img.shields.io/badge/UDL-Aligned-purple.svg)](#udl-alignment)
 
 ---
@@ -15,7 +15,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** that run
 - 🎮 **Gamified activities** (Escape Rooms, Boss Battles, Adventures)
 - 📝 **Interactive quizzes** with QTI export for Canvas/Schoology
 - 🌍 **Multilingual glossaries** with audio pronunciation
-- 📊 **Visual organizers** (Timelines, Mind Maps, Venn Diagrams)
+- 📊 **Visual organizers** (Structured Outlines, Mind Maps, Venn Diagrams)
 
 **No install required.** Just click and go.
 
@@ -50,7 +50,6 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** that run
 - **Line focus / Reading ruler**
 - **High contrast & dark mode**
 - **Full keyboard navigation**
-- **WCAG 2.1 AA compliant**
 
 ---
 
@@ -65,7 +64,7 @@ AlloFlow is designed to be **FERPA-compatible** with a privacy-first architectur
 | **Air-Gap Architecture** | Student work stays on-device; only aggregated session data syncs |
 | **Your Infrastructure** | Runs within your existing Google Education environment |
 
-> 💡 **Tip:** Keep cloud syncing off for maximum privacy. Turn it on only for cross-device resource development.
+> 💡 **Tip:** Keep cloud syncing off for maximum privacy. Turn it on only for cross-device resource development and preventing data loss prior to manual saves.
 
 ---
 
