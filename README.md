@@ -19,7 +19,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** that run
 
 **No install required.** Just click and go.
 
-🔗 **[Launch AlloFlow](https://gemini.google.com/share/94bd4409dcc3)**
+🔗 **[Launch AlloFlow](https://gemini.google.com/share/544cba6b9967)**
 
 ---
 
