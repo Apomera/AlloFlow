@@ -73,8 +73,8 @@ AlloFlow is designed to be **FERPA-compatible** with a privacy-first architectur
 **Yes.** AlloFlow leverages your Google account's free daily AI quota.
 
 - **Free tier:** Generous daily limits (1+ lessons per day)
-- **Paid Gemini plans:** Unlimited usage
-- **District hosting:** Self-host via Firebase/Google Cloud for unlimited, FERPA-compliant usage
+- **Paid Gemini plans:** Access to extended daily usage
+- **District hosting:** Option to self-host via Firebase/Google Cloud for unlimited, FERPA-compliant usage
 
 ---
 
