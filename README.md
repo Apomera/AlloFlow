@@ -1,4 +1,4 @@
-# AlloFlow v0.95
+# AlloFlow v0.967
 **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
@@ -23,7 +23,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** that run
 
 ---
 
-## ✨ Key Features (v0.95)
+## ✨ Key Features
 
 ### 🎓 For Teachers
 | Feature | Description |
