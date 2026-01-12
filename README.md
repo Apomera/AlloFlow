@@ -80,7 +80,7 @@ AlloFlow is designed to be **FERPA-compatible** with a privacy-first architectur
 
 ## 🛠️ Quick Start
 
-1. **Click the link:** [Launch AlloFlow](https://gemini.google.com/share/a02a23eed0f8)
+1. **Click the link:** [Launch AlloFlow]((https://gemini.google.com/share/544cba6b9967)
 2. **Complete the Quick Start wizard** or toggle "Auto-fill" and say "pack" to AlloBot
 3. **Generate your resources** - Full lesson pack ready in minutes!
 4. **Export or go live** - Share via HTML bundles, QTI, or start a Live Session
