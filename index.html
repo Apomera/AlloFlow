@@ -88,7 +88,7 @@
             <!-- Logo -->
             <div class="flex items-center gap-2">
                 <i data-lucide="layers" class="text-indigo-600 h-8 w-8"></i>
-                <span class="text-xl font-black text-slate-800 tracking-tight">AlloFlow <span class="text-xs font-normal text-slate-400 ml-1 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v0.967</span></span>
+                <span class="text-xl font-black text-slate-800 tracking-tight">AlloFlow <span class="text-xs font-normal text-slate-400 ml-1 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v0.9767</span></span>
             </div>
 
             <!-- Desktop Menu -->
@@ -311,7 +311,7 @@
                             <div>
                                 <h4 class="font-bold text-slate-800">Student View (Consumer)</h4>
                                 <p class="text-sm text-slate-600 mt-1">
-                                    Teachers can save a <strong>"Student Project" JSON</strong> file. When loaded, this locks the interface, hiding all AI generation tools and answer keys.
+                                    Teachers can save a <strong>"Student Project" JSON</strong> file. Zero setup. <strong>No student accounts or logins required</strong>, ensuring total FERPA/COPPA compliance. Runs entirely from a single file.
                                     <br><br>
                                     <span class="text-teal-700 font-bold text-xs uppercase tracking-wide bg-teal-50 px-2 py-1 rounded border border-teal-200">Safety Control</span>
                                     <span class="block mt-1 text-xs text-slate-500">
@@ -354,7 +354,7 @@
                                 </div>
                             </div>
                             <ul class="text-xs text-slate-500 space-y-2">
-                                <li class="flex gap-2 items-start"><i data-lucide="clipboard" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>Paste/Upload:</strong> Text, PDFs, Images, or Audio lectures.</span></li>
+                                <li class="flex gap-2 items-start"><i data-lucide="clipboard" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>Paste/Upload:</strong> Text, PDFs, Images, Audio, or <strong>Video</strong> lectures.</span></li>
                                 <li class="flex gap-2 items-start"><i data-lucide="search" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>AI Search:</strong> Find and import articles by topic automatically.</span></li>
                                 <li class="flex gap-2 items-start"><i data-lucide="pen-tool" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>Generate:</strong> Write new content from scratch based on a topic.</span></li>
                             </ul>
@@ -395,7 +395,7 @@
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
                         <div class="flex items-center gap-2 mb-2 font-bold text-purple-700"><i data-lucide="map" class="h-4 w-4"></i> Adventure Mode</div>
                         <p class="text-xs text-slate-600 mb-2">Turns reading into an interactive RPG where student choices impact the story.</p>
-                        <p class="text-xs text-slate-500">Features <strong>inventory tracking</strong>, <strong>XP progression</strong>, and <strong>deep customizability</strong> to adapt scenarios to any curriculum.</p>
+                        <p class="text-xs text-slate-500">Features <strong>3D Dice Physics</strong>, <strong>Storybook Export</strong>, <strong>inventory tracking</strong>, <strong>XP progression</strong>, and <strong>deep customizability</strong> to adapt scenarios to any curriculum.</p>
                     </div>
                     
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
@@ -444,7 +444,7 @@
 
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
                         <div class="flex items-center gap-2 mb-2 font-bold text-indigo-700"><i data-lucide="globe" class="h-4 w-4"></i> Glossary & Flashcards</div>
-                        <p class="text-xs text-slate-600 mb-2">Identifies Tier 2/3 vocabulary automatically.</p>
+                        <p class="text-xs text-slate-600 mb-2">Identifies Tier 2/3 vocabulary automatically. <strong>Supports any language via Gemini</strong>: Generate and download <strong>custom Language Packs</strong> to instantly localize the interface.</p>
                         <p class="text-xs text-slate-500">Generates <strong>context-aware definitions</strong>, translations, and printable flashcards for every term.</p>
                     </div>
 
@@ -458,6 +458,12 @@
                         <div class="flex items-center gap-2 mb-2 font-bold text-amber-700"><i data-lucide="file-search" class="h-4 w-4"></i> Source Analysis</div>
                         <p class="text-xs text-slate-600 mb-2">AI analyzes source text for <strong>bias</strong>, <strong>key arguments</strong>, and <strong>credibility</strong>.</p>
                         <p class="text-xs text-slate-500">Supports critical literacy by teaching students to evaluate information sources.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
+                        <div class="flex items-center gap-2 mb-2 font-bold text-pink-600"><i data-lucide="music" class="h-4 w-4"></i> Word Sounds (Phonics)</div>
+                        <p class="text-xs text-slate-600 mb-2">Complete phonemic awareness suite: <strong>Segmentation</strong>, <strong>Blending</strong>, <strong>Isolation</strong>, and <strong>Rhyming</strong>.</p>
+                        <p class="text-xs text-slate-500">Features <strong>Orthographic Processing</strong> with <strong>Elkonin Boxes</strong> for mapping sounds to letters, adaptive difficulty levels, and gamified badges.</p>
                     </div>
                 </div>
 
@@ -551,6 +557,13 @@
                         <div>
                             <h4 class="font-bold text-indigo-900 text-sm">Fact Check Protocol</h4>
                             <p class="text-xs text-indigo-800/80 mt-1">"Verify & Debunk" button forces AI to critique its own quiz answers to prevent hallucinations.</p>
+                        </div>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 h-full">
+                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="shield-check" class="h-4 w-4"></i></div>
+                        <div>
+                            <h4 class="font-bold text-indigo-900 text-sm">Active Safety Shield</h4>
+                            <p class="text-xs text-indigo-800/80 mt-1">Real-time content filtering flags self-harm, bullying, and profanity in student inputs without sending data to the cloud.</p>
                         </div>
                     </div>
                 </div>
@@ -1043,7 +1056,7 @@
         // Copy Link Functionality
         function copyCanvasLink() {
             // REPLACE WITH YOUR ACTUAL CANVAS SHARE LINK
-            const link = "https://gemini.google.com/share/544cba6b9967"; 
+            const link = "https://gemini.google.com/share/0450d64df9ef"; 
             navigator.clipboard.writeText(link).then(() => {
                 // Find all buttons with this ID prefix to update both top and bottom buttons if needed
                 const buttons = document.querySelectorAll('button[onclick="copyCanvasLink()"]');
@@ -1077,5 +1090,4 @@
     </script>
 </body>
 </html>
-
 
