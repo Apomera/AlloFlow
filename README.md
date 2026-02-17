@@ -1,4 +1,4 @@
-# AlloFlow v0.967
+# AlloFlow v1.00
 **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
@@ -80,7 +80,7 @@ AlloFlow is designed to be **FERPA-compatible** with a privacy-first architectur
 
 ## 🛠️ Quick Start
 
-1. **Click the link:** [Launch AlloFlow]((https://gemini.google.com/share/544cba6b9967)
+1. **Click the link:** [Launch AlloFlow][(https://gemini.google.com/share/c8baf80a46cc)]
 2. **Complete the Quick Start wizard** or toggle "Auto-fill" and say "pack" to AlloBot
 3. **Generate your resources** - Full lesson pack ready in minutes!
 4. **Export or go live** - Share via HTML bundles, QTI, or start a Live Session
