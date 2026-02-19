@@ -516,7 +516,9 @@ Use "Translate Resources" after generating content—students can access the sam
 ### Pro Tip
 • You can work on multiple different lessons in one session. Use the History panel to switch contexts instantly without losing progress.`,
     spotlight_title: "Spotlight",
-  },
+  
+    spotlight_message: 'Say hello to {name}!',
+},
   word_sounds: {
     title: "Word Sounds Studio",
     subtitle: "Phonemic Awareness Activities",
@@ -787,7 +789,19 @@ Use "Translate Resources" after generating content—students can access the sam
     maximize: "Maximize",
     this_topic: "this topic",
     you: "You",
-  },
+  
+    confirm_action: 'Confirm',
+    continued: 'Cont.',
+    family_guide: 'Family Guide',
+    family_learning_guide: 'Family Learning Guide',
+    gemini_bridge: 'Gemini Bridge',
+    ready: 'Ready',
+    standard_audit: 'Standard Audit',
+    study_guide: 'Study Guide',
+    tool_simplified: 'Text Adaptation',
+    udl_aligned: 'UDL Aligned',
+    udl_lesson_plan: 'UDL Lesson Plan',
+},
   meta: {
     engagement_ideas: "Engagement Ideas",
     interview_candidates: "Interview Candidates",
@@ -808,7 +822,10 @@ Use "Translate Resources" after generating content—students can access the sam
     standard_audit: "Standard Audit",
     gemini_bridge: "Gemini Bridge",
     udl_aligned: "UDL-Aligned",
-  },
+  
+    multi_part: 'Multi-part',
+    processing_sections: 'Text is long. Processing {count} sections...',
+},
   errors: {
     component_title: "Component Error",
     default_desc: "Something went wrong in this section. It might be due to complex data formatting or a temporary glitch.",
@@ -831,7 +848,10 @@ Use "Translate Resources" after generating content—students can access the sam
     no_context_for_outcome: "No context available for outcome generation.",
     no_session: "No active session found.",
     no_text: "Please enter or generate source text first.",
-  },
+  
+    load_failed: 'Failed to load saved configuration',
+    storage_full: 'Storage full \u2014 could not save',
+},
   status: {
     initializing: "Initializing AI...",
     analyzing: "Analyzing text structure...",
@@ -1039,7 +1059,9 @@ Use "Translate Resources" after generating content—students can access the sam
     storage_disabled: "Local storage is disabled or unavailable.",
     unsupported_file_type: "Unsupported file type.",
     visual_glitch_rewind: "Visual glitch detected. Rewinding state.",
-  },
+  
+    applied_standard: 'Applied standard: {code}',
+},
   large_file: {
     modal_title: "Import Large Audio File",
     modal_subtitle: "Transcribe files larger than 20MB",
@@ -1333,7 +1355,9 @@ Use "Translate Resources" after generating content—students can access the sam
       l3: "Level 3: Strategic Thinking",
       l4: "Level 4: Extended Thinking",
     }
-  },
+  
+    step_codename: 'Pick Your Codename!',
+},
   settings: {
     immersive_options: "Immersive Options",
     text_size: "Text Size",
@@ -1454,7 +1478,9 @@ Use "Translate Resources" after generating content—students can access the sam
         close_generator: "Close Bingo Generator",
         launch_caller_aria: "Launch Caller Mode",
         exit_caller_aria: "Exit Caller Mode",
-      },
+      
+    exit_caller_aria: 'Exit Bingo Caller',
+},
       memory: {
           title: "Memory Match",
           moves: "Moves",
@@ -1648,7 +1674,9 @@ Use "Translate Resources" after generating content—students can access the sam
       alert_parse_error: "Failed to parse language file.",
       status_complete: "Translation complete!",
       status_custom_loaded: "Custom language pack loaded!",
-  },
+  
+    status_retrying_chunk: 'Retrying chunk {chunk} (attempt {attempt} of {maxAttempts})...',
+},
   languages: {
       english: "English",
       all_selected: "All Selected Languages",
@@ -1982,7 +2010,16 @@ Use "Translate Resources" after generating content—students can access the sam
     resume: "Resume",
     riddle_challenge: "Riddle Challenge",
     select_answer: "Select your answer",
-  },
+  
+    all_solved_bonus: '\ud83c\udfc6 All puzzles solved! +{xp} XP bonus!',
+    config_saved: '\ud83d\udcbe Escape Room saved! Load it anytime from settings.',
+    invalid_save: 'Saved data is corrupted',
+    load_saved: 'Load Saved',
+    loaded_saved: '\ud83d\udcc2 Saved Escape Room loaded! Review and launch when ready.',
+    no_saved: 'No saved Escape Room found',
+    preview_confirmed: '\u2705 Escape Room locked \u2014 ready to play!',
+    xp_earned_streak: '+{xp} XP ({multiplier}x streak bonus!)',
+},
   class_analytics: {
     title: "Class Analytics",
     import_files: "Import Student Files",
@@ -2461,7 +2498,12 @@ Use "Translate Resources" after generating content—students can access the sam
         enhanced_success: "Visuals enhanced automatically!",
         enhanced_skipped: "Visual refinement skipped due to error. Showing original.",
     }
-  },
+  
+    replace_image: 'Replace',
+    restore_ai_image: 'Restore AI image',
+    restore_original: 'Restore',
+    upload_image: 'Upload your own image',
+},
   visual_director: {
     multi_panel: "Multi-Panel ({{count}} panels)",
     generating_panels: "Generating multi-panel illustration...",
@@ -2471,7 +2513,9 @@ Use "Translate Resources" after generating content—students can access the sam
     all_panels_refined: "All panels refined!",
     panels_downloaded: "Panels downloaded!",
     refine_failed: "Panel refinement failed.",
-  },
+  
+    panel_refined: 'Panel refined!',
+},
   fullpack: {
     button_label: "Generate Full Resource Pack",
     helper_text: "Creates Analysis, Text, Glossary, Visuals, Quiz & more (Seq.)",
@@ -2484,7 +2528,11 @@ Use "Translate Resources" after generating content—students can access the sam
     option_all: "All Tools",
     status_init: "Initializing Resource Pack...",
     status_start: "Starting generation sequence...",
-  },
+  
+    group_all: '\ud83c\udfaf All Groups',
+    group_current: 'Current Settings',
+    group_tooltip: 'Generate for a specific group or all groups',
+},
   faq: {
     title: "FAQ Generator",
     count: "Number of Questions",
@@ -3092,7 +3140,9 @@ Use "Translate Resources" after generating content—students can access the sam
         user_label: "➤ YOU",
         print_button: "Print Storybook",
     }
-  },
+  
+    answer_key_title: 'Answer Key',
+},
   export_status: {
     lib_loading: "Compression library loading...",
     no_content: "No content to export.",
@@ -3256,7 +3306,9 @@ Use "Translate Resources" after generating content—students can access the sam
     prompt_label: "Discussion Prompt",
     reflection_complete: "Reflection Complete",
     save_tooltip: "Save conversation",
-  },
+  
+    topic_spark_tooltip: 'Get a topic suggestion ({remaining} remaining)',
+},
   session: {
     start: "Start Live Class",
     join: "Join Class",
@@ -3936,7 +3988,9 @@ Use "Translate Resources" after generating content—students can access the sam
 
       format_outline: 'Outline',
 
-  },
+  
+    bridge_mode_btn: '\ud83c\udf10 Bridge Mode',
+},
   adventure: {
     title: "Adventure Mode",
     resume: "Resume Previous Adventure",
@@ -4282,7 +4336,9 @@ Use "Translate Resources" after generating content—students can access the sam
         exit_immersive: "Exit Immersive Mode",
         democracy_toggle: "Toggle Class Voting Mode",
         remove_option: "Remove Option",
-    },
+    
+        stability: 'Stability: {value}%',
+},
     option_placeholder: "Option {n}",
     inventory_action: {
         obtained: "Obtained: {item}",
@@ -4946,7 +5002,13 @@ Use "Translate Resources" after generating content—students can access the sam
     said_label: "said",
     errors_label: "Errors",
     words_correct: "Words Correct",
-  },
+  
+    custom_norms: 'Custom (Manual)',
+    custom_wcpm: 'Target WCPM',
+    prosody_expression: 'Expression',
+    prosody_pacing: 'Pacing',
+    prosody_phrasing: 'Phrasing',
+},
   socratic: {
     title: "Socratic Tutor",
     thinking: "Thinking...",
@@ -5085,7 +5147,9 @@ Use "Translate Resources" after generating content—students can access the sam
     gate_failure: "Submission appears off-topic or does not address the prompt.",
     grading_error: "Failed to process grading results. Please try again.",
     grammar_fix_truncation: "Text changed significantly. Please review.",
-  },
+  
+    enter_text: 'Please enter or paste text first',
+},
   languages_list: {
     "English": "English",
     "Spanish": "Spanish",
