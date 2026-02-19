@@ -1060,7 +1060,6 @@ Use "Translate Resources" after generating content—students can access the sam
     unsupported_file_type: "Unsupported file type.",
     visual_glitch_rewind: "Visual glitch detected. Rewinding state.",
   
-    applied_standard: 'Applied standard: {code}',
 },
   large_file: {
     modal_title: "Import Large Audio File",
@@ -1119,7 +1118,7 @@ Use "Translate Resources" after generating content—students can access the sam
     support_tooltip: "Support AlloFlow",
     support_aria: "Buy me a coffee",
     jump_to_lesson: "Jump to Lesson Plan",
-        applied_standard: 'Applied standard: {code}',
+    applied_standard: 'Applied standard: {code}',
   },
   translate: {
     target_label: "Target Language",
@@ -1354,10 +1353,9 @@ Use "Translate Resources" after generating content—students can access the sam
       l2: "Level 2: Skill/Concept",
       l3: "Level 3: Strategic Thinking",
       l4: "Level 4: Extended Thinking",
-    }
-  
+    },
     step_codename: 'Pick Your Codename!',
-},
+  },
   settings: {
     immersive_options: "Immersive Options",
     text_size: "Text Size",
@@ -1478,9 +1476,7 @@ Use "Translate Resources" after generating content—students can access the sam
         close_generator: "Close Bingo Generator",
         launch_caller_aria: "Launch Caller Mode",
         exit_caller_aria: "Exit Caller Mode",
-      
-    exit_caller_aria: 'Exit Bingo Caller',
-},
+      },
       memory: {
           title: "Memory Match",
           moves: "Moves",
@@ -1674,9 +1670,8 @@ Use "Translate Resources" after generating content—students can access the sam
       alert_parse_error: "Failed to parse language file.",
       status_complete: "Translation complete!",
       status_custom_loaded: "Custom language pack loaded!",
-  
-    status_retrying_chunk: 'Retrying chunk {chunk} (attempt {attempt} of {maxAttempts})...',
-},
+      status_retrying_chunk: 'Retrying chunk {chunk} (attempt {attempt} of {maxAttempts})...',
+  },
   languages: {
       english: "English",
       all_selected: "All Selected Languages",
@@ -1728,10 +1723,6 @@ Use "Translate Resources" after generating content—students can access the sam
       assessment_header: "Assessment",
       objectives_header: "Objectives",
   },
-        status_checking: 'Checking {lang}...',
-        status_generating: 'Generating {lang}...',
-        status_retrying_chunk: 'Retrying chunk {chunk}, attempt {attempt}...',
-        status_translating_part: 'Translating part {current}/{total}...',
   memory: {
     title: "Memory Match",
     moves: "Moves",
@@ -2498,11 +2489,6 @@ Use "Translate Resources" after generating content—students can access the sam
         enhanced_success: "Visuals enhanced automatically!",
         enhanced_skipped: "Visual refinement skipped due to error. Showing original.",
     }
-  
-    replace_image: 'Replace',
-    restore_ai_image: 'Restore AI image',
-    restore_original: 'Restore',
-    upload_image: 'Upload your own image',
 },
   visual_director: {
     multi_panel: "Multi-Panel ({{count}} panels)",
@@ -3139,9 +3125,9 @@ Use "Translate Resources" after generating content—students can access the sam
         chapter_separator: "***",
         user_label: "➤ YOU",
         print_button: "Print Storybook",
-    }
+    },
   
-    answer_key_title: 'Answer Key',
+  answer_key_title: 'Answer Key',
 },
   export_status: {
     lib_loading: "Compression library loading...",
