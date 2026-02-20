@@ -1,294 +1,339 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AlloFlow | The Local-First AI Classroom Assistant</title>
-    <meta name="description" content="Open-source, privacy-first AI tool for differentiated instruction. Runs inside Google Gemini Canvas. No install required.">
-    
-    <!-- Open Graph / Facebook -->
+    <meta name="description"
+        content="Open-source, privacy-first AI tool for differentiated instruction. Runs inside Google Gemini Canvas. No install required.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="og:title" content="AlloFlow | Differentiation on Auto-Pilot">
-    <meta property="og:description" content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes. Runs locally in Gemini Canvas.">
+    <meta property="og:description"
+        content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
-
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="twitter:title" content="AlloFlow | Differentiation on Auto-Pilot">
-    <meta property="twitter:description" content="The privacy-first AI tool that turns static curriculum into interactive games, leveled text, and quizzes. Runs locally in Gemini Canvas.">
     <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
-
-    <!-- Structured Data for SEO -->
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "AlloFlow",
-        "applicationCategory": "EducationalApplication",
-        "operatingSystem": "Web Browser",
-        "description": "Open-source, privacy-first AI tool for differentiated instruction. Transforms curriculum into leveled texts, interactive games, and quizzes.",
-        "url": "https://apomera.github.io/AlloFlow/",
-        "author": {
-            "@type": "Person",
-            "name": "Aaron Pomeranz",
-            "jobTitle": "EdTech Developer"
-        },
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-        },
-        "license": "https://www.gnu.org/licenses/agpl-3.0.html",
-        "isAccessibleForFree": true,
-        "keywords": ["UDL", "differentiated instruction", "AI education", "classroom assistant", "special education", "accessibility", "FERPA", "RTI", "phonics", "literacy", "progress monitoring", "letter tracing"]
-    }
+    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"AlloFlow","applicationCategory":"EducationalApplication","operatingSystem":"Web Browser","description":"Open-source, privacy-first AI tool for differentiated instruction.","url":"https://apomera.github.io/AlloFlow/","author":{"@type":"Person","name":"Aaron Pomeranz","jobTitle":"EdTech Developer"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"isAccessibleForFree":true}
     </script>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
+    <link rel="stylesheet" href="shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
-        .gradient-text { background: linear-gradient(to right, #4f46e5, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .blob { position: absolute; filter: blur(80px); opacity: 0.4; z-index: -1; }
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        
-        /* Keyboard Key Style */
-        kbd {
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            box-shadow: 0 2px 0 #cbd5e1;
-            color: #334155;
-            display: inline-block;
-            font-family: monospace;
-            font-size: 0.75em;
-            font-weight: 700;
-            line-height: 1;
-            padding: 2px 6px;
-            white-space: nowrap;
-        }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 overflow-x-hidden">
+
+<body>
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center relative">
-            
-            <!-- Logo -->
-            <div class="flex items-center gap-2">
-                <i data-lucide="layers" class="text-indigo-600 h-8 w-8"></i>
-                <span class="text-xl font-black text-slate-800 tracking-tight">AlloFlow <span class="text-xs font-normal text-slate-400 ml-1 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">v1.0</span></span>
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo">
+                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow
+                <span
+                    style="font-size:0.6rem;font-weight:400;color:#94a3b8;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px">v1.0</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#privacy">Privacy</a>
+                <a href="https://ko-fi.com/aaronpomeranz207" target="_blank" class="sponsor-btn"><i data-lucide="heart"
+                        style="width:12px;height:12px"></i> Sponsor</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                        style="width:16px;height:16px"></i> Get Code</a>
             </div>
-
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex gap-6 text-sm font-bold text-slate-600 items-center">
-                <a href="#how-it-works" class="hover:text-indigo-600 transition-colors">How it Works</a>
-                <a href="#mission" class="hover:text-indigo-600 transition-colors">Mission</a>
-                <a href="#features" class="hover:text-indigo-600 transition-colors">Features</a>
-                <a href="#families" class="hover:text-indigo-600 transition-colors">Families</a>
-                <a href="#pricing" class="hover:text-indigo-600 transition-colors">Pricing</a>
-                <a href="#tech" class="hover:text-indigo-600 transition-colors">Deploy</a>
-                <a href="#privacy" class="hover:text-indigo-600 transition-colors">Privacy</a>
-                <a href="https://ko-fi.com/aaronpomeranz207" target="_blank" class="text-pink-600 hover:text-pink-700 flex items-center gap-1 bg-pink-50 px-3 py-1 rounded-full border border-pink-100 transition-colors">
-                    <i data-lucide="heart" class="h-3 w-3 fill-current"></i> Sponsor
-                </a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-xs font-bold hover:bg-slate-700 transition-all shadow-lg shadow-slate-900/20 flex items-center gap-2">
-                    <i data-lucide="github" class="h-4 w-4"></i> Get Code
-                </a>
-            </div>
-
-            <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" aria-label="Open navigation menu" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                <i data-lucide="menu" class="h-6 w-6"></i>
+            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu">
+                <i data-lucide="menu" style="width:24px;height:24px"></i>
             </button>
-        </div>
-
-        <!-- Mobile Menu Dropdown (Hidden by default) -->
-        <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-slate-200 shadow-xl absolute top-full left-0 w-full z-40">
-            <div class="flex flex-col p-4 gap-4 text-sm font-bold text-slate-600">
-                <a href="#how-it-works" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">How it Works</a>
-                <a href="#mission" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">Mission</a>
-                <a href="#features" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">Features</a>
-                <a href="#families" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">Families</a>
-                <a href="#pricing" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">Pricing</a>
-                <a href="#tech" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">Deploy</a>
-                <a href="#privacy" class="block py-2 px-4 hover:bg-indigo-50 hover:text-indigo-600 rounded transition-colors" onclick="closeMenu()">Privacy</a>
-                <div class="h-px bg-slate-100 my-1"></div>
-                <a href="https://ko-fi.com/aaronpomeranz207" target="_blank" class="flex items-center gap-2 py-2 px-4 text-pink-600 hover:bg-pink-50 rounded transition-colors">
-                    <i data-lucide="heart" class="h-4 w-4"></i> Sponsor
-                </a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="flex items-center gap-2 py-2 px-4 text-slate-900 hover:bg-slate-100 rounded transition-colors">
-                    <i data-lucide="github" class="h-4 w-4"></i> Get Code
-                </a>
-            </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="pt-24 pb-20 px-4 text-center relative">
-        <div class="blob bg-indigo-300 w-96 h-96 rounded-full top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
-        <div class="blob bg-purple-300 w-96 h-96 rounded-full bottom-0 right-0 translate-x-1/3 translate-y-1/3"></div>
-        
-        <div class="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-white border border-indigo-100 rounded-full shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <span class="flex h-2 w-2 relative">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            <span class="text-indigo-900 text-xs font-bold uppercase tracking-wider">Runs inside Gemini Canvas</span>
-        </div>
-        
-        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight max-w-5xl mx-auto tracking-tight">
-            Differentiation on <br> <span class="gradient-text">Auto-Pilot</span>
-        </h1>
-        
-        <p class="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto mb-10 leading-relaxed">
-            The "Differentiation Engine" that turns static curriculum into interactive resources.
-            Reduce lesson planning time from 5 hours to 5 minutes while supporting every learner.
-        </p>
-        
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-            <!-- Copy Link Button -->
-            <button onclick="copyCanvasLink()" class="bg-indigo-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-transform hover:scale-105 shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2 group">
-                <i data-lucide="link" class="h-5 w-5 group-hover:animate-pulse"></i> 
-                <span id="copy-btn-text">Copy Canvas Link</span>
-            </button>
-            
-            <a href="https://github.com/Apomera/AlloFlow#readme" target="_blank" class="bg-white text-slate-700 border border-slate-300 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                <i data-lucide="book" class="h-5 w-5"></i> Read the Docs
-            </a>
-        </div>
-        
-        <!-- Browser Compatibility Note -->
-        <p class="text-[10px] text-slate-400 uppercase tracking-wide font-bold mb-16 text-center">
-            * Optimized for <i data-lucide="chrome" class="h-3 w-3 inline mb-0.5"></i> Google Chrome & Microsoft Edge on Desktop
-        </p>
+    <!-- Mobile Nav Overlay -->
+    <div id="mobileNav" class="mobile-nav">
+        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
+            aria-label="Close">&times;</button>
+        <a href="index.html" onclick="this.parentElement.classList.remove('open')">Home</a>
+        <a href="features.html">Features</a>
+        <a href="library.html">Library</a>
+        <a href="#pricing" onclick="this.closest('.mobile-nav').classList.remove('open')">Pricing</a>
+        <a href="#privacy" onclick="this.closest('.mobile-nav').classList.remove('open')">Privacy</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    </div>
 
-        <!-- Browser Mockup with Video Embed -->
-        <div id="demo" class="max-w-4xl mx-auto relative group animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-            <div class="relative bg-slate-900 rounded-xl shadow-2xl border border-slate-800 overflow-hidden">
-                <div class="bg-slate-800 px-4 py-3 flex items-center gap-2 border-b border-slate-700">
-                    <div class="flex gap-1.5">
-                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    </div>
-                    <div class="mx-auto bg-slate-900 px-3 py-1 rounded text-xs text-slate-500 font-mono flex items-center gap-2">
-                        <i data-lucide="lock" class="h-3 w-3"></i> gemini.google.com
-                    </div>
+    <!-- Hero -->
+    <header class="section" style="padding-top:100px;padding-bottom:60px;text-align:center;position:relative">
+        <div class="blob" style="width:500px;height:500px;background:#818cf8;top:-100px;left:-150px"></div>
+        <div class="blob" style="width:400px;height:400px;background:#c084fc;bottom:-100px;right:-100px"></div>
+        <div style="position:relative;z-index:1;max-width:800px;margin:0 auto">
+            <div
+                style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:999px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+                <span
+                    style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse 2s infinite"></span>
+                <span
+                    style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Runs
+                    inside Gemini Canvas</span>
+            </div>
+            <h1
+                style="font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-0.02em">
+                Differentiation on<br><span class="gradient-text">Auto-Pilot</span>
+            </h1>
+            <p style="font-size:1.15rem;color:#64748b;max-width:600px;margin:0 auto 32px;line-height:1.7">
+                The open-source AI engine that turns static curriculum into interactive games, leveled text, and quizzes
+                — in seconds, not hours.
+            </p>
+            <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
+                <button onclick="copyCanvasLink()" class="btn-primary" id="hero-copy-btn">
+                    <i data-lucide="link" style="width:18px;height:18px"></i>
+                    <span>Copy Canvas Link</span>
+                </button>
+                <a href="features.html" class="btn-secondary">
+                    <i data-lucide="sparkles" style="width:18px;height:18px"></i> Explore Features
+                </a>
+            </div>
+            <div style="margin:20px auto 0;position:relative;display:inline-block">
+                <!-- Allobot SVG (inline for CSS animation support) -->
+                <div style="width:110px;height:110px;margin:0 auto;position:relative;z-index:2" id="hero-allobot">
+                    <img src="allobot.svg" alt="Allobot" class="allobot-svg" style="width:100%;height:100%">
+                    <script>
+                        fetch('allobot.svg').then(r => r.text()).then(svg => {
+                            document.getElementById('hero-allobot').innerHTML = svg;
+                        });
+                    </script>
                 </div>
-                <div class="aspect-video bg-black relative">
-                    <iframe 
-                        class="absolute top-0 left-0 w-full h-full"
-                        src="https://www.youtube.com/embed/8Mr-VzWHys8?autoplay=0&rel=0" 
-                        title="AlloFlow Demo"
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
+                <div
+                    style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:6px;background:rgba(0,0,0,0.2);border-radius:50%;filter:blur(4px);animation:shadowScale 4s ease-in-out infinite;z-index:1">
                 </div>
             </div>
-            <p class="text-center text-slate-400 text-sm mt-4 font-medium">
-                See how it works in less than 10 minutes. <span class="text-indigo-400">Sound On 🔊</span>
+            <p style="font-size:0.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;font-weight:600">
+                Optimized for Google Chrome & Microsoft Edge on Desktop
             </p>
         </div>
     </header>
 
+    <!-- Stats Bar -->
+    <div class="section reveal" style="padding:20px 24px 60px;background:#fff;border-top:1px solid #e2e8f0">
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-number" data-target="280" data-suffix="+">0</div>
+                <div class="stat-label">Features</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-target="100" data-suffix="+">0</div>
+                <div class="stat-label">Languages</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-prefix="$" data-target="0">$0</div>
+                <div class="stat-label">Software Cost</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-text="K-12">K-12</div>
+                <div class="stat-label">Grade Range</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Demo -->
+    <div class="section reveal" style="background:#fff;padding-top:0;padding-bottom:60px">
+        <div style="max-width:800px;margin:0 auto;position:relative">
+            <div
+                style="position:absolute;inset:-2px;background:linear-gradient(135deg,#4f46e5,#9333ea);border-radius:18px;opacity:0.15">
+            </div>
+            <div
+                style="position:relative;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #334155">
+                <div
+                    style="background:#1e293b;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155">
+                    <div style="display:flex;gap:6px">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
+                        <div style="width:10px;height:10px;border-radius:50%;background:#eab308"></div>
+                        <div style="width:10px;height:10px;border-radius:50%;background:#22c55e"></div>
+                    </div>
+                    <div
+                        style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#64748b;font-family:monospace;display:flex;align-items:center;gap:6px">
+                        <i data-lucide="lock" style="width:10px;height:10px"></i> gemini.google.com
+                    </div>
+                </div>
+                <div style="aspect-ratio:16/9;position:relative;background:#000" id="video-container">
+                    <div id="video-poster" onclick="loadVideo()"
+                        style="cursor:pointer;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#312e81)">
+                        <div style="text-align:center;color:#fff">
+                            <div
+                                style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;backdrop-filter:blur(8px)">
+                                <i data-lucide="play" style="width:32px;height:32px;fill:white"></i>
+                            </div>
+                            <p style="font-size:0.9rem;font-weight:600">Watch the Demo</p>
+                            <p style="font-size:0.7rem;opacity:0.6;margin-top:4px">See how it works in under 10 minutes
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NotebookLM Video Overviews -->
+    <section class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0;padding-bottom:60px">
+        <div class="section-inner">
+            <div class="section-header">
+                <h2>Learn More</h2>
+                <p>Short explainer videos — one for educators, one for families.</p>
+            </div>
+            <div
+                style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;max-width:900px;margin:0 auto">
+                <!-- Teachers / Admin Video -->
+                <div
+                    style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
+                    <div style="position:relative;aspect-ratio:16/9;background:#0f172a;cursor:pointer"
+                        onclick="this.innerHTML='<iframe style=&quot;position:absolute;inset:0;width:100%;height:100%&quot; src=&quot;https://www.youtube.com/embed/oDWZhSDZXrQ?autoplay=1&amp;rel=0&quot; title=&quot;AlloFlow for Teachers&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture&quot; allowfullscreen></iframe>'">
+                        <div
+                            style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff">
+                            <div
+                                style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);margin-bottom:8px">
+                                <i data-lucide="play" style="width:24px;height:24px;fill:white"></i>
+                            </div>
+                            <p style="font-size:0.8rem;font-weight:600">Watch Overview</p>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                            <div
+                                style="width:28px;height:28px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center">
+                                <i data-lucide="graduation-cap" style="width:14px;height:14px;color:#4f46e5"></i>
+                            </div>
+                            <span style="font-weight:700;font-size:0.95rem;color:#1e293b">For Teachers &
+                                Administrators</span>
+                        </div>
+                        <p style="font-size:0.8rem;color:#64748b;line-height:1.5">How AlloFlow replaces $20K+ in SaaS
+                            subscriptions with a single, free AI tool. Covers lesson generation, differentiation,
+                            assessment, and standards alignment.</p>
+                    </div>
+                </div>
+                <!-- Parents / Families Video -->
+                <div
+                    style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
+                    <div style="position:relative;aspect-ratio:16/9;background:#0f172a;cursor:pointer"
+                        onclick="this.innerHTML='<iframe style=&quot;position:absolute;inset:0;width:100%;height:100%&quot; src=&quot;https://www.youtube.com/embed/FfZFok40Yw8?autoplay=1&amp;rel=0&quot; title=&quot;AlloFlow for Families&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture&quot; allowfullscreen></iframe>'">
+                        <div
+                            style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#052e16,#166534);color:#fff">
+                            <div
+                                style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);margin-bottom:8px">
+                                <i data-lucide="play" style="width:24px;height:24px;fill:white"></i>
+                            </div>
+                            <p style="font-size:0.8rem;font-weight:600">Watch Overview</p>
+                        </div>
+                    </div>
+                    <div style="padding:16px">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                            <div
+                                style="width:28px;height:28px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center">
+                                <i data-lucide="home" style="width:14px;height:14px;color:#16a34a"></i>
+                            </div>
+                            <span style="font-weight:700;font-size:0.95rem;color:#1e293b">For Parents & Families</span>
+                        </div>
+                        <p style="font-size:0.8rem;color:#64748b;line-height:1.5">How families can use AlloFlow at home
+                            for reading practice, phonics games, adventure mode stories, and homework support — for less
+                            than $8/month.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- How It Works -->
-    <section id="how-it-works" class="py-20 bg-white border-b border-slate-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">No Install. Just Click & Go.</h2>
-                <p class="text-slate-500">AlloFlow isn't a chrome extension. It runs directly inside Gemini Canvas.</p>
+    <section class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+        <div class="section-inner">
+            <div class="section-header">
+                <h2>No Install. Just Click & Go.</h2>
+                <p>AlloFlow runs directly inside Gemini Canvas — no extensions, no setup.</p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-                <div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-indigo-100 via-purple-100 to-indigo-100 -z-10"></div>
-
-                <div class="text-center">
-                    <div class="w-24 h-24 bg-white border-4 border-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm relative z-10">
-                        <span class="text-4xl font-black text-indigo-600">1</span>
-                    </div>
-                    <h3 class="font-bold text-xl mb-2">Get the Link</h3>
-                    <p class="text-sm text-slate-600 px-4">Copy the Gemini Canvas link from this site or your district library.</p>
+            <div class="grid-3">
+                <div style="text-align:center">
+                    <div
+                        style="width:80px;height:80px;background:#fff;border:4px solid #eef2ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--indigo);font-family:'Outfit'">
+                        1</div>
+                    <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Get the Link</h3>
+                    <p style="font-size:0.85rem;color:#64748b">Copy the Canvas link from this site or your district
+                        library.</p>
                 </div>
-
-                <div class="text-center">
-                    <div class="w-24 h-24 bg-white border-4 border-purple-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm relative z-10">
-                        <span class="text-4xl font-black text-purple-600">2</span>
-                    </div>
-                    <h3 class="font-bold text-xl mb-2">Open in Gemini</h3>
-                    <p class="text-sm text-slate-600 px-4">Paste the link into your browser. The app launches instantly inside the Gemini interface.</p>
+                <div style="text-align:center">
+                    <div
+                        style="width:80px;height:80px;background:#fff;border:4px solid #f3e8ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--purple);font-family:'Outfit'">
+                        2</div>
+                    <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Open in Gemini</h3>
+                    <p style="font-size:0.85rem;color:#64748b">Paste the link into your browser. The app launches
+                        instantly.</p>
                 </div>
-
-                <div class="text-center">
-                    <div class="w-24 h-24 bg-white border-4 border-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm relative z-10">
-                        <span class="text-4xl font-black text-teal-600">3</span>
-                    </div>
-                    <h3 class="font-bold text-xl mb-2">Differentiate</h3>
-                    <p class="text-sm text-slate-600 px-4">Generate quizzes, texts, and games. Save your work locally.</p>
+                <div style="text-align:center">
+                    <div
+                        style="width:80px;height:80px;background:#fff;border:4px solid #ccfbf1;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;font-weight:900;color:var(--teal);font-family:'Outfit'">
+                        3</div>
+                    <h3 style="font-weight:700;font-size:1.15rem;margin-bottom:8px">Differentiate</h3>
+                    <p style="font-size:0.85rem;color:#64748b">Generate quizzes, games, leveled text, and more. Save
+                        locally.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Dual Mission: Teacher Speed & Student Access -->
-    <section id="mission" class="py-20 bg-slate-50 border-b border-slate-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">Eliminating the "Differentiation Tax"</h2>
-                <p class="text-slate-500 max-w-3xl mx-auto">
-                    Educators face a cognitive burden: adapting one curriculum for dozens of unique learning profiles. 
-                    AlloFlow creates a sustainable workflow that bridges the gap between mandate and reality.
+    <!-- Dual Mission -->
+    <section class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
+        <div class="section-inner">
+            <div class="section-header">
+                <h2>Eliminating the "Differentiation Tax"</h2>
+                <p>Educators face a cognitive burden: adapting one curriculum for dozens of unique learning profiles.
                 </p>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div class="bg-white p-8 rounded-3xl border border-indigo-100 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <i data-lucide="zap" class="h-32 w-32 text-indigo-600"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-600/20">
-                            <i data-lucide="clock" class="h-6 w-6"></i>
+            <div class="grid-2">
+                <div class="card" style="border-color:#e0e7ff;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:0;right:0;opacity:0.06"><i data-lucide="zap"
+                            style="width:120px;height:120px;color:var(--indigo)"></i></div>
+                    <div style="position:relative;z-index:1">
+                        <div
+                            style="width:44px;height:44px;background:var(--indigo);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+                            <i data-lucide="clock" style="width:22px;height:22px"></i>
                         </div>
-                        <h3 class="font-bold text-2xl text-indigo-900 mb-3">For Teachers: Speed</h3>
-                        <p class="text-slate-600 leading-relaxed mb-4">
-                            Manual differentiation takes hours. AlloFlow automates the heavy lifting: text leveling, glossary creation, and assessment design happen in seconds.
-                        </p>
-                        <ul class="space-y-2 text-sm font-medium text-indigo-800">
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> <strong>Teacher Paced Mode</strong> for guided instruction</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Automated QTI/Canvas Exports</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Integrated Answer Keys & Rubrics</li>
+                        <h3 style="font-weight:700;font-size:1.3rem;color:#1e1b4b;margin-bottom:10px">For Teachers:
+                            Speed</h3>
+                        <p style="font-size:0.9rem;color:#475569;line-height:1.7;margin-bottom:16px">Manual
+                            differentiation takes hours. AlloFlow automates text leveling, glossary creation, and
+                            assessment design in seconds.</p>
+                        <ul
+                            style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.85rem;color:#312e81;font-weight:500">
+                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                    style="width:16px;height:16px"></i> <strong>Teacher Paced Mode</strong> for guided
+                                instruction</li>
+                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                    style="width:16px;height:16px"></i> Automated QTI/Canvas Exports</li>
+                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                    style="width:16px;height:16px"></i> Integrated Answer Keys & Rubrics</li>
                         </ul>
                     </div>
                 </div>
-
-                <div class="bg-white p-8 rounded-3xl border border-teal-100 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <i data-lucide="heart" class="h-32 w-32 text-teal-600"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="w-12 h-12 bg-teal-600 text-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-teal-600/20">
-                            <i data-lucide="accessibility" class="h-6 w-6"></i>
+                <div class="card" style="border-color:#ccfbf1;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:0;right:0;opacity:0.06"><i data-lucide="heart"
+                            style="width:120px;height:120px;color:var(--teal)"></i></div>
+                    <div style="position:relative;z-index:1">
+                        <div
+                            style="width:44px;height:44px;background:var(--teal);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+                            <i data-lucide="accessibility" style="width:22px;height:22px"></i>
                         </div>
-                        <h3 class="font-bold text-2xl text-teal-900 mb-3">For Students: Access</h3>
-                        <p class="text-slate-600 leading-relaxed mb-4">
-                            Students receive a personalized "Lesson Pack" that lets them review material at their own pace with built-in accommodations.
-                        </p>
-                        <ul class="space-y-2 text-sm font-medium text-teal-800">
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> <strong>Offline HTML Bundles</strong> for homework equity</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Native Text-to-Speech & Phonics</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4"></i> Gamified Review (XP & Leveling)</li>
+                        <h3 style="font-weight:700;font-size:1.3rem;color:#134e4a;margin-bottom:10px">For Students:
+                            Access</h3>
+                        <p style="font-size:0.9rem;color:#475569;line-height:1.7;margin-bottom:16px">Students receive a
+                            personalized "Lesson Pack" and review material at their own pace with built-in
+                            accommodations.</p>
+                        <ul
+                            style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:0.85rem;color:#134e4a;font-weight:500">
+                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                    style="width:16px;height:16px"></i> <strong>Offline HTML Bundles</strong> for
+                                homework equity</li>
+                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                    style="width:16px;height:16px"></i> Native Text-to-Speech & Phonics</li>
+                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                    style="width:16px;height:16px"></i> Gamified Review (XP & Leveling)</li>
                         </ul>
                     </div>
                 </div>
@@ -296,82 +341,82 @@
         </div>
     </section>
 
-    <!-- Modes & Architecture -->
-    <section class="py-20 bg-white border-b border-slate-200">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-900 mb-6">Safe, Locked Student Mode</h2>
-                    <div class="space-y-6">
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="school" class="h-5 w-5"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800">Teacher View (Creator)</h4>
-                                <p class="text-sm text-slate-600 mt-1">Full access to generative tools, answer keys, and configuration. Teachers generate the lesson content here.</p>
+    <!-- Interactive Study Guides (NotebookLM) -->
+    <section class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
+        <div class="section-inner">
+            <div class="section-header">
+                <div
+                    style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:#f3f4f6;border-radius:999px;margin-bottom:16px;font-size:0.75rem;font-weight:800;color:#64748b;letter-spacing:0.05em;text-transform:uppercase">
+                    <i data-lucide="sparkles" style="width:14px;height:14px;color:#9333ea"></i> Powered by NotebookLM
+                </div>
+                <h2>Explore the Pedagogy</h2>
+                <p>Dive deep into the research behind AlloFlow. Listen to our AI podcast overview or tap through the
+                    interactive slide decks.</p>
+            </div>
+
+            <div class="grid-2">
+                <!-- Audio Briefing -->
+                <div class="card"
+                    style="background:linear-gradient(135deg, #f8fafc, #f1f5f9); border:1px solid #cbd5e1;display:flex;flex-direction:column;justify-content:center">
+                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+                        <div
+                            style="width:52px;height:52px;background:var(--indigo);border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(79,70,229,0.25)">
+                            <i data-lucide="headphones" style="width:24px;height:24px"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-weight:800;font-size:1.15rem;margin-bottom:4px">The "Why" Behind AlloFlow
+                            </h3>
+                            <p style="font-size:0.85rem;color:#64748b;font-weight:600">Audio Overview • 8 mins</p>
+                        </div>
+                    </div>
+                    <!-- Custom Audio Player Mockup -->
+                    <div
+                        style="background:#fff;border-radius:999px;padding:10px 18px;display:flex;align-items:center;gap:16px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.02)">
+                        <button
+                            style="background:var(--indigo);color:#fff;border:none;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform 0.2s"><i
+                                data-lucide="play"
+                                style="width:16px;height:16px;fill:white;margin-left:2px"></i></button>
+                        <div style="flex-grow:1;height:6px;background:#e2e8f0;border-radius:3px;position:relative">
+                            <div
+                                style="position:absolute;left:0;top:0;height:100%;width:30%;background:var(--indigo);border-radius:3px">
+                            </div>
+                            <div
+                                style="position:absolute;left:30%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#fff;border:2.5px solid var(--indigo);border-radius:50%;cursor:pointer">
                             </div>
                         </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="lock" class="h-5 w-5"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800">Student View (Consumer)</h4>
-                                <p class="text-sm text-slate-600 mt-1">
-                                    Teachers can save a <strong>"Student Project" JSON</strong> file. Zero setup. <strong>No student accounts or logins required</strong>, ensuring total FERPA/COPPA compliance. Runs entirely from a single file.
-                                    <br><br>
-                                    <span class="text-teal-700 font-bold text-xs uppercase tracking-wide bg-teal-50 px-2 py-1 rounded border border-teal-200">Safety Control</span>
-                                    <span class="block mt-1 text-xs text-slate-500">
-                                        Can explicitly <strong>disable</strong> the "Socratic Tutor" or <strong>restrict to Multiple Choice</strong> responses (preventing custom text input in Adventure Mode). Teachers can also set a <strong>custom admin password</strong> in the configuration section to lock settings. Includes "Offline HTML" export.
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="home" class="h-5 w-5"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800">Parent & Independent Modes</h4>
-                                <p class="text-sm text-slate-600 mt-1">
-                                    Simplified interfaces that transform "Lesson Plans" into "Family Guides" for bedtime reading, or "Study Guides" for self-directed independent learners.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center shrink-0"><i data-lucide="wifi" class="h-5 w-5"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 flex items-center gap-2">
-                                    Live Classroom Sync
-                                </h4>
-                                <p class="text-sm text-slate-600 mt-1">
-                                    Real-time Firebase sync with <strong>Teacher Lock</strong>, <strong>team-based Escape Rooms</strong>, and <strong>group differentiation</strong> to push different resources to different student groups.
-                                </p>
-                            </div>
-                        </div>
+                        <span
+                            style="font-size:0.75rem;font-weight:700;color:#64748b;font-variant-numeric:tabular-nums;flex-shrink:0">02:14
+                            / 08:31</span>
                     </div>
                 </div>
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-inner">
-                    <div class="space-y-4">
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-bold text-slate-700 flex items-center gap-2"><i data-lucide="layers" class="h-4 w-4 text-indigo-500"></i> Flexible Sourcing</span>
-                                <div class="flex gap-2 text-slate-400">
-                                    <i data-lucide="file-plus" class="h-4 w-4"></i>
-                                    <i data-lucide="globe" class="h-4 w-4"></i>
-                                    <i data-lucide="sparkles" class="h-4 w-4"></i>
-                                </div>
-                            </div>
-                            <ul class="text-xs text-slate-500 space-y-2">
-                                <li class="flex gap-2 items-start"><i data-lucide="clipboard" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>Paste/Upload:</strong> Text, PDFs, Images, Audio, or <strong>Video</strong> lectures.</span></li>
-                                <li class="flex gap-2 items-start"><i data-lucide="search" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>AI Search:</strong> Find and import articles by topic automatically.</span></li>
-                                <li class="flex gap-2 items-start"><i data-lucide="pen-tool" class="h-3 w-3 mt-0.5 text-slate-400"></i> <span><strong>Generate:</strong> Write new content from scratch based on a topic.</span></li>
-                            </ul>
+
+                <!-- Slide Deck preview -->
+                <div class="card"
+                    style="padding:0;overflow:hidden;border:1px solid #cbd5e1;display:flex;flex-direction:column">
+                    <div
+                        style="flex-grow:1;background:linear-gradient(135deg, #1e293b, #0f172a);position:relative;display:flex;align-items:center;justify-content:center;color:#fff;min-height:220px;padding:24px">
+                        <div style="text-align:center">
+                            <i data-lucide="presentation"
+                                style="width:44px;height:44px;margin-bottom:16px;opacity:0.9;color:#818cf8"></i>
+                            <h4 style="font-family:'Outfit';font-weight:800;font-size:1.3rem;margin-bottom:6px">UDL
+                                Architecture Briefing</h4>
+                            <p style="font-size:0.85rem;opacity:0.8">Interactive Slide Deck</p>
                         </div>
-                        
-                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
-                            <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider">Processing...</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-green-50 p-4 rounded-xl border border-green-100 text-center text-xs font-bold text-green-700">Leveled Text</div>
-                            <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 text-center text-xs font-bold text-purple-700">RPG Adventure</div>
-                            <div class="bg-teal-50 p-4 rounded-xl border border-teal-100 text-center text-xs font-bold text-teal-700">Canvas Quiz (QTI)</div>
-                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center text-xs font-bold text-blue-700">Visual Glossary</div>
+                        <div
+                            style="position:absolute;bottom:12px;right:12px;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:6px;font-size:0.7rem;font-weight:700;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1)">
+                            Click to Explore <i data-lucide="external-link"
+                                style="width:10px;height:10px;display:inline-block;margin-left:2px"></i></div>
+                    </div>
+                    <div
+                        style="padding:12px 20px;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-size:0.85rem;font-weight:800;color:#475569">Slide 1 of 12</span>
+                        <div style="display:flex;gap:8px">
+                            <button
+                                style="background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:6px;cursor:pointer;color:#64748b;transition:background 0.2s"><i
+                                    data-lucide="chevron-left" style="width:18px;height:18px"></i></button>
+                            <button
+                                style="background:var(--slate-900);border:1px solid var(--slate-900);border-radius:6px;padding:6px;cursor:pointer;color:#fff;transition:background 0.2s"><i
+                                    data-lucide="chevron-right" style="width:18px;height:18px"></i></button>
                         </div>
                     </div>
                 </div>
@@ -379,906 +424,334 @@
         </div>
     </section>
 
-    <!-- The UDL Suite (Categorized) -->
-    <section id="features" class="py-20 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">Universal Design for Learning (UDL)</h2>
-                <p class="text-slate-500">280+ features organized by UDL Principle.</p>
+    <!-- Feature Highlights (Condensed — link to full page) -->
+    <section class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+        <div class="section-inner">
+            <div class="section-header">
+                <h2>Universal Design for Learning</h2>
+                <p>280+ features organized by UDL Principle. <a href="features.html"
+                        style="color:var(--indigo);font-weight:700">See all features →</a></p>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                <!-- Engagement Column -->
-                <div class="space-y-6">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-2 h-8 bg-yellow-400 rounded-full"></div>
-                        <h3 class="font-bold text-xl text-slate-800">Engagement</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#7e22ce">
+                        <i data-lucide="map" style="width:18px;height:18px"></i> Adventure Mode
                     </div>
-                    
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-purple-700"><i data-lucide="map" class="h-4 w-4"></i> Adventure Mode</div>
-                        <p class="text-xs text-slate-600 mb-2">Turns reading into an interactive RPG where student choices impact the story.</p>
-                        <p class="text-xs text-slate-500">Features <strong>3D Dice Physics</strong>, <strong>Storybook Export</strong>, <strong>inventory tracking</strong>, <strong>XP progression</strong>, and <strong>deep customizability</strong> to adapt scenarios to any curriculum.</p>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-yellow-700"><i data-lucide="swords" class="h-4 w-4"></i> Multiplayer & Bosses</div>
-                        <p class="text-xs text-slate-600 mb-2"><strong>Boss Battle Mode:</strong> The class cooperatively fights a "Monster" by answering questions.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>Live Pulse</strong> formative checks and <strong>Democracy Mode</strong> for voting on story paths.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-orange-700"><i data-lucide="gamepad-2" class="h-4 w-4"></i> Interactive Games</div>
-                        <p class="text-xs text-slate-600 mb-2">Instantly generates games from lesson vocabulary and content.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>Review Game</strong> (Jeopardy-style), <strong>Bingo</strong>, <strong>Memory Match</strong>, <strong>Crossword</strong>, <strong>Word Search</strong>, and <strong>Concept Sort</strong>.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-indigo-800"><i data-lucide="message-circle" class="h-4 w-4"></i> Interview Mode</div>
-                        <p class="text-xs text-slate-600 mb-2">Simulate real-time interviews with historical figures, fictional characters, or subject matter experts.</p>
-                        <p class="text-xs text-slate-500">Features a <strong>Dynamic Rapport System</strong> where the AI reacts to student politeness and empathy.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-red-700"><i data-lucide="door-open" class="h-4 w-4"></i> Escape Room</div>
-                        <p class="text-xs text-slate-600 mb-2">Teams solve <strong>6 puzzle types</strong> (MCQ, Sequence, Cipher, Matching, Scramble, Fill-in) to escape a themed room.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>clue chains</strong>, <strong>lives & hints</strong>, <strong>streak bonuses</strong>, and a <strong>Final Door</strong> synthesis challenge.</p>
-                    </div>
+                    <p style="font-size:0.85rem;color:#475569">Turns reading into an interactive RPG with 3D dice,
+                        storybook export, and inventory tracking.</p>
                 </div>
-
-                <!-- Representation Column -->
-                <div class="space-y-6">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-2 h-8 bg-green-500 rounded-full"></div>
-                        <h3 class="font-bold text-xl text-slate-800">Representation</h3>
+                <div class="card">
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#be185d">
+                        <i data-lucide="music" style="width:18px;height:18px"></i> Word Sounds Studio
                     </div>
-                    
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-green-700"><i data-lucide="book-open" class="h-4 w-4"></i> Leveled Text</div>
-                        <p class="text-xs text-slate-600 mb-2">Rewrites text for K-12 levels. Includes <strong>Immersive Reader</strong> (Line Focus, Dyslexia Fonts, Grammar Highlights).</p>
-                        <p class="text-xs text-slate-500">Features <strong>Syntax Scramble</strong>, <strong>Cloze</strong> activities, and <strong>Parallel Bilingual Views</strong>.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-700"><i data-lucide="scan-line" class="h-4 w-4"></i> Visuals & Organizers</div>
-                        <p class="text-xs text-slate-600 mb-2">Generates <strong>Timelines</strong>, <strong>Venn Diagrams</strong>, <strong>Mind Maps</strong>, <strong>Cause & Effect</strong>, and <strong>Flow Charts</strong>.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>"Nano Banana" Eraser Mode</strong> to remove labels for instant fill-in-the-blank worksheets.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-indigo-700"><i data-lucide="globe" class="h-4 w-4"></i> Glossary & Flashcards</div>
-                        <p class="text-xs text-slate-600 mb-2">Identifies Tier 2/3 vocabulary automatically. <strong>Supports any language via Gemini</strong>: Generate and download <strong>custom Language Packs</strong> to instantly localize the interface.</p>
-                        <p class="text-xs text-slate-500">Generates <strong>context-aware definitions</strong>, translations, and printable flashcards for every term.</p>
-                    </div>
-
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-amber-700"><i data-lucide="file-search" class="h-4 w-4"></i> Source Analysis</div>
-                        <p class="text-xs text-slate-600 mb-2">AI analyzes source text for <strong>bias</strong>, <strong>key arguments</strong>, and <strong>credibility</strong>.</p>
-                        <p class="text-xs text-slate-500">Supports critical literacy by teaching students to evaluate information sources.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-pink-600"><i data-lucide="music" class="h-4 w-4"></i> Word Sounds (Phonics)</div>
-                        <p class="text-xs text-slate-600 mb-2">Complete phonemic awareness suite: <strong>Segmentation</strong>, <strong>Blending</strong>, <strong>Isolation</strong>, <strong>Rhyming</strong>, and <strong>Sound Matching</strong>.</p>
-                        <p class="text-xs text-slate-500">Features <strong>Orthographic Processing</strong> with <strong>Elkonin Boxes</strong> for mapping sounds to letters, adaptive difficulty levels, and gamified badges.</p>
-                    </div>
+                    <p style="font-size:0.85rem;color:#475569">Complete phonemic awareness suite: Segmentation,
+                        Blending, Isolation, Rhyming, and Sound Mapping.</p>
                 </div>
-
-                <!-- Action & Expression Column -->
-                <div class="space-y-6">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-2 h-8 bg-teal-500 rounded-full"></div>
-                        <h3 class="font-bold text-xl text-slate-800">Action & Expression</h3>
+                <div class="card">
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0d9488">
+                        <i data-lucide="check-square" style="width:18px;height:18px"></i> Exit Tickets & Quizzes
                     </div>
-                    
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-teal-700"><i data-lucide="check-square" class="h-4 w-4"></i> Exit Ticket (Quiz)</div>
-                        <p class="text-xs text-slate-600 mb-2">Generates MCQs and exports to Canvas (QTI).</p>
-                        <p class="text-xs text-slate-500">Features <strong>Depth of Knowledge (DOK) Tuning</strong> and a <strong>Fact-Check Protocol</strong> to verify AI answers.</p>
+                    <p style="font-size:0.85rem;color:#475569">Generate MCQs with DOK tuning and export directly to
+                        Canvas (QTI format).</p>
+                </div>
+                <div class="card">
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#ea580c">
+                        <i data-lucide="gamepad-2" style="width:18px;height:18px"></i> Interactive Games
                     </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-rose-700"><i data-lucide="mic" class="h-4 w-4"></i> Oral Fluency Coach</div>
-                        <p class="text-xs text-slate-600 mb-2">Listens to students read aloud to calculate WCPM (Words Correct Per Minute).</p>
-                        <p class="text-xs text-slate-500">Provides a <strong>color-coded heat map</strong> of reading accuracy and highlights missed words.</p>
+                    <p style="font-size:0.85rem;color:#475569">Review Game, Bingo, Memory Match, Crossword, Word Search,
+                        and Concept Sort.</p>
+                </div>
+                <div class="card">
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#16a34a">
+                        <i data-lucide="book-open" style="width:18px;height:18px"></i> Leveled Text
                     </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-600"><i data-lucide="quote" class="h-4 w-4"></i> Writing Scaffolds</div>
-                        <p class="text-xs text-slate-600 mb-2">Generates sentence starters and paragraph frames.</p>
-                        <p class="text-xs text-slate-500">Includes <strong>Smart Synthesis</strong> to pre-fill drafts and an <strong>Iterative Feedback Loop</strong> for AI revision.</p>
+                    <p style="font-size:0.85rem;color:#475569">Rewrites text for K-12 levels with Immersive Reader,
+                        Dyslexia Fonts, and Grammar Highlights.</p>
+                </div>
+                <div class="card">
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#dc2626">
+                        <i data-lucide="door-open" style="width:18px;height:18px"></i> Escape Room
                     </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-purple-600"><i data-lucide="help-circle" class="h-4 w-4"></i> Socratic Tutor</div>
-                        <p class="text-xs text-slate-600 mb-2">An AI guide that answers questions with guiding hints, never direct answers.</p>
-                        <p class="text-xs text-slate-500">Supports executive function and encourages problem-solving. Can be disabled by teachers.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-auto md:h-52">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-orange-600"><i data-lucide="table" class="h-4 w-4"></i> Rubric Builder</div>
-                        <p class="text-xs text-slate-600 mb-2">Generates detailed <strong>grading rubrics</strong> with clear criteria and point values.</p>
-                        <p class="text-xs text-slate-500">Aligned to learning objectives and exportable for easy teacher use.</p>
-                    </div>
+                    <p style="font-size:0.85rem;color:#475569">Teams solve 6 puzzle types to escape a themed room with
+                        clue chains and streak bonuses.</p>
                 </div>
             </div>
-
-            <!-- STEM & Multimedia Row -->
-            <div class="mt-12 pt-8 border-t border-slate-200">
-                <h3 class="text-center font-bold text-slate-400 uppercase text-xs tracking-widest mb-6">STEM & Multimedia Expansion</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-blue-800"><i data-lucide="sigma" class="h-4 w-4"></i> Context-Aware STEM</div>
-                        <p class="text-xs text-slate-600">Generates math & science problems linked to the lesson topic (e.g., "Pyramid Geometry"). Renders <strong>SVG Graphs</strong> and scientific diagrams.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-pink-700"><i data-lucide="presentation" class="h-4 w-4"></i> Native Exports</div>
-                        <p class="text-xs text-slate-600">One-click generation of editable <strong>PowerPoint (.pptx)</strong> slides and <strong>Podcast (.mp3)</strong> audio files for offline learning.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-indigo-600"><i data-lucide="bot" class="h-4 w-4"></i> AlloBot Guide</div>
-                        <p class="text-xs text-slate-600">An animated AI companion that provides "Show Me" navigation, physically flying to buttons to teach users how to use the interface.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Literacy & Assessment Row -->
-            <div class="mt-12 pt-8 border-t border-slate-200">
-                <h3 class="text-center font-bold text-slate-400 uppercase text-xs tracking-widest mb-6">Literacy &amp; Assessment</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-emerald-700"><i data-lucide="pencil" class="h-4 w-4"></i> Letter Tracing</div>
-                        <p class="text-xs text-slate-600">Interactive letter formation practice with <strong>animated hand guides</strong> and stroke-accurate path detection for early writers.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-violet-700"><i data-lucide="file-text" class="h-4 w-4"></i> Progress Reports</div>
-                        <p class="text-xs text-slate-600">Generate <strong>parent-friendly progress reports</strong> with printable layouts. Export student data as <strong>CSV</strong> for gradebooks and MTSS documentation.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-sky-700"><i data-lucide="bar-chart-3" class="h-4 w-4"></i> RTI Progress Monitoring</div>
-                        <p class="text-xs text-slate-600">Track student progress across <strong>Tier 1-3 interventions</strong>. Visual dashboards for SLPs, reading specialists, and MTSS teams.</p>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all h-full">
-                        <div class="flex items-center gap-2 mb-2 font-bold text-cyan-700"><i data-lucide="trophy" class="h-4 w-4"></i> Team Showdown</div>
-                        <p class="text-xs text-slate-600">Real-time competitive quiz mode with <strong>live leaderboards</strong>, team scoring, and broadcast teacher controls. <span class="text-[10px] text-indigo-500 font-bold">(Firebase)</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Tools Row -->
-            <div class="mt-12 pt-8 border-t border-slate-200">
-                <h3 class="text-center font-bold text-slate-400 uppercase text-xs tracking-widest mb-6">Teacher Productivity Tools</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 h-full">
-                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="users" class="h-4 w-4"></i></div>
-                        <div>
-                            <h4 class="font-bold text-indigo-900 text-sm">Smart Profiles</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">Snapshot configurations (e.g., "Grade 5 + ESL") to switch lesson contexts in one click.</p>
-                        </div>
-                    </div>
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 h-full">
-                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="clipboard-list" class="h-4 w-4"></i></div>
-                        <div>
-                            <h4 class="font-bold text-indigo-900 text-sm">Lesson Plan Builder</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">Synthesizes all generated resources into a cohesive, scripted lesson plan.</p>
-                        </div>
-                    </div>
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 h-full">
-                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="monitor" class="h-4 w-4"></i></div>
-                        <div>
-                            <h4 class="font-bold text-indigo-900 text-sm">Teacher Dashboard</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">View progress, <strong>track class-wide misconceptions</strong>, and collect grades from offline files.</p>
-                        </div>
-                    </div>
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 h-full">
-                        <div class="bg-indigo-200 text-indigo-700 p-2 rounded-lg"><i data-lucide="check-circle" class="h-4 w-4"></i></div>
-                        <div>
-                            <h4 class="font-bold text-indigo-900 text-sm">Fact Check Protocol</h4>
-                            <p class="text-xs text-indigo-800/80 mt-1">"Verify & Debunk" button forces AI to critique its own quiz answers to prevent hallucinations.</p>
-                        </div>
-                    </div>
-
-                </div>
-                
-                <!-- Group Differentiation Feature -->
-                <div class="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-5 rounded-xl border border-purple-200 flex items-start gap-4">
-                    <div class="bg-purple-500 text-white p-3 rounded-xl shrink-0 shadow-lg shadow-purple-500/20">
-                        <i data-lucide="git-branch" class="h-5 w-5"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-purple-900 text-sm">
-                            Group-Based Differentiation
-                        </h4>
-                        <p class="text-xs text-purple-800/80 mt-1 leading-relaxed">
-                            During live sessions, assign students to groups and <strong>push different resources to each group simultaneously</strong>. 
-                            Ideal for stations, tiered instruction, or language-specific content. Includes group-level language overrides for multilingual classrooms.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- UDL & Standards Alignment Row -->
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-green-50 p-5 rounded-xl border border-green-200 flex items-start gap-4">
-                        <div class="bg-green-500 text-white p-3 rounded-xl shrink-0 shadow-lg shadow-green-500/20">
-                            <i data-lucide="layout-grid" class="h-5 w-5"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-green-900 text-sm">UDL Alignment Matrix</h4>
-                            <p class="text-xs text-green-800/80 mt-1 leading-relaxed">
-                                Every feature is <strong>mapped to CAST's UDL Guidelines</strong>. See exactly which checkpoints each tool supports for Engagement, Representation, and Action & Expression.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="bg-amber-50 p-5 rounded-xl border border-amber-200 flex items-start gap-4">
-                        <div class="bg-amber-500 text-white p-3 rounded-xl shrink-0 shadow-lg shadow-amber-500/20">
-                            <i data-lucide="target" class="h-5 w-5"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-amber-900 text-sm">Standards Consultation</h4>
-                            <p class="text-xs text-amber-800/80 mt-1 leading-relaxed">
-                                Align content to <strong>Common Core, NGSS, or state-specific standards</strong>. AI suggests relevant standards and adapts quiz questions to match learning objectives.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+            <div style="text-align:center;margin-top:36px">
+                <a href="features.html" class="btn-primary" style="background:var(--slate-900)"><i
+                        data-lucide="layout-grid" style="width:18px;height:18px"></i> View All 280+ Features</a>
             </div>
         </div>
     </section>
 
-    <!-- For Families Section -->
-    <section id="families" class="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <div class="inline-block p-3 rounded-full bg-amber-100 border border-amber-200 mb-6">
-                    <i data-lucide="home" class="h-8 w-8 text-amber-600"></i>
-                </div>
-                <h2 class="text-3xl font-black text-slate-900 mb-4">Great for Families, Too</h2>
-                <p class="text-slate-500 text-lg max-w-2xl mx-auto">
-                    AlloFlow isn't just for classrooms. Parents and caregivers can use it at home to support learning — no teaching degree required.
-                </p>
+    <!-- Social Proof / Testimonials -->
+    <section class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
+        <div class="section-inner">
+            <div class="section-header">
+                <h2>Built by an Educator, for Educators</h2>
+                <p>AlloFlow was designed by a school psychologist who understands the realities of the classroom.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="text-3xl mb-4">📚</div>
-                    <h3 class="font-bold text-lg text-slate-900 mb-2">Homework Help</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Paste any homework passage and AlloFlow generates vocabulary games, comprehension quizzes, and phonics activities instantly. AlloBot guides your child step-by-step.
-                    </p>
+            <div
+                style="text-align:center;max-width:700px;margin:0 auto;padding:40px;background:linear-gradient(135deg, #f8fafc, #f1f5f9);border:1px dashed #cbd5e1;border-radius:20px">
+                <div
+                    style="width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 12px rgba(0,0,0,0.05)">
+                    <i data-lucide="heart-handshake" style="width:28px;height:28px;color:var(--indigo)"></i>
                 </div>
-                <div class="bg-white p-8 rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="text-3xl mb-4">🌙</div>
-                    <h3 class="font-bold text-lg text-slate-900 mb-2">Bedtime Reading</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Turn any storybook into an interactive learning session. <strong>Parent Mode</strong> creates "Family Guides" with activities designed for shared reading time.
-                    </p>
-                </div>
-                <div class="bg-white p-8 rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="text-3xl mb-4">☀️</div>
-                    <h3 class="font-bold text-lg text-slate-900 mb-2">Summer & After-School Practice</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Keep skills sharp between school years. Your child picks a fun codename, explores Adventure Mode, and you can track progress through saved JSON files.
-                    </p>
-                </div>
-            </div>
-            <div class="text-center mt-10">
-                <p class="text-sm text-slate-500">Children use <strong>codenames</strong> instead of real names. No student account needed. All data stays on your device.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- "Two Paths" Deployment Section -->
-    <section id="tech" class="py-20 bg-slate-900 text-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <div class="inline-block p-3 rounded-full bg-slate-800 border border-slate-700 mb-6">
-                    <i data-lucide="cpu" class="h-8 w-8 text-blue-400"></i>
-                </div>
-                <h2 class="text-3xl font-black mb-4">Two Ways to Run AlloFlow</h2>
-                <p class="text-slate-400 text-lg max-w-2xl mx-auto">
-                    Start instantly in Gemini Canvas, or unlock the full platform by self-hosting with Firebase.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                <!-- Canvas Path -->
-                <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">Quick Start</div>
-                    <h4 class="font-bold text-xl mb-3 flex items-center gap-2"><i data-lucide="chrome" class="text-blue-400 h-5 w-5"></i> Gemini Canvas Mode</h4>
-                    <p class="text-sm text-slate-300 mb-4">Click a link and go. No installation, no API keys, no setup. Ideal for individual teachers getting started.</p>
-                    <ul class="text-xs text-slate-400 space-y-2 mb-4">
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-green-400"></i> Zero-setup deployment</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-green-400"></i> Local-first data (browser cache + JSON files)</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-green-400"></i> Full differentiation toolkit</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-green-400"></i> Offline HTML student exports</li>
-                    </ul>
-                    <div class="bg-slate-900/50 rounded-lg px-3 py-2 text-xs text-slate-500 flex items-center gap-2">
-                        <i data-lucide="sparkles" class="h-3 w-3 text-blue-400"></i> Powered by <strong class="text-blue-300 ml-1">Gemini 2.5 Flash</strong>
-                    </div>
-                </div>
-
-                <!-- Firebase Path -->
-                <div class="bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 p-6 rounded-xl relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-indigo-500 text-white text-[9px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">Full Platform</div>
-                    <h4 class="font-bold text-xl mb-3 flex items-center gap-2"><i data-lucide="server" class="text-indigo-400 h-5 w-5"></i> Self-Hosted (Firebase)</h4>
-                    <p class="text-sm text-slate-300 mb-4">Deploy your own instance for full control. Unlocks real-time multiplayer, analytics, and district-level data sovereignty.</p>
-                    <ul class="text-xs text-slate-400 space-y-2 mb-4">
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-indigo-400"></i> <strong class="text-white">Live Classroom Sessions</strong> with real-time sync</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-indigo-400"></i> <strong class="text-white">Team Showdown</strong> quizzes & leaderboards</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-indigo-400"></i> <strong class="text-white">RTI Progress Monitoring</strong> dashboard</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="h-3 w-3 text-indigo-400"></i> District-controlled data sovereignty</li>
-                    </ul>
-                    <div class="bg-slate-900/50 rounded-lg px-3 py-2 text-xs text-slate-500 flex items-center gap-2">
-                        <i data-lucide="sparkles" class="h-3 w-3 text-indigo-400"></i> Powered by <strong class="text-indigo-300 ml-1">Gemini 2.5 Flash</strong>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Architecture Cards -->
-            <h3 class="text-center font-bold text-slate-500 uppercase text-xs tracking-widest mb-6">Under the Hood</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-800/50 border border-slate-700 p-5 rounded-xl">
-                    <h4 class="font-bold text-sm mb-2 flex items-center gap-2"><i data-lucide="code" class="text-purple-400 h-4 w-4"></i> Strict JSON Enforcement</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Forces the LLM to output structured data, enabling interactive UI components like games, quizzes, and flashcards rather than static text.
-                    </p>
-                </div>
-                <div class="bg-slate-800/50 border border-slate-700 p-5 rounded-xl">
-                    <h4 class="font-bold text-sm mb-2 flex items-center gap-2"><i data-lucide="link-2" class="text-blue-400 h-4 w-4"></i> Contextual Chaining</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Maintains a "Knowledge State" — quizzes reference glossary terms, lesson plans reference adventure scenarios. One cohesive unit, not disjointed artifacts.
-                    </p>
-                </div>
-                <div class="bg-slate-800/50 border border-slate-700 p-5 rounded-xl">
-                    <h4 class="font-bold text-sm mb-2 flex items-center gap-2"><i data-lucide="shield" class="text-green-400 h-4 w-4"></i> Air Gap Architecture</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Student data travels via local JSON files — never over a network. This eliminates interception risk and simplifies FERPA compliance.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-20 bg-gradient-to-b from-slate-50 to-white">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">Simple, Transparent Access</h2>
-                <p class="text-slate-500 text-lg max-w-2xl mx-auto">
-                    AlloFlow itself is <strong>100% free and open-source</strong>. You only need a Google account to power the AI.
-                </p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Free Tier -->
-                <div class="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
-                    <div class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Free</div>
-                    <div class="text-4xl font-black text-slate-900 mb-1">$0</div>
-                    <div class="text-sm text-slate-500 mb-6">Google Education Account</div>
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> Full AlloFlow access</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> Ample usage quotas via your school district</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> Enterprise protections under district Workspace</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> 15 GB Google storage</li>
-                    </ul>
-                    <div class="text-xs text-slate-400">Requires a school-issued Google Workspace for Education account.</div>
-                    <div class="mt-3 pt-3 border-t border-slate-100">
-                        <p class="text-xs text-slate-500"><i data-lucide="info" class="h-3 w-3 inline mb-0.5"></i> Usage limits vary by district. Most education accounts provide generous daily quotas.</p>
-                    </div>
-                </div>
-                <!-- AI Plus -->
-                <div class="bg-white p-8 rounded-2xl border-2 border-indigo-400 shadow-lg relative">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">Recommended for Families</div>
-                    <div class="text-sm font-bold text-indigo-500 uppercase tracking-wider mb-2">Google AI Plus</div>
-                    <div class="text-4xl font-black text-slate-900 mb-1">~$8<span class="text-lg font-normal text-slate-400">/mo</span></div>
-                    <div class="text-sm text-slate-500 mb-2">Personal Google Account</div>
-                    <div class="inline-block bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full mb-4">🎁 Try ~$4/mo for the first 2 months</div>
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0"></i> Full AlloFlow access</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0"></i> Higher Gemini usage limits</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0"></i> <strong>Full Gemini AI</strong> for writing, research, coding &amp; more</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0"></i> AI image generation &amp; editing</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0"></i> 2 TB Google storage</li>
-                    </ul>
-                    <div class="text-xs text-indigo-600 font-medium">💡 This subscription gives you the full Google Gemini AI platform — AlloFlow is just one of many things you can do with it.</div>
-                    <div class="mt-3 pt-3 border-t border-indigo-100">
-                        <p class="text-xs text-slate-500"><i data-lucide="info" class="h-3 w-3 inline mb-0.5"></i> Expect enough daily usage for several full lesson builds, quizzes, and student activities comfortably.</p>
-                    </div>
-                </div>
-                <!-- AI Pro -->
-                <div class="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-sm">
-                    <div class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Google AI Pro</div>
-                    <div class="text-4xl font-black text-slate-900 mb-1">~$20<span class="text-lg font-normal text-slate-400">/mo</span></div>
-                    <div class="text-sm text-slate-500 mb-6">Personal Google Account</div>
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> Everything in AI Plus</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> Higher daily usage limits (~100 prompts/day)</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> <strong>Full Gemini AI</strong> with premium models</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> Priority access to new Gemini features</li>
-                        <li class="flex items-start gap-2"><i data-lucide="check" class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0"></i> 2 TB Google storage</li>
-                    </ul>
-                    <div class="text-xs text-slate-400 mb-3">Best for power users, content creators, and teachers generating large lesson libraries.</div>
-                    <div class="inline-block bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">🎁 1 month free trial for new subscribers</div>
-                </div>
-            </div>
-            <div class="text-center mt-8">
-                <p class="text-sm text-slate-400 mb-2">Prices shown are approximate U.S. pricing as of early 2026. Visit <a href="https://one.google.com" target="_blank" class="text-indigo-500 hover:underline">one.google.com</a> for current plans. AlloFlow does not charge any fees.</p>
-                <p class="text-xs text-slate-400 mb-3">🎓 <strong>College students (18+):</strong> Google may offer up to 1 year of AI Pro free with a verified .edu email. <a href="https://gemini.google/students/" target="_blank" class="text-indigo-500 hover:underline">Check eligibility</a></p>
-                <div class="bg-slate-100 border border-slate-200 rounded-lg p-3 max-w-2xl mx-auto">
-                    <p class="text-xs text-slate-500"><strong>Disclaimer:</strong> AlloFlow is an independent open-source project and is <strong>not affiliated with, endorsed by, or sponsored by Google</strong>. Google, Gemini, Google Workspace, and Google One are trademarks of Google LLC. Pricing and plan details are determined entirely by Google and may change at any time.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Accessibility Section -->
-    <section id="accessibility" class="py-20 bg-white border-b border-slate-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">Designed for Every Learner</h2>
-                <p class="text-slate-500">Full compliance with WCAG 2.1 AA standards for keyboard navigation and screen reader support.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="type" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Dyslexia Support</h4>
-                        <p class="text-xs text-slate-500 mt-1">Toggle the OpenDyslexic font globally or enable Bionic Reading to guide the eye.</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="languages" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Global Localization</h4>
-                        <p class="text-xs text-slate-500 mt-1">Instantly translate the entire User Interface and content into any language supported by Gemini.</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="mic" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Dictation</h4>
-                        <p class="text-xs text-slate-500 mt-1">Speech-to-text is available in every input field, supporting students with dysgraphia.</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="scan-line" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Reading Ruler</h4>
-                        <p class="text-xs text-slate-500 mt-1">A mouse-following focus bar helps isolate lines of text to reduce visual tracking errors.</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="volume-2" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Text-to-Speech</h4>
-                        <p class="text-xs text-slate-500 mt-1">Click any sentence or word to hear it read aloud. Includes slow-speed phonics breakdown.</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="palette" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Color Overlays</h4>
-                        <p class="text-xs text-slate-500 mt-1">Blue, Peach, and Yellow tint overlays to reduce visual stress (Irlen Syndrome).</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="keyboard" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Keyboard Nav</h4>
-                        <p class="text-xs text-slate-500 mt-1">All games (Memory, Matching) are playable via Tab/Arrow keys for motor accessibility.</p>
-                    </div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="contrast" class="h-5 w-5 text-slate-600"></i></div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">High Contrast</h4>
-                        <p class="text-xs text-slate-500 mt-1">Toggle Dark Mode or pure High Contrast Mode (Black/Yellow) for low-vision support.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-8 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2"><i data-lucide="keyboard" class="h-5 w-5 text-indigo-600"></i> Keyboard Shortcuts Cheat Sheet</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-600">
-                    <div class="flex justify-between items-center bg-white px-3 py-2 rounded border border-slate-100"><span>Next Element</span> <kbd>Tab</kbd></div>
-                    <div class="flex justify-between items-center bg-white px-3 py-2 rounded border border-slate-100"><span>Select/Flip</span> <kbd>Enter</kbd></div>
-                    <div class="flex justify-between items-center bg-white px-3 py-2 rounded border border-slate-100"><span>Close Modal</span> <kbd>Esc</kbd></div>
-                    <div class="flex justify-between items-center bg-white px-3 py-2 rounded border border-slate-100"><span>Game Move</span> <kbd>Arrows</kbd></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Privacy & Compliance -->
-    <section id="privacy" class="py-20 bg-white border-t border-slate-100">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <div class="inline-block p-3 rounded-full bg-slate-100 border border-slate-200 mb-6">
-                    <i data-lucide="lock" class="h-8 w-8 text-red-500"></i>
-                </div>
-                <h2 class="text-3xl font-black mb-4">Critical Data Privacy</h2>
-                <p class="text-slate-400 text-lg max-w-2xl mx-auto">
-                    AlloFlow is a curriculum tool, not a student record system.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h4 class="font-bold text-lg mb-2 flex items-center gap-2"><i data-lucide="database" class="text-blue-500 h-5 w-5"></i> Air Gap Architecture</h4>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        To ensure FERPA compliance, AlloFlow uses a digital "Air Gap". 
-                        Student work is saved as a local JSON file on the device. To grade it, the teacher uploads this file to their dashboard. 
-                        This means student data <strong>never</strong> travels over a database connection, eliminating the risk of interception.
-                    </p>
-                </div>
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h4 class="font-bold text-lg mb-2 flex items-center gap-2"><i data-lucide="building" class="text-purple-500 h-5 w-5"></i> Google Integration</h4>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        When teachers use AlloFlow within Gemini using their <strong>Google Education Account</strong>, the application data is processed under the district's existing Workspace agreement, adding a layer of enterprise protection.
-                    </p>
-                </div>
-            </div>
-            
-            <div class="bg-white p-6 rounded-xl border border-indigo-100 shadow-sm mb-8 text-center">
-                <h4 class="font-bold text-lg mb-2 flex items-center justify-center gap-2 text-indigo-900"><i data-lucide="toggle-left" class="text-indigo-500 h-5 w-5"></i> Default Safety Settings</h4>
-                <p class="text-sm text-slate-600 leading-relaxed">
-                    The <strong>Cloud Sync</strong> toggle is set to <strong>OFF</strong> by default. AlloFlow automatically saves progress to your browser's Local Storage. We highly recommend frequent backups using the "Save to Drive" (JSON) feature to preserve work between sessions.
-                </p>
-            </div>
-
-            <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-xl mb-8">
-                <h3 class="text-red-700 font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <i data-lucide="alert-triangle" class="h-5 w-5"></i> Do NOT Input PII
+                <h3 style="font-size:1.5rem;font-weight:800;color:var(--slate-900);margin-bottom:12px">Share Your Story
                 </h3>
-                <p class="text-sm text-red-800/90 mb-4">
-                    Personally Identifiable Information (PII) is <strong>not required</strong> for AlloFlow to function. 
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <ul class="text-sm text-red-800 font-mono space-y-2">
-                        <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> No Student Names</li>
-                        <li class="flex items-center gap-2"><i data-lucide="x" class="h-4 w-4"></i> No ID Numbers</li>
+                <p style="font-size:1rem;color:#475569;margin-bottom:24px;line-height:1.6">Have you had a positive
+                    experience using AlloFlow in your classroom or at home? I would love to hear how it has impacted
+                    your learners!</p>
+                <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow Success Story" class="btn-primary"
+                    style="padding:12px 28px;font-size:0.95rem"><i data-lucide="mail"
+                        style="width:16px;height:16px"></i> Contact Aaron</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section reveal" style="background:#f8fafc;border-top:1px solid #e2e8f0">
+        <div class="section-inner">
+            <div class="section-header">
+                <h2>Simple, Transparent Access</h2>
+                <p>AlloFlow itself is <strong>100% free and open-source</strong>. You only need a Google account to
+                    power the AI.</p>
+            </div>
+            <div class="grid-3">
+                <div class="card" style="border-width:2px">
+                    <div
+                        style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">
+                        Free</div>
+                    <div style="font-size:2.5rem;font-weight:900;color:var(--slate-900)">$0</div>
+                    <div style="font-size:0.85rem;color:#64748b;margin-bottom:20px">Google Education Account</div>
+                    <ul
+                        style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#475569">
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:#22c55e"></i> Full AlloFlow access</li>
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:#22c55e"></i> Ample district quotas</li>
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:#22c55e"></i> Enterprise protections</li>
                     </ul>
-                    <div class="bg-white/50 p-3 rounded border border-red-200">
-                        <p class="text-xs text-red-900 font-bold mb-1">Use the Codename Generator:</p>
-                        <p class="text-xs text-red-800 italic">"Cosmic Badger", "Noble Tiger", "Rapid Falcon"</p>
-                        <p class="text-[10px] text-red-700 mt-1">Students are assigned random animal aliases for grading.</p>
-                    </div>
                 </div>
-                
-                <!-- Re-Identification Risk Warning -->
-                <div class="mt-4 pt-4 border-t border-red-200">
-                    <h4 class="text-xs font-bold text-red-700 uppercase tracking-wide mb-1">⚠️ Re-Identification Risk (The Mosaic Effect)</h4>
-                    <p class="text-xs text-red-800/90 leading-relaxed">
-                        Be mindful that combining non-PII data (e.g., "Grade 3 + Somali Speaker + Specific Behavioral Issue") in a small cohort can inadvertently identify a student. Generalize inputs whenever possible.
-                    </p>
+                <div class="card" style="border-color:var(--indigo);border-width:2px;position:relative">
+                    <div
+                        style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#fff;font-size:0.65rem;font-weight:700;padding:4px 14px;border-radius:999px">
+                        Recommended for Families</div>
+                    <div
+                        style="font-size:0.75rem;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">
+                        AI Plus</div>
+                    <div style="font-size:2.5rem;font-weight:900;color:var(--slate-900)">~$8<span
+                            style="font-size:1rem;font-weight:400;color:#94a3b8">/mo</span></div>
+                    <div style="font-size:0.85rem;color:#64748b;margin-bottom:12px">Personal Google Account</div>
+                    <div
+                        style="display:inline-block;background:#dcfce7;color:#15803d;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:16px">
+                        🎁 ~$4/mo for first 2 months</div>
+                    <ul
+                        style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#475569">
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:var(--indigo)"></i> Higher usage limits</li>
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:var(--indigo)"></i> Full Gemini AI platform</li>
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:var(--indigo)"></i> 2 TB Google storage</li>
+                    </ul>
                 </div>
-            </div>
-
-            <div class="text-center">
-                 <p class="text-sm text-slate-500 italic">We strongly recommend speaking with your District Admins before adoption to ensure alignment with your local Acceptable Use Policy.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="py-20 bg-white">
-        <div class="max-w-3xl mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-black text-slate-900 mb-4">Frequently Asked Questions</h2>
-            </div>
-            
-            <div class="space-y-4">
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        Can I prevent students from chatting with the AI?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
-                        <p><strong>Yes.</strong> When a teacher saves a lesson as a <strong>"Student Project"</strong> (JSON), they have the option to disable the "Socratic Tutor" and "Adventure Mode".</p>
-                        <p>Alternatively, you can enable <strong>"Strict Mode"</strong>, which forces Adventure and Interview interactions to be <strong>Multiple Choice only</strong>, allowing engagement without open text input. When a student loads this specific file, the interface locks accordingly.</p>
-                    </div>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        Is it free? What about API costs?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
-                        <p><strong>The Software:</strong> AlloFlow itself is 100% free and open-source. You do not pay us a subscription fee.</p>
-                        <p><strong>Canvas Mode (Gemini):</strong> When running inside Gemini Canvas, AlloFlow uses the API quota ("tokens") associated with your Google account.</p>
-                        <ul class="list-disc list-inside pl-2 space-y-1 mt-1">
-                            <li><strong>Google Education Accounts:</strong> Districts with "Gemini for Google Workspace" licenses typically have ample quotas included at no extra cost to the teacher.</li>
-                            <li><strong>Personal Accounts (Free Tier):</strong> Free personal Google accounts can run AlloFlow using the free tier of Gemini, though you may encounter daily usage limits.</li>
-                            <li><strong>Google AI Plus (~$8/month):</strong> Full access to Gemini models with higher usage limits. This is the recommended plan for families and individual educators using personal accounts.</li>
-                            <li><strong>Google AI Pro (~$20/month):</strong> Higher daily usage limits, premium models, and 2TB of Google storage. Best for power users and content creators.</li>
-                        </ul>
-                        <p><strong>Self-Hosted (Firebase):</strong> When self-hosting, your district provides its own Gemini API key. Google offers a generous free tier, and usage beyond that is billed directly to your organization&mdash;no middleman.</p>
-                    </div>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        Why do you recommend logging in with a Google Education account?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <p class="text-slate-600 text-sm mt-3 leading-relaxed">
-                        Using your school-issued Google Workspace for Education account ensures that the AlloFlow app runs within your district's governed environment. This often provides additional protections and logging that personal Gmail accounts do not offer. It aligns the tool's usage with your district's existing Acceptable Use Policy.
-                    </p>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        How does the "Cloud Sync" feature work with student privacy?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
-                        <p>By default, AlloFlow operates in "Local-First" mode. All data is stored in your browser's cache or in JSON files you download.</p>
-                        <p><strong>Canvas Mode:</strong> The Cloud Sync feature uses a shared Firebase sandbox instance. This sandbox is not managed by your district's IT department. <strong>We strongly recommend keeping Cloud Sync off if you are inputting any student-adjacent data in this mode.</strong></p>
-                        <p><strong>Self-Hosted (Firebase):</strong> When your district deploys its own Firebase instance, data sovereignty is fully under district control. Your IT team manages the database, access rules, and retention policies&mdash;making Cloud Sync safe to enable.</p>
-                    </div>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        What are Parent and Independent Learner modes?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <p class="text-slate-600 text-sm mt-3 leading-relaxed">
-                        These are simplified interfaces tailored for specific use cases. <strong>Parent Mode</strong> transforms technical lesson plans into "Family Guides" for bedtime reading and home support. <strong>Independent Learner Mode</strong> rephrases tools for self-directed study, turning rubrics into "Self-Checklists" and disabling teacher-only controls.
-                    </p>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        What languages does it support?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
-                        <p>AlloFlow utilizes Google Gemini's massive language model capabilities to translate both content and the User Interface into almost any language (e.g., 'Swahili', 'Hmong', 'Cantonese').</p>
-                        <p><strong>To create a Language Pack:</strong> Simply type the language name in the top-right field of the "Welcome" screen or under "App Language" in the settings. Gemini will translate the UI instantly.</p>
-                        <p><strong>Sharing:</strong> You can then click to <strong>download a JSON Language Pack</strong>. This file can be shared with ELL students and families, who can import it to instantly localize the app interface without needing to re-generate translations.</p>
-                    </div>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        Is the code available for review? (Open Source)
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <p class="text-slate-600 text-sm mt-3 leading-relaxed">
-                        Yes. AlloFlow is Open Source software released under the <strong>GNU Affero General Public License (AGPL)</strong>. The code is freely available for you and your district to review, audit, and share. This transparency ensures trust, although the code is protected by the license and cannot be modified or re-distributed as a closed-source product without permission.
-                    </p>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        What is a JSON Lesson Pack?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <p class="text-slate-600 text-sm mt-3 leading-relaxed">
-                        A JSON Lesson Pack is a tiny file that acts as a "Save State" for your entire lesson. It contains all the text, quiz questions, adventure scenarios, and glossary terms you generated. You can email this file to a colleague, upload it to Google Classroom, or load it into AlloFlow on any device to instantly restore the lesson exactly as you saved it.
-                    </p>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        Can families use AlloFlow at home?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
-                        <p><strong>Yes!</strong> AlloFlow is not just for classrooms. Parents can use it at home to support their child's learning across reading, writing, math, vocabulary, and more.</p>
-                        <p><strong>Parent Mode</strong> transforms technical lesson plans into "Family Guides" designed for bedtime reading and home support. <strong>Independent Learner Mode</strong> rephrases tools for self-directed study.</p>
-                        <p>Children use a fun <strong>codename</strong> instead of their real name, and all progress data stays on your device or in files you control. There is no account creation required for students.</p>
-                        <p>AlloFlow is free with a school Google account. For personal accounts, <strong>Google AI Plus (~$8/month)</strong> provides full access.</p>
-                    </div>
-                </details>
-
-                <details class="group bg-slate-50 p-5 rounded-xl border border-slate-100 cursor-pointer transition-colors hover:border-indigo-100">
-                    <summary class="flex justify-between items-center font-bold text-slate-800 list-none">
-                        What do I need to get started?
-                        <span class="transition group-open:rotate-180 text-indigo-500"><i data-lucide="chevron-down" class="h-5 w-5"></i></span>
-                    </summary>
-                    <div class="text-slate-600 text-sm mt-3 leading-relaxed space-y-2">
-                        <p><strong>A web browser and a Google account.</strong> That's it. No software installation, no extensions, no app store download.</p>
-                        <ul class="list-disc list-inside pl-2 space-y-1 mt-1">
-                            <li><strong>Best experience:</strong> Google Chrome or Microsoft Edge on a desktop or laptop computer.</li>
-                            <li><strong>Also works on:</strong> Tablets and phones (the interface is responsive).</li>
-                            <li><strong>Account types:</strong> A school-issued Google Education account (free) or a personal Google account with a Gemini subscription (~$8/month for Google AI Plus).</li>
-                            <li><strong>For students:</strong> No student account is needed. Students pick a codename and can start immediately.</li>
-                        </ul>
-                        <p>Just copy the Canvas link from this page, paste it into your browser, and you're ready to go.</p>
-                    </div>
-                </details>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact / About Section (NEW) -->
-    <section id="contact" class="py-20 bg-white border-t border-slate-200">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="bg-indigo-50 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-12 border border-indigo-100 shadow-sm mb-12">
-                <!-- Photo Placeholder -->
-                <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-indigo-200 flex-shrink-0 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden relative">
-                    <img 
-                        src="./profile-image.jpg" 
-                        alt="Aaron Pomeranz - AlloFlow Creator"
-                        class="w-full h-full object-cover"
-                    />
-                </div>
-
-                <div class="text-center md:text-left">
-                    <h2 class="text-3xl font-black text-indigo-900 mb-3">Partner with the Developer</h2>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-6 max-w-xl">
-                        Hello! I'm <strong>Aaron Pomeranz, PsyD</strong>, an EdTech Developer from Maine and a graduate of the University of Southern Maine's school psychology doctoral program.
-                        I specialize in bridging the gap between advanced AI engineering and practical classroom pedagogy.
-                    </p>
-                    
-                    <p class="text-slate-600 text-sm leading-relaxed mb-4 max-w-xl">
-                        I am available to partner with <strong>School Districts, Educational Agencies, and EdTech Companies</strong> to create tailored solutions for your unique needs.
-                    </p>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
-                        <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm">
-                            <h4 class="font-bold text-indigo-800 text-sm mb-1 flex items-center gap-2"><i data-lucide="graduation-cap" class="h-4 w-4"></i> Strategic Implementation</h4>
-                            <p class="text-xs text-slate-500">Guiding districts through safe, effective AI adoption and staff training.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm">
-                            <h4 class="font-bold text-indigo-800 text-sm mb-1 flex items-center gap-2"><i data-lucide="code" class="h-4 w-4"></i> Tailored Solutions</h4>
-                            <p class="text-xs text-slate-500">Building custom, FERPA-compliant applications for specific organizational needs (IEP automation, assessment tracking, workflow optimization).</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-indigo-100 shadow-sm sm:col-span-2">
-                             <h4 class="font-bold text-indigo-800 text-sm mb-1 flex items-center gap-2"><i data-lucide="network" class="h-4 w-4"></i> Systems Level Support</h4>
-                             <p class="text-xs text-slate-500">Analyzing and automating complex district workflows to save time and reduce burnout.</p>
-                        </div>
-                    </div>
-
-                    <a href="mailto:aaron.pomeranz@maine.edu" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg">
-                        <i data-lucide="mail" class="h-4 w-4"></i> Contact Me
-                    </a>
+                <div class="card" style="border-width:2px">
+                    <div
+                        style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">
+                        AI Pro</div>
+                    <div style="font-size:2.5rem;font-weight:900;color:var(--slate-900)">~$20<span
+                            style="font-size:1rem;font-weight:400;color:#94a3b8">/mo</span></div>
+                    <div style="font-size:0.85rem;color:#64748b;margin-bottom:20px">Personal Google Account</div>
+                    <ul
+                        style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#475569">
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:#22c55e"></i> Everything in AI Plus</li>
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:#22c55e"></i> ~100 prompts/day</li>
+                        <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
+                                style="width:14px;height:14px;color:#22c55e"></i> Premium models</li>
+                    </ul>
                 </div>
             </div>
-
-            <!-- Community & Feedback Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-green-50 p-8 rounded-2xl border border-green-100">
-                    <h3 class="font-bold text-green-900 text-xl mb-2 flex items-center gap-2">
-                        <i data-lucide="check-circle" class="h-5 w-5"></i> v1.0 — Production Ready
-                    </h3>
-                    <p class="text-sm text-green-800/80 mb-4 leading-relaxed">
-                        AlloFlow v1.0 is production-ready with 280+ features for K-12 differentiation. We're actively seeking early adopters and welcome feedback from educators and families.
-                    </p>
-                    <a href="https://forms.gle/AqLdhDCVn6s4q8eg9" target="_blank" class="text-sm font-bold text-green-700 hover:text-green-900 hover:underline flex items-center gap-1">
-                        Submit Feedback <i data-lucide="arrow-right" class="h-3 w-3"></i>
-                    </a>
-                </div>
-
-                <div class="bg-blue-50 p-8 rounded-2xl border border-blue-100">
-                    <h3 class="font-bold text-blue-900 text-xl mb-2 flex items-center gap-2">
-                        <i data-lucide="library" class="h-5 w-5"></i> Community Library
-                    </h3>
-                    <p class="text-sm text-blue-800/80 mb-4 leading-relaxed">
-                        We are building a repository of Open Source Lesson Packs. Created a great unit? Submit your <strong>.json Project file</strong> to be hosted here.
-                    </p>
-                    <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow Lesson Submission" class="text-sm font-bold text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 mb-6">
-                        Submit a Lesson Pack <i data-lucide="arrow-right" class="h-3 w-3"></i>
-                    </a>
-
-                    <!-- Example Downloads Section (How to host files) -->
-                    <div class="bg-white/60 rounded-xl p-4 border border-blue-100">
-                        <span class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 block">Featured Downloads (Try these!)</span>
-                        <div class="space-y-2">
-                            
-                            <!-- 
-                                DOWNLOAD LINKS:
-                                1. Ensure your file is named 'civil_war.json' in the 'examples' folder.
-                                2. Ensure your file is named 'photosynthesis.json' in the 'examples' folder.
-                            -->
-                            
-                            <a href="./examples/civil_war.json" download="Civil_War_Unit.json" type="application/json" class="flex items-center justify-between p-2 hover:bg-white rounded transition-colors group cursor-pointer">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="file-json" class="h-4 w-4 text-blue-500"></i>
-                                    <span class="text-sm text-blue-800">⚔️ US Civil War (Gr 3)</span>
-                                </div>
-                                <i data-lucide="download" class="h-4 w-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                            </a>
-
-                            <a href="./examples/photosynthesis.json" download="Photosynthesis.json" type="application/json" class="flex items-center justify-between p-2 hover:bg-white rounded transition-colors group cursor-pointer">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="file-json" class="h-4 w-4 text-blue-500"></i>
-                                    <span class="text-sm text-blue-800">🌱 Photosynthesis (Gr 5)</span>
-                                </div>
-                                <i data-lucide="download" class="h-4 w-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                            </a>
-
-                        </div>
-                    </div>
+            <div style="text-align:center;margin-top:24px">
+                <p style="font-size:0.8rem;color:#94a3b8">Prices shown are approximate U.S. pricing as of early 2026.
+                    Visit <a href="https://one.google.com" target="_blank"
+                        style="color:var(--indigo)">one.google.com</a> for current plans. AlloFlow does not charge any
+                    fees.</p>
+                <div
+                    style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:12px;max-width:640px;margin:12px auto 0">
+                    <p style="font-size:0.7rem;color:#64748b"><strong>Disclaimer:</strong> AlloFlow is an independent
+                        open-source project and is <strong>not affiliated with, endorsed by, or sponsored by
+                            Google</strong>.</p>
                 </div>
             </div>
         </div>
     </section>
-    
-    <!-- CTA Before Footer -->
-    <section class="py-20 bg-slate-900 text-white text-center">
-        <div class="max-w-4xl mx-auto px-4">
-            <h2 class="text-3xl md:text-5xl font-black mb-6">Ready to Transform Your Classroom?</h2>
-            <p class="text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
-                Join a growing community of educators saving time and reaching every learner with the power of AlloFlow.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <button onclick="copyCanvasLink()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-transform hover:scale-105 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
-                    <i data-lucide="link" class="h-5 w-5"></i> <span>Copy Canvas Link</span>
-                </button>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-8 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2">
-                    <i data-lucide="github" class="h-5 w-5"></i> Star on GitHub
-                </a>
+
+    <!-- Privacy -->
+    <section id="privacy" class="section reveal" style="background:#fff;border-top:1px solid #e2e8f0">
+        <div class="section-inner" style="max-width:800px">
+            <div class="section-header">
+                <div
+                    style="width:56px;height:56px;background:#fef2f2;border:1px solid #fecaca;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+                    <i data-lucide="shield-check" style="width:28px;height:28px;color:#ef4444"></i>
+                </div>
+                <h2>Data Privacy & Architecture</h2>
+                <p>AlloFlow is designed with security in mind, putting control in the hands of educators.</p>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h4 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
+                            data-lucide="folder-down" style="width:18px;height:18px;color:#3b82f6"></i> File-Based
+                        Persistence</h4>
+                    <p style="font-size:0.85rem;color:#475569;line-height:1.7">Because Gemini Canvas environments don't
+                        persist internal databases across sessions, AlloFlow uses a "sneakernet" architecture. You save
+                        and load your activities directly as standard <strong>JSON files</strong> to your hard drive.
+                        This makes sharing custom lessons with other teachers or deploying activities to students as
+                        simple as sharing a file.</p>
+                </div>
+                <div class="card">
+                    <h4 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
+                            data-lucide="building" style="width:18px;height:18px;color:#9333ea"></i> Google Education
+                        Infrastructure
+                    </h4>
+                    <p style="font-size:0.85rem;color:#475569;line-height:1.7">By running as an artifact within Gemini
+                        Canvas, AlloFlow piggybacks entirely on your district's existing <strong>Google Workspace for
+                            Education</strong> security agreements. API calls happen directly through Google's
+                        infrastructure, ensuring your school's FERPA and COPPA compliance remains intact.</p>
+                </div>
+            </div>
+            <div
+                style="background:#fef2f2;border-left:4px solid #ef4444;padding:24px;border-radius:0 12px 12px 0;margin-top:24px">
+                <h4
+                    style="font-weight:700;color:#991b1b;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+                    <i data-lucide="hard-drive" style="width:16px;height:16px"></i> Local-First Student Data
+                </h4>
+                <p style="font-size:0.85rem;color:#7f1d1d">Student progress, XP, quiz scores, and session data
+                    are tracked — but <strong>stored locally on the device</strong>, never uploaded to external
+                    servers. Teachers can export data as JSON files for record-keeping. The Student Portal uses
+                    generated codenames instead of real names, keeping learner identities private by default.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Footer -->
+    <section class="section" style="background:var(--slate-900);color:#fff;text-align:center">
+        <div style="max-width:700px;margin:0 auto">
+            <h2 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;margin-bottom:16px">Ready to Transform Your
+                Classroom?</h2>
+            <p style="color:#94a3b8;font-size:1rem;margin-bottom:28px">Join a growing community of educators saving time
+                and reaching every learner.</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+                <button onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
+                        style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="btn-secondary"
+                    style="border-color:#475569;color:#fff;background:transparent"><i data-lucide="github"
+                        style="width:18px;height:18px"></i> Star on GitHub</a>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 bg-white text-center border-t border-slate-200">
-        <div class="flex items-center justify-center gap-2 mb-4 text-slate-900 font-black text-xl">
-            <i data-lucide="layers" class="h-6 w-6 text-indigo-600"></i> AlloFlow
-        </div>
-        <p class="text-slate-400 text-sm mb-2">
-            An open-source project for educators. Not affiliated with Google.
-        </p>
-        <p class="text-slate-400 text-xs mb-8">
-            Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span> AlloFlow.
-        </p>
-        <div class="flex justify-center gap-6 text-sm font-bold text-slate-600">
-            <a href="https://github.com/Apomera/AlloFlow#readme" class="hover:text-indigo-600 transition-colors">Documentation</a>
-            <a href="https://github.com/Apomera/AlloFlow" class="hover:text-indigo-600 transition-colors">GitHub</a>
-            <a href="mailto:aaron.pomeranz@maine.edu" class="hover:text-indigo-600 transition-colors">Contact</a>
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
+            <div class="footer-links">
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="https://github.com/Apomera/AlloFlow#readme">Docs</a>
+                <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
+                <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
+            </div>
         </div>
     </footer>
 
-    <!-- Initialize Icons & Scripts -->
+    <!-- Back to Top Button -->
+    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    </button>
+
+    <style>
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+    </style>
+
     <script>
         lucide.createIcons();
-
-        // Dynamic Year
         document.getElementById('year').innerText = new Date().getFullYear();
 
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+        // Scroll Reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+        // Animated Stat Counters
+        const statObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.querySelectorAll('.stat-number[data-target]').forEach(el => {
+                        const target = parseInt(el.dataset.target);
+                        const prefix = el.dataset.prefix || '';
+                        const suffix = el.dataset.suffix || '';
+                        const duration = 1200;
+                        const start = performance.now();
+                        const animate = (now) => {
+                            const elapsed = now - start;
+                            const progress = Math.min(elapsed / duration, 1);
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            const current = Math.round(target * eased);
+                            el.textContent = prefix + current + suffix;
+                            if (progress < 1) requestAnimationFrame(animate);
+                        };
+                        requestAnimationFrame(animate);
+                    });
+                    statObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        document.querySelectorAll('.stats-row').forEach(el => statObserver.observe(el));
 
-        // Close menu when a link is clicked
-        function closeMenu() {
-            mobileMenu.classList.add('hidden');
+        // Back to Top Button
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backBtn.classList.toggle('visible', window.scrollY > 600);
+        }, { passive: true });
+
+        // Lazy Video Load
+        function loadVideo() {
+            const container = document.getElementById('video-container');
+            container.innerHTML = '<iframe style="position:absolute;inset:0;width:100%;height:100%" src="https://www.youtube.com/embed/8Mr-VzWHys8?autoplay=1&rel=0" title="AlloFlow Demo" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
         }
 
-        // Copy Link Functionality
+        // Copy Link
         function copyCanvasLink() {
-            // REPLACE WITH YOUR ACTUAL CANVAS SHARE LINK
-            const link = "https://gemini.google.com/share/c8baf80a46cc"; 
+            const link = "https://gemini.google.com/share/c8baf80a46cc";
             navigator.clipboard.writeText(link).then(() => {
-                const buttons = document.querySelectorAll('button[onclick="copyCanvasLink()"]');
-                buttons.forEach(btn => {
-                    const span = btn.querySelector('span');
-                    if (span) {
-                        const originalText = span.innerText;
-                        span.innerText = "Copied!";
-                        setTimeout(() => { span.innerText = originalText; }, 2000);
-                    }
-                });
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                alert("Failed to copy link. Please check permissions.");
-            });
+                document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
+            }).catch(() => alert("Failed to copy. Check permissions."));
         }
     </script>
 </body>
+
 </html>
