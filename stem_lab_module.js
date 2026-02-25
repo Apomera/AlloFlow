@@ -43,6 +43,7 @@ window.AlloModules.StemLab = function StemLabModal(props) {
     gridChallenge,
     gridFeedback,
     gridPoints,
+    gridRange,
     mathInput,
     mathMode,
     mathQuantity,
