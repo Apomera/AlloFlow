@@ -125,7 +125,13 @@ window.AlloModules.StemLab = function StemLabModal(props) {
     nlChallenge,
     nlFeedback,
     nlMarkerLabel,
-    nlMarkerVal
+    nlMarkerVal,
+    areaChallenge,
+    areaFeedback,
+    areaAnswer,
+    fracChallenge,
+    fracFeedback,
+    fracAnswer
   } = props;
 
   // STEM Lab modal JSX
