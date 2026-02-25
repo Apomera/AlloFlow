@@ -120,7 +120,12 @@ window.AlloModules.StemLab = function StemLabModal(props) {
     stemLabTool,
     submitExploreScore,
     t,
-    toolSnapshots
+    toolSnapshots,
+    nlAnswer,
+    nlChallenge,
+    nlFeedback,
+    nlMarkerLabel,
+    nlMarkerVal
   } = props;
 
   // STEM Lab modal JSX
