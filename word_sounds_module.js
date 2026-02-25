@@ -1,0 +1,11021 @@
+// word_sounds_module.js
+// Auto-extracted from AlloFlowANTI.txt
+// Word Sounds Studio module for AlloFlow - loaded from GitHub CDN
+// Version: 1.0.0 (Feb 2026)
+
+window.AlloModules = window.AlloModules || {};
+
+window.AlloModules.WordSoundsModal = ({
+    audioCache: providedAudioCache,
+    glossaryTerms,
+    onClose,
+    wordSoundsActivity,
+    setWordSoundsActivity,
+    wordSoundsScore,
+    setWordSoundsScore,
+    currentWordSoundsWord,
+    setCurrentWordSoundsWord,
+    wordSoundsPhonemes,
+    setWordSoundsPhonemes,
+    wordSoundsLanguage,
+    setWordSoundsLanguage,
+    wordSoundsFeedback,
+    setWordSoundsFeedback,
+    wordSoundsHistory,
+    setWordSoundsHistory,
+    wordSoundsFamilies,
+    setWordSoundsFamilies,
+    wordSoundsAudioLibrary,
+    setWordSoundsAudioLibrary,
+    fetchTTSBytes,
+    onScoreUpdate,
+    speakWord,
+    callGemini,
+    callTTS,
+    callImagen,
+    selectedVoice,
+    t,
+    wordSoundsDifficulty = 'auto',
+    setWordSoundsDifficulty,
+    wordSoundsAccuracyHistory = [],
+    setWordSoundsAccuracyHistory,
+    wordSoundsTtsSpeed = 1.0,
+    setWordSoundsTtsSpeed,
+    orthoSessionGoal = 0,
+    setOrthoSessionGoal,
+    wordSoundsStreak = 0,
+    setWordSoundsStreak,
+    wordSoundsSessionGoal = 10,
+    setWordSoundsSessionGoal,
+    wordSoundsSessionProgress = 0,
+    setWordSoundsSessionProgress,
+    wordSoundsBadges = [],
+    setWordSoundsBadges,
+    wordSoundsLevel = 1,
+    setWordSoundsLevel,
+    phonemeMastery = {},
+    setPhonemeMastery,
+    wordSoundsDailyProgress = {},
+    setWordSoundsDailyProgress,
+    wordSoundsConfusionPatterns = {},
+    setWordSoundsConfusionPatterns,
+    playSound,
+    disableAnimations = false,
+    addToast,
+    wsPreloadedWords = [],
+    setWsPreloadedWords,
+    onBackToSetup,
+    initialShowReviewPanel = false,
+    initialActivitySequence = [],
+    lessonPlanConfig = null,
+    isProbeMode = false,
+    probeGradeLevel = 'K',
+    onProbeComplete,
+}) => {
+    const estimateFirstPhoneme = (word) => {
+        if (!word) return '';
+        const w = word.toLowerCase();
+        const EXCEPTIONS = {
+            'city': 's', 'cent': 's', 'cell': 's', 'circle': 's', 'cycle': 's', 'cedar': 's', 'cereal': 's', 'center': 's',
+            'gym': 'j', 'gem': 'j', 'giant': 'j', 'giraffe': 'j', 'gentle': 'j', 'germ': 'j', 'gist': 'j', 'ginger': 'j',
+            'knight': 'n', 'knee': 'n', 'knob': 'n', 'knock': 'n', 'knot': 'n', 'know': 'n', 'knife': 'n',
+            'wrap': 'r', 'wren': 'r', 'write': 'r', 'wrong': 'r', 'wrist': 'r',
+            'gnaw': 'n', 'gnat': 'n', 'gnome': 'n',
+            'psalm': 's', 'psychology': 's',
+        };
+        if (EXCEPTIONS[w]) return EXCEPTIONS[w];
+        const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck'];
+        for (const dg of digraphs) { if (w.startsWith(dg)) return dg; }
+        if (w.startsWith('kn')) return 'n';
+        if (w.startsWith('wr')) return 'r';
+        if (w.startsWith('gn')) return 'n';
+        if (w.startsWith('c') && w.length > 1 && 'eiy'.includes(w[1])) return 's';
+        if (w.startsWith('g') && w.length > 1 && 'eiy'.includes(w[1])) return 'j';
+        return w.charAt(0);
+    };
+    const estimateLastPhoneme = (word) => {
+        if (!word) return '';
+        const w = word.toLowerCase();
+        const EXCEPTIONS = {
+            'come': 'm', 'some': 'm', 'done': 'n', 'gone': 'n', 'give': 'v', 'live': 'v', 'have': 'v',
+            'nation': 'n', 'action': 'n',
+        };
+        if (EXCEPTIONS[w]) return EXCEPTIONS[w];
+        const rControlled = ['ar', 'er', 'ir', 'or', 'ur'];
+        for (const rc of rControlled) { if (w.endsWith(rc)) return rc; }
+        const digraphs = ['sh', 'ch', 'th', 'ng', 'ck'];
+        for (const dg of digraphs) {
+            if (dg === 'ck' && w.endsWith('ck')) return 'k';
+            if (w.endsWith(dg)) return dg;
+        }
+        return w.slice(-1);
+    };
+    const includeOrthographic = orthoSessionGoal > 0;
+    const latestRequestedWord = React.useRef(null);
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [isMinimized, setIsMinimized] = React.useState(false);
+    React.useEffect(() => {
+        if (typeof loadPsychometricProbes === 'function') {
+            loadPsychometricProbes();
+        }
+    }, []);
+    const [activitySequence, setActivitySequence] = React.useState(initialActivitySequence || []);
+    const [sequenceIndex, setSequenceIndex] = React.useState(0);
+    React.useEffect(() => {
+        if (initialActivitySequence && initialActivitySequence.length > 0) {
+            debugLog("🔄 Syncing activitySequence from prop:", initialActivitySequence);
+            setActivitySequence(initialActivitySequence);
+        }
+    }, [initialActivitySequence]);
+    const [isStudentLocked, setIsStudentLocked] = React.useState(false);
+    const audioCtxRef = React.useRef(null);
+    const [playInstructions, setPlayInstructions] = React.useState(true);
+
+    const [tracingPhase, setTracingPhase] = React.useState('upper');
+    const lastTracingWord = React.useRef(null);
+    const [isCelebrating, setIsCelebrating] = React.useState(false);
+    const playInstructions2 = playInstructions;
+    const [isLoadingPhonemes, setIsLoadingPhonemes] = React.useState(false);
+    const [phonemeError, setPhonemeError] = React.useState(null);
+    const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
+    const [userAnswer, setUserAnswer] = React.useState('');
+    const [showLetterHints, setShowLetterHints] = React.useState(false);
+    React.useEffect(() => {
+        if (isProbeMode) {
+            setShowLetterHints(false);
+        }
+    }, [isProbeMode]);
+    React.useEffect(() => {
+        if (isProbeMode) {
+            setShowLetterHints(false);
+            setShowWordText(false);
+        }
+    }, [isProbeMode]);
+    const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+    const [showImageForCurrentWord, setShowImageForCurrentWord] = React.useState(false);
+    const SMART_IMAGE_VISIBILITY = {
+        'counting': 'afterCompletion',
+        'isolation': 'progressive',
+        'blending': 'afterCompletion',
+        'segmentation': 'alwaysOn',
+        'rhyming': 'alwaysOn',
+        'letter_tracing': 'alwaysOn',
+        'mapping': 'alwaysOn',
+        'orthography': 'afterCompletion',
+        'sound_sort': 'progressive',
+        'spelling_bee': 'afterCompletion',
+        'word_scramble': 'afterCompletion',
+        'missing_letter': 'afterCompletion',
+    };
+    const SMART_TEXT_VISIBILITY = {
+        'counting': 'hidden',
+        'isolation': 'hidden',
+        'blending': 'hidden',
+        'segmentation': 'afterAnswer',
+        'rhyming': 'afterAnswer',
+        'letter_tracing': 'alwaysOn',
+        'mapping': 'alwaysOn',
+        'orthography': 'afterAnswer',
+        'sound_sort': 'afterAnswer',
+        'word_families': 'progressive',
+        'spelling_bee': 'hidden',
+        'word_scramble': 'alwaysOn',
+        'missing_letter': 'alwaysOn',
+    };
+    const getEffectiveImageMode = () => {
+        if (imageVisibilityMode === 'smart') {
+            return SMART_IMAGE_VISIBILITY[wordSoundsActivity] || 'progressive';
+        }
+        return imageVisibilityMode;
+    };
+    const getEffectiveTextMode = () => {
+        if (imageVisibilityMode === 'alwaysOn') return 'alwaysOn';
+        if (imageVisibilityMode === 'alwaysOff') return 'alwaysOn';
+        return SMART_TEXT_VISIBILITY[wordSoundsActivity] || 'afterAnswer';
+    };
+    const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
+    const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
+    const [isPrefetching, setIsPrefetching] = React.useState(false);
+    const internalAudioCache = React.useRef(new Map());
+    const audioInstances = React.useRef(new Map());
+    const isMountedRef = React.useRef(true);
+
+    React.useEffect(() => {
+        loadWordAudioBank();
+    }, []);
+
+    const audioCache = providedAudioCache || internalAudioCache;
+    const ttsQueue = React.useRef(Promise.resolve());
+    const [attempts, setAttempts] = React.useState(0);
+    const [rhymeOptions, setRhymeOptions] = React.useState([]);
+    const rhymeOptionsRef = React.useRef([]);
+    React.useEffect(() => { rhymeOptionsRef.current = rhymeOptions; }, [rhymeOptions]);
+    const [highlightedRhymeIndex, setHighlightedRhymeIndex] = React.useState(null);
+    const [highlightedIsoIndex, setHighlightedIsoIndex] = React.useState(null);
+    const [highlightedBlendIndex, setHighlightedBlendIndex] = React.useState(null);
+    const [blendingProgress, setBlendingProgress] = React.useState(0);
+    const [blendingOptions, setBlendingOptions] = React.useState([]);
+    const blendingOptionsRef = React.useRef([]);
+    React.useEffect(() => { blendingOptionsRef.current = blendingOptions; }, [blendingOptions]);
+    const [orthographyOptions, setOrthographyOptions] = React.useState([]);
+    const [isolationState, setIsolationState] = React.useState(null);
+    const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0);
+    const modalRef = React.useRef(null);
+    const submissionLockRef = React.useRef(false);
+    const sessionWordResults = React.useRef([]);
+    const feedbackAudioRef = React.useRef(null);
+    const isolationPositionRef = React.useRef(null);
+    const lastWordForIsolation = React.useRef(null);
+    const lastWordForRhyming = React.useRef(null);
+    const lastWordForOrthography = React.useRef(null);
+    const lastWordForBlending = React.useRef(null);
+    const autoDirectorCooldown = React.useRef(false);
+    const [useMicInput, setUseMicInput] = React.useState(false);
+    const [isListening, setIsListening] = React.useState(false);
+    const recognitionRef = React.useRef(null);
+    const preloadedWords = wsPreloadedWords || [];
+    const setPreloadedWords = setWsPreloadedWords || (() => {
+        console.warn("setWsPreloadedWords is not defined - updates won't persist");
+    });
+    const [currentWordIndex, setCurrentWordIndex] = React.useState(0);
+    const [preloadProgress, setPreloadProgress] = React.useState(0);
+    const [isPreloading, setIsPreloading] = React.useState(false);
+    const [firstWordReady, setFirstWordReady] = React.useState(false);
+    const preloadedWordCache = React.useRef(new Map());
+    const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false);
+    const hasStartedFromReview = React.useRef(false);
+    const lastPreloadedFirstWord = React.useRef(null);
+    const [masteryStats, setMasteryStats] = React.useState({});
+    const [revisitQueue, setRevisitQueue] = React.useState([]);
+    const sequenceIndexRef = React.useRef(0);
+    const shouldAdvanceActivity = React.useCallback((activityId, lessonPlanConfig) => {
+        if (!lessonPlanConfig || !lessonPlanConfig.activities) return false;
+        const activityConfig = lessonPlanConfig.activities.find(a => a.id === activityId);
+        if (!activityConfig) return false;
+        const stats = masteryStats[activityId] || { attempted: 0, consecutiveStreak: 0 };
+        const minItems = activityConfig.count || 5;
+        const masteryThreshold = lessonPlanConfig.masteryThreshold || 3;
+        return stats.attempted >= minItems && stats.consecutiveStreak >= masteryThreshold;
+    }, [masteryStats]);
+    const updateMasteryStats = React.useCallback((activityId, isCorrect, word) => {
+        setMasteryStats(prev => {
+            const current = prev[activityId] || { attempted: 0, correct: 0, consecutiveStreak: 0, completed: false };
+            return {
+                ...prev,
+                [activityId]: {
+                    attempted: current.attempted + 1,
+                    correct: current.correct + (isCorrect ? 1 : 0),
+                    consecutiveStreak: isCorrect ? current.consecutiveStreak + 1 : 0,
+                    completed: current.completed
+                }
+            };
+        });
+        if (!isCorrect && word) {
+            setRevisitQueue(prev => {
+                if (prev.some(w => w.word === word)) return prev;
+                return [...prev, { word, activityId }];
+            });
+        }
+    }, []);
+
+    React.useEffect(() => {
+        console.error(`[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: ${initialShowReviewPanel}, activity: ${wordSoundsActivity}`);
+        return () => console.error("[WS-DBG] WordSoundsModal UNMOUNTED");
+    }, []);
+
+    React.useEffect(() => {
+        console.error(`[WS-DBG] initialShowReviewPanel changed to: ${initialShowReviewPanel}`);
+        if (initialShowReviewPanel) {
+            hasStartedFromReview.current = false;
+            console.error("📋 [WS-DBG] initialShowReviewPanel is true - forcing Review Panel open. current showReviewPanel state:", showReviewPanel);
+            setShowReviewPanel(true);
+        }
+    }, [initialShowReviewPanel]);
+
+    React.useEffect(() => {
+        if (preloadedWords.length > 0) {
+            const firstWord = preloadedWords[0]?.word || preloadedWords[0]?.term || preloadedWords[0]?.targetWord;
+            if (firstWord && lastPreloadedFirstWord.current !== firstWord) {
+                hasStartedFromReview.current = false;
+                lastPreloadedFirstWord.current = firstWord;
+                debugLog("🔄 Reset hasStartedFromReview for new word set:", firstWord);
+            }
+        }
+    }, [preloadedWords]);
+    const [regeneratingIndex, setRegeneratingIndex] = React.useState(null);
+    const [generatingImageIndex, setGeneratingImageIndex] = React.useState(null);
+    const [generatingImageSet, setGeneratingImageSet] = React.useState(new Set());
+    const isSequentialMode = wordSoundsDifficulty === 'sequential';
+    const [errorMessage, setErrorMessage] = React.useState(null);
+    const [showSessionComplete, setShowSessionComplete] = React.useState(false);
+    const showError = React.useCallback((message, duration = 3000) => {
+        setErrorMessage(message);
+        setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+    }, []);
+    const ttsFailureCount = React.useRef(0);
+    const ttsQuotaExhausted = React.useRef(false);
+    const ttsInflight = React.useRef(new Map());
+    const currentActiveAudio = React.useRef(null);
+    const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+        if (!input) { warnLog("handleAudio called with null input"); return Promise.resolve(); }
+        const textToPlay = (typeof input === 'object' && input.word) ? input.word : input;
+        if (typeof textToPlay === 'string' && textToPlay.startsWith('data:audio')) {
+            if (currentActiveAudio.current) {
+                currentActiveAudio.current.pause();
+                currentActiveAudio.current.currentTime = 0;
+                currentActiveAudio.current = null;
+            }
+            const audio = new Audio(textToPlay);
+            currentActiveAudio.current = audio;
+            audio.onended = () => { if (currentActiveAudio.current === audio) currentActiveAudio.current = null; };
+            audio.onpause = () => { if (currentActiveAudio.current === audio) currentActiveAudio.current = null; };
+            if (playImmediately) {
+                return new Promise((resolve) => {
+                    audio.onended = () => resolve();
+                    audio.onerror = () => resolve();
+                    setTimeout(resolve, 5000);
+                    audio.play().catch(e => {
+                        warnLog("Data URI playback failed", e);
+                        resolve();
+                    });
+                });
+            }
+            return Promise.resolve();
+        }
+        const text = (typeof textToPlay === 'string' ? textToPlay.trim() : String(textToPlay).trim()).toLowerCase();
+        if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[text]) {
+            debugLog("⚡ Playing internal bank audio for:", text);
+            const audio = new Audio(PHONEME_AUDIO_BANK[text]);
+            if (playImmediately) {
+                return new Promise((resolve) => {
+                    audio.onended = () => resolve();
+                    audio.onerror = () => resolve();
+                    setTimeout(resolve, 5000);
+                    audio.play().catch(e => {
+                        warnLog("Bank playback failed", e);
+                        resolve();
+                    });
+                });
+            }
+            return Promise.resolve();
+        }
+        if (!text) return Promise.resolve();
+        setIsPlayingAudio(true);
+        const playInstance = async (audio) => {
+            try {
+                audio.currentTime = 0;
+                audio.playbackRate = ttsSpeed;
+                await audio.play();
+                await new Promise(resolve => {
+                    audio.onended = resolve;
+                    setTimeout(resolve, 3000);
+                });
+            } catch (e) {
+                warnLog("Playback failed", e);
+            } finally {
+                setIsPlayingAudio(false);
+            }
+        };
+        const loadAndPlay = async (src) => {
+            const audio = new Audio(src);
+            await new Promise((resolve) => {
+                audio.oncanplaythrough = resolve;
+                audio.onerror = (e) => {
+                    warnLog("Audio load error:", audio.src, e);
+                    resolve();
+                };
+                setTimeout(resolve, 1000);
+            });
+            audioInstances.current.set(text, audio);
+            if (playImmediately) {
+                await playInstance(audio);
+            } else {
+                setIsPlayingAudio(false);
+            }
+            return src;
+        };
+        if (audioInstances.current.has(text)) {
+            debugLog("⚡ audioInstances HIT:", text);
+            if (playImmediately) {
+                await playInstance(audioInstances.current.get(text));
+            }
+            return;
+        }
+        if (audioCache && audioCache.current && audioCache.current.has(text)) {
+            const url = audioCache.current.get(text);
+            debugLog("⚡ using shared audio cache for:", text);
+            return loadAndPlay(url);
+        }
+        const lower = text.toLowerCase();
+
+        if (typeof _CACHE_WORD_AUDIO_BANK !== 'undefined' && _CACHE_WORD_AUDIO_BANK && _CACHE_WORD_AUDIO_BANK[lower]) {
+            debugLog("⚡ using global word_audio_bank for:", text);
+            return loadAndPlay(_CACHE_WORD_AUDIO_BANK[lower]);
+        }
+
+        let normalizedKey = lower.trim();
+        if (normalizedKey.startsWith('short ') && normalizedKey.length === 7) {
+            normalizedKey = normalizedKey.replace('short ', '');
+        }
+        else if (normalizedKey.endsWith('_short')) normalizedKey = normalizedKey.replace('_short', '');
+        else if (normalizedKey.endsWith(' short')) normalizedKey = normalizedKey.replace(' short', '');
+        const specialMap = {
+            'au': 'aw',
+            'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo',
+            'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u',
+            'ae': 'ay', 'ai': 'ay', 'a_e': 'ay', 'ei': 'ay',
+            'ea': 'ee', 'ey': 'ee', 'e_e': 'ee',
+            'i_e': 'ie', 'igh': 'ie', 'y': 'ee',
+            'o_e': 'oa', 'ow': 'ow',
+            'ew': 'oo', 'u_e': 'oo', 'ue': 'oo', 'ui': 'oo',
+            'long u': 'oo', 'short u': 'u',
+            'ə': 'u',
+        };
+        if (specialMap[normalizedKey]) normalizedKey = specialMap[normalizedKey];
+        const bankKey = (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[normalizedKey])
+            ? normalizedKey
+            : lower;
+        if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[bankKey]) {
+            if (bankKey !== lower) debugLog(`⚡ Mapped complex phoneme "${lower}" to "${bankKey}"`);
+            return loadAndPlay(PHONEME_AUDIO_BANK[bankKey]);
+        }
+        if (wordSoundsAudioLibrary && wordSoundsAudioLibrary[lower]) {
+            return loadAndPlay(wordSoundsAudioLibrary[lower]);
+        }
+        const persistent = loadAudioFromStorage(text);
+        if (persistent) {
+            return loadAndPlay(persistent);
+        }
+        const isPhoneme = (() => {
+            const trimmed = text.trim().toLowerCase();
+            if (trimmed.length === 1) return true;
+            if (/^[āēīōūăĕĭŏŭə]$/.test(trimmed)) return true;
+            if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[trimmed]) return true;
+            const phonemePatterns = [
+                'sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'dh', 'zh',
+                'ar', 'er', 'ir', 'or', 'ur',
+                'aw', 'ow', 'ou', 'oo', 'ee', 'ea', 'ay', 'ai', 'oa', 'ie', 'ue', 'oy',
+                'air', 'ear', 'oo_long', 'oo_short',
+                'igh', 'tch', 'dge',
+                'kn', 'wr', 'gn', 'mb', 'qu'
+            ];
+            if (phonemePatterns.includes(trimmed)) return true;
+            return false;
+        })();
+        if (isPhoneme && typeof PHONEME_AUDIO_BANK !== 'undefined') {
+            const phonemeMatches = {
+                'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo',
+                'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u',
+                'kn': 'n', 'wr': 'r', 'gn': 'n', 'mb': 'm', 'gh': 'g', 'qu': 'k',
+                'igh': 'ie', 'tch': 'ch', 'dge': 'j',
+                'ai': 'ay', 'a_e': 'ay', 'ae': 'ay', 'ei': 'ay',
+                'ea': 'ee', 'ey': 'ee', 'e_e': 'ee',
+                'i_e': 'ie', 'y': 'ee',
+                'o_e': 'oa',
+                'ue': 'oo', 'ew': 'oo', 'u_e': 'oo', 'ui': 'oo',
+                'oi': 'oy', 'au': 'aw', 'ou': 'ow',
+                'ir': 'er', 'ur': 'er',
+                'c': 'k', 'q': 'k', 'x': 's',
+                'ph': 'f', 'ck': 'k',
+                'ce': 's', 'ci': 's', 'cy': 's',
+                'ge': 'j', 'gi': 'j', 'gy': 'j',
+                'ə': 'u',
+                'ɔɪ': 'oy', 'aʊ': 'ow', 'əʊ': 'oa',
+                'eɪ': 'ay', 'aɪ': 'ie',
+                'iː': 'ee', 'uː': 'oo', 'ɑː': 'ar', 'ɔː': 'or', 'ɜː': 'er',
+                'æ': 'a', 'ɛ': 'e', 'ɪ': 'i', 'ɒ': 'o', 'ʌ': 'u', 'ʊ': 'oo',
+                'θ': 'th', 'ð': 'th', 'ʃ': 'sh', 'ʒ': 'sh',
+                'ŋ': 'ng', 'tʃ': 'ch', 'dʒ': 'j',
+                'ɪə': 'ear', 'eə': 'air', 'ʊə': 'oo',
+            };
+            const match = phonemeMatches[lower] || phonemeMatches[normalizedKey];
+            if (match && PHONEME_AUDIO_BANK[match]) {
+                debugLog(`Phoneme fallback: "${text}" -> "${match}"`);
+                return loadAndPlay(PHONEME_AUDIO_BANK[match]);
+            }
+            const isEnglish = !wordSoundsLanguage || wordSoundsLanguage.startsWith('en');
+            if (isEnglish) {
+                warnLog(`No bank audio for English phoneme "${text}" - skipping (no TTS for phonemes)`);
+                setIsPlayingAudio(false);
+                return;
+            }
+            if (callTTS && selectedVoice) {
+                try {
+                    debugLog(`Non-English phoneme "${text}" - using Gemini TTS`);
+                    const url = await callTTS(text, selectedVoice);
+                    if (url) {
+                        return loadAndPlay(url);
+                    }
+                } catch (e) {
+                    warnLog("Gemini TTS failed for phoneme", e);
+                }
+            }
+            warnLog(`No audio source for non-English phoneme "${text}"`);
+            setIsPlayingAudio(false);
+            return;
+        }
+        if (callTTS && selectedVoice && !isPhoneme) {
+            if (ttsInflight.current.has(text)) {
+                debugLog("⏳ TTS already in-flight for:", text, "- awaiting existing request");
+                try {
+                    const url = await ttsInflight.current.get(text);
+                    if (url && playImmediately) { return loadAndPlay(url); }
+                    setIsPlayingAudio(false);
+                    return;
+                } catch (e) { warnLog("In-flight TTS failed", e); }
+            }
+            try {
+                const ttsPromise = callTTS(text, selectedVoice);
+                ttsInflight.current.set(text, ttsPromise);
+                const url = await ttsPromise;
+                ttsInflight.current.delete(text);
+                if (url) {
+                    saveAudioToStorage(text, url);
+                    return loadAndPlay(url);
+                }
+            } catch (e) {
+                ttsInflight.current.delete(text);
+                warnLog("TTS Failed", e);
+            }
+        }
+        if (!isPhoneme && playImmediately) {
+            warnLog("Falling back to Browser TTS for word:", text);
+            await speakWord(text, wordSoundsLanguage || 'en-US', ttsSpeed);
+        }
+        setIsPlayingAudio(false);
+    }, [callTTS, selectedVoice, speakWord, wordSoundsLanguage, ttsSpeed, wordSoundsAudioLibrary]);
+    const playBlending = React.useCallback(async () => {
+        if (!wordSoundsPhonemes?.phonemes) return;
+        try {
+            setIsPlayingAudio(true);
+            setBlendingProgress(0);
+            for (let i = 0; i < (wordSoundsPhonemes.phonemes?.length || 0); i++) {
+                const phoneme = wordSoundsPhonemes?.phonemes?.[i];
+                setBlendingProgress(i + 1);
+                await handleAudio(phoneme);
+                await new Promise(r => setTimeout(r, 900));
+            }
+            setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
+
+            await new Promise(r => setTimeout(r, 400));
+
+            const whichWordAudio = INSTRUCTION_AUDIO['which_word_did_you_hear'];
+            if (whichWordAudio) {
+                const a = new Audio(whichWordAudio); await new Promise((res, rej) => { a.onended = res; a.onerror = rej; a.play().catch(rej); });
+            } else {
+                const whichWordAudio = INSTRUCTION_AUDIO["which_word_did_you_hear"];
+
+                if (whichWordAudio) {
+
+                    const a = new Audio(whichWordAudio); await new Promise((res, rej) => { a.onended = res; a.onerror = rej; a.play().catch(rej); });
+
+                } else {
+
+                    await handleAudio('Which word did you hear?');
+
+                }
+
+            }
+
+        } catch (err) {
+            warnLog("Blending playback error:", err);
+        } finally {
+            setIsPlayingAudio(false);
+        }
+    }, [wordSoundsPhonemes]);
+    const PhonologyView = React.useCallback(({
+        activity,
+        data,
+        showLetterHints,
+        onPlayAudio,
+        onCheckAnswer,
+        isEditing,
+        onUpdateOption,
+        highlightedIndex: externalHighlightedIndex
+    }) => {
+        const [playingIndex, setPlayingIndex] = React.useState(null);
+        const [isSequencing, setIsSequencing] = React.useState(false);
+        const sequenceRef = React.useRef(false);
+        const playFullSequence = async () => {
+            if (isSequencing) return;
+            setIsSequencing(true);
+            sequenceRef.current = true;
+            try {
+                setPlayingIndex(-1);
+                await onPlayAudio(data.word);
+                if (!sequenceRef.current) return;
+                for (let i = 0; i < (data.options?.length || 0); i++) {
+                    if (!sequenceRef.current) break;
+                    setPlayingIndex(i);
+                    await onPlayAudio(data.options[i]);
+                    await new Promise(r => setTimeout(r, 750));
+                }
+            } catch (e) {
+                warnLog("Sequence error", e);
+            } finally {
+                setPlayingIndex(null);
+                setIsSequencing(false);
+                sequenceRef.current = false;
+            }
+        };
+        if (activity === 'isolation') {
+            return (
+                <div className="flex flex-col items-center justify-center gap-8 animate-in zoom-in-50 duration-500">
+                    <div className="text-center space-y-4">
+                        <div className="relative">
+                            <button
+                                aria-label={t('common.volume')}
+                                onClick={() => onPlayAudio(data.word)}
+                                className={`w-32 h-32 rounded-full flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 group relative mb-4 mx-auto overflow-hidden ${playingIndex === -1
+                                        ? 'bg-violet-400 text-white ring-4 ring-violet-200 scale-110 shadow-violet-300/50'
+                                        : 'bg-violet-100 hover:bg-violet-200 text-violet-600'
+                                    }`}
+                            >
+                                {data.image ? (
+                                    <img loading="lazy"
+                                        src={data.image}
+                                        alt={data.word}
+                                        className={`w-full h-full object-cover rounded-full ${playingIndex === -1 ? 'ring-4 ring-violet-300' : ''}`}
+                                    />
+                                ) : (
+                                    <Volume2 size={64} className={playingIndex === -1 ? "animate-pulse" : "group-hover:animate-pulse"} />
+                                )}
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs py-1 rounded-b-full font-medium">👂</div>
+                            </button>
+                            {!isEditing && (
+                                <button
+                                    aria-label={t('common.play_all_sounds')}
+                                    onClick={playFullSequence}
+                                    disabled={isSequencing}
+                                    className={`absolute -right-4 top-0 p-2 rounded-full shadow-md transition-all ${isSequencing
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-white text-violet-500 hover:bg-violet-50 hover:text-violet-700'
+                                        }`}
+                                    title={t('common.play_all_sounds')}
+                                >
+                                    {isSequencing ? (
+                                        <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
+                                    ) : (
+                                        <PlayCircle size={24} />
+                                    )}
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                            <h3 className="text-2xl font-bold text-slate-700">
+                                {(() => {
+                                    const pos = typeof data.position === 'number' ? data.position : 0;
+                                    const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+                                    return `What is the ${ordinals[pos] || (pos + 1) + 'th'} sound?`;
+                                })()}
+                            </h3>
+                            <button
+                                onClick={async () => {
+                                    const pos = typeof data.position === 'number' ? data.position : 0;
+                                    const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+                                    const ordinal = ordinals[pos] || (pos + 1) + 'th';
+                                    const bankAudio = ISOLATION_AUDIO[ordinal];
+                                    if (bankAudio) {
+                                        try {
+                                            const audio = new Audio(bankAudio);
+                                            audio.playbackRate = 0.9;
+                                            await audio.play();
+                                            return;
+                                        } catch (e) { /* fall through to Gemini TTS */ }
+                                    }
+                                    try {
+                                        const instruction = `What is the ${ordinal} sound?`;
+                                        const url = await callTTS(instruction, selectedVoice);
+                                        if (url) {
+                                            const audio = new Audio(url);
+                                            audio.playbackRate = 0.9;
+                                            await audio.play();
+                                        }
+                                    } catch (e) {
+                                        warnLog("Instruction audio failed:", e);
+                                    }
+                                }}
+                                className="p-2 rounded-full bg-slate-100 hover:bg-violet-100 text-slate-500 hover:text-violet-600 transition-colors"
+                                title={t('common.repeat_instruction')}
+                                aria-label={t('common.repeat_instruction')}
+                            >
+                                <RefreshCw size={18} />
+                            </button>
+                        </div>
+                        {showLetterHints && (
+                            <div className="text-4xl font-black tracking-widest text-slate-500">
+                                {data.word.split('').map((char, i) => (
+                                    <span key={i} className={(typeof data.position === 'number' && i === data.position) ? "text-violet-400" : ""}>
+                                        {char === ' ' ? '\u00A0' : '_'}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
+                        {(data.options || []).map((opt, idx) => (
+                            isEditing ? (
+
+                                <div key={idx} className={`relative group flex items-center gap-2 ${opt?.toLowerCase() === data.correctSound?.toLowerCase() ? 'ring-2 ring-green-400 rounded-2xl' : ''}`}>
+
+                                    <button
+
+                                        aria-label={opt?.toLowerCase() === data.correctSound?.toLowerCase() ? "Correct answer" : "Set as correct"}
+
+                                        onClick={(e) => { e.stopPropagation(); onUpdateOption && onUpdateOption(idx, opt, 'set_correct'); }}
+
+                                        className={`p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.correctSound?.toLowerCase() ? 'text-green-500' : 'text-slate-300 hover:text-green-400'}`}
+
+                                        title={opt?.toLowerCase() === data.correctSound?.toLowerCase() ? "✓ Correct answer" : "Click to set as correct"}
+
+                                    >
+
+                                        {opt?.toLowerCase() === data.correctSound?.toLowerCase() ? <Check size={20} /> : <Star size={18} />}
+
+                                    </button>
+
+                                    <input aria-label={t('common.enter_opt')}
+
+                                        className="w-full h-32 rounded-2xl border-4 border-amber-300 bg-white text-center text-4xl font-bold outline-none focus:ring-4 focus:ring-amber-500 text-slate-700"
+
+                                        value={opt}
+
+                                        onChange={(e) => onUpdateOption && onUpdateOption(idx, e.target.value)}
+
+                                        onKeyDown={(e) => e.stopPropagation()}
+
+                                    />
+
+                                </div>
+
+                            ) : (
+                                <div
+                                    key={idx}
+                                    className="relative group"
+                                >
+                                    <button
+                                        aria-label={t('common.volume')}
+                                        onClick={() => onCheckAnswer(opt)}
+                                        className={`w-full h-32 rounded-2xl font-bold text-4xl flex items-center justify-center shadow-sm transition-all active:scale-95 ${(playingIndex === idx || externalHighlightedIndex === idx)
+                                                ? 'bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105'
+                                                : 'bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700'
+                                            }`}
+                                    >
+                                        {showLetterHints ? opt : <span className="text-sm text-slate-400 font-normal">Sound {idx + 1}</span>}
+                                    </button>
+                                    <button
+                                        aria-label={t('common.listen')}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onPlayAudio(opt, true);
+                                        }}
+                                        className="absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-500 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10"
+                                        title={t('common.listen')}
+                                    >
+                                        <Volume2 size={20} />
+                                    </button>
+                                </div>
+                            )
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    }, [t]);
+    const RhymeView = React.memo(({ data, showLetterHints, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, highlightedIndex, isAudioBusy }) => {
+        const [playingIndex, setPlayingIndex] = React.useState(null);
+        const activeIndex = playingIndex ?? highlightedIndex;
+        return (
+            <div className="flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500">
+                <div className="bg-orange-100 p-6 rounded-3xl flex items-center gap-6 shadow-sm border-2 border-orange-200">
+                    <button
+                        aria-label={t('common.volume')}
+                        onClick={() => onPlayAudio(data.word)}
+                        disabled={isAudioBusy}
+                        className={`w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg focus:ring-4 focus:ring-orange-300 focus:outline-none hover:scale-105 transition-all ${isAudioBusy ? 'text-orange-300 cursor-wait' : 'text-orange-500'}`}
+                    >
+                        {isAudioBusy ? <div className="animate-spin h-8 w-8 border-3 border-orange-400 border-t-transparent rounded-full" /> : <Volume2 size={32} />}
+                    </button>
+                    <div>
+                        <span className="text-sm font-bold text-orange-600 uppercase tracking-wider">{ts('word_sounds.target_word') || 'Target Word'}</span>
+                        <h3 className="text-4xl font-black text-slate-800">{showLetterHints ? data.word : "???"}</h3>
+                    </div>
+                </div>
+                <h3 className="text-xl font-bold text-slate-600">{ts('word_sounds.rhyming_q')}</h3>
+                <button
+                    onClick={async () => {
+                        if (playingIndex !== null || isAudioBusy) return;
+                        try {
+                            const opts = data.options || [];
+                            for (let i = 0; i < opts.length; i++) {
+                                setPlayingIndex(i);
+                                const audioPromise = onPlayAudio(opts[i], true);
+
+                                const minDelay = new Promise(r => setTimeout(r, 800));
+
+                                await Promise.all([audioPromise, minDelay]);
+
+                            }
+                            setPlayingIndex(null);
+                        } catch (e) { warnLog("Unhandled error in anon_playAllOptions:", e); setPlayingIndex(null); }
+                    }}
+                    disabled={playingIndex !== null || isAudioBusy}
+                    className={`mx-auto flex items-center gap-2 px-4 py-2 mb-2 rounded-full font-medium text-sm shadow-sm transition-colors ${playingIndex !== null || isAudioBusy ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60' : 'bg-orange-100 hover:bg-orange-200 text-orange-700'}`}
+                >
+                    <PlayCircle size={18} />
+                    {ts('word_sounds.play_all_options')}
+                </button>
+                <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
+                    {(data.options || []).map((opt, i) => (
+                        isEditing ? (
+                            <div key={i} className={`p-4 rounded-2xl bg-white border-2 shadow-md flex items-center gap-2 relative ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? 'border-green-400 ring-2 ring-green-200' : 'border-amber-200'}`}>
+
+                                <button
+
+                                    aria-label={opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "Correct answer" : "Set as correct"}
+
+                                    onClick={(e) => { e.stopPropagation(); onUpdateOption && onUpdateOption(i, opt, 'set_correct'); }}
+
+                                    className={`p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? 'text-green-500' : 'text-slate-300 hover:text-green-400'}`}
+
+                                    title={opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "✓ Correct answer" : "Click to set as correct answer"}
+
+                                >
+
+                                    {opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? <Check size={20} /> : <Star size={18} />}
+
+                                </button>
+
+                                <input aria-label={t('common.enter_opt')}
+                                    type="text"
+                                    value={opt}
+                                    onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value)}
+                                    className="w-full px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring-2 focus:ring-amber-400"
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                />
+                                <button
+                                    aria-label={t('common.volume')}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onPlayAudio(opt, true);
+                                    }}
+                                    className="absolute right-2 top-2 p-2 text-slate-400 hover:text-indigo-600"
+                                >
+                                    <Volume2 size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div
+                                key={i}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => onCheckAnswer(opt)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        onCheckAnswer(opt);
+                                    }
+                                }}
+                                className={`p-6 rounded-2xl transition-all group text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? 'border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative' : 'bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50'}`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-xl font-bold text-slate-700 ${!showLetterHints && 'blur-sm'}`}>{opt}</span>
+                                    <button
+                                        aria-label={t('common.volume')}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onPlayAudio(opt, true);
+                                        }}
+                                        className="w-10 h-10 rounded-full hover:bg-orange-200 text-slate-500 hover:text-orange-600 flex items-center justify-center transition-colors z-10"
+                                        title={ts('common.listen') || "Listen"}
+                                    >
+                                        <Volume2 size={20} />
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    ))}
+                </div>
+            </div>
+        );
+    });
+    const OrthographyView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+        const [userSpelling, setUserSpelling] = React.useState('');
+        const [feedback, setFeedback] = React.useState(null);
+        const [draggedLetter, setDraggedLetter] = React.useState(null);
+        const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
+        React.useEffect(() => {
+            setUserSpelling('');
+            setFeedback(null);
+        }, [data.correct, data.word]);
+        const handleChipClick = (letter) => {
+            const lowerL = letter.toLowerCase();
+            if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowerL]) {
+                onPlayAudio(LETTER_NAME_AUDIO[lowerL]);
+            } else {
+                onPlayAudio(letter);
+            }
+        };
+        const handleDragStart = (e, letter) => {
+            setDraggedLetter(letter);
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('text/plain', letter);
+        };
+        const handleDragOver = (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        };
+        const handleDrop = (e) => {
+            e.preventDefault();
+            const letter = draggedLetter || e.dataTransfer.getData('text/plain');
+            if (letter) {
+                setUserSpelling(prev => prev + letter);
+                setDraggedLetter(null);
+            }
+        };
+        const handleSubmit = (e) => {
+            if (e) e.preventDefault();
+            if (!userSpelling.trim()) return;
+            const target = data.correct || data.word;
+            const isCorrect = target && userSpelling.trim().toLowerCase() === target.toLowerCase();
+            setFeedback(isCorrect ? 'correct' : 'incorrect');
+            if (isCorrect) {
+                setTimeout(() => { if (isMountedRef.current) onCheckAnswer(userSpelling); }, 500);
+            } else {
+                onCheckAnswer(userSpelling);
+            }
+        };
+        if (isEditing) {
+            return (
+                <div className="flex flex-col items-center gap-6 animate-in fade-in">
+                    <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-200">
+                        <h3 className="font-bold text-amber-800 mb-4 flex items-center gap-2">
+                            <span className="bg-amber-200 p-1 rounded">✏️</span> Edit Spelling Word
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            <input aria-label={t('common.edit_spelling_word')}
+                                type="text"
+                                value={data.word}
+                                onChange={(e) => onUpdateOption && onUpdateOption(0, e.target.value)}
+                                className="w-48 px-4 py-3 text-xl font-bold text-slate-700 bg-white rounded-xl border border-amber-300 focus:ring-4 focus:ring-amber-200 outline-none shadow-sm"
+                            />
+                            <button
+                                aria-label={t('common.volume')}
+                                onClick={() => onPlayAudio(data.word)}
+                                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-sm"
+                            >
+                                <Volume2 size={24} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return (
+            <div className="flex flex-col items-center gap-6 animate-in fade-in duration-500 w-full max-w-4xl mx-auto">
+                <div className="flex flex-col items-center gap-3 mb-2">
+                    <button
+                        aria-label={t('common.volume')}
+                        onClick={() => onPlayAudio(data.word)}
+                        className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50"
+                        title={ts('word_sounds.hear_word_again') || 'Hear Word Again'}
+                    >
+                        <Volume2 size={32} />
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit} className="w-full max-w-lg relative group">
+                    <div
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        className={`relative rounded-2xl transition-all ${draggedLetter ? 'scale-105 ring-4 ring-indigo-200 bg-indigo-50' : ''}`}
+                    >
+                        <input aria-label={t('common.drag_letters_here')}
+                            type="text"
+                            value={userSpelling}
+                            onChange={(e) => setUserSpelling(e.target.value)}
+                            placeholder={t('common.placeholder_drag_letters_here')}
+                            className={`w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-300 tracking-widest uppercase
+                                ${feedback === 'correct' ? 'border-green-400 bg-green-50 text-green-700' :
+                                    feedback === 'incorrect' ? 'border-red-300 bg-red-50 text-red-700 animate-shake' :
+                                        'border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100'}
+                            `}
+                            autoComplete="off"
+                        />
+                        {userSpelling && (
+                            <button
+                                aria-label={t('common.close')}
+                                type="button"
+                                onClick={() => setUserSpelling('')}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        )}
+                    </div>
+                </form>
+                <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 w-full">
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {alphabet.map((letter) => (
+                            <div
+                                key={letter}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, letter)}
+                                onClick={() => handleChipClick(letter)}
+                                className="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+                                         hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
+                                         flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
+                            >
+                                {letter}
+                            </div>
+                        ))}
+                    </div>
+                    <p className="text-center text-slate-400 text-sm mt-4 font-medium">
+                        Drag letters to spell the word, or click to hear them!
+                    </p>
+                </div>
+                <button
+                    aria-label={t('common.next')}
+                    onClick={handleSubmit}
+                    disabled={!userSpelling}
+                    className={`px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 ${!userSpelling
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0'
+                        }`}
+                >
+                    {ts('word_sounds.check_spelling') || 'Check Spelling'} <ChevronRight size={20} />
+                </button>
+            </div>
+        );
+    });
+    const WordFamiliesView = React.useMemo(() => ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, showLetterHints, soundOnlyMode }) => {
+        const [foundWords, setFoundWords] = React.useState([]);
+        const [shakenWord, setShakenWord] = React.useState(null);
+        const [wrongFeedback, setWrongFeedback] = React.useState(null);
+        const [isComplete, setIsComplete] = React.useState(false);
+        const [wordBank, setWordBank] = React.useState([]);
+        const [activeIndex, setActiveIndex] = React.useState(null);
+        const lastOptionsKey = React.useRef('');
+        React.useEffect(() => {
+            if (data.options && data.distractors) {
+                const newKey = JSON.stringify([...data.options].sort()) + '|' + JSON.stringify([...data.distractors].sort());
+                if (newKey !== lastOptionsKey.current) {
+                    lastOptionsKey.current = newKey;
+                    const mixed = [
+                        ...(data.options || []).map(w => ({ text: w, isFamily: true })),
+                        ...(data.distractors || []).map(w => ({ text: w, isFamily: false }))
+                    ];
+                    const mixed_shuffled = fisherYatesShuffle(mixed);
+                    setWordBank(mixed_shuffled);
+                    setFoundWords([]);
+                    setIsComplete(false);
+                    const playAllOptions = async () => {
+                        await new Promise(r => setTimeout(r, 500));
+                        for (let i = 0; i < mixed_shuffled.length; i++) {
+                            if (!isMountedRef.current) break;
+                            setActiveIndex(i);
+                            try { await onPlayAudio(mixed_shuffled[i].text); } catch (e) { }
+                            setActiveIndex(null);
+                            await new Promise(r => setTimeout(r, 300));
+                        }
+                    };
+                    playAllOptions();
+                }
+            }
+        }, [data.options, data.distractors]);
+        const handleWordClick = (item) => {
+            if (foundWords.includes(item.text) || isComplete) return;
+            onPlayAudio(item.text);
+            if (item.isFamily) {
+                const newFound = [...foundWords, item.text];
+                setFoundWords(newFound);
+                const allMembers = data.options;
+                const uniqueFound = new Set(newFound);
+                if (allMembers.every(m => uniqueFound.has(m))) {
+                    setIsComplete(true);
+                    onPlayAudio('correct');
+                    setTimeout(() => { if (isMountedRef.current) onCheckAnswer('correct'); }, 1200);
+                }
+            } else {
+                setShakenWord(item.text);
+                setWrongFeedback(item.text);
+                setTimeout(() => { if (isMountedRef.current) { setShakenWord(null); setWrongFeedback(null); } }, 1500);
+                onCheckAnswer('incorrect');
+            }
+        };
+        if (isEditing) {
+            return (
+                <div className="flex flex-col gap-8 animate-in fade-in">
+                    <div className="text-center">
+                        <h3 className="text-xl font-bold text-slate-600 mb-2">Editing Word Family: <span className="text-violet-600">{data.family}</span></h3>
+                        <p className="text-sm text-slate-500">Modify the family members and distractors below.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-violet-50 p-6 rounded-2xl border-2 border-violet-100">
+                            <h4 className="font-bold text-violet-700 mb-4 flex items-center gap-2">
+                                <span className="bg-violet-200 p-1 rounded">🏠</span> Family Members
+                            </h4>
+                            <div className="space-y-3">
+                                {(data.options || []).map((word, i) => (
+                                    <div key={`opt-${i}`} className="flex gap-2">
+                                        <input aria-label={t('common.family_word')}
+                                            value={word}
+                                            onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value, 'member')}
+                                            className="flex-1 px-3 py-2 rounded-lg border border-violet-200 outline-none focus:ring-2 focus:ring-violet-400 font-bold text-slate-700"
+                                            placeholder={t('common.placeholder_family_word')}
+                                        />
+                                        <button onClick={() => onPlayAudio(word)} className="p-2 text-violet-400 hover:text-violet-600">
+                                            <Volume2 size={18} />
+                                        </button>
+                                        <button onClick={() => onUpdateOption && onUpdateOption(i, null, 'remove_member')}
+                                            aria-label={t('common.remove')}
+                                            className="p-2 text-red-300 hover:text-red-500 transition-colors" title={t('common.remove')}>
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button onClick={() => onUpdateOption && onUpdateOption(-1, '', 'add_member')}
+                                    className="w-full py-2 border-2 border-dashed border-violet-200 rounded-lg text-violet-400 hover:text-violet-600 hover:border-violet-400 transition-all text-sm font-bold">
+                                    + Add Word
+                                </button>
+                            </div>
+                        </div>
+                        <div className="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100">
+                            <h4 className="font-bold text-amber-700 mb-4 flex items-center gap-2">
+                                <span className="bg-amber-200 p-1 rounded">🚫</span> Distractors
+                            </h4>
+                            <div className="space-y-3">
+                                {(data.distractors || []).map((word, i) => (
+                                    <div key={`dist-${i}`} className="flex gap-2">
+                                        <input aria-label={t('common.distractor')}
+                                            value={word}
+                                            onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value, 'distractor')}
+                                            className="flex-1 px-3 py-2 rounded-lg border border-amber-200 outline-none focus:ring-2 focus:ring-amber-400 font-bold text-slate-700"
+                                            placeholder={t('common.placeholder_distractor')}
+                                        />
+                                        <button onClick={() => onPlayAudio(word)} className="p-2 text-amber-400 hover:text-amber-600">
+                                            <Volume2 size={18} />
+                                        </button>
+                                        <button onClick={() => onUpdateOption && onUpdateOption(i, null, 'remove_distractor')}
+                                            aria-label={t('common.remove')}
+                                            className="p-2 text-red-300 hover:text-red-500 transition-colors" title={t('common.remove')}>
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button onClick={() => onUpdateOption && onUpdateOption(-1, '', 'add_distractor')}
+                                    className="w-full py-2 border-2 border-dashed border-amber-200 rounded-lg text-amber-400 hover:text-amber-600 hover:border-amber-400 transition-all text-sm font-bold">
+                                    + Add Distractor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return (
+            <div className="flex flex-col h-full">
+                <div className="text-center mb-6 relative">
+                    <div className="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-slate-100 mb-4">
+                        <div className="flex flex-col">
+                            <span className="text-xs uppercase font-bold text-slate-500 tracking-wider">{ts('word_sounds.sound_sort_label') || 'Sound Sort'}</span>
+                            <span className="text-xl font-black text-violet-600">{showLetterHints ? data.family : (data.mode === 'first' ? 'Starts with /…/' : data.mode === 'last' ? 'Ends with /…/' : 'Sound Family')}</span>
+                        </div>
+                        <button
+                            aria-label={t('common.hear_target_sound')}
+                            onClick={() => onPlayAudio(data.targetChar || data.options?.[0] || data.family)}
+                            title={t('common.hear_target_sound')}
+                            className="ml-2 p-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors"
+                        >
+                            <Volume2 size={18} />
+                        </button>
+                    </div>
+                    <h3 className="text-lg text-slate-600 font-medium">
+                        {ts('word_sounds.sound_sort_instruction') || (showLetterHints ? `Find all words that match: ${data.family}` : 'Tap each word to hear it. Find the ones that match!')}
+                    </h3>
+                    <div className="mt-2 flex items-center justify-center gap-2">
+                        <div className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm font-bold">
+                            {foundWords.length} / {data.options?.length || 0} {ts('word_sounds.sound_sort_found') || 'found'}
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-3xl border-4 border-violet-100 p-6 mb-8 relative overflow-hidden min-h-[200px] shadow-inner transition-colors duration-500"
+                    style={{ backgroundColor: isComplete ? '#f5f3ff' : 'white' }}
+                >
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 relative z-10">
+                        {(foundWords || []).map((word, i) => (
+                            <div key={`found-${i}`} className="animate-in zoom-in spin-in-3 duration-300">
+                                <div className="bg-violet-500 text-white px-4 py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2">
+                                    {soundOnlyMode ? '🔊' : word} <Check size={16} className="text-violet-200" />
+                                </div>
+                            </div>
+                        ))}
+                        {[...Array(Math.max(0, (data.options?.length || 0) - foundWords.length))].map((_, i) => (
+                            <div key={`empty-${i}`} className="border-2 border-dashed border-slate-100 rounded-xl h-12 flex items-center justify-center">
+                                <div className="w-2 h-2 bg-slate-100 rounded-full" />
+                            </div>
+                        ))}
+                    </div>
+                    {isComplete && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm animate-in fade-in z-20">
+                            <div className="bg-green-100 text-green-700 px-6 py-4 rounded-2xl font-black text-2xl shadow-xl transform rotate-3 border-4 border-white">
+                                {ts('word_sounds.sound_sort_complete') || 'All Matched! 🎉'}
+
+                            </div>
+                        </div>
+                    )}
+                </div>
+                {wrongFeedback && (
+                    <div className="text-center animate-in fade-in mb-2">
+                        <span className="inline-block bg-rose-100 text-rose-600 px-4 py-2 rounded-full text-sm font-bold">
+                            ❌ "{wrongFeedback}" {ts('word_sounds.sound_sort_wrong_hint') || (showLetterHints ? `doesn't match: ${data.family}` : `doesn't match the target sound`)}
+                        </span>
+                    </div>
+                )}
+                {!isComplete && wordBank.length > 0 && (
+                    <div className="flex justify-center mb-3">
+                        <button
+                            onClick={async () => {
+                                for (let i = 0; i < wordBank.length; i++) {
+                                    const item = wordBank[i];
+                                    if (foundWords.includes(item.text)) continue;
+                                    setActiveIndex(i);
+                                    try { await onPlayAudio(item.text); } catch (e) { }
+                                    setActiveIndex(null);
+                                    await new Promise(r => setTimeout(r, 350));
+                                }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors font-bold text-sm"
+                            aria-label={t('common.hear_all_words')}
+                            title={t('common.play_all_remaining_words_aloud')}
+                        >
+                            <Volume2 size={16} /> Hear All Words
+                        </button>
+                    </div>
+                )}
+                <div className="flex flex-wrap justify-center gap-3">
+                    {(wordBank || []).map((item, idx) => {
+                        const isFound = foundWords.includes(item.text);
+                        const isShaking = shakenWord === item.text;
+                        if (isFound) return null;
+                        return (
+                            <div key={`bank-${idx}`} className="flex items-center gap-1">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onPlayAudio(item.text); }}
+                                    className="p-2 rounded-full text-violet-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+                                    aria-label={`Hear ${soundOnlyMode ? 'option' : item.text}`}
+                                    title={t('common.hear_this_word')}
+                                >
+                                    <Volume2 size={18} />
+                                </button>
+                                <button
+                                    onClick={() => handleWordClick(item)}
+                                    className={`px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${isShaking
+                                            ? 'bg-red-100 border-red-300 text-red-600 animate-shake'
+                                            : activeIndex === idx
+                                                ? 'bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10'
+                                                : 'bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600'
+                                        }`}
+                                >
+                                    {soundOnlyMode ? '🔊' : item.text}
+                                </button>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }, [t]);
+    const SoundMappingView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+        const [slots, setSlots] = React.useState(new Array(data.phonemes?.length || 0).fill(null));
+        const [chips, setChips] = React.useState([]);
+        const lastWordRef = React.useRef(null);
+        React.useEffect(() => {
+            if (data.graphemes && data.word !== lastWordRef.current) {
+                lastWordRef.current = data.word;
+                const labeled = data.graphemes?.map((g, i) => ({
+                    id: i,
+                    text: typeof g === 'string' ? g : String(g),
+                    isPlaced: false
+                }));
+                setChips(fisherYatesShuffle(labeled));
+                setSlots(new Array((data.graphemes || []).length).fill(null));
+            }
+        }, [data.word, data.graphemes ? data.graphemes.join(',') : '']);
+        React.useEffect(() => {
+            if (data.word) {
+                const timer = setTimeout(() => {
+                    debugLog("🔊 Auto-Playing Mapping:", data.word);
+                    onPlayAudio(data.word, true);
+                }, 500);
+                return () => clearTimeout(timer);
+            }
+        }, [data.word]);
+        const handleChipClick = (chip) => {
+            if (isEditing) return;
+            const emptyIdx = slots.findIndex(s => s === null);
+            if (emptyIdx !== -1) {
+                const newSlots = [...slots];
+                newSlots[emptyIdx] = chip;
+                setSlots(newSlots);
+                setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: true } : c));
+                onPlayAudio(chip.text);
+                if (newSlots.every(s => s !== null)) {
+                    setTimeout(() => { if (isMountedRef.current) onCheckAnswer('correct'); }, 1000);
+                }
+            }
+        };
+        const handleSlotClick = (index) => {
+            if (isEditing) return;
+            const chip = slots[index];
+            if (chip) {
+                const newSlots = [...slots];
+                newSlots[index] = null;
+                setSlots(newSlots);
+                setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: false } : c));
+                playSound('pop');
+            }
+        };
+        const reset = () => {
+            setSlots(new Array(data.phonemes?.length || 0).fill(null));
+            setChips(prev => prev.map(c => ({ ...c, isPlaced: false })));
+        };
+        return (
+            <div className="flex flex-col items-center gap-8">
+                <div className="flex justify-center gap-4 mb-4">
+                    {slots.map((slot, i) => (
+                        <button
+                            key={i}
+                            onClick={() => handleSlotClick(i)}
+                            className={`w-20 h-20 rounded-2xl border-4 border-dashed flex items-center justify-center text-3xl font-bold transition-all ${slot
+                                    ? 'border-indigo-500 bg-white text-indigo-700 shadow-md scale-100'
+                                    : 'border-slate-300 bg-slate-50 text-slate-500 scale-95'
+                                }`}
+                            aria-label={slot ? `Slot ${i + 1}: ${slot.text}` : `Empty Slot ${i + 1}`}
+                        >
+                            {slot ? slot.text : i + 1}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex flex-wrap justify-center gap-4 py-8">
+                    {isEditing ? (
+                        data.graphemes?.map((g, i) => (
+                            <div key={i} className="relative">
+                                <input aria-label={t('common.enter_g')}
+                                    value={g}
+                                    onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value)}
+                                    className="w-20 h-20 rounded-2xl border-4 text-center text-3xl font-bold outline-none focus:ring-4 focus:ring-amber-500 border-amber-300 bg-white text-slate-700"
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                />
+                                <span className="absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-sm">{i + 1}</span>
+                            </div>
+                        ))
+                    ) : (
+                        chips.filter(c => !c.isPlaced).map((chip) => (
+                            <button
+                                aria-label={t('common.volume')}
+                                key={chip.id}
+                                onClick={() => handleChipClick(chip)}
+                                className="w-20 h-20 rounded-2xl bg-white border-b-4 border-slate-200 text-3xl font-bold text-slate-600 shadow-sm hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg transition-all active:scale-95"
+                            >
+                                {chip.text}
+                            </button>
+                        ))
+                    )}
+                </div>
+                <button aria-label={t('common.volume')} onClick={() => { debugLog("🔊 Playing Mapping:", data.word); onPlayAudio(data.word, true); }} className="flex items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors">
+                    <Volume2 size={16} /> {ts('word_sounds.listen_word') || 'Listen to Word'}
+                </button>
+            </div>
+        );
+    });
+    const ts = React.useCallback((key, params = {}) => getWordSoundsString(t, key, params), [t]);
+    const ALL_ACTIVITIES = [
+        { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc'), tier: 'phonological' },
+        { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc'), tier: 'phonological' },
+        { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc'), tier: 'phonological' },
+        { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc'), tier: 'phonological' },
+        { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc'), tier: 'phonological' },
+        { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling', tier: 'orthographic' },
+        { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters', tier: 'orthographic' },
+        { id: 'spelling_bee', label: ts('word_sounds.activity_spelling_bee') || 'Spelling Bee', icon: '🐝', description: ts('word_sounds.spelling_bee_desc') || 'Spell the word you hear', tier: 'orthographic' },
+        { id: 'word_scramble', label: ts('word_sounds.activity_word_scramble') || 'Word Scramble', icon: '🔀', description: ts('word_sounds.word_scramble_desc') || 'Unscramble the letters', tier: 'orthographic' },
+        { id: 'missing_letter', label: ts('word_sounds.activity_missing_letter') || 'Missing Letter', icon: '❓', description: ts('word_sounds.missing_letter_desc') || 'Fill in the blank', tier: 'orthographic' },
+        { id: 'sound_sort', label: ts('word_sounds.activity_sound_sort') || 'Sound Sort', icon: '🔊', description: ts('word_sounds.sound_sort_desc') || 'Sort words by shared sounds', tier: 'phonological' },
+        { id: 'letter_tracing', label: ts('word_sounds.activity_letter_tracing') || 'Letter Trace', icon: '✍️', description: ts('word_sounds.letter_tracing_desc') || 'Trace the first letter', tier: 'phonological' },
+        { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Build the word family house', tier: 'phonological' }
+    ];
+    const ACTIVITIES = React.useMemo(() => {
+        if (includeOrthographic) {
+            return ALL_ACTIVITIES;
+        }
+        return ALL_ACTIVITIES.filter(a => a.tier === 'phonological');
+    }, [includeOrthographic]);
+    const extractWords = React.useCallback((term) => {
+        if (!term) return [];
+        return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+    }, []);
+    const PHONEME_NORMALIZE = {
+        'igh': 'ie', 'tch': 'ch', 'dge': 'j',
+        'kn': 'n', 'wr': 'r', 'gn': 'n', 'gh': 'g', 'mb': 'm', 'qu': 'k',
+        'oi': 'oy', 'aw': 'au', 'ew': 'oo', 'oe': 'oa',
+    };
+    const estimatePhonemesBasic = React.useCallback((word) => {
+        if (!word) return [];
+        const w = word.toLowerCase();
+        const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ar', 'er', 'ir', 'or', 'ur'];
+        const trigraphs = ['igh', 'tch', 'dge'];
+        const HARD_G_EXCEPTIONS = new Set(['get', 'gets', 'getting', 'got', 'girl', 'girls', 'give', 'gives', 'giving', 'given', 'gift', 'gifts', 'gear', 'gears', 'geese', 'begin', 'beginning', 'beginnings']);
+        let result = [];
+        let i = 0;
+        while (i < w.length) {
+            if (i < w.length - 2 && trigraphs.includes(w.slice(i, i + 3))) {
+                result.push(w.slice(i, i + 3));
+                i += 3;
+            }
+            else if (i < w.length - 1 && digraphs.includes(w.slice(i, i + 2))) {
+                result.push(w.slice(i, i + 2));
+                i += 2;
+            }
+            else if (w[i] === 'c' && i < w.length - 1 && ['e', 'i', 'y'].includes(w[i + 1])) {
+                result.push('s');
+                i++;
+            }
+            else if (w[i] === 'g' && i < w.length - 1 && ['e', 'i', 'y'].includes(w[i + 1])) {
+                if (HARD_G_EXCEPTIONS.has(w)) {
+                    result.push('g');
+                } else {
+                    result.push('j');
+                }
+                i++;
+            }
+            else {
+                result.push(w[i]);
+                i++;
+            }
+        }
+        return result.map(p => PHONEME_NORMALIZE[p] || p);
+    }, []);
+
+    const [showProbeResults, setShowProbeResults] = React.useState(false);
+    const probeStartTimeRef = React.useRef(null);
+    const renderProbeResults = () => {
+        const totalTime = probeStartTimeRef.current ? (Date.now() - probeStartTimeRef.current) / 1000 : 0;
+        const correct = wordSoundsScore.correct;
+        const total = wordSoundsScore.total;
+        const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+        const itemsPerMin = totalTime > 0 ? Math.round((total / totalTime) * 60 * 10) / 10 : 0;
+        const probeCSV = () => {
+            const headers = ['Date', 'Grade', 'Activity', 'Items Attempted', 'Items Correct', 'Accuracy %', 'Items/Min', 'Duration (s)'];
+            const row = [new Date().toLocaleDateString(), probeGradeLevel, wordSoundsActivity, total, correct, accuracy, itemsPerMin, Math.round(totalTime)];
+            const csv = headers.join(',') + '\n' + row.join(',');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Probe_' + probeGradeLevel + '_' + wordSoundsActivity + '_' + new Date().toISOString().split('T')[0] + '.csv';
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        };
+        return (
+            <div className="fixed inset-0 z-[300] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center border-4 border-violet-200">
+                    <div className="text-4xl mb-3">📊</div>
+                    <h2 className="text-xl font-black text-slate-800 mb-1">{t('common.benchmark_probe_results')}</h2>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-6">
+                        Grade {probeGradeLevel} • {wordSoundsActivity} • {new Date().toLocaleDateString()}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        <div className="bg-violet-50 border border-violet-200 rounded-xl p-4">
+                            <div className="text-3xl font-black text-violet-600">{total}</div>
+                            <div className="text-[10px] font-bold text-slate-600 uppercase">Items Attempted</div>
+                        </div>
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                            <div className="text-3xl font-black text-emerald-600">{correct}</div>
+                            <div className="text-[10px] font-bold text-slate-600 uppercase">Items Correct</div>
+                        </div>
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                            <div className={`text-3xl font-black ${accuracy >= 80 ? 'text-green-600' : accuracy >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>{accuracy}%</div>
+                            <div className="text-[10px] font-bold text-slate-600 uppercase">Accuracy</div>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <div className="text-3xl font-black text-amber-600">{itemsPerMin}</div>
+                            <div className="text-[10px] font-bold text-slate-600 uppercase">Items / Min</div>
+                        </div>
+                    </div>
+                    <div className="text-xs text-slate-500 mb-4">
+                        Duration: {Math.floor(totalTime / 60)}:{Math.round(totalTime % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                        <button
+                            onClick={probeCSV}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                        >
+                            📥 Download CSV
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowProbeResults(false);
+                                if (onProbeComplete) onProbeComplete({ correct, total, accuracy, itemsPerMin, duration: totalTime });
+                                onClose();
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                        >
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+    React.useEffect(() => {
+        if (isProbeMode && wordSoundsScore.total === 1 && !probeStartTimeRef.current) {
+            probeStartTimeRef.current = Date.now();
+        }
+    }, [isProbeMode, wordSoundsScore.total]);
+    const [probeElapsed, setProbeElapsed] = React.useState(0);
+    React.useEffect(() => {
+        if (!isProbeMode || !probeStartTimeRef.current) return;
+        const interval = setInterval(() => {
+            setProbeElapsed(Math.floor((Date.now() - probeStartTimeRef.current) / 1000));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isProbeMode, probeStartTimeRef.current]);
+
+    const wordPool = React.useMemo(() => {
+        if (!glossaryTerms || glossaryTerms.length === 0) return [];
+        const pool = [];
+        glossaryTerms.forEach(term => {
+            const fullTerm = term.term || term.word || term;
+            const words = extractWords(fullTerm);
+            words.forEach(word => {
+                pool.push({
+                    word: word.toLowerCase(),
+                    originalTerm: fullTerm,
+                    displayWord: word,
+                    definition: term.definition || term.meaning || '',
+                    image: term.image || null,
+                    phonemes: (fullTerm.toLowerCase() === word.toLowerCase() && term.phonemes) ? term.phonemes : null,
+                    syllables: (fullTerm.toLowerCase() === word.toLowerCase() && term.syllables) ? term.syllables : null,
+                    rhymeWord: term.rhymeWord,
+                    wordFamily: term.wordFamily,
+                    familyMembers: term.familyMembers,
+                    phonemeCount: term.phonemeCount,
+                    firstSound: term.firstSound,
+                    lastSound: term.lastSound,
+                    middleSound: term.middleSound,
+                    rhymeDistractors: term.rhymeDistractors,
+                    blendingDistractors: term.blendingDistractors,
+                    orthographyDistractors: term.orthographyDistractors
+                });
+            });
+        });
+        const seen = new Set();
+        return pool.filter(entry => {
+            if (seen.has(entry.word)) return false;
+            seen.add(entry.word);
+            return true;
+        });
+    }, [glossaryTerms, extractWords]);
+    const availableLanguages = React.useMemo(() => {
+        const langs = new Set(['English']);
+        if (glossaryTerms && glossaryTerms.length > 0) {
+            glossaryTerms.forEach(term => {
+                if (term.translations) {
+                    Object.keys(term.translations).forEach(l => langs.add(l));
+                }
+            });
+        } else {
+            warnLog("⚠️ WordSoundsModal: glossaryTerms is empty or undefined");
+        }
+        const result = Array.from(langs);
+        debugLog("✅ WordSoundsModal: availableLanguages", result);
+        return result;
+    }, [glossaryTerms]);
+    const getRandomWord = React.useCallback(() => {
+        if (!wordPool || wordPool.length === 0) return null;
+        const randomIndex = Math.floor(Math.random() * wordPool.length);
+        const entry = wordPool[randomIndex];
+        return {
+            singleWord: entry.displayWord || entry.word,
+            fullTerm: entry.originalTerm,
+            definition: entry.definition,
+            image: entry.image
+        };
+    }, [wordPool]);
+    const categorizeWordDifficulty = React.useCallback((word) => {
+        if (!word) return 'medium';
+        const w = word.toLowerCase();
+        const isSimpleCVC = /^[bcdfghjklmnpqrstvwxyz][aeiou][bcdfghjklmnpqrstvwxyz]$/.test(w);
+        const isShortSimple = w.length <= 4 && !/[qxz]/.test(w) && !/([aeiou]){2,}/.test(w);
+        const hasBlend = /^(bl|br|cl|cr|dr|fl|fr|gl|gr|pl|pr|sc|sk|sl|sm|sn|sp|st|sw|tr|tw|wr)/.test(w) ||
+            /(nd|ng|nk|nt|mp|ft|lt|pt|sk|sp|st)$/.test(w);
+        const hasDigraph = /(ch|sh|th|wh|ph|ck|gh|kn|wr|mb|gn)/.test(w);
+        const hasSilentLetter = /(kn|wr|mb|gn|gh)/.test(w) || /e$/.test(w) && w.length > 3;
+        const isLong = w.length >= 7;
+        const hasComplexVowel = /(oo|ee|ea|ou|ow|oi|oy|au|aw|ew|ie|ei)/.test(w);
+        let complexity = 0;
+        if (hasBlend) complexity += 2;
+        if (hasDigraph) complexity += 2;
+        if (hasSilentLetter) complexity += 1;
+        if (isLong) complexity += 2;
+        if (hasComplexVowel) complexity += 1;
+        if (isSimpleCVC || (isShortSimple && complexity === 0)) return 'easy';
+        if (complexity >= 4 || isLong) return 'hard';
+        return 'medium';
+    }, []);
+    const getEffectiveDifficulty = React.useCallback(() => {
+        if (wordSoundsDifficulty !== 'auto') return wordSoundsDifficulty;
+        const recentHistory = (wordSoundsHistory || []).slice(-10);
+        if (recentHistory.length < 3) return 'easy';
+        const correctCount = recentHistory.filter(h => h.correct).length;
+        const accuracy = correctCount / recentHistory.length;
+        const levelBoost = Math.min((wordSoundsLevel - 1) * 0.05, 0.15);
+        if (accuracy >= (0.85 - levelBoost)) return 'hard';
+        if (accuracy >= (0.60 - levelBoost)) return 'medium';
+        return 'easy';
+    }, [wordSoundsDifficulty, wordSoundsHistory, wordSoundsLevel]);
+    const categorizedPool = React.useMemo(() => {
+        return wordPool.map(entry => ({
+            ...entry,
+            difficulty: categorizeWordDifficulty(entry.word)
+        }));
+    }, [wordPool, categorizeWordDifficulty]);
+    const getDifficultyFilteredPool = React.useCallback(() => {
+        const effectiveDifficulty = getEffectiveDifficulty();
+        let filtered = categorizedPool.filter(e => e.difficulty === effectiveDifficulty);
+        if (categorizedPool.length <= 15 || (glossaryTerms && glossaryTerms.length > 0)) {
+            return categorizedPool;
+        }
+        if (filtered.length < 3) {
+            if (effectiveDifficulty === 'easy') {
+                filtered = categorizedPool.filter(e => e.difficulty !== 'hard');
+            } else if (effectiveDifficulty === 'hard') {
+                filtered = categorizedPool.filter(e => e.difficulty !== 'easy');
+            } else {
+                filtered = categorizedPool;
+            }
+        }
+        return filtered.length > 0 ? filtered : categorizedPool;
+    }, [categorizedPool, getEffectiveDifficulty]);
+    const getAdaptiveRandomWord = React.useCallback((excludeWord = null) => {
+        const activityId = wordSoundsActivity || 'segmentation';
+        if (!sessionQueueRef.current[activityId] || sessionQueueRef.current[activityId].length === 0) {
+            return null;
+        }
+        const queue = sessionQueueRef.current[activityId];
+        const nextWord = queue[0];
+        const remaining = queue.slice(1);
+        sessionQueueRef.current[activityId] = remaining;
+        setSessionWordLists(prev => ({ ...prev, [activityId]: remaining }));
+        return nextWord;
+    }, [wordSoundsActivity]);
+    const [soundChips, setSoundChips] = React.useState([]);
+    const [segmentationErrors, setSegmentationErrors] = React.useState([]);
+    const [playingOptionIndex, setPlayingOptionIndex] = React.useState(null);
+    const [showWordText, setShowWordText] = React.useState(false);
+    const [draggedItem, setDraggedItem] = React.useState(null);
+    const sessionQueueRef = React.useRef({});
+    const [sessionWordLists, setSessionWordLists] = React.useState({});
+    const SESSION_LENGTH = 10;
+    const easyPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) === 'easy') : [], [wordPool, categorizeWordDifficulty]);
+    const mediumPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) === 'medium') : [], [wordPool, categorizeWordDifficulty]);
+    const hardPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) === 'hard') : [], [wordPool, categorizeWordDifficulty]);
+    const generateSessionQueue = React.useCallback((activityId, difficulty) => {
+        const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.map(pw => ({
+            word: pw.word || pw.targetWord || pw.displayWord,
+            displayWord: pw.displayWord || pw.word,
+            originalTerm: pw.targetWord,
+            definition: pw.definition,
+            image: pw.image,
+            difficulty: 'medium',
+        }));
+        const uniqueMap = new Map();
+        if (rawPool) {
+            rawPool.forEach(w => {
+                const key = (w.word || w.targetWord || w.displayWord || '').toLowerCase();
+                if (key) uniqueMap.set(key, w);
+            });
+        }
+        const effectivePool = Array.from(uniqueMap.values());
+        if (!effectivePool || effectivePool.length === 0) {
+            warnLog("⚠️ generateSessionQueue: No words available in pool or preloaded!");
+            return [];
+        }
+        debugLog(`🎲 Generating session queue for ${activityId} (${difficulty})`);
+        let diffFiltered = effectivePool;
+        if (categorizeWordDifficulty && difficulty !== 'all') {
+            diffFiltered = effectivePool.filter(w => {
+                const wordDiff = categorizeWordDifficulty(w.word || w.displayWord);
+                return wordDiff === difficulty;
+            });
+            debugLog(`📊 Difficulty filter (${difficulty}): ${diffFiltered.length}/${effectivePool.length} words`);
+        }
+        let candidates = diffFiltered;
+        if (candidates.length < SESSION_LENGTH) {
+            debugLog("⚠️ Not enough strict difficulty words, broadening pool...");
+            candidates = effectivePool;
+        }
+        const activityHistory = (wordSoundsHistory || [])
+            .filter(h => h.activity === activityId && h.correct)
+            .map(h => h.word?.toLowerCase());
+        const playedSet = new Set(activityHistory);
+        let freshCandidates = candidates.filter(c => !playedSet.has(c.word?.toLowerCase()));
+        if (freshCandidates.length < SESSION_LENGTH && !isSequentialMode) {
+            debugLog("♻️ Pool exhausted, recycling words for queue...");
+            freshCandidates = candidates;
+        } else if (freshCandidates.length === 0 && isSequentialMode) {
+            debugLog("🏁 Sequential Queue Empty: Activity Complete");
+            if (isProbeMode) { setShowProbeResults(true); return null; }
+            return [];
+        }
+        let selection = freshCandidates;
+        if (!isSequentialMode) {
+            selection = fisherYatesShuffle(freshCandidates);
+        } else {
+            selection = [...freshCandidates].sort((a, b) => (a.word || '').localeCompare(b.word || ''));
+        }
+        const queue = selection.slice(0, SESSION_LENGTH).map(entry => ({
+            singleWord: entry.displayWord || entry.word,
+            fullTerm: entry.originalTerm,
+            definition: entry.definition,
+            difficulty: entry.difficulty || categorizeWordDifficulty(entry.word),
+            image: entry.image,
+            uniqueId: Date.now() + Math.random()
+        }));
+        debugLog(`✅ Queue generated: ${queue.length} words (Sequential: ${isSequentialMode})`);
+        sessionQueueRef.current[activityId] = queue;
+        setSessionWordLists(prev => ({ ...prev, [activityId]: queue }));
+        return queue;
+    }, [wordPool, wordSoundsHistory, categorizeWordDifficulty, isSequentialMode]);
+    const generateSoundChips = React.useCallback((phonemes) => {
+        if (!Array.isArray(phonemes)) return [];
+        const getPastelColor = (idx, total) => {
+            const hue = (idx * (360 / total)) % 360;
+            return `hsl(${hue}, 85%, 92%)`;
+        };
+        let chipCount = 0;
+        const correctChips = (Array.isArray(phonemes) ? phonemes : []).map((rawP, i) => {
+            const p = (rawP || '').trim();
+            chipCount++;
+            return {
+                id: `correct-${i}-${Date.now()}`,
+                phoneme: p,
+                isDistractor: false,
+                used: false,
+                color: getPastelColor(chipCount, 12)
+            };
+        });
+        const usedPhonemes = new Set((Array.isArray(phonemes) ? phonemes : []).map(p => (p || '').toLowerCase().trim()));
+        const commonPhonemes = ['s', 't', 'r', 'n', 'l', 'k', 'p', 'm', 'b', 'd', 'sh', 'ch', 'th', 'ar', 'er'];
+        const distractors = [];
+        const numDistractors = Math.max(3, Math.ceil(phonemes.length * 0.5));
+        const shuffledCommon = fisherYatesShuffle(commonPhonemes);
+        for (const p of shuffledCommon) {
+            if (distractors.length >= numDistractors) break;
+            const pLower = p.toLowerCase();
+            if (!usedPhonemes.has(pLower)) {
+                chipCount++;
+                usedPhonemes.add(pLower);
+                distractors.push({
+                    id: `distractor-${distractors.length}-${Date.now()}`,
+                    phoneme: p,
+                    isDistractor: true,
+                    used: false,
+                    color: getPastelColor(chipCount + 5, 12)
+                });
+            }
+        }
+        return fisherYatesShuffle([...correctChips, ...distractors]);
+    }, []);
+    const updatePhonemeMastery = React.useCallback((phonemes, isCorrect) => {
+        if (!phonemes || !Array.isArray(phonemes) || !setPhonemeMastery) return;
+        setPhonemeMastery(prev => {
+            const updated = { ...prev };
+            (Array.isArray(phonemes) ? phonemes : []).forEach(phoneme => {
+                const p = phoneme.toLowerCase();
+                if (!updated[p]) {
+                    updated[p] = { correct: 0, total: 0 };
+                }
+                updated[p].total += 1;
+                if (isCorrect) {
+                    updated[p].correct += 1;
+                }
+            });
+            return updated;
+        });
+    }, [setPhonemeMastery]);
+    const trackConfusion = React.useCallback((expected, actual) => {
+        if (!expected || !actual || typeof expected !== 'string' || typeof actual !== 'string') return;
+        if (expected.toLowerCase() === actual.toLowerCase()) return;
+        if (!setWordSoundsConfusionPatterns) return;
+        setWordSoundsConfusionPatterns(prev => {
+            const key = `${expected.toLowerCase()}->${actual.toLowerCase()}`;
+            const updated = { ...prev };
+            updated[key] = (updated[key] || 0) + 1;
+            return updated;
+        });
+    }, [setWordSoundsConfusionPatterns]);
+    const updateDailyProgress = React.useCallback((isCorrect) => {
+        if (!setWordSoundsDailyProgress) return;
+        const today = new Date().toISOString().split('T')[0];
+        setWordSoundsDailyProgress(prev => {
+            const updated = { ...prev };
+            if (!updated[today]) {
+                updated[today] = { total: 0, correct: 0, streak: 0 };
+            }
+            updated[today].total += 1;
+            if (isCorrect) {
+                updated[today].correct += 1;
+            }
+            return updated;
+        });
+    }, [setWordSoundsDailyProgress]);
+    const checkAndAwardBadges = React.useCallback((activity, isCorrect, currentStreak) => {
+        if (!setWordSoundsBadges) return;
+        const newBadges = [];
+        const history = wordSoundsHistory || [];
+        const totalCorrect = history.filter(h => h.correct).length + (isCorrect ? 1 : 0);
+        const badgeChecks = [
+            { id: 'first_sound', condition: totalCorrect >= 1, name: 'First Sound', icon: '🎵' },
+            { id: 'streak_5', condition: currentStreak >= 5, name: 'On Fire!', icon: '🔥' },
+            { id: 'streak_10', condition: currentStreak >= 10, name: 'Unstoppable', icon: '⚡' },
+            { id: 'streak_25', condition: currentStreak >= 25, name: 'Legendary', icon: '🏆' },
+            { id: 'perfect_10', condition: history.slice(-10).filter(h => h.correct).length === 10, name: 'Perfect 10', icon: '💯' },
+            { id: 'rhyme_master', condition: history.filter(h => h.activity === 'rhyming' && h.correct).length >= 20, name: 'Rhyme Master', icon: '🎤' },
+            { id: 'sound_detective', condition: history.filter(h => h.activity === 'isolation' && h.correct).length >= 20, name: 'Sound Detective', icon: '🔍' },
+            { id: 'counting_pro', condition: history.filter(h => h.activity === 'counting' && h.correct).length >= 20, name: 'Counting Pro', icon: '🔢' },
+        ];
+        badgeChecks.forEach(badge => {
+            if (badge.condition && !wordSoundsBadges.find(b => b.id === badge.id)) {
+                newBadges.push({ ...badge, earnedAt: new Date().toISOString() });
+            }
+        });
+        if (newBadges.length > 0) {
+            setWordSoundsBadges(prev => [...prev, ...newBadges]);
+        }
+        return newBadges;
+    }, [wordSoundsHistory, wordSoundsBadges, setWordSoundsBadges]);
+    const DifficultyIndicator = React.useCallback(() => {
+        const effectiveDifficulty = getEffectiveDifficulty();
+        const colors = { easy: '#22c55e', medium: '#eab308', hard: '#ef4444' };
+        const labels = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+        return (
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                backgroundColor: colors[effectiveDifficulty] + '20',
+                border: `1px solid ${colors[effectiveDifficulty]}`,
+                fontSize: '12px',
+                fontWeight: 500,
+                color: colors[effectiveDifficulty]
+            }}>
+                <span>{wordSoundsDifficulty === 'auto' ? '🤖' : '📊'}</span>
+                <span>{labels[effectiveDifficulty]}</span>
+                {wordSoundsDifficulty === 'auto' && <span style={{ fontSize: '10px', opacity: 0.7 }}>(Auto)</span>}
+            </div>
+        );
+    }, [getEffectiveDifficulty, wordSoundsDifficulty]);
+    const [currentWordImage, setCurrentWordImage] = React.useState(null);
+    const lastPlayedWord = React.useRef(null);
+    const wordDataCache = React.useRef(new Map());
+    const pendingRequests = React.useRef(new Map());
+    const applyWordDataToState = (data) => {
+        if (data && data.word && pendingRequests.current.has(data.word.toLowerCase())) {
+            const { resolve } = pendingRequests.current.get(data.word.toLowerCase());
+            resolve(data);
+            pendingRequests.current.delete(data.word.toLowerCase());
+        }
+        if (!data) return;
+        setWordSoundsPhonemes(data);
+        if (wordSoundsActivity === 'blending' && data.blendingDistractors && setBlendingOptions) {
+            const target = (data.word || '').trim().toLowerCase();
+            const unique = [...new Set(
+                data.blendingDistractors
+                    .map(d => (d || '').toString().trim().toLowerCase())
+                    .filter(d => d && d !== target)
+            )];
+            if (unique.length >= 3) {
+                const validUnique = unique.slice(0, 5);
+                const opts = fisherYatesShuffle([target, ...validUnique]);
+                setBlendingOptions(opts);
+            }
+        }
+        setIsLoadingPhonemes(false);
+        setPhonemeError(null);
+        if (data.word) {
+            wordDataCache.current.set(data.word.toLowerCase(), data);
+        }
+    };
+    const fetchWordData = React.useCallback(async (word, retryCount = 0, isBackground = false, forceRefresh = false) => {
+        latestRequestedWord.current = word;
+        if (!word) return;
+        if (pendingRequests.current.has(word.toLowerCase())) {
+            debugLog(`⏳ Request for "${word}" already pending, waiting...`);
+            const { promise } = pendingRequests.current.get(word.toLowerCase());
+            return promise;
+        }
+        let resolveRequest, rejectRequest;
+        const requestPromise = new Promise((resolve, reject) => { resolveRequest = resolve; rejectRequest = reject; });
+        pendingRequests.current.set(word.toLowerCase(), { promise: requestPromise, resolve: resolveRequest, reject: rejectRequest });
+        const cleanupRequest = () => {
+            pendingRequests.current.delete(word.toLowerCase());
+        };
+        if (retryCount === 0) setPhonemeError(null);
+        const cached = wordDataCache.current.get(word.toLowerCase());
+        if (cached) {
+            applyWordDataToState(cached);
+            resolveRequest(cached);
+            cleanupRequest();
+            return;
+        }
+        const poolEntry = wordPool.find(p => p.word === word.toLowerCase() && p.phonemes && p.phonemes.length > 0);
+        if (poolEntry && !forceRefresh) {
+            debugLog("⚡ using Glossary pre-generated data for:", word);
+            applyWordDataToState(poolEntry);
+            return poolEntry;
+        }
+        const MAX_RETRIES = 3;
+        if (!isBackground) setIsLoadingPhonemes(true);
+        let phonemeData = null;
+        if (!phonemeData) {
+            const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+            const wordLower = word.toLowerCase();
+            const rhymeEnding = wordLower.length >= 3 ? wordLower.slice(-3) : wordLower.slice(-2);
+            const rhymeEndingShort = wordLower.slice(-2);
+            const rhymeFamilies = {
+                'an': ['can', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'ban', 'dan'],
+                'at': ['cat', 'bat', 'hat', 'mat', 'rat', 'sat', 'pat', 'fat'],
+                'op': ['hop', 'mop', 'top', 'pop', 'stop', 'chop', 'drop', 'shop'],
+                'ig': ['big', 'dig', 'fig', 'pig', 'wig', 'jig', 'rig'],
+                'og': ['dog', 'fog', 'hog', 'log', 'jog', 'frog', 'blog'],
+                'un': ['bun', 'fun', 'run', 'sun', 'pun', 'spun'],
+                'ug': ['bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'plug'],
+                'in': ['bin', 'fin', 'pin', 'win', 'tin', 'spin', 'grin', 'chin'],
+                'it': ['bit', 'fit', 'hit', 'kit', 'pit', 'sit', 'wit', 'spit'],
+                'ot': ['cot', 'dot', 'got', 'hot', 'lot', 'not', 'pot', 'shot'],
+                'et': ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'wet'],
+                'en': ['ben', 'den', 'hen', 'men', 'pen', 'ten', 'when', 'then'],
+                'ed': ['bed', 'fed', 'led', 'red', 'wed', 'shed', 'sled'],
+                'ap': ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'tap', 'trap', 'clap'],
+                'ip': ['dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'chip', 'ship', 'trip'],
+                'ck': ['back', 'pack', 'rack', 'tack', 'black', 'crack', 'snack', 'track'],
+                'ell': ['bell', 'cell', 'fell', 'sell', 'tell', 'well', 'yell', 'shell', 'spell'],
+                'ill': ['bill', 'fill', 'hill', 'mill', 'pill', 'will', 'chill', 'drill', 'skill'],
+                'all': ['ball', 'call', 'fall', 'hall', 'mall', 'tall', 'wall', 'small'],
+                'ook': ['book', 'cook', 'hook', 'look', 'took', 'brook', 'shook'],
+                'ake': ['bake', 'cake', 'fake', 'lake', 'make', 'rake', 'take', 'wake', 'shake', 'snake'],
+                'ame': ['came', 'fame', 'game', 'name', 'same', 'tame', 'blame', 'flame', 'frame', 'shame'],
+                'ate': ['date', 'fate', 'gate', 'hate', 'late', 'mate', 'rate', 'plate', 'skate', 'state'],
+                'ide': ['hide', 'ride', 'side', 'wide', 'bride', 'glide', 'pride', 'slide'],
+                'ine': ['dine', 'fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine'],
+                'ore': ['bore', 'core', 'more', 'pore', 'sore', 'tore', 'wore', 'shore', 'store', 'score']
+            };
+            let rhymeDistractors = [];
+            for (const [ending, family] of Object.entries(rhymeFamilies)) {
+                if (wordLower.endsWith(ending)) {
+                    const seed = wordLower.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                    const shuffled = [...family].sort((a, b) => {
+                        const hashA = ((seed * 31) + a.charCodeAt(0)) % 97;
+                        const hashB = ((seed * 31) + b.charCodeAt(0)) % 97;
+                        return hashA - hashB;
+                    });
+                    rhymeDistractors = shuffled.filter(w => w !== wordLower).slice(0, 5);
+                    break;
+                }
+            }
+            if (rhymeDistractors.length === 0 && rhymeEndingShort.length >= 2) {
+                const consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'w'];
+                rhymeDistractors = consonants
+                    .map(c => c + rhymeEndingShort)
+                    .filter(w => w !== wordLower && w.length >= 2)
+                    .slice(0, 3);
+            }
+            const blendingDistractors = [];
+            const commonWords = [
+                'cat', 'dog', 'sun', 'run', 'big', 'hot', 'top', 'sit', 'hat', 'map',
+                'cup', 'bed', 'red', 'pen', 'bus', 'pig', 'bat', 'fan', 'pin', 'pot',
+                'net', 'jet', 'wet', 'bet', 'hen', 'leg', 'fox', 'box', 'nut', 'cut',
+                'bug', 'rug', 'hug', 'tub', 'cub', 'web', 'jam', 'ham', 'van', 'gap'
+            ];
+            const seed = wordLower.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            const shuffled = [...commonWords].sort((a, b) => {
+                const hashA = (seed * a.charCodeAt(0)) % 100;
+                const hashB = (seed * b.charCodeAt(0)) % 100;
+                return hashA - hashB;
+            });
+
+            const homophonePairs = {
+                'sun': ['son'], 'son': ['sun'],
+                'ate': ['eight'], 'eight': ['ate'],
+                'sea': ['see', 'c'], 'see': ['sea', 'c'],
+                'two': ['to', 'too'], 'to': ['two', 'too'], 'too': ['to', 'two'],
+                'red': ['read'], 'read': ['red'],
+                'blue': ['blew'], 'blew': ['blue'],
+                'one': ['won'], 'won': ['one'],
+                'bear': ['bare'], 'bare': ['bear'],
+                'deer': ['dear'], 'dear': ['deer'],
+                'eye': ['i'], 'i': ['eye'],
+                'know': ['no'], 'no': ['know'],
+                'right': ['write'], 'write': ['right']
+            };
+
+            for (const w of shuffled) {
+                const isHomophone = homophonePairs[wordLower] && homophonePairs[wordLower].includes(w);
+                if (w !== wordLower && !isHomophone && Math.abs(w.length - wordLower.length) <= 1 && blendingDistractors.length < 5) {
+                    blendingDistractors.push(w);
+                }
+            }
+            phonemeData = {
+                word: word,
+                phonemes: fallbackPhonemes,
+                phonemeCount: fallbackPhonemes.length,
+                firstSound: fallbackPhonemes[0] || wordLower[0] || '',
+                lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || wordLower[wordLower.length - 1] || '',
+                rhymeWord: rhymeDistractors[0] || '',
+                rhymeDistractors: rhymeDistractors,
+                blendingDistractors: blendingDistractors,
+                familyEnding: '-' + rhymeEndingShort,
+                familyMembers: rhymeDistractors,
+                mappingGraphemes: fallbackPhonemes
+            };
+            debugLog("📦 Generated local fallback phoneme data for:", word, phonemeData);
+            applyWordDataToState(phonemeData);
+            wordDataCache.current.set(word.toLowerCase(), phonemeData);
+        }
+        if (resolveRequest) resolveRequest(phonemeData);
+        cleanupRequest();
+        setIsLoadingPhonemes(false);
+        return phonemeData;
+    }, [wordSoundsLanguage, callGemini]);
+    const generateFallbackData = (word) => {
+        const phonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+        return {
+            word,
+            phonemes,
+            phonemeCount: phonemes.length,
+            firstSound: phonemes[0],
+            lastSound: phonemes[phonemes.length - 1],
+            rhymeWord: '',
+            rhymeDistractors: [],
+            orthographyDistractors: []
+        };
+    };
+    React.useEffect(() => {
+        const repairBlendingDistractors = async () => {
+            if (wordSoundsActivity === 'blending' && wordSoundsPhonemes) {
+                const targetToCheck = (currentWordSoundsWord || wordSoundsPhonemes?.word || '').trim().toLowerCase();
+                if (lastWordForBlending.current !== targetToCheck) {
+                    setBlendingOptions && setBlendingOptions([]);
+                    debugLog("🔄 Word changed, clearing stale blending options");
+                }
+                if (lastWordForBlending.current === targetToCheck && blendingOptions.length > 0) {
+                    return;
+                }
+                lastWordForBlending.current = targetToCheck;
+                let rawDistractors = wordSoundsPhonemes?.blendingDistractors || [];
+                const hpMap = {
+                    'sun': ['son'], 'son': ['sun'],
+                    'ate': ['eight'], 'eight': ['ate'],
+                    'sea': ['see', 'c'], 'see': ['sea', 'c'],
+                    'two': ['to', 'too'], 'to': ['two', 'too'], 'too': ['to', 'two'],
+                    'red': ['read'], 'read': ['red'],
+                    'blue': ['blew'], 'blew': ['blue'],
+                    'one': ['won'], 'won': ['one'],
+                    'bear': ['bare'], 'bare': ['bear'],
+                    'deer': ['dear'], 'dear': ['deer'],
+                    'eye': ['i'], 'i': ['eye'],
+                    'know': ['no'], 'no': ['know'],
+                    'right': ['write'], 'write': ['right']
+                };
+                let uniqueDistractors = [...new Set(
+                    rawDistractors
+                        .map(d => (d || '').toString().trim().toLowerCase())
+                        .filter(d => d && d !== targetToCheck && !(hpMap[targetToCheck] && hpMap[targetToCheck].includes(d)))
+                )];
+                if (uniqueDistractors.length < 3) {
+                    debugLog("⚠️ Insufficient unique distractors. Repairing...");
+                    try {
+                        const repairPrompt = `List 3 unique distractor words for "${targetToCheck}" (cannot be the word itself). Return JSON array.`;
+                        const repairRes = await callGemini(repairPrompt, true);
+                        const repairMatch = repairRes.match(/\[[\s\S]*\]/);
+                        if (repairMatch) {
+                            const fixed = JSON.parse(repairMatch[0]);
+                            const merged = [...uniqueDistractors, ...fixed];
+                            uniqueDistractors = [...new Set(
+                                merged.map(d => d.trim().toLowerCase()).filter(d => d !== targetToCheck)
+                            )];
+                        }
+                    } catch (repairErr) {
+                        warnLog("Blending repair failed", repairErr);
+                    }
+                }
+                const finalDistractors = uniqueDistractors.slice(0, 5);
+                if (finalDistractors.length === 0) {
+                    finalDistractors.push('cat', 'dog', 'run');
+                }
+                const finalOptions = [targetToCheck, ...finalDistractors];
+                const uniqueFinalOptions = [...new Set(finalOptions)];
+                setBlendingOptions && setBlendingOptions(fisherYatesShuffle(uniqueFinalOptions));
+                debugLog("✅ Blending options set (Unique & Filtered):", uniqueFinalOptions);
+            }
+        };
+        repairBlendingDistractors();
+    }, [wordSoundsActivity, wordSoundsPhonemes, currentWordSoundsWord, callGemini]);
+    const generateOrthographyDistractors = (word) => {
+        if (!word || word.length < 2) return [`${word}s`, `${word}ed`, `un${word}`];
+        const distractors = [];
+        const lowerWord = word.toLowerCase();
+        if (/(.)/.test(lowerWord)) {
+            distractors.push(lowerWord.replace(/(.)/, '$1'));
+        } else if (lowerWord.length > 2) {
+            distractors.push(lowerWord.slice(0, 2) + lowerWord[1] + lowerWord.slice(2));
+        }
+        const vowelSwaps = { 'a': 'e', 'e': 'a', 'i': 'e', 'o': 'u', 'u': 'o' };
+        for (let i = 0; i < lowerWord.length; i++) {
+            if (vowelSwaps[lowerWord[i]]) {
+                distractors.push(lowerWord.slice(0, i) + vowelSwaps[lowerWord[i]] + lowerWord.slice(i + 1));
+                break;
+            }
+        }
+        if (lowerWord.length > 3) {
+            const midIndex = Math.floor(lowerWord.length / 2);
+            distractors.push(lowerWord.slice(0, midIndex) + lowerWord.slice(midIndex + 1));
+        }
+        distractors.push(lowerWord + 's');
+        if (lowerWord.includes('c')) distractors.push(lowerWord.replace('c', 'k'));
+        if (lowerWord.includes('k')) distractors.push(lowerWord.replace('k', 'c'));
+        if (lowerWord.includes('ph')) distractors.push(lowerWord.replace('ph', 'f'));
+        const filtered = [...new Set(distractors)].filter(d => d !== lowerWord && d.length > 0);
+        while (filtered.length < 3) {
+            filtered.push(`${lowerWord}${['x', 'z', 'q'][filtered.length]}`);
+        }
+        return filtered.slice(0, 4);
+    };
+    const prefetchNextWords = React.useCallback(async () => {
+        return;
+    }, [preloadedWords, isPrefetching, currentWordSoundsWord, wordSoundsActivity, fetchWordData, getDifficultyFilteredPool]);
+    const preloadInitialBatch = React.useCallback(async () => {
+        if (isPreloading) return;
+        if (preloadedWords.length > 0) {
+            debugLog("🛡️ Blocking preloadInitialBatch: words already loaded");
+            return;
+        }
+        const alreadyCached = preloadedWordCache.current.size;
+        if (alreadyCached > 0) {
+            debugLog(`✅ ${alreadyCached} words already cached, checking for new words...`);
+        }
+        if (!wordPool || wordPool.length === 0) {
+            warnLog("Word pool empty, skipping preload");
+            return;
+        }
+        setIsPreloading(true);
+        setPreloadProgress(0);
+        setFirstWordReady(false);
+        const PRELOAD_COUNT = 10;
+        const wordsToPreload = [];
+        const usedWords = new Set();
+        const difficultyPool = fisherYatesShuffle(wordPool);
+        for (const entry of difficultyPool) {
+            if (wordsToPreload.length >= PRELOAD_COUNT) break;
+            const wordText = (entry.singleWord || entry.word || '').toLowerCase();
+            if (preloadedWordCache.current.has(wordText)) {
+                debugLog("⚡ Skipping cached word:", wordText);
+                continue;
+            }
+            const word = entry.word?.toLowerCase() || entry.displayWord?.toLowerCase();
+            if (word && !usedWords.has(word)) {
+                usedWords.add(word);
+                wordsToPreload.push(entry);
+            }
+        }
+        const totalSteps = wordsToPreload.length * 2;
+        let completedSteps = 0;
+        const preloadedData = [];
+        try {
+            const prefetchPromises = wordsToPreload.map(async (wordEntry, i) => {
+                const targetWord = wordEntry.displayWord || wordEntry.word;
+                const isFirstWord = (i === 0);
+                if (wordEntry.phonemes && wordEntry.phonemes.length > 0) {
+                    debugLog("⚡ [Prefetch] using Glossary data for:", targetWord);
+                    const fetchAudio = async () => {
+                        try {
+                            await handleAudio(targetWord, false);
+                            const distractorSets = [
+                                ...(wordEntry.blendingDistractors || []),
+                                ...(wordEntry.rhymeDistractors || []),
+                                ...(wordEntry.familyMembers || [])
+                            ];
+                            if (distractorSets.length > 0) {
+                                await Promise.all(distractorSets.map(d => handleAudio(d, false).catch(() => { })));
+                            }
+                            const keys = [wordEntry.firstSound, wordEntry.lastSound, wordEntry.rhymeWord].filter(Boolean);
+                            await Promise.all(keys.map(k => handleAudio(k, false).catch(() => { })));
+                        } catch (e) { warnLog('Caught error:', e?.message || e); }
+                    };
+                    if (isFirstWord) {
+                        await fetchAudio();
+                        if (isMountedRef.current) setFirstWordReady(true);
+                    } else {
+                        fetchAudio();
+                    }
+                    return { ...wordEntry, ttsReady: true, difficulty: wordEntry.difficulty || categorizeWordDifficulty(targetWord) };
+                }
+                try {
+                    const langContext = wordSoundsLanguage ? ` in language ${wordSoundsLanguage}` : '';
+                    const prompt = `Analyze the word "${targetWord}" for phonemic awareness${langContext}.
+PHONEME NOTATION (use EXACTLY these symbols):
+• LONG VOWELS: Use macron symbols: ā (long a), ē (long e), ī (long i), ō (long o), ū (long u)
+• SHORT VOWELS: Use plain letters: a, e, i, o, u
+• DIGRAPHS: sh, ch, th, wh, ng, ck (count as ONE sound)
+• R-CONTROLLED: ar, er, ir, or, ur (count as ONE sound)
+EXAMPLES:
+• "cake" → ["k", "ā", "k"] (3 phonemes, long a = ā)
+• "cat" → ["k", "a", "t"] (3 phonemes, short a = a)
+• "rain" → ["r", "ā", "n"] (3 phonemes, ai makes long a = ā)
+• "green" → ["g", "r", "ē", "n"] (4 phonemes, ee = ē)
+• "kite" → ["k", "ī", "t"] (3 phonemes, i_e = ī)
+• "boat" → ["b", "ō", "t"] (3 phonemes, oa = ō)
+• "moon" → ["m", "ū", "n"] (3 phonemes, oo = ū)
+• "ship" → ["sh", "i", "p"] (3 phonemes, sh is one sound)
+• "car" → ["k", "ar"] (2 phonemes, ar is one sound)
+• "star" → ["s", "t", "ar"] (3 phonemes, ar is ONE sound - do NOT add extra r)
+• "bird" → ["b", "ir", "d"] (3 phonemes, ir is one sound)
+• "turn" → ["t", "ur", "n"] (3 phonemes, ur is one sound)
+• "corn" → ["k", "or", "n"] (3 phonemes, or is one sound)
+• "knight" → ["n", "ī", "t"] (3 phonemes, skip silent k and gh)
+Return ONLY valid JSON. For phonemes, return BOTH the IPA symbol AND the grapheme (letters) from the word:
+{
+  "word": "${targetWord}",
+  "phonemes": [
+    {"ipa": "IPA symbol", "grapheme": "letters from word"},
+    {"ipa": "IPA symbol", "grapheme": "letters from word"}
+  ],
+  "syllables": ["syl", "la", "bles"],
+  "phonemeCount": 3,
+  "rhymeWords": ["word1", "word2", "word3"],
+  "firstSound": "first phoneme IPA",
+  "lastSound": "last phoneme IPA",
+  "middleSound": "middle phoneme IPA",
+  "blendingDistractors": ["word1", "word2", "word3"],
+  "soundSortMatches": {"phoneme": "first or last phoneme", "position": "first|last", "words": ["word1", "word2", "word3", "word4", "word5"]},
+  "rimeFamilyMembers": {"rime": "-at", "words": ["cat", "bat", "hat", "mat", "sat"]},
+  "orthographyDistractors": ["misspelling1", "misspelling2", "misspelling3"]
+}
+PHONEME FORMAT: Each phoneme is an object with:
+- "ipa": Use IPA symbols: ŋ (ng in sing), ʃ (sh), tʃ (ch), θ (unvoiced th), ð (voiced th), ʒ (zh in vision), eɪ (long a), aɪ (long i), oʊ (long o), i (long e/ee), u (long oo), ɔ (aw), ɛr (er/ir/ur)
+- "grapheme": The actual letters from the word that represent this sound
+ACTIVITY DATA FIELDS:
+- "soundSortMatches": Pick ONE phoneme (first or last). Find 5 OTHER real words sharing that phoneme in the same position. Include the phoneme and position.
+- "rimeFamilyMembers": Identify the rime (vowel+coda, e.g. "-at" from "cat"). List 5 real words sharing that rime. If no clear rime family, return {"rime": "", "words": []}.
+- "orthographyDistractors": Create 3 plausible misspellings of the word (swap vowels, double letters, phonetic spellings). Must NOT be real words.
+CONSTRAINT: You MUST only use these IPA symbols in your phoneme output. Do NOT invent or use any symbols not in this list:
+Consonants: b, d, f, g, h, k, l, m, n, p, r, s, t, v, w, z, j (=Y), ŋ (=ng), ʃ (=sh), tʃ (=ch), θ (=th unvoiced), ð (=th voiced), ʒ (=zh), dʒ (=j/g soft), kw (=qu)
+Short Vowels: æ (=short a), ɛ (=short e), ɪ (=short i), ɒ (=short o), ʌ (=short u)
+Long Vowels: eɪ (=long a), iː or i (=long e), aɪ (=long i), oʊ (=long o), uː or u (=long oo), juː (=long u/ue)
+Other Vowels: ʊ (=short oo), ɔː or ɔ (=aw), aʊ (=ow), ɔɪ (=oy)
+R-Controlled: ɑr (=ar), ɜr or ɛr (=er), ɪr (=ir), ɔr (=or), ʊr (=ur), ɛər (=air), ɪər (=ear)
+EXAMPLES:
+- "baking" → [{"ipa":"b","grapheme":"b"},{"ipa":"eɪ","grapheme":"a"},{"ipa":"k","grapheme":"k"},{"ipa":"ɪ","grapheme":"i"},{"ipa":"ŋ","grapheme":"ng"}]
+- "ship" → [{"ipa":"ʃ","grapheme":"sh"},{"ipa":"ɪ","grapheme":"i"},{"ipa":"p","grapheme":"p"}]
+- "think" → [{"ipa":"θ","grapheme":"th"},{"ipa":"ɪ","grapheme":"i"},{"ipa":"ŋ","grapheme":"n"},{"ipa":"k","grapheme":"k"}]`;
+                    let response = null;
+                    let lastError = null;
+                    for (let attempt = 1; attempt <= 3; attempt++) {
+                        try {
+                            if (attempt > 1) debugLog(`🔄 Gemini Retry Attempt ${attempt} for "${targetWord}"...`);
+                            const temp = attempt === 1 ? 0.3 : 0.6;
+                            response = await callGemini(prompt, { temperature: temp });
+                            if (response && response.includes('{')) {
+                                break;
+                            } else {
+                                throw new Error("Invalid/Empty Response");
+                            }
+                        } catch (e) {
+                            lastError = e;
+                            if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
+                        }
+                    }
+                    if (!response) {
+                        warnLog(`❌ Gemini failed after 3 attempts for "${targetWord}"`, lastError);
+                        throw lastError || new Error("Gemini Exhausted");
+                    }
+                    let phonemeData = null;
+                    try {
+                        const jsonMatch = response.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            phonemeData = JSON.parse(jsonMatch[0]);
+                        }
+                    } catch (parseErr) {
+                        const estimatePhonemes = (word) => {
+                            const w = word.toLowerCase();
+                            const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ar', 'er', 'ir', 'or', 'ur'];
+                            const trigraphs = ['igh', 'tch', 'dge'];
+                            let result = [];
+                            let i = 0;
+                            while (i < w.length) {
+                                if (i < w.length - 2 && trigraphs.includes(w.slice(i, i + 3))) {
+                                    result.push(w.slice(i, i + 3));
+                                    i += 3;
+                                } else if (i < w.length - 1 && digraphs.includes(w.slice(i, i + 2))) {
+                                    result.push(w.slice(i, i + 2));
+                                    i += 2;
+                                } else {
+                                    result.push(w[i]);
+                                    i++;
+                                }
+                            }
+                            return result;
+                        };
+                        const smartPhonemes = estimatePhonemes(targetWord);
+                        phonemeData = {
+                            word: targetWord,
+                            phonemes: smartPhonemes,
+                            phonemeCount: smartPhonemes.length,
+                            rhymeWords: [],
+                            firstSound: targetWord[0]?.toLowerCase(),
+                            lastSound: targetWord[targetWord.length - 1]?.toLowerCase()
+                        };
+                    }
+                    const fetchAudio = async () => {
+                        try {
+                            await handleAudio(targetWord, false);
+                            const keys = [
+                                phonemeData?.firstSound,
+                                phonemeData?.lastSound,
+                                phonemeData?.rhymeWord,
+                                ...(phonemeData?.phonemes || []),
+                                ...(phonemeData?.blendingDistractors || []),
+                                ...(phonemeData?.familyMembers || []),
+                                ...(phonemeData?.mappingGraphemes || []),
+                                ...(phonemeData?.rhymeDistractors || [])
+                            ].filter(Boolean);
+                            await Promise.all(keys.map(k => handleAudio(k, false).catch(() => { })));
+                        } catch (e) { warnLog('Caught error:', e?.message || e); }
+                    };
+                    if (isFirstWord) {
+                        await fetchAudio();
+                        debugLog("🚀 Optimistic First Word Ready!");
+                        if (isMountedRef.current) setFirstWordReady(true);
+                    } else {
+                        fetchAudio();
+                    }
+                    let phonemes = phonemeData?.phonemes || [];
+                    if (phonemes.length > 0 && typeof phonemes[0] === 'string') {
+                        phonemes = (Array.isArray(phonemes) ? phonemes : []).map(p => normalizePhoneme(p));
+                    }
+                    let phonemeCount = phonemes.length || phonemeData?.phonemeCount || 0;
+                    if (phonemeCount === 0) {
+                        warnLog("⚠️ ZERO PHONEMES detected for:", targetWord, "- will retry Gemini");
+                        for (let retryAttempt = 1; retryAttempt <= 3 && phonemeCount === 0; retryAttempt++) {
+                            debugLog(`🔄 Gemini retry ${retryAttempt}/3 for "${targetWord}"...`);
+                            try {
+                                const retryPrompt = `CRITICAL: Return phonemes for "${targetWord}".
+The word "${targetWord}" MUST have at least 1 sound. Every word has sounds.
+Return JSON: {"word":"${targetWord}","phonemes":["sound1","sound2"],"phonemeCount":2}
+Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                                const retryResponse = await callGemini(retryPrompt, { temperature: 0.2 + (retryAttempt * 0.1) });
+                                const retryMatch = retryResponse.match(/\{[\s\S]*\}/);
+                                if (retryMatch) {
+                                    const retryData = JSON.parse(retryMatch[0]);
+                                    if (retryData.phonemes?.length > 0) {
+                                        phonemeData = retryData;
+                                        phonemes = retryData.phonemes;
+                                        phonemeCount = phonemes.length;
+                                        debugLog(`✅ Retry ${retryAttempt} succeeded:`, phonemes);
+                                    }
+                                }
+                            } catch (retryErr) {
+                                warnLog(`⚠️ Retry ${retryAttempt} failed:`, retryErr.message);
+                            }
+                        }
+                        if (phonemeCount === 0) {
+                            warnLog("⚠️ All 3 Gemini retries failed for:", targetWord, "- using enhanced local estimation");
+                            const estimatePhonemesEnhanced = (word) => {
+                                const w = word.toLowerCase();
+                                const result = [];
+                                let i = 0;
+                                const vowelTeams = {
+                                    'ough': 'ō', 'igh': 'ī', 'eigh': 'ā', 'augh': 'aw',
+                                    'tion': 'shun', 'sion': 'zhun',
+                                    'oa': 'ō', 'oe': 'ō', 'ow': 'ō',
+                                    'ai': 'ā', 'ay': 'ā', 'ei': 'ā', 'ey': 'ā',
+                                    'ee': 'ē', 'ea': 'ē',
+                                    'ie': 'ī',
+                                    'ue': 'ū', 'ew': 'ū', 'oo': 'ū',
+                                    'ou': 'ow', 'oi': 'oy', 'au': 'aw',
+                                    'ar': 'ar', 'er': 'er', 'ir': 'er', 'or': 'or', 'ur': 'er',
+                                };
+                                const trigraphs = ['tch', 'dge'];
+                                const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ar', 'er', 'ir', 'or', 'ur'];
+                                while (i < w.length) {
+                                    let matched = false;
+                                    if (i < w.length - 3) {
+                                        const four = w.slice(i, i + 4);
+                                        if (vowelTeams[four]) {
+                                            result.push(vowelTeams[four]); i += 4; matched = true;
+                                        }
+                                    }
+                                    if (!matched && i < w.length - 2) {
+                                        const three = w.slice(i, i + 3);
+                                        if (vowelTeams[three]) {
+                                            result.push(vowelTeams[three]); i += 3; matched = true;
+                                        } else if (trigraphs.includes(three)) {
+                                            result.push(three); i += 3; matched = true;
+                                        }
+                                    }
+                                    if (!matched && i < w.length - 1) {
+                                        const two = w.slice(i, i + 2);
+                                        if (vowelTeams[two]) {
+                                            result.push(vowelTeams[two]); i += 2; matched = true;
+                                        } else if (digraphs.includes(two)) {
+                                            result.push(two); i += 2; matched = true;
+                                        }
+                                    }
+                                    if (!matched && i < w.length - 2) {
+                                        const vowels = 'aeiou';
+                                        if (vowels.includes(w[i]) && !vowels.includes(w[i + 1]) && w[w.length - 1] === 'e' && i === w.length - 3) {
+                                            const longVowelMap = { 'a': 'ā', 'e': 'ē', 'i': 'ī', 'o': 'ō', 'u': 'ū' };
+                                            result.push(longVowelMap[w[i]] || w[i]);
+                                            result.push(w[i + 1]);
+                                            i = w.length;
+                                            matched = true;
+                                        }
+                                    }
+                                    if (!matched) {
+                                        if (i === 0 && (w.startsWith('kn') || w.startsWith('wr') || w.startsWith('gn'))) {
+                                            i++;
+                                        } else if (w[i] !== 'e' || i !== w.length - 1) {
+                                            result.push(w[i]);
+                                        }
+                                        i++;
+                                    }
+                                }
+                                return result.filter(p => p);
+                            };
+                            const fallbackPhonemes = estimatePhonemesEnhanced(targetWord);
+                            phonemeData = {
+                                ...phonemeData,
+                                word: targetWord,
+                                phonemes: fallbackPhonemes,
+                                phonemeCount: fallbackPhonemes.length,
+                                firstSound: fallbackPhonemes[0] || targetWord[0],
+                                lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || targetWord[targetWord.length - 1],
+                                _fallbackUsed: true
+                            };
+                            debugLog("✅ Enhanced fallback phonemes applied:", fallbackPhonemes);
+                        }
+                    }
+                    return {
+                        ...wordEntry,
+                        phonemes: phonemeData,
+                        ttsReady: true
+                    };
+                } catch (err) {
+                    warnLog("Parallel fetch failed for", targetWord, err);
+                    return null;
+                }
+            });
+            const results = await Promise.all(prefetchPromises);
+            const validResults = results.filter(Boolean);
+
+            if (validResults.length > 0) {
+                if (regeneratingIndex !== null) {
+                    debugLog("🔒 Skipping bulk replace - regeneration in progress");
+                    setPreloadedWords(prev => {
+                        const merged = [...validResults];
+                        prev.forEach((existingWord, idx) => {
+                            if (existingWord._regeneratedAt) {
+                                merged[idx] = existingWord;
+                            }
+                        });
+                        return merged;
+                    });
+                } else {
+                    setPreloadedWords(validResults);
+                }
+                setPreloadProgress(100);
+                validResults.forEach(w => {
+                    const key = (w.targetWord || w.word || '').toLowerCase();
+                    if (key) preloadedWordCache.current.set(key, w);
+                });
+                debugLog(`📦 Cache now has ${preloadedWordCache.current.size} words`);
+            }
+        } catch (err) {
+            warnLog("Bulk preload failed:", err);
+        } finally {
+            setIsPreloading(false);
+            setPreloadProgress(100);
+        }
+    }, [isPreloading, preloadedWords.length, wordPool, callGemini, wordSoundsLanguage]);
+    React.useEffect(() => {
+    }, [wordPool, preloadedWords.length, isPreloading, preloadInitialBatch]);
+    React.useEffect(() => {
+        if (!preloadedWords || preloadedWords.length === 0) return;
+        const wordsNeedingAudio = preloadedWords.filter(w => !w.ttsReady && !w._audioRequested);
+
+        if (wordsNeedingAudio.length === 0) return;
+        debugLog(`🎧 Prefetching audio for ${wordsNeedingAudio.length} words...`);
+        if (setWsPreloadedWords) {
+            setWsPreloadedWords(prev => prev.map(w =>
+                wordsNeedingAudio.some(n => n.word === w.word) ? { ...w, _audioRequested: true } : w
+            ));
+        }
+        wordsNeedingAudio.forEach(async (w) => {
+            const text = w.word;
+            try {
+                await handleAudio(text, false).catch(e => warnLog("Audio prefetch failed:", e));
+                if (setWsPreloadedWords) {
+                    setWsPreloadedWords(prev => prev.map(pw => {
+                        if (pw.word === text) {
+                            return { ...pw, ttsReady: true, _audioRequested: false };
+                        }
+                        return pw;
+                    }));
+                }
+            } catch (e) {
+                warnLog(`Audio prefetch failed for ${text}`, e);
+            }
+        });
+    }, [preloadedWords, setWsPreloadedWords]);
+    React.useEffect(() => {
+        if (preloadedWords.length > 0 && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+            const timer = setTimeout(() => {
+                if (!showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+                    debugLog("📋 Words loaded - showing Review Panel");
+                    setShowReviewPanel(true);
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+    const handleReorderPreloadedWords = React.useCallback((newOrder) => {
+        if (setWsPreloadedWords) {
+            setWsPreloadedWords(newOrder);
+            debugLog("✅ Reordered words via setWsPreloadedWords");
+        } else {
+            setPreloadedWords(newOrder);
+            warnLog("⚠️ REORDER: Using local fallback (won't persist across unmount)");
+        }
+    }, [setWsPreloadedWords]);
+    const handleUpdatePreloadedWord = React.useCallback((index, newData) => {
+        if (setWsPreloadedWords) {
+            setWsPreloadedWords(prev => {
+                const prevArray = Array.isArray(prev) ? prev : [];
+                const updated = [...prevArray];
+                if (index < updated.length) {
+                    updated[index] = { ...updated[index], ...newData };
+                }
+                debugLog("✅ Updated word at index", index, "via setWsPreloadedWords");
+                return updated;
+            });
+        } else {
+            setPreloadedWords(prev => {
+                const prevArray = Array.isArray(prev) ? prev : [];
+                const updated = [...prevArray];
+                if (index >= 0 && index < updated.length) {
+                    updated[index] = { ...updated[index], ...newData };
+                }
+                return updated;
+            });
+            warnLog("⚠️ UPDATE: Using local fallback (won't persist across unmount)");
+        }
+        const wordKey = (newData.targetWord || newData.word)?.toLowerCase();
+        if (wordKey) {
+            preloadedWordCache.current.set(wordKey, newData);
+            debugLog("📝 Updated cached word:", wordKey);
+        }
+    }, []);
+    const handleDeleteWord = React.useCallback((idx) => {
+        debugLog("🗑️ DELETE: Attempting to remove word at index:", idx, "setWsPreloadedWords defined:", !!setWsPreloadedWords);
+        const performDelete = (setter, name) => {
+            if (setter) {
+                setter(prevWords => {
+                    const prevArray = Array.isArray(prevWords) ? prevWords : [];
+                    debugLog("🗑️ DELETE via " + name + ": Current list has", prevArray.length, "words");
+                    const newWords = prevArray.filter((_, i) => i !== idx);
+                    debugLog("🗑️ DELETE via " + name + ": New list has", newWords.length, "words");
+                    return newWords;
+                });
+                debugLog("🗑️ DELETE: Update dispatched via " + name);
+                return true;
+            }
+            return false;
+        };
+        const usedLifted = performDelete(setWsPreloadedWords, 'setWsPreloadedWords');
+        if (!usedLifted) {
+            warnLog("⚠️ DELETE: Lifted setter unavailable, trying direct state manipulation");
+            setPreloadedWords(prev => {
+                const prevArray = Array.isArray(prev) ? prev : [];
+                return prevArray.filter((_, i) => i !== idx);
+            });
+            warnLog("⚠️ DELETE: Using local fallback (won't persist across unmount)");
+        }
+    }, [setWsPreloadedWords]);
+    const handleRegenerateWord = React.useCallback(async (index) => {
+        debugLog("🔄🔄🔄 handleRegenerateWord CALLED with index:", index);
+        setRegeneratingIndex(index);
+        const existingWord = preloadedWords[index];
+        if (!existingWord) {
+            setRegeneratingIndex(null);
+            return;
+        }
+        const targetWord = existingWord.targetWord || existingWord.word || '';
+        debugLog("🔄 Re-fetching phoneme data for:", targetWord);
+        if (audioCache && audioCache.current) {
+            audioCache.current.delete(targetWord);
+            audioCache.current.delete(targetWord.toLowerCase());
+        }
+        if (audioInstances && audioInstances.current) {
+            audioInstances.current.delete(targetWord);
+            audioInstances.current.delete(targetWord.toLowerCase());
+        }
+        if (preloadedWordCache.current) {
+            preloadedWordCache.current.delete(targetWord.toLowerCase());
+        }
+        if (typeof removeAudioFromStorage === 'function') {
+            removeAudioFromStorage(targetWord);
+            removeAudioFromStorage(targetWord.toLowerCase());
+        } else {
+            try {
+                const bank = JSON.parse(safeGetItem(PHONEME_STORAGE_KEY) || '{}');
+                if (bank[targetWord]) { delete bank[targetWord]; safeSetItem(PHONEME_STORAGE_KEY, JSON.stringify(bank)); }
+            } catch (e) { warnLog('Caught error:', e?.message || e); }
+        }
+        try {
+            const phonemeData = await fetchWordData(targetWord, 0, false, true);
+            if (phonemeData) {
+                const refreshedWord = {
+                    ...existingWord,
+                    phonemes: phonemeData.phonemes || [],
+                    phonemeCount: phonemeData.phonemeCount || 0,
+                    rhymeWord: phonemeData.rhymeWord || '',
+                    rhymeDistractors: phonemeData.rhymeDistractors || [],
+                    familyEnding: phonemeData.familyEnding || '',
+                    familyMembers: phonemeData.familyMembers || [],
+                    blendingDistractors: phonemeData.blendingDistractors || [],
+                    soundSortMatches: phonemeData.soundSortMatches || null,
+                    rimeFamilyMembers: phonemeData.rimeFamilyMembers || null,
+                    orthographyDistractors: phonemeData.orthographyDistractors || [],
+                    firstSound: phonemeData.firstSound || '',
+                    lastSound: phonemeData.lastSound || '',
+                    _regeneratedAt: Date.now()
+                };
+                if (setWsPreloadedWords) {
+                    setWsPreloadedWords(prev => {
+                        const prevArray = Array.isArray(prev) ? prev : [];
+                        const updated = [...prevArray];
+                        if (index < updated.length) updated[index] = refreshedWord;
+                        return updated;
+                    });
+                }
+                if (preloadedWordCache.current) {
+                    preloadedWordCache.current.set(targetWord.toLowerCase(), refreshedWord);
+                }
+                setTimeout(async () => {
+                    if (!isMountedRef.current) return;
+                    await handleAudio(targetWord, true);
+                }, 100);
+            }
+        } catch (err) {
+            warnLog("Regeneration failed:", err);
+        } finally {
+            setRegeneratingIndex(null);
+        }
+    }, [preloadedWords, fetchWordData, setWsPreloadedWords]);
+    const handleRegenerateOption = React.useCallback(async (wordIdx, listKey, opIdx, currentVal) => {
+        if (!preloadedWords || !preloadedWords[wordIdx]) return;
+        const wordObj = preloadedWords[wordIdx];
+        const targetWord = wordObj.targetWord || wordObj.word;
+        const currentList = wordObj[listKey] || [];
+        debugLog(`🔄 Regenerating option for ${targetWord} [${listKey}]`);
+        try {
+            const prompt = listKey === 'rhymeDistractors'
+                ? `Generate 1 simple English rhyming word for "${targetWord}". it must NOT be "${targetWord}" and MUST NOT be in this list: [${currentList.join(', ')}]. Return ONLY the single word.`
+                : `Generate 1 phonetically similar distractor word for "${targetWord}" (e.g. swap one sound). It must NOT be "${targetWord}" and MUST NOT be in this list: [${currentList.join(', ')}]. Return ONLY the single word.`;
+            if (!callGemini) throw new Error("GenAI not available");
+            const newOptionRaw = await callGemini(prompt, "You are a precise literacy generator. Output only the single word requested. No punctuation.");
+            const newOption = newOptionRaw ? newOptionRaw.trim().replace(/['".]+/g, '') : null;
+            if (newOption && newOption.length > 0) {
+                setWsPreloadedWords(prev => {
+                    const copy = [...prev];
+                    const newWord = { ...copy[wordIdx] };
+                    const newList = [...(newWord[listKey] || [])];
+                    newList[opIdx] = newOption;
+                    newWord[listKey] = newList;
+                    copy[wordIdx] = newWord;
+                    return copy;
+                });
+                debugLog("✅ Option Regenerated:", newOption);
+                handleAudio(newOption, false);
+            }
+        } catch (e) {
+            warnLog("Option regeneration failed", e);
+            if (showError) showError("Failed to regenerate option. Try again.");
+        }
+    }, [preloadedWords, callGemini, setWsPreloadedWords, handleAudio]);
+    const handleRegenerateAll = React.useCallback(async () => {
+        debugLog("🧹 Deep cleaning audio state for regeneration...");
+        setIsPlayingAudio(false);
+        if (audioInstances.current) audioInstances.current.clear();
+        if (audioCache.current) audioCache.current.clear();
+        if (wordDataCache.current) wordDataCache.current.clear();
+        if (preloadedWordCache.current) preloadedWordCache.current.clear();
+        if (!preloadedWords || preloadedWords.length === 0) {
+            warnLog("No words to regenerate");
+            addToast?.("No words to regenerate", "error");
+            return;
+        }
+        debugLog("🔄 Regenerating data for all " + preloadedWords.length + " words...");
+        addToast?.("🔄 Regenerating all word data...", "info");
+        const regeneratedWords = [];
+        for (let i = 0; i < preloadedWords.length; i++) {
+            const word = preloadedWords[i];
+            const targetWord = word.targetWord || word.word || word.singleWord;
+            setRegeneratingIndex(i);
+            try {
+                debugLog(`🔄 Regenerating ${i + 1}/${preloadedWords.length}: ${targetWord}`);
+                const freshData = await fetchWordData(targetWord, 0, true);
+                regeneratedWords.push({
+                    ...word,
+                    ...(freshData || {}),
+                    image: word.image || freshData?.image || null
+                });
+            } catch (err) {
+                warnLog("Failed to regenerate:", targetWord, err);
+                regeneratedWords.push(word);
+            }
+        }
+        const setter = setWsPreloadedWords || setPreloadedWords;
+        if (setter) {
+            setter(regeneratedWords);
+            debugLog("✅ Regeneration complete for " + regeneratedWords.length + " words");
+        } else {
+            warnLog("❌ No state setter available for regenerate all");
+        }
+        setRegeneratingIndex(null);
+        addToast?.("✅ All words regenerated!", "success");
+    }, [preloadedWords, fetchWordData, setWsPreloadedWords, setPreloadedWords, addToast]);
+    const handleGenerateWordImage = React.useCallback(async (index, word) => {
+        if (generatingImageSet.size >= 5) { warnLog("⚠️ Max 5 concurrent image generations"); return; }
+        setGeneratingImageIndex(index); setGeneratingImageSet(prev => new Set(prev).add(index));
+        const MAX_RETRIES = 3;
+        try {
+            const imagePrompt = `Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`;
+            let imageBase64 = null;
+            if (typeof callImagen === 'function') {
+                for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+                    try {
+                        if (attempt > 0) {
+                            const backoffMs = 1000 * Math.pow(2, attempt);
+                            debugLog(`⏳ Retry ${attempt + 1}/${MAX_RETRIES} for "${word}" after ${backoffMs}ms...`);
+                            await new Promise(r => setTimeout(r, backoffMs));
+                        }
+                        debugLog("🖼️ Calling callImagen for:", word);
+                        imageBase64 = await callImagen(imagePrompt);
+                        break;
+                    } catch (retryErr) {
+                        const is401 = retryErr.message && retryErr.message.includes('401');
+                        if (is401 && attempt < MAX_RETRIES - 1) {
+                            warnLog(`⚠️ Rate limited on "${word}", will retry...`);
+                            continue;
+                        }
+                        throw retryErr;
+                    }
+                }
+            } else {
+                warnLog("callImagen not available - check if prop is passed");
+                addToast?.("Image generation not available", "error");
+                setGeneratingImageIndex(null); setGeneratingImageSet(prev => { const s = new Set(prev); s.delete(index); return s; });
+                return;
+            }
+            if (imageBase64) {
+                setPreloadedWords(prev => {
+                    const newList = [...prev];
+                    if (newList[index]) {
+                        newList[index] = { ...newList[index], image: imageBase64 };
+                    }
+                    return newList;
+                });
+                addToast?.("✨ Image generated!", "success");
+            }
+        } catch (e) {
+            warnLog("Failed to generate image:", e);
+            addToast?.("Failed to generate image", "error");
+            setPreloadedWords(prev => {
+                const newList = [...prev];
+                if (newList[index]) {
+                    newList[index] = { ...newList[index], imageFailed: true, image: null };
+                }
+                return newList;
+            });
+        } finally {
+            setGeneratingImageIndex(null);
+        }
+    }, [generatingImageIndex, setPreloadedWords]);
+    const handleRefineWordImage = React.useCallback(async (index, instruction) => {
+        if (generatingImageIndex !== null) return;
+        const word = preloadedWords[index];
+        if (!word?.image) {
+            addToast?.("No image to refine", "error");
+            return;
+        }
+        setGeneratingImageIndex(index);
+        try {
+            const rawBase64 = word.image.split(',')[1];
+            if (!rawBase64) {
+                throw new Error("Invalid image format");
+            }
+            const refinementPrompt = `Edit this educational icon. Instruction: ${instruction}. Maintain simple, flat vector art style with white background.`;
+            let newImageBase64 = null;
+            if (typeof callGeminiImageEdit === 'function') {
+                newImageBase64 = await callGeminiImageEdit(refinementPrompt, rawBase64);
+            } else {
+                warnLog("callGeminiImageEdit not available");
+                addToast?.("Image editing not available", "error");
+                setGeneratingImageIndex(null);
+                return;
+            }
+            if (newImageBase64) {
+                setPreloadedWords(prev => {
+                    const newList = [...prev];
+                    if (newList[index]) {
+                        newList[index] = { ...newList[index], image: newImageBase64 };
+                    }
+                    return newList;
+                });
+                addToast?.("✨ Image refined!", "success");
+            }
+        } catch (e) {
+            warnLog("Failed to refine image:", e);
+            addToast?.("Failed to refine image", "error");
+        } finally {
+            setGeneratingImageIndex(null);
+        }
+    }, [generatingImageIndex, preloadedWords, setPreloadedWords]);
+    React.useEffect(() => {
+        if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+            const timer = setTimeout(() => prefetchNextWords(), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [wordSoundsPhonemes, nextWordBuffer, isLoadingPhonemes, prefetchNextWords]);
+    const generateUniqueSoundChips = React.useCallback((phonemes) => {
+        if (!phonemes) return [];
+        const chips = (Array.isArray(phonemes) ? phonemes : []).map((p, i) => ({
+            id: `correct-${i}-${Date.now()}`,
+            phoneme: (p || '').trim(),
+            type: 'correct',
+            isDistractor: false,
+            color: '#f0f9ff',
+            used: false
+        }));
+        const correctCounts = {};
+        (Array.isArray(phonemes) ? phonemes : []).forEach(p => {
+            const key = (p || '').toLowerCase().trim();
+            correctCounts[key] = (correctCounts[key] || 0) + 1;
+        });
+        const usedPhonemes = new Set(Object.keys(correctCounts));
+        const commonPhonemes = ['s', 't', 'm', 'p', 'k', 'n', 'r', 'l', 'b', 'g', 'f', 'h', 'd', 'sh', 'ch', 'th', 'a', 'e', 'i', 'o', 'u'];
+        const shuffledCommon = fisherYatesShuffle(commonPhonemes);
+        let distractorCount = 0;
+        for (const p of shuffledCommon) {
+            if (distractorCount >= 5) break;
+            const pLower = p.toLowerCase();
+            if (!usedPhonemes.has(pLower)) {
+                chips.push({
+                    id: `distractor-${p}-${Date.now()}-${distractorCount}`,
+                    phoneme: p,
+                    type: 'distractor',
+                    isDistractor: true,
+                    color: '#f8fafc',
+                    used: false
+                });
+                usedPhonemes.add(pLower);
+                distractorCount++;
+            }
+        }
+        const shuffledChips = fisherYatesShuffle(chips);
+        const pastelColors = [
+            '#eff6ff', '#f0fdf4', '#faf5ff', '#fff7ed',
+            '#fdf2f8', '#fcf6f5', '#ecfeff', '#fefce8'
+        ];
+        return shuffledChips.map((chip, i) => ({
+            ...chip,
+            color: pastelColors[i % pastelColors.length]
+        }));
+    }, []);
+    React.useEffect(() => {
+        if (!wordSoundsPhonemes) return;
+        const effectiveCount = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+        if (wordSoundsActivity === 'letter_tracing' && currentWordSoundsWord !== lastTracingWord.current) {
+            lastTracingWord.current = currentWordSoundsWord;
+            setTracingPhase('upper');
+        }
+        if (['segmentation', 'blending'].includes(wordSoundsActivity) && wordSoundsPhonemes.phonemes) {
+            if (elkoninBoxes.length === 0 || elkoninBoxes.length !== effectiveCount || soundChips.length === 0) {
+                debugLog("🔧 Initializing Elkonin boxes:", effectiveCount, "for", currentWordSoundsWord);
+                wordSoundsPhonemes?.phonemes && setSoundChips(generateUniqueSoundChips(wordSoundsPhonemes.phonemes));
+                setElkoninBoxes(new Array(effectiveCount).fill(null));
+            }
+        }
+        if (wordSoundsActivity === 'orthography' && (!orthographyOptions || orthographyOptions.length < 2)) {
+            const targetWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+            if (targetWord) {
+                debugLog("🔧 Initializing orthography options for:", targetWord);
+                if (lastWordForOrthography.current === targetWord && orthographyOptions.length > 0) {
+                    debugLog("✅ Orthography options already set for this word, skipping");
+                    return;
+                }
+                lastWordForOrthography.current = targetWord;
+                const generated = generateOrthographyDistractors(targetWord);
+                const distractors = fisherYatesShuffle(generated).slice(0, 5);
+                setOrthographyOptions(fisherYatesShuffle([targetWord, ...distractors]));
+            }
+        }
+        if (wordSoundsActivity === 'rhyming') {
+            const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+            if (lastWordForRhyming.current === currentWord && rhymeOptions.length > 0) {
+                debugLog("✅ Rhyme options already set for this word, skipping re-shuffle");
+                return;
+            }
+            const correctRhyme = wordSoundsPhonemes?.rhymeWord;
+            if (correctRhyme) {
+                lastWordForRhyming.current = currentWord;
+                const generateNearRhymes = (word) => {
+                    const endings = ['at', 'an', 'en', 'in', 'op', 'ot', 'ug', 'un', 'ake', 'ine', 'ight', 'ound'];
+                    const commonWords = {
+                        'at': ['cat', 'hat', 'bat', 'mat', 'rat', 'sat', 'fat', 'pat'],
+                        'an': ['can', 'fan', 'man', 'pan', 'ran', 'van', 'tan', 'plan'],
+                        'en': ['hen', 'pen', 'ten', 'men', 'den', 'then', 'when', 'wren'],
+                        'in': ['pin', 'win', 'tin', 'bin', 'fin', 'sin', 'chin', 'thin'],
+                        'op': ['hop', 'mop', 'top', 'pop', 'cop', 'drop', 'shop', 'stop'],
+                        'ot': ['hot', 'pot', 'cot', 'dot', 'got', 'lot', 'not', 'shot'],
+                        'ug': ['bug', 'hug', 'mug', 'rug', 'tug', 'dug', 'jug', 'plug'],
+                        'un': ['bun', 'fun', 'run', 'sun', 'pun', 'spun', 'stun'],
+                        'ake': ['bake', 'cake', 'lake', 'make', 'take', 'wake', 'shake', 'snake'],
+                        'ine': ['fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine'],
+                        'ight': ['light', 'night', 'right', 'sight', 'tight', 'bright', 'flight', 'slight'],
+                        'ound': ['bound', 'found', 'ground', 'hound', 'mound', 'pound', 'round', 'sound']
+                    };
+                    const lowerWord = word.toLowerCase();
+                    let distractors = [];
+                    for (const ending of endings) {
+                        if (!lowerWord.endsWith(ending) && commonWords[ending]) {
+                            distractors.push(...commonWords[ending]);
+                        }
+                    }
+                    return fisherYatesShuffle(distractors).slice(0, 5);
+                };
+                const distractors = wordSoundsPhonemes?.rhymeDistractors?.length >= 3
+                    ? wordSoundsPhonemes?.rhymeDistractors?.slice(0, 5)
+                    : generateNearRhymes(currentWordSoundsWord || 'cat');
+                const getRime = (word) => {
+                    const w = (word || '').toLowerCase();
+                    const vowels = 'aeiou';
+                    let rimeStart = w.length;
+                    for (let i = w.length - 1; i >= 0; i--) {
+                        if (vowels.includes(w[i])) {
+                            rimeStart = i;
+                            while (i > 0 && vowels.includes(w[i - 1])) i--;
+                            rimeStart = i;
+                            break;
+                        }
+                    }
+                    return w.slice(rimeStart);
+                };
+                const correctRime = getRime(correctRhyme);
+                const filteredDistractors = distractors.filter(d => {
+                    if (!d) return false;
+                    return getRime(d) !== correctRime;
+                });
+                const options = [correctRhyme, ...filteredDistractors.slice(0, 4)];
+                if (rhymeOptions.length === 0 || !rhymeOptions.includes(correctRhyme)) {
+                    setRhymeOptions(fisherYatesShuffle(options));
+                }
+            } else {
+                if (rhymeOptions.length === 0) {
+                    const word = (currentWordSoundsWord || '').toLowerCase();
+                    const firstLetter = word.charAt(0);
+                    const similarSoundMap = {
+                        'b': ['ball', 'big', 'bus', 'box', 'bed'],
+                        'c': ['car', 'cup', 'cat', 'can', 'cow'],
+                        'k': ['car', 'cup', 'kit', 'key', 'kid'],
+                        'd': ['dog', 'dig', 'den', 'dot', 'dip'],
+                        'f': ['fun', 'fog', 'fit', 'fan', 'fox'],
+                        'g': ['go', 'get', 'gum', 'gap', 'got'],
+                        'h': ['hot', 'hop', 'hug', 'hen', 'hit'],
+                        'j': ['jog', 'jet', 'jug', 'jam', 'job'],
+                        'l': ['let', 'log', 'lip', 'leg', 'lit'],
+                        'm': ['mud', 'mop', 'mix', 'met', 'map'],
+                        'n': ['nap', 'net', 'nod', 'nut', 'not'],
+                        'p': ['pop', 'pet', 'pig', 'pen', 'pot'],
+                        'r': ['run', 'red', 'rip', 'rug', 'rob'],
+                        's': ['sun', 'sit', 'set', 'sob', 'sip'],
+                        't': ['top', 'tin', 'ten', 'tub', 'tap'],
+                        'w': ['win', 'wet', 'wag', 'web', 'wig'],
+                        'z': ['zip', 'zap', 'zoo', 'zig', 'zest']
+                    };
+                    let pool = similarSoundMap[firstLetter] || ['dog', 'cat', 'run', 'sun', 'bed'];
+                    pool = pool.filter(w => w !== word);
+                    const distractors = fisherYatesShuffle(pool).slice(0, 4);
+                    setRhymeOptions(distractors);
+                }
+            }
+        }
+    }, [wordSoundsPhonemes, wordSoundsActivity, currentWordSoundsWord, generateSoundChips]);
+    React.useEffect(() => {
+        if (wordSoundsActivity !== 'isolation' || !wordSoundsPhonemes) {
+            if (isolationState) setIsolationState(null);
+            return;
+        }
+        const currentWord = wordSoundsPhonemes?.word || currentWordSoundsWord;
+        const isNewWord = lastWordForIsolation.current !== currentWord;
+        if (isNewWord && isolationState && isolationState.correctSound && isolationState.isoOptions?.length > 0) {
+            debugLog("✅ Using pre-generated isolation options:", isolationState.isoOptions);
+            lastWordForIsolation.current = currentWord;
+            return;
+        }
+        if (isNewWord) {
+            debugLog("⚠️ Generating new isolation options (fallback - not pre-generated)");
+            lastWordForIsolation.current = currentWord;
+            const phonemeCount = wordSoundsPhonemes?.phonemes?.length || 2;
+            const positionIndex = Math.floor(Math.random() * phonemeCount);
+            isolationPositionRef.current = positionIndex;
+            const currentPosition = typeof isolationPositionRef.current === 'number' ? isolationPositionRef.current : 0;
+            const phonemes = wordSoundsPhonemes?.phonemes || [];
+            const positionIdx = typeof currentPosition === 'number' ? currentPosition : 0;
+            const correctSound = phonemes[positionIdx] || wordSoundsPhonemes?.firstSound;
+            const isoAllPhonemes = wordSoundsPhonemes?.phonemes || [];
+            const isoDistractors = isoAllPhonemes.filter(p => p.toLowerCase() !== correctSound?.toLowerCase()).slice(0, 5);
+
+            const used = new Set([correctSound?.toLowerCase(), ...(isoDistractors || []).map(d => d.toLowerCase())]);
+            const SIMILAR_SOUNDS = {
+                'b': ['d', 'p', 'v', 'g'], 'd': ['b', 't', 'g', 'n'], 'f': ['v', 'th', 's', 'p'],
+                'g': ['k', 'd', 'b', 'j'], 'h': ['wh', 'f'], 'j': ['g', 'ch', 'zh', 'z'],
+                'k': ['g', 't', 'c', 'ck'], 'l': ['r', 'w', 'n', 'y'], 'm': ['n', 'b', 'p', 'ng'],
+                'n': ['m', 'ng', 'd', 'l'], 'p': ['b', 't', 'f', 'k'], 'r': ['l', 'w', 'y', 'er'],
+                's': ['z', 'sh', 'th', 'f'], 't': ['d', 'k', 'p', 'ch'], 'v': ['f', 'b', 'w', 'th'],
+                'w': ['r', 'l', 'wh', 'y'], 'y': ['w', 'l', 'ee', 'i'], 'z': ['s', 'zh', 'j', 'th'],
+                'sh': ['ch', 's', 'zh', 'th'], 'ch': ['sh', 'j', 't', 'tch'], 'th': ['f', 'v', 's', 'd'],
+                'wh': ['w', 'h', 'f'], 'ng': ['n', 'm', 'nk'], 'ck': ['k', 'g', 'c'],
+                'a': ['e', 'u', 'o', 'ah'], 'e': ['i', 'a', 'u', 'eh'], 'i': ['e', 'ee', 'y', 'ih'],
+                'o': ['u', 'a', 'aw', 'ah'], 'u': ['o', 'oo', 'a', 'uh'],
+                'ee': ['i', 'ea', 'e', 'y'], 'oo': ['u', 'ew', 'o'], 'ai': ['ay', 'a', 'ei'],
+                'oa': ['o', 'ow', 'oe'], 'ou': ['ow', 'oo', 'u'], 'ow': ['ou', 'oa', 'o'],
+                'oi': ['oy', 'ou', 'aw'], 'oy': ['oi', 'ow', 'o'],
+                'ar': ['or', 'er', 'a', 'ah'], 'or': ['ar', 'er', 'aw', 'ore'], 'er': ['ar', 'or', 'ur', 'ir'],
+                'ir': ['er', 'ur', 'ear'], 'ur': ['er', 'ir', 'or'],
+                'aw': ['or', 'o', 'au', 'ow'], 'au': ['aw', 'o', 'ou'],
+                'c': ['k', 's', 'ck', 'g'],
+            };
+            const similarPool = SIMILAR_SOUNDS[correctSound?.toLowerCase()] || [];
+            const wordSeed = (currentWordSoundsWord || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            const shuffledSimilar = [...similarPool].sort((a, b) => ((wordSeed * 31 + a.charCodeAt(0)) % 97) - ((wordSeed * 31 + b.charCodeAt(0)) % 97));
+            for (const sim of shuffledSimilar) {
+                if (isoDistractors.length >= 5) break;
+                if (!used.has(sim.toLowerCase())) { isoDistractors.push(sim); used.add(sim.toLowerCase()); }
+            }
+            const isoExpandedPool = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'z', 'a', 'e', 'i', 'o', 'u', 'sh', 'ch', 'th', 'wh', 'ng', 'ee', 'oo', 'ar', 'or', 'er'];
+            const shuffledPool = [...isoExpandedPool].sort((a, b) => ((wordSeed * 13 + a.charCodeAt(0)) % 89) - ((wordSeed * 13 + b.charCodeAt(0)) % 89));
+            for (const p of shuffledPool) {
+                if (isoDistractors.length >= 5) break;
+                if (!used.has(p.toLowerCase())) { isoDistractors.push(p); used.add(p.toLowerCase()); }
+            }
+            const fallbackSound = (currentWordSoundsWord || '')[0]?.toLowerCase() || 'a';
+            const effectiveCorrect = correctSound || fallbackSound;
+            const isoUniqueOpts = [...new Set([effectiveCorrect, ...isoDistractors.slice(0, 5)])];
+            const isoExpandedPool2 = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'z', 'a', 'e', 'i', 'o', 'u', 'sh', 'ch', 'th'];
+            const isoUsedSet = new Set(isoUniqueOpts.map(o => o.toLowerCase()));
+            for (const p of isoExpandedPool2) { if (isoUniqueOpts.length >= 6) break; if (!isoUsedSet.has(p)) { isoUniqueOpts.push(p); isoUsedSet.add(p); } }
+            const isoOptions = fisherYatesShuffle(isoUniqueOpts.slice(0, 6));
+            setIsolationState({
+                word: currentWordSoundsWord,
+                currentPosition,
+                correctSound: effectiveCorrect,
+                isoOptions
+            });
+            isoOptions.forEach(phoneme => {
+                handleAudio(phoneme, false).catch(async (err) => {
+                    warnLog("Prefetch failed for", phoneme, "- retrying once...");
+                    await new Promise(r => setTimeout(r, 500));
+                    handleAudio(phoneme, false).catch(() => { });
+                });
+            });
+        }
+    }, [wordSoundsActivity, wordSoundsPhonemes, currentWordSoundsWord]);
+    React.useEffect(() => {
+        if (wordSoundsActivity !== 'isolation') return;
+        if (!currentWordSoundsWord) return;
+        if (isolationState?.word?.toLowerCase() === currentWordSoundsWord?.toLowerCase()) return;
+        const timer = setTimeout(() => {
+            if (!isMountedRef.current) return;
+            debugLog("🔧 Auto-recovery: isolationState stuck for 3s, forcing re-sync for:", currentWordSoundsWord);
+            const phonemes = wordSoundsPhonemes?.phonemes || estimatePhonemesBasic(currentWordSoundsWord);
+            const pos = Math.floor(Math.random() * phonemes.length);
+            const correct = phonemes[pos] || currentWordSoundsWord[0] || 'a';
+            const dists = phonemes.filter(p => p !== correct).slice(0, 3);
+            while (dists.length < 3) dists.push(['b', 'd', 'f', 'g', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't'][Math.floor(Math.random() * 12)]);
+            setIsolationState({
+                word: currentWordSoundsWord,
+                currentPosition: pos,
+                correctSound: correct,
+                correctAnswer: correct,
+                isoOptions: fisherYatesShuffle([correct, ...dists.slice(0, 3)])
+            });
+            setIsLoadingPhonemes(false);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [currentWordSoundsWord, isolationState?.word, wordSoundsActivity]);
+    React.useEffect(() => {
+        if (playInstructions) return;
+        if (currentWordSoundsWord && !isLoadingPhonemes) {
+            const playKey = `${currentWordSoundsWord}-${wordSoundsActivity}`;
+            if (lastPlayedWord.current === playKey) return;
+            const timer = setTimeout(async () => {
+                try {
+                    if (!isMountedRef.current) return;
+                    if (!isMountedRef.current) return;
+                    lastPlayedWord.current = playKey;
+                    if (wordSoundsActivity === 'blending') {
+                        await playBlending();
+                    } else {
+                        await handleAudio(currentWordSoundsWord);
+                        if (wordSoundsActivity === 'isolation' && isolationState?.isoOptions?.length > 0) {
+                            await new Promise(r => setTimeout(r, 600));
+                            for (let i = 0; i < (isolationState?.isoOptions?.length || 0); i++) {
+                                setHighlightedIsoIndex(i);
+                                await handleAudio(isolationState.isoOptions[i]);
+                                await new Promise(r => setTimeout(r, 450));
+                            }
+                            setHighlightedIsoIndex(null);
+                        }
+                    }
+                    if (wordSoundsActivity === 'rhyming' && rhymeOptionsRef.current && rhymeOptionsRef.current.length > 0) {
+                        await new Promise(r => setTimeout(r, 300));
+
+                        for (let i = 0; i < rhymeOptionsRef.current.length; i++) {
+                            setHighlightedRhymeIndex(i);
+                            const opt = rhymeOptionsRef.current[i];
+                            const text = typeof opt === 'string' ? opt : opt.text;
+                            await handleAudio(text);
+                            await new Promise(r => setTimeout(r, 400));
+                        }
+                        setHighlightedRhymeIndex(null);
+                    }
+                } catch (e) { warnLog("Unhandled error in timer:", e); }
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [currentWordSoundsWord, isLoadingPhonemes, wordSoundsActivity, rhymeOptions, playBlending]);
+    const startActivity = React.useCallback((activityId, forceWord = null, excludeWord = null, recursionDepth = 0) => {
+        setWordSoundsActivity(activityId);
+        setWordSoundsFeedback?.(null);
+        setUserAnswer('');
+        setAttempts(0);
+        if (isProbeMode) {
+            probeStartTimeRef.current = null;
+            setProbeElapsed(0);
+        }
+        if (isProbeMode) {
+            probeStartTimeRef.current = null;
+            setProbeElapsed(0);
+        }
+        setBlendingProgress(0);
+        setSoundChips([]);
+        setShowSessionComplete(false);
+        sessionWordResults.current = [];
+        setWordSoundsScore(prev => ({ ...prev, streak: 0 }));
+        if (setWordSoundsStreak) setWordSoundsStreak(0);
+        debugLog("🔄 Streak reset on activity change to:", activityId);
+        setElkoninBoxes([]);
+        setSegmentationErrors([]);
+        setNextWordBuffer(null);
+        lastPlayedWord.current = null;
+        if (setWordSoundsSessionProgress) setWordSoundsSessionProgress(0);
+        if (!forceWord) {
+            const effectiveDiff = getEffectiveDifficulty();
+            generateSessionQueue(activityId, effectiveDiff);
+        }
+        let word = forceWord;
+        if (!word) {
+            const queue = sessionQueueRef.current[activityId];
+            if (queue && queue.length > 0) {
+                word = queue[0];
+                sessionQueueRef.current[activityId] = queue.slice(1);
+                setSessionWordLists(prev => ({ ...prev, [activityId]: queue.slice(1) }));
+            }
+        }
+        if (!word) {
+            const hasAnyWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+            if (!hasAnyWords) {
+                debugLog("WordSounds: No words available, waiting for data...");
+                setWordSoundsFeedback?.({
+                    type: 'info',
+                    message: "Loading your words... ⏳",
+                });
+                return;
+            }
+            if (recursionDepth > ACTIVITIES.length + 1) {
+                warnLog("WordSounds: All pools exhausted, stopping auto-advance.");
+                setWordSoundsFeedback?.({
+                    type: 'success',
+                    message: "All activities complete! Great job! 🌟",
+                });
+                return;
+            }
+            if (wordPool && wordPool.length > 0 && recursionDepth === 0 && !isSequentialMode) {
+                debugLog("WordSounds: Queue empty but pool has words. Regenerating with broader difficulty...");
+                generateSessionQueue(activityId, 'medium');
+                const retryWord = getAdaptiveRandomWord();
+                if (retryWord) {
+                    const retryTargetWord = retryWord.singleWord || retryWord.fullTerm || retryWord.word;
+                    setCurrentWordSoundsWord(retryTargetWord);
+                    setCurrentWordImage(retryWord.image);
+                    setShowWordText(false);
+                    const retryPreloaded = preloadedWords.find(pw =>
+                    (pw.word?.toLowerCase() === retryTargetWord.toLowerCase() ||
+                        pw.targetWord?.toLowerCase() === retryTargetWord.toLowerCase()));
+                    if (retryPreloaded && retryPreloaded.phonemes) {
+                        setWordSoundsPhonemes(retryPreloaded);
+                    } else {
+                        const fallback = generateFallbackData(retryTargetWord);
+                        if (fallback) applyWordDataToState(fallback);
+                    }
+                    setIsLoadingPhonemes(false);
+                    return;
+                }
+            }
+            const currentIndex = ACTIVITIES.findIndex(a => a.id === activityId);
+            if (currentIndex !== -1) {
+                const nextIndex = currentIndex + 1;
+                if (nextIndex >= ACTIVITIES.length) {
+                    debugLog("✅ Completed all activities!");
+                    setWordSoundsFeedback?.({
+                        type: 'success',
+                        message: "All activities complete! Great job! 🌟",
+                    });
+                    return;
+                }
+                const nextActivity = ACTIVITIES[nextIndex];
+                debugLog("🎯 Activity queue empty - showing completion instead of auto-advancing");
+                setWordSoundsFeedback?.({
+                    type: 'success',
+                    message: "Activity Complete! Great job! 🌟",
+                });
+                setShowSessionComplete(true);
+            }
+            return;
+        }
+        if (word) {
+            const targetWord = word.singleWord || word.fullTerm || word.term || word.word || word;
+            setCurrentWordSoundsWord(targetWord);
+            setCurrentWordImage(word.image);
+            setShowWordText(false);
+            const preloadedWord = preloadedWords.find(
+                pw => (pw.word?.toLowerCase() === targetWord.toLowerCase() ||
+                    pw.displayWord?.toLowerCase() === targetWord.toLowerCase())
+            );
+            const matchingIdx = preloadedWords.findIndex(
+                pw => (pw.word?.toLowerCase() === targetWord.toLowerCase() ||
+                    pw.targetWord?.toLowerCase() === targetWord.toLowerCase() ||
+                    pw.displayWord?.toLowerCase() === targetWord.toLowerCase())
+            );
+            if (matchingIdx >= 0) {
+                setCurrentWordIndex(matchingIdx + 1);
+                debugLog("🔄 Synced currentWordIndex to", matchingIdx + 1, "to skip:", targetWord);
+            }
+            if (preloadedWord && preloadedWord.phonemes) {
+                debugLog("🚀 Using preloaded data for:", targetWord);
+                setWordSoundsPhonemes(preloadedWord);
+                setIsLoadingPhonemes(false);
+                if (activityId === 'blending' && preloadedWord.blendingDistractors) {
+                    const distractors = preloadedWord.blendingDistractors.slice(0, 5);
+                    setBlendingOptions(fisherYatesShuffle([targetWord, ...distractors]));
+                    lastWordForBlending.current = targetWord;
+                    debugLog("📋 [Eager] Set blending options from preloaded:", targetWord);
+                }
+                if (activityId === 'rhyming' && preloadedWord.rhymeDistractors) {
+                    const correctRhyme = preloadedWord.rhymeWord;
+                    const distractors = preloadedWord.rhymeDistractors.slice(0, 5);
+                    const options = correctRhyme
+                        ? fisherYatesShuffle([correctRhyme, ...distractors])
+                        : distractors;
+                    setRhymeOptions(options);
+                    lastWordForRhyming.current = targetWord;
+                    debugLog("📋 [Eager] Set rhyme options from preloaded:", targetWord);
+                }
+            } else {
+                debugLog("📦 Using local fallback for:", targetWord, "(preloaded data unavailable)");
+                const fallback = generateFallbackData(targetWord);
+                if (fallback) {
+                    applyWordDataToState(fallback);
+                    wordDataCache.current.set(targetWord.toLowerCase(), fallback);
+                }
+                setIsLoadingPhonemes(false);
+            }
+        }
+    }, [getAdaptiveRandomWord, fetchWordData, setWordSoundsActivity, setCurrentWordSoundsWord, setWordSoundsFeedback, wordPool, preloadedWords]);
+    React.useEffect(() => {
+        if (firstWordReady && preloadedWords.length > 0 && !currentWordSoundsWord && !isLoadingPhonemes) {
+            if (isProbeMode && !hasStartedFromReview.current) {
+                hasStartedFromReview.current = true;
+                const autoStartTimer = setTimeout(() => {
+                    startActivity(wordSoundsActivity);
+                }, 100);
+                return () => clearTimeout(autoStartTimer);
+            }
+            const firstWord = preloadedWords[0];
+            if (firstWord && firstWord.phonemes) {
+                if (!showReviewPanel && !hasStartedFromReview.current) {
+                    setShowReviewPanel(true);
+                }
+            }
+        }
+    }, [firstWordReady, preloadedWords, currentWordSoundsWord, isLoadingPhonemes, showReviewPanel, isProbeMode, wordSoundsActivity, startActivity]);
+    React.useEffect(() => {
+        if (showReviewPanel) {
+            return;
+        }
+        const hasWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+        if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
+            if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+                setShowReviewPanel(true);
+                return;
+            }
+            const prefetchTimer = setTimeout(() => {
+                prefetchNextWords();
+                if (typeof preloadInitialBatch === 'function') {
+                    preloadInitialBatch();
+                }
+            }, 100);
+            return () => clearTimeout(prefetchTimer);
+        }
+    }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+    React.useEffect(() => {
+        if (activitySequence && activitySequence.length > 0 &&
+            wordSoundsActivity === 'word-sounds' &&
+            preloadedWords.length > 0 &&
+            !showReviewPanel &&
+            !initialShowReviewPanel) {
+            debugLog("🎯 Lesson Plan: Auto-starting first activity:", activitySequence[0]);
+            hasStartedFromReview.current = true;
+            const autoStartTimer = setTimeout(() => {
+                startActivity(activitySequence[0]);
+            }, 100);
+            return () => clearTimeout(autoStartTimer);
+        }
+    }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel, initialShowReviewPanel]);
+    React.useEffect(() => {
+        if (wordSoundsActivity && (!sessionQueueRef.current[wordSoundsActivity] || sessionQueueRef.current[wordSoundsActivity].length === 0)) {
+            debugLog("🚀 Initializing Session Queue for", wordSoundsActivity);
+            generateSessionQueue(wordSoundsActivity, wordSoundsDifficulty || 'medium');
+            if (!currentWordSoundsWord) {
+                const hasWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+                if (hasWords) {
+                    hasStartedFromReview.current = true;
+                    startActivity(wordSoundsActivity);
+                } else {
+                    const first = getAdaptiveRandomWord();
+                    if (first) {
+                        const w = first.singleWord || first.word || first;
+                        setCurrentWordSoundsWord(w);
+                    }
+                }
+            }
+        }
+    }, [wordSoundsActivity, wordPool, preloadedWords.length, generateSessionQueue, startActivity]);
+    React.useEffect(() => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        if (audioInstances.current) {
+            audioInstances.current.forEach((audio) => {
+                try { audio.pause(); } catch (e) { warnLog('Caught error:', e?.message || e); }
+            });
+        }
+        setIsPlayingAudio(false);
+    }, [currentWordSoundsWord, wordSoundsActivity]);
+    React.useEffect(() => {
+        if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
+        if (showReviewPanel) return;
+        if (wordSoundsActivity === 'orthography') return;
+        let cancelled = false;
+        setIsPlayingAudio(true);
+        const runInstructionSequence = async () => {
+            try {
+                await new Promise(r => setTimeout(r, 800));
+                if (cancelled) return;
+                let instructionAudioSrc = null;
+                let instructionText = null;
+                const INST_KEY_MAP = {
+                    orthography: 'inst_orthography',
+                    spelling_bee: 'inst_spelling_bee',
+                    word_scramble: 'inst_word_scramble',
+                    missing_letter: 'inst_missing_letter',
+                    counting: 'inst_counting',
+                    blending: 'inst_blending',
+                    segmentation: 'inst_segmentation',
+                    rhyming: 'inst_rhyming',
+                    letter_tracing: 'inst_letter_tracing',
+                    sound_sort: 'inst_word_families',
+                    word_families: 'inst_word_families',
+                    mapping: 'mapping',
+                };
+                const instKey = INST_KEY_MAP[wordSoundsActivity] || wordSoundsActivity;
+                if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSoundsActivity !== 'rhyming' && wordSoundsActivity !== 'letter_tracing' && wordSoundsActivity !== 'sound_sort' && wordSoundsActivity !== 'word_families') {
+                    instructionAudioSrc = INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity];
+                } else if (wordSoundsActivity === 'isolation' && isolationState) {
+                    const posRaw = isolationState.currentPosition;
+                    const posKeyMap = { 'first': '1st', 'middle': 'middle', 'last': 'last' };
+                    const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
+                    const posKey = typeof posRaw === 'number' ? ordinals[posRaw] : (posKeyMap[posRaw] || posRaw);
+
+                    if (typeof ISOLATION_AUDIO !== 'undefined' && ISOLATION_AUDIO[posKey]) {
+                        instructionAudioSrc = ISOLATION_AUDIO[posKey];
+                    } else {
+                        const ordinalNames = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"];
+                        const posStr = typeof posRaw === 'number' ? ordinalNames[posRaw] : posRaw;
+                        instructionText = `What is the ${posStr || "target"} sound in ${currentWordSoundsWord}?`;
+                    }
+                } else if (wordSoundsActivity === 'letter_tracing') {
+                    const lowLet = currentWordSoundsWord.charAt(0).toLowerCase();
+                    const upperLet = currentWordSoundsWord.charAt(0).toUpperCase();
+                    if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['trace_letter']) {
+                        await handleAudio(INSTRUCTION_AUDIO['trace_letter']);
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowLet]) {
+                            await handleAudio(LETTER_NAME_AUDIO[lowLet]);
+                        } else {
+                            await handleAudio(upperLet);
+                        }
+                        await new Promise(r => setTimeout(r, 200));
+                        if (INSTRUCTION_AUDIO['for']) {
+                            await handleAudio(INSTRUCTION_AUDIO['for']);
+                            if (cancelled) return;
+                            await new Promise(r => setTimeout(r, 200));
+                        }
+                        await handleAudio(currentWordSoundsWord);
+                    } else if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowLet]) {
+                        instructionAudioSrc = LETTER_NAME_AUDIO[lowLet];
+                    } else {
+                        instructionText = `Trace the letter ${upperLet} for ${currentWordSoundsWord}`;
+                    }
+                } else if (wordSoundsActivity === 'word_families') {
+                    const newPhonemes = { ...wordSoundsPhonemes };
+                    if (!newPhonemes.familyMembers) newPhonemes.familyMembers = [];
+                    if (!newPhonemes.rhymeDistractors) newPhonemes.rhymeDistractors = [];
+                    if (type === 'member') {
+                        while (newPhonemes.familyMembers.length <= index) newPhonemes.familyMembers.push('');
+                        newPhonemes.familyMembers[index] = newValue;
+                    } else if (type === 'distractor') {
+                        while (newPhonemes.rhymeDistractors.length <= index) newPhonemes.rhymeDistractors.push('');
+                        newPhonemes.rhymeDistractors[index] = newValue;
+                    } else if (type === 'remove_member') {
+                        newPhonemes.familyMembers.splice(index, 1);
+                    } else if (type === 'remove_distractor') {
+                        newPhonemes.rhymeDistractors.splice(index, 1);
+                    } else if (type === 'add_member') {
+                        newPhonemes.familyMembers.push('');
+                    } else if (type === 'add_distractor') {
+                        newPhonemes.rhymeDistractors.push('');
+                    }
+                    setWordSoundsPhonemes(newPhonemes);
+                } else if (wordSoundsActivity === 'sound_sort') {
+                    const targetWord = (currentWordSoundsWord || '').toLowerCase();
+                    const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                    const mode = (wordSeed % 2 === 0) ? 'first' : 'last';
+                    let targetSound = '';
+                    if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes) {
+                        targetSound = mode === 'first' ? wordSoundsPhonemes.phonemes[0] : wordSoundsPhonemes.phonemes[wordSoundsPhonemes.phonemes.length - 1];
+                    } else {
+                        targetSound = mode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord);
+                    }
+                    if (mode === 'first') {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['sound_match_start']) {
+                            await handleAudio(INSTRUCTION_AUDIO['sound_match_start']);
+                            await new Promise(r => setTimeout(r, 300));
+                            await handleAudio(targetSound);
+                        } else {
+                            instructionText = `Find words that start with the ${targetSound} sound`;
+                        }
+                    } else {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['sound_match_end']) {
+                            await handleAudio(INSTRUCTION_AUDIO['sound_match_end']);
+                            await new Promise(r => setTimeout(r, 300));
+                            await handleAudio(targetSound);
+                        } else {
+                            instructionText = `Find words that end with the ${targetSound} sound`;
+                        }
+                    }
+                } else if (wordSoundsActivity === 'word_families') {
+                    const targetWord = currentWordSoundsWord?.toLowerCase() || '';
+                    let targetRime = '';
+                    for (const rime of Object.keys(typeof RIME_FAMILIES !== 'undefined' ? RIME_FAMILIES : {})) {
+                        if (targetWord.endsWith(rime) && targetWord.length > rime.length) { targetRime = rime; break; }
+                    }
+                    if (!targetRime) targetRime = targetWord.slice(-2);
+                    if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['inst_word_families']) {
+                        await handleAudio(INSTRUCTION_AUDIO['inst_word_families']);
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (cancelled) return;
+                        await handleAudio(targetRime);
+                    } else {
+                        try {
+                            await handleAudio(`Find all words in the ${targetRime} family`);
+                        } catch (e) { warnLog('Word families instruction audio failed:', e); }
+                    }
+                } else if (wordSoundsActivity === 'rhyming') {
+                    if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['inst_rhyming']) {
+                        await handleAudio(INSTRUCTION_AUDIO['inst_rhyming']);
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (cancelled) return;
+                        await handleAudio(currentWordSoundsWord);
+                    } else {
+                        await handleAudio("Which word rhymes with");
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (cancelled) return;
+                        await handleAudio(currentWordSoundsWord);
+                    }
+                } else {
+                    instructionText = ts(`word_sounds.${wordSoundsActivity}_prompt`);
+                }
+                if (cancelled) return;
+                if (instructionAudioSrc) {
+                    await handleAudio(instructionAudioSrc);
+                } else if (instructionText && !isPlayingAudio) {
+                    await handleAudio(instructionText);
+                }
+                if (cancelled) return;
+                if (wordSoundsActivity === 'blending' && wordSoundsPhonemes?.phonemes) {
+                    await new Promise(r => setTimeout(r, 400));
+                    if (cancelled) return;
+                    await playBlending();
+                    let effectiveBlendingOptions = blendingOptionsRef.current;
+                    if (!effectiveBlendingOptions || effectiveBlendingOptions.length === 0) {
+                        for (let waitAttempt = 0; waitAttempt < 15; waitAttempt++) {
+                            await new Promise(r => setTimeout(r, 200));
+                            if (cancelled) return;
+                            if (blendingOptionsRef.current && blendingOptionsRef.current.length > 0) {
+                                effectiveBlendingOptions = blendingOptionsRef.current;
+                                break;
+                            }
+                        }
+                    }
+                    if (effectiveBlendingOptions && effectiveBlendingOptions.length > 0) {
+
+                        await Promise.all(effectiveBlendingOptions.map(o => handleAudio(typeof o === 'string' ? o : o.text, false).catch(() => { })));
+
+                        await new Promise(r => setTimeout(r, 600));
+                        for (let i = 0; i < effectiveBlendingOptions.length; i++) {
+                            if (cancelled) break;
+                            setHighlightedBlendIndex(i);
+                            await handleAudio(effectiveBlendingOptions[i]);
+                            if (cancelled) return;
+                            await new Promise(r => setTimeout(r, 500));
+                        }
+                        setHighlightedBlendIndex(null);
+                    }
+                }
+                if (wordSoundsActivity === 'segmentation' && currentWordSoundsWord) {
+                    await new Promise(r => setTimeout(r, 400));
+                    if (cancelled) return;
+                    await handleAudio(currentWordSoundsWord);
+                }
+                if (wordSoundsActivity === 'rhyming' && rhymeOptionsRef.current && rhymeOptionsRef.current.length > 0) {
+                    await new Promise(r => setTimeout(r, 300));
+
+                    for (let i = 0; i < rhymeOptionsRef.current.length; i++) {
+                        if (cancelled) break;
+                        setHighlightedRhymeIndex(i);
+                        await handleAudio(rhymeOptionsRef.current[i]);
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 600));
+                    }
+                    setHighlightedRhymeIndex(null);
+                }
+                if (wordSoundsActivity === 'isolation' && currentWordSoundsWord) {
+                    await new Promise(r => setTimeout(r, 400));
+                    if (cancelled) return;
+                    await handleAudio(currentWordSoundsWord);
+                    if (isolationState?.isoOptions?.length > 0) {
+                        await new Promise(r => setTimeout(r, 600));
+
+                        await Promise.all(isolationState.isoOptions.map(o => handleAudio(o, false).catch(() => { })));
+
+                        for (let i = 0; i < (isolationState?.isoOptions?.length || 0); i++) {
+                            if (cancelled) break;
+                            setHighlightedIsoIndex(i);
+                            await handleAudio(isolationState.isoOptions[i]);
+                            if (cancelled) return;
+                            await new Promise(r => setTimeout(r, 450));
+                        }
+                        setHighlightedIsoIndex(null);
+                    }
+                }
+                if (wordSoundsActivity === 'counting' && currentWordSoundsWord) {
+                    await new Promise(r => setTimeout(r, 400));
+                    if (cancelled) return;
+                    await handleAudio(currentWordSoundsWord);
+                }
+                if (wordSoundsActivity === 'sound_sort' && currentWordSoundsWord) {
+                    await new Promise(r => setTimeout(r, 400));
+                    if (cancelled) return;
+                    await handleAudio(currentWordSoundsWord);
+                }
+            } catch (e) { warnLog("Unhandled error in runInstructionSequence:", e); }
+        };
+        runInstructionSequence();
+        return () => { cancelled = true; };
+    }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.currentPosition]);
+    const playSynthesizedSound = (type, intensity = 0) => {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+                audioCtxRef.current = new AudioContext();
+            }
+            const ctx = audioCtxRef.current;
+            if (ctx.state === 'suspended') ctx.resume();
+            if (type === 'correct') {
+                const baseFreq = 523.25;
+                const steps = [0, 4, 7, 12, 16, 19, 24];
+                const step = steps[Math.min(intensity, steps.length - 1)] || 0;
+                const freq = baseFreq * Math.pow(2, step / 12);
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(freq * 1.01, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.6);
+            }
+        } catch (e) {
+            warnLog("Audio juice failed", e);
+        }
+    };
+    const checkAnswer = React.useCallback((answer, expectedAnswer) => {
+        debugLog("TeacherCheck: checkAnswer called", { answer, expectedAnswer, locked: submissionLockRef.current });
+        if (submissionLockRef.current) return;
+        try {
+            const safeAnswer = (answer ?? '').toString().toLowerCase().trim();
+            const safeExpected = (expectedAnswer ?? '').toString().toLowerCase().trim();
+            if (!safeExpected) {
+                warnLog("⚠️ checkAnswer: expectedAnswer is empty/null, skipping check");
+                return;
+            }
+            const ANSWER_EQUIV = { 'oi': 'oy', 'aw': 'au', 'ew': 'oo', 'oe': 'oa' };
+            const normAnswer = ANSWER_EQUIV[safeAnswer] || safeAnswer;
+            const normExpected = ANSWER_EQUIV[safeExpected] || safeExpected;
+            const isCorrect = normAnswer === normExpected || safeAnswer === safeExpected;
+            const effectiveCheckMode = getEffectiveImageMode();
+            if (!isCorrect && attempts < 2 && !isProbeMode) {
+                const newAttempts = attempts + 1;
+                setAttempts(newAttempts);
+                playSound('error');
+                if (newAttempts === 1) {
+                    if (effectiveCheckMode === 'progressive') setShowImageForCurrentWord(true);
+                    setWordSoundsFeedback?.({
+                        isCorrect: false,
+                        message: ts('word_sounds.fb_try_again') || "Try again! Listen closely... 👂",
+                    });
+                    try {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_try_again_listen']) {
+                            if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; }
+                            const tryAgainAudio = new Audio(INSTRUCTION_AUDIO['fb_try_again_listen']);
+                            feedbackAudioRef.current = tryAgainAudio;
+                            tryAgainAudio.volume = 0.7;
+                            tryAgainAudio.play().catch(() => { });
+                            tryAgainAudio.onended = () => {
+                                if (isMountedRef.current && currentWordSoundsWord) {
+                                    setTimeout(() => handleAudio(currentWordSoundsWord), 300);
+                                }
+                            };
+                        } else {
+                            setTimeout(() => {
+                                if (isMountedRef.current && currentWordSoundsWord) handleAudio(currentWordSoundsWord);
+                            }, 800);
+                        }
+                    } catch (e) { debugLog('fb_try_again_listen error', e); }
+                } else {
+                    const hint = wordSoundsPhonemes?.phonemes
+                        ? `Hint: This word has ${wordSoundsPhonemes.phonemes.length} sounds and starts with "${safeExpected.charAt(0).toUpperCase()}"`
+                        : `Hint: It starts with "${safeExpected.charAt(0).toUpperCase()}"`;
+                    setWordSoundsFeedback?.({
+                        isCorrect: false,
+                        message: (ts('word_sounds.fb_one_more_try') || `${hint} — one more try! 💪`),
+                    });
+                    setShowWordText(true);
+                    try {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_almost']) {
+                            if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; }
+                            const almostAudio = new Audio(INSTRUCTION_AUDIO['fb_almost']);
+                            feedbackAudioRef.current = almostAudio;
+                            almostAudio.volume = 0.7;
+                            almostAudio.play().catch(() => { });
+                            almostAudio.onended = () => {
+                                if (isMountedRef.current) {
+                                    setTimeout(() => handleAudio(expectedAnswer), 300);
+                                }
+                            };
+                        } else {
+                            setTimeout(() => {
+                                if (isMountedRef.current) handleAudio(expectedAnswer);
+                            }, 800);
+                        }
+                    } catch (e) { debugLog('fb_almost error', e); }
+                }
+                setTimeout(() => { if (isMountedRef.current) setWordSoundsFeedback?.(null); }, 3000);
+                return;
+            }
+            submissionLockRef.current = true;
+            setAttempts(0);
+            const newStreak = isCorrect
+                ? (attempts > 0 ? wordSoundsScore.streak : wordSoundsScore.streak + 1)
+                : 0;
+            if (isCorrect) {
+                setIsCelebrating(true);
+                playSynthesizedSound('correct', newStreak);
+                setTimeout(() => { if (isMountedRef.current) setIsCelebrating(false); }, 2500);
+                setShowWordText(true);
+                if (setShowImageForCurrentWord) setShowImageForCurrentWord(true);
+            }
+            if (!isCorrect && effectiveCheckMode === 'afterCompletion') {
+                setShowImageForCurrentWord(true);
+            }
+            if (!isCorrect && alloBotRef && alloBotRef.current && alloBotRef.current.playAnimation) alloBotRef.current.playAnimation('sympathetic-tilt', 800);
+            setWordSoundsScore(prev => ({
+                correct: prev.correct + (isCorrect ? 1 : 0),
+                total: prev.total + 1,
+                streak: newStreak
+            }));
+            if (setWordSoundsStreak) setWordSoundsStreak(newStreak);
+            if (!isCorrect && !showLetterHints && newStreak === 0) {
+                const recentHistory = (wordSoundsHistory || []).slice(-5);
+                const recentAccuracy = recentHistory.length > 0
+                    ? recentHistory.filter(h => h.correct).length / recentHistory.length
+                    : 1;
+                if (recentAccuracy < 0.4) {
+                    setShowLetterHints(true);
+                    setWordSoundsFeedback?.({
+                        type: 'info',
+                        message: ts('word_sounds.fb_text_scaffold') || "Let's add some text to help! 📝"
+                    });
+                    debugLog("📝 Letter hints re-enabled due to low accuracy:", recentAccuracy);
+                }
+            }
+            if (!isProbeMode) {
+                if (isCorrect) {
+                    const baseXP = attempts > 0 ? 5 : 10;
+                    const streakBonus = attempts > 0 ? 0 : Math.min(newStreak * 2, 20);
+                    const effectiveDiff = getEffectiveDifficulty();
+                    const difficultyBonus = effectiveDiff === 'hard' ? 10 : effectiveDiff === 'medium' ? 5 : 0;
+                    const totalXP = baseXP + streakBonus + difficultyBonus;
+                    onScoreUpdate?.(totalXP, `word_sounds_${wordSoundsActivity}`);
+                }
+            }
+            setWordSoundsHistory(prev => [...prev, {
+                timestamp: Date.now(),
+                activity: wordSoundsActivity,
+                word: currentWordSoundsWord,
+                correct: isCorrect,
+                mode: showLetterHints ? 'visual' : 'sound_only',
+                difficulty: getEffectiveDifficulty(),
+                phonemes: wordSoundsPhonemes?.phonemes || []
+            }]);
+            if (!isCorrect && currentWordSoundsWord && !isProbeMode) {
+                const requeueActId = wordSoundsActivity || 'segmentation';
+                const currentQueue = sessionQueueRef.current[requeueActId] || [];
+                const wordEntry = preloadedWords.find(pw =>
+                (pw.word?.toLowerCase() === currentWordSoundsWord.toLowerCase() ||
+                    pw.targetWord?.toLowerCase() === currentWordSoundsWord.toLowerCase())
+                ) || currentWordSoundsWord;
+                sessionQueueRef.current[requeueActId] = [...currentQueue, wordEntry];
+                debugLog("♻️ Re-queued missed word for retry:", currentWordSoundsWord);
+            }
+            updateMasteryStats(wordSoundsActivity, isCorrect, currentWordSoundsWord);
+            const currentLessonConfig = lessonPlanConfig;
+            const hasLessonPlan = currentLessonConfig && activitySequence && activitySequence.length > 0;
+            if (autoDirectorCooldown.current) {
+                debugLog("⏸️ Auto-director on cooldown, skipping progression check");
+            } else if (hasLessonPlan && isCorrect && shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig)) {
+                debugLog("📋 Mastery achieved for:", wordSoundsActivity, masteryStats[wordSoundsActivity]);
+                setMasteryStats(prev => ({
+                    ...prev,
+                    [wordSoundsActivity]: { ...prev[wordSoundsActivity], completed: true }
+                }));
+                const uniqueActivities = [...new Set(activitySequence)];
+                const currentIdx = uniqueActivities.indexOf(wordSoundsActivity);
+                if (currentIdx < uniqueActivities.length - 1) {
+                    const nextActivity = uniqueActivities[currentIdx + 1];
+                    setWordSoundsFeedback({
+                        type: 'success',
+                        message: `✅ Activity complete! Moving to ${nextActivity.replace('_', ' ')}! 🎉`
+                    });
+                    setWordSoundsScore(prev => ({ ...prev, streak: 0 }));
+                    if (setWordSoundsStreak) setWordSoundsStreak(0);
+                    autoDirectorCooldown.current = true;
+                    setTimeout(() => {
+                        if (!isMountedRef.current) return;
+                        startActivity(nextActivity);
+                        setTimeout(() => { autoDirectorCooldown.current = false; }, 15000);
+                        if (!isMountedRef.current) return;
+                    }, 2500);
+                } else {
+                    if (revisitQueue.length > 0) {
+                        setWordSoundsFeedback({
+                            type: 'info',
+                            message: `📝 Let's review ${revisitQueue.length} words you missed!`
+                        });
+                        const firstRevisit = revisitQueue[0];
+                        if (firstRevisit) {
+                            setWordSoundsScore(prev => ({ ...prev, streak: 0 }));
+                            if (setWordSoundsStreak) setWordSoundsStreak(0);
+                            autoDirectorCooldown.current = true;
+                            setTimeout(() => {
+                                if (!isMountedRef.current) return;
+                                startActivity(firstRevisit.activityId, firstRevisit.word);
+                                setRevisitQueue(prev => prev.slice(1));
+                                setTimeout(() => { autoDirectorCooldown.current = false; }, 15000);
+                            }, 2500);
+                        }
+                    } else {
+                        setWordSoundsFeedback({
+                            type: 'success',
+                            message: `🎊 Lesson Complete! All activities mastered! 🌟`
+                        });
+                        setTimeout(() => { if (isMountedRef.current) setShowSessionComplete(true); }, 2500);
+                    }
+                }
+            } else if (!hasLessonPlan && isCorrect && wordSoundsActivity !== 'orthography') {
+                const actStats = masteryStats[wordSoundsActivity] || { attempted: 0 };
+                const MIN_PRACTICE = 5;
+                const queueRemaining = sessionQueueRef.current[wordSoundsActivity] || [];
+                const allWordsCompleted = actStats.attempted > 0 && queueRemaining.length === 0;
+                const readyToAdvance = (actStats.attempted >= MIN_PRACTICE && newStreak >= 3) || allWordsCompleted;
+                if (showLetterHints && newStreak >= 3) {
+                    setWordSoundsFeedback({
+                        type: 'success',
+                        message: ts('word_sounds.fb_no_text_mode') || "Awesome! Let's try WITHOUT text now! 🙈",
+                    });
+                    setTimeout(() => { if (isMountedRef.current) setShowLetterHints(false); }, 2000);
+                }
+                else if (!showLetterHints && readyToAdvance) {
+                    const PHONO_ORDER = ['counting', 'isolation', 'blending', 'segmentation', 'rhyming', 'word_families', 'sound_sort'];
+                    const currentIdx = PHONO_ORDER.indexOf(wordSoundsActivity);
+                    if (currentIdx >= 0 && currentIdx < PHONO_ORDER.length - 1) {
+                        const nextActivity = PHONO_ORDER[currentIdx + 1];
+                        setWordSoundsFeedback({
+                            type: 'success',
+                            message: (ts('word_sounds.fb_great_work_next') || `Great work! Let's try ${nextActivity}! 🎉`)
+                        });
+                        setWordSoundsScore(prev => ({ ...prev, streak: 0 }));
+                        if (setWordSoundsStreak) setWordSoundsStreak(0);
+                        autoDirectorCooldown.current = true;
+                        debugLog("🛑 Auto-director cooldown STARTED for:", nextActivity);
+                        setTimeout(() => {
+                            if (!isMountedRef.current) return;
+                            if (!isProbeMode) setWordSoundsActivity(nextActivity);
+                            setTimeout(() => {
+                                if (!isMountedRef.current) return;
+                                autoDirectorCooldown.current = false;
+                                debugLog("✅ Auto-director cooldown CLEARED");
+                            }, 15000);
+                        }, 2000);
+                    } else if (includeOrthographic && wordSoundsScore.correct >= wordSoundsSessionGoal) {
+                        const ORTHO_ORDER = ['orthography', 'mapping', 'spelling_bee', 'word_scramble', 'missing_letter'];
+                        const orthoIdx = ORTHO_ORDER.indexOf(wordSoundsActivity);
+                        if (orthoIdx >= 0 && orthoIdx < ORTHO_ORDER.length - 1) {
+                            const nextOrtho = ORTHO_ORDER[orthoIdx + 1];
+                            setWordSoundsFeedback({
+                                type: 'success',
+                                message: ts('word_sounds.fb_spelling_transition') || `Great spelling! Let's try ${nextOrtho.replace(/_/g, ' ')}! 🏆`,
+                            });
+                            setWordSoundsScore(prev => ({ ...prev, streak: 0 }));
+                            if (setWordSoundsStreak) setWordSoundsStreak(0);
+                            autoDirectorCooldown.current = true;
+                            setTimeout(() => {
+                                if (!isMountedRef.current) return;
+                                if (!isProbeMode) setWordSoundsActivity(nextOrtho);
+                                setTimeout(() => { autoDirectorCooldown.current = false; }, 15000);
+                            }, 2000);
+                        } else if (orthoIdx === -1) {
+                            setWordSoundsFeedback({
+                                type: 'success',
+                                message: ts('word_sounds.fb_spelling_transition') || "You're a pro! Testing your spelling now! 👁️",
+                            });
+                            autoDirectorCooldown.current = true;
+                            setTimeout(() => {
+                                if (!isMountedRef.current) return;
+                                if (!isProbeMode) setWordSoundsActivity('orthography');
+                                setTimeout(() => { autoDirectorCooldown.current = false; }, 15000);
+                            }, 2000);
+                        }
+                    }
+                }
+            }
+            if (wordSoundsPhonemes?.phonemes) {
+                wordSoundsPhonemes?.phonemes && updatePhonemeMastery(wordSoundsPhonemes.phonemes, isCorrect);
+            }
+            if (!isCorrect && answer && expectedAnswer) {
+                trackConfusion(expectedAnswer, answer);
+            }
+            updateDailyProgress(isCorrect);
+            if (isCorrect && setWordSoundsSessionProgress) {
+                setWordSoundsSessionProgress(prev => {
+                    const newVal = prev + 1;
+                    if (newVal > 0 && newVal % 10 === 0) {
+                        playSound('success');
+                        setWordSoundsLevel && setWordSoundsLevel(l => l + 1);
+                        const nextLevel = (newVal / 10) + 1;
+                        const levelMessages = [
+                            `🌟 LEVEL ${nextLevel}! Words are getting trickier! 🌟`,
+                            `🚀 LEVEL ${nextLevel}! You're a phonics star! 🌟`,
+                            `🏆 LEVEL ${nextLevel}! Challenge mode activated! 🌟`,
+                        ];
+                        setWordSoundsFeedback?.({
+                            type: 'success',
+                            message: levelMessages[Math.floor(Math.random() * levelMessages.length)]
+                        });
+                        try {
+                            if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_amazing']) {
+                                if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; }
+                                const audio = new Audio(INSTRUCTION_AUDIO['fb_amazing']);
+                                feedbackAudioRef.current = audio;
+                                audio.volume = 0.7;
+                                audio.play().catch(() => { });
+                            }
+                        } catch (e) { debugLog('Level-up audio error', e); }
+                        return 0;
+                    }
+                    return newVal;
+                });
+            }
+            checkAndAwardBadges(wordSoundsActivity, isCorrect, newStreak);
+            const streakCelebration = (newStreak === 5 || newStreak === 10 || newStreak === 25)
+                ? ` 🔥 ${newStreak} in a row!`
+                : '';
+            if (isCorrect) {
+                const feedbackAudioKey = (() => {
+                    if (newStreak === 5) return 'fb_on_fire';
+                    if (newStreak === 10) return 'fb_excellent';
+                    if (newStreak === 25) return 'fb_wow';
+                    if (newStreak === 1) return 'fb_you_got_it';
+                    if (Math.random() < 0.3) {
+                        const pool = ['fb_great_job', 'fb_nice', 'fb_keep_going',
+                            'fb_way_to_go', 'fb_perfect', 'fb_correct', 'fb_you_got_it',
+                            'fb_excellent'];
+                        return pool[Math.floor(Math.random() * pool.length)];
+                    }
+                    return null;
+                })();
+                if (feedbackAudioKey) {
+                    try {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO[feedbackAudioKey]) {
+                            if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; }
+                            const audio = new Audio(INSTRUCTION_AUDIO[feedbackAudioKey]);
+                            feedbackAudioRef.current = audio;
+                            audio.volume = 0.6;
+                            audio.play().catch(e => debugLog('Audio play error', e));
+                        }
+                    } catch (err) { debugLog('Audio init error', err); }
+                }
+            }
+            setWordSoundsFeedback?.({
+                isCorrect,
+                streak: newStreak,
+                message: isCorrect
+                    ? ts('word_sounds.feedback_correct') + streakCelebration
+                    : (ts('word_sounds.fb_nice_try') || `Nice try! The answer was "${expectedAnswer}".`)
+            });
+            if (!isCorrect && expectedAnswer) {
+                setTimeout(() => {
+                    if (isMountedRef.current) handleAudio(expectedAnswer);
+                }, 600);
+            }
+            setTimeout(() => {
+                submissionLockRef.current = false;
+                const actId = wordSoundsActivity || 'segmentation';
+                let queue = sessionQueueRef.current[actId] || [];
+                const currentLower = (currentWordSoundsWord || '').toLowerCase();
+                while (queue.length > 0) {
+                    const peekWord = queue[0];
+                    const peekTarget = (peekWord.singleWord || peekWord.fullTerm || peekWord.word || peekWord || '').toString().toLowerCase();
+                    if (peekTarget === currentLower && queue.length > 1) {
+                        queue = [...queue.slice(1), queue[0]];
+                        debugLog("⏩ Skipped repeat word in queue:", peekTarget);
+                    } else {
+                        break;
+                    }
+                }
+                sessionQueueRef.current[actId] = queue;
+                if (queue.length > 0) {
+                    const queueWord = queue[0];
+                    sessionQueueRef.current[actId] = queue.slice(1);
+                    setSessionWordLists(prev => ({ ...prev, [actId]: queue.slice(1) }));
+                    const queueTargetWord = queueWord.singleWord || queueWord.fullTerm || queueWord.word || queueWord;
+                    const bufferedWord = preloadedWords.find(
+                        pw => (pw.word?.toLowerCase() === queueTargetWord.toLowerCase() ||
+                            pw.targetWord?.toLowerCase() === queueTargetWord.toLowerCase() ||
+                            pw.displayWord?.toLowerCase() === queueTargetWord.toLowerCase())
+                    ) || queueWord;
+                    const targetWord = bufferedWord.targetWord || bufferedWord.displayWord || bufferedWord.word || '';
+                    const phonemeData = bufferedWord;
+                    const wordImage = bufferedWord.image;
+                    setCurrentWordSoundsWord(targetWord);
+                    setCurrentWordImage(wordImage);
+                    setShowWordText(false);
+                    setShowImageForCurrentWord(false);
+                    applyWordDataToState(phonemeData);
+                    if (wordSoundsActivity === 'orthography') {
+                        const bufferedTargetWord = bufferedWord?.targetWord || bufferedWord?.word;
+                        if (bufferedTargetWord && bufferedTargetWord.toLowerCase() === targetWord.toLowerCase()) {
+                            if (lastWordForOrthography.current === targetWord) {
+                                debugLog("⏩ Orthography options already set for:", targetWord);
+                            } else {
+                                const pool = wordSoundsPhonemes?.orthographyDistractors?.length > 0 ? wordSoundsPhonemes.orthographyDistractors : (phonemeData?.orthographyDistractors || generateOrthographyDistractors(targetWord));
+                                const distractors = fisherYatesShuffle(pool).slice(0, 5);
+                                const options = fisherYatesShuffle([targetWord, ...distractors]);
+                                setOrthographyOptions(options);
+                                lastWordForOrthography.current = targetWord;
+                            }
+                        } else {
+                            warnLog("⚠️ Orthography buffer mismatch, skipping:", bufferedTargetWord, "vs", targetWord);
+                        }
+                    }
+                    if (wordSoundsActivity === 'rhyming') {
+                        const bufferedTargetWord = bufferedWord?.targetWord || bufferedWord?.word;
+                        if (bufferedTargetWord && bufferedTargetWord.toLowerCase() === targetWord.toLowerCase()) {
+                            if (lastWordForRhyming.current === targetWord) {
+                                debugLog("⏩ Rhyme options already set for:", targetWord);
+                            } else {
+                                const correctRhyme = phonemeData?.rhymeWord;
+                                const distractorPool = phonemeData?.rhymeDistractors || ['dog', 'cat', 'run', 'bed', 'sit'];
+                                const distractors = fisherYatesShuffle(distractorPool).slice(0, 5);
+                                const options = correctRhyme
+                                    ? fisherYatesShuffle([correctRhyme, ...distractors])
+                                    : distractors;
+                                setRhymeOptions(options);
+                                lastWordForRhyming.current = targetWord;
+                            }
+                        } else {
+                            warnLog("⚠️ Rhyme buffer mismatch, skipping:", bufferedTargetWord, "vs", targetWord);
+                        }
+                    }
+                    if (['segmentation', 'blending'].includes(wordSoundsActivity) && phonemeData?.phonemes) {
+                        if (lastWordForBlending.current !== targetWord) {
+                            setSoundChips(generateSoundChips(phonemeData.phonemes));
+                            setElkoninBoxes(new Array(phonemeData.phonemeCount || phonemeData.phonemes.length).fill(null));
+                            lastWordForBlending.current = targetWord;
+                            if (wordSoundsActivity === 'blending' && phonemeData?.blendingDistractors) {
+                                const distractors = phonemeData.blendingDistractors.slice(0, 5);
+                                const options = fisherYatesShuffle([targetWord, ...distractors]);
+                                setBlendingOptions(options);
+                                debugLog("📋 Set blending options from preloaded:", options);
+                            }
+                        } else {
+                            debugLog("⏩ Blending/segmentation state already set for:", targetWord);
+                        }
+                    }
+                    if (wordSoundsActivity === 'isolation') {
+                        if (bufferedWord.isolationOptions) {
+                            lastWordForIsolation.current = targetWord;
+                            isolationPositionRef.current = bufferedWord.isolationOptions.currentPosition;
+                            setIsolationState(bufferedWord.isolationOptions);
+                        } else if (lastWordForIsolation.current !== targetWord) {
+                            debugLog("🔧 Generating isolation state for:", targetWord);
+                            const phonemes = phonemeData?.phonemes || estimatePhonemesBasic(targetWord);
+                            const phonemeLen = phonemes.length || 2;
+                            const position = Math.floor(Math.random() * phonemeLen);
+                            const correctIdx = position;
+                            const correctPhoneme = phonemes[correctIdx] || phonemes[0] || targetWord.charAt(0);
+                            const allPhonemes = [...new Set(phonemes)];
+                            const distractors = allPhonemes.filter(p => p !== correctPhoneme).slice(0, 5);
+                            while (distractors.length < 5) distractors.push(['b', 'd', 'f', 'g', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't'][Math.floor(Math.random() * 12)]);
+                            const isoUniqueSet = new Set([correctPhoneme, ...distractors.slice(0, 5)].map(x => x?.toLowerCase()));
+                            const ioFiller = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'z', 'a', 'e', 'i', 'o', 'u'];
+                            const ioFilled = [correctPhoneme, ...distractors.slice(0, 5)];
+                            for (const p of ioFiller) { if (ioFilled.length >= 6) break; if (!isoUniqueSet.has(p)) { ioFilled.push(p); isoUniqueSet.add(p); } }
+                            const isoOptions = fisherYatesShuffle(ioFilled.slice(0, 6));
+                            const generatedState = {
+                                correctAnswer: correctPhoneme,
+                                currentPosition: position,
+                                isoOptions: isoOptions,
+                                prompt: position === 0 ? 'beginning' : position === phonemeLen - 1 ? 'ending' : 'middle'
+                            };
+                            isolationPositionRef.current = position;
+                            lastWordForIsolation.current = targetWord;
+                            setIsolationState(generatedState);
+                        }
+                    }
+                    setIsLoadingPhonemes(false);
+                    setCurrentWordIndex(prev => prev + 1);
+                    setNextWordBuffer(null);
+                    setWordSoundsFeedback?.(null);
+                    setUserAnswer('');
+                    setTimeout(() => prefetchNextWords(), 100);
+                } else {
+                    const fallbackActId = wordSoundsActivity || 'segmentation';
+                    const fallbackQueue = sessionQueueRef.current[fallbackActId];
+                    let word = null;
+                    if (fallbackQueue && fallbackQueue.length > 0) {
+                        word = fallbackQueue[0];
+                        sessionQueueRef.current[fallbackActId] = fallbackQueue.slice(1);
+                        setSessionWordLists(prev => ({ ...prev, [fallbackActId]: fallbackQueue.slice(1) }));
+                    }
+                    if (!word && wordPool && wordPool.length > 0) {
+                        debugLog("WordSounds: Queue empty during progression. Regenerating with 'medium' fallback...");
+                        generateSessionQueue(wordSoundsActivity, 'medium');
+                        const regenQueue = sessionQueueRef.current[fallbackActId];
+                        if (regenQueue && regenQueue.length > 0) {
+                            const fCurrentLower = (currentWordSoundsWord || '').toLowerCase();
+                            let fIdx = regenQueue.findIndex(w => {
+                                const wt = (w.singleWord || w.fullTerm || w.word || w || '').toString().toLowerCase();
+                                return wt !== fCurrentLower;
+                            });
+                            if (fIdx < 0) fIdx = 0; // fallback to first if all match
+                            word = regenQueue[fIdx];
+                            sessionQueueRef.current[fallbackActId] = regenQueue.slice(1);
+                            setSessionWordLists(prev => ({ ...prev, [fallbackActId]: regenQueue.slice(1) }));
+                        }
+                    }
+                    if (word) {
+                        const targetWord = word.singleWord || word.fullTerm || word.term || word.word || word;
+                        setCurrentWordSoundsWord(targetWord);
+                        const preloadedMatch = preloadedWords.find(
+                            pw => (pw.word?.toLowerCase() === targetWord.toLowerCase() ||
+                                pw.targetWord?.toLowerCase() === targetWord.toLowerCase() ||
+                                pw.displayWord?.toLowerCase() === targetWord.toLowerCase())
+                        );
+                        const correctImage = preloadedMatch?.image || word.image;
+                        debugLog("🖼️ Image sync check:", targetWord, "preloaded:", !!preloadedMatch, "image:", !!correctImage);
+                        setCurrentWordImage(correctImage);
+                        setShowWordText(false);
+                        if (preloadedMatch && preloadedMatch.phonemes) {
+                            debugLog("🚀 Using preloaded phonemes for:", targetWord);
+                            setWordSoundsPhonemes(preloadedMatch);
+                            setIsLoadingPhonemes(false);
+                            if (wordSoundsActivity === 'blending' && preloadedMatch.blendingDistractors) {
+                                const distractors = preloadedMatch.blendingDistractors.slice(0, 5);
+                                const options = fisherYatesShuffle([targetWord, ...distractors]);
+                                setBlendingOptions(options);
+                                lastWordForBlending.current = targetWord;
+                                debugLog("📋 [Fallback] Set blending options:", options);
+                            }
+                            if (wordSoundsActivity === 'rhyming' && preloadedMatch.rhymeDistractors) {
+                                const correctRhyme = preloadedMatch.rhymeWord;
+                                const distractors = preloadedMatch.rhymeDistractors.slice(0, 5);
+                                const options = correctRhyme
+                                    ? fisherYatesShuffle([correctRhyme, ...distractors])
+                                    : distractors;
+                                setRhymeOptions(options);
+                                lastWordForRhyming.current = targetWord;
+                                debugLog("📋 [Fallback] Set rhyme options:", options);
+                            }
+                        } else {
+                            debugLog("📦 Using local fallback for:", targetWord, "(no preloaded match)");
+                            const fallback = generateFallbackData(targetWord);
+                            if (fallback) {
+                                applyWordDataToState(fallback);
+                                wordDataCache.current.set(targetWord.toLowerCase(), fallback);
+                            }
+                            setIsLoadingPhonemes(false);
+                        }
+                        if (wordSoundsActivity === 'isolation' && lastWordForIsolation.current !== targetWord) {
+                            debugLog("🔧 [Fallback] Generating isolation state for:", targetWord);
+                            const iso_phonemes = preloadedMatch?.phonemes || estimatePhonemesBasic(targetWord);
+                            const iso_phonemeLen = iso_phonemes.length || 2;
+                            const iso_position = Math.floor(Math.random() * iso_phonemeLen);
+                            const iso_correctIdx = iso_position;
+                            const iso_correct = iso_phonemes[iso_correctIdx] || iso_phonemes[0] || targetWord.charAt(0);
+                            const iso_all = [...new Set(iso_phonemes)];
+                            const iso_dist = iso_all.filter(p => p !== iso_correct).slice(0, 5);
+                            while (iso_dist.length < 5) iso_dist.push(['b', 'd', 'f', 'g', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't'][Math.floor(Math.random() * 12)]);
+                            const iso_unique = new Set([iso_correct, ...iso_dist.slice(0, 5)].map(x => x?.toLowerCase()));
+                            const iso_filler = ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'z', 'a', 'e', 'i', 'o', 'u'];
+                            const iso_filled = [iso_correct, ...iso_dist.slice(0, 5)];
+                            for (const p of iso_filler) { if (iso_filled.length >= 6) break; if (!iso_unique.has(p)) { iso_filled.push(p); iso_unique.add(p); } }
+                            const iso_opts = fisherYatesShuffle(iso_filled.slice(0, 6));
+                            isolationPositionRef.current = iso_position;
+                            lastWordForIsolation.current = targetWord;
+                            setIsolationState({
+                                word: targetWord,
+                                correctAnswer: iso_correct,
+                                correctSound: iso_correct,
+                                currentPosition: iso_position,
+                                isoOptions: iso_opts,
+                                prompt: iso_position === 0 ? 'beginning' : iso_position === iso_phonemeLen - 1 ? 'ending' : 'middle'
+                            });
+                        }
+                        setIsLoadingPhonemes(false);
+                        setWordSoundsFeedback?.(null);
+                        setUserAnswer('');
+                    } else {
+                        if (isProbeMode ? wordSoundsScore.total >= wordSoundsSessionGoal : wordSoundsScore.correct >= (wordSoundsSessionGoal + (orthoSessionGoal || 0))) {
+                            debugLog("WordSounds: Session Goal Met! Complete.");
+                            if (isProbeMode && probeStartTimeRef.current && onProbeComplete) {
+                                const elapsedMinutes = Math.max((Date.now() - probeStartTimeRef.current) / 60000, 0.01);
+                                const wcpm = Math.round(wordSoundsScore.correct / elapsedMinutes);
+                                onProbeComplete({ wcpm, correct: wordSoundsScore.correct, total: wordSoundsScore.total, elapsed: Math.round(elapsedMinutes * 60), activity: wordSoundsActivity });
+                            }
+                            setShowSessionComplete(true);
+                        } else if (isProbeMode) {
+                            debugLog("📊 Probe: Queue depleted. Ending probe.");
+                            if (probeStartTimeRef.current && onProbeComplete) {
+                                const elapsedMinutes = Math.max((Date.now() - probeStartTimeRef.current) / 60000, 0.01);
+                                const wcpm = Math.round(wordSoundsScore.correct / elapsedMinutes);
+                                onProbeComplete({ wcpm, correct: wordSoundsScore.correct, total: wordSoundsScore.total, elapsed: Math.round(elapsedMinutes * 60), activity: wordSoundsActivity });
+                            }
+                            setShowSessionComplete(true);
+                        } else if (isProbeMode) {
+                            debugLog("📊 Probe: Queue depleted. Ending probe.");
+                            if (probeStartTimeRef.current && onProbeComplete) {
+                                const elapsedMinutes = Math.max((Date.now() - probeStartTimeRef.current) / 60000, 0.01);
+                                const wcpm = Math.round(wordSoundsScore.correct / elapsedMinutes);
+                                onProbeComplete({ wcpm, correct: wordSoundsScore.correct, total: wordSoundsScore.total, elapsed: Math.round(elapsedMinutes * 60), activity: wordSoundsActivity });
+                            }
+                            setShowSessionComplete(true);
+                        } else {
+                            debugLog("⚠️ Queue empty but goal not met. Forcing refill...");
+                            generateSessionQueue(wordSoundsActivity, 'medium');
+                            const retryActId = wordSoundsActivity || 'segmentation';
+                            const retryQueue = sessionQueueRef.current[retryActId];
+                            const retryWord = (retryQueue && retryQueue.length > 0) ? retryQueue.shift() : null;
+                            if (retryWord) sessionQueueRef.current[retryActId] = retryQueue;
+                            if (retryWord) {
+                                const target = retryWord.singleWord || retryWord.word || retryWord;
+                                debugLog("♻️ Refill successful, continuing with:", target);
+                                setCurrentWordSoundsWord(target);
+                                const refillPreloaded = preloadedWords.find(pw =>
+                                (pw.word?.toLowerCase() === target.toLowerCase() ||
+                                    pw.targetWord?.toLowerCase() === target.toLowerCase()));
+                                if (refillPreloaded && refillPreloaded.phonemes) {
+                                    setWordSoundsPhonemes(refillPreloaded);
+                                } else {
+                                    const fallback = generateFallbackData(target);
+                                    if (fallback) applyWordDataToState(fallback);
+                                }
+                                setIsLoadingPhonemes(false);
+                            } else {
+                                warnLog("❌ Refill failed (no words). Ending session.");
+                                setShowSessionComplete(true);
+                            }
+                        }
+                    }
+                }
+            }, isProbeMode ? (isCorrect ? 800 : 1200) : (isCorrect ? 2000 : 3000));
+        } catch (e) {
+            warnLog("CheckAnswer CRITICAL FAIL", e);
+            submissionLockRef.current = false;
+            console.error("CheckAnswer error details:", e?.message, e?.stack);
+            if (e?.message?.includes('Cannot read properties of null') || e?.message?.includes('undefined')) {
+                debugLog("⚠️ checkAnswer: Swallowed null-reference error:", e.message);
+            } else {
+                addToast("Error checking answer - please try again", 'error');
+            }
+        }
+    }, [wordSoundsScore, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes,
+        onScoreUpdate, setWordSoundsScore, setWordSoundsHistory, setWordSoundsFeedback,
+        getAdaptiveRandomWord, setCurrentWordSoundsWord, fetchWordData, ts, getEffectiveDifficulty,
+        updatePhonemeMastery, trackConfusion, updateDailyProgress, checkAndAwardBadges, setWordSoundsStreak,
+        nextWordBuffer, preloadedWords, prefetchNextWords, generateSoundChips]);
+    React.useEffect(() => {
+        if (useMicInput && !isListening && userAnswer) {
+            debugLog("🎤 Mic input received:", userAnswer);
+            let expected = currentWordSoundsWord;
+            if (wordSoundsActivity === 'rhyming') {
+                expected = wordSoundsPhonemes?.rhymeWord;
+                const isCorrect = expected && userAnswer.toLowerCase().trim() === expected.toLowerCase().trim();
+                checkAnswer(isCorrect ? 'correct' : 'incorrect', 'correct');
+                return;
+            }
+            if (expected) {
+                checkAnswer(userAnswer, expected);
+            }
+        }
+    }, [useMicInput, isListening, userAnswer, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, checkAnswer]);
+    const handleMicInput = React.useCallback(() => {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            addToast("Microphone not supported in this browser", "error");
+            return;
+        }
+        if (isListening) {
+            recognitionRef.current?.stop();
+            setIsListening(false);
+            return;
+        }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = wordSoundsLanguage || 'en-US';
+        recognition.onstart = () => {
+            setIsListening(true);
+            playSound('pop');
+        };
+        recognition.onend = () => setIsListening(false);
+        recognition.onerror = (e) => {
+            warnLog("Mic Error", e);
+            setIsListening(false);
+            if (e.error !== 'no-speech') {
+                addToast(ts('common.mic_error') || "Microphone error", "error");
+            }
+        };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            debugLog("Mic Transcript:", transcript);
+            setUserAnswer(transcript);
+            let expected = currentWordSoundsWord;
+            if (wordSoundsActivity === 'rhyming') expected = wordSoundsPhonemes?.rhymeWord;
+            const cleanTranscript = transcript.toLowerCase().trim().replace(/[.,!?]/g, '');
+            const cleanTarget = expected?.toLowerCase().trim().replace(/[.,!?]/g, '');
+            if (cleanTranscript === cleanTarget) {
+                checkAnswer('correct', 'correct');
+            } else {
+                checkAnswer(transcript, expected);
+            }
+        };
+        recognition.start();
+    }, [wordSoundsLanguage, isListening, currentWordSoundsWord, wordSoundsActivity, wordSoundsPhonemes, checkAnswer, addToast, playSound, ts]);
+    const handleChipClick = React.useCallback((chip, source, index) => {
+        setSegmentationErrors([]);
+        if (source === 'pool') {
+            const firstEmptyIndex = elkoninBoxes.findIndex(box => box === null);
+            if (firstEmptyIndex !== -1) {
+                const newBoxes = [...elkoninBoxes];
+                newBoxes[firstEmptyIndex] = chip;
+                setElkoninBoxes(newBoxes);
+                setSoundChips(prev => prev.map(c =>
+                    c.id === chip.id ? { ...c, used: true } : c
+                ));
+                playSound('pop');
+                handleAudio(chip.phoneme);
+            }
+        } else if (source === 'box') {
+            const newBoxes = [...elkoninBoxes];
+            newBoxes[index] = null;
+            setElkoninBoxes(newBoxes);
+            setSoundChips(prev => prev.map(c =>
+                c.id === chip.id ? { ...c, used: false } : c
+            ));
+            playSound('woosh');
+        }
+    }, [elkoninBoxes, soundChips, playSound]);
+    const handleSegDrop = React.useCallback((e, targetSource, targetIndex = null) => {
+        e.preventDefault();
+        if (!draggedItem) return;
+        const { item, source, index: sourceIndex } = draggedItem;
+        let newBoxes = [...elkoninBoxes];
+        let newChips = [...soundChips];
+        if (source === 'pool' && targetSource === 'box') {
+            const existingChip = newBoxes[targetIndex];
+            if (existingChip) {
+                newChips = newChips.map(c => c.id === existingChip.id ? { ...c, used: false } : c);
+            }
+            newBoxes[targetIndex] = item;
+            newChips = newChips.map(c => c.id === item.id ? { ...c, used: true } : c);
+            playSound('pop');
+            handleAudio(item.phoneme);
+        } else if (source === 'box' && targetSource === 'pool') {
+            newBoxes[sourceIndex] = null;
+            newChips = newChips.map(c => c.id === item.id ? { ...c, used: false } : c);
+            playSound('woosh');
+        } else if (source === 'box' && targetSource === 'box') {
+            if (sourceIndex === targetIndex) return;
+            const targetContent = newBoxes[targetIndex];
+            newBoxes[targetIndex] = item;
+            newBoxes[sourceIndex] = targetContent;
+            playSound('pop');
+        }
+        setElkoninBoxes(newBoxes);
+        setSoundChips(newChips);
+        setDraggedItem(null);
+        setSegmentationErrors([]);
+    }, [draggedItem, elkoninBoxes, soundChips, handleAudio]);
+    const handleMoveKey = React.useCallback((item, source, index) => {
+        if (source === 'pool') {
+            const firstEmpty = elkoninBoxes.findIndex(b => b === null);
+            if (firstEmpty !== -1) {
+                let newBoxes = [...elkoninBoxes];
+                let newChips = [...soundChips];
+                newBoxes[firstEmpty] = item;
+                newChips = newChips.map(c => c.id === item.id ? { ...c, used: true } : c);
+                playSound('pop');
+                handleAudio(item.phoneme);
+                setElkoninBoxes(newBoxes);
+                setSoundChips(newChips);
+            }
+        } else if (source === 'box') {
+            let newBoxes = [...elkoninBoxes];
+            let newChips = [...soundChips];
+            newBoxes[index] = null;
+            newChips = newChips.map(c => c.id === item.id ? { ...c, used: false } : c);
+            playSound('woosh');
+            setElkoninBoxes(newBoxes);
+            setSoundChips(newChips);
+        }
+    }, [elkoninBoxes, soundChips, handleAudio]);
+    const handleOptionUpdate = (index, newValue, type) => {
+        if (type === 'set_correct') {
+            if (wordSoundsActivity === 'rhyming') {
+                setWordSoundsPhonemes(prev => ({ ...prev, rhymeWord: newValue }));
+                debugLog("✏️ Teacher set correct rhyme answer to:", newValue);
+                addToast?.(`✅ Correct answer set to "${newValue}"`, 'success');
+            } else if (wordSoundsActivity === 'isolation') {
+                setIsolationState(prev => ({ ...prev, correctSound: newValue, correctAnswer: newValue }));
+                debugLog("✏️ Teacher set correct isolation answer to:", newValue);
+                addToast?.(`✅ Correct answer set to "${newValue}"`, 'success');
+            } else if (wordSoundsActivity === 'blending') {
+                setCurrentWordSoundsWord(newValue);
+                debugLog("✏️ Teacher set correct blending answer to:", newValue);
+                addToast?.(`✅ Correct answer set to "${newValue}"`, 'success');
+            }
+            return;
+        }
+        if (wordSoundsActivity === 'orthography') {
+            const newOptions = [...orthographyOptions];
+            newOptions[index] = newValue;
+            setOrthographyOptions(newOptions);
+        } else if (wordSoundsActivity === 'rhyming') {
+            const newOptions = [...rhymeOptions];
+            newOptions[index] = newValue;
+            setRhymeOptions(newOptions);
+        } else if (wordSoundsActivity === 'sound_sort') {
+            const newPhonemes = { ...wordSoundsPhonemes };
+            const family = newPhonemes.wordFamily || (currentWordSoundsWord?.length > 2 ? currentWordSoundsWord.slice(1) : "at");
+            if (!newPhonemes.familyMembers) {
+                newPhonemes.familyMembers = [
+                    currentWordSoundsWord,
+                    `b${family}`,
+                    `c${family}`,
+                    `m${family}`
+                ];
+            }
+            if (!newPhonemes.rhymeDistractors) {
+                newPhonemes.rhymeDistractors = ['dog', 'bed', 'sit'];
+            }
+            if (type === 'member') {
+                while (newPhonemes.familyMembers.length <= index) newPhonemes.familyMembers.push('');
+                newPhonemes.familyMembers[index] = newValue;
+            } else if (type === 'distractor') {
+                while (newPhonemes.rhymeDistractors.length <= index) newPhonemes.rhymeDistractors.push('');
+                newPhonemes.rhymeDistractors[index] = newValue;
+            } else {
+                if (!newPhonemes.familyMembers) newPhonemes.familyMembers = [];
+                newPhonemes.familyMembers[index] = newValue;
+            }
+            setWordSoundsPhonemes(newPhonemes);
+        } else if (wordSoundsActivity === 'isolation') {
+            const newOptions = [...(isolationState?.isoOptions || [])];
+            newOptions[index] = newValue;
+            setIsolationState(prev => ({ ...prev, isoOptions: newOptions }));
+        } else if (wordSoundsActivity === 'mapping') {
+            const newGraphemes = [...(wordSoundsPhonemes?.graphemes || [])];
+            newGraphemes[index] = newValue;
+            setWordSoundsPhonemes(prev => ({ ...prev, graphemes: newGraphemes }));
+        } else if (wordSoundsActivity === 'segmentation' || wordSoundsActivity === 'blending') {
+            const newPhonemes = [...(wordSoundsPhonemes?.phonemes || [])];
+            newPhonemes[index] = newValue;
+            const updated = { ...wordSoundsPhonemes, phonemes: newPhonemes };
+            setWordSoundsPhonemes(updated);
+            setSoundChips(prev => {
+                const newChips = [...prev];
+                if (newChips[index]) {
+                    newChips[index] = { ...newChips[index], phoneme: newValue };
+                }
+                return newChips;
+            });
+        }
+    };
+    const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
+        const canvasRef = React.useRef(null);
+        const maskRef = React.useRef(null);
+        const localMountedRef = React.useRef(true);
+        const [isDrawing, setIsDrawing] = React.useState(false);
+        const [feedback, setFeedback] = React.useState(null);
+        const [resetKey, setResetKey] = React.useState(0);
+        const [startDotPos, setStartDotPos] = React.useState(null);
+        const [handAnimPos, setHandAnimPos] = React.useState(null);
+        const [isAnimating, setIsAnimating] = React.useState(true);
+        const audioCtxRef = React.useRef(null);
+        const noiseNodeRef = React.useRef(null);
+        const LETTER_SVG_PATHS = {
+            'a': 'M 200 100 Q 230 180 200 260 Q 160 280 120 230 Q 100 180 140 140 Q 180 120 220 160 L 220 260',
+            'b': 'M 120 80 L 120 260 M 120 180 Q 120 120 180 120 Q 240 120 240 190 Q 240 260 180 260 Q 120 260 120 200',
+            'c': 'M 220 130 Q 180 80 120 120 Q 80 160 80 200 Q 80 260 140 280 Q 200 280 220 240',
+            'd': 'M 200 80 L 200 260 M 200 180 Q 200 120 140 120 Q 80 140 80 200 Q 80 260 140 260 Q 200 260 200 200',
+            'e': 'M 100 180 L 220 180 Q 220 120 160 100 Q 100 120 100 180 Q 100 260 160 280 Q 220 260 220 220',
+            'f': 'M 200 90 Q 160 60 140 100 L 140 260 M 100 160 L 180 160',
+            'g': 'M 200 110 Q 200 80 160 80 Q 100 95 100 140 Q 100 190 160 210 Q 200 190 200 140 L 200 270 Q 180 300 120 285',
+            'h': 'M 100 80 L 100 260 M 100 160 Q 100 120 160 120 Q 220 120 220 180 L 220 260',
+            'i': 'M 160 100 L 160 100 M 160 140 L 160 260',
+            'j': 'M 180 80 L 180 80 M 180 110 L 180 250 Q 160 285 120 270',
+            'k': 'M 100 80 L 100 260 M 200 120 L 100 180 L 200 260',
+            'l': 'M 160 80 L 160 260',
+            'm': 'M 80 260 L 80 140 Q 80 100 120 100 Q 160 100 160 160 L 160 260 M 160 140 Q 160 100 200 100 Q 240 100 240 160 L 240 260',
+            'n': 'M 100 260 L 100 140 Q 100 100 160 100 Q 220 100 220 160 L 220 260',
+            'o': 'M 160 100 Q 100 100 100 180 Q 100 260 160 260 Q 220 260 220 180 Q 220 100 160 100',
+            'p': 'M 100 110 L 100 285 M 100 140 Q 100 95 160 95 Q 220 95 220 140 Q 220 190 160 190 Q 100 190 100 160',
+            'q': 'M 220 110 L 220 285 M 220 140 Q 220 95 160 95 Q 100 95 100 140 Q 100 190 160 190 Q 220 190 220 160',
+            'r': 'M 100 260 L 100 140 Q 120 100 180 120',
+            's': 'M 200 130 Q 160 100 120 130 Q 80 160 160 190 Q 240 220 200 260 Q 160 280 100 250',
+            't': 'M 150 80 L 150 260 M 100 130 L 200 130',
+            'u': 'M 100 140 L 100 220 Q 100 260 160 260 Q 220 260 220 220 L 220 140 L 220 260',
+            'v': 'M 80 140 L 160 260 L 240 140',
+            'w': 'M 60 140 L 110 260 L 160 180 L 210 260 L 260 140',
+            'x': 'M 100 140 L 220 260 M 220 140 L 100 260',
+            'y': 'M 100 110 L 160 160 M 220 110 L 160 160 L 120 270',
+            'z': 'M 100 140 L 220 140 L 100 260 L 220 260',
+            'A': 'M 60 260 L 160 60 L 260 260 M 100 180 L 220 180',
+            'B': 'M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 80 160 L 180 160 Q 250 160 250 210 Q 250 260 180 260 L 80 260',
+            'C': 'M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 200 280 240 220',
+            'D': 'M 80 60 L 80 260 M 80 60 L 160 60 Q 260 80 260 160 Q 260 240 160 260 L 80 260',
+            'E': 'M 220 60 L 80 60 L 80 260 L 220 260 M 80 160 L 180 160',
+            'F': 'M 220 60 L 80 60 L 80 260 M 80 160 L 180 160',
+            'G': 'M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 220 280 240 200 L 240 160 L 180 160',
+            'H': 'M 80 60 L 80 260 M 240 60 L 240 260 M 80 160 L 240 160',
+            'I': 'M 120 60 L 200 60 M 160 60 L 160 260 M 120 260 L 200 260',
+            'J': 'M 140 60 L 220 60 M 180 60 L 180 220 Q 180 280 120 280 Q 80 260 80 220',
+            'K': 'M 80 60 L 80 260 M 240 60 L 80 160 L 240 260',
+            'L': 'M 80 60 L 80 260 L 220 260',
+            'M': 'M 60 260 L 60 60 L 160 180 L 260 60 L 260 260',
+            'N': 'M 80 260 L 80 60 L 240 260 L 240 60',
+            'O': 'M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40',
+            'P': 'M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160',
+            'Q': 'M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40 M 200 220 L 260 280',
+            'R': 'M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 160 160 L 240 260',
+            'S': 'M 220 80 Q 180 40 120 60 Q 60 80 60 120 Q 60 160 160 180 Q 260 200 260 240 Q 260 280 180 280 Q 100 280 60 240',
+            'T': 'M 60 60 L 260 60 M 160 60 L 160 260',
+            'U': 'M 80 60 L 80 200 Q 80 280 160 280 Q 240 280 240 200 L 240 60',
+            'V': 'M 60 60 L 160 260 L 260 60',
+            'W': 'M 40 60 L 100 260 L 160 120 L 220 260 L 280 60',
+            'X': 'M 60 60 L 260 260 M 260 60 L 60 260',
+            'Y': 'M 60 60 L 160 160 L 160 260 M 260 60 L 160 160',
+            'Z': 'M 60 60 L 260 60 L 60 260 L 260 260',
+        };
+        const samplePathPoints = React.useMemo(() => {
+            return (pathD, numPoints = 40) => {
+                const ns = "http://www.w3.org/2000/svg";
+                const svg = document.createElementNS(ns, "svg");
+                const path = document.createElementNS(ns, "path");
+                path.setAttribute("d", pathD);
+                svg.appendChild(path);
+                document.body.appendChild(svg);
+                const totalLength = path.getTotalLength();
+                const points = [];
+                for (let i = 0; i <= numPoints; i++) {
+                    const distance = (i / numPoints) * totalLength;
+                    const pt = path.getPointAtLength(distance);
+                    points.push({ x: pt.x, y: pt.y });
+                }
+                document.body.removeChild(svg);
+                return points;
+            };
+        }, []);
+        React.useEffect(() => {
+            setIsAnimating(false);
+        }, [letter, resetKey]);
+        const startScratch = () => {
+            try {
+                if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = audioCtxRef.current;
+                if (ctx.state === 'suspended') ctx.resume();
+                const bufferSize = ctx.sampleRate * 2;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+                noise.loop = true;
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 800;
+                filter.Q.value = 1;
+                const gain = ctx.createGain();
+                gain.gain.value = 0.05;
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                noise.start();
+                noiseNodeRef.current = { node: noise, gain: gain };
+            } catch (e) { warnLog("Audio scratch failed", e); }
+        };
+        const stopScratch = () => {
+            if (noiseNodeRef.current) {
+                const { node, gain } = noiseNodeRef.current;
+                try {
+                    gain.gain.exponentialRampToValueAtTime(0.001, node.context.currentTime + 0.1);
+                    node.stop(node.context.currentTime + 0.1);
+                } catch (e) { warnLog('Caught error:', e?.message || e); }
+                noiseNodeRef.current = null;
+            }
+        };
+        React.useEffect(() => {
+            return () => {
+                if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                if (audioInstances.current) {
+                    audioInstances.current.forEach((audio) => {
+                        try {
+                            audio.pause();
+                            audio.src = '';
+                        } catch (e) { warnLog('Caught error:', e?.message || e); }
+                    });
+                    audioInstances.current.clear();
+                }
+                if (audioCtxRef.current) {
+                    try { audioCtxRef.current.close(); } catch (e) { warnLog('Caught error:', e?.message || e); }
+                }
+                if (feedbackAudioRef.current) { feedbackAudioRef.current.pause(); feedbackAudioRef.current = null; }
+                localMountedRef.current = false;
+            };
+        }, []);
+        React.useEffect(() => {
+            const canvas = canvasRef.current;
+            const mask = maskRef.current;
+            if (!canvas || !mask) return;
+            const width = canvas.width;
+            const height = canvas.height;
+            const ctx = canvas.getContext('2d');
+            const mCtx = mask.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+            mCtx.clearRect(0, 0, width, height);
+            const font = 'bold 200px "Comic Sans MS", "Chalkboard SE", sans-serif';
+            ctx.font = font;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 25;
+            ctx.setLineDash([15, 15]);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeText(letter, width / 2, height / 2 + 20);
+            mCtx.font = font;
+            mCtx.textAlign = 'center';
+            mCtx.textBaseline = 'middle';
+            mCtx.fillStyle = '#000000';
+            mCtx.strokeStyle = '#ff0000';
+            mCtx.lineWidth = 35;
+            mCtx.setLineDash([]);
+            mCtx.lineCap = 'round';
+            mCtx.lineJoin = 'round';
+            mCtx.strokeText(letter, width / 2, height / 2 + 20);
+            const mData = mCtx.getImageData(0, 0, width, height).data;
+            const svgPath = LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
+            let startX = width / 2, startY = 60, found = false;
+            if (svgPath) {
+                const mMatch = svgPath.match(/^M\s+([\d.]+)\s+([\d.]+)/);
+                if (mMatch) {
+                    const svgX = parseFloat(mMatch[1]);
+                    const svgY = parseFloat(mMatch[2]);
+                    const searchRadius = 40;
+                    let bestDist = Infinity;
+                    for (let dy = -searchRadius; dy <= searchRadius; dy += 2) {
+                        for (let dx = -searchRadius; dx <= searchRadius; dx += 2) {
+                            const px = Math.round(svgX + dx);
+                            const py = Math.round(svgY + dy);
+                            if (px < 0 || px >= width || py < 0 || py >= height) continue;
+                            const idx = (py * width + px) * 4;
+                            if (mData[idx + 3] > 100) {
+                                const dist = dx * dx + dy * dy;
+                                if (dist < bestDist) {
+                                    bestDist = dist;
+                                    startX = px;
+                                    startY = py;
+                                    found = true;
+                                }
+                            }
+                        }
+                    }
+                    if (!found) { startX = svgX; startY = svgY; found = true; }
+                }
+            }
+            if (!found) {
+                for (let y = 40; y < height; y += 4) {
+                    for (let x = 40; x < width; x += 4) {
+                        const i = (y * width + x) * 4;
+                        if (mData[i + 3] > 100) {
+                            startX = x; startY = y; found = true; break;
+                        }
+                    }
+                    if (found) break;
+                }
+            }
+            if (found) {
+                ctx.beginPath();
+                ctx.arc(startX, startY, 12, 0, Math.PI * 2);
+                ctx.fillStyle = '#10b981';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.setLineDash([]);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                setStartDotPos({ x: startX, y: startY });
+            } else {
+                setStartDotPos(null);
+            }
+        }, [letter, resetKey]);
+        const checkTracing = () => {
+            const canvas = canvasRef.current;
+            const mask = maskRef.current;
+            if (!canvas || !mask) return;
+            const width = canvas.width;
+            const height = canvas.height;
+            const uData = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+            const mData = mask.getContext('2d').getImageData(0, 0, width, height).data;
+            let hits = 0;
+            let totalTarget = 0;
+            let outsideInk = 0;
+            for (let i = 0; i < uData.length; i += 4) {
+                const uAlpha = uData[i + 3];
+                const mAlpha = mData[i + 3];
+                const isInk = uAlpha > 50 && uData[i] < 160 && uData[i + 1] < 160;
+                const isTarget = mAlpha > 50;
+                if (isTarget) {
+                    totalTarget++;
+                    if (isInk) hits++;
+                } else if (isInk) {
+                    outsideInk++;
+                }
+            }
+            const coverage = hits / (totalTarget || 1);
+            const messiness = outsideInk / (totalTarget || 1);
+            debugLog("Trace Score:", coverage, messiness, "Hits:", hits, "Target:", totalTarget);
+            if (coverage > 0.20 || (hits > 300 && messiness < 2.0)) {
+                setFeedback({ type: 'success', emoji: '🌟', size: 'lg' });
+                setTimeout(() => { if (localMountedRef.current) onComplete(true); }, 800);
+            } else if (coverage > 0.05) {
+                setFeedback({ type: 'neutral', emoji: '👆', size: 'md' });
+                setTimeout(() => { if (localMountedRef.current) setFeedback(null); }, 2000);
+            } else {
+                setFeedback({ type: 'error', emoji: '🔄', size: 'md' });
+                setTimeout(() => { if (localMountedRef.current) setFeedback(null); }, 2000);
+            }
+        };
+        const getPoint = (e) => {
+            const canvas = canvasRef.current;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        };
+        const startDraw = (e) => {
+            setIsDrawing(true); startScratch();
+            const { x, y } = getPoint(e);
+            const ctx = canvasRef.current.getContext('2d');
+            ctx.setLineDash([]);
+            ctx.strokeStyle = '#7c3aed';
+            ctx.lineWidth = 30;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        };
+        const draw = (e) => {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const { x, y } = getPoint(e);
+            const ctx = canvasRef.current.getContext('2d');
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        };
+        const endDraw = () => {
+            if (isDrawing) {
+                setIsDrawing(false); stopScratch();
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.beginPath();
+            }
+        };
+        return (
+            <div className="flex flex-col items-center animate-in fade-in">
+                <canvas ref={maskRef} width={320} height={320} className="hidden" />
+                <div className="relative">
+                    <canvas
+                        ref={canvasRef}
+                        width={320}
+                        height={320}
+                        onMouseDown={startDraw}
+                        onMouseMove={draw}
+                        onMouseUp={endDraw}
+                        onMouseLeave={endDraw}
+                        onTouchStart={startDraw}
+                        onTouchMove={draw}
+                        onTouchEnd={endDraw}
+                        className={`border-4 rounded-3xl bg-white shadow-xl touch-none cursor-crosshair mb-6 transition-all duration-500 ${feedback?.type === 'success' ? 'border-solid border-emerald-400 shadow-emerald-200/50 shadow-2xl' : feedback?.type === 'error' ? 'border-dashed border-rose-300' : 'border-dashed border-violet-200'}`}
+                    />
+                    {!isDrawing && !feedback && (isAnimating ? handAnimPos : startDotPos) && (
+                        <div
+                            className={`absolute pointer-events-none ${isAnimating ? '' : 'animate-bounce'}`}
+                            style={{
+                                left: (isAnimating ? handAnimPos?.x : startDotPos?.x) - 35,
+                                top: (isAnimating ? handAnimPos?.y : startDotPos?.y) - 15,
+                                transform: 'translate(-50%, -50%)',
+                                transition: isAnimating ? 'left 0.12s ease-out, top 0.12s ease-out' : 'none',
+                            }}
+                        >
+                            <span className={`text-4xl filter drop-shadow-lg transform -rotate-12 block ${isAnimating ? 'scale-110' : ''}`}>👉</span>
+                        </div>
+                    )}
+                    {feedback && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className={`
+                                ${feedback.size === 'lg' ? 'text-8xl' : 'text-5xl'}
+                                ${feedback.type === 'success' ? 'animate-bounce' : 'animate-pulse'}
+                                filter drop-shadow-xl
+                                transition-all duration-300
+                            `}>
+                                {feedback.emoji}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="flex items-center justify-center gap-3 mb-6">
+                    <span className="text-5xl font-black text-violet-600 bg-violet-50 w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner">{letter}</span>
+                    {word && <span className="text-lg text-slate-400 font-medium">for <span className="font-bold text-slate-700">{word}</span></span>}
+                </div>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => {
+                            setResetKey(k => k + 1);
+                            setFeedback(null);
+                        }}
+                        className="px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                    >
+                        Clear
+                    </button>
+                    <button
+                        onClick={checkTracing}
+                        className="px-8 py-3 rounded-xl font-bold bg-violet-600 text-white shadow-lg hover:scale-105 transition-transform"
+                    >
+                        Check ✓
+                    </button>
+                </div>
+            </div>
+        );
+    });
+    const renderPrompt = () => (
+        <div className="text-center mb-6 relative">
+            {(() => {
+                const effectiveMode = getEffectiveImageMode();
+                const shouldShowImage = currentWordImage && (
+                    effectiveMode === 'alwaysOn' ||
+                    ((effectiveMode === 'progressive' || effectiveMode === 'afterCompletion') && showImageForCurrentWord)
+                );
+                return shouldShowImage;
+            })() ? (
+                <div className="flex flex-col items-center animate-in fade-in zoom-in">
+                    <img loading="lazy"
+                        src={currentWordImage}
+                        alt="Mystery Word"
+                        className="w-32 h-32 object-cover rounded-xl shadow-md mb-2 border-2 border-slate-100"
+                    />
+                    {(getEffectiveTextMode() === 'alwaysOn' || showWordText) && <span className="text-lg font-bold text-slate-700 bg-white/80 px-3 py-1 rounded-full shadow-sm">{currentWordSoundsWord}</span>}
+                    {wordSoundsActivity !== 'counting' && (
+                        <div className="flex gap-1 mb-2">
+                            {[...Array(wordSoundsPhonemes?.phonemeCount || 3)].map((_, i) => (
+                                <div key={i} className="w-8 h-8 bg-slate-100 rounded-lg animate-pulse" />
+                            ))}
+                        </div>
+                    )}
+                    <button
+                        onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+                        disabled={isPlayingAudio}
+                        className={`p-3 rounded-full transition-colors shadow-sm mt-1 ${isPlayingAudio ? 'bg-slate-100 text-slate-400 cursor-wait' : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+                            }`}
+                        aria-label={t('common.play_word')}
+                    >
+                        {isPlayingAudio ? <div className="animate-spin h-6 w-6 border-2 border-current border-t-transparent rounded-full" /> : <Volume2 size={24} />}
+                    </button>
+                </div>
+            ) : (
+                <button
+                    onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+                    disabled={isPlayingAudio}
+                    className={`flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all ${isPlayingAudio ? 'bg-violet-100 scale-105' : 'bg-white/60 hover:bg-violet-50 hover:scale-105'
+                        }`}
+                >
+                    {(getEffectiveTextMode() === 'alwaysOn' || showWordText) && (
+                        <span className="text-4xl font-bold text-violet-700">{currentWordSoundsWord}</span>
+                    )}
+                    <div className="relative flex items-center justify-center">
+                        <Ear size={48} className={`transition-all ${isPlayingAudio ? 'text-violet-500 animate-pulse' : 'text-violet-400'}`} />
+                        {isPlayingAudio && (
+                            <div className="absolute -right-3 -top-1 flex gap-0.5 items-end h-5">
+                                <div className="w-1 bg-violet-400 rounded-full" style={{ height: '4px', animation: 'soundwave 0.6s ease-in-out infinite alternate' }} />
+                                <div className="w-1 bg-violet-500 rounded-full" style={{ height: '12px', animation: 'soundwave 0.6s ease-in-out infinite alternate 0.2s' }} />
+                                <div className="w-1 bg-violet-400 rounded-full" style={{ height: '8px', animation: 'soundwave 0.6s ease-in-out infinite alternate 0.4s' }} />
+                            </div>
+                        )}
+                    </div>
+                    {!(getEffectiveTextMode() === 'alwaysOn' || showWordText) && (
+                        <span className="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
+                    )}
+                </button>
+            )}
+            {wordSoundsActivity !== 'counting' && <div className="flex items-center justify-center gap-2 mt-2">
+                <p className="text-slate-500">
+                    {ts(`word_sounds.${wordSoundsActivity}_prompt`)}
+                </p>
+                <button
+                    aria-label={t('common.read_instructions')}
+                    onClick={() => {
+                        const instKeyMap = { orthography: 'inst_orthography', spelling_bee: 'inst_spelling_bee', word_scramble: 'inst_word_scramble', missing_letter: 'inst_missing_letter', counting: 'inst_counting', blending: 'inst_blending', segmentation: 'inst_segmentation', rhyming: 'inst_rhyming', letter_tracing: 'inst_letter_tracing', sound_sort: 'inst_word_families', word_families: 'inst_word_families', mapping: 'mapping' };
+                        const rptKey = instKeyMap[wordSoundsActivity] || wordSoundsActivity;
+                        if (wordSoundsActivity === 'isolation' && typeof ISOLATION_AUDIO !== 'undefined') {
+                            const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+                            const posKey = ordinals[isolationState?.currentPosition || 0] || 'fallback';
+                            if (ISOLATION_AUDIO[posKey]) { handleAudio(ISOLATION_AUDIO[posKey]); }
+                            else { handleAudio(ts('word_sounds.isolation_prompt')); }
+                        } else if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[rptKey] || INSTRUCTION_AUDIO[wordSoundsActivity])) {
+                            handleAudio(INSTRUCTION_AUDIO[rptKey] || INSTRUCTION_AUDIO[wordSoundsActivity]);
+                        } else {
+                            handleAudio(ts(`word_sounds.${wordSoundsActivity}_prompt`));
+                        }
+                    }}
+                    className="p-1.5 rounded-full text-slate-400 hover:text-violet-600 hover:bg-violet-100 transition-colors"
+                    title={t('common.read_instructions')}
+                >
+                    <Volume2 size={16} />
+                </button>
+            </div>}
+        </div>
+    );
+    const playSegmentationSequence = async () => {
+        setIsPlayingAudio(true);
+        try {
+            for (const box of elkoninBoxes) {
+                if (box && box.phoneme) {
+                    await handleAudio(box.phoneme);
+                    await new Promise(r => setTimeout(r, 500));
+                } else {
+                    await new Promise(r => setTimeout(r, 600));
+                }
+            }
+        } catch (e) {
+            warnLog("Unhandled error:", e);
+        } finally {
+            setIsPlayingAudio(false);
+        }
+    };
+    const spellingBeeInitRef = React.useRef(false);
+    React.useEffect(() => {
+        let sbTimer = null;
+        if (wordSoundsActivity === 'spelling_bee' && currentWordSoundsWord && !spellingBeeInitRef.current) {
+            spellingBeeInitRef.current = true;
+            sbTimer = setTimeout(() => handleAudio(currentWordSoundsWord), 300);
+        }
+        if (wordSoundsActivity !== 'spelling_bee') {
+            spellingBeeInitRef.current = false;
+        }
+        return () => { spellingBeeInitRef.current = false; if (sbTimer) clearTimeout(sbTimer); };
+    }, [currentWordSoundsWord, wordSoundsActivity]);
+    const scrambleWord = (word) => {
+        if (!word || word.length <= 2) return word?.split('') || [];
+        const letters = word.split('');
+        const seed = word.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        for (let i = letters.length - 1; i > 0; i--) {
+            const j = (seed + i) % (i + 1);
+            [letters[i], letters[j]] = [letters[j], letters[i]];
+        }
+        if (letters.join('') === word) {
+            [letters[0], letters[1]] = [letters[1], letters[0]];
+        }
+        return letters;
+    };
+    const scrambledLetters = React.useMemo(() =>
+        scrambleWord(currentWordSoundsWord?.toLowerCase()),
+        [currentWordSoundsWord]
+    );
+    const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
+    const hiddenIndex = React.useMemo(() => {
+        if (!currentWordSoundsWord || currentWordSoundsWord.length <= 1) return 0;
+        const seed = currentWordSoundsWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        return seed % currentWordSoundsWord.length;
+    }, [currentWordSoundsWord]);
+    const correctLetter = currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
+    const letterOptions = React.useMemo(() => {
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+        const options = [correctLetter];
+        const seed = (currentWordSoundsWord || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        let s = seed;
+        const nextRand = () => { s = Math.sin(s + 1) * 10000; return s - Math.floor(s); };
+        while (options.length < 4) {
+            const rand = alphabet[Math.floor(nextRand() * 26)];
+            if (!options.includes(rand)) options.push(rand);
+        }
+        return options.sort(() => nextRand() - 0.5);
+    }, [correctLetter, currentWordSoundsWord]);
+    const renderActivityContent = () => {
+        const handleDragStart = (e, item, source, index = null) => {
+            setDraggedItem({ item, source, index });
+            e.dataTransfer.effectAllowed = 'move';
+        };
+        const handleDragOver = (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        };
+        if (isLoadingPhonemes) {
+            return (
+                <div className="flex flex-col items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-violet-500 border-t-transparent mb-4"></div>
+                    <p className="text-slate-500 mb-4">{ts('word_sounds.loading_phonemes')}</p>
+                    <button
+                        aria-label={t('common.minimize')}
+                        onClick={() => setIsMinimized(true)}
+                        className="px-4 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                    >
+                        <Minimize size={16} /> Run in Background
+                    </button>
+                </div>
+            );
+        }
+        if (!wordSoundsPhonemes) {
+            return (
+                <div className="text-center py-12 text-slate-500">
+                    <Ear size={48} className="mx-auto mb-4 text-violet-300" />
+                    <p>{ts('word_sounds.select_activity')}</p>
+                </div>
+            );
+        }
+        switch (wordSoundsActivity) {
+            case 'isolation': {
+                const { word: isoWord, currentPosition, correctSound, isoOptions } = isolationState || {};
+                if (!isolationState || (isoWord && isoWord.toLowerCase() !== currentWordSoundsWord?.toLowerCase())) {
+                    if (currentWordSoundsWord && isoWord && isoWord.toLowerCase() !== currentWordSoundsWord?.toLowerCase()) {
+                        debugLog("⚠️ Isolation state mismatch:", isoWord, "vs", currentWordSoundsWord, "- will auto-sync");
+                    }
+                    return <div className="p-8 text-center animate-pulse text-violet-400">Loading sounds...</div>;
+                }
+                if (useMicInput) {
+                    return (
+                        <div className="flex flex-col items-center">
+                            {renderVoiceInputOverlay("Say the sound (e.g. 'Buh')")}
+                            <div className="mt-6">
+                                <button
+                                    aria-label={t('common.voice_input')}
+                                    onClick={handleMicInput}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-rose-100 text-rose-700 font-bold hover:bg-rose-200 transition-colors"
+                                >
+                                    <Mic size={20} /> Switch to Clicking
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <div className="flex flex-col gap-4">
+                        <PhonologyView
+                            key={currentWordSoundsWord}
+                            activity={wordSoundsActivity}
+                            data={{
+                                word: currentWordSoundsWord,
+                                position: currentPosition,
+                                options: isoOptions,
+                                correctSound: correctSound,
+                                image: isolationState?.image || currentWordImage || wordSoundsPhonemes?.image
+                            }}
+                            showLetterHints={showLetterHints}
+                            onPlayAudio={handleAudio}
+                            onCheckAnswer={(ans) => checkAnswer(ans, correctSound)}
+                            isEditing={isEditing}
+                            onUpdateOption={handleOptionUpdate}
+                            highlightedIndex={highlightedIsoIndex}
+                        />
+                        <div className="mx-auto">
+                            <button
+                                aria-label={t('common.voice_input')}
+                                onClick={handleMicInput}
+                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                            >
+                                <Mic size={20} /> Use Microphone
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+            case 'segmentation':
+            case 'blending': {
+                const availableChips = soundChips.filter(c => !c.used);
+
+                return (
+                    <div className="space-y-6">
+                        {renderPrompt()}
+                        {wordSoundsActivity === 'segmentation' && (<>
+                            <div className="flex justify-center gap-3 flex-wrap min-h-[100px] p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 transition-colors"
+                                onDragOver={handleDragOver}
+                            >
+                                {elkoninBoxes.map((chip, i) => {
+                                    const isError = segmentationErrors.includes(i);
+                                    return (
+                                        <div
+                                            key={i}
+                                            onDragOver={handleDragOver}
+                                            onDrop={(e) => handleSegDrop(e, 'box', i)}
+                                            className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold transition-all relative ${isError
+                                                    ? 'bg-red-50 border-2 border-red-400'
+                                                    : chip
+                                                        ? 'scale-100 shadow-md ring-2 ring-violet-200'
+                                                        : 'bg-white border-2 border-slate-200 text-slate-500'
+                                                }`}
+                                            style={{
+                                                backgroundColor: chip ? chip.color : undefined,
+                                                border: chip ? `2px solid ${chip.color.replace('92%', '60%')}` : undefined
+                                            }}
+                                        >
+                                            {chip ? (
+                                                <div
+                                                    draggable
+                                                    onDragStart={(e) => handleDragStart(e, chip, 'box', i)}
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => handleKeyDown(e, chip, () => handleMoveKey(chip, 'box', i))}
+                                                    onClick={() => handleAudio(chip.phoneme)}
+                                                    className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
+                                                    aria-label={`Phoneme ${chip.phoneme}. Press Space to hear, Enter to remove.`}
+                                                >
+                                                    {showLetterHints ? chip.phoneme : <Volume2 size={24} className="opacity-50" />}
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm opacity-50">Drop</span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="flex justify-center mt-2 mb-4">
+                                <button aria-label={t('common.play')}
+                                    onClick={playSegmentationSequence} data-help-key="wordsounds_test_sequence"
+                                    disabled={isPlayingAudio}
+                                    className="flex items-center gap-2 px-5 py-2 rounded-full bg-violet-100 text-violet-700 font-bold text-sm hover:bg-violet-200 transition-colors shadow-sm"
+                                >
+                                    {isPlayingAudio ? <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" /> : <Play size={16} />}
+                                    {ts('word_sounds.test_sequence') || 'Test Sequence'}
+                                </button>
+                            </div>
+                        </>)}
+                        {wordSoundsActivity === 'segmentation' && (<>
+                            <div
+                                className="flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors"
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleSegDrop(e, 'pool')}
+                            >
+                                {availableChips.map((chip, idx) => (
+                                    isEditing ? (
+                                        <div key={chip.id} className="relative">
+                                            <input aria-label={t('common.text_field')}
+                                                className="w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center text-center outline-none focus:ring-2 focus:ring-violet-400"
+                                                style={{
+                                                    backgroundColor: chip.color,
+                                                    borderColor: chip.color.replace('92%', '70%'),
+                                                    color: '#475569',
+                                                }}
+                                                value={chip.phoneme}
+                                                onChange={(e) => handleOptionUpdate(idx, e.target.value)}
+                                                onKeyDown={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <button
+                                            key={chip.id}
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, chip, 'pool')}
+                                            onClick={() => handleAudio(chip.phoneme)}
+                                            onKeyDown={(e) => handleKeyDown(e, chip, () => handleMoveKey(chip, 'pool'))}
+                                            tabIndex={0}
+                                            data-help-key="wordsounds_pool_item" aria-label={showLetterHints ? `Phoneme ${chip.phoneme}` : "Mystery Sound"}
+                                            title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[chip.phoneme] ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\nDrag to box or Click to listen` : "Drag to box or Click to listen"}
+                                            className="w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing"
+                                            style={{
+                                                backgroundColor: chip.color,
+                                                borderColor: chip.color.replace('92%', '70%'),
+                                                color: '#475569',
+                                            }}
+                                        >
+                                            {showLetterHints ? chip.phoneme : <Volume2 size={20} />}
+                                        </button>
+                                    )
+                                ))}
+                            </div>
+                        </>)}
+                        {wordSoundsActivity === 'segmentation' && (<>
+                            <div className="flex justify-center gap-3 mt-6">
+                                <button
+                                    onClick={() => {
+                                        if (elkoninBoxes.some(b => b === null)) return;
+                                        const expected = wordSoundsPhonemes?.phonemes || [];
+                                        const errors = [];
+                                        let isPerfect = true;
+                                        const normalizePhoneme = (p) => {
+                                            const map = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', 'oi': 'oy', 'aw': 'au', 'ew': 'oo', 'oe': 'oa' };
+                                            const lower = (p || '').toLowerCase().trim();
+                                            return map[lower] || lower;
+                                        };
+                                        elkoninBoxes.forEach((box, idx) => {
+                                            if (!box || !expected[idx] || normalizePhoneme(box.phoneme) !== normalizePhoneme(expected[idx])) {
+                                                errors.push(idx);
+                                                isPerfect = false;
+                                            }
+                                        });
+                                        if (!isPerfect) {
+                                            setSegmentationErrors(errors);
+                                            checkAnswer('wrong', 'right');
+                                        } else {
+                                            const userPhonemes = elkoninBoxes.map(b => (b.phoneme || '').trim()).join('').toLowerCase();
+                                            const expectedPhonemes = expected.map(p => (p || '').trim()).join('').toLowerCase();
+                                            checkAnswer(userPhonemes, expectedPhonemes);
+                                        }
+                                    }}
+                                    disabled={elkoninBoxes.some(b => b === null)}
+                                    className={`px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${elkoninBoxes.some(b => b === null)
+                                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            : 'bg-violet-600 text-white hover:bg-violet-700 hover:scale-105'
+                                        }`}
+                                >
+                                    {t('common.check')}
+                                </button>
+                            </div>
+                        </>)}
+                        {wordSoundsActivity === 'blending' && (
+                            <div className="space-y-4 mt-6">
+                                {isEditing && wordSoundsPhonemes?.phonemes && (
+                                    <div className="p-4 border-2 border-dashed border-violet-300 rounded-xl bg-violet-50 mb-6 relative animate-in zoom-in-95">
+                                        <div className="absolute -top-3 left-4 bg-violet-100 text-violet-700 px-2 text-xs font-bold uppercase tracking-wider rounded border border-violet-200">
+                                            Edit Sounds
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 justify-center mt-2">
+                                            {(wordSoundsPhonemes?.phonemes || []).map((p, idx) => (
+                                                <input aria-label={t('common.enter_p')}
+                                                    key={`blend-ph-${idx}`}
+                                                    value={p}
+                                                    onChange={(e) => handleOptionUpdate(idx, e.target.value)}
+                                                    className="w-14 h-14 rounded-lg border-2 border-violet-200 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-violet-500 text-slate-700 shadow-sm"
+                                                    title={`Sound ${idx + 1}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="text-center space-y-2">
+                                    <button
+                                        aria-label={t('common.volume')}
+                                        onClick={async () => {
+                                            try {
+                                                const phonemes = wordSoundsPhonemes?.phonemes || [];
+                                                for (let i = 0; i < phonemes.length; i++) {
+                                                    if (!isMountedRef.current) return;
+                                                    await handleAudio(phonemes[i]);
+                                                    await new Promise(r => setTimeout(r, 400));
+                                                }
+                                            } catch (e) { warnLog("Unhandled error in anon_phonemePlay:", e); }
+                                        }}
+                                        disabled={isPlayingAudio}
+                                        className="mx-auto flex items-center gap-2 px-5 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-full font-bold text-sm transition-all hover:scale-105 shadow-sm"
+                                    >
+                                        {isPlayingAudio ? (
+                                            <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                                        ) : (
+                                            <Volume2 size={18} />
+                                        )}
+                                        {ts('word_sounds.blending_replay_sounds') || 'ð Replay Sounds'}
+                                    </button>
+
+                                </div>
+                                {useMicInput ? (
+                                    <div className="flex flex-col items-center gap-4 animate-in fade-in">
+                                        <button
+                                            aria-label={t('common.voice_input')}
+                                            onClick={handleMicInput}
+                                            className={`w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening
+                                                    ? 'bg-rose-500 text-white scale-110 ring-4 ring-rose-200 animate-pulse'
+                                                    : 'bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500'
+                                                }`}
+                                        >
+                                            <Mic size={40} />
+                                        </button>
+                                        <p className="font-bold text-slate-600 min-h-[1.5em]">
+                                            {isListening ? (ts('word_sounds.listening') || "Listening...") : (userAnswer || (ts('word_sounds.tap_to_speak') || "Tap to Speak"))}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    blendingOptions.length > 0 && (
+                                        <div className="flex flex-col gap-4">
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        for (let i = 0; i < blendingOptions.length; i++) {
+                                                            setPlayingOptionIndex(i);
+                                                            await handleAudio(blendingOptions[i]);
+                                                            await new Promise(r => setTimeout(r, 600));
+                                                        }
+                                                        setPlayingOptionIndex(null);
+                                                    } catch (e) { warnLog("Unhandled error in anon_blendingPlay:", e); }
+                                                }}
+                                                className="mx-auto flex items-center gap-2 px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium text-sm shadow-sm transition-colors"
+                                                disabled={isPlayingAudio}
+                                            >
+                                                {isPlayingAudio ? (
+                                                    <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                                                ) : (
+                                                    <PlayCircle size={18} />
+                                                )}
+                                                {ts('word_sounds.play_all_options')}
+                                            </button>
+                                            <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+                                                {(blendingOptions || []).map((word, idx) => (
+                                                    isEditing ? (
+                                                        <input aria-label={t('common.enter_word')}
+                                                            key={`blend-edit-${idx}`}
+                                                            value={word}
+                                                            onChange={(e) => {
+                                                                const newOpts = [...blendingOptions];
+                                                                newOpts[idx] = e.target.value;
+                                                                setBlendingOptions(newOpts);
+                                                            }}
+                                                            className="px-6 py-4 bg-white border-2 border-amber-200 rounded-xl font-bold text-lg shadow-md focus:ring-2 focus:ring-amber-400 outline-none"
+                                                            onKeyDown={(e) => e.stopPropagation()}
+                                                        />
+                                                    ) : (
+                                                        <div
+                                                            key={`blend-option-${idx}`}
+                                                            className={`relative group transition-all duration-300 ${(playingOptionIndex === idx || highlightedBlendIndex === idx) ? 'scale-105 ring-4 ring-pink-300 rounded-xl z-20' : ''}`}
+                                                        >
+                                                            <button
+                                                                aria-label={t('common.volume')}
+                                                                onClick={() => {
+                                                                    const isCorrect = word?.toLowerCase() === currentWordSoundsWord?.toLowerCase();
+                                                                    checkAnswer(isCorrect ? 'correct' : 'incorrect', 'correct');
+                                                                }}
+                                                                className="w-full px-8 py-6 bg-white border-2 border-slate-200 rounded-xl font-bold text-xl shadow-md hover:border-violet-400 hover:scale-105 hover:shadow-lg transition-all capitalize"
+                                                            >
+                                                                {showLetterHints ? word : <span className="text-slate-500 text-sm font-normal">Option {idx + 1}</span>}
+                                                            </button>
+                                                            <button
+                                                                aria-label={t('common.listen_to_this_option')}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (isPlayingAudio) return;
+                                                                    handleAudio(word);
+                                                                }}
+                                                                className="absolute top-1 right-1 w-8 h-8 bg-pink-100 hover:bg-pink-500 hover:text-white text-pink-600 rounded-lg flex items-center justify-center shadow-sm transition-all z-10"
+                                                                title={t('common.listen_to_this_option')}
+                                                            >
+                                                                <Volume2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    )
+                                                ))}
+                                            </div>
+                                            <button
+                                                aria-label={t('common.voice_input')}
+                                                onClick={handleMicInput}
+                                                className="mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors"
+                                            >
+                                                <Mic size={20} /> Use Microphone
+                                            </button>
+                                        </div>
+                                    )
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+            case 'orthography': {
+                const correctWord = currentWordSoundsWord;
+                let safeOptions = [...orthographyOptions];
+                if (!safeOptions || safeOptions.length < 2) {
+                    debugLog("⚠️ Generating distractors for Sight & Spell (options were empty)");
+                    const generated = generateOrthographyDistractors(correctWord);
+                    const distractors = generated.slice(0, 5);
+                    safeOptions = [correctWord, ...distractors];
+                }
+                if (correctWord && !safeOptions.some(opt => opt && opt.toLowerCase() === correctWord.toLowerCase())) {
+                    debugLog("⚠️ Added missing correct option to Sight & Spell:", correctWord);
+                    if (safeOptions.length > 0) {
+                        safeOptions[0] = correctWord;
+                    } else {
+                        safeOptions = [correctWord];
+                    }
+                }
+                safeOptions = [...new Set(safeOptions)];
+                return (
+                    <div className="space-y-4">
+                        {renderPrompt()}
+                        <OrthographyView
+                            activity={wordSoundsActivity}
+                            data={{
+                                word: currentWordSoundsWord,
+                                options: safeOptions,
+                                correct: currentWordSoundsWord
+                            }}
+                            showLetterHints={true}
+                            onPlayAudio={handleAudio}
+                            onCheckAnswer={(ans) => checkAnswer(ans, currentWordSoundsWord)}
+                            isEditing={isEditing}
+                            onUpdateOption={handleOptionUpdate}
+                        />
+                    </div>
+                );
+            }
+            case 'mapping':
+                return (
+                    <div className="space-y-4">
+                        {renderPrompt()}
+                        <SoundMappingView
+                            key={currentWordSoundsWord}
+                            data={{
+                                word: currentWordSoundsWord,
+                                phonemes: wordSoundsPhonemes?.phonemes || [],
+                                graphemes: wordSoundsPhonemes?.graphemes || currentWordSoundsWord?.split('') || []
+                            }}
+                            onPlayAudio={handleAudio}
+                            onCheckAnswer={(ans) => checkAnswer(ans, 'correct')}
+                            isEditing={isEditing}
+                            onUpdateOption={handleOptionUpdate}
+                        />
+                    </div>
+                );
+            case 'spelling_bee': {
+                const getLetterFeedback = () => {
+                    if (!userAnswer || !currentWordSoundsWord) return [];
+                    const target = currentWordSoundsWord.toLowerCase();
+                    const input = userAnswer.toLowerCase();
+                    return target.split('').map((letter, idx) => ({
+                        target: letter,
+                        typed: input[idx] || '',
+                        correct: input[idx]?.toLowerCase() === letter
+                    }));
+                };
+                const letterFeedback = getLetterFeedback();
+                const correctCount = letterFeedback.filter(l => l.correct).length;
+
+                const currentStreak = wordSoundsScore?.streak || 0;
+                const checkSpellingBee = () => {
+                    const correct = userAnswer?.toLowerCase().trim() === currentWordSoundsWord?.toLowerCase();
+                    if (correct) {
+                        const streakBonus = currentStreak >= 5 ? ' 🔥x2 BONUS!' : currentStreak >= 3 ? ' ⭐ Streak!' : '';
+                        setWordSoundsFeedback({ type: 'correct', message: '🎉 Perfect!' + streakBonus });
+                        setTimeout(() => {
+                            if (!isMountedRef.current) return;
+                            setUserAnswer('');
+                            checkAnswer('correct', 'correct');
+                        }, 1500);
+                    } else {
+                        const almostMsg = correctCount > 0
+                            ? `${correctCount}/${currentWordSoundsWord?.length} letters correct! Check the red boxes 👀`
+                            : 'Try again! Listen carefully 🔊';
+                        setWordSoundsFeedback({ type: 'incorrect', message: almostMsg });
+                        handleAudio(currentWordSoundsWord);
+                        checkAnswer('incorrect', 'correct');
+                    }
+                };
+                return (
+                    <div className="flex flex-col items-center gap-5 p-4">
+                        {renderPrompt()}
+                        <div className="text-center relative">
+                            <div className={`text-4xl mb-2 ${wordSoundsFeedback?.type === 'correct' ? 'animate-bounce' : ''}`}>🐝</div>
+                            <h3 className="text-lg font-bold text-amber-700">{ts('word_sounds.spelling_bee_title')}</h3>
+                            <p className="text-sm text-amber-600">{ts('word_sounds.spelling_bee_subtitle')}</p>
+                            {currentStreak >= 3 && (
+                                <div className="absolute -top-2 -right-8 px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full animate-pulse">
+                                    🔥 x{currentStreak}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                aria-label={t('common.volume')}
+                                onClick={() => handleAudio(currentWordSoundsWord)}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-amber-100 hover:bg-amber-200 rounded-full text-amber-800 font-bold transition-all hover:scale-105 shadow-md"
+                            >
+                                <Volume2 size={20} />
+                                {ts('word_sounds.spelling_bee_hear')}
+                            </button>
+                            <button
+                                aria-label={t('common.slow_playback')}
+                                onClick={() => handleAudio(currentWordSoundsWord, null, 0.5)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-700 font-medium transition-all"
+                                title={t('common.slow_playback')}
+                            >
+                                {ts('word_sounds.spelling_bee_slow')}
+                            </button>
+                        </div>
+                        <div className="flex gap-2 justify-center flex-wrap">
+                            {currentWordSoundsWord?.split('').map((letter, idx) => {
+                                const hasInput = userAnswer?.[idx];
+                                const isCorrect = hasInput && userAnswer[idx]?.toLowerCase() === letter.toLowerCase();
+                                const isWrong = hasInput && !isCorrect;
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all ${isCorrect ? 'border-green-400 bg-green-50 text-green-700 scale-105' :
+                                                isWrong ? 'border-rose-400 bg-rose-50 text-rose-600 animate-pulse' :
+                                                    'border-slate-200 bg-slate-50 text-slate-400'
+                                            }`}
+                                    >
+                                        {userAnswer?.[idx]?.toUpperCase() || '_'}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {userAnswer && (
+                            <div className="text-sm text-slate-500">
+                                {correctCount}/{currentWordSoundsWord?.length} letters correct
+                            </div>
+                        )}
+                        {useMicInput ? (
+                            renderVoiceInputOverlay("Say the letters or word!")
+                        ) : (
+                            <input aria-label={t('common.enter_user_answer')}
+                                type="text"
+                                inputMode="text"
+                                value={userAnswer || ''}
+                                onChange={(e) => {
+                                    setUserAnswer(e.target.value);
+                                    setWordSoundsFeedback(null);
+                                }}
+                                onKeyDown={(e) => e.key === 'Enter' && checkSpellingBee()}
+                                placeholder={t('common.placeholder_type_the_word')}
+                                maxLength={currentWordSoundsWord?.length || 20}
+                                className="w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none"
+                                autoFocus
+                            />
+                        )}
+                        <button
+                            aria-label={t('common.voice_input')}
+                            onClick={checkSpellingBee}
+                            disabled={!userAnswer}
+                            className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer
+                                    ? 'bg-amber-500 hover:bg-amber-600 text-white hover:scale-105'
+                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                }`}
+                        >
+                            {ts('word_sounds.spelling_bee_check') || 'Check Spelling ✓'}
+                        </button>
+                        <div className="mt-2">
+                            <button aria-label={t('common.microphone')}
+                                onClick={handleMicInput}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${useMicInput ? 'bg-rose-100 text-rose-700 font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            >
+                                <Mic size={20} /> {useMicInput ? (ts('word_sounds.mic_switch_typing') || "Switch to Typing") : (ts('word_sounds.mic_switch_mic') || "Use Microphone")}
+                            </button>
+                        </div>
+                        <div className="flex gap-4 text-sm">
+                            <button
+                                onClick={() => setUserAnswer(currentWordSoundsWord?.[0] || '')}
+                                className="text-amber-600 hover:text-amber-700 underline"
+                            >
+                                {ts('word_sounds.spelling_bee_first_letter')}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const word = currentWordSoundsWord || '';
+                                    const vowels = 'aeiou';
+                                    const current = userAnswer?.toLowerCase() || '';
+                                    const vowelHint = word.split('').map(ch =>
+                                        vowels.includes(ch.toLowerCase()) ? ch : '_'
+                                    ).join('');
+                                    if (current.length >= vowelHint.replace(/_/g, '').length && current.length > 0) {
+                                        setUserAnswer(word);
+                                    } else {
+                                        setUserAnswer(vowelHint);
+                                    }
+                                }}
+                                className="text-slate-400 hover:text-slate-500 underline"
+                            >
+                                {userAnswer && userAnswer.includes('_')
+                                    ? (ts('word_sounds.spelling_bee_hint_more') || '💡 Show More')
+                                    : (ts('word_sounds.spelling_bee_hint_vowels') || '💡 Show Vowels')}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+            case 'word_scramble': {
+                const checkScramble = () => {
+                    const correct = userAnswer?.toLowerCase().trim() === currentWordSoundsWord?.toLowerCase();
+                    if (correct) {
+                        setWordSoundsFeedback({ type: 'correct', message: '🎉 Unscrambled!' });
+                        setTimeout(() => {
+                            if (!isMountedRef.current) return;
+                            setUserAnswer('');
+                            setUsedScrambleIndices([]);
+                            checkAnswer('correct', 'correct');
+                        }, 1500);
+                    } else {
+                        setWordSoundsFeedback({ type: 'incorrect', message: 'Not quite! Try again 🔀' });
+                        setUserAnswer('');
+                        setUsedScrambleIndices([]);
+                        checkAnswer('incorrect', 'correct');
+                    }
+                };
+                return (
+                    <div className="flex flex-col items-center gap-5 p-4">
+                        {renderPrompt()}
+                        <div className="text-center">
+                            <div className="text-4xl mb-2">🔀</div>
+                            <h3 className="text-lg font-bold text-violet-700">{ts('word_sounds.word_scramble_title')}</h3>
+                            <p className="text-sm text-violet-600">{ts('word_sounds.word_scramble_subtitle')}</p>
+                        </div>
+                        <button
+                            aria-label={t('common.volume')}
+                            onClick={() => handleAudio(currentWordSoundsWord)}
+                            className="flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 rounded-full text-violet-700 font-medium transition-all"
+                        >
+                            <Volume2 size={18} />
+                            {ts('word_sounds.word_scramble_hint')}
+                        </button>
+                        <div className="flex gap-2 justify-center flex-wrap">
+                            {scrambledLetters.map((letter, idx) => {
+                                const isUsed = usedScrambleIndices.includes(idx);
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold uppercase shadow-md transition-all ${isUsed
+                                                ? 'border-slate-200 bg-slate-100 text-slate-300 cursor-not-allowed opacity-50'
+                                                : 'border-violet-300 bg-violet-50 text-violet-700 hover:scale-105 cursor-pointer'
+                                            }`}
+                                        onClick={() => {
+                                            if (isUsed) return;
+                                            setUserAnswer((prev) => (prev || '') + letter);
+                                            setUsedScrambleIndices((prev) => [...prev, idx]);
+                                        }}
+                                    >
+                                        {letter.toUpperCase()}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="flex gap-1 justify-center">
+                            {currentWordSoundsWord?.split('').map((_, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`w-10 h-12 border-2 rounded flex items-center justify-center text-lg font-bold uppercase ${userAnswer?.[idx] ? 'border-violet-400 bg-violet-100 text-violet-700' : 'border-slate-200 bg-white'
+                                        }`}
+                                >
+                                    {userAnswer?.[idx]?.toUpperCase() || ''}
+                                </div>
+                            ))}
+                        </div>
+                        {useMicInput ? (
+                            renderVoiceInputOverlay("Say the un-scrambled word!")
+                        ) : (
+                            <input aria-label={t('common.enter_user_answer')}
+                                type="text"
+                                value={userAnswer || ''}
+                                onChange={(e) => {
+                                    setUserAnswer(e.target.value);
+                                    setWordSoundsFeedback(null);
+                                }}
+                                onKeyDown={(e) => e.key === 'Enter' && checkScramble()}
+                                placeholder={t('common.placeholder_type_or_tap_letters')}
+                                maxLength={currentWordSoundsWord?.length || 20}
+                                className="w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-violet-300 rounded-xl focus:ring-2 focus:ring-violet-400 outline-none"
+                                autoFocus
+                            />
+                        )}
+                        <div className="flex gap-3">
+                            {!useMicInput && (
+                                <button
+                                    onClick={() => { setUserAnswer(''); setUsedScrambleIndices([]); }}
+                                    className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-all"
+                                >
+                                    {ts('word_sounds.word_scramble_clear')}
+                                </button>
+                            )}
+                            <button
+                                aria-label={t('common.voice_input')}
+                                onClick={checkScramble}
+                                disabled={!userAnswer}
+                                className={`px-6 py-2 rounded-lg font-bold shadow-md transition-all ${userAnswer
+                                        ? 'bg-violet-500 hover:bg-violet-600 text-white hover:scale-105'
+                                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                    }`}
+                            >
+                                {ts('word_sounds.word_scramble_check')}
+                            </button>
+                        </div>
+                        <div className="mt-2">
+                            <button aria-label={t('common.microphone')}
+                                onClick={handleMicInput}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${useMicInput ? 'bg-rose-100 text-rose-700 font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            >
+                                <Mic size={20} /> {useMicInput ? (ts('word_sounds.mic_switch_typing') || "Switch to Typing") : (ts('word_sounds.mic_switch_mic') || "Use Microphone")}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+            case 'missing_letter': {
+                const checkMissingLetter = () => {
+                    const correct = userAnswer?.toLowerCase().trim() === correctLetter;
+                    if (correct) {
+                        setWordSoundsFeedback({ type: 'correct', message: '🎉 Correct letter!' });
+                        setTimeout(() => {
+                            if (!isMountedRef.current) return;
+                            setUserAnswer('');
+                            checkAnswer('correct', 'correct');
+                        }, 1500);
+                    } else {
+                        const attempts = (wordSoundsScore?.total || 0) - (wordSoundsScore?.correct || 0);
+                        const position = (hiddenIndex || 0) + 1;
+                        if (attempts >= 2) {
+                            setWordSoundsFeedback({ type: 'incorrect', message: `💡 The missing letter is "${correctLetter.toUpperCase()}"` });
+                            setUserAnswer(correctLetter);
+                        } else if (attempts >= 1) {
+                            setWordSoundsFeedback({ type: 'incorrect', message: `🔍 Hint: It's letter #${position} in the word. Listen carefully!` });
+                        } else {
+                            setWordSoundsFeedback({ type: 'incorrect', message: 'Not quite! Listen again 🔊' });
+                        }
+                        handleAudio(currentWordSoundsWord);
+                        checkAnswer('incorrect', 'correct');
+                    }
+                };
+                return (
+                    <div className="flex flex-col items-center gap-5 p-4">
+                        {renderPrompt()}
+                        <div className="text-center">
+                            <div className="text-4xl mb-2">❓</div>
+                            <h3 className="text-lg font-bold text-emerald-700">{ts('word_sounds.missing_letter_title')}</h3>
+                            <p className="text-sm text-emerald-600">{ts('word_sounds.missing_letter_subtitle')}</p>
+                        </div>
+                        <button
+                            aria-label={t('common.volume')}
+                            onClick={() => handleAudio(currentWordSoundsWord)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 rounded-full text-emerald-700 font-medium transition-all"
+                        >
+                            <Volume2 size={18} />
+                            {ts('word_sounds.missing_letter_hear') || 'Hear the word'}
+                        </button>
+                        <div className="flex gap-1 justify-center flex-wrap">
+                            {currentWordSoundsWord?.split('').map((letter, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold uppercase ${idx === hiddenIndex
+                                            ? 'border-emerald-400 bg-emerald-50 text-emerald-700 border-dashed'
+                                            : 'border-slate-200 bg-white text-slate-700'
+                                        }`}
+                                >
+                                    {idx === hiddenIndex ? (userAnswer?.toUpperCase() || '?') : letter.toUpperCase()}
+                                </div>
+                            ))}
+                        </div>
+                        {useMicInput ? (
+                            renderVoiceInputOverlay("Say the missing letter!")
+                        ) : (
+                            <div className="flex gap-3 justify-center flex-wrap">
+                                {letterOptions.map((letter, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => {
+                                            setUserAnswer(letter);
+                                            setWordSoundsFeedback(null);
+                                        }}
+                                        className={`w-14 h-14 border-2 rounded-xl flex items-center justify-center text-2xl font-bold uppercase transition-all hover:scale-110 ${userAnswer?.toLowerCase() === letter
+                                                ? 'border-emerald-500 bg-emerald-100 text-emerald-700'
+                                                : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'
+                                            }`}
+                                    >
+                                        {letter.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        <button
+                            aria-label={t('common.voice_input')}
+                            onClick={checkMissingLetter}
+                            disabled={!userAnswer}
+                            className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer
+                                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105'
+                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                }`}
+                        >
+                            Check Answer ✓
+                        </button>
+                        <div className="mt-4">
+                            <button aria-label={t('common.microphone')}
+                                onClick={handleMicInput}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${useMicInput ? 'bg-rose-100 text-rose-700 font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            >
+                                <Mic size={20} /> {useMicInput ? (ts('word_sounds.mic_switch_tapping') || "Switch to Tapping") : (ts('word_sounds.mic_switch_mic') || "Use Microphone")}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+            case 'rhyming': {
+                if (useMicInput) {
+                    return (
+                        <div className="space-y-6 mt-4">
+                            <div className="text-center">
+                                <div className="inline-block px-6 py-3 bg-violet-100 rounded-full text-violet-800 font-bold text-lg mb-4">
+                                    rhymes with "{currentWordSoundsWord}"
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center gap-4 animate-in fade-in">
+                                <button
+                                    aria-label={t('common.voice_input')}
+                                    onClick={handleMicInput}
+                                    className={`w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening
+                                            ? 'bg-rose-500 text-white scale-110 ring-4 ring-rose-200 animate-pulse'
+                                            : 'bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500'
+                                        }`}
+                                >
+                                    <Mic size={40} />
+                                </button>
+                                <p className="font-bold text-slate-600 min-h-[1.5em] text-lg">
+                                    {isListening ? (ts('word_sounds.listening') || "Listening...") : (userAnswer || (ts('word_sounds.tap_to_speak') || "Tap to Speak"))}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <div className="flex flex-col gap-4">
+                        {renderPrompt()}
+                        <RhymeView
+                            data={{
+                                word: currentWordSoundsWord,
+                                rhymeWord: wordSoundsPhonemes?.rhymeWord,
+                                options: rhymeOptions
+                            }}
+                            highlightedIndex={highlightedRhymeIndex}
+                            showLetterHints={showLetterHints}
+                            onPlayAudio={handleAudio}
+                            isEditing={isEditing}
+                            onUpdateOption={handleOptionUpdate}
+                            isAudioBusy={isPlayingAudio}
+                            onCheckAnswer={(ans) => {
+                                const isRhyme = ans?.toLowerCase() === wordSoundsPhonemes?.rhymeWord?.toLowerCase();
+                                checkAnswer(isRhyme ? 'correct' : 'incorrect', 'correct');
+                            }}
+                        />
+                        <button
+                            aria-label={t('common.voice_input')}
+                            onClick={handleMicInput}
+                            className="mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors"
+                        >
+                            <Mic size={20} /> Use Microphone
+                        </button>
+                    </div>
+                );
+            }
+            case 'sound_sort': {
+                const targetWord = (currentWordSoundsWord || '').toLowerCase();
+                if (!targetWord || targetWord.length < 2) return null;
+                const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                const mode = (wordSeed % 2 === 0) ? 'first' : 'last';
+                let targetPhoneme = '';
+                if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes && wordSoundsPhonemes.phonemes.length > 0) {
+                    targetPhoneme = mode === 'first'
+                        ? wordSoundsPhonemes.phonemes[0]
+                        : wordSoundsPhonemes.phonemes[wordSoundsPhonemes.phonemes.length - 1];
+                } else {
+                    targetPhoneme = mode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord);
+                }
+                const aiSortData = wordSoundsPhonemes?.soundSortMatches;
+                let aiMatches = [];
+                let aiMode = mode;
+                if (aiSortData && aiSortData.words && aiSortData.words.length >= 2) {
+                    aiMatches = aiSortData.words
+                        .map(w => w.toLowerCase().trim())
+                        .filter(w => w && w !== targetWord);
+                    if (aiSortData.position === 'first' || aiSortData.position === 'last') {
+                        aiMode = aiSortData.position;
+                    }
+                    if (aiSortData.phoneme) {
+                        targetPhoneme = aiSortData.phoneme;
+                    }
+                    debugLog("🤖 Using AI-generated Sound Sort matches:", aiMatches);
+                }
+                const pool = SOUND_MATCH_POOL || ['bat', 'cat', 'dog', 'sit'];
+                const poolMatches = pool.filter(w => {
+                    const wClean = w.toLowerCase();
+                    if (wClean === targetWord) return false;
+                    const pPhoneme = aiMode === 'first' ? estimateFirstPhoneme(wClean) : estimateLastPhoneme(wClean);
+                    return pPhoneme === targetPhoneme;
+                });
+                const matches = [...new Set([...aiMatches, ...poolMatches])];
+                const distractorsPool = pool.filter(w => {
+                    const wClean = w.toLowerCase();
+                    if (wClean === targetWord) return false;
+                    const pPhoneme = aiMode === 'first' ? estimateFirstPhoneme(wClean) : estimateLastPhoneme(wClean);
+                    return pPhoneme !== targetPhoneme;
+                }, (prevProps, nextProps) => prevProps.letter === nextProps.letter && prevProps.word === nextProps.word);
+                const wordLen = targetWord.length;
+                const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
+                const difficulty = (wordLen <= 3 && !hasBlend) ? 'easy' : (wordLen <= 4 || hasBlend) ? 'medium' : 'hard';
+                const matchLimit = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
+                const distractorLimit = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 4 : 5;
+                const seededRandom = (seed) => {
+                    let s = seed;
+                    return () => {
+                        s = Math.sin(s) * 10000;
+                        return s - Math.floor(s);
+                    };
+                };
+                const rng = seededRandom(wordSeed);
+                const shuffleSeeded = (arr) => {
+                    return [...arr].sort(() => rng() - 0.5);
+                };
+                const filterByDifficulty = (words) => {
+                    if (difficulty === 'easy') return words.filter(w => w.length <= 3);
+                    if (difficulty === 'medium') return words.filter(w => w.length <= 4);
+                    return words;
+                };
+                let selectedMatches = shuffleSeeded(filterByDifficulty(matches)).slice(0, matchLimit);
+                if (selectedMatches.length < 2) {
+                    selectedMatches = shuffleSeeded(matches).slice(0, matchLimit);
+                }
+                if (selectedMatches.length === 0) {
+                    warnLog(`No matches found for ${targetWord} (${mode}: ${targetPhoneme}) in pool.`);
+                }
+                const selectedDistractors = shuffleSeeded(filterByDifficulty(distractorsPool)).slice(0, distractorLimit);
+                return (
+                    <div className="space-y-4">
+                        <WordFamiliesView
+                            key={`${targetWord}-${mode}`}
+                            data={{
+                                family: mode === 'first' ? `Starts with ${targetPhoneme}` : `Ends with ${targetPhoneme}`,
+                                mode: mode,
+                                difficulty: difficulty,
+                                targetChar: targetPhoneme,
+                                targetWord: targetWord,
+                                options: selectedMatches,
+                                distractors: selectedDistractors
+                            }}
+                            onPlayAudio={handleAudio}
+                            isEditing={isEditing}
+                            onUpdateOption={handleOptionUpdate}
+                            onCheckAnswer={(result) => {
+                                checkAnswer(result, 'correct');
+                            }}
+                            showLetterHints={showLetterHints}
+                        />
+                    </div>
+                );
+            }
+            case 'letter_tracing': {
+                const firstLetter = currentWordSoundsWord ? currentWordSoundsWord.charAt(0) : 'a';
+                const isLowercaseBonus = tracingPhase === 'lower';
+                const displayLetter = isLowercaseBonus ? firstLetter.toLowerCase() : firstLetter.toUpperCase();
+                return (
+                    <div className="space-y-6">
+                        {renderPrompt()}
+                        {isLowercaseBonus && (
+                            <div className="flex flex-col items-center justify-center gap-1 animate-in fade-in">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-4xl animate-pulse">⭐</span>
+                                    <span className="text-2xl font-black text-emerald-600 tracking-wide">Bonus!</span>
+                                    <span className="text-4xl animate-pulse">⭐</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <span className="text-2xl">{firstLetter.toUpperCase()}</span>
+                                    <span className="text-lg">→</span>
+                                    <span className="text-2xl font-bold text-violet-600">{firstLetter.toLowerCase()}</span>
+                                </div>
+                            </div>
+                        )}
+                        <LetterTraceView
+                            key={`trace-${displayLetter}-${tracingPhase}`}
+                            letter={displayLetter}
+                            word={currentWordSoundsWord}
+                            onComplete={(success) => {
+                                if (success) {
+                                    playSound('success');
+                                    if (!isLowercaseBonus) {
+                                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_great_job']) {
+                                            handleAudio(INSTRUCTION_AUDIO['fb_great_job']);
+                                        }
+                                        setTimeout(() => {
+                                            if (!isMountedRef.current) return;
+                                            if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['now_try_lowercase']) {
+                                                handleAudio(INSTRUCTION_AUDIO['now_try_lowercase']);
+                                            }
+                                            setTracingPhase('lower');
+                                        }, 1200);
+                                    } else {
+                                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_amazing']) {
+                                            handleAudio(INSTRUCTION_AUDIO['fb_amazing']);
+                                        }
+                                        setTimeout(() => {
+                                            if (!isMountedRef.current) return;
+                                            setTracingPhase('upper');
+                                            checkAnswer('correct', 'correct');
+                                        }, 1000);
+                                    }
+                                }
+                            }}
+                        />
+                        {isLowercaseBonus && (
+                            <button
+                                onClick={() => {
+                                    setTracingPhase('upper');
+                                    checkAnswer('correct', 'correct');
+                                }}
+                                className="text-sm text-slate-400 hover:text-slate-600 underline transition-colors"
+                            >
+                                Skip lowercase →
+                            </button>
+                        )}
+                    </div>
+                );
+            }
+            case 'counting': {
+                const count = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+                const numberOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+                const handleCountDrop = (e) => {
+                    e.preventDefault();
+                    if (!draggedItem) return;
+                    const { item } = draggedItem;
+                    const val = parseInt(item);
+                    checkAnswer(val, count);
+                    setDraggedItem(null);
+                };
+                const handleCountKeyDown = (e, num) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        checkAnswer(num, count);
+                    }
+                };
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-center mb-4 flex-wrap">
+                            <h3 className="text-xl font-bold text-violet-700 mb-2">{ts('word_sounds.how_many_sounds')}</h3>
+                        </div>
+                        {renderPrompt()}
+                        <div
+                            className="mx-auto w-48 h-48 rounded-3xl border-4 border-dashed border-violet-300 bg-violet-50 flex flex-col items-center justify-center mb-8 transition-all relative overflow-hidden"
+                            onDragOver={handleDragOver}
+                            onDrop={handleCountDrop}
+                            style={{
+                                borderColor: draggedItem ? '#8b5cf6' : undefined,
+                                transform: draggedItem ? 'scale(1.05)' : 'scale(1)',
+                                backgroundColor: draggedItem ? '#f5f3ff' : undefined
+                            }}
+                        >
+                            {draggedItem && (
+                                <div className="absolute inset-0 bg-violet-200/20 animate-pulse pointer-events-none" />
+                            )}
+                            <div className="text-center pointer-events-none p-4 z-10">
+                                <div className="mb-3 text-violet-500">
+                                    <Calculator size={48} className="mx-auto opacity-50" />
+                                </div>
+                                <div className="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-violet-600 shadow-sm border border-violet-100">
+                                    {draggedItem ? ts('word_sounds.counting_drop') : ts('word_sounds.how_many_sounds')}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-center flex-wrap gap-4">
+                            {numberOptions.map((num) => (
+                                <div
+                                    key={num}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, num, 'number')}
+                                    onKeyDown={(e) => handleCountKeyDown(e, num)}
+                                    tabIndex={0}
+                                    onClick={() => checkAnswer(num, count)}
+                                    className="w-16 h-16 rounded-2xl bg-white border-b-4 border-violet-200 text-violet-700 font-black text-2xl flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-violet-50 hover:border-violet-400 transition-all cursor-grab active:cursor-grabbing"
+                                    aria-label={`Number ${num}`}
+                                >
+                                    {num}
+                                </div>
+                            ))}
+                            <div
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, 11, 'number')}
+                                onKeyDown={(e) => handleCountKeyDown(e, 11)}
+                                tabIndex={0}
+                                onClick={() => checkAnswer(11, count)}
+                                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-100 border-b-4 border-purple-300 text-purple-700 font-black text-lg flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-purple-50 hover:border-purple-400 transition-all cursor-grab active:cursor-grabbing"
+                                aria-label={t('common.11_or_more_sounds')}
+                            >
+                                11+
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            case 'word_families': {
+                const targetWord = currentWordSoundsWord?.toLowerCase() || '';
+
+                const aiRimeData = wordSoundsPhonemes?.rimeFamilyMembers;
+                let targetRime = null;
+                let familyMembers = [];
+
+                if (aiRimeData && aiRimeData.rime && aiRimeData.words && aiRimeData.words.length >= 3) {
+                    targetRime = aiRimeData.rime.replace(/^-/, '');
+                    familyMembers = aiRimeData.words
+                        .map(w => w.toLowerCase().trim())
+                        .filter(w => w && w !== targetWord);
+                    debugLog("🏠 Using AI-generated rime family:", targetRime, familyMembers);
+                }
+
+                if (!targetRime || familyMembers.length < 2) {
+                    for (const [rime, members] of Object.entries(RIME_FAMILIES)) {
+                        if (targetWord.endsWith(rime) && targetWord.length > rime.length) {
+                            targetRime = rime;
+                            familyMembers = members.filter(w => w !== targetWord);
+                            break;
+                        }
+                    }
+                }
+
+                if (!targetRime) {
+                    const ending = targetWord.slice(-2);
+                    if (RIME_FAMILIES[ending]) {
+                        targetRime = ending;
+                        familyMembers = RIME_FAMILIES[ending].filter(w => w !== targetWord);
+                    }
+                }
+
+                if (!targetRime) {
+                    targetRime = 'at';
+                    familyMembers = RIME_FAMILIES['at'].filter(w => w !== targetWord);
+                    warnLog(`No rime family found for "${targetWord}", falling back to -at`);
+                }
+
+                const rimeWordLen = targetWord.length;
+                const rimeDifficulty = rimeWordLen <= 3 ? 'easy' : rimeWordLen <= 4 ? 'medium' : 'hard';
+                const rimeMemberLimit = rimeDifficulty === 'easy' ? 3 : rimeDifficulty === 'medium' ? 4 : 5;
+                const rimeDistractorLimit = rimeDifficulty === 'easy' ? 2 : rimeDifficulty === 'medium' ? 3 : 4;
+
+                const wfSeed = targetWord.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17;
+                const wfRng = ((s) => { let x = s; return () => { x = Math.sin(x) * 10000; return x - Math.floor(x); }; })(wfSeed);
+                const wfShuffle = (arr) => [...arr].sort(() => wfRng() - 0.5);
+
+                const selectedMembers = wfShuffle(familyMembers).slice(0, rimeMemberLimit);
+
+                const rimeKeys = Object.keys(RIME_FAMILIES);
+                const currentRimeIdx = rimeKeys.indexOf(targetRime);
+                const adjacentRimes = rimeKeys.filter(r => r !== targetRime && (
+                    r[0] === targetRime[0] ||
+                    Math.abs(rimeKeys.indexOf(r) - currentRimeIdx) <= 3
+                ));
+                let distractorPool = [];
+                for (const adjRime of wfShuffle(adjacentRimes).slice(0, 4)) {
+                    const adjMembers = RIME_FAMILIES[adjRime] || [];
+                    distractorPool.push(...adjMembers.slice(0, 3));
+                }
+                distractorPool = distractorPool.filter(w => !w.endsWith(targetRime));
+                const selectedDistractors = wfShuffle(distractorPool).slice(0, rimeDistractorLimit);
+
+                return (
+                    <div className="space-y-4">
+                        {renderPrompt()}
+                        <WordFamiliesView
+                            key={`wf-${targetWord}`}
+                            data={{
+                                family: `-${targetRime} family`,
+                                mode: 'rime',
+                                difficulty: rimeDifficulty,
+                                targetChar: targetRime,
+                                targetWord: targetWord,
+                                options: selectedMembers,
+                                distractors: selectedDistractors
+                            }}
+                            isEditing={isEditing}
+                            onCheckAnswer={(result) => checkAnswer(result === 'correct' ? currentWordSoundsWord : null, currentWordSoundsWord)}
+                            onPlayAudio={(w) => handleAudio(w)}
+                            onUpdateOption={handleOptionUpdate}
+                            showLetterHints={showLetterHints}
+                            soundOnlyMode={!showWordText}
+                        />
+                    </div>
+                );
+            }
+
+            default:
+                return null;
+        }
+    };
+    const accuracy = wordSoundsScore.total > 0
+        ? Math.round((wordSoundsScore.correct / wordSoundsScore.total) * 100)
+        : 0;
+    if (showSessionComplete) {
+        const streakEmoji = wordSoundsStreak >= 5 ? '🔥' : wordSoundsStreak >= 3 ? '⚡' : '✨';
+        return (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in zoom-in duration-300">
+                <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden text-white">
+                    <div className="p-8 text-center">
+                        <div className="text-6xl mb-4 animate-bounce">{accuracy >= 90 ? '🏆' : accuracy >= 70 ? '🎉' : accuracy >= 50 ? '⭐' : '💪'}</div>
+                        <h2 className="text-3xl font-black mb-2">{ts('word_sounds.session_complete') || 'Session Complete!'}</h2>
+                        <p className="text-white/70">{
+                            accuracy >= 90 ? (ts('word_sounds.session_msg_outstanding') || "Outstanding work! You're a phonics champion!") :
+                                accuracy >= 70 ? (ts('word_sounds.session_msg_great') || 'Great job with this activity!') :
+                                    accuracy >= 50 ? (ts('word_sounds.session_msg_good') || 'Good effort! Keep practicing!') :
+                                        (ts('word_sounds.session_msg_nice') || 'Nice try! Every practice makes you stronger!')
+                        }</p>
+                        {wordSoundsLevel > 1 && (
+                            <div className="mt-2 inline-flex items-center gap-1 bg-white/20 rounded-full px-4 py-1 text-sm font-bold">
+                                ⭐ Level {wordSoundsLevel}
+                            </div>
+                        )}
+                    </div>
+                    <div className="bg-white/10 backdrop-blur p-6">
+                        <div className="grid grid-cols-3 gap-4 text-center mb-4">
+                            <div className="bg-white/10 rounded-2xl p-4">
+                                <div className="text-3xl font-black">{wordSoundsScore.correct}</div>
+                                <div className="text-xs text-white/60 uppercase tracking-wider">{ts('word_sounds.correct') || 'Correct'}</div>
+                            </div>
+                            <div className="bg-white/10 rounded-2xl p-4">
+                                <div className="text-3xl font-black">{accuracy}%</div>
+                                <div className="text-xs text-white/60 uppercase tracking-wider">{ts('word_sounds.accuracy') || 'Accuracy'}</div>
+                            </div>
+                            <div className="bg-white/10 rounded-2xl p-4">
+                                <div className="text-3xl font-black">{streakEmoji} {wordSoundsStreak}</div>
+                                <div className="text-xs text-white/60 uppercase tracking-wider">{ts('word_sounds.streak') || 'Streak'}</div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-center">
+                            <div className="bg-white/10 rounded-xl p-3">
+                                <div className="text-xl font-bold">{wordSoundsScore.total}</div>
+                                <div className="text-xs text-white/60 uppercase tracking-wider">{ts('word_sounds.session_words_practiced') || 'Words Practiced'}</div>
+                            </div>
+                            <div className="bg-white/10 rounded-xl p-3">
+                                <div className="text-xl font-bold">{(wordSoundsScore?.correct || 0) * 10} ✨</div>
+                                <div className="text-xs text-white/60 uppercase tracking-wider">{ts('word_sounds.session_xp_earned') || 'XP Earned'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {sessionWordResults.current.length > 0 && (
+                        <div className="px-6 pb-2">
+                            <div className="text-xs uppercase tracking-wider text-white/50 font-bold mb-2">Word Recap</div>
+                            <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto scrollbar-thin">
+                                {[...new Map(sessionWordResults.current.map(r => [r.word, r])).values()].map((r, i) => (
+                                    <span key={i} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${r.correct
+                                            ? 'bg-green-400/20 text-green-200'
+                                            : 'bg-red-400/20 text-red-200'
+                                        }`}>
+                                        {r.correct ? '✓' : '✗'} {r.word}
+                                        {r.attempts > 1 && <span className="text-white/40">({r.attempts}×)</span>}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    <div className="p-6 flex flex-col gap-3">
+                        {sessionWordResults.current.filter(r => !r.correct).length > 0 && (
+                            <button
+                                onClick={() => {
+                                    setShowSessionComplete(false);
+                                    const missedWords = [...new Set(sessionWordResults.current.filter(r => !r.correct).map(r => r.word))];
+                                    const actId = wordSoundsActivity || 'segmentation';
+                                    sessionQueueRef.current[actId] = missedWords.map(w => ({ word: w, singleWord: w }));
+                                    setWordSoundsScore({ correct: 0, total: 0 });
+                                    setWordSoundsSessionProgress?.(0);
+                                    sessionWordResults.current = [];
+                                    const firstMissed = missedWords[0];
+                                    setCurrentWordSoundsWord(firstMissed);
+                                    const preloaded = preloadedWords.find(pw =>
+                                    (pw.word?.toLowerCase() === firstMissed.toLowerCase() ||
+                                        pw.targetWord?.toLowerCase() === firstMissed.toLowerCase()));
+                                    if (preloaded) {
+                                        setWordSoundsPhonemes(preloaded);
+                                    } else {
+                                        const fallback = generateFallbackData(firstMissed);
+                                        if (fallback) applyWordDataToState(fallback);
+                                    }
+                                    setIsLoadingPhonemes(false);
+                                }}
+                                className="w-full py-4 bg-amber-400 text-amber-900 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform"
+                            >
+                                🎯 Practice Missed Words ({[...new Set(sessionWordResults.current.filter(r => !r.correct).map(r => r.word))].length})
+                            </button>
+                        )}
+                        <button
+                            onClick={() => {
+                                setShowSessionComplete(false);
+                                setWordSoundsScore({ correct: 0, total: 0 });
+                                setWordSoundsSessionProgress?.(0);
+                                sessionWordResults.current = [];
+                                startActivity(wordSoundsActivity);
+                            }}
+                            className="w-full py-4 bg-white text-violet-600 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform"
+                        >
+                            🔄 {ts('word_sounds.play_again') || 'Play Again'}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowSessionComplete(false);
+                                if (activitySequence.length > 0) {
+                                    const nextIdx = (sequenceIndex + 1) % activitySequence.length;
+                                    setSequenceIndex(nextIdx);
+                                    setWordSoundsActivity(activitySequence[nextIdx]);
+                                } else {
+                                    setWordSoundsActivity(null);
+                                }
+                            }}
+                            className="w-full py-3 bg-white/20 text-white rounded-full font-medium hover:bg-white/30 transition-colors"
+                        >
+                            {activitySequence.length > 0 ? ('➡️ ' + (ts('word_sounds.session_next_activity') || 'Next Activity')) : (ts('word_sounds.choose_activity') || 'Choose Another Activity')}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowSessionComplete(false);
+                                onClose();
+                            }}
+                            className="w-full py-2 text-white/60 hover:text-white transition-colors"
+                        >
+                            {ts('common.close') || 'Close'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    if (showReviewPanel) {
+        return (
+            <WordSoundsReviewPanel
+                preloadedWords={preloadedWords}
+                onUpdateWord={handleUpdatePreloadedWord}
+                onReorderWords={handleReorderPreloadedWords}
+                onRegenerateWord={handleRegenerateWord}
+                onRegenerateOption={handleRegenerateOption}
+                onRegenerateAll={handleRegenerateAll}
+                onGenerateImage={handleGenerateWordImage}
+                onRefineImage={handleRefineWordImage}
+                activitySequence={activitySequence}
+                setActivitySequence={setActivitySequence}
+                isStudentLocked={isStudentLocked}
+                setIsStudentLocked={setIsStudentLocked}
+                generatingImageIndex={generatingImageIndex}
+                regeneratingIndex={regeneratingIndex} isLoading={isLoadingPhonemes}
+                onStartActivity={() => {
+                    hasStartedFromReview.current = true;
+                    setWordSoundsHistory([]);
+                    setShowReviewPanel(false);
+                    const firstWord = preloadedWords[currentWordIndex % Math.max(1, preloadedWords.length)];
+                    if (firstWord) {
+                        setCurrentWordSoundsWord(firstWord.targetWord || firstWord.word);
+                        setWordSoundsPhonemes(firstWord);
+                        setIsLoadingPhonemes(false);
+                    }
+                }}
+                onClose={onClose}
+                onBackToSetup={() => {
+                    setShowReviewPanel(false);
+                    if (onBackToSetup) {
+                        onBackToSetup();
+                    } else {
+                        onClose();
+                    }
+                }}
+                onPlayAudio={handleAudio}
+                onDeleteWord={handleDeleteWord}
+                t={t}
+                imageVisibilityMode={imageVisibilityMode}
+                setImageVisibilityMode={setImageVisibilityMode}
+            />
+        );
+    }
+    if (isMinimized) {
+        return (
+            <div className="fixed bottom-4 right-4 z-[100] w-80 bg-white rounded-xl shadow-2xl border-2 border-violet-200 animate-in slide-in-from-bottom-10 fade-in duration-300 overflow-hidden flex flex-col font-sans">
+                <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-3 flex items-center justify-between text-white shadow-sm cursor-move">
+                    <div className="flex items-center gap-2 font-bold text-sm">
+                        {isLoadingPhonemes ? <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : <Music size={16} />}
+                        <span>{isLoadingPhonemes ? "Generating Sounds..." : "Word Sounds"}</span>
+                    </div>
+                    <div className="flex gap-1">
+                        <button
+                            aria-label={t('common.maximize')}
+                            onClick={() => setIsMinimized(false)}
+                            className="p-1 hover:bg-white/20 rounded transition-colors"
+                            title={t('common.maximize')}
+                        >
+                            <Maximize2 size={16} />
+                        </button>
+                        <button aria-label={t('common.close_maximize')}
+                            onClick={onClose}
+                            className="p-1 hover:bg-white/20 rounded transition-colors"
+                            title={t('common.close')}
+                        >
+                            <X size={16} />
+                        </button>
+                    </div>
+                </div>
+                <div className="p-4 bg-slate-50 flex-grow">
+                    {isLoadingPhonemes ? (
+                        <div data-help-key="word_sounds_loading_minimized" className="space-y-3">
+                            <div className="flex justify-between text-xs text-slate-500 font-medium">
+                                <span>Processing...</span>
+                                <span className="animate-pulse">Active</span>
+                            </div>
+                            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-violet-500 animate-pulse w-full origin-left scale-x-75" />
+                            </div>
+                            <p className="text-[10px] text-slate-500 text-center italic">
+                                You can continue working. Sound generation is running in the background.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="text-center">
+                            <p className="text-xs text-slate-600 mb-3 font-medium">Ready to play!</p>
+                            <button
+                                onClick={() => setIsMinimized(false)}
+                                className="w-full py-2 bg-violet-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-violet-700 transition-colors"
+                            >
+                                Resume Activity
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div
+            ref={modalRef}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('common.word_sounds_activity')}
+        >
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4">
+                {errorMessage && (
+                    <div className="bg-red-500 text-white px-4 py-2 text-center text-sm font-medium animate-in slide-in-from-top">
+                        ⚠️ {errorMessage}
+                    </div>
+                )}
+                <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <svg width="48" height="48" viewBox="0 0 48 48" className={`drop-shadow-lg transition-transform duration-500 ${isCelebrating ? "animate-bounce scale-110" : ""}`}>
+                                <circle cx="24" cy="24" r="16" fill="#FBBF24" stroke="#F59E0B" strokeWidth="2" />
+                                <rect x="10" y="19" width="12" height="8" rx="2" fill="#1F2937" />
+                                <rect x="26" y="19" width="12" height="8" rx="2" fill="#1F2937" />
+                                <rect x="22" y="21" width="4" height="3" fill="#1F2937" />
+                                <rect x="11" y="20" width="4" height="2" rx="1" fill="#4B5563" opacity="0.5" />
+                                <rect x="27" y="20" width="4" height="2" rx="1" fill="#4B5563" opacity="0.5" />
+                                <path d="M18 32 Q24 35 30 32" stroke="#B45309" strokeWidth="2" fill="none" strokeLinecap="round" />
+                                <path d="M6 24 Q6 8 24 8 Q42 8 42 24" stroke="#1F2937" strokeWidth="4" fill="none" strokeLinecap="round" />
+                                <ellipse cx="6" cy="26" rx="5" ry="7" fill="#374151" />
+                                <ellipse cx="42" cy="26" rx="5" ry="7" fill="#374151" />
+                                <ellipse cx="6" cy="26" rx="3" ry="5" fill="#4B5563" />
+                                <ellipse cx="42" cy="26" rx="3" ry="5" fill="#4B5563" />
+                            </svg>
+                            <div>
+                                <h2 className="text-xl font-bold">{ts('word_sounds.title')}</h2>
+                                <p className="text-violet-200 text-sm">{ts('word_sounds.subtitle')}</p>
+                            </div>
+                        </div>
+                        <button
+                            aria-label={t('common.minimize_to_background')}
+                            onClick={() => setIsMinimized(true)}
+                            className="p-2 hover:bg-white/20 rounded-full transition-colors mr-1"
+                            title={t('common.minimize_to_background')}
+                        >
+                            <Minimize size={20} />
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                            aria-label={t('common.close')}
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                    {lessonPlanConfig && activitySequence?.length > 0 && (
+                        <div className="mt-3 bg-white/10 rounded-xl p-3 backdrop-blur">
+                            <div className="flex items-center justify-between text-xs mb-2">
+                                <div className="flex items-center gap-2 text-white font-bold">
+                                    <span className="text-violet-200">📋</span>
+                                    <span>{wordSoundsActivity?.replace('_', ' ').replace(/^./, c => c.toUpperCase()) || 'Activity'}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    {[...Array(lessonPlanConfig.masteryThreshold || 3)].map((_, i) => (
+                                        <span key={i} className={`text-base ${(masteryStats[wordSoundsActivity]?.consecutiveStreak || 0) > i ? 'opacity-100' : 'opacity-30'}`}>
+                                            {(masteryStats[wordSoundsActivity]?.consecutiveStreak || 0) > i ? '✓' : '○'}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-300"
+                                    style={{
+                                        width: `${Math.min(100, ((masteryStats[wordSoundsActivity]?.attempted || 0) / (lessonPlanConfig.activities?.find(a => a.id === wordSoundsActivity)?.count || 5)) * 100)}%`
+                                    }}
+                                />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-violet-200 mt-1">
+                                <span>{masteryStats[wordSoundsActivity]?.attempted || 0}/{lessonPlanConfig.activities?.find(a => a.id === wordSoundsActivity)?.count || 5} items</span>
+                                <span>
+                                    {(() => {
+                                        const uniqueActs = [...new Set(activitySequence)];
+                                        const currentIdx = uniqueActs.indexOf(wordSoundsActivity);
+                                        if (currentIdx < uniqueActs.length - 1) {
+                                            const next = uniqueActs[currentIdx + 1];
+                                            return 'Next: ' + (next?.replace('_', ' ') || 'Complete');
+                                        }
+                                        return '🎉 Final Activity';
+                                    })()}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between gap-4 mt-3 text-sm flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+                                <Trophy size={14} />
+                                <span>{wordSoundsScore.correct}/{wordSoundsScore.total}</span>
+                            </div>
+                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border ${wordSoundsScore.streak > 4 ? 'bg-amber-500/20 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'bg-white/20 border-transparent'}`}>
+                                {wordSoundsScore.streak > 4 ? <span className="animate-pulse text-amber-400">🔥</span> : <Zap size={14} className={isCelebrating ? "text-yellow-300 animate-spin" : ""} />}
+                                <span key={wordSoundsScore.streak} className={`font-bold ${isCelebrating ? 'animate-in zoom-in slide-in-from-bottom-2 duration-300 text-amber-200' : ''}`}>
+                                    {ts('word_sounds.streak')}: {wordSoundsScore.streak}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+                                <span>{accuracy}% {ts('word_sounds.accuracy')}</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {preloadedWords.length > 0 && (
+                                <button
+                                    aria-label={t('common.review_and_edit_word_list')}
+                                    onClick={() => setShowReviewPanel(true)}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors shadow-md"
+                                    title={t('common.review_and_edit_word_list')}
+                                >
+                                    ✏️ Review Words
+                                </button>
+                            )}
+                            <button
+                                aria-label={t('common.confirm')}
+                                onClick={() => setIsEditing(prev => !prev)}
+                                className={`p-1.5 rounded-full transition-colors flex items-center justify-center ${isEditing
+                                        ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-300'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                    }`}
+                                title={isEditing ? (ts('common.done') || 'Done') : (ts('common.edit') || 'Edit')}
+                            >
+                                {isEditing ? <Check size={16} /> : <Edit2 size={16} />}
+                            </button>
+                            <button
+                                aria-label={t('common.voice_input')}
+                                onClick={() => {
+                                    setUseMicInput(!useMicInput);
+                                    if (useMicInput) setIsListening(false);
+                                }}
+                                className={`p-1.5 rounded-full transition-colors flex items-center justify-center ${useMicInput
+                                        ? 'bg-rose-500 text-white ring-2 ring-rose-300 shadow-md animate-pulse'
+                                        : 'bg-white/10 text-white hover:bg-white/20'
+                                    }`}
+                                title={useMicInput ? (ts('word_sounds.switch_click_mode') || "Switch to Click Mode") : (ts('word_sounds.switch_mic_mode') || "Switch to Microphone Mode")}
+                            >
+                                {useMicInput ? <Mic size={16} /> : <MicOff size={16} />}
+                            </button>
+                            <button
+                                onClick={() => { if (!isProbeMode) setShowLetterHints(prev => !prev) }}
+                                className={`flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold ${showLetterHints
+                                        ? 'bg-white/20 border-white/30 text-white'
+                                        : 'bg-violet-800 border-violet-500 text-violet-100 shadow-inner'
+                                    }`}
+                                title={showLetterHints ? (ts('word_sounds.switch_sound_only') || "Switch to Sound Only Mode (Hide Letters)") : (ts('word_sounds.switch_letter_mode') || "Switch to Letter Mode (Show Letters)")}
+                            >
+                                <span>{showLetterHints ? '👁️' : '👂'}</span>
+                                <span className="hidden sm:inline">{showLetterHints ? ts('word_sounds.mode_phonics') || 'Phonics' : ts('word_sounds.mode_sound') || 'Sound Only'}</span>
+                            </button>
+                            <DifficultyIndicator />
+                            {availableLanguages.length > 1 && setWordSoundsLanguage && (
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                        <Globe size={12} className="text-indigo-200" />
+                                    </div>
+                                    <select aria-label={t('common.selection')}
+                                        value={wordSoundsLanguage || 'en-US'}
+                                        onChange={(e) => setWordSoundsLanguage(e.target.value)}
+                                        className="bg-violet-800 border border-violet-600 rounded-full pl-8 pr-8 py-1 text-white text-xs cursor-pointer hover:bg-violet-700 transition-colors outline-none appearance-none shadow-sm"
+                                        title={ts('common.language') || "Language"}
+                                    >
+                                        {availableLanguages.map(lang => (
+                                            <option key={lang} value={getSpeechLangCode(lang)}>
+                                                {lang === 'English' ? '🇺🇸 English' : `${lang}`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                        <ChevronDown size={12} className="text-indigo-200" />
+                                    </div>
+                                </div>
+                            )}
+                            <button
+                                onClick={() => setPlayInstructions(prev => !prev)}
+                                className={`flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold ${playInstructions
+                                        ? 'bg-indigo-100 border-indigo-200 text-indigo-700'
+                                        : 'bg-white/10 border-white/30 text-white/70'
+                                    }`}
+                                title={playInstructions ? "Instructions are ON" : "Instructions are OFF"}
+                            >
+                                <span>{playInstructions ? '🗣️' : '🔇'}</span>
+                                <span className="hidden sm:inline">Help</span>
+                            </button>
+                            {!isStudentLocked && setWordSoundsDifficulty && (
+                                <select aria-label={t('common.selection')}
+                                    value={wordSoundsDifficulty || 'auto'}
+                                    onChange={(e) => setWordSoundsDifficulty(e.target.value)}
+                                    className="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50"
+                                    style={{ WebkitAppearance: 'none', appearance: 'none' }}
+                                >
+                                    <option value="auto" className="text-slate-800">🤖 Auto</option>
+                                    <option value="sequential" className="text-slate-800">📝 Sequential</option>
+                                    <option value="easy" className="text-slate-800">🟢 Easy</option>
+                                    <option value="medium" className="text-slate-800">🟡 Medium</option>
+                                    <option value="hard" className="text-slate-800">🔴 Hard</option>
+                                </select>
+                            )}
+                            <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
+                                <span className="text-xs opacity-80">🐢</span>
+                                <input aria-label={t('common.range_slider')}
+                                    type="range"
+                                    min="0.5"
+                                    max="1.5"
+                                    step="0.25"
+                                    value={ttsSpeed}
+                                    onChange={(e) => setTtsSpeed(parseFloat(e.target.value))}
+                                    className="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
+                                    title={ts('word_sounds.tts_speed') || "Speed"}
+                                />
+                                <span className="text-xs opacity-80">🐇</span>
+                                <span className="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">{ttsSpeed}x</span>
+                            </div>
+                        </div>
+                    </div>
+                    {wordSoundsSessionProgress > 0 && (
+                        <div className="mt-3">
+                            <div className="flex justify-between text-xs text-violet-200 mb-1">
+                                <span>{ts('word_sounds.session_progress')}</span>
+                                <span>{Math.min(wordSoundsSessionProgress, wordSoundsSessionGoal)}/{wordSoundsSessionGoal}</span>
+                            </div>
+                            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
+                                    style={{ width: `${Math.min((wordSoundsSessionProgress / wordSoundsSessionGoal) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                    {wordSoundsBadges && wordSoundsBadges.length > 0 && (
+                        <div className="flex items-center gap-1 mt-2 flex-wrap">
+                            {wordSoundsBadges.slice(-5).map((badge, i) => (
+                                <div
+                                    key={badge.id || i}
+                                    className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs"
+                                    title={badge.name}
+                                >
+                                    <span>{badge.icon}</span>
+                                    <span className="hidden sm:inline">{badge.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                {!isStudentLocked && !isProbeMode && <div className="border-b border-slate-200 px-4 py-3 overflow-x-auto">
+                    <div className="flex gap-2">
+                        {ACTIVITIES.map(activity => (
+                            <button
+                                key={activity.id}
+                                onClick={() => startActivity(activity.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id
+                                        ? 'bg-violet-500 text-white shadow-md'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                                title={activity.description}
+                            >
+                                <span>{activity.icon}</span>
+                                <span>{activity.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>}
+                {isProbeMode && (
+                    <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-inner">
+                        <div className="flex items-center gap-3">
+                            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">📊 PROBE MODE</span>
+                            <span>Word {wordSoundsScore.total + 1} of {wordSoundsSessionGoal}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span>{wordSoundsScore.correct} correct / {wordSoundsScore.total} total</span>
+                            {probeStartTimeRef.current && (
+                                <span className="bg-white/20 px-2 py-0.5 rounded-full tabular-nums">
+                                    ⏱ {Math.floor(probeElapsed / 60)}:{String(probeElapsed % 60).padStart(2, '0')}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
+                {isProbeMode && (
+                    <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-inner">
+                        <div className="flex items-center gap-3">
+                            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">📊 PROBE MODE</span>
+                            <span>Word {wordSoundsScore.total + 1} of {wordSoundsSessionGoal}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span>{wordSoundsScore.correct} correct / {wordSoundsScore.total} total</span>
+                            {probeStartTimeRef.current && (
+                                <span className="bg-white/20 px-2 py-0.5 rounded-full tabular-nums">
+                                    ⏱ {Math.floor(probeElapsed / 60)}:{String(probeElapsed % 60).padStart(2, '0')}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
+                <div className="flex-1 overflow-y-auto p-6">
+                    {phonemeError && (
+                        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between animate-in slide-in-from-top-2">
+                            <div className="flex items-center gap-2 text-amber-700">
+                                <AlertTriangle size={20} />
+                                <div className="text-sm">
+                                    <span className="font-bold">AI Generation Failed.</span>
+                                    <span className="ml-1 opacity-80">Using basic data.</span>
+                                </div>
+                            </div>
+                            <button
+                                aria-label={t('common.refresh')}
+                                onClick={() => fetchWordData(phonemeError)}
+                                className="px-3 py-1.5 bg-white border border-amber-200 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 shadow-sm"
+                            >
+                                <RefreshCw size={12} />
+                                Retry
+                            </button>
+                        </div>
+                    )}
+                    <div key={wordSoundsActivity} className="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both">
+                        {renderActivityContent()}
+                    </div>
+                    {wordSoundsFeedback && (
+                        <div className={`mt-6 p-4 rounded-xl text-center font-bold animate-in slide-in-from-bottom-2 ${wordSoundsFeedback.isCorrect
+                                ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                                : 'bg-red-100 text-red-700 border-2 border-red-300'
+                            }`}>
+                            {wordSoundsFeedback.isCorrect ? '🎉 ' : '💡 '}
+                            {wordSoundsFeedback.message}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latestProbeResult, setLatestProbeResult, rosterQueue, setRosterQueue, screenerSession, setScreenerSession, onLaunchORF, probeHistory, interventionLogs, addToast, probeGradeLevel, setProbeGradeLevel, probeActivity, setProbeActivity, probeForm, setProbeForm, isProbeMode, setIsProbeMode, probeTargetStudent, setProbeTargetStudent, saveProbeResult, setWsPreloadedWords, setWordSoundsActivity, setIsWordSoundsMode, setActiveView, setGeneratedContent, setIsFluencyMode, setFluencyStatus, setFluencyResult, isIndependentMode = false, globalPoints = 0, globalLevel = 1, history = [], wordSoundsHistory = [], phonemeMastery = {}, wordSoundsBadges = {}, gameCompletions = [], mathFluencyOperation, setMathFluencyOperation, mathFluencyDifficulty, setMathFluencyDifficulty, mathFluencyTimeLimit, setMathFluencyTimeLimit, setMathFluencyProblems, setMathFluencyCurrentIndex, setMathFluencyResults, setMathFluencyStudentInput, setMathFluencyTimer, setMathFluencyActive, mathFluencyTimerRef, mathFluencyInputRef, finishMathFluencyProbe, loadPsychometricProbes }) => {
+
+    const [importedStudents, setImportedStudents] = React.useState([]);
+    const [selectedStudent, setSelectedStudent] = React.useState(null);
+    const [isProcessing, setIsProcessing] = React.useState(false);
+    const [isMinimized, setIsMinimized] = React.useState(false);
+    const [assessmentCenterTab, setAssessmentCenterTab] = React.useState("assessments");
+    const [researchStudent, setResearchStudent] = React.useState(null);
+    const [showCBMImport, setShowCBMImport] = React.useState(false);
+    const [showSurveyModal, setShowSurveyModal] = React.useState(false);
+    const [showResearchSetup, setShowResearchSetup] = React.useState(false);
+    const [researchFirstVisit, setResearchFirstVisit] = React.useState(true);
+    React.useEffect(() => {
+        if (typeof loadPsychometricProbes === 'function') {
+            loadPsychometricProbes();
+        }
+    }, []);
+
+    React.useEffect(() => {
+        if (typeof loadPsychometricProbes === 'function') {
+            loadPsychometricProbes();
+        }
+    }, []);
+    const [importProgress, setImportProgress] = React.useState({ current: 0, total: 0 });
+    const [sortColumn, setSortColumn] = React.useState(null);
+    const [sortDirection, setSortDirection] = React.useState('asc');
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const [showRTISettings, setShowRTISettings] = React.useState(false);
+    const [mathProbeGrade, setMathProbeGrade] = React.useState("1");
+    const [mathProbeForm, setMathProbeForm] = React.useState("A");
+    const [mathProbeStudent, setMathProbeStudent] = React.useState(null);
+    const [mnProbeActive, setMnProbeActive] = React.useState(false);
+    const [mnProbeProblems, setMnProbeProblems] = React.useState([]);
+    const [mnProbeIndex, setMnProbeIndex] = React.useState(0);
+    const [mnProbeAnswer, setMnProbeAnswer] = React.useState("");
+    const [mnProbeResults, setMnProbeResults] = React.useState(null);
+    const [mnProbeTimer, setMnProbeTimer] = React.useState(0);
+    const mnProbeTimerRef = React.useRef(null);
+    const mnProbeInputRef = React.useRef(null);
+    React.useEffect(() => {
+        if (mnProbeActive && mnProbeTimer === 0 && mnProbeTimerRef.current === null && mnProbeProblems.length > 0 && !mnProbeResults) {
+            const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
+            const correct = answered.filter(p => p.correct).length;
+            setMnProbeResults({ correct, total: answered.length, problems: mnProbeProblems, type: 'missing_number' });
+            setMnProbeActive(false);
+        }
+    }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
+    React.useEffect(() => {
+        if (mnProbeActive && mnProbeTimer === 0 && mnProbeTimerRef.current === null && mnProbeProblems.length > 0 && !mnProbeResults) {
+            const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
+            const correct = answered.filter(p => p.correct).length;
+            setMnProbeResults({ correct, total: answered.length, problems: mnProbeProblems, type: 'missing_number' });
+            setMnProbeActive(false);
+        }
+    }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
+    const [qdProbeActive, setQdProbeActive] = React.useState(false);
+    const [qdProbeProblems, setQdProbeProblems] = React.useState([]);
+    const [qdProbeIndex, setQdProbeIndex] = React.useState(0);
+    const [qdProbeResults, setQdProbeResults] = React.useState(null);
+    const [qdProbeTimer, setQdProbeTimer] = React.useState(0);
+    const qdProbeTimerRef = React.useRef(null);
+    React.useEffect(() => {
+        if (qdProbeActive && qdProbeTimer === 0 && qdProbeTimerRef.current === null && qdProbeProblems.length > 0 && !qdProbeResults) {
+            const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
+            const correct = answered.filter(p => p.correct).length;
+            setQdProbeResults({ correct, total: answered.length, problems: qdProbeProblems, type: 'quantity_discrimination' });
+            setQdProbeActive(false);
+        }
+    }, [qdProbeTimer, qdProbeActive, qdProbeProblems, qdProbeResults]);
+    React.useEffect(() => {
+        if (qdProbeActive && qdProbeTimer === 0 && qdProbeTimerRef.current === null && qdProbeProblems.length > 0 && !qdProbeResults) {
+            const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
+            const correct = answered.filter(p => p.correct).length;
+            setQdProbeResults({ correct, total: answered.length, problems: qdProbeProblems, type: 'quantity_discrimination' });
+            setQdProbeActive(false);
+        }
+    }, [qdProbeTimer, qdProbeActive, qdProbeProblems, qdProbeResults]);
+    const [reportStartDate, setReportStartDate] = React.useState('');
+    const [reportEndDate, setReportEndDate] = React.useState('');
+    const [safetyFlaggingVisible, setSafetyFlaggingVisible] = React.useState(() => {
+        try { return safeGetItem('alloflow_safety_visible') !== 'false'; } catch (e) { return true; }
+    });
+    React.useEffect(() => {
+        try { safeSetItem('alloflow_safety_visible', String(safetyFlaggingVisible)); } catch (e) { }
+    }, [safetyFlaggingVisible]);
+    React.useEffect(() => {
+        if (!latestProbeResult) return;
+        const targetName = latestProbeResult.student;
+        if (!targetName) {
+            setLatestProbeResult(null);
+            return;
+        }
+        setImportedStudents(prev => prev.map(s => {
+            if ((s.nickname || s.name) !== targetName) return s;
+            const history = s.screeningHistory || [];
+            return { ...s, screeningHistory: [...history, latestProbeResult] };
+        }));
+        setLatestProbeResult(null);
+    }, [latestProbeResult]);
+    const [liveProgressData, setLiveProgressData] = React.useState({});
+    const [isLiveListening, setIsLiveListening] = React.useState(false);
+    const [liveSyncCode, setLiveSyncCode] = React.useState('');
+    const [showLiveSyncInput, setShowLiveSyncInput] = React.useState(false);
+    const [rtiThresholds, setRtiThresholds] = React.useState(() => {
+        try {
+            const saved = safeGetItem('alloflow_rti_thresholds');
+            if (saved) return JSON.parse(saved);
+        } catch (e) { /* localStorage unavailable */ }
+        return { quizTier3: 50, quizTier2: 80, wsTier3: 50, wsTier2: 75, engagementMin: 2, fluencyMin: 60, labelChallengeMin: 50 };
+    });
+    React.useEffect(() => {
+        try { safeSetItem('alloflow_rti_thresholds', JSON.stringify(rtiThresholds)); } catch (e) { /* ignore */ }
+    }, [rtiThresholds]);
+    const quizChartRef = React.useRef(null);
+    const quizChartInstance = React.useRef(null);
+    const flagsChartRef = React.useRef(null);
+    const flagsChartInstance = React.useRef(null);
+    const trendChartRef = React.useRef(null);
+    const trendChartInstance = React.useRef(null);
+    React.useEffect(() => {
+        if (typeof Chart !== 'undefined') return;
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+        script.async = true;
+        document.head.appendChild(script);
+        return () => { /* keep script loaded */ };
+    }, []);
+    const handleSort = (column) => {
+        if (sortColumn === column) {
+            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('asc');
+        }
+    };
+    const sortedAndFiltered = React.useMemo(() => {
+        let list = [...importedStudents];
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            list = list.filter(s => s.name.toLowerCase().includes(q));
+        }
+        if (sortColumn) {
+            list.sort((a, b) => {
+                let valA, valB;
+                if (sortColumn === 'name') { valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); }
+                else if (sortColumn === 'flags') { valA = a.safetyFlags.length; valB = b.safetyFlags.length; }
+                else if (sortColumn === 'rtiTier') { valA = classifyRTITier(a.stats).tier; valB = classifyRTITier(b.stats).tier; }
+                else { valA = a.stats[sortColumn] || 0; valB = b.stats[sortColumn] || 0; }
+                if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return list;
+    }, [importedStudents, sortColumn, sortDirection, searchQuery]);
+    const handleFileImport = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        setIsProcessing(true);
+        setImportProgress({ current: 0, total: files.length });
+        const CHUNK_SIZE = 10;
+        let processedCount = 0;
+        let allNewStudents = [];
+        for (let i = 0; i < files.length; i += CHUNK_SIZE) {
+            const chunk = files.slice(i, i + CHUNK_SIZE);
+            const chunkStudents = [];
+            for (const file of chunk) {
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    const studentName = data.studentNickname ||
+                        data.profile?.name ||
+                        file.name.replace('.json', '').replace(/_/g, ' ');
+                    const stats = calculateStudentStats(data);
+                    chunkStudents.push({
+                        id: `student-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                        name: studentName,
+                        filename: file.name,
+                        data: data,
+                        stats: stats,
+                        safetyFlags: extractSafetyFlags(data),
+                        lastSession: data.lastSaved || new Date().toISOString()
+                    });
+                } catch (err) {
+                    warnLog(`Failed to parse ${file.name}:`, err);
+                }
+            }
+            allNewStudents = [...allNewStudents, ...chunkStudents];
+            processedCount += chunk.length;
+            setImportProgress({ current: Math.min(processedCount, files.length), total: files.length });
+            setImportedStudents(prev => [...prev, ...chunkStudents]);
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+
+        if (rosterKey && rosterKey.students && Object.keys(rosterKey.students).length > 0) {
+
+            let appendedCount = 0;
+
+            setRosterKey(function (prev) {
+
+                var history = Object.assign({}, prev.progressHistory || {});
+
+                allNewStudents.forEach(function (student) {
+
+                    var codename = student.name;
+
+                    if (prev.students && prev.students[codename] !== undefined) {
+
+                        var snapshot = {
+
+                            date: new Date().toISOString().split('T')[0],
+
+                            quizAvg: student.stats.quizAvg || 0,
+
+                            wsAccuracy: student.stats.wsAccuracy || 0,
+
+                            wsBestStreak: student.stats.wsBestStreak || 0,
+
+                            fluencyWCPM: student.stats.fluencyWCPM || 0,
+
+                            adventureXP: student.stats.adventureXP || 0,
+
+                            gamesPlayed: student.stats.gamesPlayed || 0,
+
+                            totalActivities: student.stats.totalActivities || 0,
+
+                            focusRatio: student.stats.focusRatio || null,
+
+                            importedFrom: student.filename
+
+                        };
+
+                        var existing = history[codename] || [];
+
+                        var filtered = existing.filter(function (s) { return s.date !== snapshot.date; });
+
+                        filtered.push(snapshot);
+
+                        filtered.sort(function (a, b) { return a.date.localeCompare(b.date); });
+
+                        history[codename] = filtered;
+
+                        appendedCount++;
+
+                    }
+
+                });
+
+                return Object.assign({}, prev, { progressHistory: history });
+
+            });
+
+            if (appendedCount > 0 && alloBotRef.current) {
+
+                alloBotRef.current.speak("Progress snapshots saved for " + appendedCount + " student" + (appendedCount > 1 ? "s" : "") + " in your roster.");
+
+            }
+
+        } else if (!rosterKey || !rosterKey.students || Object.keys(rosterKey.students).length === 0) {
+
+            if (alloBotRef.current) { alloBotRef.current.speak("Tip: Create a Class Roster to track student progress over time."); }
+
+        }
+
+        setIsProcessing(false);
+        setImportProgress({ current: 0, total: 0 });
+        if (alloBotRef.current) {
+            const totalFlags = allNewStudents.reduce((acc, s) => acc + (s.safetyFlags ? s.safetyFlags.length : 0), 0);
+            if (totalFlags > 0) {
+                alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+            } else {
+                alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+            }
+        }
+    };
+    const calculateStudentStats = (data) => {
+        const stats = {
+            quizAvg: 0,
+            adventureXP: 0,
+            escapeCompletion: 0,
+            fluencyWCPM: 0,
+            interviewXP: 0,
+            totalActivities: 0,
+            wsWordsCompleted: 0, wsAccuracy: 0, wsBestStreak: 0,
+            socraticMessageCount: 0,
+            gamesPlayed: 0,
+            memoryGame: null, matchingGame: null, syntaxScramble: null,
+            crosswordGame: null, timelineGame: null, conceptSortGame: null,
+            vennDiagram: null, bingo: null, wordScramble: null,
+            labelChallengeAvg: 0, labelChallengeAttempts: 0, labelChallengeBest: 0
+        };
+        if (data.responses && Object.keys(data.responses).length > 0) {
+            const quizScores = Object.values(data.responses).map(r => r.score || 0);
+            stats.quizAvg = quizScores.length > 0 ?
+                Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length) : 0;
+            stats.totalActivities += quizScores.length;
+        }
+        if (data.adventureState) {
+            stats.adventureXP = data.adventureState.xp || data.adventureState.totalXP || 0;
+            if (stats.adventureXP > 0) stats.totalActivities++;
+        }
+        if (data.escapeRoomStats) {
+            const er = data.escapeRoomStats;
+            if (er.totalPuzzles > 0) {
+                stats.escapeCompletion = Math.round((er.puzzlesSolved / er.totalPuzzles) * 100);
+            }
+            if (er.puzzlesSolved > 0) stats.totalActivities++;
+        }
+        if (data.fluencyAssessments && data.fluencyAssessments.length > 0) {
+            const latest = data.fluencyAssessments[data.fluencyAssessments.length - 1];
+            stats.fluencyWCPM = latest.wcpm || 0;
+            stats.totalActivities += data.fluencyAssessments.length;
+        }
+        if (data.personaState) {
+            stats.interviewXP = data.personaState.accumulatedXP || data.personaState.totalXP || 0;
+            if (data.personaState.chatHistory?.length > 0) stats.totalActivities++;
+        }
+        if (data.wordSoundsState) {
+            const ws = data.wordSoundsState;
+            stats.wsWordsCompleted = ws.history?.length || 0;
+            if (ws.sessionScore) {
+                stats.wsAccuracy = ws.sessionScore.total > 0
+                    ? Math.round((ws.sessionScore.correct / ws.sessionScore.total) * 100) : 0;
+                stats.wsBestStreak = ws.sessionScore.streak || 0;
+            }
+            if (ws.dailyProgress) {
+                stats.totalActivities += Object.keys(ws.dailyProgress).length;
+            }
+        }
+        if (data.gameCompletions) {
+            const typeMap = {
+                memory: 'memoryGame', matching: 'matchingGame',
+                syntaxScramble: 'syntaxScramble', crossword: 'crosswordGame',
+                timelineGame: 'timelineGame', conceptSortGame: 'conceptSortGame',
+                vennDiagram: 'vennDiagram', bingo: 'bingo', wordScramble: 'wordScramble'
+            };
+            for (const [rawType, statKey] of Object.entries(typeMap)) {
+                const entries = data.gameCompletions[rawType] || [];
+                if (entries.length > 0) {
+                    const scores = entries.map(e => e.score ?? e.accuracy ?? 0);
+                    stats[statKey] = {
+                        initial: scores[0],
+                        attempts: entries.length,
+                        best: Math.max(...scores)
+                    };
+                    stats.gamesPlayed += entries.length;
+                    stats.totalActivities += entries.length;
+                }
+            }
+        }
+        if (data.socraticChatHistory?.messageCount > 0) {
+            stats.socraticMessageCount = data.socraticChatHistory.messageCount;
+            stats.totalActivities++;
+        }
+        if (data.labelChallengeResults?.length > 0) {
+            const scores = data.labelChallengeResults.map(r => r.score || 0);
+            stats.labelChallengeAvg = Math.round(
+                scores.reduce((a, b) => a + b, 0) / scores.length
+            );
+            stats.labelChallengeAttempts = scores.length;
+            stats.labelChallengeBest = Math.max(...scores);
+            stats.totalActivities += scores.length;
+        }
+        return stats;
+    };
+
+    const classifyRTITier = (stats, thresholds) => {
+        const t3 = thresholds || rtiThresholds || { quizTier3: 50, quizTier2: 80, wsTier3: 50, wsTier2: 75, engagementMin: 2, fluencyMin: 60, labelChallengeMin: 50 };
+        const reasons = [];
+        const recs = [];
+        let tier = 1;
+
+        if (stats.quizAvg < t3.quizTier3) {
+            tier = Math.max(tier, 3);
+            reasons.push(`Quiz average below ${t3.quizTier3}%`);
+            recs.push('Increase scaffolding on quiz activities; consider breaking content into smaller chunks');
+        } else if (stats.quizAvg < t3.quizTier2) {
+            tier = Math.max(tier, 2);
+            reasons.push(`Quiz average in instructional range (${t3.quizTier3}-${t3.quizTier2 - 1}%)`);
+            recs.push('Provide targeted review on missed concepts before advancing');
+        }
+
+        if (stats.wsAccuracy > 0) {
+            if (stats.wsAccuracy < t3.wsTier3) {
+                tier = Math.max(tier, 3);
+                reasons.push(`Word Sounds accuracy below ${t3.wsTier3}%`);
+                recs.push('Focus on phonemic awareness with simpler CVC patterns; increase TTS scaffolding');
+            } else if (stats.wsAccuracy < t3.wsTier2) {
+                tier = Math.max(tier, 2);
+                reasons.push('Word Sounds accuracy in developing range');
+                recs.push('Practice with word families; use the fill-in-blank label mode for vocabulary building');
+            }
+        }
+
+        if (stats.totalActivities < t3.engagementMin) {
+            tier = Math.max(tier, 2);
+            reasons.push(`Very low engagement (fewer than ${t3.engagementMin} activities)`);
+            recs.push('Check for access barriers; consider student interest inventory to personalize content');
+        }
+
+        if (stats.fluencyWCPM > 0 && stats.fluencyWCPM < t3.fluencyMin) {
+            tier = Math.max(tier, 2);
+            reasons.push(`Fluency below ${t3.fluencyMin} WCPM`);
+            recs.push('Implement repeated reading with the fluency assessment tool; track WCPM trend weekly');
+        }
+
+        if (stats.labelChallengeAvg > 0 && stats.labelChallengeAvg < t3.labelChallengeMin) {
+            tier = Math.max(tier, 2);
+            reasons.push(`Label Challenge average below ${t3.labelChallengeMin}%`);
+            recs.push('Use fill-in-blank mode to build vocabulary before attempting from-scratch labeling');
+        }
+
+        if (stats.mathDCPM > 0 && stats.mathDCPM < (t3.mathDCPMTier3 || 20)) {
+            tier = Math.max(tier, 3);
+            reasons.push(`Math fluency critically below ${t3.mathDCPMTier3 || 20} DCPM`);
+            recs.push("Implement daily math fact practice with timed drills; focus on single-operation mastery");
+        } else if (stats.mathDCPM > 0 && stats.mathDCPM < (t3.mathDCPMTier2 || 40)) {
+            tier = Math.max(tier, 2);
+            reasons.push(`Math fluency developing (below ${t3.mathDCPMTier2 || 40} DCPM)`);
+            recs.push("Use Fluency Probes 2-3x/week to build automaticity; gradually increase operation complexity");
+        }
+
+        if (tier === 1) {
+            if (stats.quizAvg >= t3.quizTier2) reasons.push('Strong quiz performance');
+            if (stats.wsAccuracy >= t3.wsTier2) reasons.push('Solid phonemic accuracy');
+            if (stats.totalActivities >= 5) reasons.push('Good engagement level');
+            if (stats.fluencyWCPM >= 100) reasons.push('Strong fluency');
+            recs.push('Ready for increased challenge, reduced scaffolding, or peer tutoring roles');
+        }
+
+        const tierLabels = {
+            1: { label: 'Tier 1 — On Track', color: '#16a34a', bg: '#dcfce7', border: '#86efac', emoji: '🟢' },
+            2: { label: 'Tier 2 — Strategic', color: '#d97706', bg: '#fef9c3', border: '#fcd34d', emoji: '🟡' },
+            3: { label: 'Tier 3 — Intensive', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5', emoji: '🔴' }
+        };
+
+        return { tier, ...tierLabels[tier], reasons, recommendations: recs };
+
+        const classifyScreeningRisk = (results) => {
+            if (!results || results.length === 0) return { tier: 0, label: 'No Data', color: '#94a3b8', bg: '#f1f5f9', border: '#e2e8f0', emoji: '⚪', avgAccuracy: 0, reasons: [] };
+
+            const exportScreeningCSV = () => {
+                const rows = [['Student', 'Grade', 'Form', 'Date', 'Subtest', 'Correct', 'Total', 'Accuracy%', 'Items/min', 'Risk Level']];
+                importedStudents.forEach(s => {
+                    (s.screeningHistory || []).forEach(h => {
+                        const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
+                        rows.push([
+                            s.nickname || s.name, h.grade || '', h.form || '',
+                            h.timestamp ? new Date(h.timestamp).toLocaleDateString() : '',
+                            h.activity || '', h.correct || 0, h.total || 0,
+                            h.accuracy || 0, h.itemsPerMin || 0, risk
+                        ]);
+                    });
+                });
+                const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'screening_results_' + new Date().toISOString().slice(0, 10) + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                addToast('Screening CSV exported', 'success');
+            };
+
+            const avgAccuracy = Math.round(results.reduce((s, r) => s + (r.accuracy || 0), 0) / results.length);
+            const reasons = [];
+            let tier = 1;
+            if (avgAccuracy < 60) { tier = 3; reasons.push('Composite accuracy ' + avgAccuracy + '% — intensive support needed'); }
+            else if (avgAccuracy < 80) { tier = 2; reasons.push('Composite accuracy ' + avgAccuracy + '% — strategic support recommended'); }
+            else { reasons.push('Composite accuracy ' + avgAccuracy + '% — on track'); }
+            results.forEach(r => {
+                if (r.accuracy < 50) { tier = Math.max(tier, 3); reasons.push((r.activity || 'Subtest') + ' critically low (' + r.accuracy + '%)'); }
+            });
+            const labels = {
+                1: { label: 'Low Risk', color: '#16a34a', bg: '#dcfce7', border: '#86efac', emoji: '🟢' },
+                2: { label: 'Some Risk', color: '#d97706', bg: '#fef9c3', border: '#fcd34d', emoji: '🟡' },
+                3: { label: 'At Risk', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5', emoji: '🔴' },
+            };
+            return { tier, avgAccuracy, reasons, ...labels[tier] };
+        };
+    };
+
+    const generateRTICSV = () => {
+        if (!importedStudents || importedStudents.length === 0) return;
+        const headers = ['Student', 'Date', 'RTI Tier', 'Quiz Avg', 'WS Accuracy', 'WS Words', 'Fluency WCPM', 'Games Played', 'Total Activities', 'Label Challenge Avg', 'Time on Task (min)', 'Recommendations'];
+        const rows = importedStudents.map(s => {
+            const rti = classifyRTITier(s.stats);
+            const tot = s.data?.timeOnTask?.totalSessionMinutes || 0;
+            return [
+                s.name,
+                new Date().toLocaleDateString(),
+                'Tier ' + rti.tier,
+                s.stats.quizAvg + '%',
+                s.stats.wsAccuracy + '%',
+                s.stats.wsWordsCompleted,
+                s.stats.fluencyWCPM,
+                s.stats.gamesPlayed,
+                s.stats.totalActivities,
+                s.stats.labelChallengeAvg + '%',
+                Math.round(tot),
+                '"' + rti.recommendations.join('; ').replace(/"/g, "'") + '"'
+            ].join(',');
+        });
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `RTI_Report_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    };
+
+    const exportFluencyCSV = () => {
+        const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
+        if (fluencyRecords.length === 0) { addToast('No fluency assessments to export', 'warning'); return; }
+        const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
+        const rows = fluencyRecords.map(r => {
+            const m = r.data.metrics;
+            const rrm = typeof calculateRunningRecordMetrics === 'function' && r.data.wordData
+                ? calculateRunningRecordMetrics(r.data.wordData, r.data.fullAnalysis?.insertions || [])
+                : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
+            const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
+            return [
+                new Date(r.timestamp).toLocaleDateString(),
+                '"' + passageTitle + '"',
+                m.wcpm || 0,
+                m.accuracy || 0,
+                m.totalWords || 0,
+                Math.round(m.durationSeconds || 0),
+                rrm.substitutions || 0,
+                rrm.omissions || 0,
+                rrm.insertions || 0,
+                rrm.selfCorrections || 0,
+                '1:' + (rrm.errorRate || 0),
+                rrm.readingLevel || 'unknown'
+            ].join(',');
+        });
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Fluency_Assessments_' + new Date().toISOString().split('T')[0] + '.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    };
+
+    const renderInsightsPanel = (studentName) => {
+        const insights = generateStudentInsights(studentName);
+        if (insights.insufficient) {
+            return React.createElement('div', { className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center' },
+                React.createElement('p', { className: 'text-sm text-slate-500' },
+                    '\u{1F4CA} Need at least 2 progress snapshots to generate insights. Currently: ' + insights.snapshots + ' snapshot(s), ' + insights.probes + ' probe(s).'),
+                React.createElement('p', { className: 'text-xs text-slate-400 mt-1' },
+                    'Import student data at different time points to build a longitudinal profile.')
+            );
+        }
+
+        const strengthColor = { strong: 'text-emerald-600', moderate: 'text-amber-600', weak: 'text-red-500' };
+        const domainColors = { phonologicalAwareness: 'bg-blue-500', comprehension: 'bg-purple-500', fluency: 'bg-emerald-500' };
+        const maxVal = Math.max(...Object.values(insights.profile), 1);
+
+        return React.createElement('div', { className: 'mt-4 space-y-4' },
+            React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                React.createElement('span', { className: 'text-lg' }, '\u{1F4CA}'),
+                React.createElement('h4', { className: 'text-sm font-bold text-slate-700 uppercase tracking-wider' }, 'Practice-to-Outcome Insights'),
+                React.createElement('span', { className: 'text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-medium' }, insights.snapshots + ' snapshots')
+            ),
+
+            React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                React.createElement('h5', { className: 'text-xs font-bold text-slate-600 uppercase mb-3' }, 'Domain Profile'),
+                React.createElement('div', { className: 'space-y-2' },
+                    ...Object.entries(insights.profile).map(([domain, value]) =>
+                        React.createElement('div', { key: domain, className: 'flex items-center gap-2' },
+                            React.createElement('span', { className: 'text-xs text-slate-600 w-36 shrink-0 font-medium' }, DOMAIN_LABELS[domain] || domain),
+                            React.createElement('div', { className: 'flex-1 bg-slate-100 rounded-full h-5 overflow-hidden' },
+                                React.createElement('div', {
+                                    className: (domainColors[domain] || 'bg-slate-400') + ' h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2',
+                                    style: { width: Math.max(8, (value / Math.max(maxVal, 100)) * 100) + '%' }
+                                }, React.createElement('span', { className: 'text-[10px] font-bold text-white' }, Math.round(value)))
+                            ),
+                            domain === insights.strength ? React.createElement('span', { className: 'text-xs text-emerald-600 font-bold' }, '\u2B50') : null,
+                            domain === insights.weakness ? React.createElement('span', { className: 'text-xs text-amber-500 font-bold' }, '\u26A0\uFE0F') : null
+                        )
+                    )
+                ),
+                insights.strength && insights.weakness ? React.createElement('div', { className: 'mt-3 flex gap-4 text-xs' },
+                    React.createElement('span', { className: 'text-emerald-600' }, '\u2B50 Strength: ' + (DOMAIN_LABELS[insights.strength] || insights.strength)),
+                    React.createElement('span', { className: 'text-amber-600' }, '\u26A0\uFE0F Watch: ' + (DOMAIN_LABELS[insights.weakness] || insights.weakness))
+                ) : null
+            ),
+
+            React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                React.createElement('h5', { className: 'text-xs font-bold text-slate-600 uppercase mb-3' }, 'Growth Since First Snapshot'),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
+                    ...[['Word Sounds', insights.growth.wsAccuracy, '%'], ['Comprehension', insights.growth.quizAvg, '%'], ['Fluency', insights.growth.fluencyWCPM, ' WCPM']].map(([label, val, unit]) =>
+                        React.createElement('div', { key: label, className: 'text-center p-2 rounded-lg ' + (val > 0 ? 'bg-emerald-50' : val < 0 ? 'bg-red-50' : 'bg-slate-50') },
+                            React.createElement('div', { className: 'text-lg font-black ' + (val > 0 ? 'text-emerald-600' : val < 0 ? 'text-red-500' : 'text-slate-400') },
+                                (val > 0 ? '+' : '') + Math.round(val) + unit),
+                            React.createElement('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, label)
+                        )
+                    )
+                )
+            ),
+
+            insights.correlations.practiceToQuiz && !insights.correlations.practiceToQuiz.insufficient ?
+                React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                    React.createElement('h5', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, 'Practice \u2194 Outcome Correlation'),
+                    React.createElement('div', { className: 'flex items-center gap-3' },
+                        React.createElement('div', { className: 'text-2xl font-black ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || 'text-slate-500') },
+                            'r = ' + insights.correlations.practiceToQuiz.r),
+                        React.createElement('div', null,
+                            React.createElement('div', { className: 'text-xs font-bold ' + (strengthColor[insights.correlations.practiceToQuiz.strength] || '') },
+                                insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation'),
+                            React.createElement('div', { className: 'text-[10px] text-slate-400' },
+                                'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy \u2194 Quiz performance)')
+                        )
+                    )
+                ) : null,
+
+            insights.growthTrajectory.length > 1 ?
+                React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                    React.createElement('h5', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, 'Growth Trajectory'),
+                    React.createElement('div', { className: 'overflow-x-auto' },
+                        React.createElement('table', { className: 'w-full text-xs' },
+                            React.createElement('thead', null,
+                                React.createElement('tr', { className: 'border-b border-slate-200' },
+                                    React.createElement('th', { className: 'text-left py-1.5 text-slate-500 font-medium' }, 'Date'),
+                                    React.createElement('th', { className: 'text-right py-1.5 text-blue-600 font-medium' }, 'Word Sounds'),
+                                    React.createElement('th', { className: 'text-right py-1.5 text-purple-600 font-medium' }, 'Quiz Avg'),
+                                    React.createElement('th', { className: 'text-right py-1.5 text-emerald-600 font-medium' }, 'Fluency')
+                                )
+                            ),
+                            React.createElement('tbody', null,
+                                ...insights.growthTrajectory.map((row, idx) =>
+                                    React.createElement('tr', { key: idx, className: idx % 2 === 0 ? 'bg-slate-50/50' : '' },
+                                        React.createElement('td', { className: 'py-1.5 text-slate-600' }, row.date),
+                                        React.createElement('td', { className: 'py-1.5 text-right font-medium text-blue-700' }, Math.round(row.wsAccuracy) + '%'),
+                                        React.createElement('td', { className: 'py-1.5 text-right font-medium text-purple-700' }, Math.round(row.quizAvg) + '%'),
+                                        React.createElement('td', { className: 'py-1.5 text-right font-medium text-emerald-700' }, Math.round(row.fluencyWCPM))
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ) : null,
+
+            insights.dosage.totalInterventions > 0 ?
+                React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+                    React.createElement('h5', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, 'Intervention Dosage'),
+                    React.createElement('div', { className: 'grid grid-cols-3 gap-3 text-center' },
+                        React.createElement('div', null,
+                            React.createElement('div', { className: 'text-lg font-black text-indigo-600' }, insights.dosage.totalInterventions),
+                            React.createElement('div', { className: 'text-[10px] text-slate-500' }, 'Interventions')),
+                        React.createElement('div', null,
+                            React.createElement('div', { className: 'text-lg font-black text-indigo-600' }, insights.dosage.avgFrequency + 'x/wk'),
+                            React.createElement('div', { className: 'text-[10px] text-slate-500' }, 'Avg Frequency')),
+                        React.createElement('div', null,
+                            React.createElement('div', { className: 'text-lg font-black text-indigo-600' }, insights.dosage.avgMinutes + ' min'),
+                            React.createElement('div', { className: 'text-[10px] text-slate-500' }, 'Avg Duration'))
+                    )
+                ) : null
+        );
+    };
+
+    const renderClassInsights = () => {
+        const classData = generateClassInsights();
+        if (!classData) return React.createElement('div', { className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center' },
+            React.createElement('p', { className: 'text-sm text-slate-500' }, '\u{1F4CA} Import student data with multiple snapshots to see class-wide insights.'));
+        return React.createElement('div', { className: 'mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4' },
+            React.createElement('div', { className: 'flex items-center gap-2 mb-3' },
+                React.createElement('span', { className: 'text-lg' }, '\u{1F3EB}'),
+                React.createElement('h4', { className: 'text-sm font-bold text-indigo-800 uppercase tracking-wider' }, 'Class-Wide Analysis'),
+                React.createElement('span', { className: 'text-xs bg-indigo-200 text-indigo-700 px-2 py-0.5 rounded-full font-medium' }, classData.studentCount + ' students')
+            ),
+            React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                classData.avgCorrelation !== null ? React.createElement('div', { className: 'bg-white rounded-lg p-3 text-center' },
+                    React.createElement('div', { className: 'text-xl font-black text-indigo-600' }, 'r = ' + classData.avgCorrelation),
+                    React.createElement('div', { className: 'text-[10px] text-slate-500' }, 'Avg Practice\u2194Outcome Correlation')
+                ) : null,
+                classData.commonWeakness ? React.createElement('div', { className: 'bg-white rounded-lg p-3 text-center' },
+                    React.createElement('div', { className: 'text-xl font-black text-amber-600' }, (DOMAIN_LABELS[classData.commonWeakness] || classData.commonWeakness)),
+                    React.createElement('div', { className: 'text-[10px] text-slate-500' }, 'Most Common Area to Watch (' + classData.commonWeaknessCount + ' students)')
+                ) : null
+            )
+        );
+    };
+
+    const exportResearchCSV = () => {
+        const students = importedStudents.map(s => {
+            const insights = generateStudentInsights(s.name);
+            const probes = (probeHistory?.[s.name] || []);
+            const interventions = interventionLogs?.[s.name] || [];
+            const snapshots = rosterKey?.progressHistory?.[s.name] || [];
+            return { name: s.name, insights, probes, interventions, snapshots, stats: s.stats };
+        });
+
+        const headers = [
+            'Student', 'Snapshots', 'Probes',
+            'Latest_WS_Accuracy', 'Latest_Quiz_Avg', 'Latest_Fluency_WCPM',
+            'Growth_WS_Accuracy', 'Growth_Quiz', 'Growth_Fluency',
+            'Strength', 'Weakness',
+            'Correlation_r', 'Correlation_Strength', 'Correlation_N',
+            'Intervention_Count', 'Avg_Frequency_PerWeek', 'Avg_Minutes',
+            'Total_Activities', 'Games_Played', 'Adventure_XP',
+            'Probe_1_Activity', 'Probe_1_Accuracy', 'Probe_1_ItemsPerMin', 'Probe_1_Date',
+            'Probe_2_Activity', 'Probe_2_Accuracy', 'Probe_2_ItemsPerMin', 'Probe_2_Date',
+            'Probe_3_Activity', 'Probe_3_Accuracy', 'Probe_3_ItemsPerMin', 'Probe_3_Date',
+            'External_CBM_Source', 'External_CBM_Score', 'External_CBM_Date'
+        ];
+
+        const rows = students.map(s => {
+            const ins = s.insights;
+            const ext = (externalCBMScores?.[s.name] || [])[0] || {};
+            const p1 = s.probes[0] || {}, p2 = s.probes[1] || {}, p3 = s.probes[2] || {};
+            return [
+                s.name, ins.snapshots || 0, ins.probes || 0,
+                ins.profile?.phonologicalAwareness || 0, ins.profile?.comprehension || 0, ins.profile?.fluency || 0,
+                ins.growth?.wsAccuracy || 0, ins.growth?.quizAvg || 0, ins.growth?.fluencyWCPM || 0,
+                ins.strength || '', ins.weakness || '',
+                ins.correlations?.practiceToQuiz?.r ?? '', ins.correlations?.practiceToQuiz?.strength || '', ins.correlations?.practiceToQuiz?.n || '',
+                ins.dosage?.totalInterventions || 0, ins.dosage?.avgFrequency || 0, ins.dosage?.avgMinutes || 0,
+                s.stats?.totalActivities || 0, s.stats?.gamesPlayed || 0, s.stats?.adventureXP || 0,
+                p1.activity || '', p1.accuracy || '', p1.itemsPerMin || '', p1.date || '',
+                p2.activity || '', p2.accuracy || '', p2.itemsPerMin || '', p2.date || '',
+                p3.activity || '', p3.accuracy || '', p3.itemsPerMin || '', p3.date || '',
+                ext.source || '', ext.score || '', ext.date || ''
+            ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
+        });
+
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'AlloFlow_Research_Export_' + new Date().toISOString().split('T')[0] + '.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+        addToast && addToast('Research CSV exported with ' + students.length + ' students', 'success');
+    };
+
+    const [externalCBMScores, setExternalCBMScores] = React.useState(() => {
+        try { return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}'); } catch { return {}; }
+    });
+    const saveExternalCBM = (studentName, entry) => {
+        const existing = externalCBMScores[studentName] || [];
+        const updated = { ...externalCBMScores, [studentName]: [...existing, { ...entry, id: Date.now() }] };
+        setExternalCBMScores(updated);
+        try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(updated)); } catch { }
+    };
+    const [showCBMModal, setShowCBMModal] = React.useState(false);
+    const [cbmForm, setCBMForm] = React.useState({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });
+
+    const renderCBMImportModal = () => {
+        if (!showCBMModal) return null;
+        const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];
+        const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCBM: ['Passage Reading Fluency', 'Word Reading', 'Letter Names'], STAR: ['Scaled Score', 'Percentile Rank'], MAP: ['RIT Score', 'Percentile'], Other: ['Custom'] };
+        return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200' },
+            React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-indigo-200', onClick: e => e.stopPropagation() },
+                React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-4 flex items-center gap-2' },
+                    React.createElement('span', null, '\u{1F4CB}'), 'Import External CBM Score'),
+                React.createElement('div', { className: 'space-y-3' },
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Student'),
+                        React.createElement('select', {
+                            className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm', value: cbmForm.student,
+                            onChange: e => setCBMForm(p => ({ ...p, student: e.target.value }))
+                        },
+                            React.createElement('option', { value: '' }, '-- Select Student --'),
+                            ...importedStudents.map(s => React.createElement('option', { key: s.id, value: s.name }, s.name))
+                        )
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'CBM Source'),
+                        React.createElement('select', {
+                            className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm', value: cbmForm.source,
+                            onChange: e => setCBMForm(p => ({ ...p, source: e.target.value, measure: '' }))
+                        },
+                            ...sources.map(s => React.createElement('option', { key: s, value: s }, s))
+                        )
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Measure'),
+                        React.createElement('select', {
+                            className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm', value: cbmForm.measure,
+                            onChange: e => setCBMForm(p => ({ ...p, measure: e.target.value }))
+                        },
+                            React.createElement('option', { value: '' }, '-- Select Measure --'),
+                            ...((measures[cbmForm.source] || []).map(m => React.createElement('option', { key: m, value: m }, m)))
+                        )
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Score'),
+                            React.createElement('input', {
+                                type: 'number', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                                value: cbmForm.score, onChange: e => setCBMForm(p => ({ ...p, score: e.target.value })), placeholder: 'e.g. 72'
+                            })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Date'),
+                            React.createElement('input', {
+                                type: 'date', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                                value: cbmForm.date, onChange: e => setCBMForm(p => ({ ...p, date: e.target.value }))
+                            })
+                        )
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Percentile (optional)'),
+                            React.createElement('input', {
+                                type: 'number', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                                value: cbmForm.percentile, onChange: e => setCBMForm(p => ({ ...p, percentile: e.target.value })), placeholder: 'e.g. 45'
+                            })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Benchmark Status'),
+                            React.createElement('select', {
+                                className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                                value: cbmForm.benchmark, onChange: e => setCBMForm(p => ({ ...p, benchmark: e.target.value }))
+                            },
+                                React.createElement('option', { value: '' }, '-- Optional --'),
+                                React.createElement('option', { value: 'Above' }, 'Above Benchmark'),
+                                React.createElement('option', { value: 'At' }, 'At Benchmark'),
+                                React.createElement('option', { value: 'Below' }, 'Below Benchmark'),
+                                React.createElement('option', { value: 'Well Below' }, 'Well Below Benchmark')
+                            )
+                        )
+                    )
+                ),
+                React.createElement('div', { className: 'flex justify-end gap-2 mt-5' },
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors',
+                        onClick: () => { setShowCBMModal(false); setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' }); }
+                    }, 'Cancel'),
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-bold',
+                        disabled: !cbmForm.student || !cbmForm.score || !cbmForm.date,
+                        onClick: () => {
+                            saveExternalCBM(cbmForm.student, { source: cbmForm.source, measure: cbmForm.measure, score: parseFloat(cbmForm.score), date: cbmForm.date, percentile: cbmForm.percentile ? parseInt(cbmForm.percentile) : null, benchmark: cbmForm.benchmark || null });
+                            setShowCBMModal(false);
+                            setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });
+                        }
+                    }, 'Save Score')
+                )
+            )
+        );
+    };
+
+    const [surveyResponses, setSurveyResponses] = React.useState(() => {
+        try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}'); } catch { return {}; }
+    });
+    const saveSurveyResponse = (type, respondent, responses) => {
+        const key = type + '_' + respondent;
+        const existing = surveyResponses[key] || [];
+        const updated = { ...surveyResponses, [key]: [...existing, { ...responses, timestamp: new Date().toISOString(), type, respondent }] };
+        setSurveyResponses(updated);
+        try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(updated)); } catch { }
+    };
+    const [surveyAnswers, setSurveyAnswers] = React.useState({});
+    const [surveyRespondent, setSurveyRespondent] = React.useState('');
+
+    const SURVEY_QUESTIONS = {
+        student: [
+            { id: 'engagement', text: 'How fun was this activity?', labels: ['\u{1F61E}', '\u{1F610}', '\u{1F642}', '\u{1F604}', '\u{1F929}'] },
+            { id: 'difficulty', text: 'How hard was this for you?', labels: ['Too Easy', 'Easy', 'Just Right', 'Hard', 'Too Hard'] },
+            { id: 'improvement', text: 'Do you feel like you are getting better at reading?', labels: ['Not at all', 'A little', 'Some', 'A lot', 'Definitely!'] },
+            { id: 'confidence', text: 'How confident do you feel about reading new words?', labels: ['\u{1F61F}', '\u{1F914}', '\u{1F642}', '\u{1F60A}', '\u{1F4AA}'] },
+            { id: 'helpfulness', text: 'Did the app help you learn something new today?', labels: ['No', 'A little', 'Maybe', 'Yes', 'A lot!'] },
+            { id: 'perceived_usefulness', text: 'AlloFlow helps me get better at reading and math', labels: ['No way', 'Not really', 'Maybe', 'Yes', 'Definitely!'] },
+            { id: 'ease_of_use', text: 'AlloFlow is easy to use', labels: ['Very Hard', 'Hard', 'OK', 'Easy', 'Very Easy'] },
+            { id: 'intention', text: 'I want to keep using AlloFlow', labels: ['No', 'Probably not', 'Maybe', 'Yes', 'Definitely!'] }
+        ],
+        teacher: [
+            { id: 'alignment', text: 'How well does this student\'s AlloFlow performance match your classroom observations?', labels: ['Not at all', 'Slightly', 'Moderately', 'Well', 'Very well'] },
+            { id: 'dataUsefulness', text: 'How useful is the progress monitoring data for instructional decisions?', labels: ['Not useful', 'Slightly', 'Moderately', 'Very', 'Extremely'] },
+            { id: 'recommendation', text: 'Has the intervention data changed your instructional approach?', labels: ['No change', 'Slightly', 'Somewhat', 'Significantly', 'Completely'] },
+            { id: 'efficiency', text: 'How much time does AlloFlow save compared to traditional assessment?', labels: ['None', 'A little', 'Some', 'A lot', 'Significant'] },
+            { id: 'satisfaction', text: 'Overall, how satisfied are you with AlloFlow as an RTI tool?', labels: ['Very dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very satisfied'] },
+            { id: 'perceived_usefulness', text: 'AlloFlow meaningfully improves student literacy outcomes', labels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'] },
+            { id: 'ease_of_use', text: 'AlloFlow integrates easily into my existing workflow', labels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'] },
+            { id: 'intention', text: 'I plan to continue using AlloFlow next school year', labels: ['Definitely not', 'Unlikely', 'Unsure', 'Likely', 'Definitely'] }
+        ],
+        parent: [
+            { id: 'attitude', text: 'Has your child\'s attitude toward reading changed?', labels: ['Much worse', 'Worse', 'Same', 'Better', 'Much better'] },
+            { id: 'homeUse', text: 'Does your child practice reading strategies at home?', labels: ['Never', 'Rarely', 'Sometimes', 'Often', 'Daily'] },
+            { id: 'understanding', text: 'How well do you understand your child\'s reading progress?', labels: ['Not at all', 'A little', 'Somewhat', 'Well', 'Very well'] },
+            { id: 'communication', text: 'Do you feel informed about your child\'s intervention plan?', labels: ['Not at all', 'Slightly', 'Moderately', 'Well', 'Very well'] },
+            { id: 'satisfaction', text: 'How satisfied are you with the support your child is receiving?', labels: ['Very dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very satisfied'] },
+            { id: 'perceived_usefulness', text: 'AlloFlow has been helpful for my child\'s learning', labels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'] },
+            { id: 'intention', text: 'I would recommend AlloFlow to other parents', labels: ['Definitely not', 'Unlikely', 'Unsure', 'Likely', 'Definitely'] }
+        ]
+    };
+
+    const renderSurveyModal = () => {
+        if (!showSurveyModal) return null;
+        const questions = SURVEY_QUESTIONS[showSurveyModal] || [];
+        const typeLabel = showSurveyModal.charAt(0).toUpperCase() + showSurveyModal.slice(1);
+        const allAnswered = questions.every(q => surveyAnswers[q.id] !== undefined);
+        return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200' },
+            React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full border-2 border-purple-200 max-h-[85vh] overflow-y-auto', onClick: e => e.stopPropagation() },
+                React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2' },
+                    React.createElement('span', null, '\u{1F4DD}'), typeLabel + ' Survey'),
+                React.createElement('p', { className: 'text-xs text-slate-500 mb-4' }, 'Rate each item on a scale of 1-5. Your responses help us improve.'),
+                React.createElement('div', { className: 'mb-4' },
+                    React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, showSurveyModal === 'student' ? 'Student Name' : showSurveyModal === 'teacher' ? 'Teacher Name' : 'Parent/Guardian Name'),
+                    React.createElement('input', {
+                        type: 'text', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                        value: surveyRespondent, onChange: e => setSurveyRespondent(e.target.value), placeholder: 'Enter name...'
+                    })
+                ),
+                React.createElement('div', { className: 'space-y-4' },
+                    ...questions.map(q =>
+                        React.createElement('div', { key: q.id, className: 'bg-slate-50 rounded-xl p-3' },
+                            React.createElement('p', { className: 'text-sm font-medium text-slate-700 mb-2' }, q.text),
+                            React.createElement('div', { className: 'flex gap-1' },
+                                ...q.labels.map((label, idx) =>
+                                    React.createElement('button', {
+                                        key: idx,
+                                        className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' +
+                                            (surveyAnswers[q.id] === idx + 1
+                                                ? 'bg-purple-600 text-white shadow-md scale-105'
+                                                : 'bg-white border border-slate-200 text-slate-600 hover:bg-purple-50 hover:border-purple-300'),
+                                        onClick: () => setSurveyAnswers(p => ({ ...p, [q.id]: idx + 1 }))
+                                    }, label)
+                                )
+                            )
+                        )
+                    )
+                ),
+                React.createElement('div', { className: 'flex justify-end gap-2 mt-5' },
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors',
+                        onClick: () => { setShowSurveyModal(null); setSurveyAnswers({}); setSurveyRespondent(''); }
+                    }, 'Cancel'),
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-bold disabled:opacity-50',
+                        disabled: !allAnswered || !surveyRespondent.trim(),
+                        onClick: () => {
+                            saveSurveyResponse(showSurveyModal, surveyRespondent.trim(), surveyAnswers);
+                            setShowSurveyModal(null); setSurveyAnswers({}); setSurveyRespondent('');
+                            addToast && addToast(typeLabel + ' survey saved!', 'success');
+                        }
+                    }, 'Submit Survey')
+                )
+            )
+        );
+    };
+
+    const renderScatterPlot = (studentName) => {
+        const snapshots = (rosterKey?.progressHistory?.[studentName] || []).filter(s => (s.wsAccuracy || 0) > 0 && (s.quizAvg || 0) > 0);
+        if (snapshots.length < 2) return null;
+        const W = 280, H = 180, PAD = 35;
+        const xVals = snapshots.map(s => s.wsAccuracy || 0);
+        const yVals = snapshots.map(s => s.quizAvg || 0);
+        const xMin = Math.min(...xVals) - 5, xMax = Math.max(...xVals) + 5;
+        const yMin = Math.min(...yVals) - 5, yMax = Math.max(...yVals) + 5;
+        const xScale = v => PAD + ((v - xMin) / (xMax - xMin || 1)) * (W - PAD * 2);
+        const yScale = v => H - PAD - ((v - yMin) / (yMax - yMin || 1)) * (H - PAD * 2);
+        const n = xVals.length;
+        const mx = xVals.reduce((s, v) => s + v, 0) / n;
+        const my = yVals.reduce((s, v) => s + v, 0) / n;
+        let num = 0, den = 0;
+        for (let i = 0; i < n; i++) { num += (xVals[i] - mx) * (yVals[i] - my); den += (xVals[i] - mx) * (xVals[i] - mx); }
+        const slope = den !== 0 ? num / den : 0;
+        const intercept = my - slope * mx;
+        const trendY1 = slope * xMin + intercept, trendY2 = slope * xMax + intercept;
+
+        return React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 mt-4' },
+            React.createElement('h5', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, 'Practice vs Outcome Scatter Plot'),
+            React.createElement('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full max-w-xs mx-auto', style: { overflow: 'visible' } },
+                ...[0, 25, 50, 75, 100].filter(v => v >= yMin && v <= yMax).map(v =>
+                    React.createElement('line', { key: 'gy' + v, x1: PAD, x2: W - PAD, y1: yScale(v), y2: yScale(v), stroke: '#e2e8f0', strokeWidth: 0.5 })
+                ),
+                React.createElement('line', { x1: PAD, x2: W - PAD, y1: H - PAD, y2: H - PAD, stroke: '#94a3b8', strokeWidth: 1 }),
+                React.createElement('line', { x1: PAD, x2: PAD, y1: PAD, y2: H - PAD, stroke: '#94a3b8', strokeWidth: 1 }),
+                React.createElement('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 9, fill: '#64748b' }, 'Word Sounds Accuracy (%)'),
+                React.createElement('text', { x: 8, y: H / 2, textAnchor: 'middle', fontSize: 9, fill: '#64748b', transform: 'rotate(-90, 8, ' + (H / 2) + ')' }, 'Quiz Avg (%)'),
+                React.createElement('line', { x1: xScale(xMin), y1: yScale(trendY1), x2: xScale(xMax), y2: yScale(trendY2), stroke: '#818cf8', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7 }),
+                ...snapshots.map((s, idx) =>
+                    React.createElement('circle', { key: idx, cx: xScale(s.wsAccuracy), cy: yScale(s.quizAvg), r: 5, fill: '#6366f1', stroke: '#fff', strokeWidth: 1.5, opacity: 0.85 })
+                ),
+                React.createElement('text', { x: PAD, y: H - PAD + 12, fontSize: 8, fill: '#94a3b8', textAnchor: 'middle' }, Math.round(xMin)),
+                React.createElement('text', { x: W - PAD, y: H - PAD + 12, fontSize: 8, fill: '#94a3b8', textAnchor: 'middle' }, Math.round(xMax)),
+                React.createElement('text', { x: PAD - 5, y: H - PAD, fontSize: 8, fill: '#94a3b8', textAnchor: 'end' }, Math.round(yMin)),
+                React.createElement('text', { x: PAD - 5, y: PAD + 4, fontSize: 8, fill: '#94a3b8', textAnchor: 'end' }, Math.round(yMax))
+            ),
+            React.createElement('p', { className: 'text-[10px] text-slate-400 text-center mt-1' },
+                'Dashed line = trend (' + (slope > 0 ? 'positive' : slope < 0 ? 'negative' : 'flat') + '). ' + snapshots.length + ' data points.')
+        );
+    };
+
+    const renderResearchToolbar = () => {
+        const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+        const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+        return React.createElement('div', { className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200 p-3' },
+            React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+                React.createElement('span', { className: 'text-sm' }, '\u{1F52C}'),
+                React.createElement('span', { className: 'text-xs font-bold text-indigo-800 uppercase tracking-wider' }, 'Research Tools')
+            ),
+            React.createElement('div', { className: 'flex items-center justify-between mb-2 bg-white/60 rounded-lg px-3 py-1.5' },
+                React.createElement('div', { className: 'flex items-center gap-2' },
+                    React.createElement('span', { className: 'text-xs font-medium text-slate-600' }, 'Research Mode'),
+                    researchMode && researchMode.active ? React.createElement('span', { className: 'flex items-center gap-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold' },
+                        React.createElement('span', { className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse' }), 'Active') : null
+                ),
+                React.createElement('button', {
+                    className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (researchMode && researchMode.active ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'),
+                    onClick: () => researchMode && researchMode.active ? toggleResearchMode(null) : setShowResearchSetup(true)
+                }, researchMode && researchMode.active ? '\u{23F9} End Study' : '\u{1F52C} Start Study')
+            ),
+            React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                React.createElement('button', {
+                    className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700',
+                    onClick: exportResearchCSV
+                }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'),
+                React.createElement('button', {
+                    className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
+                    onClick: () => setShowCBMModal(true)
+                }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', { className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold' }, cbmCount) : null),
+                React.createElement('button', {
+                    className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700',
+                    onClick: () => setShowSurveyModal('student')
+                }, React.createElement('span', null, '\u{1F9D2}'), 'Student Survey'),
+                React.createElement('button', {
+                    className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
+                    onClick: () => setShowSurveyModal('teacher')
+                }, React.createElement('span', null, '\u{1F468}\u{200D}\u{1F3EB}'), 'Teacher Survey'),
+                React.createElement('button', {
+                    className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700',
+                    onClick: () => setShowSurveyModal('parent')
+                }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey',
+                    surveyCount > 0 ? React.createElement('span', { className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold' }, surveyCount + ' responses') : null)
+            )
+        );
+    };
+
+    const [researchMode, setResearchMode] = React.useState(() => {
+        try { return JSON.parse(localStorage.getItem('alloflow_research_mode') || 'null'); } catch { return null; }
+    });
+
+    const toggleResearchMode = (settings) => {
+        const mode = settings || null;
+        setResearchMode(mode);
+        try { localStorage.setItem('alloflow_research_mode', JSON.stringify(mode)); } catch { }
+    };
+
+    const [fidelityLog, setFidelityLog] = React.useState(() => {
+        try { return JSON.parse(localStorage.getItem('alloflow_fidelity_log') || '[]'); } catch { return []; }
+    });
+
+    const logSession = React.useCallback((studentName, activityType, durationMinutes) => {
+        if (!researchMode || !researchMode.active) return;
+        const entry = {
+            id: Date.now(),
+            student: studentName || 'Unknown',
+            activity: activityType || 'general',
+            duration: durationMinutes || 0,
+            date: new Date().toISOString(),
+            weekday: new Date().toLocaleDateString('en-US', { weekday: 'short' }),
+            researchStudy: researchMode.studyName || 'Untitled Study'
+        };
+        setFidelityLog(prev => {
+            const updated = [...prev, entry];
+            try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(updated)); } catch { }
+            return updated;
+        });
+    }, [researchMode]);
+
+    const [sessionCounter, setSessionCounter] = React.useState(() => {
+        try { return parseInt(localStorage.getItem('alloflow_session_counter') || '0'); } catch { return 0; }
+    });
+    const [showAutoSurveyPrompt, setShowAutoSurveyPrompt] = React.useState(false);
+
+    const incrementSessionAndCheckSurvey = React.useCallback(() => {
+        if (!researchMode || !researchMode.active) return;
+        const newCount = sessionCounter + 1;
+        setSessionCounter(newCount);
+        try { localStorage.setItem('alloflow_session_counter', String(newCount)); } catch { }
+        const freq = parseInt(researchMode.surveyFrequency) || 5;
+        if (newCount % freq === 0) {
+            setShowAutoSurveyPrompt(true);
+        }
+    }, [researchMode, sessionCounter]);
+
+    const [researchSetupForm, setResearchSetupForm] = React.useState({
+        studyName: '', surveyFrequency: '5', irb: '', notes: ''
+    });
+
+    const renderResearchSetupModal = () => {
+        if (!showResearchSetup) return null;
+        return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200' },
+            React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-emerald-200', onClick: e => e.stopPropagation() },
+                React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2' },
+                    React.createElement('span', null, '\u{1F52C}'), 'Research Mode Setup'),
+                React.createElement('p', { className: 'text-xs text-slate-500 mb-4' }, 'Configure research data collection. This enables auto-surveys, session fidelity logging, and study tracking.'),
+                React.createElement('div', { className: 'space-y-3' },
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Study Name'),
+                        React.createElement('input', {
+                            type: 'text', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                            value: researchSetupForm.studyName, onChange: e => setResearchSetupForm(p => ({ ...p, studyName: e.target.value })),
+                            placeholder: 'e.g. AlloFlow Pilot Study Spring 2026'
+                        })
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Auto-Survey Frequency'),
+                        React.createElement('select', {
+                            className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                            value: researchSetupForm.surveyFrequency, onChange: e => setResearchSetupForm(p => ({ ...p, surveyFrequency: e.target.value }))
+                        },
+                            React.createElement('option', { value: '3' }, 'Every 3 sessions'),
+                            React.createElement('option', { value: '5' }, 'Every 5 sessions'),
+                            React.createElement('option', { value: '10' }, 'Every 10 sessions'),
+                            React.createElement('option', { value: '15' }, 'Every 15 sessions'),
+                            React.createElement('option', { value: '0' }, 'Never (manual only)')
+                        )
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'IRB Number (optional)'),
+                        React.createElement('input', {
+                            type: 'text', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+                            value: researchSetupForm.irb, onChange: e => setResearchSetupForm(p => ({ ...p, irb: e.target.value })),
+                            placeholder: 'e.g. IRB-2026-0042'
+                        })
+                    ),
+                    React.createElement('div', null,
+                        React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Notes'),
+                        React.createElement('textarea', {
+                            className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm resize-none', rows: 2,
+                            value: researchSetupForm.notes, onChange: e => setResearchSetupForm(p => ({ ...p, notes: e.target.value })),
+                            placeholder: 'Any additional study notes...'
+                        })
+                    )
+                ),
+                React.createElement('div', { className: 'flex justify-end gap-2 mt-5' },
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
+                        onClick: () => setShowResearchSetup(false)
+                    }, 'Cancel'),
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold',
+                        onClick: () => {
+                            toggleResearchMode({
+                                active: true,
+                                startDate: new Date().toISOString(),
+                                studyName: researchSetupForm.studyName || 'Untitled Study',
+                                surveyFrequency: researchSetupForm.surveyFrequency,
+                                irb: researchSetupForm.irb,
+                                notes: researchSetupForm.notes
+                            });
+                            setShowResearchSetup(false);
+                            setSessionCounter(0);
+                            try { localStorage.setItem('alloflow_session_counter', '0'); } catch { }
+                            addToast && addToast('Research Mode activated!', 'success');
+                        }
+                    }, '\u{1F52C} Activate Research Mode')
+                )
+            )
+        );
+    };
+
+    const renderAutoSurveyPrompt = () => {
+        if (!showAutoSurveyPrompt) return null;
+        return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200' },
+            React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-purple-200 text-center' },
+                React.createElement('div', { className: 'w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3' },
+                    React.createElement('span', { className: 'text-3xl' }, '\u{1F4DD}')),
+                React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, 'Quick Feedback Time!'),
+                React.createElement('p', { className: 'text-sm text-slate-600 mb-4' },
+                    'You\'ve completed ' + sessionCounter + ' sessions. Would you like to share your feedback?'),
+                React.createElement('div', { className: 'flex gap-2 justify-center' },
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg',
+                        onClick: () => setShowAutoSurveyPrompt(false)
+                    }, 'Skip'),
+                    React.createElement('button', {
+                        className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold',
+                        onClick: () => { setShowAutoSurveyPrompt(false); setShowSurveyModal('student'); }
+                    }, '\u{1F4DD} Take Survey')
+                )
+            )
+        );
+    };
+
+    const renderResearchDashboard = () => {
+        if (!researchMode || !researchMode.active) return null;
+
+        const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+        const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+        const totalProbes = Object.values(probeHistory).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+        const studyStartDate = researchMode.startDate ? new Date(researchMode.startDate) : new Date();
+        const daysSinceStart = Math.max(1, Math.round((Date.now() - studyStartDate) / (24 * 60 * 60 * 1000)));
+        const weeksSinceStart = Math.max(1, Math.round(daysSinceStart / 7));
+
+        const totalSessions = fidelityLog.length;
+        const totalMinutes = fidelityLog.reduce((s, e) => s + (e.duration || 0), 0);
+        const uniqueStudents = new Set(fidelityLog.map(e => e.student)).size;
+        const sessionsPerWeek = totalSessions > 0 ? Math.round((totalSessions / weeksSinceStart) * 10) / 10 : 0;
+
+        const activityCounts = {};
+        fidelityLog.forEach(e => { activityCounts[e.activity] = (activityCounts[e.activity] || 0) + 1; });
+        const topActivity = Object.entries(activityCounts).sort((a, b) => b[1] - a[1])[0];
+
+        const expectedSurveys = researchMode.surveyFrequency && researchMode.surveyFrequency !== '0'
+            ? Math.floor(sessionCounter / parseInt(researchMode.surveyFrequency))
+            : 0;
+        const studentSurveys = Object.entries(surveyResponses).filter(([k]) => k.startsWith('student_')).reduce((s, [, arr]) => s + arr.length, 0);
+        const responseRate = expectedSurveys > 0 ? Math.round((studentSurveys / expectedSurveys) * 100) : null;
+
+        return React.createElement('div', { className: 'mt-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl border-2 border-emerald-300 p-4' },
+            React.createElement('div', { className: 'flex items-center justify-between mb-3' },
+                React.createElement('div', { className: 'flex items-center gap-2' },
+                    React.createElement('span', { className: 'text-lg' }, '\u{1F52C}'),
+                    React.createElement('h4', { className: 'text-sm font-bold text-emerald-800 uppercase tracking-wider' }, 'Research Dashboard'),
+                    React.createElement('span', { className: 'flex items-center gap-1 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse' },
+                        React.createElement('span', { className: 'w-1.5 h-1.5 bg-emerald-600 rounded-full' }), 'ACTIVE')
+                ),
+                React.createElement('button', {
+                    className: 'text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors',
+                    onClick: () => { toggleResearchMode(null); addToast && addToast('Research Mode deactivated', 'info'); }
+                }, '\u{23F9} End Study')
+            ),
+
+            React.createElement('div', { className: 'bg-white/70 rounded-lg p-3 mb-3' },
+                React.createElement('div', { className: 'text-sm font-bold text-slate-800' }, researchMode.studyName),
+                React.createElement('div', { className: 'flex gap-4 text-[10px] text-slate-500 mt-1' },
+                    React.createElement('span', null, '\u{1F4C5} Started: ' + studyStartDate.toLocaleDateString()),
+                    React.createElement('span', null, '\u{23F1} Day ' + daysSinceStart + ' (Week ' + weeksSinceStart + ')'),
+                    researchMode.irb ? React.createElement('span', null, '\u{1F4CB} IRB: ' + researchMode.irb) : null
+                )
+            ),
+
+            React.createElement('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
+                ...[
+                    ['\u{1F4CA}', totalSessions, 'Sessions Logged', 'bg-blue-50 text-blue-700'],
+                    ['\u{23F1}', Math.round(totalMinutes), 'Total Minutes', 'bg-purple-50 text-purple-700'],
+                    ['\u{1F9D1}', uniqueStudents, 'Students', 'bg-amber-50 text-amber-700'],
+                    ['\u{1F4C8}', sessionsPerWeek + '/wk', 'Frequency', 'bg-emerald-50 text-emerald-700']
+                ].map(([icon, value, label, cls]) =>
+                    React.createElement('div', { key: label, className: 'text-center p-2 rounded-lg ' + cls },
+                        React.createElement('div', { className: 'text-[10px]' }, icon),
+                        React.createElement('div', { className: 'text-lg font-black' }, value),
+                        React.createElement('div', { className: 'text-[9px] opacity-70' }, label)
+                    )
+                )
+            ),
+
+            React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+                ...[
+                    [surveyCount, 'Survey Responses', 'bg-purple-100 text-purple-700'],
+                    [totalProbes, 'Probe Results', 'bg-indigo-100 text-indigo-700'],
+                    [cbmCount, 'External CBM Scores', 'bg-teal-100 text-teal-700']
+                ].map(([val, label, cls]) =>
+                    React.createElement('div', { key: label, className: 'text-center p-2 rounded-lg ' + cls },
+                        React.createElement('div', { className: 'text-lg font-black' }, val),
+                        React.createElement('div', { className: 'text-[9px] opacity-70' }, label)
+                    )
+                )
+            ),
+
+            React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                responseRate !== null ? React.createElement('div', { className: 'bg-white/70 rounded-lg p-2 text-center' },
+                    React.createElement('div', { className: 'text-lg font-black ' + (responseRate >= 80 ? 'text-emerald-600' : responseRate >= 50 ? 'text-amber-600' : 'text-red-500') }, responseRate + '%'),
+                    React.createElement('div', { className: 'text-[9px] text-slate-500' }, 'Survey Response Rate'),
+                    React.createElement('div', { className: 'text-[8px] text-slate-400' }, studentSurveys + '/' + expectedSurveys + ' expected')
+                ) : React.createElement('div', { className: 'bg-white/70 rounded-lg p-2 text-center' },
+                    React.createElement('div', { className: 'text-sm text-slate-400' }, 'No auto-surveys yet'),
+                    React.createElement('div', { className: 'text-[9px] text-slate-400' }, sessionCounter + ' sessions completed')
+                ),
+                topActivity ? React.createElement('div', { className: 'bg-white/70 rounded-lg p-2 text-center' },
+                    React.createElement('div', { className: 'text-sm font-bold text-slate-700' }, topActivity[0]),
+                    React.createElement('div', { className: 'text-[9px] text-slate-500' }, 'Most Used Activity (' + topActivity[1] + 'x)')
+                ) : React.createElement('div', { className: 'bg-white/70 rounded-lg p-2 text-center' },
+                    React.createElement('div', { className: 'text-sm text-slate-400' }, 'No sessions logged'),
+                    React.createElement('div', { className: 'text-[9px] text-slate-400' }, 'Activities will appear here')
+                )
+            ),
+
+            fidelityLog.length > 0 ? React.createElement('div', { className: 'mt-3 bg-white/70 rounded-lg p-3' },
+                React.createElement('h5', { className: 'text-[10px] font-bold text-slate-600 uppercase mb-2' }, 'Recent Session Log'),
+                React.createElement('div', { className: 'space-y-1 max-h-32 overflow-y-auto' },
+                    ...fidelityLog.slice(-10).reverse().map(entry =>
+                        React.createElement('div', { key: entry.id, className: 'flex items-center justify-between text-[10px] py-0.5 border-b border-slate-100' },
+                            React.createElement('span', { className: 'text-slate-600' }, entry.student),
+                            React.createElement('span', { className: 'text-slate-500' }, entry.activity),
+                            React.createElement('span', { className: 'text-slate-400' }, entry.duration + ' min'),
+                            React.createElement('span', { className: 'text-slate-400' }, entry.weekday + ' ' + new Date(entry.date).toLocaleDateString())
+                        )
+                    )
+                )
+            ) : null,
+
+            React.createElement('div', { className: 'mt-3 flex gap-2' },
+                React.createElement('button', {
+                    className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 font-medium text-slate-600 transition-colors',
+                    onClick: () => {
+                        const headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Min', 'Study'];
+                        const rows = fidelityLog.map(e => [e.date, e.weekday, e.student, e.activity, e.duration, e.researchStudy].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
+                        const csv = [headers.join(','), ...rows].join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'Fidelity_Log_' + new Date().toISOString().split('T')[0] + '.csv';
+                        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                    }
+                }, '\u{1F4C4} Export Fidelity Log'),
+                React.createElement('button', {
+                    className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:bg-purple-50 hover:border-purple-300 font-medium text-slate-600 transition-colors',
+                    onClick: () => {
+                        const allResponses = [];
+                        Object.entries(surveyResponses).forEach(([key, arr]) => {
+                            if (Array.isArray(arr)) arr.forEach(r => allResponses.push({ key, ...r }));
+                        });
+                        const headers = ['Key', 'Type', 'Respondent', 'Timestamp', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5'];
+                        const rows = allResponses.map(r => {
+                            const questions = SURVEY_QUESTIONS[r.type] || [];
+                            const scores = questions.map(q => r[q.id] || '');
+                            return [r.key, r.type, r.respondent, r.timestamp, ...scores].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
+                        });
+                        const csv = [headers.join(','), ...rows].join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
+                        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                    }
+                }, '\u{1F4DD} Export Survey Data')
+            )
+        );
+    };
+
+    const saveRtiGoal = (studentName, goal) => {
+        const updated = { ...rtiGoals, [studentName]: { ...goal, updatedAt: new Date().toISOString() } };
+        setRtiGoals(updated);
+        try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch { }
+    };
+    const calculateAimline = (goal, dataPoints) => {
+        if (!goal || !goal.baseline || !goal.target || !goal.targetDate) return null;
+        const baseDate = new Date(goal.baselineDate || Date.now());
+        const targetDate = new Date(goal.targetDate);
+        const totalWeeks = Math.max(1, Math.round((targetDate - baseDate) / (7 * 24 * 60 * 60 * 1000)));
+        const slope = (goal.target - goal.baseline) / totalWeeks;
+        const aimlinePoints = [];
+        for (let w = 0; w <= totalWeeks; w++) {
+            aimlinePoints.push({ week: w, expected: Math.round(goal.baseline + slope * w) });
+        }
+        let consecutiveBelow = 0;
+        if (dataPoints && dataPoints.length > 0) {
+            const recent = dataPoints.slice(-6);
+            for (const dp of recent) {
+                const weeksSinceBase = Math.max(0, Math.round((new Date(dp.date || Date.now()) - baseDate) / (7 * 24 * 60 * 60 * 1000)));
+                const expected = goal.baseline + slope * weeksSinceBase;
+                if (dp.value < expected) consecutiveBelow++;
+                else consecutiveBelow = 0;
+            }
+        }
+        return { aimlinePoints, slope, totalWeeks, consecutiveBelow, alert: consecutiveBelow >= 6 ? 'critical' : consecutiveBelow >= 4 ? 'warning' : 'ok' };
+    };
+
+    const computeCorrelation = (xValues, yValues) => {
+        const n = Math.min(xValues.length, yValues.length);
+        if (n < 3) return { r: null, n, insufficient: true };
+        const x = xValues.slice(0, n), y = yValues.slice(0, n);
+        const meanX = x.reduce((s, v) => s + v, 0) / n;
+        const meanY = y.reduce((s, v) => s + v, 0) / n;
+        let num = 0, denX = 0, denY = 0;
+        for (let i = 0; i < n; i++) {
+            const dx = x[i] - meanX, dy = y[i] - meanY;
+            num += dx * dy; denX += dx * dx; denY += dy * dy;
+        }
+        const den = Math.sqrt(denX * denY);
+        const r = den === 0 ? 0 : num / den;
+        const rounded = Math.round(r * 100) / 100;
+        return { r: rounded, n, strength: Math.abs(rounded) >= 0.7 ? 'strong' : Math.abs(rounded) >= 0.4 ? 'moderate' : 'weak' };
+    };
+
+    const DOMAIN_LABELS = {
+        phonologicalAwareness: 'Phonological Awareness',
+        comprehension: 'Comprehension',
+        fluency: 'Fluency (WCPM)'
+    };
+
+    const generateStudentInsights = (studentName) => {
+        const snapshots = (rosterKey?.progressHistory?.[studentName] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+        const probes = (probeHistory?.[studentName] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+        const interventions = interventionLogs?.[studentName] || [];
+        if (snapshots.length < 2) return { insufficient: true, snapshots: snapshots.length, probes: probes.length };
+        const practiceAccuracy = snapshots.map(s => s.wsAccuracy || 0);
+        const quizScores = snapshots.map(s => s.quizAvg || 0);
+        const latest = snapshots[snapshots.length - 1];
+        const first = snapshots[0];
+        const profile = {
+            phonologicalAwareness: latest.wsAccuracy || 0,
+            comprehension: latest.quizAvg || 0,
+            fluency: latest.fluencyWCPM || 0
+        };
+        const domains = Object.entries(profile).filter(([, v]) => v > 0);
+        const strength = domains.length > 0 ? domains.reduce((a, b) => a[1] > b[1] ? a : b)[0] : null;
+        const weakness = domains.length > 0 ? domains.reduce((a, b) => a[1] < b[1] ? a : b)[0] : null;
+        const growth = {
+            wsAccuracy: (latest.wsAccuracy || 0) - (first.wsAccuracy || 0),
+            quizAvg: (latest.quizAvg || 0) - (first.quizAvg || 0),
+            fluencyWCPM: (latest.fluencyWCPM || 0) - (first.fluencyWCPM || 0)
+        };
+        return {
+            insufficient: false, snapshots: snapshots.length, probes: probes.length,
+            interventions: interventions.length, profile, strength, weakness, growth,
+            correlations: { practiceToQuiz: computeCorrelation(practiceAccuracy, quizScores) },
+            growthTrajectory: snapshots.map(s => ({ date: s.date, wsAccuracy: s.wsAccuracy || 0, quizAvg: s.quizAvg || 0, fluencyWCPM: s.fluencyWCPM || 0 })),
+            dosage: {
+                totalInterventions: interventions.length,
+                avgFrequency: interventions.length > 0 ? Math.round(interventions.reduce((s, i) => s + (parseInt(i.frequency) || 0), 0) / interventions.length) : 0,
+                avgMinutes: interventions.length > 0 ? Math.round(interventions.reduce((s, i) => s + (parseInt(i.minutes) || 0), 0) / interventions.length) : 0
+            }
+        };
+    };
+
+    const generateClassInsights = () => {
+        const all = importedStudents.map(s => ({ name: s.name, insights: generateStudentInsights(s.name) })).filter(s => !s.insights.insufficient);
+        if (all.length === 0) return null;
+        const correlations = all.map(s => s.insights.correlations.practiceToQuiz.r).filter(r => r !== null);
+        const avgCorrelation = correlations.length > 0 ? Math.round((correlations.reduce((s, v) => s + v, 0) / correlations.length) * 100) / 100 : null;
+        const weaknessCounts = {};
+        all.forEach(s => { if (s.insights.weakness) weaknessCounts[s.insights.weakness] = (weaknessCounts[s.insights.weakness] || 0) + 1; });
+        const commonWeakness = Object.entries(weaknessCounts).sort((a, b) => b[1] - a[1])[0];
+        return { studentCount: all.length, avgCorrelation, commonWeakness: commonWeakness?.[0], commonWeaknessCount: commonWeakness?.[1], byStudent: all };
+    };
+
+    const handleLaunchORF = (grade, form) => {
+        const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
+        const passage = passages ? passages[form] || passages['A'] : null;
+        if (!passage) {
+            addToast('No ORF passage available for grade ' + grade, 'warning');
+            return;
+        }
+        setProbeGradeLevel(grade);
+        setProbeActivity('orf');
+        setProbeForm(form);
+        setGeneratedContent(prev => ({
+            ...(prev || {}),
+            id: 'orf-screening-' + Date.now(),
+            text: passage,
+            title: 'ORF Screening Passage \u2014 Grade ' + grade + ' Form ' + form,
+            sourceText: passage,
+            isScreeningORF: true
+        }));
+        setIsFluencyMode(true);
+        setFluencyStatus('ready');
+        setFluencyResult(null);
+        setActiveView('simplified_read_mode');
+        addToast('ORF passage loaded \u2014 press Record to begin', 'info');
+    };
+
+    const launchBenchmarkProbe = (grade, activity, form = 'A') => {
+        const gradeBank = typeof BENCHMARK_PROBE_BANKS !== 'undefined' && BENCHMARK_PROBE_BANKS[grade];
+        const bank = gradeBank ? gradeBank[form] : null;
+        if (activity === 'orf') {
+            if (typeof onLaunchORF === 'function') {
+                onLaunchORF(grade, form);
+            }
+            return;
+        }
+        if (!bank || !bank[activity]) {
+            addToast('No probe words available for ' + grade + ' / ' + activity, 'warning');
+            return;
+        }
+        const rawWords = bank[activity];
+        const probeWords = rawWords.map((w, idx) => {
+            if (typeof w === 'string') {
+                return { word: w, targetWord: w, displayWord: w, definition: '', image: null, probeIndex: idx };
+            } else if (w.word && w.phonemes) {
+                var segIsoEntry = { word: w.word, targetWord: w.word, displayWord: w.word, definition: '', image: null, probeIndex: idx, phonemes: w.phonemes };
+                if (w.isolationOptions) segIsoEntry.isolationOptions = w.isolationOptions;
+                if (w.segmentationOptions) segIsoEntry.segmentationOptions = w.segmentationOptions;
+                return segIsoEntry;
+            } else if (w.display && w.answer) {
+                var probeEntry = { word: w.answer, targetWord: w.answer, displayWord: w.display, definition: '', image: null, probeIndex: idx, blendingDisplay: w.display };
+                if (w.phonemes) probeEntry.phonemes = w.phonemes;
+                if (w.distractors) probeEntry.blendingDistractors = w.distractors;
+                return probeEntry;
+            } else if (w.target && w.options) {
+                return { word: w.target, targetWord: w.target, displayWord: w.target, definition: '', image: null, probeIndex: idx, rhymeOptions: w.options };
+            }
+            return { word: String(w), targetWord: String(w), displayWord: String(w), definition: '', image: null, probeIndex: idx };
+        });
+        setIsProbeMode(true);
+        setProbeGradeLevel(grade);
+        setProbeActivity(activity);
+        if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
+        const activityMap = { spelling: 'spelling_bee' };
+        const wsActivity = activityMap[activity] || activity;
+        setWsPreloadedWords(probeWords);
+        setWordSoundsActivity(wsActivity);
+        setIsWordSoundsMode(true);
+        setActiveView('word-sounds');
+    };
+
+    const launchScreeningSession = (grade, form, student) => {
+
+        const subtests = GRADE_SUBTEST_BATTERIES[grade];
+
+        if (!subtests || subtests.length === 0) { addToast('No subtests available for grade ' + grade, 'warning'); return; }
+
+        if (!student) { addToast('Please select a student first', 'warning'); return; }
+
+        const session = { grade, form, student, subtests, currentIndex: 0, results: [], status: 'running' };
+
+        setScreenerSession(session);
+
+        setProbeTargetStudent(student);
+
+        launchBenchmarkProbe(grade, subtests[0], form);
+
+    };
+
+    const advanceRoster = () => {
+        if (rosterQueue.length === 0) return;
+        const [nextStudent, ...rest] = rosterQueue;
+        setRosterQueue(rest);
+        setScreenerSession(null);
+        setTimeout(() => {
+            launchScreeningSession(probeGradeLevel, probeForm, nextStudent);
+        }, 500);
+    };
+
+    const generateFluencyScoreSheet = (result, sourceText) => {
+        if (!result || !result.wordData) return;
+        const rrm = typeof calculateRunningRecordMetrics === 'function'
+            ? calculateRunningRecordMetrics(result.wordData, result.insertions || [])
+            : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, scRate: 0, accuracy: 0, totalErrors: 0, readingLevel: 'unknown' };
+        const readingLevelLabel = rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational';
+        const wordMarkup = result.wordData.map(w => {
+            const sym = w.status === 'correct' ? '\u2713' : w.status === 'missed' ? '—' : w.status === 'self_corrected' ? 'SC' : '\u2717';
+            const color = w.status === 'correct' ? '#16a34a' : w.status === 'missed' ? '#dc2626' : w.status === 'self_corrected' ? '#2563eb' : '#ea580c';
+            const said = w.said ? `<br/><span style="font-size:9px;color:#94a3b8;">${w.said}</span>` : '';
+            return `<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ${color}20;background:${color}08;"><span style="font-size:16px;color:#1e293b;">${w.word}</span><br/><span style="font-size:11px;font-weight:800;color:${color};">${sym}</span>${said}</span>`;
+        }).join('');
+        const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Oral Fluency Score Sheet</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.override{padding:16px 24px;border-top:1px solid #e2e8f0}.override h3{font-size:12px;font-weight:800;color:#4338ca;margin-bottom:8px}.ofields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.ofield{font-size:11px}.ofield label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.ofield input{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:13px;font-weight:600}.notes{padding:16px 24px;border-top:1px solid #e2e8f0}.notes textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-size:12px;min-height:60px;resize:vertical}.sig{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:24px}.sig .sigf{flex:1}.sig .sigf label{font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px}.sig .sigf .line{border-bottom:1px solid #1e293b;min-height:28px}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>
+<div class="sheet"><div class="hdr"><div><h1>\ud83d\udcca Oral Fluency Score Sheet</h1><p>AlloFlow Assessment Record</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ${new Date().toLocaleDateString()}</div></div></div>
+<div class="fields"><div class="field"><label>Student</label><div class="val">${studentNickname || '________________'}</div></div><div class="field"><label>Date</label><div class="val">${new Date().toLocaleDateString()}</div></div><div class="field"><label>Grade / Benchmark</label><div class="val">${fluencyBenchmarkGrade} / ${fluencyBenchmarkSeason}</div></div></div>
+<div class="words">${wordMarkup}</div>
+<div class="legend"><span>\u2713 = Correct</span><span>\u2717 = Substitution/Stumbled</span><span>— = Omission</span><span>SC = Self-Corrected</span></div>
+<div class="metrics"><div class="mcol"><h3>{t('common.ai_calculated_metrics')}</h3><div class="mrow"><span class="lbl">WCPM</span><span class="vl">${result.wcpm || 0}</span></div><div class="mrow"><span class="lbl">Accuracy</span><span class="vl">${result.accuracy || 0}%</span></div><div class="mrow"><span class="lbl">Substitutions</span><span class="vl">${rrm.substitutions || 0}</span></div><div class="mrow"><span class="lbl">Omissions</span><span class="vl">${rrm.omissions || 0}</span></div><div class="mrow"><span class="lbl">Insertions</span><span class="vl">${rrm.insertions || 0}</span></div><div class="mrow"><span class="lbl">Self-Corrections</span><span class="vl">${rrm.selfCorrections || 0}</span></div><div class="mrow"><span class="lbl">Error Rate</span><span class="vl">1:${rrm.errorRate || 0}</span></div><div class="mrow"><span class="lbl">Reading Level</span><span class="vl">${readingLevelLabel}</span></div></div>
+<div class="mcol"><h3>{t('common.error_analysis')}</h3><div class="mrow"><span class="lbl">Total Errors</span><span class="vl">${rrm.totalErrors || 0}</span></div><div class="mrow"><span class="lbl">SC Rate</span><span class="vl">${rrm.scRate || 0}%</span></div><div class="mrow"><span class="lbl">Total Words</span><span class="vl">${result.wordData?.length || 0}</span></div></div></div>
+<div class="override"><h3>\u270f\ufe0f Teacher Verification (Override AI if needed)</h3><div class="ofields"><div class="ofield"><label>Verified WCPM</label><input type="number" placeholder="${result.wcpm || ''}"/></div><div class="ofield"><label>Verified Accuracy %</label><input type="number" placeholder="${result.accuracy || ''}"/></div><div class="ofield"><label>Verified Reading Level</label><input type="text" placeholder="${readingLevelLabel}"/></div></div></div>
+<div class="notes"><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">Teacher Notes</label><textarea placeholder={t('common.placeholder_observations_patterns_next_steps')}></textarea></div>
+<div class="sig"><div class="sigf"><label>Teacher Signature</label><div class="line"></div></div><div class="sigf"><label>Date</label><div class="line"></div></div></div></div>
+<div class="no-print" style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="background:#4f46e5;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">\ud83d\udda8\ufe0f Print Score Sheet</button></div></body></html>`;
+        const win = window.open('', '_blank');
+        if (win) { win.document.write(html); win.document.close(); }
+    };
+
+    const generateStudentProgressReport = (student) => {
+        if (!student) return;
+        const rti = classifyRTITier(student.stats);
+        const s = student.stats;
+        const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const tierColors = { 1: { bg: '#dcfce7', color: '#16a34a', border: '#86efac', label: 'On Track' }, 2: { bg: '#fef9c3', color: '#d97706', border: '#fcd34d', label: 'Strategic Support' }, 3: { bg: '#fee2e2', color: '#dc2626', border: '#fca5a5', label: 'Intensive Support' } };
+        const tc = tierColors[rti.tier] || tierColors[1];
+
+        const metricBar = (label, value, max, unit, icon) => {
+            const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+            const barColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
+            return `
+                <div style="margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                        <span style="font-size: 13px; font-weight: 600; color: #334155;">${icon} ${label}</span>
+                        <span style="font-size: 14px; font-weight: 800; color: ${barColor};">${value}${unit}</span>
+                    </div>
+                    <div style="background: #f1f5f9; border-radius: 6px; height: 10px; overflow: hidden;">
+                        <div style="background: ${barColor}; height: 100%; border-radius: 6px; width: ${pct}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>`;
+        };
+
+        let runningRecordHtml = '';
+        const fluencyAssessments = student.data?.fluencyAssessments;
+        if (fluencyAssessments?.length > 0) {
+            const latest = fluencyAssessments[fluencyAssessments.length - 1];
+            if (latest?.wordData && typeof calculateRunningRecordMetrics === 'function') {
+                const rr = calculateRunningRecordMetrics(latest.wordData, latest.insertions || []);
+                if (rr) {
+                    const accColor = rr.accuracy >= 95 ? '#16a34a' : rr.accuracy >= 90 ? '#d97706' : '#dc2626';
+                    const accLabel = rr.accuracy >= 95 ? 'Independent' : rr.accuracy >= 90 ? 'Instructional' : 'Frustrational';
+                    runningRecordHtml = `
+                        <div style="margin-top: 24px; padding: 16px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px;">
+                            <h3 style="font-size: 15px; font-weight: 800; color: #4338ca; margin: 0 0 12px 0;">📖 Oral Reading Fluency</h3>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;">
+                                <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
+                                    <div style="font-size: 20px; font-weight: 800; color: #dc2626;">${rr.substitutions}</div>
+                                    <div style="font-size: 10px; color: #64748b; font-weight: 600;">Substitutions</div>
+                                </div>
+                                <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
+                                    <div style="font-size: 20px; font-weight: 800; color: #ea580c;">${rr.omissions}</div>
+                                    <div style="font-size: 10px; color: #64748b; font-weight: 600;">Omissions</div>
+                                </div>
+                                <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
+                                    <div style="font-size: 20px; font-weight: 800; color: #7c3aed;">${rr.insertions}</div>
+                                    <div style="font-size: 10px; color: #64748b; font-weight: 600;">Insertions</div>
+                                </div>
+                                <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
+                                    <div style="font-size: 20px; font-weight: 800; color: #2563eb;">${rr.selfCorrections}</div>
+                                    <div style="font-size: 10px; color: #64748b; font-weight: 600;">Self-Corrections</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 16px; font-size: 12px; color: #475569; align-items: center; flex-wrap: wrap;">
+                                <span><strong>Error Rate:</strong> 1:${rr.errorRate}</span>
+                                <span><strong>SC Rate:</strong> ${rr.scRate}</span>
+                                <span style="padding: 2px 10px; border-radius: 12px; font-weight: 700; background: ${accColor}20; color: ${accColor}; border: 1px solid ${accColor}40;">${accLabel} (${rr.accuracy}%)</span>
+                            </div>
+                        </div>`;
+                }
+            }
+            if (latest?.wcpm) {
+                runningRecordHtml += `
+                    <div style="margin-top: 8px; padding: 10px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 13px; color: #166534; font-weight: 600;">Latest Fluency:</span>
+                        <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${latest.wcpm} WCPM</span>
+                    </div>`;
+            }
+        }
+
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Progress Report — ${student.name}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; background: #f8fafc; padding: 32px; line-height: 1.5; }
+        .report { max-width: 700px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); overflow: hidden; }
+        .header { padding: 28px 32px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; }
+        .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        .header p { font-size: 13px; opacity: 0.85; }
+        .content { padding: 28px 32px; }
+        .tier-badge { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 12px; margin-bottom: 20px; }
+        .section-title { font-size: 15px; font-weight: 800; color: #334155; margin: 20px 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+        .recommendations { padding-left: 20px; }
+        .recommendations li { font-size: 13px; color: #475569; margin-bottom: 8px; line-height: 1.6; }
+        .footer { padding: 16px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; }
+        .print-btn { display: block; margin: 16px auto; padding: 10px 28px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .print-btn:hover { background: #4338ca; }
+        @media print {
+            body { padding: 0; background: white; }
+            .report { box-shadow: none; border-radius: 0; }
+            .print-btn { display: none !important; }
+            .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .tier-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report">
+        <div class="header">
+            <h1>{t('common.student_progress_report')}</h1>
+            <p>${student.name} &bull; ${date}</p>
+        </div>
+        <div class="content">
+            <div class="tier-badge" style="background: ${tc.bg}; border: 2px solid ${tc.border};">
+                <span style="font-size: 28px;">${rti.emoji}</span>
+                <div>
+                    <div style="font-size: 16px; font-weight: 800; color: ${tc.color};">Tier ${rti.tier} — ${tc.label}</div>
+                    <div style="font-size: 11px; color: #64748b;">RTI Classification</div>
+                </div>
+            </div>
+
+            <div class="section-title">📊 Performance Summary</div>
+            ${metricBar('Quiz Average', s.quizAvg, 100, '%', '📝')}
+            ${metricBar('Word Sounds Accuracy', s.wsAccuracy, 100, '%', '🔊')}
+            ${metricBar('Fluency', s.fluencyWCPM, 150, ' WCPM', '📖')}
+            ${metricBar('Label Challenge', s.labelChallengeAvg, 100, '%', '🏷️')}
+            ${metricBar('Total Activities', s.totalActivities, 20, '', '📊')}
+            ${metricBar('Games Played', s.gamesPlayed, 10, '', '🎮')}
+
+            <div class="section-title">📋 Assessment Basis</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
+                ${rti.reasons.map(r => `<span style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: ${tc.bg}; color: ${tc.color}; font-weight: 600; border: 1px solid ${tc.border};">${r}</span>`).join('')}
+            </div>
+
+            <div class="section-title">💡 Recommendations for Home</div>
+            <ul class="recommendations">
+                ${rti.recommendations.map(r => `<li>${r}</li>`).join('')}
+            </ul>
+
+            ${runningRecordHtml}
+        </div>
+        <div class="footer">
+            Generated ${date} &bull; Created with AlloFlow &bull; RTI Progress Monitoring System
+        </div>
+    </div>
+    <button class="print-btn" onclick="window.print()">🖨️ Print This Report</button>
+</body>
+</html>`;
+
+        const reportWindow = window.open('', '_blank');
+        if (reportWindow) {
+            reportWindow.document.write(html);
+            reportWindow.document.close();
+        }
+    };
+
+    const extractSafetyFlags = (data) => {
+        const flags = [];
+        if (data.personaState?.chatHistory) {
+            data.personaState.chatHistory.forEach((msg, idx) => {
+                if (msg.role === 'user' || msg.sender === 'student') {
+                    const text = msg.content || msg.text || '';
+                    const msgFlags = SafetyContentChecker.check(text);
+                    msgFlags.forEach(flag => {
+                        flags.push({
+                            ...flag,
+                            messageIndex: idx,
+                            context: text.substring(0, 100)
+                        });
+                    });
+                }
+            });
+        }
+        if (data.adventureState?.history) {
+            data.adventureState.history.forEach((entry, idx) => {
+                if (entry.type === 'choice' && entry.choiceSource === 'custom') {
+                    const msgFlags = SafetyContentChecker.check(entry.text || '');
+                    msgFlags.forEach(flag => {
+                        flags.push({
+                            ...flag,
+                            messageIndex: idx,
+                            source: 'adventure',
+                            context: (entry.text || '').substring(0, 100)
+                        });
+                    });
+                }
+            });
+        }
+        if (data.socraticChatHistory?.messages) {
+            data.socraticChatHistory.messages.forEach((msg, idx) => {
+                if (msg.role === 'user') {
+                    const msgFlags = SafetyContentChecker.check(msg.text || msg.content || '');
+                    msgFlags.forEach(flag => {
+                        flags.push({
+                            ...flag,
+                            source: 'socratic',
+                            messageIndex: idx,
+                            context: (msg.text || msg.content || '').substring(0, 100)
+                        });
+                    });
+                }
+            });
+        }
+        if (data.responses) {
+            Object.entries(data.responses).forEach(([quizId, resp]) => {
+                if (resp.timestamps && resp.timestamps.length > 1) {
+                    const times = resp.timestamps;
+                    let totalGap = 0;
+                    for (let i = 1; i < times.length; i++) {
+                        totalGap += (new Date(times[i]) - new Date(times[i - 1]));
+                    }
+                    const avgMs = totalGap / (times.length - 1);
+                    if (avgMs < 3000 && times.length > 2) {
+                        flags.push({
+                            category: 'behavioral_rushing',
+                            match: `Avg ${Math.round(avgMs / 1000)}s/question`,
+                            severity: 'medium',
+                            source: 'quiz',
+                            context: `Quiz ${quizId}: ${Math.round(avgMs / 1000)}s avg response time`,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+                if (resp.answers && resp.answers.length > 4) {
+                    const answerCounts = {};
+                    resp.answers.forEach(a => { answerCounts[a] = (answerCounts[a] || 0) + 1; });
+                    const maxCount = Math.max(...Object.values(answerCounts));
+                    if (maxCount / resp.answers.length > 0.7) {
+                        const repeatedAnswer = Object.entries(answerCounts).find(([_, c]) => c === maxCount)?.[0];
+                        flags.push({
+                            category: 'behavioral_repetitive',
+                            match: `Same answer ${maxCount}/${resp.answers.length} times`,
+                            severity: 'low',
+                            source: 'quiz',
+                            context: `Quiz ${quizId}: "${repeatedAnswer}" selected ${Math.round(maxCount / resp.answers.length * 100)}% of the time`,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+            });
+        }
+        if (data.timeOnTask?.totalSessionMinutes && data.timeOnTask.totalSessionMinutes > 30) {
+            const totalActs = Object.keys(data.responses || {}).length +
+                (data.wordSoundsState?.history?.length || 0) +
+                (data.gameCompletions ? Object.values(data.gameCompletions).flat().length : 0);
+            const minutesPerActivity = totalActs > 0 ? data.timeOnTask.totalSessionMinutes / totalActs : data.timeOnTask.totalSessionMinutes;
+            if (minutesPerActivity > 20 && totalActs < 3) {
+                flags.push({
+                    category: 'behavioral_idle',
+                    match: `${Math.round(minutesPerActivity)}min/activity`,
+                    severity: 'low',
+                    source: 'behavioral',
+                    context: `${data.timeOnTask.totalSessionMinutes}min session with only ${totalActs} activities completed`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+        return flags;
+    };
+    const handleExportCSV = () => {
+        if (importedStudents.length === 0) return;
+        const headers = [
+            t('class_analytics.student_name'),
+            t('class_analytics.quiz_avg'),
+            t('class_analytics.adventure_xp'),
+            t('class_analytics.escape_completion'),
+            t('class_analytics.fluency_wcpm'),
+            t('class_analytics.interview_xp'),
+            'Word Sounds %',
+            'Games Played',
+            'Socratic Msgs',
+            'Label Challenge %',
+            t('class_analytics.safety_flags'),
+            t('class_analytics.total_activities'),
+            t('class_analytics.last_session')
+        ].join(',');
+        const rows = importedStudents.map(student => [
+            `"${student.name}"`,
+            student.stats.quizAvg,
+            student.stats.adventureXP,
+            `${student.stats.escapeCompletion}%`,
+            student.stats.fluencyWCPM,
+            student.stats.interviewXP,
+            student.stats.wsAccuracy ? `${student.stats.wsAccuracy}%` : 'N/A',
+            student.stats.gamesPlayed || 0,
+            student.stats.socraticMessageCount || 0,
+            student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A',
+            student.safetyFlags.length,
+            student.stats.totalActivities,
+            new Date(student.lastSession).toLocaleDateString()
+        ].join(','));
+        const csv = [headers, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `class_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+    const classSummary = React.useMemo(() => {
+        if (importedStudents.length === 0) return null;
+        const totalQuizScores = importedStudents.map(s => s.stats.quizAvg).filter(s => s > 0);
+        return {
+            totalStudents: importedStudents.length,
+            avgQuizScore: totalQuizScores.length > 0 ?
+                Math.round(totalQuizScores.reduce((a, b) => a + b, 0) / totalQuizScores.length) : 0,
+            studentsWithFlags: importedStudents.filter(s => s.safetyFlags.length > 0).length,
+            totalFlags: importedStudents.reduce((acc, s) => acc + s.safetyFlags.length, 0),
+            totalActivities: importedStudents.reduce((acc, s) => acc + s.stats.totalActivities, 0),
+            flagBreakdown: (() => {
+                const bd = {};
+                importedStudents.forEach(s => s.safetyFlags.forEach(f => { bd[f.category] = (bd[f.category] || 0) + 1; }));
+                return bd;
+            })(),
+            rtiDistribution: (() => {
+                const dist = { 1: [], 2: [], 3: [] };
+                importedStudents.forEach(s => {
+                    const rti = classifyRTITier(s.stats);
+                    dist[rti.tier].push(s.name);
+                });
+                return dist;
+            })()
+        };
+    }, [importedStudents]);
+    React.useEffect(() => {
+        if (!quizChartRef.current || importedStudents.length === 0 || typeof Chart === 'undefined') return;
+        if (quizChartInstance.current) quizChartInstance.current.destroy();
+        const students = importedStudents.filter(s => s.stats.quizAvg > 0);
+
+        if (students.length === 0) return;
+        const colors = students.map(s => s.stats.quizAvg >= 80 ? '#10b981' : s.stats.quizAvg >= 60 ? '#f59e0b' : '#ef4444');
+        quizChartInstance.current = new Chart(quizChartRef.current, {
+            type: 'bar',
+            data: {
+                labels: students.map(s => s.name.length > 12 ? s.name.slice(0, 12) + '…' : s.name),
+                datasets: [{ label: t('class_analytics.quiz_avg'), data: students.map(s => s.stats.quizAvg), backgroundColor: colors, borderRadius: 6, maxBarThickness: 40 }]
+            },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: t('class_analytics.quiz_distribution'), font: { size: 14, weight: 'bold' } } }, scales: { x: { max: 100, grid: { display: false } }, y: { grid: { display: false } } } }
+        });
+        return () => { if (quizChartInstance.current) quizChartInstance.current.destroy(); };
+    }, [importedStudents, t]);
+    React.useEffect(() => {
+        if (!flagsChartRef.current || !classSummary?.totalFlags || typeof Chart === 'undefined') return;
+        if (flagsChartInstance.current) flagsChartInstance.current.destroy();
+        const bd = classSummary.flagBreakdown;
+        const cats = Object.keys(bd);
+        if (cats.length === 0) return;
+        const colorMap = { self_harm: '#dc2626', harm_to_others: '#b91c1c', bullying: '#ea580c', inappropriate_language: '#d97706', concerning_content: '#64748b' };
+        flagsChartInstance.current = new Chart(flagsChartRef.current, {
+            type: 'doughnut',
+            data: {
+                labels: cats.map(c => t(`class_analytics.flag_${c === 'harm_to_others' ? 'harm_others' : c}`)),
+                datasets: [{ data: cats.map(c => bd[c]), backgroundColor: cats.map(c => colorMap[c] || '#94a3b8') }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }, title: { display: true, text: t('class_analytics.flag_breakdown'), font: { size: 14, weight: 'bold' } } } }
+        });
+        return () => { if (flagsChartInstance.current) flagsChartInstance.current.destroy(); };
+    }, [classSummary, t]);
+    React.useEffect(() => {
+        if (!trendChartRef.current || !selectedStudent || typeof Chart === 'undefined') return;
+        if (trendChartInstance.current) trendChartInstance.current.destroy();
+        const assessments = selectedStudent.data?.fluencyAssessments;
+        if (!assessments || assessments.length < 2) return;
+        const labels = assessments.map((a, i) => a.date ? new Date(a.date).toLocaleDateString() : `#${i + 1}`);
+        const wcpmData = assessments.map(a => a.wcpm || 0);
+        trendChartInstance.current = new Chart(trendChartRef.current, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{ label: t('class_analytics.fluency_wcpm'), data: wcpmData, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: '#6366f1' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: t('class_analytics.fluency_trend'), font: { size: 14, weight: 'bold' } } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'WCPM' } } } }
+        });
+        return () => { if (trendChartInstance.current) trendChartInstance.current.destroy(); };
+    }, [selectedStudent, t]);
+
+    const generateStudentFriendlyReport = (sessionData) => {
+        const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const totalActivities = (sessionData?.history || []).length;
+        const quizzes = (sessionData?.history || []).filter(h => h.type === 'quiz');
+        const avgQuizScore = quizzes.length > 0 ? Math.round(quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / quizzes.length) : null;
+        const wsHistory = sessionData?.wordSoundsHistory || [];
+        const wsCorrect = wsHistory.filter(h => h.correct).length;
+        const wsAccuracy = wsHistory.length > 0 ? Math.round((wsCorrect / wsHistory.length) * 100) : null;
+        const xp = sessionData?.globalPoints || 0;
+        const level = sessionData?.globalLevel || 1;
+        const badges = sessionData?.wordSoundsBadges || {};
+        const badgeCount = Object.keys(badges).length;
+        const masteredPhonemes = Object.entries(sessionData?.phonemeMastery || {}).filter(([_, v]) => v.accuracy >= 80);
+
+        const allSnapshots = sessionData?.progressSnapshots || [];
+        const dateRange = sessionData?.dateRange || {};
+        const snapshots = allSnapshots.filter(s => {
+            if (dateRange.start && s.date < dateRange.start) return false;
+            if (dateRange.end && s.date > dateRange.end) return false;
+            return true;
+        });
+        const dateRangeLabel = (dateRange.start || dateRange.end) ? ' (' + (dateRange.start || 'start') + ' to ' + (dateRange.end || 'now') + ')' : '';
+        const hasHistory = snapshots.length > 1;
+        const first = hasHistory ? snapshots[0] : null;
+        const latest = hasHistory ? snapshots[snapshots.length - 1] : null;
+
+        const growthCard = (label, startVal, endVal, unit) => {
+            const diff = Math.round(endVal - startVal);
+            const color = diff > 0 ? '#16a34a' : diff < 0 ? '#dc2626' : '#64748b';
+            const arrow = diff > 0 ? '\u2191' : diff < 0 ? '\u2193' : '\u2192';
+            return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid ' + color + '20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + label + '</div><div style="font-size:24px;font-weight:800;color:' + color + '">' + arrow + ' ' + (diff > 0 ? '+' : '') + diff + unit + '</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">' + Math.round(startVal) + unit + ' \u2192 ' + Math.round(endVal) + unit + '</div></div>';
+        };
+
+        const sessionRow = (snap, idx) => {
+            return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;font-size:12px;color:#64748b">' + (idx + 1) + '</td><td style="padding:8px 12px;font-size:12px;font-weight:600;color:#334155">' + snap.date + '</td><td style="padding:8px 12px;font-size:12px;color:#6366f1;font-weight:700">' + Math.round(snap.wsAccuracy || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#16a34a;font-weight:700">' + Math.round(snap.quizAvg || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#0891b2;font-weight:700">' + (snap.totalActivities || 0) + '</td></tr>';
+        };
+
+        const getEncouragement = (score) => {
+            if (score >= 90) return { emoji: '\u{1F31F}', msg: 'Amazing work! You are a superstar!' };
+            if (score >= 70) return { emoji: '\u{1F4AA}', msg: 'Great progress! Keep it up!' };
+            if (score >= 50) return { emoji: '\u{1F331}', msg: 'You are growing! Every practice session helps!' };
+            return { emoji: '\u{1F680}', msg: 'Keep practicing \u2014 you are on your way!' };
+        };
+        const statCard = (icon, label, value, color) => '<div style="background:white;border-radius:16px;padding:20px;text-align:center;border:2px solid ' + color + '20;box-shadow:0 2px 8px rgba(0,0,0,0.04)"><div style="font-size:32px;margin-bottom:8px">' + icon + '</div><div style="font-size:28px;font-weight:800;color:' + color + '">' + value + '</div><div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">' + label + '</div></div>';
+        const quizEnc = avgQuizScore !== null ? getEncouragement(avgQuizScore) : { emoji: '\u{1F4DD}', msg: 'Try a quiz to see your score!' };
+
+        const badgeHtml = badgeCount > 0 ? '<div style="margin-top:24px;padding:20px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:16px;border:2px solid #f59e0b40"><h3 style="font-size:18px;font-weight:800;color:#92400e;margin:0 0 12px">\u{1F3C5} My Badges (' + badgeCount + ')</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + Object.entries(badges).map(([name]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#92400e;border:1px solid #f59e0b60">\u{1F396}\u{FE0F} ' + name + '</span>').join('') + '</div></div>' : '';
+        const strengthsHtml = masteredPhonemes.length > 0 ? '<div style="margin-top:20px;padding:20px;background:#f0fdf4;border-radius:16px;border:2px solid #86efac"><h3 style="font-size:18px;font-weight:800;color:#166534;margin:0 0 12px">\u{1F4AA} My Strengths</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + masteredPhonemes.slice(0, 12).map(([phoneme]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#166534;border:1px solid #86efac">\u2705 ' + phoneme + '</span>').join('') + '</div></div>' : '';
+
+        const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', first.wsAccuracy || 0, latest.wsAccuracy || 0, '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + first.date + ' to ' + latest.date + '</p></div>' : '';
+
+        const historyHtml = snapshots.length > 0 ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 12px">\u{1F4CB} Session History</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"><thead><tr style="background:#f8fafc"><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">#</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Date</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Word Sounds</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Quiz Avg</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Activities</th></tr></thead><tbody>' + snapshots.map((s, i) => sessionRow(s, i)).join('') + '</tbody></table></div></div>' : '';
+
+        const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>My Learning Journey</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">My Learning Journey</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' \u2022 ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('\u2705', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '\u2014', '#16a34a') + statCard('\u{1F524}', 'Word Accuracy', wsAccuracy !== null ? wsAccuracy + '%' : '\u2014', '#0891b2') + '</div>' + growthHtml + historyHtml + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' \u2022 Created with AlloFlow \u2022 Keep learning! \u{1F680}</div></div></body></html>';
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'my_learning_journey_' + new Date().toISOString().split('T')[0] + '.html';
+        a.click();
+        URL.revokeObjectURL(url);
+        if (addToast) addToast('\u{1F4CA} Your progress report has been downloaded!', 'success');
+    };
+
+    if (!isOpen) return null;
+    return ReactDOM.createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className={isIndependentMode ? "bg-amber-100 p-2 rounded-xl" : "bg-violet-100 p-2 rounded-xl"}>
+                            {isIndependentMode ? <BarChart3 size={24} className="text-amber-600" /> : <ClipboardList size={24} className="text-violet-600" />}
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800">{isIndependentMode ? '\u{1F4CA} My Learning Journey' : '🎯 Assessment Center'}</h2>
+                            {importedStudents.length > 0 && (
+                                <p className="text-sm text-slate-500">
+                                    {t('class_analytics.students_loaded', { count: importedStudents.length })}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <button aria-label={t('common.text_field')} onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
+                        <X size={20} className="text-slate-500" />
+                    </button>
+                </div>
+                {!isIndependentMode && (
+                    <div className="flex border-b border-slate-200 bg-slate-50/50 px-4 shrink-0">
+                        {[
+                            { id: 'assessments', label: '🎯 Assessments', desc: 'Probes & benchmarks' },
+                            { id: 'research', label: '📊 Research & Insights', desc: 'Analytics & growth' }
+                        ].map(tab => (
+                            <button key={tab.id} onClick={() => { setAssessmentCenterTab(tab.id); if (tab.id === 'research' && researchFirstVisit) { setResearchFirstVisit(false); if (typeof renderResearchSetupModal === 'function') setShowResearchSetup(true); } }}
+                                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${assessmentCenterTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
+                                <span>{tab.label}</span>
+                                <span className={`text-[10px] font-normal ${assessmentCenterTab === tab.id ? 'text-indigo-400' : 'text-slate-400'}`}>{tab.desc}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+                <div className="flex-1 overflow-y-auto p-4" style={{ display: (!isIndependentMode && assessmentCenterTab === 'research') ? 'none' : undefined }}>
+                    {!isIndependentMode && importedStudents.length > 0 && (
+                        <div className="mb-3">
+                            <input
+                                type="text"
+                                placeholder={t('class_analytics.search_placeholder') || 'Search students...'}
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none transition-all text-sm"
+                            />
+                        </div>
+                    )}
+                    {isIndependentMode && (
+                        <div className="mb-6 space-y-4">
+                            <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-2xl border border-indigo-100">
+                                <div className="text-center mb-4">
+                                    <span className="text-4xl">&#x1F31F;</span>
+                                    <h3 className="text-lg font-bold text-slate-800 mt-2">Welcome to Your Learning Journey!</h3>
+                                    <p className="text-sm text-slate-500 mt-1">Track your progress and celebrate your growth</p>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 mb-4">
+                                    <div className="bg-white rounded-xl p-3 text-center border border-indigo-100">
+                                        <div className="text-2xl font-bold text-indigo-600">{globalLevel}</div>
+                                        <div className="text-xs text-slate-500 font-semibold">Level</div>
+                                    </div>
+                                    <div className="bg-white rounded-xl p-3 text-center border border-purple-100">
+                                        <div className="text-2xl font-bold text-purple-600">{globalPoints}</div>
+                                        <div className="text-xs text-slate-500 font-semibold">XP</div>
+                                    </div>
+                                    <div className="bg-white rounded-xl p-3 text-center border border-pink-100">
+                                        <div className="text-2xl font-bold text-pink-600">{history.length}</div>
+                                        <div className="text-xs text-slate-500 font-semibold">Activities</div>
+                                    </div>
+                                </div>
+                                <div className="mt-4 p-3 bg-white/80 rounded-xl border border-slate-200">
+                                    <div className="text-xs font-bold text-slate-600 uppercase mb-2">&#x1F4C5; Report Date Range (optional)</div>
+                                    <div className="flex gap-2 items-center">
+                                        <input
+                                            type="date"
+                                            value={reportStartDate}
+                                            onChange={(e) => setReportStartDate(e.target.value)}
+                                            className="flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700"
+                                            placeholder="Start"
+                                        />
+                                        <span className="text-xs text-slate-400">to</span>
+                                        <input
+                                            type="date"
+                                            value={reportEndDate}
+                                            onChange={(e) => setReportEndDate(e.target.value)}
+                                            className="flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700"
+                                            placeholder="End"
+                                        />
+                                        {(reportStartDate || reportEndDate) && (
+                                            <button
+                                                onClick={() => { setReportStartDate(''); setReportEndDate(''); }}
+                                                className="text-xs text-slate-400 hover:text-red-500 px-1"
+                                                title="Clear dates"
+                                            >&#x2716;</button>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-1">Leave empty to include all sessions</p>
+                                </div>
+                                <button
+                                    onClick={() => generateStudentFriendlyReport({ history, wordSoundsHistory, phonemeMastery, wordSoundsBadges, gameCompletions, globalPoints, globalLevel, progressSnapshots: (rosterKey?.progressHistory && Object.values(rosterKey.progressHistory)[0]) || [], dateRange: { start: reportStartDate, end: reportEndDate } })}
+                                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-200"
+                                >
+                                    <Download size={18} /> Download My Progress Report
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {!isIndependentMode && (<div className="flex flex-wrap gap-3 mb-4">
+                        <label className="cursor-pointer">
+                            <input aria-label={t('common.upload_json_file')}
+                                type="file"
+                                accept=".json"
+                                multiple
+                                onChange={handleFileImport}
+                                className="hidden"
+                            />
+                            <div
+                                data-help-key="dashboard_import_btn"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                                <Upload size={16} />
+                                {t('class_analytics.import_button')}
+                            </div>
+                        </label>
+                        {importedStudents.length > 0 && (
+                            <>
+                                <button aria-label={t('common.download')}
+                                    data-help-key="dashboard_export_csv"
+                                    onClick={handleExportCSV}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                                >
+                                    <Download size={16} />
+                                    {t('class_analytics.export_csv')}
+                                </button>
+                                {showLiveSyncInput && !isLiveListening ? (
+                                    <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 animate-in fade-in">
+                                        <Cloud size={14} className="text-blue-500 shrink-0" />
+                                        <input
+                                            type="text"
+                                            placeholder={t('common.placeholder_session_code')}
+                                            value={liveSyncCode}
+                                            onChange={e => setLiveSyncCode(e.target.value)}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter' && liveSyncCode.trim()) {
+                                                    setIsLiveListening(true);
+                                                    setShowLiveSyncInput(false);
+                                                    const progressCollRef = collection(db, 'artifacts', appId, 'public', 'data', 'sessions', liveSyncCode.trim(), 'studentProgress');
+                                                    const unsubscribe = onSnapshot(progressCollRef, (snapshot) => {
+                                                        const data = {};
+                                                        snapshot.forEach(docSnap => { data[docSnap.id] = docSnap.data(); });
+                                                        setLiveProgressData(data);
+                                                        const liveStudents = Object.entries(data).map(([id, d]) => ({
+                                                            id: `live-${id}`, name: d.studentNickname || id,
+                                                            filename: `live:${id}`, data: d, stats: d.stats || {},
+                                                            safetyFlags: [], lastSession: d.lastSynced || new Date().toISOString(), isLive: true
+                                                        }));
+                                                        setImportedStudents(prev => [...prev.filter(s => !s.isLive), ...liveStudents]);
+                                                    }, (err) => { warnLog('[LiveSync] Error:', err); setIsLiveListening(false); });
+                                                    window._progressUnsub = unsubscribe;
+                                                }
+                                                if (e.key === 'Escape') { setShowLiveSyncInput(false); setLiveSyncCode(''); }
+                                            }}
+                                            className="w-28 px-2 py-1 text-xs border-none bg-transparent outline-none placeholder-blue-300"
+                                            autoFocus
+                                            aria-label={t('common.session_code_for_live_sync')}
+                                        />
+                                        <button onClick={() => { setShowLiveSyncInput(false); setLiveSyncCode(''); }}
+                                            className="text-blue-400 hover:text-blue-600 p-0.5" aria-label={t('common.cancel')}><X size={12} /></button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        aria-label={t('common.live_sync')}
+                                        data-help-key="dashboard_live_sync"
+                                        onClick={() => {
+                                            if (isLiveListening) {
+                                                if (window._progressUnsub) window._progressUnsub();
+                                                setIsLiveListening(false);
+                                                setLiveProgressData({});
+                                                return;
+                                            }
+                                            setShowLiveSyncInput(true);
+                                        }}
+                                        className={`${isLiveListening ? 'bg-green-600 hover:bg-green-700 ring-2 ring-green-300' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors`}
+                                    >
+                                        {isLiveListening ? <><Wifi size={16} className="animate-pulse" /> Live ({Object.keys(liveProgressData).length})</> : <><Cloud size={16} /> Live Sync</>}
+                                    </button>
+                                )}
+                                <button
+                                    aria-label={t('common.toggle_safety_flags')}
+                                    data-help-key="dashboard_safety_toggle"
+                                    onClick={() => setSafetyFlaggingVisible(prev => !prev)}
+                                    className={`${safetyFlaggingVisible ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-400 hover:bg-slate-500'} text-white px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm`}
+                                    title={safetyFlaggingVisible ? 'Safety flags visible — click to hide' : 'Safety flags hidden — click to show'}
+                                >
+                                    <ShieldCheck size={16} /> {safetyFlaggingVisible ? '🛡️ Safety On' : '🛡️ Off'}
+                                </button>
+                                <button
+                                    aria-label={t('common.delete')}
+                                    data-help-key="dashboard_clear_btn"
+                                    onClick={() => { setImportedStudents([]); if (window._progressUnsub) { window._progressUnsub(); setIsLiveListening(false); } }}
+                                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                                >
+                                    <Trash2 size={16} />
+                                    {t('class_analytics.clear_data')}
+                                </button>
+                            </>
+                        )}
+                        {isProcessing && importProgress.total > 0 && (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg animate-pulse border border-indigo-200 ml-auto">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent"></div>
+                                <span className="text-sm font-medium">
+                                    Processing: {importProgress.current}/{importProgress.total}
+                                </span>
+                            </div>
+                        )}
+                    </div>)}
+                    {classSummary && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                            <div
+                                data-help-key="dashboard_stat_students"
+                                className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center">
+                                <div className="text-2xl font-bold text-indigo-600">{classSummary.totalStudents}</div>
+                                <div className="text-xs text-slate-600">{t('class_analytics.total_students')}</div>
+                            </div>
+                            <div
+                                data-help-key="dashboard_stat_quiz"
+                                className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                                <div className="text-2xl font-bold text-emerald-600">{classSummary.avgQuizScore}%</div>
+                                <div className="text-xs text-slate-600">{t('class_analytics.avg_quiz_score')}</div>
+                            </div>
+                            <div
+                                data-help-key="dashboard_stat_flags"
+                                className={`${classSummary.studentsWithFlags > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'} border rounded-xl p-3 text-center`}>
+                                <div className={`text-2xl font-bold ${classSummary.studentsWithFlags > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                                    {classSummary.studentsWithFlags}
+                                </div>
+                                <div className="text-xs text-slate-600">{t('class_analytics.students_with_flags')}</div>
+                            </div>
+                            <div
+                                data-help-key="dashboard_stat_activities"
+                                className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+                                <div className="text-2xl font-bold text-purple-600">
+                                    {importedStudents.reduce((acc, s) => acc + s.stats.totalActivities, 0)}
+                                </div>
+                                <div className="text-xs text-slate-600">{t('class_analytics.total_activities')}</div>
+                            </div>
+                        </div>
+                    )}
+                    {classSummary?.rtiDistribution && (
+                        <div data-help-key="dashboard_rti_summary" className="mb-4 p-4 bg-gradient-to-r from-slate-50 to-indigo-50 border border-indigo-200 rounded-xl">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                                    🎯 RTI Tier Distribution
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400">{classSummary.totalStudents} students</span>
+                                    <button
+                                        aria-label={t('common.configure_rti_thresholds')}
+                                        onClick={() => setShowRTISettings(true)}
+                                        className="p-1.5 rounded-lg hover:bg-white/80 text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200"
+                                        title={t('common.configure_rti_thresholds')}
+                                    >
+                                        <Settings size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 mb-3">
+                                {[
+                                    { tier: 1, label: 'Tier 1 — On Track', emoji: '🟢', color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
+                                    { tier: 2, label: 'Tier 2 — Strategic', emoji: '🟡', color: '#d97706', bg: '#fef9c3', border: '#fcd34d' },
+                                    { tier: 3, label: 'Tier 3 — Intensive', emoji: '🔴', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' }
+                                ].map(t => {
+                                    const students = classSummary.rtiDistribution[t.tier] || [];
+                                    const pct = classSummary.totalStudents > 0 ? Math.round((students.length / classSummary.totalStudents) * 100) : 0;
+                                    return (
+                                        <div key={t.tier} className="rounded-xl p-3 text-center border-2 transition-all hover:shadow-md" style={{ background: t.bg, borderColor: t.border }}>
+                                            <div style={{ fontSize: '24px' }}>{t.emoji}</div>
+                                            <div style={{ fontSize: '28px', fontWeight: 800, color: t.color }}>{students.length}</div>
+                                            <div style={{ fontSize: '11px', fontWeight: 700, color: t.color }}>{t.label}</div>
+                                            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{pct}% of class</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="flex rounded-full overflow-hidden h-3 bg-slate-200" role="img" aria-label={t('common.rti_tier_distribution_bar')}>
+                                {[
+                                    { tier: 1, color: '#16a34a' },
+                                    { tier: 2, color: '#d97706' },
+                                    { tier: 3, color: '#dc2626' }
+                                ].map(t => {
+                                    const count = (classSummary.rtiDistribution[t.tier] || []).length;
+                                    const pct = classSummary.totalStudents > 0 ? (count / classSummary.totalStudents) * 100 : 0;
+                                    if (pct === 0) return null;
+                                    return <div key={t.tier} style={{ width: pct + '%', backgroundColor: t.color, transition: 'width 0.5s ease' }} />;
+                                })}
+                            </div>
+                            {((classSummary.rtiDistribution[2] || []).length > 0 || (classSummary.rtiDistribution[3] || []).length > 0) && (
+                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                    {(classSummary.rtiDistribution[3] || []).length > 0 && (
+                                        <div className="bg-white rounded-lg p-2 border border-rose-100">
+                                            <div style={{ fontSize: '10px', fontWeight: 700, color: '#dc2626', marginBottom: '4px' }}>🔴 Intensive</div>
+                                            <div className="flex flex-wrap gap-1">
+                                                {classSummary.rtiDistribution[3].map((name, i) => (
+                                                    <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-medium border border-rose-200">{name}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(classSummary.rtiDistribution[2] || []).length > 0 && (
+                                        <div className="bg-white rounded-lg p-2 border border-amber-100">
+                                            <div style={{ fontSize: '10px', fontWeight: 700, color: '#d97706', marginBottom: '4px' }}>🟡 Strategic</div>
+                                            <div className="flex flex-wrap gap-1">
+                                                {classSummary.rtiDistribution[2].map((name, i) => (
+                                                    <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium border border-amber-200">{name}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {showRTISettings && (
+                        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in" onClick={() => setShowRTISettings(false)}>
+                            <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg border-2 border-indigo-100 transform transition-all animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                        <div className="bg-indigo-100 p-2 rounded-full text-indigo-600"><Settings size={18} /></div>
+                                        RTI Threshold Configuration
+                                    </h3>
+                                    <button onClick={() => setShowRTISettings(false)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400" aria-label={t('common.close')}><X size={18} /></button>
+                                </div>
+                                <p className="text-xs text-slate-500 mb-4">Adjust classification cutoffs to match your grade level, district benchmarks, or screening tool norms. Changes apply immediately to all student classifications.</p>
+                                <div className="space-y-4">
+                                    {[
+                                        { key: 'quizTier3', label: '🔴 Quiz — Tier 3 cutoff', desc: 'Below this → Intensive', unit: '%', min: 10, max: 80, step: 5 },
+                                        { key: 'quizTier2', label: '🟡 Quiz — Tier 2 cutoff', desc: 'Below this → Strategic', unit: '%', min: 40, max: 100, step: 5 },
+                                        { key: 'wsTier3', label: '🔴 Word Sounds — Tier 3 cutoff', desc: 'Below this → Intensive', unit: '%', min: 10, max: 80, step: 5 },
+                                        { key: 'wsTier2', label: '🟡 Word Sounds — Tier 2 cutoff', desc: 'Below this → Strategic', unit: '%', min: 30, max: 100, step: 5 },
+                                        { key: 'engagementMin', label: '🟡 Minimum Activities', desc: 'Fewer than this → Strategic', unit: '', min: 1, max: 20, step: 1 },
+                                        { key: 'fluencyMin', label: '🟡 Fluency WCPM Floor', desc: 'Below this → Strategic', unit: ' WCPM', min: 20, max: 200, step: 10 },
+                                        { key: 'labelChallengeMin', label: '🟡 Label Challenge Floor', desc: 'Below this → Strategic', unit: '%', min: 10, max: 80, step: 5 }
+                                    ].map(item => (
+                                        <div key={item.key} className="flex items-center gap-3">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-sm font-semibold text-slate-700">{item.label}</div>
+                                                <div className="text-xs text-slate-400">{item.desc}</div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="range"
+                                                    min={item.min}
+                                                    max={item.max}
+                                                    step={item.step}
+                                                    value={rtiThresholds[item.key]}
+                                                    onChange={e => setRtiThresholds(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
+                                                    className="w-24 accent-indigo-600"
+                                                    aria-label={item.label}
+                                                />
+                                                <span className="text-sm font-bold text-indigo-600 w-16 text-right">{rtiThresholds[item.key]}{item.unit}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-100">
+                                    <button
+                                        onClick={() => setRtiThresholds({ quizTier3: 50, quizTier2: 80, wsTier3: 50, wsTier2: 75, engagementMin: 2, fluencyMin: 60, labelChallengeMin: 50 })}
+                                        className="text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+                                    >
+                                        ↺ Reset to Defaults
+                                    </button>
+                                    <button
+                                        onClick={() => setShowRTISettings(false)}
+                                        className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md text-sm"
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {importedStudents.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="bg-white border border-slate-200 rounded-xl p-4" style={{ minHeight: '200px' }}>
+                                <canvas ref={quizChartRef}></canvas>
+                            </div>
+                            {classSummary?.totalFlags > 0 && (
+                                <div className="bg-white border border-slate-200 rounded-xl p-4" style={{ minHeight: '200px' }}>
+                                    <canvas ref={flagsChartRef}></canvas>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="mb-4 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl" data-help-key="assessment_probe_launcher">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">📋</span>
+                            <h3 className="text-sm font-bold text-slate-700">Benchmark Probe Battery</h3>
+                            <span className="text-[10px] font-bold text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Standardized</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Curated word lists with fixed activity order per grade. No gamification — designed for formal assessment.</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label={t('common.probe_grade')}
+                                value={probeGradeLevel}
+                                onChange={(e) => {
+                                    const g = e.target.value;
+                                    setProbeGradeLevel(g);
+                                    const batteries = { K: 'segmentation', '1': 'segmentation', '2': 'segmentation', '3-5': 'segmentation' };
+                                    setProbeActivity(batteries[g] || 'segmentation');
+                                }}
+                                className="text-xs font-bold border border-violet-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                            >
+                                <option value="K">Grade K</option>
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                                <option value="3-5">Grade 3-5</option>
+                            </select>
+                            <select
+                                aria-label={t('common.probe_form')}
+                                value={probeForm}
+                                onChange={(e) => setProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-violet-200 rounded-lg px-3 py-2 bg-violet-50 text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                            >
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <select
+                                aria-label={t('common.probe_student')}
+                                value={probeTargetStudent || ''}
+                                onChange={(e) => setProbeTargetStudent(e.target.value || null)}
+                                className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                            >
+                                <option value="">🎯 Practice Mode (No Student)</option>
+                                {importedStudents.map(s => (
+                                    <option key={s.id || s.nickname} value={s.nickname || s.name}>
+                                        {s.nickname || s.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                onClick={() => launchBenchmarkProbe(probeGradeLevel, probeActivity, probeForm)}
+                                aria-label={t('common.run_benchmark_probe')}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg font-bold text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md"
+                            >
+                                ▶ Start Battery
+                            </button>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className="text-[10px] text-slate-400 font-semibold">Battery order:</span>
+                            {(GRADE_SUBTEST_BATTERIES[probeGradeLevel] || []).map((act, i, arr) => (
+                                <span key={act} className="text-[10px] font-bold text-violet-600">
+                                    {act.charAt(0).toUpperCase() + act.slice(1)}{i < arr.length - 1 ? ' →' : ''}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-4 mb-4 border border-orange-200">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">🔢</span>
+                            <h3 className="text-sm font-bold text-slate-700">Math Fluency Probe</h3>
+                            <span className="text-[10px] font-bold text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Standardized</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Fixed problem sets with DCPM scoring. 25 problems, 2-minute timer. Forms A/B/C for progress monitoring.</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label="Math probe grade"
+                                value={mathProbeGrade || "1"}
+                                onChange={(e) => setMathProbeGrade(e.target.value)}
+                                className="text-xs font-bold border border-orange-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            >
+                                <option value="K">Grade K</option>
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                                <option value="3">Grade 3</option>
+                                <option value="4">Grade 4</option>
+                                <option value="5">Grade 5</option>
+                            </select>
+                            <select
+                                aria-label="Math probe form"
+                                value={mathProbeForm || "A"}
+                                onChange={(e) => setMathProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-orange-200 rounded-lg px-3 py-2 bg-orange-50 text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            >
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <select
+                                aria-label="Math probe student"
+                                value={mathProbeStudent || ""}
+                                onChange={(e) => setMathProbeStudent(e.target.value || null)}
+                                className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            >
+                                <option value="">🎯 Practice Mode (No Student)</option>
+                                {importedStudents.map(s => (
+                                    <option key={s.id || s.nickname} value={s.nickname || s.name}>
+                                        {s.nickname || s.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                onClick={() => {
+                                    const grade = mathProbeGrade || "1";
+                                    const form = mathProbeForm || "A";
+                                    if (!window.MATH_PROBE_BANKS || !window.MATH_PROBE_BANKS[grade] || !window.MATH_PROBE_BANKS[grade][form]) {
+                                        addToast("Math probes not loaded yet — please wait and try again", "error");
+                                        loadPsychometricProbes();
+                                        return;
+                                    }
+                                    const probeData = window.MATH_PROBE_BANKS[grade][form];
+                                    const problems = probeData.problems.map(p => ({ ...p, studentAnswer: null, correct: null }));
+                                    setMathFluencyOperation(probeData.operation);
+                                    setMathFluencyDifficulty(probeData.difficulty);
+                                    setMathFluencyTimeLimit(probeData.timeLimit);
+                                    setMathFluencyProblems(problems);
+                                    setMathFluencyCurrentIndex(0);
+                                    setMathFluencyResults(null);
+                                    setMathFluencyStudentInput("");
+                                    setMathFluencyTimer(probeData.timeLimit);
+                                    setMathFluencyActive(true);
+                                    if (mathFluencyTimerRef.current) clearInterval(mathFluencyTimerRef.current);
+                                    mathFluencyTimerRef.current = setInterval(() => {
+                                        setMathFluencyTimer(prev => {
+                                            if (prev <= 1) {
+                                                clearInterval(mathFluencyTimerRef.current);
+                                                mathFluencyTimerRef.current = null;
+                                                setTimeout(() => finishMathFluencyProbe(), 0);
+                                                return 0;
+                                            }
+                                            return prev - 1;
+                                        });
+                                    }, 1000);
+                                    setTimeout(() => mathFluencyInputRef.current?.focus(), 100);
+                                }}
+                                aria-label="Start math probe"
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
+                            >
+                                ▶ Start Math Probe
+                            </button>
+                            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-base">📖</span>
+                                    <h3 className="text-sm font-bold text-slate-700">Literacy Fluency Probes</h3>
+                                    <span className="text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Standardized</span>
+                                </div>
+                                <p className="text-xs text-slate-500 mb-3">Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), and Rapid Automatized Naming (RAN) assessments.</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <button
+                                        onClick={() => {
+                                            if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
+                                            setActiveView('word-sounds');
+                                            setIsWordSoundsMode(true);
+                                            setIsProbeMode(true);
+                                            setProbeActivity('nwf');
+                                            addToast('NWF Probe — Nonsense Word Fluency', 'info');
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+                                    >
+                                        <span className="text-base">🔤</span>
+                                        <div className="text-left">
+                                            <div className="font-bold">NWF</div>
+                                            <div className="text-[10px] text-slate-400 font-normal">Nonsense Word Fluency</div>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
+                                            setActiveView('word-sounds');
+                                            setIsWordSoundsMode(true);
+                                            setIsProbeMode(true);
+                                            setProbeActivity('lnf');
+                                            addToast('LNF Probe — Letter Naming Fluency', 'info');
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+                                    >
+                                        <span className="text-base">🅰️</span>
+                                        <div className="text-left">
+                                            <div className="font-bold">LNF</div>
+                                            <div className="text-[10px] text-slate-400 font-normal">Letter Naming Fluency</div>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
+                                            setActiveView('word-sounds');
+                                            setIsWordSoundsMode(true);
+                                            setIsProbeMode(true);
+                                            setProbeActivity('ran');
+                                            addToast('RAN Probe — Rapid Automatized Naming', 'info');
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+                                    >
+                                        <span className="text-base">⚡</span>
+                                        <div className="text-left">
+                                            <div className="font-bold">RAN</div>
+                                            <div className="text-[10px] text-slate-400 font-normal">Rapid Automatized Naming</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-2 text-[10px] text-slate-400 font-semibold">
+                            {window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ?
+                                `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` :
+                                "⏳ Loading math probes..."
+                            }
+                        </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-4 mb-4 border border-purple-200">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">❓</span>
+                            <h3 className="text-sm font-bold text-slate-700">Missing Number Probe</h3>
+                            <span className="text-[10px] font-bold text-purple-500 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider">K-2</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Find the missing number: "3 + __ = 7". Measures algebraic thinking and number relationships.</p>
+                        {importedStudents.length > 0 && (
+                            <div className="mb-3 flex items-center gap-2">
+                                <span className="text-xs text-slate-500">📋 Student:</span>
+                                <select aria-label="Assign probe to student"
+                                    value={mathProbeStudent || ""}
+                                    onChange={(e) => setMathProbeStudent(e.target.value)}
+                                    className="text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                                >
+                                    <option value="">Select Student...</option>
+                                    {importedStudents.map(s => (
+                                        <option key={s.id || s.name} value={s.nickname || s.name}>{s.nickname || s.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label="Missing number probe grade"
+                                value={mathProbeGrade || "1"}
+                                onChange={(e) => setMathProbeGrade(e.target.value)}
+                                className="text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                            >
+                                <option value="K">Grade K</option>
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                            </select>
+                            <select aria-label="Missing number form" value={mathProbeForm || "A"} onChange={(e) => setMathProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-purple-50 text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                            >
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <button onClick={() => {
+                                const grade = mathProbeGrade || "1";
+                                const form = mathProbeForm || "A";
+                                const bank = window.MISSING_NUMBER_PROBES;
+                                if (!bank || !bank[grade] || !bank[grade][form]) {
+                                    addToast("Missing Number probes not loaded yet", "error");
+                                    loadPsychometricProbes();
+                                    return;
+                                }
+                                const data = bank[grade][form];
+                                setMnProbeProblems(data.problems.map(p => ({ ...p, studentAnswer: null, correct: null })));
+                                setMnProbeIndex(0);
+                                setMnProbeAnswer("");
+                                setMnProbeResults(null);
+                                setMnProbeTimer(data.timeLimit);
+                                setMnProbeActive(true);
+                                if (mnProbeTimerRef.current) clearInterval(mnProbeTimerRef.current);
+                                mnProbeTimerRef.current = setInterval(() => {
+                                    setMnProbeTimer(prev => {
+                                        if (prev <= 1) {
+                                            clearInterval(mnProbeTimerRef.current);
+                                            mnProbeTimerRef.current = null;
+                                            return 0;
+                                        }
+                                        return prev - 1;
+                                    });
+                                }, 1000);
+                                setTimeout(() => mnProbeInputRef.current?.focus(), 100);
+                            }}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-bold text-sm hover:from-purple-600 hover:to-indigo-600 transition-all shadow-md"
+                            >
+                                ▶ Start Missing Number
+                            </button>
+                        </div>
+                        {mnProbeActive && (
+                            <div className="mt-4 bg-white rounded-xl border-2 border-purple-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">📊 PROBE ACTIVE</span>
+                                        <span className="text-sm font-medium text-slate-600">Problem {mnProbeIndex + 1} of {mnProbeProblems.length}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`tabular-nums px-3 py-1 rounded-full text-sm font-bold ${mnProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`}>
+                                            ⏱ {Math.floor(mnProbeTimer / 60)}:{String(mnProbeTimer % 60).padStart(2, '0')}
+                                        </span>
+                                        <button onClick={() => {
+                                            if (window.confirm("End probe early? Progress will be saved.")) {
+                                                clearInterval(mnProbeTimerRef.current);
+                                                mnProbeTimerRef.current = null;
+                                                const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
+                                                const correct = answered.filter(p => p.correct).length;
+                                                setMnProbeResults({ correct, total: answered.length, problems: mnProbeProblems, type: 'missing_number' });
+                                                setMnProbeActive(false);
+                                            }
+                                        }} className="text-xs text-red-500 hover:text-red-700 font-bold">⏹ End Early</button>
+                                    </div>
+                                </div>
+                                <div className="w-full bg-slate-100 rounded-full h-2 mb-4">
+                                    <div className="bg-purple-500 h-2 rounded-full transition-all" style={{ width: `${(mnProbeIndex / mnProbeProblems.length) * 100}%` }} />
+                                </div>
+                                {mnProbeTimer > 0 && mnProbeIndex < mnProbeProblems.length ? (() => {
+                                    const problem = mnProbeProblems[mnProbeIndex];
+                                    return (
+                                        <div className="text-center">
+                                            <div className="text-3xl font-bold text-slate-800 mb-6 tracking-wider">
+                                                {problem.sequence.map((item, i) => (
+                                                    <span key={i} className={`mx-1 ${item === '___' ? 'inline-block w-16 border-b-4 border-purple-400 text-purple-600' : ''}`}>
+                                                        {item === '___' ? (mnProbeAnswer || '?') : item}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center justify-center gap-3">
+                                                <input
+                                                    ref={mnProbeInputRef}
+                                                    type="number"
+                                                    value={mnProbeAnswer}
+                                                    onChange={(e) => setMnProbeAnswer(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && mnProbeAnswer !== '') {
+                                                            const ans = parseInt(mnProbeAnswer, 10);
+                                                            const isCorrect = ans === problem.answer;
+                                                            const updated = [...mnProbeProblems];
+                                                            updated[mnProbeIndex] = { ...updated[mnProbeIndex], studentAnswer: ans, correct: isCorrect };
+                                                            setMnProbeProblems(updated);
+                                                            setMnProbeAnswer('');
+                                                            if (mnProbeIndex + 1 < mnProbeProblems.length) {
+                                                                setMnProbeIndex(mnProbeIndex + 1);
+                                                                setTimeout(() => mnProbeInputRef.current?.focus(), 50);
+                                                            } else {
+                                                                clearInterval(mnProbeTimerRef.current);
+                                                                mnProbeTimerRef.current = null;
+                                                                const correct = updated.filter(p => p.correct).length;
+                                                                setMnProbeResults({ correct, total: updated.length, problems: updated, type: 'missing_number' });
+                                                                setMnProbeActive(false);
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="w-24 text-center text-2xl font-bold border-2 border-purple-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                    placeholder="?"
+                                                    autoFocus
+                                                />
+                                                <button onClick={() => {
+                                                    // Skip button
+                                                    const updated = [...mnProbeProblems];
+                                                    updated[mnProbeIndex] = { ...updated[mnProbeIndex], studentAnswer: null, correct: false };
+                                                    setMnProbeProblems(updated);
+                                                    setMnProbeAnswer('');
+                                                    if (mnProbeIndex + 1 < mnProbeProblems.length) {
+                                                        setMnProbeIndex(mnProbeIndex + 1);
+                                                        setTimeout(() => mnProbeInputRef.current?.focus(), 50);
+                                                    } else {
+                                                        clearInterval(mnProbeTimerRef.current);
+                                                        mnProbeTimerRef.current = null;
+                                                        const correct = updated.filter(p => p.correct).length;
+                                                        setMnProbeResults({ correct, total: updated.length, problems: updated, type: 'missing_number' });
+                                                        setMnProbeActive(false);
+                                                    }
+                                                }} className="text-sm text-slate-400 hover:text-slate-600 font-bold">Skip →</button>
+                                            </div>
+                                        </div>
+                                    );
+                                })() : (
+                                    <div className="text-center py-4">
+                                        <p className="text-lg font-bold text-red-600">⏰ Time's Up!</p>
+                                        {(() => {
+                                            const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
+                                            const correct = answered.filter(p => p.correct).length;
+                                            if (!mnProbeResults) {
+                                                setMnProbeResults({ correct, total: answered.length, problems: mnProbeProblems, type: 'missing_number' });
+                                                setMnProbeActive(false);
+                                            }
+                                            return null;
+                                        })()}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {mnProbeResults && (
+                            <div className="mt-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4">
+                                <h4 className="font-bold text-slate-700 mb-2">📊 Missing Number Probe Results</h4>
+                                <div className="grid grid-cols-3 gap-3 text-center mb-3">
+                                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                                        <div className="text-2xl font-bold text-green-600">{mnProbeResults.correct}</div>
+                                        <div className="text-xs text-slate-500">Correct</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                                        <div className="text-2xl font-bold text-slate-700">{mnProbeResults.total}</div>
+                                        <div className="text-xs text-slate-500">Attempted</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                                        <div className="text-2xl font-bold text-indigo-600">{mnProbeResults.total > 0 ? Math.round((mnProbeResults.correct / mnProbeResults.total) * 100) : 0}%</div>
+                                        <div className="text-xs text-slate-500">Accuracy</div>
+                                    </div>
+                                </div>
+                                {mathProbeStudent && (
+                                    <button onClick={() => {
+                                        setLatestProbeResult({
+                                            student: mathProbeStudent,
+                                            type: 'missing_number',
+                                            date: new Date().toISOString(),
+                                            correct: mnProbeResults.correct,
+                                            total: mnProbeResults.total,
+                                            accuracy: mnProbeResults.total > 0 ? Math.round((mnProbeResults.correct / mnProbeResults.total) * 100) : 0,
+                                            grade: mathProbeGrade,
+                                            form: mathProbeForm
+                                        });
+                                        addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
+                                    }} className="w-full mt-2 px-4 py-2 bg-purple-500 text-white rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors">
+                                        💾 Save to Student Record
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <div className="bg-gradient-to-r from-cyan-50 to-sky-50 rounded-2xl p-4 mb-4 border border-cyan-200">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">⚖️</span>
+                            <h3 className="text-sm font-bold text-slate-700">Quantity Discrimination Probe</h3>
+                            <span className="text-[10px] font-bold text-cyan-500 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider">K-1</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Circle the bigger number. 1-minute timed. Measures number magnitude understanding.</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label="QD probe grade"
+                                value={mathProbeGrade || "K"}
+                                onChange={(e) => setMathProbeGrade(e.target.value)}
+                                className="text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                            >
+                                <option value="K">Grade K</option>
+                                <option value="1">Grade 1</option>
+                            </select>
+                            <select aria-label="QD form" value={mathProbeForm || "A"} onChange={(e) => setMathProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-cyan-50 text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                            >
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <button onClick={() => {
+                                const grade = mathProbeGrade || "K";
+                                const form = mathProbeForm || "A";
+                                const bank = window.QUANTITY_DISCRIMINATION_PROBES;
+                                if (!bank || !bank[grade] || !bank[grade][form]) {
+                                    addToast("Quantity Discrimination probes not loaded yet", "error");
+                                    loadPsychometricProbes();
+                                    return;
+                                }
+                                const data = bank[grade][form];
+                                setQdProbeProblems(data.problems.map(p => ({ ...p, studentAnswer: null, correct: null })));
+                                setQdProbeIndex(0);
+                                setQdProbeResults(null);
+                                setQdProbeTimer(data.timeLimit);
+                                setQdProbeActive(true);
+                                if (qdProbeTimerRef.current) clearInterval(qdProbeTimerRef.current);
+                                qdProbeTimerRef.current = setInterval(() => {
+                                    setQdProbeTimer(prev => {
+                                        if (prev <= 1) {
+                                            clearInterval(qdProbeTimerRef.current);
+                                            qdProbeTimerRef.current = null;
+                                            return 0;
+                                        }
+                                        return prev - 1;
+                                    });
+                                }, 1000);
+                            }}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-sky-500 text-white rounded-lg font-bold text-sm hover:from-cyan-600 hover:to-sky-600 transition-all shadow-md"
+                            >
+                                ▶ Start QD Probe
+                            </button>
+                        </div>
+                        {qdProbeActive && (
+                            <div className="mt-4 bg-white rounded-xl border-2 border-cyan-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-bold">⚖️ QD PROBE</span>
+                                        <span className="text-sm font-medium text-slate-600">Item {qdProbeIndex + 1} of {qdProbeProblems.length}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`tabular-nums px-3 py-1 rounded-full text-sm font-bold ${qdProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`}>
+                                            ⏱ {Math.floor(qdProbeTimer / 60)}:{String(qdProbeTimer % 60).padStart(2, '0')}
+                                        </span>
+                                        <button onClick={() => {
+                                            if (window.confirm("End probe early?")) {
+                                                clearInterval(qdProbeTimerRef.current);
+                                                qdProbeTimerRef.current = null;
+                                                const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
+                                                const correct = answered.filter(p => p.correct).length;
+                                                setQdProbeResults({ correct, total: answered.length, problems: qdProbeProblems, type: 'quantity_discrimination' });
+                                                setQdProbeActive(false);
+                                            }
+                                        }} className="text-xs text-red-500 hover:text-red-700 font-bold">⏹ End Early</button>
+                                    </div>
+                                </div>
+                                <div className="w-full bg-slate-100 rounded-full h-2 mb-4">
+                                    <div className="bg-cyan-500 h-2 rounded-full transition-all" style={{ width: `${(qdProbeIndex / qdProbeProblems.length) * 100}%` }} />
+                                </div>
+                                {qdProbeTimer > 0 && qdProbeIndex < qdProbeProblems.length ? (() => {
+                                    const problem = qdProbeProblems[qdProbeIndex];
+                                    return (
+                                        <div className="text-center">
+                                            <p className="text-sm text-slate-500 mb-4 font-medium">Which number is bigger?</p>
+                                            <div className="flex items-center justify-center gap-8">
+                                                {[problem.a, problem.b].map((num, i) => (
+                                                    <button key={i} onClick={() => {
+                                                        const chosen = num;
+                                                        const isCorrect = chosen === problem.answer;
+                                                        const updated = [...qdProbeProblems];
+                                                        updated[qdProbeIndex] = { ...updated[qdProbeIndex], studentAnswer: chosen, correct: isCorrect };
+                                                        setQdProbeProblems(updated);
+                                                        if (qdProbeIndex + 1 < qdProbeProblems.length) {
+                                                            setQdProbeIndex(qdProbeIndex + 1);
+                                                        } else {
+                                                            clearInterval(qdProbeTimerRef.current);
+                                                            qdProbeTimerRef.current = null;
+                                                            const correct = updated.filter(p => p.correct).length;
+                                                            setQdProbeResults({ correct, total: updated.length, problems: updated, type: 'quantity_discrimination' });
+                                                            setQdProbeActive(false);
+                                                        }
+                                                    }} className="w-28 h-28 text-4xl font-bold rounded-2xl border-4 border-cyan-200 bg-white hover:border-cyan-500 hover:bg-cyan-50 hover:scale-110 transition-all shadow-lg cursor-pointer">
+                                                        {num}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })() : (
+                                    <div className="text-center py-4">
+                                        <p className="text-lg font-bold text-red-600">⏰ Time's Up!</p>
+                                        {(() => {
+                                            const answered = qdProbeProblems.filter(p => p.studentAnswer !== null);
+                                            const correct = answered.filter(p => p.correct).length;
+                                            if (!qdProbeResults) {
+                                                setQdProbeResults({ correct, total: answered.length, problems: qdProbeProblems, type: 'quantity_discrimination' });
+                                                setQdProbeActive(false);
+                                            }
+                                            return null;
+                                        })()}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {qdProbeResults && (
+                            <div className="mt-4 bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl border border-cyan-200 p-4">
+                                <h4 className="font-bold text-slate-700 mb-2">⚖️ Quantity Discrimination Results</h4>
+                                <div className="grid grid-cols-3 gap-3 text-center mb-3">
+                                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                                        <div className="text-2xl font-bold text-green-600">{qdProbeResults.correct}</div>
+                                        <div className="text-xs text-slate-500">Correct</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                                        <div className="text-2xl font-bold text-slate-700">{qdProbeResults.total}</div>
+                                        <div className="text-xs text-slate-500">Attempted</div>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                                        <div className="text-2xl font-bold text-cyan-600">{qdProbeResults.total > 0 ? Math.round((qdProbeResults.correct / qdProbeResults.total) * 100) : 0}%</div>
+                                        <div className="text-xs text-slate-500">Accuracy</div>
+                                    </div>
+                                </div>
+                                {mathProbeStudent && (
+                                    <button onClick={() => {
+                                        setLatestProbeResult({
+                                            student: mathProbeStudent,
+                                            type: 'quantity_discrimination',
+                                            date: new Date().toISOString(),
+                                            correct: qdProbeResults.correct,
+                                            total: qdProbeResults.total,
+                                            accuracy: qdProbeResults.total > 0 ? Math.round((qdProbeResults.correct / qdProbeResults.total) * 100) : 0,
+                                            grade: mathProbeGrade,
+                                            form: mathProbeForm
+                                        });
+                                        addToast(`QD results saved for ${mathProbeStudent}`, 'success');
+                                    }} className="w-full mt-2 px-4 py-2 bg-cyan-500 text-white rounded-lg font-bold text-sm hover:bg-cyan-600 transition-colors">
+                                        💾 Save to Student Record
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">🔤</span>
+                            <h3 className="text-sm font-bold text-slate-700">Nonsense Word Fluency (NWF)</h3>
+                            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">K-1</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Student reads CVC pseudowords aloud (e.g., "sig", "bim", "tob"). Scored as Correct Letter Sounds (CLS) per minute. Tests phonetic decoding.</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label="NWF grade" value={mathProbeGrade || "K"} onChange={(e) => setMathProbeGrade(e.target.value)}
+                                className="text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                                <option value="K">Grade K</option>
+                                <option value="1">Grade 1</option>
+                            </select>
+                            <select aria-label="NWF form" value={mathProbeForm || "A"} onChange={(e) => setMathProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <div className="text-xs text-emerald-600 font-medium">
+                                {window.NWF_PROBE_BANKS ? `✅ ${window.NWF_PROBE_BANKS[mathProbeGrade || "K"]?.[mathProbeForm || "A"]?.words?.length || 0} words loaded` : "⏳ Loading..."}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-4 mb-4 border border-rose-200">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">🅰️</span>
+                            <h3 className="text-sm font-bold text-slate-700">Letter Naming Fluency (LNF)</h3>
+                            <span className="text-[10px] font-bold text-rose-500 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider">K</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Student names randomly arranged uppercase and lowercase letters. Scored as letters per minute. Tests basic letter recognition.</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label="LNF form" value={mathProbeForm || "A"} onChange={(e) => setMathProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-rose-200 rounded-lg px-3 py-2 bg-rose-50 text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300">
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <div className="text-xs text-rose-600 font-medium">
+                                {window.LNF_PROBE_BANKS ? `✅ ${window.LNF_PROBE_BANKS["K"]?.[mathProbeForm || "A"]?.letters?.length || 0} letters loaded` : "⏳ Loading..."}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 mb-4 border border-amber-200">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-base">⚡</span>
+                            <h3 className="text-sm font-bold text-slate-700">Rapid Automatized Naming (RAN)</h3>
+                            <span className="text-[10px] font-bold text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider">K-2</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-3">Student names colors (K), letters (1), or numbers (2) as fast as possible. Measures processing speed — a key predictor of reading fluency.</p>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <select aria-label="RAN grade" value={mathProbeGrade || "K"} onChange={(e) => setMathProbeGrade(e.target.value)}
+                                className="text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300">
+                                <option value="K">Grade K (Colors)</option>
+                                <option value="1">Grade 1 (Letters)</option>
+                                <option value="2">Grade 2 (Numbers)</option>
+                            </select>
+                            <select aria-label="RAN form" value={mathProbeForm || "A"} onChange={(e) => setMathProbeForm(e.target.value)}
+                                className="text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-amber-50 text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300">
+                                <option value="A">Form A (Fall)</option>
+                                <option value="B">Form B (Winter)</option>
+                                <option value="C">Form C (Spring)</option>
+                            </select>
+                            <div className="text-xs text-amber-600 font-medium">
+                                {window.RAN_PROBE_BANKS && window.RAN_PROBE_BANKS[mathProbeGrade || "K"]?.[mathProbeForm || "A"] ? `✅ ${window.RAN_PROBE_BANKS[mathProbeGrade || "K"][mathProbeForm || "A"].type} · ${window.RAN_PROBE_BANKS[mathProbeGrade || "K"][mathProbeForm || "A"].items.length} items` : "⏳ Loading..."}
+                            </div>
+                        </div>
+                    </div>
+                    {importedStudents.length > 0 && (
+                        <div className="flex gap-2 mb-3 items-center">
+                            <button
+                                onClick={generateRTICSV}
+                                aria-label={t('common.export_rti_progress_report_as_csv')}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-bold text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md"
+                            >
+                                📊 Export RTI Report
+                            </button>
+                            <span className="text-xs text-slate-500">Download CSV with tier classifications, metrics, and recommendations</span>
+                        </div>
+                    )}
+                    {importedStudents.length === 0 ? (
+                        <div className="text-center py-12 text-slate-500">
+                            <Users size={48} className="mx-auto mb-3 opacity-30" />
+                            <p>{t('class_analytics.no_data')}</p>
+                            <p className="text-sm mt-1">{t('class_analytics.import_hint')}</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto" data-help-key="dashboard_student_table">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-slate-100 text-left">
+                                        {[
+                                            { key: 'name', label: t('class_analytics.student_name'), align: 'left', round: 'rounded-l-lg' },
+                                            { key: 'rtiTier', label: 'RTI' },
+                                            { key: 'quizAvg', label: t('class_analytics.quiz_avg') },
+                                            { key: 'adventureXP', label: t('class_analytics.adventure_xp') },
+                                            { key: 'escapeCompletion', label: t('class_analytics.escape_completion') },
+                                            { key: 'fluencyWCPM', label: t('class_analytics.fluency_wcpm') },
+                                            { key: 'interviewXP', label: t('class_analytics.interview_xp') },
+                                            ...(safetyFlaggingVisible ? [{ key: 'flags', label: t('class_analytics.safety_flags') }] : []),
+                                            { key: 'focusRatio', label: '🔥 Focus' },
+                                            { key: 'totalActivities', label: t('class_analytics.total_activities'), round: 'rounded-r-lg' }
+                                        ].map(col => (
+                                            <th key={col.key}
+                                                onClick={() => handleSort(col.key)}
+                                                className={`p-2 ${col.align !== 'left' ? 'text-center' : ''} ${col.round || ''} cursor-pointer hover:bg-slate-200 select-none transition-colors`}
+                                            >
+                                                {col.label} {sortColumn === col.key ? (sortDirection === 'asc' ? ' \u25B2' : ' \u25BC') : ''}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sortedAndFiltered.map(student => (
+                                        <tr
+                                            key={student.id}
+                                            data-help-key="dashboard_student_row"
+                                            className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+                                            onClick={() => setSelectedStudent(student)}
+                                        >
+                                            <td className="p-2 font-medium">
+                                                {student.isLive && <span title={t('common.live_sync')} style={{ fontSize: '10px', marginRight: '4px', verticalAlign: 'middle' }}>📡</span>}
+                                                {student.name}
+                                            </td>
+                                            <td className="p-2 text-center">{(() => { const rti = classifyRTITier(student.stats); return <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '12px', background: rti.bg, color: rti.color, border: `1px solid ${rti.border}` }}>{rti.emoji} {rti.tier}</span>; })()}</td>
+                                            <td className="p-2 text-center">{student.stats.quizAvg}%</td>
+                                            <td className="p-2 text-center">{student.stats.adventureXP}</td>
+                                            <td className="p-2 text-center">{student.stats.escapeCompletion}%</td>
+                                            <td className="p-2 text-center">{student.stats.fluencyWCPM}</td>
+                                            <td className="p-2 text-center">{student.stats.interviewXP}</td>
+                                            <td className="p-2 text-center">{student.stats.focusRatio != null ? <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '12px', background: student.stats.focusRatio >= 80 ? '#dcfce7' : student.stats.focusRatio >= 50 ? '#fef9c3' : '#fee2e2', color: student.stats.focusRatio >= 80 ? '#166534' : student.stats.focusRatio >= 50 ? '#854d0e' : '#991b1b' }}>{student.stats.focusRatio}%</span> : <span className="text-slate-300">—</span>}</td>
+                                            {safetyFlaggingVisible && <td className="p-2 text-center">
+                                                {(() => {
+                                                    const flagCount = student.safetyFlags?.length || 0;
+                                                    const liveFlagCount = student.data?.flagSummary?.total || 0;
+                                                    const totalFlags = flagCount + liveFlagCount;
+                                                    const hasCritical = student.safetyFlags?.some(f => f.severity === 'critical') || student.data?.flagSummary?.hasCritical;
+                                                    if (totalFlags > 0) {
+                                                        return <span className={`${hasCritical ? 'bg-red-200 text-red-800 ring-2 ring-red-300' : 'bg-rose-100 text-rose-700'} px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 justify-center`}
+                                                            title={student.isLive && student.data?.flagSummary ? `Live flags: ${Object.entries(student.data.flagSummary.categories || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}` : ''}>
+                                                            {hasCritical ? '🚨' : <AlertCircle size={12} />} {totalFlags}
+                                                        </span>;
+                                                    }
+                                                    return <span className="text-slate-500">—</span>;
+                                                })()}
+                                            </td>}
+                                            <td className="p-2 text-center">{student.stats.totalActivities}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+                {selectedStudent && (
+                    <div className="absolute inset-0 bg-white flex flex-col">
+                        <div className="p-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    aria-label={t('common.previous')}
+                                    data-help-key="dashboard_detail_back"
+                                    onClick={() => setSelectedStudent(null)}
+                                    className="p-1 hover:bg-slate-100 rounded"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <h3 className="font-bold text-lg">{selectedStudent.name}</h3>
+                            </div>
+                            <button
+                                onClick={() => generateStudentProgressReport(selectedStudent)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-bold text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
+                                data-help-key="dashboard_print_parent_report"
+                                aria-label={t('common.print_parent_friendly_progress_report')}
+                            >
+                                <Printer size={14} /> Print Parent Report
+                                <button
+                                    onClick={() => generateStudentFriendlyReport({
+                                        history: selectedStudent.history || [],
+                                        wordSoundsHistory: selectedStudent.wordSoundsHistory || [],
+                                        phonemeMastery: selectedStudent.phonemeMastery || {},
+                                        wordSoundsBadges: selectedStudent.wordSoundsBadges || {},
+                                        gameCompletions: selectedStudent.gameCompletions || [],
+                                        globalPoints: selectedStudent.stats?.adventureXP || 0,
+                                        globalLevel: selectedStudent.stats?.level || 1,
+                                        progressSnapshots: (rosterKey?.progressHistory?.[selectedStudent.name]) || [],
+                                        dateRange: { start: reportStartDate, end: reportEndDate },
+                                        studentName: selectedStudent.name
+                                    })}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-bold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
+                                    title="Download a growth-focused report suitable for sharing with the student"
+                                >
+                                    <Download size={14} /> Student Report
+                                </button>
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {(() => {
+                                const rti = classifyRTITier(selectedStudent.stats);
+                                const s = selectedStudent.stats;
+                                const metrics = [
+                                    { label: 'Quiz Average', value: s.quizAvg + '%', color: s.quizAvg >= 80 ? '#16a34a' : s.quizAvg >= 50 ? '#d97706' : '#dc2626', icon: '📝' },
+                                    { label: 'WS Accuracy', value: s.wsAccuracy + '%', color: s.wsAccuracy >= 75 ? '#16a34a' : s.wsAccuracy >= 50 ? '#d97706' : '#dc2626', icon: '🔊' },
+                                    { label: 'Fluency', value: s.fluencyWCPM + ' WCPM', color: s.fluencyWCPM >= 100 ? '#16a34a' : s.fluencyWCPM >= 60 ? '#d97706' : '#dc2626', icon: '📖' },
+                                    { label: 'Games', value: s.gamesPlayed, color: s.gamesPlayed >= 5 ? '#16a34a' : s.gamesPlayed >= 2 ? '#d97706' : '#dc2626', icon: '🎮' },
+                                    { label: 'Activities', value: s.totalActivities, color: s.totalActivities >= 5 ? '#16a34a' : s.totalActivities >= 2 ? '#d97706' : '#dc2626', icon: '📊' },
+                                    { label: 'Label Challenge', value: s.labelChallengeAvg + '%', color: s.labelChallengeAvg >= 80 ? '#16a34a' : s.labelChallengeAvg >= 50 ? '#d97706' : '#dc2626', icon: '🏷️' }
+                                ];
+                                const fluencyData = selectedStudent.data?.fluencyAssessments?.map(a => a.wcpm || 0) || [];
+                                const gameScores = selectedStudent.data?.gameCompletions
+                                    ? Object.values(selectedStudent.data.gameCompletions).flat().map(e => e.score ?? e.accuracy ?? 0)
+                                    : [];
+                                const renderSparkline = (data, color, aimlineData) => {
+                                    if (data.length < 2) return null;
+                                    const allValues = [...data];
+                                    if (aimlineData) { allValues.push(aimlineData.baseline, aimlineData.target); }
+                                    const max = Math.max(...allValues, 1);
+                                    const min = Math.min(...allValues, 0);
+                                    const range = max - min || 1;
+                                    const w = 100, h = 30;
+                                    const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 4) - 2}`).join(' ');
+                                    const trend = data[data.length - 1] >= data[0] ? '↑' : '↓';
+                                    let aimlineCoords = null;
+                                    if (aimlineData && aimlineData.baseline != null && aimlineData.target != null) {
+                                        const y1 = h - ((aimlineData.baseline - min) / range) * (h - 4) - 2;
+                                        const y2 = h - ((aimlineData.target - min) / range) * (h - 4) - 2;
+                                        aimlineCoords = { x1: 0, y1, x2: w, y2 };
+                                    }
+                                    return (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+                                                {aimlineCoords && (
+                                                    <line x1={aimlineCoords.x1} y1={aimlineCoords.y1} x2={aimlineCoords.x2} y2={aimlineCoords.y2}
+                                                        stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
+                                                )}
+                                                <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                {data.map((v, i) => (
+                                                    <circle key={i} cx={(i / (data.length - 1)) * w} cy={h - ((v - min) / range) * (h - 4) - 2} r="2.5" fill={color} />
+                                                ))}
+                                            </svg>
+                                            <span style={{ fontSize: '14px', fontWeight: 700, color: trend === '↑' ? '#16a34a' : '#dc2626' }}>{trend}</span>
+                                            {aimlineCoords && <span style={{ fontSize: '9px', fontWeight: 600, color: '#f59e0b' }}>⎯⎯</span>}
+                                        </div>
+                                    );
+                                };
+                                return (
+                                    <div data-help-key="dashboard_rti_monitor" className="mb-4 p-4 rounded-xl border-2" style={{ background: `linear-gradient(135deg, ${rti.bg} 0%, white 100%)`, borderColor: rti.border }}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <span style={{ fontSize: '28px' }}>{rti.emoji}</span>
+                                                <div>
+                                                    <div style={{ fontSize: '16px', fontWeight: 800, color: rti.color }}>{rti.label}</div>
+                                                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>RTI Progress Monitor</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                                                {new Date().toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 mb-3">
+                                            {metrics.map((m, i) => (
+                                                <div key={i} className="bg-white rounded-lg p-2 text-center border" style={{ borderColor: m.color + '33' }}>
+                                                    <div style={{ fontSize: '10px', marginBottom: '2px' }}>{m.icon}</div>
+                                                    <div style={{ fontSize: '16px', fontWeight: 800, color: m.color }}>{m.value}</div>
+                                                    <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{m.label}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {(fluencyData.length >= 2 || gameScores.length >= 2) && (
+                                            <div className="grid grid-cols-2 gap-2 mb-3">
+                                                {fluencyData.length >= 2 && (
+                                                    <div className="bg-white rounded-lg p-2 border border-slate-100">
+                                                        <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', marginBottom: '4px' }}>📖 Fluency Trend</div>
+                                                        {renderSparkline(fluencyData, '#6366f1', rtiGoals[selectedStudent.name] ? { baseline: rtiGoals[selectedStudent.name].baseline, target: rtiGoals[selectedStudent.name].target } : null)}
+                                                    </div>
+                                                )}
+                                                {gameScores.length >= 2 && (
+                                                    <div className="bg-white rounded-lg p-2 border border-slate-100">
+                                                        <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', marginBottom: '4px' }}>🎮 Game Scores Trend</div>
+                                                        {renderSparkline(gameScores, '#8b5cf6')}
+                                                    </div>
+                                                )}
+                                                {mathFluencyHistory.length >= 2 && (
+                                                    <div className="bg-white rounded-lg p-2 border border-slate-100">
+                                                        <div style={{ fontSize: "10px", fontWeight: 700, color: "#64748b", marginBottom: "4px" }}>🔢 Math DCPM Trend</div>
+                                                        {renderSparkline(mathFluencyHistory.map(h => h.dcpm), "#f59e0b")}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {(() => {
+
+                                            var codename = selectedStudent.name;
+
+                                            var longData = rosterKey && rosterKey.progressHistory && rosterKey.progressHistory[codename];
+
+                                            if (!longData || longData.length < 2) return null;
+
+                                            var quizTrend = longData.map(function (s) { return s.quizAvg; }).filter(function (v) { return v > 0; });
+
+                                            var wsTrend = longData.map(function (s) { return s.wsAccuracy; }).filter(function (v) { return v > 0; });
+
+                                            var fluencyTrend = longData.map(function (s) { return s.fluencyWCPM; }).filter(function (v) { return v > 0; });
+
+                                            var hasAny = quizTrend.length >= 2 || wsTrend.length >= 2 || fluencyTrend.length >= 2;
+
+                                            if (!hasAny) return null;
+
+                                            return React.createElement("div", { className: "mb-4 p-3 rounded-xl border-2 border-purple-200", style: { background: "linear-gradient(135deg, #faf5ff 0%, white 100%)" } },
+
+                                                React.createElement("div", { style: { fontSize: "11px", fontWeight: 800, color: "#7c3aed", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" } },
+
+                                                    "📈 Longitudinal Progress (" + longData.length + " sessions)"
+
+                                                ),
+
+                                                React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+
+                                                    quizTrend.length >= 2 ? React.createElement("div", { className: "bg-white rounded-lg p-2 border border-purple-100" },
+
+                                                        React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: "#64748b", marginBottom: "4px" } }, "📝 Quiz Avg"),
+
+                                                        renderSparkline(quizTrend, "#8b5cf6")
+
+                                                    ) : null,
+
+                                                    wsTrend.length >= 2 ? React.createElement("div", { className: "bg-white rounded-lg p-2 border border-purple-100" },
+
+                                                        React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: "#64748b", marginBottom: "4px" } }, "🔊 WS Accuracy"),
+
+                                                        renderSparkline(wsTrend, "#6366f1")
+
+                                                    ) : null,
+
+                                                    fluencyTrend.length >= 2 ? React.createElement("div", { className: "bg-white rounded-lg p-2 border border-purple-100" },
+
+                                                        React.createElement("div", { style: { fontSize: "10px", fontWeight: 700, color: "#64748b", marginBottom: "4px" } }, "📖 Fluency WCPM"),
+
+                                                        renderSparkline(fluencyTrend, "#0ea5e9",
+
+                                                            rtiGoals[codename] ? { baseline: rtiGoals[codename].baseline, target: rtiGoals[codename].target } : null
+
+                                                        )
+
+                                                    ) : null
+
+                                                ),
+
+                                                React.createElement("div", { style: { fontSize: "9px", color: "#94a3b8", marginTop: "6px", textAlign: "right" } },
+
+                                                    "First: " + longData[0].date + " → Latest: " + longData[longData.length - 1].date
+
+                                                )
+
+                                            );
+
+                                        })()}
+
+                                        <div className="mb-2">
+                                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>Assessment Basis:</div>
+                                            <div className="flex flex-wrap gap-1">
+                                                {rti.reasons.map((r, i) => (
+                                                    <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: rti.bg, color: rti.color, fontWeight: 600, border: `1px solid ${rti.border}` }}>
+                                                        {r}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>💡 Recommendations:</div>
+                                            <ul style={{ fontSize: '12px', color: '#334155', margin: 0, paddingLeft: '16px', lineHeight: 1.6 }}>
+                                                {rti.recommendations.map((r, i) => (
+                                                    <li key={i}>{r}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
+                                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#4338ca', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                🎯 WCPM Goal Setting
+                                            </div>
+                                            {(() => {
+                                                const studentGoal = rtiGoals[selectedStudent.name];
+                                                const fluencyData = selectedStudent.data?.fluencyAssessments?.map(a => ({ value: a.wcpm || 0, date: a.timestamp || a.date })) || [];
+                                                const latestWCPM = fluencyData.length > 0 ? fluencyData[fluencyData.length - 1].value : 0;
+                                                const aimline = studentGoal ? calculateAimline(studentGoal, fluencyData) : null;
+                                                return (
+                                                    <div>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '8px' }}>
+                                                            <div>
+                                                                <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Baseline</label>
+                                                                <input type="number" placeholder={latestWCPM || '—'} defaultValue={studentGoal?.baseline || ''}
+                                                                    id={`rti-baseline-${selectedStudent.name}`}
+                                                                    style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '13px', fontWeight: 600 }}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Target WCPM</label>
+                                                                <input type="number" placeholder="e.g. 72" defaultValue={studentGoal?.target || ''}
+                                                                    id={`rti-target-${selectedStudent.name}`}
+                                                                    style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '13px', fontWeight: 600 }}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Target Date</label>
+                                                                <input type="date" defaultValue={studentGoal?.targetDate || ''}
+                                                                    id={`rti-date-${selectedStudent.name}`}
+                                                                    style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px', fontWeight: 600 }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => {
+                                                                const b = document.getElementById(`rti-baseline-${selectedStudent.name}`)?.value;
+                                                                const t2 = document.getElementById(`rti-target-${selectedStudent.name}`)?.value;
+                                                                const d = document.getElementById(`rti-date-${selectedStudent.name}`)?.value;
+                                                                if (b && t2 && d) {
+                                                                    saveRtiGoal(selectedStudent.name, { baseline: parseInt(b), target: parseInt(t2), targetDate: d, metric: 'wcpm', baselineDate: new Date().toISOString() });
+                                                                    addToast('RTI goal saved for ' + selectedStudent.name, 'success');
+                                                                } else {
+                                                                    addToast('Please fill in all three fields', 'warning');
+                                                                }
+                                                            }}
+                                                            style={{ fontSize: '11px', fontWeight: 700, color: 'white', background: '#4f46e5', border: 'none', borderRadius: '6px', padding: '5px 12px', cursor: 'pointer', marginBottom: '6px' }}
+                                                        >
+                                                            Save Goal
+                                                        </button>
+                                                        {aimline && (
+                                                            <div style={{ marginTop: '6px' }}>
+                                                                <div style={{ fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                                                                    📈 Aimline: {studentGoal.baseline} → {studentGoal.target} WCPM over {aimline.totalWeeks} weeks
+                                                                    {aimline.slope > 0 && <span style={{ color: '#16a34a' }}> (+{aimline.slope.toFixed(1)}/wk)</span>}
+                                                                </div>
+                                                                {aimline.alert === 'critical' && (
+                                                                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#dc2626', background: '#fee2e2', padding: '6px 10px', borderRadius: '6px', border: '1px solid #fca5a5' }}>
+                                                                        🔴 6+ data points below aimline — Tier change recommended
+                                                                    </div>
+                                                                )}
+                                                                {aimline.alert === 'warning' && (
+                                                                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#d97706', background: '#fef9c3', padding: '6px 10px', borderRadius: '6px', border: '1px solid #fcd34d' }}>
+                                                                        🟡 4+ data points below aimline — Consider adjusting intervention
+                                                                    </div>
+                                                                )}
+                                                                {aimline.alert === 'ok' && studentGoal && (
+                                                                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', background: '#dcfce7', padding: '6px 10px', borderRadius: '6px', border: '1px solid #86efac' }}>
+                                                                        🟢 On track toward goal
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                        <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
+                                            <div style={{ fontSize: "11px", fontWeight: 700, color: "#7c3aed", marginBottom: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+                                                ⚙️ Decision Rule Settings
+                                            </div>
+                                            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                                                <select
+                                                    aria-label={t('common.decision_rule_method')}
+                                                    value={rtiDecisionRuleMethod}
+                                                    onChange={(e) => setRtiDecisionRuleMethod(e.target.value)}
+                                                    style={{ fontSize: "10px", padding: "3px 6px", borderRadius: "6px", border: "1px solid #e2e8f0", fontWeight: 600 }}
+                                                >
+                                                    <option value="four_point">Four-Point Analysis</option>
+                                                    <option value="trend_line">Trend Line Comparison</option>
+                                                    <option value="median_3">Median of Last 3</option>
+                                                </select>
+                                                {rtiDecisionRuleMethod === "four_point" && (
+                                                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                                        <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 600 }}>Threshold:</span>
+                                                        <select
+                                                            aria-label={t('common.decision_threshold')}
+                                                            value={rtiDecisionRuleThreshold}
+                                                            onChange={(e) => setRtiDecisionRuleThreshold(parseInt(e.target.value))}
+                                                            style={{ fontSize: "10px", padding: "2px 4px", borderRadius: "4px", border: "1px solid #e2e8f0", fontWeight: 600 }}
+                                                        >
+                                                            <option value={3}>3 points</option>
+                                                            <option value={4}>4 points</option>
+                                                            <option value={5}>5 points</option>
+                                                            <option value={6}>6 points</option>
+                                                        </select>
+                                                    </div>
+                                                )}
+                                                <span style={{ fontSize: "9px", color: "#94a3b8", fontStyle: "italic" }}>NCII recommended</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
+                                            <div style={{ fontSize: '11px', fontWeight: 700, color: '#0e7490', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                📝 Intervention Log
+                                            </div>
+                                            {(interventionLogs[selectedStudent.name] || []).length > 0 && (
+                                                <div style={{ marginBottom: '8px' }}>
+                                                    {(interventionLogs[selectedStudent.name] || []).map((log) => (
+                                                        <div key={log.id} style={{ fontSize: '11px', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '8px', padding: '8px', marginBottom: '4px', position: 'relative' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                                                <div>
+                                                                    <span style={{ fontWeight: 700, color: '#0e7490' }}>{log.program}</span>
+                                                                    <span style={{ color: '#64748b', marginLeft: '8px' }}>{log.frequency}, {log.minutes} min, group of {log.groupSize}</span>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => deleteInterventionLog(selectedStudent.name, log.id)}
+                                                                    style={{ fontSize: '10px', color: '#94a3b8', cursor: 'pointer', background: 'none', border: 'none', padding: '2px' }}
+                                                                    aria-label={t('common.delete_log')}
+                                                                >✕</button>
+                                                            </div>
+                                                            {log.notes && <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px', fontStyle: 'italic' }}>"{log.notes}"</div>}
+                                                            <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>Started: {log.startDate} • Logged: {new Date(log.createdAt).toLocaleDateString()}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '6px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Program/Curriculum</label>
+                                                    <input type="text" placeholder="e.g. Wilson Reading" id={`intv-program-${selectedStudent.name}`}
+                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Frequency</label>
+                                                    <select id={`intv-freq-${selectedStudent.name}`}
+                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }}>
+                                                        <option value="daily">Daily</option>
+                                                        <option value="3x/week">3x/week</option>
+                                                        <option value="2x/week">2x/week</option>
+                                                        <option value="weekly">Weekly</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Minutes/Session</label>
+                                                    <input type="number" placeholder="30" id={`intv-min-${selectedStudent.name}`}
+                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Group Size</label>
+                                                    <input type="number" placeholder="4" id={`intv-group-${selectedStudent.name}`}
+                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }} />
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '6px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Start Date</label>
+                                                    <input type="date" id={`intv-date-${selectedStudent.name}`}
+                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '2px' }}>Notes</label>
+                                                    <input type="text" placeholder={t('common.placeholder_optional_notes')} id={`intv-notes-${selectedStudent.name}`}
+                                                        style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '4px 8px', fontSize: '12px' }} />
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const program = document.getElementById(`intv-program-${selectedStudent.name}`)?.value;
+                                                    const frequency = document.getElementById(`intv-freq-${selectedStudent.name}`)?.value;
+                                                    const minutes = document.getElementById(`intv-min-${selectedStudent.name}`)?.value;
+                                                    const groupSize = document.getElementById(`intv-group-${selectedStudent.name}`)?.value;
+                                                    const startDate = document.getElementById(`intv-date-${selectedStudent.name}`)?.value;
+                                                    const notes = document.getElementById(`intv-notes-${selectedStudent.name}`)?.value;
+                                                    if (program && frequency) {
+                                                        saveInterventionLog(selectedStudent.name, { program, frequency, minutes: minutes || '30', groupSize: groupSize || '1', startDate: startDate || new Date().toISOString().split('T')[0], notes });
+                                                        addToast('Intervention logged for ' + selectedStudent.name, 'success');
+                                                        ['program', 'freq', 'min', 'group', 'date', 'notes'].forEach(f => {
+                                                            const el = document.getElementById(`intv-${f}-${selectedStudent.name}`);
+                                                            if (el) el.value = '';
+                                                        });
+                                                    } else {
+                                                        addToast('Program name and frequency are required', 'warning');
+                                                    }
+                                                }}
+                                                style={{ fontSize: '11px', fontWeight: 700, color: 'white', background: '#0e7490', border: 'none', borderRadius: '6px', padding: '5px 12px', cursor: 'pointer' }}
+                                            >
+                                                Log Intervention
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                            {selectedStudent.safetyFlags.length > 0 && (
+                                <div
+                                    data-help-key="dashboard_detail_safety"
+                                    className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                                    <h4 className="font-bold text-rose-700 mb-2 flex items-center gap-2">
+                                        <AlertCircle size={16} />
+                                        {t('class_analytics.flags_detected', { count: selectedStudent.safetyFlags.length })}
+                                    </h4>
+                                    <div className="space-y-2">
+                                        {(selectedStudent?.safetyFlags || []).map((flag, idx) => (
+                                            <div key={idx} className="bg-white p-2 rounded-lg border border-rose-100 text-sm">
+                                                <div className="font-medium text-rose-600">
+                                                    {SafetyContentChecker.getCategoryLabel(flag.category, t)}
+                                                </div>
+                                                <div className="text-slate-600 text-xs mt-1 italic">
+                                                    "{flag.context}..."
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {selectedStudent.data?.fluencyAssessments?.length > 0 && (
+                                <div className="mb-4 space-y-3">
+                                    {(() => {
+                                        const latest = selectedStudent.data.fluencyAssessments[selectedStudent.data.fluencyAssessments.length - 1];
+                                        if (!latest?.wordData) return null;
+                                        const rr = typeof calculateRunningRecordMetrics === 'function' ? calculateRunningRecordMetrics(latest.wordData, latest.insertions || []) : null;
+                                        if (!rr) return null;
+                                        return (
+                                            <div data-help-key="dashboard_detail_running_record" className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+                                                <h4 className="font-bold text-indigo-700 mb-3 flex items-center gap-2">
+                                                    <BarChart2 size={16} />
+                                                    {t('class_analytics.running_record') || 'Running Record'}
+                                                </h4>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                                    <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
+                                                        <div className="text-lg font-bold text-rose-600">{rr.substitutions}</div>
+                                                        <div className="text-xs text-slate-500">{t('fluency.substitutions') || 'Substitutions'}</div>
+                                                    </div>
+                                                    <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
+                                                        <div className="text-lg font-bold text-orange-600">{rr.omissions}</div>
+                                                        <div className="text-xs text-slate-500">{t('fluency.omissions') || 'Omissions'}</div>
+                                                    </div>
+                                                    <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
+                                                        <div className="text-lg font-bold text-purple-600">{rr.insertions}</div>
+                                                        <div className="text-xs text-slate-500">{t('fluency.insertions_label') || 'Insertions'}</div>
+                                                    </div>
+                                                    <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
+                                                        <div className="text-lg font-bold text-blue-600">{rr.selfCorrections}</div>
+                                                        <div className="text-xs text-slate-500">{t('fluency.self_corrections') || 'Self-Corrections'}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
+                                                    <span><strong>{t('fluency.error_rate') || 'Error Rate'}:</strong> 1:{rr.errorRate}</span>
+                                                    <span><strong>{t('fluency.sc_rate') || 'SC Rate'}:</strong> {rr.scRate}</span>
+                                                    <span className={`px-2 py-0.5 rounded-full font-medium ${rr.accuracy >= 95 ? 'bg-emerald-100 text-emerald-700' : rr.accuracy >= 90 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                        {rr.accuracy >= 95 ? (t('fluency.independent') || 'Independent') : rr.accuracy >= 90 ? (t('fluency.instructional') || 'Instructional') : (t('fluency.frustrational') || 'Frustrational')} ({rr.accuracy}%)
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                    {selectedStudent.data.fluencyAssessments.length >= 2 && (
+                                        <div className="bg-white border border-slate-200 rounded-xl p-4" style={{ height: '220px' }}>
+                                            <canvas ref={trendChartRef}></canvas>
+                                        </div>
+                                    )}
+                                    {(() => {
+                                        const latest = selectedStudent.data.fluencyAssessments[selectedStudent.data.fluencyAssessments.length - 1];
+                                        if (!latest?.wcpm || typeof getBenchmarkComparison !== 'function') return null;
+                                        const result = getBenchmarkComparison(latest.wcpm, '2', 'winter');
+                                        if (!result) return null;
+                                        const levelColors = { above: 'bg-emerald-100 text-emerald-700 border-emerald-200', at: 'bg-green-100 text-green-700 border-green-200', approaching: 'bg-amber-100 text-amber-700 border-amber-200', below: 'bg-rose-100 text-rose-700 border-rose-200' };
+                                        return (
+                                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium ${levelColors[result.level] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                                <span>{t('class_analytics.benchmark_vs') || 'vs. Benchmark'}:</span>
+                                                <span className="font-bold">{latest.wcpm} WCPM</span>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            )}
+                            {selectedStudent.data?.wordSoundsState && (selectedStudent.data.wordSoundsState.history?.length > 0 || selectedStudent.data.wordSoundsState.sessionScore) && (
+                                <div
+                                    data-help-key="dashboard_detail_word_sounds"
+                                    className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                    <h4 className="font-bold text-emerald-700 mb-3 flex items-center gap-2">
+                                        🔤 Word Sounds Performance
+                                    </h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        {selectedStudent.stats?.wsAccuracy > 0 && (
+                                            <div className="bg-white rounded-lg p-2 text-center border border-emerald-100">
+                                                <div className="text-lg font-bold text-emerald-600">{selectedStudent.stats.wsAccuracy}%</div>
+                                                <div className="text-xs text-slate-500">Accuracy</div>
+                                            </div>
+                                        )}
+                                        {selectedStudent.stats?.wsWordsCompleted > 0 && (
+                                            <div className="bg-white rounded-lg p-2 text-center border border-emerald-100">
+                                                <div className="text-lg font-bold text-teal-600">{selectedStudent.stats.wsWordsCompleted}</div>
+                                                <div className="text-xs text-slate-500">Words Completed</div>
+                                            </div>
+                                        )}
+                                        {selectedStudent.stats?.wsBestStreak > 0 && (
+                                            <div className="bg-white rounded-lg p-2 text-center border border-emerald-100">
+                                                <div className="text-lg font-bold text-amber-600">{selectedStudent.stats.wsBestStreak}🔥</div>
+                                                <div className="text-xs text-slate-500">Best Streak</div>
+                                            </div>
+                                        )}
+                                        {selectedStudent.data.wordSoundsState.phonemeMastery && Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length > 0 && (
+                                            <div className="bg-white rounded-lg p-2 text-center border border-emerald-100">
+                                                <div className="text-lg font-bold text-purple-600">{Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length}</div>
+                                                <div className="text-xs text-slate-500">Phonemes Practiced</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {selectedStudent.data.wordSoundsState.badges?.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {selectedStudent.data.wordSoundsState.badges.map((badge, bi) => (
+                                                <span key={bi} className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
+                                                    {typeof badge === 'string' ? badge : badge.name || '🏆'}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {selectedStudent.stats?.gamesPlayed > 0 && (
+                                <div
+                                    data-help-key="dashboard_detail_games"
+                                    className="mb-4 p-4 bg-violet-50 border border-violet-200 rounded-xl">
+                                    <h4 className="font-bold text-violet-700 mb-3 flex items-center gap-2">
+                                        🎮 Game Performance ({selectedStudent.stats.gamesPlayed} total plays)
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                        {[
+                                            { key: 'memoryGame', label: 'Memory', icon: '🧠' },
+                                            { key: 'matchingGame', label: 'Matching', icon: '🔗' },
+                                            { key: 'syntaxScramble', label: 'Syntax Scramble', icon: '📝' },
+                                            { key: 'crosswordGame', label: 'Crossword', icon: '✏️' },
+                                            { key: 'timelineGame', label: 'Timeline', icon: '📅' },
+                                            { key: 'conceptSortGame', label: 'Concept Sort', icon: '🗂️' },
+                                            { key: 'vennDiagram', label: 'Venn Diagram', icon: '⭕' },
+                                            { key: 'bingo', label: 'Bingo', icon: '🎯' },
+                                            { key: 'wordScramble', label: 'Word Scramble', icon: '🔤' }
+                                        ].filter(g => selectedStudent.stats[g.key]).map(game => {
+                                            const s = selectedStudent.stats[game.key];
+                                            return (
+                                                <div key={game.key} className="bg-white rounded-lg p-3 border border-violet-100">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-medium text-sm text-slate-700">{game.icon} {game.label}</span>
+                                                        <span className="text-xs text-slate-400">{s.attempts} play{s.attempts !== 1 ? 's' : ''}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="text-center">
+                                                            <div className="text-lg font-bold text-violet-600">{Math.round(s.best)}%</div>
+                                                            <div className="text-[10px] text-slate-400 uppercase">Best</div>
+                                                        </div>
+                                                        <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                            <div className="h-full rounded-full transition-all" style={{
+                                                                width: `${Math.min(100, Math.round(s.best))}%`,
+                                                                background: s.best >= 80 ? '#10b981' : s.best >= 50 ? '#f59e0b' : '#ef4444'
+                                                            }} />
+                                                        </div>
+                                                        {s.attempts > 1 && (
+                                                            <div className="text-center">
+                                                                <div className={`text-xs font-bold ${s.best > s.initial ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                                                    {s.best > s.initial ? `+${Math.round(s.best - s.initial)}%` : '—'}
+                                                                </div>
+                                                                <div className="text-[10px] text-slate-400 uppercase">Growth</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {selectedStudent.data?.labelChallengeResults?.length > 0 && (
+                                <div
+                                    data-help-key="dashboard_detail_label_challenge"
+                                    className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                                    <h4 className="font-bold text-blue-700 mb-3 flex items-center gap-2">
+                                        🏆 Label Challenge ({selectedStudent.stats.labelChallengeAttempts} attempt{selectedStudent.stats.labelChallengeAttempts !== 1 ? 's' : ''})
+                                    </h4>
+                                    <div className="grid grid-cols-3 gap-2 mb-3">
+                                        <div className="bg-white rounded-lg p-2 text-center border border-blue-100">
+                                            <div className="text-lg font-bold text-blue-600">{selectedStudent.stats.labelChallengeAvg}%</div>
+                                            <div className="text-xs text-slate-500">Average</div>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-2 text-center border border-blue-100">
+                                            <div className="text-lg font-bold text-emerald-600">{selectedStudent.stats.labelChallengeBest}%</div>
+                                            <div className="text-xs text-slate-500">Best Score</div>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-2 text-center border border-blue-100">
+                                            <div className="text-lg font-bold text-violet-600">{selectedStudent.stats.labelChallengeAttempts}</div>
+                                            <div className="text-xs text-slate-500">Attempts</div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                        {selectedStudent.data.labelChallengeResults.map((result, ri) => (
+                                            <div key={ri} className="bg-white p-2 rounded-lg border border-blue-100 text-sm">
+                                                <div className="flex justify-between items-center">
+                                                    <span className={`font-bold ${result.score >= 80 ? 'text-emerald-600' : result.score >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>
+                                                        {result.score}% — {result.totalCorrect}/{result.totalExpected} correct
+                                                    </span>
+                                                    <span className="text-xs text-slate-400">
+                                                        {result.timestamp ? new Date(result.timestamp).toLocaleDateString() : ''}
+                                                    </span>
+                                                </div>
+                                                {result.feedback && (
+                                                    <div className="text-xs text-slate-500 mt-1 italic">{result.feedback}</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {selectedStudent.data?.socraticChatHistory?.messages?.length > 0 && (
+                                <div
+                                    data-help-key="dashboard_detail_socratic"
+                                    className="mb-4 border border-teal-200 rounded-xl overflow-hidden">
+                                    <div className="bg-teal-100 p-3 font-bold text-teal-700 flex items-center gap-2">
+                                        💬 Socratic Chatbot ({selectedStudent.data.socraticChatHistory.messageCount} messages)
+                                    </div>
+                                    <div className="max-h-96 overflow-y-auto p-3 space-y-2">
+                                        {selectedStudent.data.socraticChatHistory.messages.map((msg, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`p-2 rounded-lg text-sm ${msg.role === 'user'
+                                                        ? 'bg-teal-100 ml-8'
+                                                        : 'bg-slate-100 mr-8'
+                                                    }`}
+                                            >
+                                                <div className="font-medium text-xs text-slate-500 mb-1">
+                                                    {msg.role === 'user' ? 'Student' : 'Socratic Tutor'}
+                                                </div>
+                                                {msg.content || msg.text}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {selectedStudent.data.personaState?.chatHistory?.length > 0 ? (
+                                <div
+                                    data-help-key="dashboard_detail_transcript"
+                                    className="border border-slate-200 rounded-xl overflow-hidden">
+                                    <div className="bg-slate-100 p-3 font-bold text-slate-700">
+                                        {t('class_analytics.view_transcript')}
+                                    </div>
+                                    <div className="max-h-96 overflow-y-auto p-3 space-y-2">
+                                        {(selectedStudent?.data?.personaState?.chatHistory || []).map((msg, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`p-2 rounded-lg text-sm ${msg.role === 'user' || msg.sender === 'student'
+                                                        ? 'bg-indigo-100 ml-8'
+                                                        : 'bg-slate-100 mr-8'
+                                                    }`}
+                                            >
+                                                <div className="font-medium text-xs text-slate-500 mb-1">
+                                                    {msg.role === 'user' || msg.sender === 'student' ? 'Student' : 'Character'}
+                                                </div>
+                                                {msg.content || msg.text}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-slate-400">
+                                    {t('class_analytics.no_transcript')}
+                                    {!isIndependentMode && assessmentCenterTab === 'research' && (
+                                        <div className="flex-1 overflow-y-auto p-4 animate-in fade-in duration-200">
+                                            <div className="space-y-6">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-slate-800">📊 Research & Insights</h3>
+                                                        <p className="text-xs text-slate-400">Longitudinal analytics, growth tracking, and practice-to-outcome correlations</p>
+                                                    </div>
+                                                    {importedStudents.length > 0 && (
+                                                        <select value={researchStudent || ''} onChange={(e) => setResearchStudent(e.target.value || null)}
+                                                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg" aria-label="Select student">
+                                                            <option value="">All students (class view)</option>
+                                                            {importedStudents.map(s => (
+                                                                <option key={s.name || s} value={s.name || s}>{s.name || s}</option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                </div>
+
+                                                {typeof renderResearchToolbar === 'function' && (
+                                                    <div className="bg-white rounded-xl border border-slate-200 p-3">
+                                                        {renderResearchToolbar()}
+                                                    </div>
+                                                )}
+                                                <div className="flex flex-wrap gap-2">
+                                                    <button onClick={() => setShowCBMImport(true)}
+                                                        className="px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1">
+                                                        📂 Import CBM Data
+                                                    </button>
+                                                    <button onClick={() => setShowSurveyModal(true)}
+                                                        className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1">
+                                                        📝 Teacher Survey
+                                                    </button>
+                                                    <button onClick={() => setShowResearchSetup(true)}
+                                                        className="px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1">
+                                                        ⚙️ Settings
+                                                    </button>
+                                                </div>
+                                                {typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt()}
+                                                {importedStudents.length === 0 ? (
+                                                    <div className="bg-slate-50 rounded-xl p-8 text-center border border-slate-200">
+                                                        <div className="text-4xl mb-3">📊</div>
+                                                        <h4 className="text-lg font-bold text-slate-700 mb-2">No Student Data Yet</h4>
+                                                        <p className="text-sm text-slate-500 mb-4">Import student assessment data to unlock research insights and growth tracking.</p>
+                                                        <button onClick={() => setAssessmentCenterTab('assessments')}
+                                                            className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700">
+                                                            Go to Assessments →
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        {researchStudent ? (
+                                                            <div>
+                                                                <div className="flex items-center gap-2 mb-4">
+                                                                    <button onClick={() => setResearchStudent(null)} className="text-sm text-indigo-600 hover:text-indigo-800 font-bold">← Back to class</button>
+                                                                    <span className="text-sm text-slate-400">|</span>
+                                                                    <span className="text-sm font-bold text-slate-700">{researchStudent}</span>
+                                                                </div>
+                                                                {renderInsightsPanel(researchStudent)}
+                                                                {typeof renderScatterPlot === 'function' && (
+                                                                    <div className="mt-4 bg-white rounded-xl border border-slate-200 p-4">
+                                                                        <h5 className="text-xs font-bold text-slate-600 uppercase mb-3">📈 Practice vs Outcome</h5>
+                                                                        {renderScatterPlot()}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <div>
+                                                                {typeof renderClassInsights === 'function' && renderClassInsights()}
+                                                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                                    {importedStudents.map(s => {
+                                                                        const name = s.name || s;
+                                                                        return (
+                                                                            <button key={name} onClick={() => setResearchStudent(name)}
+                                                                                className="p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all text-left group">
+                                                                                <div className="font-bold text-sm text-slate-700 group-hover:text-indigo-700">{name}</div>
+                                                                                <div className="text-xs text-slate-400 mt-1">View insights →</div>
+                                                                            </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {typeof renderResearchDashboard === 'function' && (
+                                                            <div className="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                                                <h4 className="text-sm font-bold text-slate-600 mb-3">📈 Research Dashboard</h4>
+                                                                {renderResearchDashboard()}
+                                                            </div>
+                                                        )}
+                                                        {showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal()}
+                                                        {showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal()}
+                                                        {showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal()}
+                                                    </div>
+
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>,
+        document.body
+    );
+});
+const FONT_OPTIONS = [
+    { id: 'default', label: 'Default (System)', cssClass: '', category: 'default' },
+    { id: 'opendyslexic', label: 'OpenDyslexic', cssClass: 'font-opendyslexic', googleFont: null, category: 'accessibility' },
+    { id: 'lexend', label: 'Lexend', cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700', category: 'accessibility' },
+    { id: 'atkinson', label: 'Atkinson Hyperlegible', cssClass: 'font-atkinson', googleFont: 'Atkinson+Hyperlegible:wght@400;700', category: 'accessibility' },
+    { id: 'andika', label: 'Andika (SIL)', cssClass: 'font-andika', googleFont: 'Andika:wght@400;700', category: 'accessibility' },
+    { id: 'inter', label: 'Inter', cssClass: 'font-inter', googleFont: 'Inter:wght@400;500;600;700', category: 'sans-serif' },
+    { id: 'roboto', label: 'Roboto', cssClass: 'font-roboto', googleFont: 'Roboto:wght@400;500;700', category: 'sans-serif' },
+    { id: 'opensans', label: 'Open Sans', cssClass: 'font-opensans', googleFont: 'Open+Sans:wght@400;600;700', category: 'sans-serif' },
+    { id: 'lato', label: 'Lato', cssClass: 'font-lato', googleFont: 'Lato:wght@400;700', category: 'sans-serif' },
+    { id: 'nunito', label: 'Nunito', cssClass: 'font-nunito', googleFont: 'Nunito:wght@400;600;700', category: 'sans-serif' },
+    { id: 'sourcesans', label: 'Source Sans 3', cssClass: 'font-sourcesans', googleFont: 'Source+Sans+3:wght@400;600;700', category: 'sans-serif' },
+    { id: 'poppins', label: 'Poppins', cssClass: 'font-poppins', googleFont: 'Poppins:wght@400;500;600;700', category: 'modern' },
+    { id: 'montserrat', label: 'Montserrat', cssClass: 'font-montserrat', googleFont: 'Montserrat:wght@400;500;600;700', category: 'modern' },
+    { id: 'raleway', label: 'Raleway', cssClass: 'font-raleway', googleFont: 'Raleway:wght@400;500;600;700', category: 'modern' },
+    { id: 'quicksand', label: 'Quicksand', cssClass: 'font-quicksand', googleFont: 'Quicksand:wght@400;500;700', category: 'modern' },
+    { id: 'comic', label: 'Comic Neue', cssClass: 'font-comic', googleFont: 'Comic+Neue:wght@400;700', category: 'modern' },
+    { id: 'merriweather', label: 'Merriweather', cssClass: 'font-merriweather', googleFont: 'Merriweather:wght@400;700', category: 'serif' },
+    { id: 'gentium', label: 'Gentium Plus', cssClass: 'font-gentium', googleFont: 'Gentium+Book+Plus:wght@400;700', category: 'serif' },
+    { id: 'lora', label: 'Lora', cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
+    { id: 'playfair', label: 'Playfair Display', cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
+];
+(function injectFontStyles() {
+    const fonts = FONT_OPTIONS.filter(f => f.googleFont).map(f => f.googleFont);
+    if (fonts.length > 0) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${fonts.join('&family=')}&display=swap`;
+        document.head.appendChild(link);
+    }
+    const style = document.createElement('style');
+    style.textContent = `
+    .font-opendyslexic { font-family: 'OpenDyslexic', cursive, sans-serif; }
+    .font-lexend { font-family: 'Lexend', sans-serif; }
+    .font-atkinson { font-family: 'Atkinson Hyperlegible', sans-serif; }
+    .font-andika { font-family: 'Andika', sans-serif; }
+    .font-inter { font-family: 'Inter', sans-serif; }
+    .font-roboto { font-family: 'Roboto', sans-serif; }
+    .font-opensans { font-family: 'Open Sans', sans-serif; }
+    .font-lato { font-family: 'Lato', sans-serif; }
+    .font-nunito { font-family: 'Nunito', sans-serif; }
+    .font-sourcesans { font-family: 'Source Sans 3', sans-serif; }
+    .font-poppins { font-family: 'Poppins', sans-serif; }
+    .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    .font-raleway { font-family: 'Raleway', sans-serif; }
+    .font-quicksand { font-family: 'Quicksand', sans-serif; }
+    .font-comic { font-family: 'Comic Neue', cursive, sans-serif; }
+    .font-merriweather { font-family: 'Merriweather', serif; }
+    .font-gentium { font-family: 'Gentium Book Plus', serif; }
+    .font-lora { font-family: 'Lora', serif; }
+    .font-playfair { font-family: 'Playfair Display', serif; }
+    @media (max-width: 768px) {
+      select, [role="listbox"], [role="menu"], [role="combobox"] {
+        z-index: 50 !important;
+        position: relative;
+      }
+      .overflow-hidden:has(select),
+      .overflow-hidden:has([role="listbox"]),
+      .overflow-hidden:has([role="menu"]) {
+        overflow: visible !important;
+      }
+      [class*="fixed"][class*="inset-0"] > div {
+        max-height: 95vh;
+        max-height: 95dvh;
+      }
+      [class*="fixed"][class*="inset-0"] [class*="overflow-y-auto"] {
+        -webkit-overflow-scrolling: touch;
+      }
+      [class*="fixed"] [class*="max-w-"] {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      header select, nav select, [class*="sticky"] select {
+        z-index: 50 !important;
+      }
+      #tour-header-settings .absolute.top-full {
+        position: fixed !important;
+        top: 80px !important;
+        right: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        max-width: calc(100vw - 2rem) !important;
+      }
+      #tour-header-settings .relative {
+        position: static !important;
+      }
+      .prose {
+        font-weight: 400 !important;
+      }
+      .prose p, .prose span, .prose li, .prose td, .prose th,
+      .prose div:not([class*="font-bold"]):not([class*="font-black"]) {
+        font-weight: 400 !important;
+      }
+      .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+        font-weight: 700 !important;
+      }
+      .prose strong, .prose b, .prose [class*="font-bold"], .prose [class*="font-black"] {
+        font-weight: 700 !important;
+      }
+      [class*="text-2xl"][class*="font-black"],
+      [class*="text-xl"][class*="font-bold"],
+      [class*="text-lg"][class*="font-bold"] {
+        font-weight: 700 !important;
+      }
+    }
+    @media (max-width: 480px) {
+      [class*="fixed"][class*="inset-0"] {
+        padding: 8px;
+      }
+      [class*="fixed"][class*="inset-0"] > div {
+        max-width: calc(100vw - 16px) !important;
+      }
+      [class*="fixed"][class*="inset-0"] [class*="p-6"] {
+        padding: 12px;
+      }
+      [class*="fixed"][class*="inset-0"] [class*="p-8"] {
+        padding: 16px;
+      }
+    }
+    @media (max-width: 768px) {
+      [class*="fixed"][class*="inset-0"] {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      [class*="fixed"][class*="inset-0"] > [class*="flex-col"] {
+        max-height: 100%;
+        overflow-y: auto;
+      }
+    }
+    @supports (padding: env(safe-area-inset-top)) {
+      @media (max-width: 768px) {
+        [class*="fixed"][class*="inset-0"] {
+          padding-top: max(8px, env(safe-area-inset-top));
+          padding-left: max(8px, env(safe-area-inset-left));
+          padding-right: max(8px, env(safe-area-inset-right));
+          padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+        [class*="fixed"][class*="bottom-"] {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+    }
+    @media (max-width: 768px) and (orientation: landscape) {
+      [class*="fixed"][class*="inset-0"] > div {
+        max-height: 90vh;
+        max-height: 90dvh;
+      }
+      [class*="fixed"][class*="inset-0"] [class*="grid-cols-2"] {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      [class*="fixed"][class*="inset-0"],
+      [class*="fixed"][class*="inset-0"] > div {
+        transition: max-height 0.3s ease-out, padding 0.2s ease-out;
+      }
+    }
+    @media print {
+      [class*="fixed"][class*="inset-0"] {
+        position: static !important;
+        padding: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      [class*="fixed"][class*="inset-0"] > div {
+        max-width: 100% !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+    }
+    @media (max-width: 768px) {
+      nav[aria-label={t('common.content_tabs')}] {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+        flex-wrap: nowrap !important;
+        gap: 2px;
+      }
+      nav[aria-label={t('common.content_tabs')}]::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+      }
+      nav[aria-label={t('common.content_tabs')}] > button {
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        min-width: max-content;
+        white-space: nowrap;
+      }
+    }
+    @media (max-width: 768px) {
+      button, [role="button"], a[href], select, input[type="checkbox"], input[type="radio"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      button[class*="p-1"], button[class*="p-0.5"] {
+        min-height: 36px;
+        min-width: 36px;
+      }
+      nav[aria-label={t('common.content_tabs')}] > button {
+        min-height: 44px;
+        padding: 8px 16px;
+      }
+      button[class*="rounded-full"], button[class*="rounded-xl"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+    @media (pointer: coarse) {
+      [class*="cursor-grab"], [class*="cursor-grabbing"],
+      [class*="GripVertical"], [class*="GripHorizontal"] {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      [draggable="true"] {
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: none;
+      }
+      button[class*="border"][class*="rounded"] {
+        min-height: 48px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+    }
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+      [class*="max-w-5xl"] { max-width: calc(100vw - 2rem) !important; }
+      [class*="max-w-4xl"] { max-width: calc(100vw - 2rem) !important; }
+    }
+    .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+  `;
+    document.head.appendChild(style);
+    const disabledEls = document.querySelectorAll('button[disabled], input[disabled], textarea[disabled]');
+    disabledEls.forEach(el => {
+        el.removeAttribute('disabled');
+        el.setAttribute('aria-disabled', 'true');
+        el.setAttribute('data-was-disabled', 'true');
+    });
+})();
+// #region --- LOCALIZATION STRINGS ---
+let UI_STRINGS = {};
+let HELP_STRINGS = {};
+(async () => {
+    try {
+        const cached = localStorage.getItem("alloflow_ui_strings_cache");
+        if (cached) { UI_STRINGS = JSON.parse(cached); }
+        const resp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js?v=" + Date.now());
+        if (resp.ok) {
+            const text = await resp.text();
+            try {
+                UI_STRINGS = JSON.parse(text);
+            } catch {
+                try {
+                    UI_STRINGS = new Function("return " + text)();
+                } catch (evalErr) {
+                    console.warn("UI_STRINGS: new Function blocked (CSP), trying manual parse...", evalErr.message);
+                    let cleaned = text.replace(/^[^{]*/, "").replace(/[^}]*$/, "");
+                    cleaned = cleaned.replace(/`([^`]*)`/g, (_, inner) => JSON.stringify(inner.replace(/\r?\n/g, "\\n")));
+                    cleaned = cleaned.replace(/'([^']*)'/g, '"$1"');
+                    cleaned = cleaned.replace(/(?<=[\{,\n\r])\s*([a-zA-Z_]\w*)\s*:/g, ' "$1":');
+                    cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
+                    try { UI_STRINGS = JSON.parse(cleaned); console.log("[AlloFlow] UI_STRINGS parsed via enhanced cleanup"); } catch (e2) { console.error("UI_STRINGS: All parse methods failed", e2.message, "First 300 chars:", cleaned.substring(0, 300)); }
+                }
+            }
+            if (UI_STRINGS && Object.keys(UI_STRINGS).length > 0) {
+                try { localStorage.setItem("alloflow_ui_strings_cache", JSON.stringify(UI_STRINGS)); } catch { }
+                console.log("[AlloFlow] UI_STRINGS loaded:", Object.keys(UI_STRINGS).length, "top-level keys");
+            }
+        } else {
+            console.warn("[AlloFlow] UI_STRINGS fetch failed with status:", resp.status);
+        }
+    } catch (e) {
+        console.warn("UI_STRINGS fetch failed, using cache or defaults:", e.message);
+    }
+    try {
+        const hsCached = localStorage.getItem("alloflow_help_strings_cache");
+        if (hsCached) { HELP_STRINGS = JSON.parse(hsCached); }
+        const hsResp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/help_strings.js?v=" + Date.now());
+        if (hsResp.ok) {
+            const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
+            try {
+                HELP_STRINGS = JSON.parse(hsText);
+            } catch {
+                try {
+                    HELP_STRINGS = new Function("return " + hsText)();
+                } catch (evalErr) {
+                    console.warn("HELP_STRINGS: new Function blocked (CSP), trying manual parse...", evalErr.message);
+                    const hsCleaned = hsText.replace(/^[^{]*/, '').replace(/[^}]*$/, '').replace(/'/g, '"').replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+                    try { HELP_STRINGS = JSON.parse(hsCleaned); } catch { console.error("HELP_STRINGS: All parse methods failed"); }
+                }
+            }
+            if (HELP_STRINGS && Object.keys(HELP_STRINGS).length > 0) {
+                try { localStorage.setItem("alloflow_help_strings_cache", JSON.stringify(HELP_STRINGS)); } catch { }
+                console.log("[AlloFlow] HELP_STRINGS loaded:", Object.keys(HELP_STRINGS).length, "keys");
+            }
+        }
+    } catch (e) {
+        console.warn("HELP_STRINGS fetch failed, using cache or defaults:", e.message);
+    }
+
