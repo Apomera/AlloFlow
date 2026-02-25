@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features | AlloFlow</title>
+    <meta name="description"
+        content="280+ features for differentiated instruction, phonics, RTI monitoring, and Science of Reading. Explore AlloFlow's complete UDL toolkit — free and open-source.">
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html" style="color:var(--indigo)">Features</a>
+                <a href="library.html">Library</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                        style="width:16px;height:16px"></i> Get Code</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+    <div id="mobileNav" class="mobile-nav">
+        <button class="close-btn" onclick="this.parentElement.classList.remove('open')">&times;</button>
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
+            href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    </div>
+
+    <!-- Page Header -->
+    <header class="section"
+        style="background:linear-gradient(135deg,#eef2ff,#faf5ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #e0e7ff">
+        <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">The Complete <span class="gradient-text">UDL
+                Toolkit</span></h1>
+        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto">280+ features organized by CAST's
+            Universal Design for Learning framework.</p>
+    </header>
+
+    <!-- Jump Navigation -->
+    <div class="jump-nav">
+        <div class="jump-nav-inner">
+            <a href="#engagement" class="jump-pill">Engagement</a>
+            <a href="#representation" class="jump-pill">Representation</a>
+            <a href="#action" class="jump-pill">Action & Expression</a>
+            <a href="#intake" class="jump-pill">Content Intake</a>
+            <a href="#grading" class="jump-pill">Grading</a>
+            <a href="#architecture" class="jump-pill">Architecture</a>
+            <a href="#stem" class="jump-pill">STEM & Productivity</a>
+            <a href="#accessibility" class="jump-pill">Accessibility</a>
+        </div>
+    </div>
+
+    <main>
+        <!-- Engagement -->
+        <section id="engagement" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#eab308;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Engagement</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7e22ce">
+                            <i data-lucide="map" style="width:16px;height:16px"></i> Adventure Mode
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Turns reading into a branching
+                            interactive RPG with combat, choices, inventory tracking, and dynamic story paths. Also
+                            supports
+                            interactive social stories for SEL.</p>
+                        <p style="font-size:0.75rem;color:#64748b">3D Dice Physics, Storybook Export, Inventory System,
+                            XP
+                            Progression, Boss Battles, Character Portraits</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ca8a04">
+                            <i data-lucide="swords" style="width:16px;height:16px"></i> Multiplayer & Bosses
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Boss Battle Mode: the class
+                            cooperatively fights a "Monster" by answering questions.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Live Pulse, Democracy Mode for voting on story paths
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ea580c">
+                            <i data-lucide="gamepad-2" style="width:16px;height:16px"></i> Interactive Games
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Instantly generates games from
+                            lesson
+                            vocabulary and content.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Review Game, Bingo, Memory Match, Crossword, Word
+                            Search,
+                            Jeopardy, Concept Sort</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1d4ed8">
+                            <i data-lucide="message-circle" style="width:16px;height:16px"></i> Interview Mode
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Simulate interviews with historical
+                            figures, fictional characters, or experts.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Dynamic Rapport System reacts to student empathy</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#dc2626">
+                            <i data-lucide="door-open" style="width:16px;height:16px"></i> Escape Room
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Teams solve 6 puzzle types to escape
+                            a
+                            themed room.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Clue chains, lives & hints, streak bonuses, Final
+                            Door
+                            synthesis</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="trophy" style="width:16px;height:16px"></i> Team Showdown
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Real-time competitive quiz with live
+                            leaderboards and team scoring.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Firebase-powered broadcast teacher controls</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Representation -->
+        <section id="representation" class="section reveal" style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#22c55e;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Representation</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#16a34a">
+                            <i data-lucide="book-open" style="width:16px;height:16px"></i> Leveled Text
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Rewrites text for K-12 levels with
+                            Immersive Reader support.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Line Focus, Dyslexia Fonts, Grammar Highlights,
+                            Syntax
+                            Scramble, Cloze, Bilingual Views</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#2563eb">
+                            <i data-lucide="scan-line" style="width:16px;height:16px"></i> Visuals & Organizers
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Generates Timelines, Venn Diagrams,
+                            Mind
+                            Maps, Cause & Effect, Flow Charts.</p>
+                        <p style="font-size:0.75rem;color:#64748b">"Nano Banana" Eraser Mode for instant
+                            fill-in-the-blank
+                            worksheets</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4f46e5">
+                            <i data-lucide="globe" style="width:16px;height:16px"></i> Glossary & Flashcards
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Auto-identifies Tier 2/3 vocabulary.
+                            Supports any language via Gemini.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Context-aware definitions, translations, printable
+                            flashcards</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#b45309">
+                            <i data-lucide="file-search" style="width:16px;height:16px"></i> Source Analysis
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Analyzes sources for bias, key arguments, and
+                            credibility.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#be185d">
+                            <i data-lucide="music" style="width:16px;height:16px"></i> Word Sounds (Phonics)
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Complete phonemic awareness suite
+                            aligned with Orton-Gillingham and Science of Reading — 7 interactive activities with
+                            pre-recorded audio.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Break It Down, Blend Sounds, Find Sounds, Rhyme Time,
+                            Sound Sort, Word Families, Letter Tracing — with XP rewards and session mastery tracking</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="pencil" style="width:16px;height:16px"></i> Letter Tracing
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Interactive letter formation with animated hand guides
+                            and
+                            path detection.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action & Expression -->
+        <section id="action" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#14b8a6;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Action & Expression</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0d9488">
+                            <i data-lucide="check-square" style="width:16px;height:16px"></i> Exit Ticket (Quiz)
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Generates MCQs, exports to Canvas QTI. DOK Tuning and
+                            Fact-Check Protocol.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#e11d48">
+                            <i data-lucide="mic" style="width:16px;height:16px"></i> Oral Fluency Coach
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Listens to reading aloud, calculates WCPM, shows
+                            color-coded accuracy heat map.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#2563eb">
+                            <i data-lucide="quote" style="width:16px;height:16px"></i> Writing Scaffolds
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Sentence starters, paragraph frames, Smart Synthesis
+                            drafts, and AI revision loops.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7e22ce">
+                            <i data-lucide="help-circle" style="width:16px;height:16px"></i> Socratic Tutor
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">AI guide that answers with hints, never direct
+                            answers.
+                            Can be disabled by teachers.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ea580c">
+                            <i data-lucide="table" style="width:16px;height:16px"></i> Rubric Builder
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Generates detailed grading rubrics aligned to learning
+                            objectives.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed">
+                            <i data-lucide="bar-chart-3" style="width:16px;height:16px"></i> RTI Monitoring
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569">Track Tier 1-3 interventions. Visual dashboards for
+                            SLPs
+                            and MTSS teams.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Intake & Advanced Generation -->
+        <section id="intake" class="section reveal" style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#f59e0b;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Content Intake & Generation</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#b45309">
+                            <i data-lucide="file-audio" style="width:16px;height:16px"></i> Multimodal Intake
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Extract educational content from
+                            anywhere.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Built-in OCR for PDFs and Images, Whisper for
+                            Audio/Video
+                            transcription, and clean URL importing.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0369a1">
+                            <i data-lucide="globe" style="width:16px;height:16px"></i> AI Web Grounding
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Prevents hallucinations through
+                            active
+                            search.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Multi-stage Google Search integration with citations
+                            to
+                            ensure factual accuracy in generated curriculum.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4f46e5">
+                            <i data-lucide="align-justify" style="width:16px;height:16px"></i> Multi-Chunk Writing
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Generate massive, comprehensive
+                            units.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">Bypasses standard context windows with automatic
+                            outlining and sequential writing for 1000+ words.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#be185d">
+                            <i data-lucide="users" style="width:16px;height:16px"></i> Dialogue Mode
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Expert mode for character
+                            simulations.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">Generates complex educational character scripts,
+                            historical debates, and scenario-based roleplays.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
+                            <i data-lucide="package" style="width:16px;height:16px"></i> Full Resource Packs
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Automate your entire prep period.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">One-click batch generation of multiple differentiated
+                            resources simultaneously.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#6d28d9">
+                            <i data-lucide="bot" style="width:16px;height:16px"></i> The Gemini Bridge
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Auto-generate sandbox prompts.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Bridges students straight into Gemini Canvas to run
+                            Python, React, and p5.js coding sandboxes.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2">
+                            <i data-lucide="help-circle" style="width:16px;height:16px"></i> FAQ Generator
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Anticipates common student questions
+                            and misconceptions.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Generates Q&A sets with comprehension, analysis, and
+                            clarification questions at target grade level.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1d4ed8">
+                            <i data-lucide="message-circle" style="width:16px;height:16px"></i> Interview / Persona Mode
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Simulate conversations with
+                            historical
+                            figures, literary characters, or experts.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Dynamic Rapport System, multi-persona panel debates,
+                            and
+                            character-authentic responses.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#16a34a">
+                            <i data-lucide="lightbulb" style="width:16px;height:16px"></i> Activity Brainstorm
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">AI generates hands-on activity
+                            ideas.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">Includes materials, timing, differentiation, and
+                            standards connections. Perfect for PBL and learning stations.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#be185d">
+                            <i data-lucide="book-open-check" style="width:16px;height:16px"></i> Immersive Reader Suite
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Three interactive text modes plus
+                            RSVP
+                            (Rapid Serial Visual Presentation) for speed reading.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Read Mode (karaoke TTS), Define Mode (click any word
+                            for
+                            instant definition), Explain Mode (contextual breakdowns), Part-of-Speech tagging,
+                            adjustable
+                            WPM pacing.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grading & Analytics -->
+        <section id="grading" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#ef4444;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Grading, Analytics & Mastery</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#b91c1c">
+                            <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i> Teacher Dashboard
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Comprehensive class insights.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Track misconceptions, view longitudinal XP
+                            progression,
+                            and export CSV Gradebooks.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857">
+                            <i data-lucide="refresh-cw" style="width:16px;height:16px"></i> Mastery Check System
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Focus on growth, not just grades.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">Multi-draft revision loops where students receive
+                            targeted feedback and modify work until mastery.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca">
+                            <i data-lucide="file-check-2" style="width:16px;height:16px"></i> Alignment Reports
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Verify curriculum rigor instantly.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">Deep standards audits with gap analysis against CCSS,
+                            NGSS, and TEKS frameworks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Intake & Integrations -->
+        <section id="intake" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#f97316;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Content Intake & Integrations</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#dc2626;font-size:0.85rem">
+                            <i data-lucide="youtube" style="width:16px;height:16px"></i> YouTube Transcript Import
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Paste a YouTube URL → Gemini AI extracts the full
+                            transcript automatically. Instant source material from any public video.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#2563eb;font-size:0.85rem">
+                            <i data-lucide="link" style="width:16px;height:16px"></i> URL Content Import
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Paste any webpage URL → clean, ad-free text extracted
+                            via
+                            Jina AI. Works with articles, Wikipedia, news sites, and more.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed;font-size:0.85rem">
+                            <i data-lucide="search" style="width:16px;height:16px"></i> AI Search & Grounding
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">"Find AI" mode — type a topic and AlloFlow searches
+                            Google, curates the best source, and grounds content with citations to prevent
+                            hallucinations.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669;font-size:0.85rem">
+                            <i data-lucide="scan" style="width:16px;height:16px"></i> OCR & Media Transcription
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Upload images, photos of textbook pages, PDFs, or
+                            audio —
+                            AI extracts clean text for immediate use as source material.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4f46e5;font-size:0.85rem">
+                            <i data-lucide="code-2" style="width:16px;height:16px"></i> Gemini Bridge
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Auto-generates a Gemini Canvas
+                            prompt
+                            from any lesson — opens a sandboxed coding environment with Python, React, or p5.js.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Students explore simulations, interactive models, and
+                            hands-on coding directly from lesson content.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0891b2;font-size:0.85rem">
+                            <i data-lucide="trending-up" style="width:16px;height:16px"></i> RTI / MTSS Monitoring
+                        </div>
+                        <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Oral Reading Fluency probes with
+                            WCPM
+                            calculation, color-coded accuracy heat maps, and tier progress monitoring.</p>
+                        <p style="font-size:0.75rem;color:#64748b">Benchmark probe banks, teacher &amp; parent-friendly
+                            reports.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ca8a04;font-size:0.85rem">
+                            <i data-lucide="package" style="width:16px;height:16px"></i> Full Resource Pack
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">One-click batch creation of multiple resources
+                            simultaneously — lesson plan, quiz, glossary, scaffolds, and games generated from a single
+                            source.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEM & Productivity -->
+        <section id="stem" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#6366f1;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">STEM, Multimedia & Productivity</h2>
+                </div>
+                <div class="grid-4">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1e40af;font-size:0.85rem">
+                            <i data-lucide="sigma" style="width:16px;height:16px"></i> Context-Aware STEM
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Math & science problems linked to lesson topics. SVG
+                            Graphs and diagrams.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#be185d;font-size:0.85rem">
+                            <i data-lucide="presentation" style="width:16px;height:16px"></i> Native Exports
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">One-click PowerPoint (.pptx) and Podcast (.mp3)
+                            generation.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4f46e5;font-size:0.85rem">
+                            <i data-lucide="bot" style="width:16px;height:16px"></i> AlloBot Guide
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Animated AI companion with "Show Me" step-by-step
+                            navigation.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669;font-size:0.85rem">
+                            <i data-lucide="layout-grid" style="width:16px;height:16px"></i> UDL Alignment
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">All generative outputs are explicitly mapped to
+                            CAST's
+                            Guidelines.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="users" style="width:16px;height:16px"></i> Smart Profiles
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Save snapshot configs (e.g., "Grade 5 + ESL") for
+                            one-click switching.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="clipboard-list" style="width:16px;height:16px"></i> Lesson Plan Builder
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Auto-synthesizes all resources into a cohesive,
+                            scripted
+                            lesson plan.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="git-branch" style="width:16px;height:16px"></i> Live Differentiation
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Assign different resources to each student group
+                            simultaneously.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="check-circle" style="width:16px;height:16px"></i> Fact Check Protocol
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">"Verify & Debunk" mechanism forces the AI to critique
+                            its
+                            own answers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture & Privacy -->
+        <section id="architecture" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+                    <div style="width:6px;height:32px;background:#ef4444;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Architecture & Privacy</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#3b82f6;font-size:0.85rem">
+                            <i data-lucide="shield-check" style="width:16px;height:16px"></i> Google Education
+                            Infrastructure
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Operates natively inside Gemini Canvas, leveraging
+                            your
+                            district's existing COPPA/FERPA-compliant Google Workspace security agreements.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#9333ea;font-size:0.85rem">
+                            <i data-lucide="folder-down" style="width:16px;height:16px"></i> Standard JSON "Sneakernet"
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Because Gemini Canvas does not persist internal
+                            databases
+                            across sessions, AlloFlow relies on saving and loading curriculum directly as JSON files to
+                            your
+                            hard drive.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#f59e0b;font-size:0.85rem">
+                            <i data-lucide="share-2" style="width:16px;height:16px"></i> Frictionless Sharing
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Distribute interactive lessons to students or
+                            collaborate
+                            with co-teachers simply by sending the JSON file and a canvas link.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#10b981;font-size:0.85rem">
+                            <i data-lucide="hard-drive" style="width:16px;height:16px"></i> Local-First Student Data
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Student progress is tracked on-device, never
+                            uploaded.
+                            Teachers export data as JSON. The Student Portal uses codenames to keep identities private.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#be185d;font-size:0.85rem">
+                            <i data-lucide="server-off" style="width:16px;height:16px"></i> No Cloud Accounts Required
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Zero third-party account creation for students.
+                            Bypasses
+                            the need to manage standalone application rosters.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#64748b;font-size:0.85rem">
+                            <i data-lucide="code" style="width:16px;height:16px"></i> Single-File Monolith
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">The entire application, including its assets,
+                            compiles
+                            into a single file payload, removing dependency vulnerabilities.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="wifi-off" style="width:16px;height:16px"></i> Offline HTML Bundles
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Export units as standalone interactive packages that
+                            work
+                            without internet — perfect for homework equity.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="key" style="width:16px;height:16px"></i> Teacher Gate
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Access code protection keeps student and teacher
+                            environments separate.</p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#4338ca;font-size:0.85rem">
+                            <i data-lucide="shield" style="width:16px;height:16px"></i> Privacy by Design
+                        </div>
+                        <p style="font-size:0.75rem;color:#475569">Student Entry Portal uses fun codenames (e.g. "Cosmic
+                            Badger") instead of PII.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accessibility -->
+        <section id="accessibility" class="section reveal" style="background:#f8fafc">
+            <div class="section-inner">
+                <div class="section-header">
+                    <h2>Designed for Every Learner</h2>
+                    <p>Built to meet WCAG 2.1 AA standards for keyboard navigation and screen reader support.</p>
+                </div>
+                <div class="grid-4">
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="type" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Dyslexia Support</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">OpenDyslexic font & Bionic Reading
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="languages" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Global Localization</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Translate the full UI into any
+                                language</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="mic" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Dictation</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Speech-to-text in every input
+                                field
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="scan-line" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Reading Ruler</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Mouse-following focus bar</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="volume-2" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Text-to-Speech</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Click any word to hear it read
+                                aloud
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="palette" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Color Overlays</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Blue, Peach, Yellow tint overlays
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="keyboard" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">Keyboard Nav</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">All games playable via Tab/Arrow
+                                keys
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:flex-start">
+                        <div
+                            style="width:36px;height:36px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <i data-lucide="contrast" style="width:16px;height:16px;color:#475569"></i>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.85rem;font-weight:700">High Contrast</h4>
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Dark Mode & Black/Yellow mode</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <div class="footer-links"><a href="index.html">Home</a><a href="features.html">Features</a><a
+                    href="library.html">Library</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a
+                    href="https://www.youtube.com/@AlloFlow" target="_blank">YouTube</a></div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    </button>
+
+    <!-- Sticky CTA Bar -->
+    <div id="stickyCta" class="sticky-cta">
+        <div
+            style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <p style="font-size:0.85rem;font-weight:600;color:#e2e8f0;margin:0">Ready to try AlloFlow? <span
+                    style="color:#64748b;font-weight:400">280+ features, $0 cost.</span></p>
+            <div style="display:flex;gap:10px;align-items:center">
+                <a href="index.html" style="font-size:0.8rem;color:#a5b4fc;text-decoration:none;font-weight:600">←
+                    Back
+                    to Home</a>
+                <button
+                    onclick="navigator.clipboard.writeText('https://gemini.google.com/share/c8baf80a46cc').then(()=>{this.textContent='Copied!';setTimeout(()=>{this.textContent='Copy Canvas Link'},2000)})"
+                    style="background:#4f46e5;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:0.8rem;font-weight:700;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;gap:6px">
+                    <i data-lucide="link" style="width:14px;height:14px"></i> Copy Canvas Link
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Back to Top Button
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backBtn.classList.toggle('visible', window.scrollY > 600);
+            const cta = document.getElementById('stickyCta');
+            if (cta) cta.classList.toggle('visible', window.scrollY > 400);
+        }, { passive: true });
+    </script>
+
+    <style>
+        .sticky-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            border-top: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .sticky-cta.visible {
+            transform: translateY(0);
+        }
+
+        .sticky-cta button:hover {
+            background: #4338ca !important;
+        }
+
+        @media (max-width: 600px) {
+            .sticky-cta>div {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .sticky-cta p {
+                width: 100%;
+            }
+        }
+    </style>
+</body>
+
+</html>

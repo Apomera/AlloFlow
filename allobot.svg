@@ -1,0 +1,88 @@
+<svg width="110" height="110" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="allobot-svg">
+    <!-- Jetpack Base — slate gray metallic -->
+    <rect x="25" y="42" width="50" height="8" rx="2" fill="#475569" />
+    <circle cx="50" cy="46" r="6" fill="#06B6D4" stroke="#475569" stroke-width="2" />
+    <circle cx="50" cy="46" r="3" fill="#67E8F9" class="allobot-pulse" />
+    <path d="M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z" fill="#64748b" stroke="#475569" stroke-width="2" />
+    <path d="M10 46 H30 M10 60 H30" stroke="#475569" stroke-width="1" fill="none" opacity="0.6" />
+    <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill="#64748b" stroke="#475569" stroke-width="2" />
+    <path d="M70 46 H90 M70 60 H90" stroke="#475569" stroke-width="1" fill="none" opacity="0.6" />
+    
+    <!-- Jetpack Flames (Flying) -->
+    <g class="allobot-flame">
+        <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
+        <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
+        <path d="M74 78 Q80 100 86 78 Z" fill="#F59E0B" />
+        <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
+    </g>
+
+    <!-- Wind Streaks (Flying context) -->
+    <g transform="translate(-10, 0)" style="opacity: 0.6">
+        <rect x="-20" y="20" width="30" height="2" rx="1" fill="white" class="allobot-wind" style="animation-duration: 0.4s; animation-delay: 0s" />
+        <rect x="-10" y="50" width="40" height="1" rx="0.5" fill="white" class="allobot-wind" style="animation-duration: 0.6s; animation-delay: 0.2s" />
+        <rect x="-15" y="80" width="25" height="2" rx="1" fill="white" class="allobot-wind" style="animation-duration: 0.5s; animation-delay: 0.1s" />
+    </g>
+
+    <!-- Aura/Glow -->
+    <circle cx="50" cy="50" r="45" fill="#7c3aed" fill-opacity="0.15" class="allobot-glow" />
+
+    <!-- Antenna -->
+    <g class="allobot-antenna" style="transform-origin: 50px 15px">
+        <path d="M50 15V5" stroke="#818CF8" stroke-width="4" stroke-linecap="round" />
+        <!-- Antenna Signals -->
+        <g class="allobot-signals">
+            <circle cx="50" cy="5" r="10" stroke="#818CF8" stroke-width="2" fill="none" class="allobot-wave" />
+            <circle cx="50" cy="5" r="10" stroke="#818CF8" stroke-width="2" fill="none" class="allobot-wave" style="animation-delay: 0.5s" />
+        </g>
+        <circle cx="50" cy="5" r="5" fill="#FACC15" class="allobot-antenna-tip" />
+    </g>
+
+    <!-- Body -->
+    <circle cx="50" cy="55" r="35" fill="url(#bodyGradient-idle)" />
+    <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
+
+    <!-- Visor -->
+    <g class="allobot-hover-sync">
+        <rect x="20" y="30" width="60" height="36" rx="14" fill="#0F172A" />
+        <!-- Visor Reflection -->
+        <path d="M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36" fill="none" stroke="url(#visorReflect)" stroke-width="3" stroke-linecap="round" opacity="0.9" />
+        <rect x="20" y="30" width="60" height="36" rx="14" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" />
+    </g>
+
+    <!-- Hand Colors -->
+    <g class="allobot-float-left" style="animation-delay: 0.2s">
+        <circle cx="10" cy="65" r="6.5" fill="#7c3aed" stroke="#5b21b6" stroke-width="1.5" />
+    </g>
+    <g class="allobot-float-right" style="animation-delay: 0.5s">
+        <circle cx="90" cy="65" r="6.5" fill="#7c3aed" stroke="#5b21b6" stroke-width="1.5" />
+    </g>
+
+    <g class="allobot-hover-sync">
+        <g class="allobot-blink">
+            <!-- Eyes Left -->
+            <ellipse cx="38" cy="48" rx="4.5" ry="6" fill="#10B981" />
+            <ellipse cx="40" cy="46" rx="2.5" ry="2.5" fill="#ffffff" opacity="0.8" />
+            <!-- Eyes Right -->
+            <ellipse cx="62" cy="48" rx="4.5" ry="6" fill="#10B981" />
+            <ellipse cx="64" cy="46" rx="2.5" ry="2.5" fill="#ffffff" opacity="0.8" />
+        </g>
+        <!-- Mouth -->
+        <path d="M 42 58 Q 50 62 58 58" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    </g>
+
+    <defs>
+        <!-- Body Gradient — muted grape purple -->
+        <radialGradient id="bodyGradient-idle" cx="35%" cy="35%" r="65%" fx="30%" fy="30%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#5b21b6" />
+        </radialGradient>
+        <radialGradient id="rimLightGradient" cx="70%" cy="70%" r="70%">
+            <stop offset="82%" stop-color="#ffffff" stop-opacity="0" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0.4" />
+        </radialGradient>
+        <linearGradient id="visorReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+        </linearGradient>
+    </defs>
+</svg>
