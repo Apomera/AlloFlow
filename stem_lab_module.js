@@ -131,7 +131,8 @@ window.AlloModules.StemLab = function StemLabModal(props) {
     areaAnswer,
     fracChallenge,
     fracFeedback,
-    fracAnswer
+    fracAnswer,
+    handleGenerateMath
   } = props;
 
   // STEM Lab modal JSX
@@ -437,6 +438,9 @@ window.AlloModules.StemLab = function StemLabModal(props) {
       setMathQuantity(assessmentBlocks.reduce((s, b) => s + b.quantity, 0));
       setActiveView('math');
       setShowStemLab(false);
+      setTimeout(() => {
+        if (typeof handleGenerateMath === 'function') handleGenerateMath('Create an assessment with these sections:\n' + prompt);
+      }, 300);
     },
     className: "flex-1 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
