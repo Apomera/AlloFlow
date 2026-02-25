@@ -282,7 +282,7 @@ window.AlloModules.StemLab = function StemLabModal(props) {
         setMathMode(mathMode === 'Freeform Builder' || mathMode === 'Word Problems from Source' ? 'Problem Set Generator' : mathMode);
       }
       setActiveView('math');
-      setShowStemLab(false);
+      // setShowStemLab(false); // Removed so users can continue building assessment without the window abruptly closing
     },
     disabled: !mathInput.trim(),
     className: "w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 disabled:opacity-40 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"

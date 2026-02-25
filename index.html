@@ -445,35 +445,693 @@
                     </div>
 
                     <!-- Slide Deck preview -->
-                    <div class="card"
-                        style="padding:0;overflow:hidden;border:1px solid #cbd5e1;display:flex;flex-direction:column">
-                        <div
-                            style="flex-grow:1;background:linear-gradient(135deg, #1e293b, #0f172a);position:relative;display:flex;align-items:center;justify-content:center;color:#fff;min-height:220px;padding:24px">
-                            <div style="text-align:center">
-                                <i data-lucide="presentation"
-                                    style="width:44px;height:44px;margin-bottom:16px;opacity:0.9;color:#818cf8"></i>
-                                <h4 style="font-family:'Outfit';font-weight:800;font-size:1.3rem;margin-bottom:6px">UDL
-                                    Architecture Briefing</h4>
-                                <p style="font-size:0.85rem;opacity:0.8">Interactive Slide Deck</p>
-                            </div>
-                            <div
-                                style="position:absolute;bottom:12px;right:12px;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:6px;font-size:0.7rem;font-weight:700;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1)">
-                                Click to Explore <i data-lucide="external-link"
-                                    style="width:10px;height:10px;display:inline-block;margin-left:2px"></i></div>
-                        </div>
-                        <div
-                            style="padding:12px 20px;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
-                            <span style="font-size:0.85rem;font-weight:800;color:#475569">Slide 1 of 12</span>
-                            <div style="display:flex;gap:8px">
-                                <button aria-label="Previous slide"
-                                    style="background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:6px;cursor:pointer;color:#64748b;transition:background 0.2s"><i
-                                        data-lucide="chevron-left" style="width:18px;height:18px"></i></button>
-                                <button aria-label="Next slide"
-                                    style="background:var(--slate-900);border:1px solid var(--slate-900);border-radius:6px;padding:6px;cursor:pointer;color:#fff;transition:background 0.2s"><i
-                                        data-lucide="chevron-right" style="width:18px;height:18px"></i></button>
-                            </div>
+                    
+                    
+                    </div>
+
+                    <!-- Integrated Architecture Slider -->
+<div style="margin-top: 4rem; display: flex; justify-content: center;">
+
+                    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #060913;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        #slider-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 650px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #090e17, #151a2a);
+            border: 1px solid #334155;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #slides-viewport {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 3rem 4rem;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .slide.prev {
+            transform: translateX(-50px);
+        }
+
+        .slide-content {
+            flex: 1;
+        }
+
+        .slide-visual {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .slide h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide p {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            max-width: 600px;
+        }
+
+        .info-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-desc {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        #controls {
+            padding: 16px 32px;
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #f8fafc;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #818cf8;
+            color: #818cf8;
+            transform: scale(1.05);
+        }
+
+        #indicator {
+            font-family: 'Outfit';
+            font-size: 1rem;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.1em;
+        }
+
+        /* Custom Visuals SVG styles */
+        .svg-container {
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+        }
+
+        .node-box {
+            fill: #0f172a;
+            stroke: #334155;
+            stroke-width: 2;
+            rx: 12;
+        }
+
+        .node-text {
+            fill: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            text-anchor: middle;
+        }
+
+        .node-subtext {
+            fill: #94a3b8;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        .path-line {
+            fill: none;
+            stroke: #475569;
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+            animation: march 20s linear infinite;
+        }
+
+        .path-solid {
+            fill: none;
+            stroke: #6366f1;
+            stroke-width: 3;
+        }
+
+        @keyframes march {
+            from {
+                stroke-dashoffset: 200;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .pulse-circle {
+            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            box-sizing: border-box;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(0.8);
+            }
+        }
+    </style>
+<div id="slider-container">
+        <div id="slides-viewport">
+
+            <!-- Slide 1: Local Offline Priority (Equity First) -->
+            <div class="slide active">
+                <div class="slide-content">
+                    <div class="slide-tag">Equity First</div>
+                    <h3 style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text;">
+                        Universal Offline Access</h3>
+                    <p>AlloFlow is built on a <strong>Local-First Monolith architecture</strong> to guarantee that
+                        students without high-speed internet at home receive full pedagogical support.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #10b981;">
+                        <div class="info-title">Zero-Latency State Context</div>
+                        <div class="info-desc">By compiling all tools into a single execution environment, actions do
+                            not require server round-trips. Once loaded, the tool remains resilient during catastrophic
+                            network failures.</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <defs>
+                            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#10b981" stop-opacity="0.2" />
+                                <stop offset="100%" stop-color="#064e3b" stop-opacity="0.8" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Server (Faded) -->
+                        <rect x="50" y="20" width="100" height="60" class="node-box" stroke-dasharray="4"
+                            stroke="#475569" fill="#0f172a" opacity="0.5" />
+                        <text x="100" y="55" class="node-subtext" fill="#64748b">Cloud Server</text>
+
+                        <!-- Blocked connection -->
+                        <path d="M100 80 L100 130" class="path-line" stroke="#ef4444" />
+                        <text x="110" y="110" fill="#ef4444" font-size="20">✕</text>
+
+                        <!-- Local Device (Glowing) -->
+                        <rect x="50" y="140" width="300" height="140" rx="16" fill="url(#g1)" stroke="#10b981"
+                            stroke-width="2" />
+                        <text x="200" y="170" class="node-text">Student Chromebook</text>
+
+                        <!-- Internal modules -->
+                        <rect x="70" y="190" width="80" height="40" rx="8" fill="#1e293b" />
+                        <text x="110" y="215" class="node-subtext">Word Sounds</text>
+
+                        <rect x="160" y="190" width="80" height="40" rx="8" fill="#1e293b" />
+                        <text x="200" y="215" class="node-subtext">STEM Lab</text>
+
+                        <rect x="250" y="190" width="80" height="40" rx="8" fill="#1e293b" />
+                        <text x="290" y="215" class="node-subtext">Adventures</text>
+
+                        <!-- Internal connections -->
+                        <path d="M110 230 C110 260, 200 260, 200 230" class="path-solid" stroke="#34d399" />
+                        <path d="M290 230 C290 260, 200 260, 200 230" class="path-solid" stroke="#34d399" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 2: Multi-Lexile Streaming -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">Differentiation</div>
+                    <h3 style="background: linear-gradient(135deg, #0ea5e9, #38bdf8); -webkit-background-clip: text;">
+                        Instant Leveled Text</h3>
+                    <p>Adapting a single reading passage for five different reading levels previously took hours.
+                        AlloFlow's <strong>Bimodal Generative Pipeline</strong> reconstructs raw texts dynamically.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #0ea5e9;">
+                        <div class="info-title">Syntax & Semantic Downgrading</div>
+                        <div class="info-desc">The AI doesn't just swap synonyms; it restructures compound-complex
+                            sentences into simple S-V-O patterns while preserving the narrative "Golden Thread".</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <!-- Input Document -->
+                        <path
+                            d="M50 40 h60 a10 10 0 0 1 10 10 v100 a10 10 0 0 1 -10 10 h-60 a10 10 0 0 1 -10 -10 v-100 a10 10 0 0 1 10 -10 z"
+                            fill="#1e293b" stroke="#0ea5e9" stroke-width="2" />
+                        <text x="80" y="70" class="node-text" font-size="12">11th Grade</text>
+                        <text x="80" y="90" class="node-subtext">Source Text</text>
+                        <line x1="60" y1="110" x2="100" y2="110" stroke="#475569" stroke-width="3"
+                            stroke-linecap="round" />
+                        <line x1="60" y1="125" x2="90" y2="125" stroke="#475569" stroke-width="3"
+                            stroke-linecap="round" />
+
+                        <!-- Processing Engine -->
+                        <circle cx="200" cy="100" r="30" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+                        <text x="200" y="105" font-size="20" fill="#38bdf8" text-anchor="middle">✨</text>
+                        <path d="M120 100 L170 100" class="path-solid" stroke="#38bdf8" />
+
+                        <!-- Outputs -->
+                        <path d="M230 100 C 260 100, 270 40, 300 40" class="path-line" stroke="#0ea5e9" />
+                        <path d="M230 100 C 260 100, 270 100, 300 100" class="path-line" stroke="#0ea5e9" />
+                        <path d="M230 100 C 260 100, 270 160, 300 160" class="path-line" stroke="#0ea5e9" />
+
+                        <!-- Lexile 1 -->
+                        <rect x="300" y="20" width="80" height="40" rx="6" fill="#0f172a" stroke="#0ea5e9" />
+                        <text x="340" y="45" font-size="11" fill="#f8fafc" font-family="Outfit"
+                            text-anchor="middle">Grade 8 (ESL)</text>
+                        <!-- Lexile 2 -->
+                        <rect x="300" y="80" width="80" height="40" rx="6" fill="#0f172a" stroke="#0ea5e9" />
+                        <text x="340" y="105" font-size="11" fill="#f8fafc" font-family="Outfit"
+                            text-anchor="middle">Grade 5 (IEP)</text>
+                        <!-- Lexile 3 -->
+                        <rect x="300" y="140" width="80" height="40" rx="6" fill="#0f172a" stroke="#0ea5e9" />
+                        <text x="340" y="165" font-size="11" fill="#f8fafc" font-family="Outfit"
+                            text-anchor="middle">Grade 2 (RTI)</text>
+
+                        <!-- Dictionary DB -->
+                        <rect x="170" y="180" width="60" height="30" rx="4" fill="#0f172a" stroke="#334155" />
+                        <text x="200" y="200" font-size="10" fill="#94a3b8" text-anchor="middle">Dictionary</text>
+                        <path d="M200 130 L200 180" class="path-line" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 3: Multi-Modal Formats -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">Engagement</div>
+                    <h3 style="background: linear-gradient(135deg, #a855f7, #c084fc); -webkit-background-clip: text;">
+                        Multi-Modal Workflows</h3>
+                    <p>One size never fits all. AlloFlow uses a <strong>Structural JSON Extractor</strong> to guarantee
+                        that raw standards data can be visualized into vastly different UIs.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #a855f7;">
+                        <div class="info-title">Deterministic HTML Generation</div>
+                        <div class="info-desc">AI outputs are rigorously mapped into predictable data structures,
+                            allowing an Escape Room puzzle and a 3D Dice Adventure to stem from the exact same
+                            mathematical standard.</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <!-- Source JSON -->
+                        <rect x="150" y="20" width="100" height="40" rx="8" fill="#1e293b" stroke="#a855f7"
+                            stroke-width="2" />
+                        <text x="200" y="45" font-size="12" fill="#f8fafc" font-family="monospace"
+                            text-anchor="middle">{Standard Data}</text>
+
+                        <!-- Flow Lines -->
+                        <path d="M200 60 C 200 100, 100 100, 100 130" class="path-solid" stroke="#c084fc" />
+                        <path d="M200 60 C 200 100, 200 100, 200 130" class="path-solid" stroke="#c084fc" />
+                        <path d="M200 60 C 200 100, 300 100, 300 130" class="path-solid" stroke="#c084fc" />
+
+                        <!-- Outputs -->
+                        <rect x="60" y="130" width="80" height="60" rx="8" fill="#0f172a" stroke="#cbd5e1" />
+                        <text x="100" y="155" font-size="20" text-anchor="middle">🎲</text>
+                        <text x="100" y="175" font-size="10" fill="#94a3b8" text-anchor="middle">3D Adventure</text>
+
+                        <rect x="160" y="130" width="80" height="60" rx="8" fill="#0f172a" stroke="#cbd5e1" />
+                        <text x="200" y="155" font-size="20" text-anchor="middle">🔒</text>
+                        <text x="200" y="175" font-size="10" fill="#94a3b8" text-anchor="middle">Escape Room</text>
+
+                        <rect x="260" y="130" width="80" height="60" rx="8" fill="#0f172a" stroke="#cbd5e1" />
+                        <text x="300" y="155" font-size="20" text-anchor="middle">📊</text>
+                        <text x="300" y="175" font-size="10" fill="#94a3b8" text-anchor="middle">QTI Quiz</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 4: Phonemic Engine -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">Science of Reading</div>
+                    <h3 style="background: linear-gradient(135deg, #f43f5e, #fb7185); -webkit-background-clip: text;">
+                        Phonemic Precision</h3>
+                    <p>English spelling frequently violates spoken rules. The Word Sounds Studio bridges orthography
+                        with auditory IPA sounds through synchronized playback.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #f43f5e;">
+                        <div class="info-title">Advanced Audio Orchestration</div>
+                        <div class="info-desc">To prevent TTS "ghost loops", audio strings are cached in proxy layers
+                            and sequenced perfectly to prevent overlapping reads during rapid student interactions.
                         </div>
                     </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <!-- Word visualization -->
+                        <text x="200" y="60" font-size="36" fill="#f8fafc" font-family="'Outfit'" font-weight="800"
+                            text-anchor="middle" letter-spacing="4">C A T</text>
+
+                        <!-- Sound blocks -->
+                        <rect x="110" y="90" width="50" height="50" rx="8" fill="#4c1d95" stroke="#8b5cf6" />
+                        <text x="135" y="120" font-size="24" fill="#fff" text-anchor="middle">/k/</text>
+
+                        <rect x="175" y="90" width="50" height="50" rx="8" fill="#831843" stroke="#be185d" />
+                        <text x="200" y="120" font-size="24" fill="#fff" text-anchor="middle">/æ/</text>
+
+                        <rect x="240" y="90" width="50" height="50" rx="8" fill="#14532d" stroke="#16a34a" />
+                        <text x="265" y="120" font-size="24" fill="#fff" text-anchor="middle">/t/</text>
+
+                        <!-- Audio Waveform abstraction -->
+                        <path d="M 50 200 Q 135 150 200 200 T 350 200" fill="none" class="path-solid"
+                            stroke="#fb7185" />
+                        <path d="M 50 200 Q 135 250 200 200 T 350 200" fill="none" class="path-solid" stroke="#fb7185"
+                            opacity="0.5" />
+
+                        <!-- Sync lines -->
+                        <line x1="135" y1="140" x2="135" y2="185" stroke="#94a3b8" stroke-dasharray="2 2" />
+                        <line x1="200" y1="140" x2="200" y2="185" stroke="#94a3b8" stroke-dasharray="2 2" />
+                        <line x1="265" y1="140" x2="265" y2="185" stroke="#94a3b8" stroke-dasharray="2 2" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 5: The Tour Engine -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">Scaffolding</div>
+                    <h3 style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text;">
+                        Interactive Tour Engine</h3>
+                    <p>Allobot is an <strong>embodied pedagogical agent</strong>. Rather than passively chatting, it
+                        parses JSON to physically manipulate the DOM, guiding students visually to exactly what they
+                        need.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #f59e0b;">
+                        <div class="info-title">data-help-key Binding</div>
+                        <div class="info-desc">Every element is tagged. The AI generates deterministic coordinates for
+                            the Bot Avatar to scroll to, open drawers, and highlight targets in sync with
+                            Text-To-Speech.</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <!-- App Canvas Mockup -->
+                        <rect x="50" y="50" width="300" height="200" rx="8" fill="#0f172a" stroke="#334155"
+                            stroke-width="2" />
+                        <!-- Sidebar -->
+                        <rect x="50" y="50" width="80" height="200" rx="8" fill="#1e293b" />
+                        <rect x="60" y="70" width="60" height="20" rx="4" fill="#334155" />
+                        <!-- Target Button -->
+                        <rect x="60" y="110" width="60" height="20" rx="4" fill="#10b981" id="target-btn"
+                            stroke="#34d399" stroke-width="2" />
+
+                        <!-- AI JSON Packet -->
+                        <rect x="220" y="20" width="140" height="60" rx="6" fill="#1e1b4b" stroke="#8b5cf6" />
+                        <text x="230" y="40" font-size="10" fill="#a5b4fc" font-family="monospace">{"action":
+                            "highlight",</text>
+                        <text x="230" y="55" font-size="10" fill="#a5b4fc" font-family="monospace"> "target":
+                            "tool_math"}</text>
+
+                        <!-- Bot Avatar -->
+                        <circle cx="200" cy="180" r="20" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" />
+                        <text x="200" y="185" font-size="16" text-anchor="middle">🤖</text>
+
+                        <!-- Path to target -->
+                        <path d="M 180 170 C 150 150, 130 140, 100 120" class="path-line" stroke="#f59e0b" />
+                        <circle cx="90" cy="120" r="16" fill="none" stroke="#f59e0b" stroke-width="2"
+                            class="pulse-circle" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 6: Data Privacy -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">FERPA Compliance</div>
+                    <h3 style="background: linear-gradient(135deg, #14b8a6, #2dd4bf); -webkit-background-clip: text;">
+                        Absolute Data Privacy</h3>
+                    <p>Student data should never be collected, sold, or stored on corporate servers. AlloFlow solves
+                        data privacy by eliminating backend databases entirely.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #14b8a6;">
+                        <div class="info-title">Local Context Compression</div>
+                        <div class="info-desc">All quiz scores, XPS, and RTI metrics are heavily compressed (via
+                            LZ-String) and persisted explicitly inside the district's local browser context.</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <defs>
+                            <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.3" />
+                                <stop offset="100%" stop-color="#0f766e" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Big Shield -->
+                        <path
+                            d="M 200 20 L 300 60 L 300 160 C 300 240, 200 280, 200 280 C 200 280, 100 240, 100 160 L 100 60 Z"
+                            fill="url(#shield)" stroke="#2dd4bf" stroke-width="3" />
+
+                        <!-- Local storage visual -->
+                        <rect x="150" y="80" width="100" height="120" rx="8" fill="#0f172a" stroke="#14b8a6" />
+                        <line x1="150" y1="120" x2="250" y2="120" stroke="#14b8a6" />
+                        <line x1="150" y1="160" x2="250" y2="160" stroke="#14b8a6" />
+
+                        <!-- Data inside -->
+                        <text x="200" y="105" font-size="12" fill="#f8fafc" text-anchor="middle">Local Storage</text>
+                        <text x="200" y="145" font-size="10" fill="#94a3b8" text-anchor="middle">LZ Compressed
+                            Data</text>
+                        <text x="200" y="185" font-size="10" fill="#94a3b8" text-anchor="middle">Student Profiles</text>
+
+                        <!-- Rejected Cloud -->
+                        <path d="M 330 60 Q 360 40 380 60 Q 400 90 370 110 Q 350 130 330 110 Z" fill="#1e293b"
+                            opacity="0.6" />
+                        <text x="360" y="90" font-size="20" fill="#ef4444" text-anchor="middle">✕</text>
+                        <line x1="300" y1="100" x2="330" y2="90" stroke="#ef4444" stroke-width="3"
+                            stroke-dasharray="4" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 7: Empowering Families -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">Community</div>
+                    <h3 style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text;">
+                        Empowering Families</h3>
+                    <p>Response to Intervention (RTI) thrives when families are involved, but high-tier educational
+                        software is usually gatekept by district licensing fees.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #ef4444;">
+                        <div class="info-title">The $0 Software Extension</div>
+                        <div class="info-desc">Parents can practice identical phonics strategies and manipulatives at
+                            the kitchen table that teachers use in the classroom, ensuring continuity of care.</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <!-- School -->
+                        <rect x="50" y="80" width="100" height="120" rx="8" fill="#1e293b" stroke="#334155"
+                            stroke-width="2" />
+                        <text x="100" y="140" font-size="30" text-anchor="middle">🏫</text>
+                        <text x="100" y="170" font-size="12" fill="#94a3b8" text-anchor="middle">School Setup</text>
+
+                        <!-- Share Link -->
+                        <path d="M 150 140 Q 200 100 250 140" fill="none" class="path-solid" stroke="#ef4444" />
+                        <text x="200" y="115" font-size="20" text-anchor="middle">🔗</text>
+
+                        <!-- Home -->
+                        <rect x="250" y="80" width="100" height="120" rx="8" fill="#1e293b" stroke="#334155"
+                            stroke-width="2" />
+                        <text x="300" y="140" font-size="30" text-anchor="middle">🏠</text>
+                        <text x="300" y="170" font-size="12" fill="#94a3b8" text-anchor="middle">Home Practice</text>
+
+                        <!-- JSON Transfer File -->
+                        <rect x="180" y="140" width="40" height="50" rx="4" fill="#0f172a" stroke="#f87171"
+                            stroke-width="2" />
+                        <text x="200" y="165" font-size="10" fill="#f87171" font-weight="bold"
+                            text-anchor="middle">JSON</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Slide 8: Mission -->
+            <div class="slide">
+                <div class="slide-content">
+                    <div class="slide-tag">Mission</div>
+                    <h3 style="background: linear-gradient(135deg, #6366f1, #818cf8); -webkit-background-clip: text;">
+                        The Open-Source Commitment</h3>
+                    <p>Built by a public school educator to dismantle the "Differentiation Tax"—the unacceptable reality
+                        that teachers spend their own money on accommodations.</p>
+
+                    <div class="info-box" style="border-left: 4px solid #6366f1;">
+                        <div class="info-title">Fully Open Infrastructure</div>
+                        <div class="info-desc">AlloFlow is completely open-source. School districts or independent
+                            developers can fork, modify, and host their own internal variants of the platform without
+                            vendor lock-in.</div>
+                    </div>
+                </div>
+                <div class="slide-visual">
+                    <svg class="svg-container" viewBox="0 0 400 300">
+                        <circle cx="200" cy="150" r="100" fill="#0f172a" stroke="#475569" stroke-width="2" />
+                        <circle cx="200" cy="150" r="100" fill="none" class="path-line" stroke="#6366f1"
+                            stroke-dasharray="8 8" />
+
+                        <!-- Core -->
+                        <circle cx="200" cy="150" r="40" fill="#1e1b4b" stroke="#818cf8" stroke-width="3" />
+                        <text x="200" y="157" font-size="24" fill="#818cf8" text-anchor="middle">&lt;/&gt;</text>
+
+                        <!-- Forks -->
+                        <circle cx="120" cy="80" r="20" fill="#0f172a" stroke="#818cf8" stroke-width="2" />
+                        <text x="120" y="85" font-size="14" text-anchor="middle">🎒</text>
+                        <path d="M 135 95 L 175 125" class="path-solid" stroke="#475569" />
+
+                        <circle cx="280" cy="80" r="20" fill="#0f172a" stroke="#818cf8" stroke-width="2" />
+                        <text x="280" y="85" font-size="14" text-anchor="middle">🏛️</text>
+                        <path d="M 265 95 L 225 125" class="path-solid" stroke="#475569" />
+
+                        <circle cx="200" cy="260" r="20" fill="#0f172a" stroke="#818cf8" stroke-width="2" />
+                        <text x="200" y="265" font-size="14" text-anchor="middle">🌍</text>
+                        <path d="M 200 240 L 200 190" class="path-solid" stroke="#475569" />
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="controls">
+            <button class="btn" id="prev" aria-label="Previous">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                </svg>
+            </button>
+            <div id="indicator">1 / 8</div>
+            <button class="btn" id="next" aria-label="Next">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const s = document.querySelectorAll('.slide');
+        let cur = 0;
+        function update() {
+            s.forEach((slide, i) => {
+                slide.className = 'slide';
+                if (i === cur) slide.classList.add('active');
+                else if (i < cur) slide.classList.add('prev');
+            });
+            document.getElementById('indicator').textContent = `${cur + 1} / ${s.length}`;
+        }
+        document.getElementById('prev').onclick = () => { if (cur > 0) { cur--; update(); } };
+        document.getElementById('next').onclick = () => { if (cur < s.length - 1) { cur++; update(); } };
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' && cur < s.length - 1) { cur++; update(); }
+            if (e.key === 'ArrowLeft' && cur > 0) { cur--; update(); }
+        });
+    </script>
+</div>
+</div>
+                    
                 </div>
             </div>
         </section>
