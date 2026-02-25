@@ -1,5 +1,5 @@
 (function() {
-"use strict";
+if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
 // stem_lab_module.js
 // Auto-extracted from AlloFlowANTI.txt
 // STEM Lab module for AlloFlow - loaded from GitHub CDN
@@ -2915,6 +2915,5 @@ window.AlloModules.StemLab = function StemLabModal(props) {
     className: "text-xs text-rose-600 font-bold hover:underline"
   }, t('explore.next_challenge'))))))));
 };
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.StemLab = StemLab;
+}
 })();
