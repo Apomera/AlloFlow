@@ -1,3 +1,5 @@
+(function() {
+"use strict";
 // stem_lab_module.js
 // Auto-extracted from AlloFlowANTI.txt
 // STEM Lab module for AlloFlow - loaded from GitHub CDN
@@ -2915,3 +2917,4 @@ window.AlloModules.StemLab = function StemLabModal(props) {
 };
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.StemLab = StemLab;
+})();
