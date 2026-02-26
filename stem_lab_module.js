@@ -140,7 +140,7 @@
       } = props;
 
       // STEM Lab modal JSX
-      return /*#__PURE__*/React.createElement("div", {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
         className: "fixed inset-0 z-[9999] flex items-stretch justify-center",
         style: {
           background: 'rgba(15,23,42,0.7)',
@@ -2976,12 +2976,12 @@
           setFracAnswer('');
         },
         className: "text-xs text-rose-600 font-bold hover:underline"
-      }, t('explore.next_challenge'))))))));
+      }, t('explore.next_challenge'))))))))
 // ═══════════════════════════════════════════════════════
 // TIER 3: Calculus Visualizer, Wave Simulator, Cell Diagram
 // ═══════════════════════════════════════════════════════
 
-), stemLabTab === 'explore' && stemLabTool === 'calculus' && (() => {
+, stemLabTab === 'explore' && stemLabTool === 'calculus' && (() => {
   const d = labToolData.calculus;
   const upd = (key, val) => setLabToolData(prev => ({...prev, calculus: {...prev.calculus, [key]: val}}));
   const W = 440, H = 300, pad = 40;
@@ -3144,13 +3144,13 @@
       ),
       React.createElement("button", {onClick: () => { setToolSnapshots(prev => [...prev, {id:'ce-'+Date.now(), tool:'cell', label: d.type+' cell'+(d.selectedOrganelle ? ': '+d.selectedOrganelle : ''), data:{...d}, timestamp: Date.now()}]); addToast('📸 Cell snapshot saved!','success'); }, className: "ml-auto px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200"}, "📸 Snapshot")
     )
-  );
+  )
 })()
 // ═══════════════════════════════════════════════════════
 // NEW TOOLS: Function Grapher, Physics, Chem, Punnett, Circuit, Data, Inequality, Molecule
 // ═══════════════════════════════════════════════════════
 
-), stemLabTab === 'explore' && stemLabTool === 'funcGrapher' && (() => {
+, stemLabTab === 'explore' && stemLabTool === 'funcGrapher' && (() => {
         const d = labToolData.funcGrapher;
         const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
         const W = 400, H = 300, pad = 40;
@@ -3482,8 +3482,9 @@
               React.createElement("span", { className: "text-xs text-slate-400 ml-4" }, d.atoms.length + " atoms, " + d.bonds.length + " bonds")
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ml-' + Date.now(), tool: 'molecule', label: d.formula || 'molecule', data: { atoms: d.atoms.map(a => ({ ...a })), bonds: [...d.bonds], formula: d.formula }, timestamp: Date.now() }]); addToast('📸 Molecule snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
-          );
+          )
         })()
+    )
     };
   }
 })();
