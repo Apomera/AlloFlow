@@ -3030,7 +3030,7 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'calc-' + Date.now(), tool: 'calculus', label: `∫[${d.xMin},${d.xMax}] n=${d.n}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Calculus snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'calc-' + Date.now(), tool: 'calculus', label: `∫[${d.xMin},${d.xMax}] n=${d.n}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Calculus snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -3089,7 +3089,7 @@
             React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 text-center text-xs text-slate-500" },
               `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | A = ${Number(d.amplitude).toFixed(1)}`
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: `A=${d.amplitude} f=${d.frequency}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Wave snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: `A=${d.amplitude} f=${d.frequency}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -3195,7 +3195,7 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Function snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Function snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -3236,7 +3236,7 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '° ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('📸 Physics snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '° ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('📸 Physics snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -3325,7 +3325,7 @@
               React.createElement("p", { className: "text-sm font-bold text-slate-600" }, "Genotype Ratios: " + Object.entries(counts).map(([g, c]) => g + ': ' + c + '/4').join(' | ')),
               React.createElement("p", { className: "text-xs text-slate-400 mt-1" }, "Phenotype: " + grid.flat().filter(g => phenotype(g) === 'Dominant').length + "/4 Dominant, " + grid.flat().filter(g => phenotype(g) === 'Recessive').length + "/4 Recessive")
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pn-' + Date.now(), tool: 'punnett', label: d.parent1.join('') + ' × ' + d.parent2.join(''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Punnett snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pn-' + Date.now(), tool: 'punnett', label: d.parent1.join('') + ' × ' + d.parent2.join(''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Punnett snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -3414,7 +3414,7 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: { ...d, mode }, timestamp: Date.now() }]); addToast('\u{1F4F8} Circuit snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "\u{1F4F8} Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: { ...d, mode }, timestamp: Date.now() }]); addToast('\u{1F4F8} Circuit snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\u{1F4F8} Snapshot")
           )
         })(),
 
@@ -3499,7 +3499,7 @@
                 React.createElement("p", { className: "text-sm font-bold text-teal-800" }, (function (ps) { var m = ps.reduce(function (s, p) { return s + p.y }, 0) / ps.length; return Math.sqrt(ps.reduce(function (s, p) { return s + Math.pow(p.y - m, 2) }, 0) / ps.length); })(d.points).toFixed(2))
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dp-' + Date.now(), tool: 'dataPlot', label: d.points.length + ' pts r²=' + r2.toFixed(2), data: { points: [...d.points] }, timestamp: Date.now() }]); addToast('📸 Data snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dp-' + Date.now(), tool: 'dataPlot', label: d.points.length + ' pts r²=' + r2.toFixed(2), data: { points: [...d.points] }, timestamp: Date.now() }]); addToast('📸 Data snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -3533,9 +3533,13 @@
                 )
               ),
               ineq && React.createElement("circle", { cx: toSX(ineq.val), cy: 40, r: 6, fill: ineq.op.includes('=') ? '#d946ef' : 'white', stroke: "#d946ef", strokeWidth: 2.5 }),
-              ineq && React.createElement("line", { x1: toSX(ineq.val) + (ineq.op.includes('>') ? 10 : -10), y1: 40, x2: ineq.op.includes('>') ? W - pad : pad, y2: 40, stroke: "#d946ef", strokeWidth: 3 })
+              ineq && React.createElement("line", { x1: toSX(ineq.val) + (ineq.op.includes('>') ? 10 : -10), y1: 40, x2: ineq.op.includes('>') ? W - pad : pad, y2: 40, stroke: "#d946ef", strokeWidth: 3 }),
+              ineq && ineq.op.includes('>') && React.createElement("polygon", { points: `${W - pad},40 ${W - pad - 12},32 ${W - pad - 12},48`, fill: "#d946ef" }),
+              ineq && ineq.op.includes('<') && React.createElement("polygon", { points: `${pad},40 ${pad + 12},32 ${pad + 12},48`, fill: "#d946ef" }),
+              React.createElement("polygon", { points: `${W - pad},40 ${W - pad - 8},35 ${W - pad - 8},45`, fill: "#94a3b8" }),
+              React.createElement("polygon", { points: `${pad},40 ${pad + 8},35 ${pad + 8},45`, fill: "#94a3b8" })
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'iq-' + Date.now(), tool: 'inequality', label: d.expr, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Inequality snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'iq-' + Date.now(), tool: 'inequality', label: d.expr, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Inequality snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
