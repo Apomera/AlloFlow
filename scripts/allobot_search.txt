@@ -1,0 +1,11 @@
+﻿=== AlloBot area ===
+L10000: let introFiredGlobal = false;
+L10001: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onM
+L10002: const { t } = useContext(LanguageContext);
+L10003: const [position, setPosition] = useState(() => {
+L10004: try {
+L10005: const saved = safeGetItem('allo_bot_pos_v2');
+L10006: return saved ? JSON.parse(saved) : { x: 24, y: 20 };
+
+L10459: if (canPlayIntro && !hasSeenBotIntro && !isTalking && !customMessage && !introFiredGlobal && t('bot_events.intro_greeting') !== 'bot_events.intro_gree
+L10463: speak(t('bot_events.intro_greeting'));
