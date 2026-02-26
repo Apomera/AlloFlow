@@ -87,9 +87,46 @@ const GRADE_SUBTEST_BATTERIES = {
   '2':   ['segmentation', 'blending', 'rhyming', 'spelling', 'orf'],
   '3-5': ['segmentation', 'rhyming', 'spelling', 'orf'],
 };
-const INSTRUCTION_AUDIO = window.__ALLO_INSTRUCTION_AUDIO || {};
-const ISOLATION_AUDIO = window.__ALLO_ISOLATION_AUDIO || {};
-const PHONEME_AUDIO_BANK = window.__ALLO_PHONEME_AUDIO_BANK || {};
+// Live bridges - always read from parent scope to handle async audio bank loading
+const INSTRUCTION_AUDIO = new Proxy({}, {
+    get(_, prop) {
+        const src = window.__ALLO_INSTRUCTION_AUDIO;
+        if (!src) { if (prop !== 'raw_ref') console.warn('[WS-AUDIO] INSTRUCTION_AUDIO not available from parent'); return undefined; }
+        return src[prop];
+    },
+    has(_, prop) { const src = window.__ALLO_INSTRUCTION_AUDIO; return src ? (prop in src) : false; },
+    ownKeys() { const src = window.__ALLO_INSTRUCTION_AUDIO; return src ? Reflect.ownKeys(src) : []; },
+    getOwnPropertyDescriptor(_, prop) { const src = window.__ALLO_INSTRUCTION_AUDIO; if (!src) return undefined; const d = Object.getOwnPropertyDescriptor(src, prop); if (d) { d.configurable = true; } return d; }
+});
+const ISOLATION_AUDIO = new Proxy({}, {
+    get(_, prop) {
+        const src = window.__ALLO_ISOLATION_AUDIO;
+        if (!src) { if (prop !== 'raw_ref') console.warn('[WS-AUDIO] ISOLATION_AUDIO not available from parent'); return undefined; }
+        return src[prop];
+    },
+    has(_, prop) { const src = window.__ALLO_ISOLATION_AUDIO; return src ? (prop in src) : false; },
+    ownKeys() { const src = window.__ALLO_ISOLATION_AUDIO; return src ? Reflect.ownKeys(src) : []; },
+    getOwnPropertyDescriptor(_, prop) { const src = window.__ALLO_ISOLATION_AUDIO; if (!src) return undefined; const d = Object.getOwnPropertyDescriptor(src, prop); if (d) { d.configurable = true; } return d; }
+});
+const PHONEME_AUDIO_BANK = new Proxy({}, {
+    get(_, prop) {
+        const src = window.__ALLO_PHONEME_AUDIO_BANK;
+        if (!src) { if (prop !== 'raw_ref') console.warn('[WS-AUDIO] PHONEME_AUDIO_BANK not available from parent'); return undefined; }
+        const val = src[prop];
+        if (prop !== 'raw_ref' && prop !== Symbol.toPrimitive && prop !== Symbol.toStringTag && typeof prop === 'string' && prop.length <= 3) {
+            console.log('[WS-AUDIO] PHONEME_AUDIO_BANK[' + prop + '] =', val ? 'data:audio...' + String(val).substring(0, 30) : 'null/undefined');
+        }
+        return val;
+    },
+    has(_, prop) { const src = window.__ALLO_PHONEME_AUDIO_BANK; return src ? (prop in src) : false; },
+    ownKeys() { const src = window.__ALLO_PHONEME_AUDIO_BANK; return src ? Reflect.ownKeys(src) : []; },
+    getOwnPropertyDescriptor(_, prop) { const src = window.__ALLO_PHONEME_AUDIO_BANK; if (!src) return undefined; const d = Object.getOwnPropertyDescriptor(src, prop); if (d) { d.configurable = true; } return d; }
+});
+console.log('[WS-AUDIO] Bridge initialized. Parent audio available:', {
+    INSTRUCTION: !!window.__ALLO_INSTRUCTION_AUDIO,
+    ISOLATION: !!window.__ALLO_ISOLATION_AUDIO,
+    PHONEME: !!window.__ALLO_PHONEME_AUDIO_BANK
+});
 
 
 
