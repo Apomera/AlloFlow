@@ -1,0 +1,17 @@
+=== Searching for audio_input4 ===
+
+Searching: C:\Users\cabba
+
+Searching: C:\Users\cabba/Downloads
+
+Searching: C:\Users\cabba/OneDrive/Desktop
+
+Searching: C:\Users\cabba/OneDrive/Desktop/UDL-Tool-Updated
+  FOUND: audio_input (0 bytes)
+  FOUND: audio_input2 (0 bytes)
+  FOUND: audio_input3 (0 bytes)
+  FOUND: audio_input4 (0 bytes)
+
+Searching: C:\Users\cabba/Documents
+
+Recursive search in: C:\Users\cabba/OneDrive/Desktop/UDL-Tool-Updated

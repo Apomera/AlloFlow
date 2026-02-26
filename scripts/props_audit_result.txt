@@ -1,0 +1,7 @@
+Expected: 113 props
+Passed: 112 props
+
+MISSING (1):
+  setData
+
+EXTRA (0):

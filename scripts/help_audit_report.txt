@@ -1,0 +1,728 @@
+HELP_STRINGS block: lines 35079 to 35841
+Defined in HELP_STRINGS: 647
+Used in JSX: 576
+Matched: 576
+Used but NO definition: 0
+Defined but NOT used: 71
+
+=== DEFINED BUT NOT USED (71) ===
+  alignment_generate_button (L35286)
+  alignment_grade_select (L35285)
+  alignment_standard_select (L35284)
+  analysis_depth (L35512)
+  analysis_focus (L35513)
+  brainstorm_simulation_detailed (L35256)
+  brainstorm_step_count_detailed (L35257)
+  concept_sort_categories_detailed (L35272)
+  concept_sort_input (L35271)
+  concept_sort_item_count (L35274)
+  dashboard_toggle_graded (L35227)
+  escape_room_matching_columns (L35460)
+  escape_room_matching_submit (L35461)
+  escape_room_sequence_check (L35459)
+  escape_room_sequence_list (L35458)
+  export_share_button (L35247)
+  export_word_button (L35246)
+  glossary_word_sounds (L35293)
+  group_karaoke_toggle (L35217)
+  header_actions (L35328)
+  header_animation_toggle (L35491)
+  header_help_toggle (L35496)
+  header_hints_recall (L35495)
+  header_overlay_toggle (L35493)
+  header_settings (L35325)
+  header_settings_type (L35133)
+  header_settings_voice_pitch (L35482)
+  header_sync_toggle (L35497)
+  header_theme_toggle (L35492)
+  header_tools (L35326)
+  header_utils (L35327)
+  header_view_student (L35149)
+  header_view_teacher (L35148)
+  header_view_toggle (L35494)
+  header_xp_modal (L35490)
+  large_file_dropzone (L35642)
+  large_file_transcribe_btn (L35643)
+  lesson_plan_assessment (L35509)
+  lesson_plan_differentiation (L35508)
+  lesson_plan_duration (L35506)
+  lesson_plan_generate_button (L35510)
+  lesson_plan_objectives (L35507)
+  math_difficulty (L35266)
+  math_problem_count (L35268)
+  math_show_work (L35269)
+  outline_depth (L35516)
+  persona_continue_btn (L35184)
+  persona_custom_instructions_detailed (L35260)
+  persona_free_response_detailed (L35261)
+  persona_mode_toggle (L35262)
+  persona_selection (L35259)
+  profiles_export_button (L35612)
+  profiles_import_button (L35611)
+  profiles_save_button (L35610)
+  profiles_select_dropdown (L35609)
+  quiz_boss_difficulty (L35207)
+  quiz_difficulty_mix (L35276)
+  quiz_end_btn (L35209)
+  quiz_question_types (L35277)
+  resource_next_button (L35250)
+  resource_prev_button (L35249)
+  timeline_count_detailed (L35281)
+  timeline_topic_detailed (L35280)
+  tool_phonics_mode (L35697)
+  visuals_delete (L35603)
+  visuals_low_quality (L35417)
+  wizard_close_btn (L35782)
+  word_sounds_mic (L35712)
+  word_sounds_play (L35713)
+  wordsounds_check_btn (L35204)
+  ws_modal_close (L35738)
+
+=== ALL DEFINED KEYS ===
+  L35532 | adventure_allow_cloud
+  L35533 | adventure_auto_climax
+  L35534 | adventure_cancel_new
+  L35362 | adventure_chance_mode
+  L35754 | adventure_choice_btn
+  L35753 | adventure_choice_toggle
+  L35535 | adventure_cloud_storage
+  L35536 | adventure_confirm_new
+  L35360 | adventure_custom_instructions
+  L35358 | adventure_difficulty
+  L35757 | adventure_edit_options
+  L35361 | adventure_free_response
+  L35751 | adventure_immersive_autoread
+  L35750 | adventure_immersive_exit
+  L35752 | adventure_immersive_inventory
+  L35749 | adventure_immersive_toggle_ui
+  L35755 | adventure_input_field
+  L35357 | adventure_input_mode
+  L35756 | adventure_input_send
+  L35359 | adventure_language
+  L35537 | adventure_lock_settings
+  L35538 | adventure_low_quality
+  L35748 | adventure_resume_btn
+  L35744 | adventure_setup_chk_chance
+  L35743 | adventure_setup_chk_freeresponse
+  L35746 | adventure_setup_chk_lowqual
+  L35745 | adventure_setup_chk_story
+  L35741 | adventure_setup_difficulty
+  L35740 | adventure_setup_input_mode
+  L35742 | adventure_setup_language
+  L35363 | adventure_social_story
+  L35747 | adventure_start_btn
+  L35539 | adventure_story_mode
+  L35364 | adventure_system_state
+  L35286 | alignment_generate_button
+  L35285 | alignment_grade_select
+  L35284 | alignment_standard_select
+  L35379 | analysis_check_accuracy
+  L35512 | analysis_depth
+  L35513 | analysis_focus
+  L35514 | analysis_generate_button
+  L35190 | bingo_card_count_input
+  L35189 | bingo_close_btn
+  L35195 | bingo_exit_caller_btn
+  L35191 | bingo_images_chk
+  L35194 | bingo_launch_caller_btn
+  L35200 | bingo_next_clue
+  L35198 | bingo_prev_clue
+  L35193 | bingo_print_btn
+  L35192 | bingo_regenerate_btn
+  L35196 | bingo_speed_slider
+  L35199 | bingo_toggle_autoplay
+  L35197 | bingo_toggle_history
+  L35160 | bot_avatar
+  L35164 | bot_mic_btn
+  L35163 | bot_mute_btn
+  L35162 | bot_settings_btn
+  L35161 | bot_sleep_btn
+  L35308 | brainstorm_card
+  L35429 | brainstorm_custom_instructions
+  L35430 | brainstorm_generate_button
+  L35309 | brainstorm_guide
+  L35307 | brainstorm_panel
+  L35256 | brainstorm_simulation_detailed
+  L35427 | brainstorm_simulation_type
+  L35428 | brainstorm_step_count
+  L35257 | brainstorm_step_count_detailed
+  L35829 | bridge_mode_button
+  L35705 | chat_auto_send
+  L35504 | chat_autofill
+  L35709 | chat_close
+  L35503 | chat_consult_btn
+  L35708 | chat_expand
+  L35501 | chat_framework_select
+  L35502 | chat_grade_select
+  L35499 | chat_input
+  L35706 | chat_save
+  L35185 | chat_save_advice_btn
+  L35500 | chat_send
+  L35707 | chat_show_me
+  L35704 | chat_voice_mode
+  L35663 | concept_sort_add_btn
+  L35456 | concept_sort_add_item
+  L35452 | concept_sort_bucket
+  L35664 | concept_sort_card_item
+  L35438 | concept_sort_categories
+  L35272 | concept_sort_categories_detailed
+  L35316 | concept_sort_category
+  L35454 | concept_sort_check_answers
+  L35453 | concept_sort_deck
+  L35450 | concept_sort_game
+  L35273 | concept_sort_generate_button
+  L35451 | concept_sort_header
+  L35271 | concept_sort_input
+  L35317 | concept_sort_item
+  L35274 | concept_sort_item_count
+  L35240 | concept_sort_items
+  L35314 | concept_sort_panel
+  L35455 | concept_sort_reset
+  L35315 | concept_sort_start_button
+  L35760 | crossword_close_btn
+  L35472 | crossword_clues_list
+  L35473 | crossword_controls
+  L35470 | crossword_game_container
+  L35471 | crossword_grid
+  L35231 | dashboard_add_file_btn_input
+  L35225 | dashboard_clear_all_btn
+  L35521 | dashboard_clear_btn
+  L35226 | dashboard_close_btn
+  L35528 | dashboard_detail_back
+  L35830 | dashboard_detail_games
+  L35831 | dashboard_detail_label_challenge
+  L35763 | dashboard_detail_running_record
+  L35529 | dashboard_detail_safety
+  L35832 | dashboard_detail_socratic
+  L35530 | dashboard_detail_transcript
+  L35833 | dashboard_detail_word_sounds
+  L35230 | dashboard_drop_zone_input
+  L35520 | dashboard_export_csv
+  L35224 | dashboard_export_csv_btn
+  L35229 | dashboard_export_pdf_btn
+  L35519 | dashboard_import_btn
+  L35834 | dashboard_live_sync
+  L35228 | dashboard_review_btn
+  L35835 | dashboard_rti_monitor
+  L35836 | dashboard_rti_summary
+  L35837 | dashboard_safety_toggle
+  L35525 | dashboard_stat_activities
+  L35524 | dashboard_stat_flags
+  L35523 | dashboard_stat_quiz
+  L35522 | dashboard_stat_students
+  L35527 | dashboard_student_row
+  L35526 | dashboard_student_table
+  L35227 | dashboard_toggle_graded
+  L35758 | democracy_toggle
+  L35636 | entry_adjective
+  L35637 | entry_animal
+  L35640 | entry_load_exist
+  L35638 | entry_randomize_btn
+  L35639 | entry_start_new
+  L35392 | escape_room_cipher_input
+  L35393 | escape_room_cipher_submit
+  L35187 | escape_room_close_btn
+  L35394 | escape_room_fillin_input
+  L35395 | escape_room_fillin_submit
+  L35390 | escape_room_hint_button
+  L35388 | escape_room_leaderboard
+  L35385 | escape_room_lives
+  L35460 | escape_room_matching_columns
+  L35399 | escape_room_matching_container
+  L35461 | escape_room_matching_submit
+  L35391 | escape_room_mcq_option
+  L35389 | escape_room_object
+  L35387 | escape_room_progress
+  L35396 | escape_room_scramble_input
+  L35397 | escape_room_scramble_submit
+  L35459 | escape_room_sequence_check
+  L35398 | escape_room_sequence_container
+  L35458 | escape_room_sequence_list
+  L35384 | escape_room_streak
+  L35386 | escape_room_team
+  L35383 | escape_room_timer
+  L35244 | export_copy_button
+  L35541 | export_html
+  L35542 | export_ims
+  L35245 | export_pdf_button
+  L35543 | export_print
+  L35544 | export_qti
+  L35247 | export_share_button
+  L35545 | export_slides
+  L35546 | export_storybook_images
+  L35547 | export_storybook_text
+  L35246 | export_word_button
+  L35548 | export_worksheet
+  L35551 | fab_dictation
+  L35552 | fab_focus
+  L35553 | fab_line_focus
+  L35554 | fab_ruler
+  L35555 | fab_timer
+  L35550 | fab_toggle
+  L35421 | faq_count
+  L35422 | faq_custom_instructions
+  L35653 | faq_edit_toggle
+  L35654 | faq_goal_panel
+  L35655 | faq_item
+  L35658 | flashcard_next
+  L35659 | flashcard_play_sequence
+  L35657 | flashcard_prev
+  L35440 | fullpack_auto_config
+  L35702 | fullpack_generate
+  L35441 | fullpack_resource_count
+  L35107 | gen_loading_hint
+  L35106 | gen_loading_progress
+  L35105 | gen_loading_screen
+  L35335 | generator_actions
+  L35081 | global_mute_toggle
+  L35095 | glossary_add_term
+  L35371 | glossary_auto_remove
+  L35091 | glossary_bingo
+  L35089 | glossary_crossword
+  L35369 | glossary_custom_instructions
+  L35368 | glossary_definition_level
+  L35290 | glossary_delete_image
+  L35292 | glossary_download_audio
+  L35094 | glossary_edit
+  L35661 | glossary_edit_tier
+  L35085 | glossary_export_language
+  L35084 | glossary_export_standard
+  L35099 | glossary_filter_all
+  L35100 | glossary_filter_tier2
+  L35101 | glossary_filter_tier3
+  L35764 | glossary_health_check
+  L35098 | glossary_image_size
+  L35096 | glossary_image_style
+  L35083 | glossary_language_flashcards
+  L35370 | glossary_language_input
+  L35090 | glossary_matching
+  L35088 | glossary_memory_game
+  L35092 | glossary_play_bingo
+  L35086 | glossary_puzzle_lang
+  L35289 | glossary_regen_image
+  L35288 | glossary_remove_words
+  L35093 | glossary_scramble
+  L35102 | glossary_search
+  L35291 | glossary_speak_term
+  L35082 | glossary_standard_flashcards
+  L35097 | glossary_terms_table
+  L35366 | glossary_tier2_count
+  L35367 | glossary_tier3_count
+  L35087 | glossary_word_search
+  L35293 | glossary_word_sounds
+  L35479 | group_active_list
+  L35477 | group_create_button
+  L35476 | group_create_input
+  L35217 | group_karaoke_toggle
+  L35475 | group_modal_container
+  L35214 | group_reading_level_select
+  L35478 | group_resource_library
+  L35480 | group_roster_list
+  L35216 | group_tts_speed_select
+  L35215 | group_visual_density_select
+  L35155 | header_about
+  L35328 | header_actions
+  L35491 | header_animation_toggle
+  L35152 | header_bot_toggle
+  L35153 | header_cloud_sync
+  L35150 | header_dashboard
+  L35487 | header_export
+  L35496 | header_help_toggle
+  L35495 | header_hints_recall
+  L35151 | header_jump_lesson
+  L35483 | header_language
+  L35493 | header_overlay_toggle
+  L35485 | header_session_join
+  L35484 | header_session_start
+  L35486 | header_session_status
+  L35325 | header_settings
+  L35145 | header_settings_anim
+  L35147 | header_settings_overlay
+  L35134 | header_settings_text
+  L35139 | header_settings_text_bionic
+  L35135 | header_settings_text_font
+  L35137 | header_settings_text_line_height
+  L35140 | header_settings_text_reset
+  L35136 | header_settings_text_size
+  L35138 | header_settings_text_spacing
+  L35146 | header_settings_theme
+  L35133 | header_settings_type
+  L35141 | header_settings_voice
+  L35482 | header_settings_voice_pitch
+  L35142 | header_settings_voice_select
+  L35143 | header_settings_voice_speed
+  L35144 | header_settings_voice_volume
+  L35489 | header_submit
+  L35156 | header_support
+  L35497 | header_sync_toggle
+  L35492 | header_theme_toggle
+  L35326 | header_tools
+  L35154 | header_tour_start
+  L35488 | header_translate
+  L35327 | header_utils
+  L35149 | header_view_student
+  L35148 | header_view_teacher
+  L35494 | header_view_toggle
+  L35490 | header_xp_modal
+  L35675 | hints_generate_extension
+  L35157 | hints_recall
+  L35765 | history_cancel_unit_btn
+  L35254 | history_clear_button
+  L35766 | history_create_unit_btn
+  L35767 | history_delete_unit_btn
+  L35768 | history_filter_unit_select
+  L35769 | history_item_drag
+  L35677 | history_load_project
+  L35680 | history_max_toggle
+  L35770 | history_move_down_btn
+  L35771 | history_move_to_unit_btn
+  L35772 | history_move_up_btn
+  L35253 | history_panel
+  L35773 | history_rename_btn
+  L35679 | history_save_student
+  L35678 | history_save_teacher
+  L35774 | history_save_unit_btn
+  L35681 | history_settings
+  L35775 | history_unit_name_input
+  L35685 | immersive_line_focus
+  L35686 | immersive_syllables
+  L35687 | immersive_wide_text
+  L35701 | input_area
+  L35761 | inventory_item
+  L35642 | large_file_dropzone
+  L35643 | large_file_transcribe_btn
+  L35683 | lesson_edit_instruction
+  L35509 | lesson_plan_assessment
+  L35355 | lesson_plan_custom_additions
+  L35508 | lesson_plan_differentiation
+  L35506 | lesson_plan_duration
+  L35510 | lesson_plan_generate_button
+  L35507 | lesson_plan_objectives
+  L35651 | mastery_draft_input
+  L35595 | matching_check_btn
+  L35594 | matching_def_item
+  L35592 | matching_reset_btn
+  L35593 | matching_term_item
+  L35349 | math_context
+  L35266 | math_difficulty
+  L35267 | math_generate_button
+  L35673 | math_generate_similar
+  L35321 | math_graph
+  L35265 | math_input
+  L35242 | math_mode
+  L35319 | math_panel
+  L35322 | math_problem
+  L35268 | math_problem_count
+  L35348 | math_quantity
+  L35269 | math_show_work
+  L35323 | math_student_work
+  L35241 | math_subject
+  L35320 | math_toggle_answers
+  L35590 | memory_card_item
+  L35589 | memory_fullscreen_btn
+  L35587 | memory_mode_select
+  L35588 | memory_reset_btn
+  L35436 | outline_custom_instructions
+  L35516 | outline_depth
+  L35517 | outline_generate_button
+  L35435 | outline_structure
+  L35666 | persona_auto_read
+  L35373 | persona_auto_send
+  L35182 | persona_back_btn
+  L35312 | persona_card
+  L35776 | persona_close
+  L35667 | persona_conclude
+  L35184 | persona_continue_btn
+  L35668 | persona_custom_instructions
+  L35260 | persona_custom_instructions_detailed
+  L35669 | persona_free_response
+  L35261 | persona_free_response_detailed
+  L35263 | persona_generate_button
+  L35670 | persona_hints_toggle
+  L35262 | persona_mode_toggle
+  L35311 | persona_panel
+  L35181 | persona_reflection_input
+  L35381 | persona_response_mode
+  L35376 | persona_save_chat
+  L35671 | persona_select_button
+  L35259 | persona_selection
+  L35374 | persona_show_hints
+  L35183 | persona_submit_btn
+  L35375 | persona_topic_spark
+  L35612 | profiles_export_button
+  L35611 | profiles_import_button
+  L35610 | profiles_save_button
+  L35609 | profiles_select_dropdown
+  L35211 | quiz_add_group_btn
+  L35218 | quiz_assign_student_select
+  L35207 | quiz_boss_difficulty
+  L35353 | quiz_custom_instructions
+  L35276 | quiz_difficulty_mix
+  L35352 | quiz_dok
+  L35209 | quiz_end_btn
+  L35278 | quiz_generate_button
+  L35213 | quiz_group_language_select
+  L35212 | quiz_group_resource_select
+  L35208 | quiz_local_stats_btn
+  L35206 | quiz_mode_select
+  L35210 | quiz_new_group_input
+  L35222 | quiz_next_question_btn
+  L35221 | quiz_prev_question_btn
+  L35443 | quiz_question_count
+  L35277 | quiz_question_types
+  L35351 | quiz_reflection_count
+  L35219 | quiz_reveal_btn
+  L35220 | quiz_start_question_btn
+  L35448 | quiz_student_answer_option
+  L35446 | quiz_student_mode_header
+  L35445 | quiz_student_overlay
+  L35447 | quiz_student_question
+  L35251 | resource_delete_button
+  L35250 | resource_next_button
+  L35249 | resource_prev_button
+  L35617 | role_independent
+  L35616 | role_parent
+  L35615 | role_student
+  L35614 | role_teacher
+  L35838 | roster_manage_button
+  L35839 | roster_panel_header
+  L35425 | scaffolds_custom_instructions
+  L35557 | scaffolds_edit_toggle
+  L35558 | scaffolds_goal_panel
+  L35559 | scaffolds_grading
+  L35560 | scaffolds_item
+  L35561 | scaffolds_paragraph_frame
+  L35562 | scaffolds_reset
+  L35563 | scaffolds_student_input
+  L35424 | scaffolds_type
+  L35565 | settings_adventure_xp
+  L35566 | settings_base_xp
+  L35567 | settings_close_btn
+  L35568 | settings_free_response
+  L35569 | settings_lock_all
+  L35570 | settings_perm_custom
+  L35571 | settings_perm_difficulty
+  L35572 | settings_perm_mode
+  L35573 | settings_perm_visuals
+  L35574 | settings_persona_free
+  L35575 | settings_unlock_xp
+  L35689 | sidebar_tab_create
+  L35690 | sidebar_tab_history
+  L35298 | simplified_add_term
+  L35411 | simplified_charts
+  L35578 | simplified_check_level
+  L35410 | simplified_citations
+  L35300 | simplified_cloze_mode
+  L35579 | simplified_compare_mode
+  L35304 | simplified_complexity_slider
+  L35580 | simplified_copy_text
+  L35412 | simplified_custom_instructions
+  L35296 | simplified_define_mode
+  L35402 | simplified_differentiation
+  L35406 | simplified_dok
+  L35303 | simplified_download_audio
+  L35581 | simplified_duplicate
+  L35582 | simplified_edit
+  L35409 | simplified_emojis
+  L35299 | simplified_explain_mode
+  L35403 | simplified_format
+  L35401 | simplified_grade_level
+  L35583 | simplified_immersive_reader
+  L35408 | simplified_interests
+  L35405 | simplified_language
+  L35404 | simplified_length
+  L35305 | simplified_overwrite_toggle
+  L35297 | simplified_phonics_mode
+  L35295 | simplified_read_along
+  L35294 | simplified_read_mode
+  L35302 | simplified_revise_mode
+  L35584 | simplified_rigor_report
+  L35301 | simplified_scramble_game
+  L35407 | simplified_standards
+  L35585 | simplified_teacher_tools
+  L35777 | socratic_auto_read
+  L35778 | socratic_auto_send
+  L35779 | socratic_close
+  L35780 | socratic_expand
+  L35693 | socratic_input
+  L35692 | socratic_toggle
+  L35239 | source_generate_btn
+  L35334 | source_generate_button
+  L35330 | source_input
+  L35238 | source_link_btn
+  L35332 | source_settings_instructions
+  L35331 | source_settings_length
+  L35237 | source_upload_btn
+  L35333 | source_verify_checkbox
+  L35235 | standards_query_input
+  L35234 | standards_region_input
+  L35236 | standards_search_btn
+  L35649 | submit_confirm_btn
+  L35719 | syntax_check
+  L35715 | syntax_close
+  L35717 | syntax_dropped_word
+  L35716 | syntax_finish
+  L35720 | syntax_next
+  L35718 | syntax_pool_word
+  L35646 | teacher_gate_input
+  L35645 | teacher_gate_modal
+  L35647 | teacher_gate_unlock
+  L35601 | timeline_check_btn
+  L35433 | timeline_count
+  L35281 | timeline_count_detailed
+  L35597 | timeline_draggable_item
+  L35282 | timeline_generate_button
+  L35599 | timeline_move_down
+  L35598 | timeline_move_up
+  L35600 | timeline_reset_btn
+  L35432 | timeline_topic
+  L35280 | timeline_topic_detailed
+  L35629 | timer_close_btn
+  L35627 | timer_duration_btn
+  L35628 | timer_reset_btn
+  L35626 | timer_task_input
+  L35103 | tool_adventure
+  L35112 | tool_alignment
+  L35113 | tool_analysis
+  L35121 | tool_brainstorm
+  L35123 | tool_concept_sort
+  L35696 | tool_define_mode
+  L35698 | tool_explain_mode
+  L35119 | tool_faq
+  L35111 | tool_fullpack
+  L35114 | tool_glossary
+  L35110 | tool_lesson_plan
+  L35165 | tool_math
+  L35120 | tool_outline
+  L35122 | tool_persona
+  L35697 | tool_phonics_mode
+  L35109 | tool_quiz
+  L35695 | tool_read_mode
+  L35118 | tool_scaffolds
+  L35167 | tool_simplified
+  L35699 | tool_syntax_game
+  L35166 | tool_timeline
+  L35338 | tool_udl
+  L35337 | tool_visual
+  L35115 | tool_wordsounds
+  L35341 | tour-analysis-settings
+  L35345 | tour-faq-settings
+  L35342 | tour-glossary-settings
+  L35346 | tour-scaffolds-settings
+  L35343 | tour-simplified-settings
+  L35344 | tour-visual-settings
+  L35116 | tour-wordsounds-panel
+  L35622 | ui_lang_export_btn
+  L35621 | ui_lang_import_btn
+  L35623 | ui_lang_manual_input
+  L35624 | ui_lang_manual_submit
+  L35620 | ui_lang_regenerate_btn
+  L35619 | ui_language_select
+  L35124 | venn_back_btn
+  L35126 | venn_bank_item
+  L35466 | venn_drop_zone_a
+  L35467 | venn_drop_zone_b
+  L35468 | venn_drop_zone_shared
+  L35463 | venn_game_container
+  L35464 | venn_header
+  L35465 | venn_item_bank
+  L35127 | venn_move_a
+  L35128 | venn_move_b
+  L35130 | venn_move_bank
+  L35131 | venn_move_cancel
+  L35129 | venn_move_shared
+  L35125 | venn_sorted_item
+  L35418 | visuals_art_style
+  L35415 | visuals_creative_mode
+  L35419 | visuals_custom_instructions
+  L35603 | visuals_delete
+  L35604 | visuals_download
+  L35840 | visuals_layout_mode
+  L35417 | visuals_low_quality
+  L35416 | visuals_no_text
+  L35605 | visuals_prompt
+  L35606 | visuals_refiner
+  L35607 | visuals_regenerate
+  L35414 | visuals_worksheet_mode
+  L35631 | welcome_load_btn
+  L35632 | welcome_skip_btn
+  L35781 | wizard_back_results_btn
+  L35782 | wizard_close_btn
+  L35783 | wizard_complete_btn
+  L35784 | wizard_content_next_btn
+  L35785 | wizard_dok_select
+  L35786 | wizard_find_standard_btn
+  L35787 | wizard_format_select
+  L35826 | wizard_generate_source
+  L35788 | wizard_grade_option
+  L35789 | wizard_growth_goal_input
+  L35790 | wizard_instructions_input
+  L35791 | wizard_interest_add_btn
+  L35792 | wizard_interest_input
+  L35793 | wizard_interest_remove_btn
+  L35794 | wizard_lang_add_btn
+  L35795 | wizard_lang_common_select
+  L35796 | wizard_lang_input
+  L35797 | wizard_lang_remove_btn
+  L35798 | wizard_length_select
+  L35799 | wizard_level_select
+  L35800 | wizard_next_grade_btn
+  L35801 | wizard_prev_btn
+  L35802 | wizard_region_input
+  L35803 | wizard_search_btn
+  L35804 | wizard_search_input
+  L35805 | wizard_search_result_link
+  L35806 | wizard_search_result_select
+  L35824 | wizard_search_source
+  L35807 | wizard_skip_btn
+  L35808 | wizard_standard_select
+  L35809 | wizard_std_manual_add_btn
+  L35810 | wizard_std_manual_input
+  L35811 | wizard_std_mode_ai
+  L35812 | wizard_std_mode_manual
+  L35813 | wizard_std_remove_btn
+  L35814 | wizard_tone_select
+  L35815 | wizard_topic_input
+  L35820 | wizard_upload_source
+  L35816 | wizard_url_fetch_btn
+  L35817 | wizard_url_input
+  L35822 | wizard_url_source
+  L35818 | wizard_verify_checkbox
+  L35819 | wizard_vocab_input
+  L35108 | word_sounds_loading_minimized
+  L35712 | word_sounds_mic
+  L35713 | word_sounds_play
+  L35170 | word_sounds_review_back
+  L35173 | word_sounds_review_delete_word
+  L35178 | word_sounds_review_distractor_input
+  L35176 | word_sounds_review_image_gen
+  L35172 | word_sounds_review_move_word
+  L35177 | word_sounds_review_phoneme_bank
+  L35179 | word_sounds_review_play_distractor
+  L35175 | word_sounds_review_play_phonemes
+  L35174 | word_sounds_review_play_word
+  L35171 | word_sounds_review_regen_word
+  L35169 | word_sounds_review_start
+  L35204 | wordsounds_check_btn
+  L35117 | wordsounds_open_btn
+  L35203 | wordsounds_pool_item
+  L35202 | wordsounds_test_sequence
+  L35723 | ws_gen_close
+  L35727 | ws_gen_count_slider
+  L35724 | ws_gen_expand
+  L35734 | ws_gen_family_select
+  L35722 | ws_gen_minimize
+  L35725 | ws_gen_ortho_slider
+  L35737 | ws_gen_quick_add_btn
+  L35736 | ws_gen_quick_add_input
+  L35726 | ws_gen_review_btn
+  L35728 | ws_gen_session_slider
+  L35735 | ws_gen_src_custom
+  L35733 | ws_gen_src_family
+  L35732 | ws_gen_src_glossary
+  L35731 | ws_gen_syllable_max
+  L35730 | ws_gen_syllable_min
+  L35729 | ws_gen_theme_input
+  L35738 | ws_modal_close
+  L35634 | xp_modal_summary
+  L35158 | xp_modal_trigger

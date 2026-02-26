@@ -1,0 +1,537 @@
+=== DEEP TOUR AUDIT ===
+
+--- HISTORY PANEL FEATURES ---
+
+history: Line 21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout, HelpCircle, CircleHelp, CheckCircle2, R
+history: Line 1798: wordSoundsHistory,
+  Total: 682
+
+session: Line 697: 'word_sounds.session_progress': 'Session Progress',
+session: Line 1827: wordSoundsSessionGoal = 10,
+  Total: 535
+
+restore: Line 25: import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc, collection, query, where, getDocs, writeBa
+restore: Line 31: const db = getFirestore(firebaseApp);
+  Total: 74
+
+version: Line 9: the Free Software Foundation, version 3
+version: Line 34: const TRANSLATION_VERSION = 'v1';
+  Total: 49
+
+save.*session: Line 27475: • **Save/Load**: Use the 'Save Session' button to download your work as a JSON file. Load it later to continue where you
+save.*session: Line 28107: 'chat_save': "Save the current conversation to your session history for later reference.",
+  Total: 2
+
+  Total: 0
+
+
+--- VISUAL ORGANIZER FEATURES ---
+
+Line 953: PHONEME_AUDIO_BANK['k'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGF
+Line 6820: venn_sort_title: "Venn Diagram Sort",
+Line 8404: sidebar_outline_desc: "Create structured visual representations of content including concept maps, f
+Line 8441: venn: "Venn Diagram (Interactive)",
+Line 8754: venn: {
+Line 8759: setup_title: "Venn Game Setup",
+Line 8784: venn_instructions: "Drag items to the correct circle section.",
+Line 10593: desc: "Generate Flow Charts, Venn Diagrams, and structured outlines.",
+Line 10833: outline_desc: "Creates structured summaries like Flow Charts, Venn Diagrams, and Mind Maps to help s
+Line 16070: const VENN_ZONES = {
+Line 16075: const getVennZone = (x, y) => {
+Line 16076: if (y > VENN_ZONES.BANK_Y) return 'bank';
+Line 16077: const distA = Math.hypot(x - VENN_ZONES.A.x, y - VENN_ZONES.A.y);
+Line 16078: const distB = Math.hypot(x - VENN_ZONES.B.x, y - VENN_ZONES.B.y);
+Line 16079: const inA = distA <= VENN_ZONES.A.r;
+Line 16080: const inB = distB <= VENN_ZONES.B.r;
+Line 18135: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+Line 18187: setAnnouncement(t('concept_map.venn.selection_cancelled'));
+Line 18190: setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
+Line 18205: setAnnouncement(t('concept_map.venn.move_neutral', { item: itemName }));
+Line 18212: setAnnouncement(t('concept_map.venn.move_correct', { item: itemName, zone: getTitle(targetZone) }));
+Line 18217: setAnnouncement(t('concept_map.venn.move_incorrect', { item: itemName }));
+Line 18258: if(onScoreUpdate) onScoreUpdate(score, "Venn Diagram Sort");
+Line 18262: onGameComplete('vennDiagram', {
+Line 18286: <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key
+Line 18289: <h3 className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
+Line 18290: <Layout size={24}/> {t('common.venn_sort_title')}
+Line 18311: <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor')}
+Line 18321: <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
+Line 18322: <p className="text-slate-500">{t('concept_map.venn.victory_desc')}</p>
+Line 18336: aria-label={t('concept_map.venn.choose_dest_aria')}
+Line 18339: <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_tit
+Line 18348: {getTitle('shared') || t('concept_map.venn.shared_fallback')}
+Line 18351: {t('concept_map.venn.return_bank')}
+Line 18354: <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-500 hover
+Line 18375: data-help-key="venn_drop_zone_a"
+Line 18383: aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setA') })}
+Line 18401: data-help-key="venn_drop_zone_b"
+Line 18409: aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setB') })}
+Line 18427: data-help-key="venn_drop_zone_shared"
+Line 18429: <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-fu
+Line 18436: aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_map.venn.shared_
+Line 18449: <div className="h-44 bg-slate-50 border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]
+Line 18459: aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_sort.unsorted_ar
+Line 18470: {t('concept_map.venn.bank_empty')}
+Line 25736: vennDiagram: [],
+Line 26037: const closeVenn = useCallback(() => {
+Line 26038: setIsVennPlaying(false);
+Line 26039: if (!isTeacherMode) setIsInteractiveVenn(false);
+Line 27728: 'simplified_charts': "Generate data tables or mermaid.js charts based on the text content.",
+Line 27758: 'outline_structure': "Choose a graphic organizer structure (e.g., Venn Diagram, Flow Chart).",
+Line 27794: // === VENN DIAGRAM GAME (Student) ===
+Line 27795: 'venn_game_container': "Interactive Venn Diagram activity. Sort items into the correct circles.",
+Line 27796: 'venn_header': "Goal: Sort all items correctly to win points and clear the board.",
+Line 27797: 'venn_item_bank': "Drag these items to the correct section of the diagram.",
+Line 27798: 'venn_drop_zone_a': "Drop items that belong ONLY to this category.",
+Line 27799: 'venn_drop_zone_b': "Drop items that belong ONLY to this category.",
+Line 27800: 'venn_drop_zone_shared': "Drop items that belong to BOTH categories (the intersection).",
+Line 28682: const [vennGameData, setVennGameData] = useState({ setA: [], setB: [], shared: [] });
+Line 28683: const [isInteractiveVenn, setIsInteractiveVenn] = useState(false);
+Line 28684: const [vennInputs, setVennInputs] = useState({ setA: '', setB: '', shared: '' });
+Line 28685: const [isVennPlaying, setIsVennPlaying] = useState(false);
+Line 28798: if (node.id === draggedNodeId && node.type === 'venn-token') {
+Line 28799: const zone = getVennZone(node.x, node.y);
+Line 28800: if (zone === 'bank' && node.y < VENN_ZONES.BANK_Y) {
+Line 28829: addToast(t('concept_map.venn.selection_cancelled'), "info");
+Line 28896: const handleInitializeVenn = () => {
+Line 28908: setVennGameData({
+Line 28913: setIsInteractiveVenn(true);
+Line 28915: if (!isTeacherMode) setIsVennPlaying(true);
+Line 28918: const handleAddVennItem = (category) => {
+Line 28919: const text = vennInputs[category]?.trim();
+Line 28921: setVennGameData(prev => ({
+Line 28925: setVennInputs(prev => ({ ...prev, [category]: '' }));
+Line 28929: const handleRemoveVennItem = (category, index) => {
+Line 28930: setVennGameData(prev => ({
+Line 28947: const parseFlowChartData = (data) => {
+Line 29118: if (structureType === 'Venn Diagram') {
+Line 29126: const itemId = `venn-${bIdx}-${iIdx}`;
+Line 29132: type: 'venn-token',
+Line 29146: const flowData = parseFlowChartData(generatedContent.data);
+Line 29258: const isFlowChart = generatedContent?.data?.structureType === 'Flow Chart' || generatedContent?.data
+Line 29270: if (isFlowChart) {
+Line 29555: const isVenn = generatedContent?.data?.structureType === 'Venn Diagram';
+Line 29556: const handleVennResetBoard = () => {
+Line 29562: addToast(t('concept_map.venn.toast_reset'), "info");
+Line 29565: const handleVennScrambleBank = () => {
+Line 29576: addToast(t('concept_map.venn.toast_scramble'), "info");
+Line 29583: {isVenn ? (
+Line 29586: onClick={handleVennResetBoard}
+Line 29590: <RefreshCw size={14} /> {t('concept_map.venn.reset_board')}
+Line 29593: onClick={handleVennScrambleBank}
+Line 29597: <ListOrdered size={14} /> {t('concept_map.venn.scramble_bank')}
+Line 29605: setIsInteractiveVenn(false);
+Line 29609: <List size={14} /> {t('concept_map.venn.return_list')}
+Line 29785: className={`relative w-full ${isVenn ? 'h-[800px]' : 'h-[75vh] min-h-[600px]'} bg-white border borde
+Line 29790: {isVenn ? (
+Line 29793: <linearGradient id="vennGradientA" x1="0%" y1="0%" x2="100%" y2="100%">
+Line 29797: <linearGradient id="vennGradientB" x1="0%" y1="0%" x2="100%" y2="100%">
+Line 29801: <radialGradient id="vennGradientShared" cx="50%" cy="50%" r="50%">
+Line 29805: <filter id="vennShadow" x="-20%" y="-20%" width="140%" height="140%">
+Line 29810: cx={VENN_ZONES.A.x}
+Line 29811: cy={VENN_ZONES.A.y}
+Line 29812: r={VENN_ZONES.A.r}
+Line 29813: fill="url(#vennGradientA)"
+Line 29816: filter="url(#vennShadow)"
+Line 29824: cx={VENN_ZONES.B.x}
+Line 29825: cy={VENN_ZONES.B.y}
+Line 29826: r={VENN_ZONES.B.r}
+Line 29827: fill="url(#vennGradientB)"
+Line 29830: filter="url(#vennShadow)"
+Line 29837: <circle cx="400" cy="250" r="100" fill="url(#vennGradientShared)" />
+Line 29844: <text x="40" y="525" fill="#94a3b8" fontSize="12" fontWeight="bold" letterSpacing="1">{t('concept_ma
+Line 29863: const isFlowChart = fromNode.type && fromNode.type.startsWith('flow-');
+Line 29864: const pathD = isFlowChart ? getElbowPath(fromNode, toNode) : null;
+Line 29873: {isFlowChart ? (
+Line 29926: {!isVenn && (conceptMapNodes || [])
+Line 29930: {!isVenn && connectingSourceId && (
+Line 29950: node.type === 'venn-token' ? `bg-${node.colorVariant || 'slate'}-50 text-slate-800 px-4 py-2 rounded
+Line 29981: {isVenn
+Line 29982: ? t('concept_map.overlay.venn_instructions')
+Line 30784: const [outlineType, setOutlineType] = useState('Venn Diagram');
+Line 31713: - If Biology/Earth Science: Generate a self-contained SVG diagram (e.g. Punnett Square, Water Cycle 
+Line 31714: - If Computer Science: Generate an SVG Flowchart or Logic Gate diagram in "graphData".
+Line 36458: if (type === 'Venn Diagram') {
+Line 42616: else if (lowerInput.includes('venn')) { setOutlineType('Venn Diagram'); typeMsg = "Venn Diagram"; }
+Line 42638: sendBotMsg("Shall we create a Visual Organizer? Do you prefer a 'Flow Chart', 'Venn Diagram', or sta
+Line 44530: countConstraint += " You are encouraged to use the same TOOL multiple times for different purposes (
+Line 44561: - **Visuals**: Choose 'outline' type based on topology (e.g. Comparative -> Venn, Procedural -> Flow
+Line 44574: { "tool": "outline", "directive": "Create a Venn Diagram comparing..." }
+Line 44582: "outlineConfig": { "type": "Flow Chart" | "Venn Diagram" | "Structured Outline" },
+Line 45619: setIsInteractiveVenn(false);
+Line 45620: setIsVennPlaying(false);
+Line 46130: case 'Venn Diagram':
+Line 46132: structureHint = "CRITICAL FOR VENN DIAGRAM: You MUST return exactly 3 branches in this order: 1. The
+Line 47632: if (lower.includes('compare') || lower.includes('venn')) stepConfig.outlineType = 'Venn Diagram';
+Line 48075: if (type === 'Venn Diagram') {
+Line 48081: const renderVennItems = (items, items_en, branchIndex) => {
+Line 48115: const renderVennTitle = (title, title_en, branchIndex) => (
+Line 48146: if (isVennPlaying || (isInteractiveVenn && !isTeacherMode)) {
+Line 48148: <ErrorBoundary fallbackMessage="Venn Game encountered an error.">
+Line 48149: <VennGame
+Line 48150: data={vennGameData}
+Line 48151: onClose={closeVenn}
+Line 48164: if (isInteractiveVenn) {
+Line 48169: <Layout size={24} className="text-purple-500"/> {t('concept_map.venn.setup_title')}
+Line 48171: <p className="text-slate-500 text-sm">{t('concept_map.venn.setup_desc')}</p>
+Line 48180: value={vennInputs.setA}
+Line 48181: onChange={(e) => setVennInputs({...vennInputs, setA: e.target.value})}
+Line 48182: onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('setA')}
+Line 48183: placeholder={t('concept_map.venn.add_item_placeholder')}
+Line 48186: <button onClick={() => handleAddVennItem('setA')} className="bg-rose-200 hover:bg-rose-300 text-rose
+Line 48189: {vennGameData.setA.map((item, i) => (
+Line 48192: <button onClick={() => handleRemoveVennItem('setA', i)} className="text-rose-300 hover:text-rose-500
+Line 48195: {vennGameData.setA.length === 0 && <p className="text-[10px] text-rose-400 italic text-center">{t('c
+Line 48203: value={vennInputs.shared}
+Line 48204: onChange={(e) => setVennInputs({...vennInputs, shared: e.target.value})}
+Line 48205: onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('shared')}
+Line 48206: placeholder={t('concept_map.venn.add_item_placeholder')}
+Line 48209: <button onClick={() => handleAddVennItem('shared')} className="bg-purple-200 hover:bg-purple-300 tex
+Line 48212: {vennGameData.shared.map((item, i) => (
+Line 48215: <button onClick={() => handleRemoveVennItem('shared', i)} className="text-purple-300 hover:text-purp
+Line 48218: {vennGameData.shared.length === 0 && <p className="text-[10px] text-purple-400 italic text-center">{
+Line 48226: value={vennInputs.setB}
+Line 48227: onChange={(e) => setVennInputs({...vennInputs, setB: e.target.value})}
+Line 48228: onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('setB')}
+Line 48229: placeholder={t('concept_map.venn.add_item_placeholder')}
+Line 48232: <button onClick={() => handleAddVennItem('setB')} className="bg-blue-200 hover:bg-blue-300 text-blue
+Line 48235: {vennGameData.setB.map((item, i) => (
+Line 48238: <button onClick={() => handleRemoveVennItem('setB', i)} className="text-blue-300 hover:text-blue-500
+Line 48241: {vennGameData.setB.length === 0 && <p className="text-[10px] text-blue-400 italic text-center">{t('c
+Line 48248: onClick={() => setIsVennPlaying(true)}
+Line 48250: <Gamepad2 size={24} className="fill-current text-yellow-400"/> {t('concept_map.venn.start_game')}
+Line 48260: onClick={handleInitializeVenn}
+Line 48263: <Gamepad2 size={16}/> {t('concept_map.venn.interactive_mode')}
+Line 48286: {renderVennTitle(setB.title, setB.title_en, 1)}
+Line 48289: {renderVennItems(setB.items, setB.items_en, 1)}
+Line 48298: {renderVennTitle(shared.title || "Shared", shared.title_en, 2)}
+Line 48301: {renderVennItems(shared.items, shared.items_en, 2)}
+Line 48308: {renderVennItems(setA.items, setA.items_en, 0)}
+Line 48311: {renderVennTitle(setA.title, setA.title_en, 0)}
+Line 54533: <option value="Venn Diagram">{t('outline.venn')}</option>
+Line 59786: (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && 
+Line 59788: if (generatedContent?.data?.structureType === 'Venn Diagram') {
+Line 59789: if (isInteractiveVenn || isVennPlaying) {
+Line 59790: setIsInteractiveVenn(false);
+Line 59791: setIsVennPlaying(false);
+Line 59793: handleInitializeVenn();
+Line 59799: className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow
+Line 59800: title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.tooltip_static') : t('out
+Line 59802: {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14}/> : <Share2 size={14}/
+Line 59803: {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? t('outline.view_static') : t('outline.vi
+Line 59807: {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
+Line 59816: {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
+
+
+--- QUIZ/GAME FEATURES ---
+
+Line 6118: if (data.escapeRoomStats) {
+Line 6119: const er = data.escapeRoomStats;
+Line 8295: team_showdown: "Team Showdown"
+Line 14663: if (mode === 'team-showdown' && user && activeSessionCode) {
+Line 14706: case 'team-showdown': return { bg: 'bg-slate-900', accent: 'text-yellow-400', icon: '🏆' };
+Line 14944: ) : mode === 'team-showdown' ? (
+Line 16731: const [gameMode, setGameMode] = useState('smart');
+Line 16737: }, [data, gameMode]);
+Line 16745: let strategy = gameMode;
+Line 16916: value={gameMode}
+Line 16917: onChange={(e) => setGameMode(e.target.value)}
+Line 20568: const StudentEscapeRoomOverlay = ({ sessionData, user, activeSessionCode, targetAppId, t, playSound 
+Line 20569: const escapeState = sessionData?.escapeRoomState;
+Line 20644: [`escapeRoomState.teams.${user.uid}`]: assignedColor
+Line 20686: [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newSolvedPuzzles,
+Line 20687: [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: allSolved,
+Line 20688: [`escapeRoomState.streak`]: newStreak
+Line 20712: [`escapeRoomState.lives`]: newLives,
+Line 20713: [`escapeRoomState.streak`]: 0,
+Line 20714: [`escapeRoomState.wrongAttempts`]: (escapeState.wrongAttempts || 0) + 1,
+Line 20715: [`escapeRoomState.isGameOver`]: isGameOver
+Line 20932: [`escapeRoomState.hintsRemaining`]: (escapeState.hintsRemaining || 0) - 1,
+Line 20933: [`escapeRoomState.revealedHints.${currentPuzzle.id}`]: true,
+Line 20934: [`escapeRoomState.streak`]: 0
+Line 21275: const EscapeRoomTeacherControls = ({ sessionData, activeSessionCode, appId, t, addToast }) => {
+Line 21276: const escapeState = sessionData?.escapeRoomState;
+Line 21300: 'escapeRoomState.timeRemaining': 0,
+Line 21301: 'escapeRoomState.isActive': false,
+Line 21302: 'escapeRoomState.isGameOver': true
+Line 21307: await updateDoc(sessionRef, { 'escapeRoomState.timeRemaining': newTime });
+Line 21338: await updateDoc(sessionRef, { 'escapeRoomState.isPaused': !isPaused });
+Line 21343: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+Line 21660: else if (mode === 'team-showdown') {
+Line 21792: <option value="team-showdown">🏆 {t('quiz.modes.team_showdown')}</option>
+Line 22091: ) : mode === 'team-showdown' ? (
+Line 25742: const [escapeRoomCompletions, setEscapeRoomCompletions] = useState(() => {
+Line 25869: localStorage.setItem('allo_escape_completions', JSON.stringify(escapeRoomCompletions));
+Line 25870: }, [escapeRoomCompletions, lzLoaded]);
+Line 25970: const recordEscapeRoomCompletion = useCallback((resourceId, data) => {
+Line 25971: setEscapeRoomCompletions(prev => [...prev, {
+Line 26306: const [escapeRoomState, setEscapeRoomState] = useState({
+Line 26510: const [gameMode, setGameMode] = useState(null);
+Line 27773: 'quiz_student_mode_header': "Shows the current quiz mode (e.g., Boss Battle, Class Showdown).",
+Line 34060: setGameMode('wordsearch');
+Line 38385: escapeRoomStats: escapeRoomState.isEscaped || escapeRoomState.totalXpEarned > 0 ? {
+Line 38386: xpEarned: escapeRoomState.totalXpEarned || 0,
+Line 38387: timeTaken: escapeRoomState.timeElapsed || 0,
+Line 38388: puzzlesSolved: Object.values(escapeRoomState.solvedPuzzles || {}).filter(Boolean).length,
+Line 38389: totalPuzzles: escapeRoomState.puzzles?.length || 0,
+Line 38390: wrongAttempts: escapeRoomState.wrongAttempts || 0,
+Line 38391: hintsUsed: escapeRoomState.hintsRevealed?.length || 0,
+Line 38392: difficulty: escapeRoomState.difficulty || 'normal',
+Line 38393: completedAt: escapeRoomState.isEscaped ? new Date().toISOString() : null
+Line 38565: if (rawData.escapeRoomStats && rawData.escapeRoomStats.xpEarned > 0) {
+Line 38566: addToast(t('escape_room.stats_restored', { xp: rawData.escapeRoomStats.xpEarned }), "info");
+Line 44696: const generateEscapeRoom = async () => {
+Line 44704: const puzzleCount = escapeRoomState?.puzzleCount || 10;
+Line 44710: const selectedDifficulty = escapeRoomState?.difficulty || 'normal';
+Line 44714: setEscapeRoomState(prev => ({
+Line 44746: const escapeRoomPrompt = `You are creating an ADVANCED educational Escape Room with DIVERSE PUZZLE T
+Line 44865: const response = await callGemini(escapeRoomPrompt, true);
+Line 44915: setEscapeRoomState(prev => ({
+Line 44931: setEscapeRoomState(prev => ({ ...prev, isActive: false, isGenerating: false }));
+Line 44936: const launchCollaborativeEscapeRoom = async () => {
+Line 44947: setEscapeRoomState(prev => ({
+Line 44958: const escapeRoomPrompt = `You are creating an educational Escape Room with DIVERSE PUZZLE TYPES base
+Line 44974: const response = await callGemini(escapeRoomPrompt, true);
+Line 45002: 'escapeRoomState': {
+Line 45020: setEscapeRoomState(prev => ({
+Line 45037: setEscapeRoomState(prev => ({ ...prev, isActive: false, isGenerating: false }));
+Line 45042: const endCollaborativeEscapeRoom = async () => {
+Line 45046: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+Line 45049: resetEscapeRoom();
+Line 45054: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45058: const newSolved = new Set(escapeRoomState.solvedPuzzles);
+Line 45062: const newClues = { ...escapeRoomState.discoveredClues };
+Line 45068: const shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
+Line 45072: const newStreak = escapeRoomState.currentStreak + 1;
+Line 45074: const difficultyMultiplier = escapeRoomState.difficulty === 'hard' ? 1.5 :
+Line 45075: escapeRoomState.difficulty === 'easy' ? 0.75 : 1;
+Line 45076: const hintPenalty = (escapeRoomState.hintsUsed?.[puzzleId] || 0) * 5;
+Line 45079: const timeBonus = escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 180 ? 10 :
+Line 45080: escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 60 ? 5 : 0;
+Line 45085: setEscapeRoomState(prev => ({
+Line 45105: if (activeSessionCode && sessionData?.escapeRoomState?.isActive && user?.uid) {
+Line 45106: const userTeam = sessionData.escapeRoomState.teams?.[user.uid];
+Line 45109: const currentSolved = sessionData.escapeRoomState.teamProgress?.[userTeam]?.solvedPuzzles || [];
+Line 45110: const totalPuzzles = sessionData.escapeRoomState.puzzles?.length || 5;
+Line 45115: [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newTeamSolved,
+Line 45116: [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: isEscaped
+Line 45136: setEscapeRoomState(prev => ({ ...prev, showClueAnimation: false }));
+Line 45156: if (!obj || escapeRoomState.solvedPuzzles?.has(obj.id)) return;
+Line 45159: const puzzle = escapeRoomState.puzzles?.find(p => p.linkedObject?.id === obj.id || p.linkedObjectId 
+Line 45161: setEscapeRoomState(prev => ({
+Line 45177: const newTimeRemaining = Math.max(0, escapeRoomState.timeRemaining - timePenalty);
+Line 45179: setEscapeRoomState(prev => ({
+Line 45190: setEscapeRoomState(prev => ({ ...prev, isActive: false, hasEscaped: false }));
+Line 45198: const handleEscapeRoomAnswer = (puzzleId, selectedIndex) => {
+Line 45199: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45200: if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+Line 45211: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45212: if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+Line 45226: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45227: if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+Line 45241: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45242: if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+Line 45244: const currentSelected = escapeRoomState.matchingSelected;
+Line 45248: setEscapeRoomState(prev => ({
+Line 45254: setEscapeRoomState(prev => ({
+Line 45270: const newPairs = [...escapeRoomState.matchingPairs, pair];
+Line 45277: setEscapeRoomState(prev => ({
+Line 45285: setEscapeRoomState(prev => ({ ...prev, matchingSelected: null }));
+Line 45292: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45293: if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+Line 45312: const finalPuzzle = escapeRoomState.finalDoorPuzzle;
+Line 45325: const isPerfect = (escapeRoomState.wrongAttempts || 0) === 0;
+Line 45335: setEscapeRoomState(prev => ({
+Line 45345: const resetEscapeRoom = () => {
+Line 45346: setEscapeRoomState({
+Line 45397: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+Line 45401: if (escapeRoomState.hintsUsed?.[puzzleId]) {
+Line 45411: if ((escapeRoomState.hintsRemaining || 0) <= 0) {
+Line 45428: setEscapeRoomState(prev => ({
+Line 45442: const openEscapeRoomSettings = () => {
+Line 45443: setEscapeRoomState(prev => ({
+Line 45452: const updateEscapeRoomSetting = (key, value) => {
+Line 45453: setEscapeRoomState(prev => ({ ...prev, [key]: value }));
+Line 45457: const launchEscapeRoomWithSettings = () => {
+Line 45458: setEscapeRoomState(prev => ({ ...prev, showSettings: false }));
+Line 45459: generateEscapeRoom();
+Line 45481: setEscapeRoomState(prev => ({ ...prev, isActive: false }));
+Line 45604: setGameMode(null);
+Line 52268: {!isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+Line 52270: <StudentEscapeRoomOverlay
+Line 57261: if (gameMode === 'wordsearch') {
+Line 57282: {gameMode === 'wordsearch' ? t('common.regenerate') : t('glossary.word_search')}
+Line 57961: {gameMode === 'wordsearch' && gameData && (
+Line 57978: <button onClick={() => setGameMode(null)} className="text-slate-500 hover:text-slate-600 p-1" aria-l
+Line 59945: if (escapeRoomState.isActive) {
+Line 59947: endCollaborativeEscapeRoom();
+Line 59949: resetEscapeRoom();
+Line 59953: launchCollaborativeEscapeRoom();
+Line 59955: openEscapeRoomSettings();
+Line 59960: className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow
+Line 59964: {escapeRoomState.isActive ? <XCircle size={14}/> : <DoorOpen size={14}/>}
+Line 59965: {escapeRoomState.isActive
+Line 60005: {isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+Line 60006: <EscapeRoomTeacherControls
+Line 60242: ) : escapeRoomState.isActive ? (
+Line 60254: {escapeRoomState.room && (
+Line 60255: <p className="text-slate-400 text-sm mt-1 font-medium">{escapeRoomState.room.theme}</p>
+Line 60267: <span className="text-white font-bold">{escapeRoomState.solvedPuzzles.size}/{escapeRoomState.totalPu
+Line 60270: <div className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${(escapeRoomState.hintsRemaining ||
+Line 60271: <Lightbulb size={16} className={(escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text
+Line 60272: <span className={`font-bold ${(escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-s
+Line 60273: {escapeRoomState.hintsRemaining || 0}
+Line 60285: {escapeRoomState.isGenerating ? (
+Line 60291: ) : escapeRoomState.isEscaped ? (() => {
+Line 60293: const maxTime = escapeRoomState.maxTime || 300;
+Line 60297: const puzzlesSolved = escapeRoomState.solvedPuzzles.size;
+Line 60298: const totalPuzzles = escapeRoomState.totalPuzzles;
+Line 60299: const wrongAttempts = escapeRoomState.wrongAttempts || 0;
+Line 60300: const hintsUsed = escapeRoomState.totalHintsUsed || 0;
+Line 60301: const xpMultiplier = escapeRoomState.xpMultiplier || 1;
+Line 60365: onClick={resetEscapeRoom}
+Line 60372: onClick={() => setEscapeRoomState(prev => ({ ...prev, isActive: false }))}
+Line 60381: : escapeRoomState.room ? (
+Line 60384: <p className="text-slate-300 italic">{escapeRoomState.room.description}</p>
+Line 60402: {escapeRoomState.objects?.map((obj, idx) => {
+Line 60403: const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === obj.id);
+Line 60404: const isSolved = puzzle && escapeRoomState.solvedPuzzles.has(puzzle.id);
+Line 60434: {escapeRoomState.selectedObject && (
+Line 60435: <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => 
+Line 60438: const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === escapeRoomState.selectedObject
+Line 60443: onClick={() => setEscapeRoomState(prev => ({ ...prev, selectedObject: null }))}
+Line 60449: <span className="text-4xl">{escapeRoomState.selectedObject.emoji}</span>
+Line 60451: <h3 className="text-xl font-bold text-white">{escapeRoomState.selectedObject.name}</h3>
+Line 60452: <p className="text-slate-400 text-sm">{escapeRoomState.selectedObject.description}</p>
+Line 60464: disabled={(escapeRoomState.hintsRemaining || 0) <= 0 && !escapeRoomState.hintsUsed?.[puzzle.id]}
+Line 60466: escapeRoomState.hintsUsed?.[puzzle.id]
+Line 60468: : (escapeRoomState.hintsRemaining || 0) > 0
+Line 60472: title={escapeRoomState.hintsUsed?.[puzzle.id] ? t('escape_room.show_hint') : t('escape_room.get_hint
+Line 60475: {escapeRoomState.hintsUsed?.[puzzle.id]
+Line 60477: : `${t('escape_room.get_hint') || 'Get Hint'} (${escapeRoomState.hintsRemaining || 0})`}
+Line 60483: {escapeRoomState.hintsUsed?.[puzzle.id] && (puzzle.hint || puzzle.hints?.[0]) && (
+Line 60486: {escapeRoomState.discoveredClues?.[puzzle.id] && (
+Line 60487: <p className="text-yellow-400 text-sm mt-2 bg-yellow-900/30 p-2 rounded-lg">🔑 {t('escape_room.clue')
+Line 60497: onClick={() => handleEscapeRoomAnswer(puzzle.id, idx)}
+Line 60517: const currentOrder = escapeRoomState.sequenceOrder?.length > 0
+Line 60518: ? escapeRoomState.sequenceOrder
+Line 60527: setEscapeRoomState(prev => ({ ...prev, sequenceOrder: newOrder }));
+Line 60549: setEscapeRoomState(prev => ({ ...prev, sequenceOrder: newOrder }));
+Line 60593: const currentOrder = escapeRoomState.sequenceOrder?.length > 0
+Line 60594: ? escapeRoomState.sequenceOrder
+Line 60622: const isSelected = escapeRoomState.textInput === word;
+Line 60626: onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
+Line 60644: value={escapeRoomState.textInput || ''}
+Line 60645: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
+Line 60651: onClick={() => handleCipherAnswer(puzzle.id, escapeRoomState.textInput || '')}
+Line 60652: disabled={!escapeRoomState.textInput}
+Line 60667: {(escapeRoomState.matchingPairs || []).length > 0 && (
+Line 60670: {(escapeRoomState.matchingPairs || []).map((pair, idx) => (
+Line 60683: !(escapeRoomState.matchingPairs || []).some(pair => pair[0] === item)
+Line 60685: const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelect
+Line 60715: !(escapeRoomState.matchingPairs || []).some(pair => pair[1] === item)
+Line 60717: const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelect
+Line 60776: value={escapeRoomState.textInput || ''}
+Line 60777: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value.toUpperCase() }))}
+Line 60786: onClick={() => handleScrambleAnswer(puzzle.id, escapeRoomState.textInput || '')}
+Line 60805: {puzzle.sentence.replace('___', escapeRoomState.textInput ? `[${escapeRoomState.textInput}]` : '____
+Line 60823: onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
+Line 60824: aria-pressed={escapeRoomState.textInput === word}
+Line 60826: escapeRoomState.textInput === word
+Line 60833: {escapeRoomState.textInput === word ? ` - ${t('escape_room.selected') || 'selected'}` : ''}
+Line 60848: value={escapeRoomState.textInput || ''}
+Line 60849: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
+Line 60858: onClick={() => handleFillinAnswer(puzzle.id, escapeRoomState.textInput || '')}
+Line 60859: disabled={!escapeRoomState.textInput}
+Line 60861: aria-disabled={!escapeRoomState.textInput}
+Line 60875: {escapeRoomState.finalDoorUnlocked && escapeRoomState.finalDoorPuzzle && !escapeRoomState.isEscaped 
+Line 60878: onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: true, textInput: '' }))}
+Line 60890: {escapeRoomState.showFinalDoor && escapeRoomState.finalDoorPuzzle && (
+Line 60893: onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: false }))}
+Line 60900: onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: false }))}
+Line 60915: {escapeRoomState.finalDoorPuzzle.sentence || escapeRoomState.finalDoorPuzzle.question}
+Line 60921: {escapeRoomState.finalDoorPuzzle.wordbank && escapeRoomState.finalDoorPuzzle.wordbank.length > 0 ? (
+Line 60927: {escapeRoomState.finalDoorPuzzle.wordbank.map((word, idx) => (
+Line 60930: onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
+Line 60931: aria-pressed={escapeRoomState.textInput === word}
+Line 60933: escapeRoomState.textInput === word
+Line 60951: value={escapeRoomState.textInput || ''}
+Line 60952: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
+Line 60961: onClick={() => handleFinalDoorAnswer(escapeRoomState.textInput || '')}
+Line 60962: disabled={!escapeRoomState.textInput}
+Line 65010: {escapeRoomState.showSettings && (
+Line 65011: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm 
+Line 65014: onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
+Line 65039: onClick={() => updateEscapeRoomSetting('difficulty', diff)}
+Line 65041: escapeRoomState.difficulty === diff
+Line 65051: {escapeRoomState.difficulty === 'easy' && '45s per puzzle • 99 lives • 5 hints'}
+Line 65052: {escapeRoomState.difficulty === 'normal' && '30s per puzzle • 3 lives • 3 hints'}
+Line 65053: {escapeRoomState.difficulty === 'hard' && '20s per puzzle • 1 life • 1 hint'}
+Line 65066: value={escapeRoomState.puzzleCount || 10}
+Line 65067: onChange={(e) => updateEscapeRoomSetting('puzzleCount', parseInt(e.target.value))}
+Line 65071: {escapeRoomState.puzzleCount || 10}
+Line 65079: onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
+Line 65085: onClick={launchEscapeRoomWithSettings}
+
+
+--- ADVENTURE MODE FEATURES ---
+
+Line 25163: const [isSocialStoryMode, setIsSocialStoryMode] = useState(false);
+Line 26655: const [isAdventureStoryMode, setIsAdventureStoryMode] = useState(false);
+Line 26659: const [enableFactionResources, setEnableFactionResources] = useState(false);
+Line 26660: const [factionResourceMode, setFactionResourceMode] = useState('ai'); // 'ai' or 'manual'
+Line 26661: const [pendingFactionResources, setPendingFactionResources] = useState(null); // For AI Decides edit
+Line 26769: setIsAdventureStoryMode(false);
+Line 26777: setIsAdventureStoryMode(true);
+Line 26785: setIsAdventureStoryMode(false);
+Line 26792: setIsAdventureStoryMode(false);
+Line 34824: - Express emotion (excitement, surprise, satisfaction)
+Line 39496: const isSocialMode = adventureInputMode === 'social_story' || (adventureState?.meta?.includes('Socia
+Line 39499: if (isAdventureStoryMode || isSocialMode) {
+Line 39529: Refine this image to look like a ${(isAdventureStoryMode || isSocialMode) ? 'high-quality storybook 
+Line 39535: ${(isAdventureStoryMode || isSocialMode) ? "4. Ensure it looks friendly and inviting." : ""}
+Line 39569: }, [useLowQualityVisuals, adventureState.isImmersiveMode, isAdventureStoryMode, adventureInputMode, 
+Line 40246: const toneInstruction = isAdventureStoryMode
+Line 40253: const socialStoryInstruction = isSocialStoryMode
+Line 40351: ${!adventureFreeResponseEnabled ? (isSocialStoryMode ? `CRITICAL: Provide exactly 4-6 distinct choic
+Line 40738: handleAdventureChoice(actionToRetry.payload);
+Line 40823: const socialStoryInstruction = isSocialStoryMode
+Line 40828: const optionsInstruction = !adventureFreeResponseEnabled ? (isSocialStoryMode ? `
+Line 40925: if (enableFactionResources) {
+Line 40926: if (factionResourceMode === 'ai') {
+Line 40963: You are a Strategy Advisor running a faction/collective-scale simulation.
+Line 40995: "scene": { "text": "Narrative describing new state of the faction/system...", "options": ${jsonOptio
+Line 41094: const handleAdventureChoice = async (choice) => {
+Line 41256: You are simulating macro-scale policy decisions for a faction, nation, organization, or complex syst
+Line 47281: const toneInstruction = isAdventureStoryMode
+Line 55336: id="socialStoryMode"
+Line 55338: checked={isSocialStoryMode}
+Line 55339: onChange={(e) => setIsSocialStoryMode(e.target.checked)}
+Line 55342: <label htmlFor="socialStoryMode" className="text-xs font-bold text-pink-800 cursor-pointer select-no
+Line 55347: {isSocialStoryMode && (
+Line 55365: id="enableFactionResources"
+Line 55367: checked={enableFactionResources}
+Line 55368: onChange={(e) => setEnableFactionResources(e.target.checked)}
+Line 55371: <label htmlFor="enableFactionResources" className="text-xs font-bold text-amber-800 cursor-pointer s
+Line 55376: {enableFactionResources && (
+Line 55383: onClick={() => setFactionResourceMode('ai')}
+Line 55385: factionResourceMode === 'ai'
+Line 55393: onClick={() => setFactionResourceMode('manual')}
+Line 55395: factionResourceMode === 'manual'
+Line 55407: {factionResourceMode === 'ai'
+Line 55414: {factionResourceMode === 'manual' && (
+Line 55492: id="storyMode"
+Line 55494: checked={isAdventureStoryMode}
+Line 55495: onChange={(e) => setIsAdventureStoryMode(e.target.checked)}
+Line 55498: <label htmlFor="storyMode" className="text-xs font-bold text-purple-800 cursor-pointer select-none f
+Line 61953: {/* Faction Resources inline display for System Simulation mode */}
+Line 61954: {adventureInputMode === 'system' && enableFactionResources && (adventureState.systemResources || [])
+Line 62233: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${isA
+Line 62236: checked={isAdventureStoryMode}
+Line 62237: onChange={(e) => setIsAdventureStoryMode(e.target.checked)}
+Line 62263: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${ena
+Line 62266: checked={enableFactionResources}
+Line 62267: onChange={(e) => setEnableFactionResources(e.target.checked)}
+Line 62610: {adventureInputMode === 'system' && enableFactionResources && (
+Line 62753: onClick={() => handleAdventureChoice(opt)}
+Line 62962: onClick={() => handleAdventureChoice(opt)}

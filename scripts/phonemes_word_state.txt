@@ -1,0 +1,29 @@
+L6547: setWordSoundsPhonemes(data);
+L8126: setCurrentWordSoundsWord(retryTargetWord);
+L8134: setWordSoundsPhonemes(retryPreloaded);
+L8171: setCurrentWordSoundsWord(targetWord);
+L8193: setWordSoundsPhonemes(preloadedWord); // Full object with blendingDistractors
+L8291: setCurrentWordSoundsWord(w);
+L8449: setWordSoundsPhonemes(newPhonemes);
+L9070: setCurrentWordSoundsWord(targetWord);
+L9197: setCurrentWordSoundsWord(targetWord);
+L9212: setWordSoundsPhonemes(preloadedMatch);
+L9285: setCurrentWordSoundsWord(target);
+L9291: setWordSoundsPhonemes(refillPreloaded);
+L9490: setWordSoundsPhonemes(prev => ({ ...prev, rhymeWord: newValue }));
+L9501: setCurrentWordSoundsWord(newValue);
+L9543: setWordSoundsPhonemes(newPhonemes);
+L9551: setWordSoundsPhonemes(prev => ({ ...prev, graphemes: newGraphemes }));
+L9557: setWordSoundsPhonemes(updated);
+L11585: setCurrentWordSoundsWord(firstMissed);
+L11590: setWordSoundsPhonemes(preloaded);
+L11671: setCurrentWordSoundsWord(firstWord.targetWord || firstWord.word);
+L11672: setWordSoundsPhonemes(firstWord);
+L34383: const setCurrentWordSoundsWord = (v) => wsDispatch({ type: 'WS_SET', field: 'currentWordSoundsWord', value: v });
+L34384: const setWordSoundsPhonemes = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsPhonemes', value: v });
+L34841: // [PHASE 4 MIGRATED] const [currentWordSoundsWord, setCurrentWordSoundsWord] = useState(null);
+L34842: // [PHASE 4 MIGRATED] const [wordSoundsPhonemes, setWordSoundsPhonemes] = useState(null);
+L47518: setCurrentWordSoundsWord(null); // FIX: Reset to allow review panel to show
+L66145: <ErrorBoundary fallbackMessage="Word Sounds encountered an error." onError={(error) => console.error("ErrorBoundary CAUGHT:", error?.message || error)} onRetry={() => { setWordSoundsPhonemes(null); setCurrentWordSoundsWord(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); }}>
+L66150: onClose={() => { setIsWordSoundsMode(false); setCurrentWordSoundsWord(null); setWordSoundsPhonemes(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); setWordSoundsAutoReview(false); setActiveView('input'); }}
+L66151: onBackToSetup={() => { setIsWordSoundsMode(false); setCurrentWordSoundsWord(null); setWordSoundsPhonemes(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); setWordSoundsAutoReview(false); setActiveView('word-sounds-generator'); }}

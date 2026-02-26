@@ -1,0 +1,18 @@
+=== FIX 1: L38127 ===
+L38127:     setWordSoundsAutoReview(true); // Show Pre-Activity Review
+
+=== FIX 2/3: Restore path (L45344-45358) ===
+L45345:               }));
+L45346:               setWsPreloadedWords(wordsWithFreshTtsFlags);
+L45347:               setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+L45348:           } else if (item.data && Array.isArray(item.data) && item.data.length > 0) {
+L45349:               // Fallback: Use item.data as preloadedWords for newly generated resources
+L45350:               console.log("📥 Restoring preloaded words from item.data:", item.data.length);
+L45351:               setWsPreloadedWords(item.data);
+L45352:           }
+L45353:       }
+L45354: 
+L45355:       if (item.type === 'adventure' && item.data?.snapshot) {
+L45356:           setAdventureState(prev => ({
+L45357:               ...prev,
+L45358:               ...item.data.snapshot,

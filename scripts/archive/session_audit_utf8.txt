@@ -1,0 +1,210 @@
+﻿======================================================================
+  LIVE SESSION INFRASTRUCTURE AUDIT
+======================================================================
+
+--- SESSION CREATION ---
+  L21241: const generateSessionCode = () => {
+  L42110: const startClassSession = async () => {
+  L42115: const code = generateSessionCode();
+  L42161: const code = generateSessionCode();
+  L55288: onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
+
+--- SESSION JOINING ---
+  L26302: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineIm
+  L31546: const [activeSessionCode, setActiveSessionCode] = useState(null);
+  L55288: onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
+
+--- FIRESTORE LISTENERS (onSnapshot) ---
+  L30: import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc, collection, query, where, getDocs, writeBatch, limit
+  L34934: const unsubscribe = onSnapshot(sessionRef, async (docSnap) => {
+
+--- SYNC MODE ---
+  L16662: simplified_read_along: "Enable read-along mode with synchronized audio and text highlighting.",
+  L31961: 'glossary_language_flashcards': "Launch bilingual flashcard practice for language learning. Cards show: term in target language ΓåÆ 
+  L32169: 'simplified_read_along': "Karaoke-style reading mode that highlights each word or phrase as it is spoken aloud. Benefits: supports
+  L32453: 'simplified_compare_mode': "Display original and simplified versions together. Side-by-side layout shows: original text on left, a
+  L32456: 'simplified_edit': "Open text editor for direct modification. Edit mode allows: typing changes, cut/copy/paste, and full text revi
+  L32457: 'simplified_immersive_reader': "Open full-screen reading mode with accessibility features. Immersive reader provides: adjustable t
+  L32491: 'role_independent': "Adult learner or self-guided mode. Full access to all features without restrictions. Progress tracking is per
+  L34963: if (data.mode === 'sync' && data.currentResourceId) {
+  L35063: if (!sessionData?.forceStatic) {
+  L42123: mode: 'sync',
+  L42173: mode: 'sync',
+  L42193: const newMode = sessionData.mode === 'sync' ? 'async' : 'sync';
+  L42197: const modeLabel = newMode === 'sync' ? t('session.toast_mode_teacher') : t('session.toast_mode_student');
+  L54060: const isSyncMode = !isTeacherMode && activeSessionCode && sessionData?.mode === 'sync';
+  L54254: className={`flex items-center gap-3 px-4 py-2 rounded-full border-2 transition-all w-full justify-center ${sessionData.mode === 's
+  L54256: <div className={`w-10 h-5 rounded-full relative transition-colors ${sessionData.mode === 'sync' ? 'bg-indigo-500' : 'bg-slate-300'
+  L54257: <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${sessionData.mode === 'sync' 
+  L54260: <span className="block text-xs font-bold uppercase tracking-wider">{sessionData.mode === 'sync' ? t('session.teacher_paced') : t('
+  L54262: {sessionData.mode === 'sync' ? t('session.teacher_paced_desc') : t('session.student_paced_desc')}
+  L59908: if (isSyncMode) {
+  L59914: className={`group flex flex-col p-2 rounded-lg transition-all border ${generatedContent && generatedContent.id === item.id ? 'bg-w
+  L60122: {isSyncMode && (
+  L63543: try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync failed:', e)
+  L63545: addToast(sessionData?.forceStatic ? t('session.interactive_unlocked') : t('session.forced_static'), "success");
+  L63547: className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${sessionData?.forceStatic
+  L63550: {sessionData?.forceStatic ? <Lock size={12}/> : <Unlock size={12}/>}
+  L63551: {sessionData?.forceStatic ? t('session.static_only') : t('session.interactive')}
+  L67879: disabled={!hasPrevResource || isSyncMode}
+  L67889: disabled={!hasNextResource || isSyncMode}
+
+--- DEMOCRACY/VOTING ---
+  L44964: const toggleDemocracyMode = async () => {
+  L44967: const newState = !sessionData.democracy?.isActive;
+  L45773: updateDoc(sessionRef, { "democracy.votes": {} }).catch(e => warnLog("Vote reset failed", e));
+  L66311: const isDemocracy = sessionData?.democracy?.isActive;
+  L66312: const votes = (isDemocracy && sessionData?.democracy?.votes) ? sessionData.democracy.votes : {};
+  L66313: const voteCount = Object.values(votes).filter(v => String(v).trim() === String(opt).trim()).length;
+  L66314: const totalVotes = Object.keys(votes).length;
+  L66315: const percent = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+
+--- RESOURCE BROADCAST ---
+  L34963: if (data.mode === 'sync' && data.currentResourceId) {
+  L34964: let targetResourceId = data.currentResourceId;
+  L35019: // NEW: Handle group-assigned resources independently (even without global currentResourceId)
+  L35080: currentResourceId: 'adventure-sync',
+  L42124: currentResourceId: null,
+  L42174: currentResourceId: null,
+  L42207: const syncResourcesToSession = async () => {
+  L42219: const timeoutId = setTimeout(syncResourcesToSession, 1500);
+  L43135: updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog("Sync error:", e));
+  L53153: updateDoc(sessionRef, { currentResourceId: targetItem.id }).catch(e => warnLog("Sync error:", e));
+
+--- SESSION DATA READS (sessionData.*) ---
+  Fields accessed: ['democracy', 'escapeRoomState', 'groups', 'mode', 'quizState', 'resources', 'roster']
+
+--- ESCAPE ROOM SESSION ---
+  L25468: const escapeState = sessionData?.escapeRoomState;
+  L26130: const escapeState = sessionData?.escapeRoomState;
+  L26157: await updateDoc(sessionRef, { 'escapeRoomState.timeRemaining': newTime });
+  L26183: await updateDoc(sessionRef, { 'escapeRoomState.isPaused': !isPaused });
+  L26189: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+  L30675: const [escapeRoomCompletions, setEscapeRoomCompletions] = useState(() => {
+  L31211: const [escapeRoomState, setEscapeRoomState] = useState({
+  L48700: const puzzleCount = escapeRoomState?.puzzleCount || 10;
+  L48706: const selectedDifficulty = escapeRoomState?.difficulty || 'normal';
+  L49013: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+  L49020: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49023: const newSolved = new Set(escapeRoomState.solvedPuzzles);
+  L49026: const newClues = { ...escapeRoomState.discoveredClues };
+  L49031: const shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
+  L49034: const calculatedStreak = escapeRoomState.currentStreak + 1;
+  L49036: const difficultyMultiplier = escapeRoomState.difficulty === 'hard' ? 1.5 :
+  L49038: const hintPenalty = (escapeRoomState.hintsUsed?.[puzzleId] || 0) * 5;
+  L49040: const timeBonus = escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 180 ? 10 :
+  L49064: const userTeam = sessionData.escapeRoomState.teams?.[user.uid];
+  L49067: const currentSolved = sessionData.escapeRoomState.teamProgress?.[userTeam]?.solvedPuzzles || [];
+  L49068: const totalPuzzles = sessionData.escapeRoomState.puzzles?.length || 5;
+  L49106: const completionBonus = escapeRoomState.difficulty === 'hard' ? 75 :
+  L49116: const puzzle = escapeRoomState.puzzles?.find(p => p.linkedObject?.id === obj.id || p.linkedObjectId === obj.id);
+  L49130: const newTimeRemaining = Math.max(0, escapeRoomState.timeRemaining - timePenalty);
+  L49149: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49159: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49171: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49183: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49185: const currentSelected = escapeRoomState.matchingSelected;
+  L49208: const newPairs = [...escapeRoomState.matchingPairs, pair];
+  L49228: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49244: const finalPuzzle = escapeRoomState.finalDoorPuzzle;
+  L49254: const isPerfect = (escapeRoomState.wrongAttempts || 0) === 0;
+  L49323: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49452: const config = escapeRoomState.savedEscapeRoom;
+  L63918: const maxTime = escapeRoomState.maxTime || 300;
+  L63922: const puzzlesSolved = escapeRoomState.solvedPuzzles.size;
+  L63923: const totalPuzzles = escapeRoomState.totalPuzzles;
+  L63924: const wrongAttempts = escapeRoomState.wrongAttempts || 0;
+  L63925: const hintsUsed = escapeRoomState.totalHintsUsed || 0;
+  L63926: const xpMultiplier = escapeRoomState.xpMultiplier || 1;
+  L64023: const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === obj.id);
+  L64024: const isSolved = puzzle && escapeRoomState.solvedPuzzles.has(puzzle.id);
+  L64057: const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === escapeRoomState.selectedObject.id);
+  L64135: const currentOrder = escapeRoomState.sequenceOrder?.length > 0
+  L64209: const currentOrder = escapeRoomState.sequenceOrder?.length > 0
+  L64236: const isSelected = escapeRoomState.textInput === word;
+  L64296: const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelected?.column === 'left';
+  L64328: const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelected?.column === 'right';
+
+--- QUIZ STATE SYNC ---
+  L19840: if (!sessionData?.quizState?.isActive || !generatedContent || generatedContent.type !== 'quiz') return null;
+  L19841: const { mode, currentQuestionIndex, phase, teams, bossStats, responses } = sessionData.quizState;
+  L26304: const { quizState, roster } = sessionData;
+  L26377: await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": true });
+  L26400: try { await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": false }); } catch(e) { warnLog('Firestore sync failed:', e
+  L26417: await updateDoc(sessionRef, { "quizState.bossStats.image": newImage });
+  L26425: try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestionIndex": c
+  L26485: const currentScores = sessionData.quizState.teamScores || {};
+  L26488: const teamColor = sessionData.quizState.teams?.[uid];
+  L26918: {phase === 'revealed' && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && (
+  L26920: +{sessionData.quizState.lastRoundStats[team].points}
+  L63518: {isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && (
+  L63524: try { await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" }); } catch(e) { warnLog('Firestore sync
+  L63558: disabled={isReviewGame || (isTeacherMode && sessionData?.quizState?.isActive)}
+  L63646: {isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? (
+
+--- STUDENT NICKNAME / CODENAME ---
+  L10421: const studentName = data.studentNickname ||
+  L11671: ΓÇó **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.
+  L14561: header_nickname: "Nickname",
+  L14663: student_entry_sub: "Enter your Class Codename or Nickname to begin.",
+  L14667: student_name_label: "Student Name / Nickname",
+  L14711: subtitle: "Enter your Class Codename or Nickname to begin.",
+  L14718: randomize_codename: "Randomize Codename",
+  L14797: codenames: {
+  L17124: const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "" }) => {
+  L17127: const adjectives = t('codenames.adjectives') || [];
+  L17128: const animals = t('codenames.animals') || [];
+  L17129: // Parse currentNickname into adj + animal (format: "Adjective Animal")
+  L17130: const parseNickname = useCallback((nickname) => {
+  L17131: if (!nickname || typeof nickname !== 'string') return { adj: '', animal: '' };
+  L17132: const parts = nickname.trim().split(' ');
+  L17155: const parsed = parseNickname(currentNickname);
+  L17160: // Nickname doesn't match format, randomize
+  L17164: }, [isOpen, currentNickname, parseNickname, randomizeName]);
+  L17257: title={t('modals.entry.randomize_codename')}
+  L17258: aria-label={t('modals.entry.randomize_codename')}
+  L25177: const adjectives = t('codenames.adjectives') || [];
+  L25178: const animals = t('codenames.animals') || [];
+  L25248: title={t('modals.entry.randomize_codename')}
+  L25249: aria-label={t('modals.entry.randomize_codename')}
+  L27263: studentNickname: parsed.studentNickname || parsed.settings?.nickname || "Anonymous",
+  L27303: const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
+  L27421: {selectedStudent.studentNickname.charAt(0).toUpperCase()}
+  L27429: {selectedStudent.studentNickname}
+  L27582: <th className="p-4">{t('dashboard.header_nickname')}</th>
+  L27598: {student.studentNickname.charAt(0).toUpperCase()}
+  L27606: {student.studentNickname}
+  L30044: const [studentNickname, setStudentNickname] = useState('');
+  L30099: nickname: '',
+  L31647: setStudentNickname(name);
+  L31650: nickname: name
+  L32098: 'dashboard_export_csv_btn': "Export all student performance data as a CSV (spreadsheet) file compatible with Excel, Google Sheets,
+  L32354: 'group_roster_list': "List of all students currently connected to your session. Drag students to different groups or use the dropd
+  L32393: 'dashboard_import_btn': "Load student records from a spreadsheet file. CSV format must include: student identifier (name or codena
+  L32396: 'dashboard_stat_students': "Count of unique students who have connected to your sessions. Includes: students currently online, pre
+  L32509: // === ENTRY/CODENAME ===
+  L32510: 'entry_adjective': "Choose the first part of your private codename. Adjectives like Clever, Swift, Brave, Quiet create personality
+  L32511: 'entry_animal': "Choose the second part of your codename. Animals like Penguin, Fox, Eagle, Dolphin add personality. Combined with
+  L32512: 'entry_randomize_btn': "Let the system suggest a random adjective-animal combination. Click multiple times until you find one that
+  L35071: updateData[`roster.${user.uid}.name`] = studentNickname || "Student";
+  L35075: }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
+  L42256: name: studentNickname || "Student",
+  L42754: studentName: confirmedName || studentNickname || studentProjectSettings.nickname || "Anonymous",
+  L42825: studentNickname: studentNickname
+  L42831: studentNickname: studentNickname,
+  L42923: if (studentNickname && studentNickname.trim()) {
+  L42924: const sanitizedNickname = studentNickname.replace(/[^a-zA-Z0-9_-]/g, '_');
+  L42925: filenamePrefix = `${filenamePrefix}_${sanitizedNickname}`;
+  L42963: nickname: rawData.settings.nickname || '',
+  L42991: nickname: '',
+  L43003: const savedNickname = rawData.studentNickname || rawData.settings?.nickname;
+  L43004: if (savedNickname) {
+  L43005: setStudentNickname(savedNickname);
+  L43006: setStudentProjectSettings(prev => ({ ...prev, nickname: savedNickname }));
+  L43007: addToast(`Welcome back, ${savedNickname}!`, "success");
+  L43072: if (!rawData.studentNickname) addToast(t('toasts.loaded_student_view'), "info");
+  L69220: currentNickname={studentNickname || studentProjectSettings.nickname}
+
+--- SESSION ERROR HANDLING ---
+  Total updateDoc(sessionRef) calls: 42
+  Potentially missing error handling: 14

@@ -1,0 +1,43 @@
+=== IN RENDER PATH (HIGHEST IMPACT — re-computed every render): 73 ===
+  L4565: [] .filter( → chips.filter(c => !c.isPlaced).map((chip) => (
+  L8482: [] .reduce( → const seed = word.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L8679: [] .filter( → {soundChips.filter(c => !c.used).map((chip, idx) => (
+  L8987: [] .filter( → const correctCount = letterFeedback.filter(l => l.correct).length;
+  L9499: [] .reduce( → const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L9562: [] .sort( → return [...arr].sort(() => rng() - 0.5);
+  L9566: [] .filter( → if (difficulty === 'easy') return words.filter(w => w.length <= 3);
+  L9567: [] .filter( → if (difficulty === 'medium') return words.filter(w => w.length <= 4);
+  L9676: [] Array.from( → const numberOptions = Array.from({length: 10}, (_, i) => i + 1); // Fixed range:
+  L9770: [] .filter( → .filter(w => w && w !== targetWord);
+  L9776: [] Object.entries( → for (const [rime, members] of Object.entries(RIME_FAMILIES)) {
+  L10669: [] Object.keys( → const cats = Object.keys(bd);
+  L11069: [] .filter( → const fonts = FONT_OPTIONS.filter(f => f.googleFont).map(f => f.googleFont);
+  L16447: [] Object.keys( → const keys = Object.keys(obj);
+  L16463: [] .reduce( + Object.keys( → return Object.keys(obj).reduce((acc, k) => {
+  L17590: [] .filter( → onAnimationEnd={() => setParticles(prev => prev.filter(item => item.id !== p.id)
+  L21288: [] .filter( → return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
+  L22480: [] .filter( → const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !
+  L23100: [] .filter( → {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment
+  L23101: [] .filter( → {items.filter(i => i.currentContainer === bucket.id).length === 0 && (
+  ... and 53 more
+
+=== IN FUNCTIONS (medium impact): 292 ===
+  L47: [] Object.keys( → console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BA
+  L640: [] Object.entries( → for (const [category, pattern] of Object.entries(this.patterns)) {
+  L868: [] Object.entries( → Object.entries(params).forEach(([k, v]) => {
+  L1593: [] .filter( → const words = result.replace(/[^a-zA-Z,\s-]/g, '').split(',').map(w => w.trim())
+  L1712: [] Array.from( → try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } cat
+  L1733: [] .filter( → order: lessonPlanOrder.filter(id => lessonPlan[id]?.enabled),
+  L1991: [] Object.keys( → {Object.keys(WORD_FAMILY_PRESETS).map(k => <option key={k} value={k}>{k} ({WORD_
+  L1993: [] .filter( → {selectedFamily && WORD_FAMILY_PRESETS[selectedFamily] && WORD_FAMILY_PRESETS[se
+  L2071: [] Object.keys( → {Object.keys(SIGHT_WORD_PRESETS).map(k => (
+  L2246: [] Array.from( → ? `Building Audio: "${previewList[Array.from(selectedIndices)[generatedCount]] |
+  ... and 282 more
+
+=== IN CALLBACKS (already memoized): 28 ===
+
+=== SUMMARY ===
+  In render: 73 (WRAP IN useMemo)
+  In functions: 292
+  In callbacks: 28 (already OK)
+  Total: 393

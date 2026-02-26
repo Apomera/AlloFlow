@@ -1,0 +1,1055 @@
+=== COMPREHENSIVE BUTTON AUDIT ===
+
+Total buttons missing data-help-key: 522
+
+Line 419:                 onClick={e => e.stopPropagation()}             >                 <button                      onClick={onClose}                     di
+
+Line 471:                                  <div className="flex gap-3 justify-end">                     <button                          onClick={onClose}      
+
+Line 478:                         {t?.('common.cancel') || 'Cancel'}                     </button>                     <button                          onClick=
+
+Line 1173:                             </div>                         </div>                         <button onClick={onClose} className="bg-white/10 hover:bg-wh
+
+Line 1329:                                                 className="flex-1 p-2 rounded-lg border border-blue-200 text-sm outline-none"                         
+
+Line 1350:                                         <p className="text-slate-400 font-medium">{selectedIndices.size} {t('word_sounds.of_total', 'of')} {previewLis
+
+Line 1359:                                     </div>                                 </div>                                 <button                             
+
+Line 1533:                                         {/* Per-Word Regenerate Button */}                                         <div className="relative z-50">    
+
+Line 1559:                                         {/* Reorder Buttons */}                                         <div className="flex flex-col gap-0.5">       
+
+Line 1565:                                                 title="Move up"                                             >▲</button>                               
+
+Line 1573:                                         </div>                                         <span className="text-xs font-mono text-slate-300 w-6">{idx + 1
+
+Line 1609:                                             <div className="flex items-center justify-between mb-2">                                                 <
+
+Line 1622:                                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-
+
+Line 1643:                                                                 {phonemes.map(p => (                                                                  
+
+Line 1648:                                                                             title={`Play sound: ${p}`}                                                
+
+Line 1744:                 {/* Actions */}                 <div className="p-4 border-t bg-slate-50 flex justify-between items-center flex-shrink-0">            
+
+Line 1753:                         {/* Regenerate Button */}                         {onRegenerateAll && (                             <button                   
+
+Line 1769:                             </button>                         )}                         <button                              onClick={onStartActivity
+
+Line 2149:                         <div className="relative">                         <div className="relative">                             <button             
+
+Line 2163:                             {/* Play All Button */}                             {!isEditing && (                                 <button              
+
+Line 2184:                             {/* Play All Button */}                             {!isEditing && (                                 <button              
+
+Line 2236:                                 className="relative group"                             >                                 <button                      
+
+Line 2249:                                                                  {/* Audio Preview Button (Top Right) */}                                 <button     
+
+Line 2276:             <div className="flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500">                 <div className="bg-orange-1
+
+Line 2301:                                      onKeyDown={(e) => e.stopPropagation()}                                  />                                  <butt
+
+Line 2327:                             <div className="flex items-center justify-between">                                 <span className={`text-xl font-bold te
+
+Line 2349:         return (             <div className="flex flex-col items-center gap-10 animate-in fade-in duration-700">                 <button              
+
+Line 2378:                                              className="w-32 px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring
+
+Line 2390:                                                            return (                                 <button                                     key={i
+
+Line 2482:                                             placeholder="Family word..."                                         />                                   
+
+Line 2504:                                             placeholder="Distractor..."                                         />                                    
+
+Line 2573:                          return (                             <button                                 key={`bank-${idx}`}                             
+
+Line 2677:                 <div className="flex justify-center gap-4 mb-4">                     {slots.map((slot, i) => (                         <button        
+
+Line 2708:                         /* Game mode: Show shuffled chips */                         chips.filter(c => !c.isPlaced).map((chip) => (                   
+
+Line 2720:                   {/* HELP */}                  <button onClick={() => { console.log("🔊 Playing Mapping:", data.word); onPlayAudio(data.word, true); }
+
+Line 5002:                      {/* Always show play button when text is hidden so user can hear the word */}                     <button                        
+
+Line 5014:                 </div>             ) : (                 <button                      onClick={() => wordSoundsActivity === 'blending' ? playBlending(
+
+Line 5181:                         {/* Test Sequence Button */}                          <div className="flex justify-center mt-2 mb-4">                         
+
+Line 5215:                                     </div>                                 ) : (                                 <button                              
+
+Line 5241:                         {wordSoundsActivity === 'segmentation' && (<>                         <div className="flex justify-center gap-3 mt-6">        
+
+Line 5308:                                 {useMicInput ? (                                     <div className="flex flex-col items-center gap-4 animate-in fade-
+
+Line 5341:                                                         />                                                     ) : (                                  
+
+Line 5354:                                                 ))}                                             </div>                                             <bu
+
+Line 5443:                               <div className="flex flex-col items-center gap-4 animate-in fade-in">                                 <button           
+
+Line 5480:                             }}                         />                         <button                              onClick={handleMicInput}       
+
+Line 5656:                     {/* Actions */}                     <div className="p-6 flex flex-col gap-3">                         <button                     
+
+Line 5668:                             🔄 {ts('word_sounds.play_again') || 'Play Again'}                         </button>                         <button        
+
+Line 5677:                             📚 {ts('word_sounds.choose_activity') || 'Choose Another Activity'}                         </button>                      
+
+Line 5771: {/* Slider moved to settings row */}                          <button                              onClick={onClose}                             class
+
+Line 5800:                             {/* Preview Words Button - Shows Review Panel */}                             {preloadedWords.length > 0 && (             
+
+Line 5809:                             )}                             {/* Edit Mode Toggle */}                             <button                               
+
+Line 5821:                             </button>                             {/* Mic Input Toggle */}                             <button                        
+
+Line 5836:                             </button>                             {/* Pure Sound Toggle */}                             <button                       
+
+Line 5948:                     <div className="flex gap-2">                         {ACTIVITIES.map(activity => (                             <button            
+
+Line 5977:                                  </div>                              </div>                              <button                                   onC
+
+Line 6257:                         </div>                     </div>                     <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg t
+
+Line 11849:     <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">     
+
+Line 11906:                          <div className="flex gap-3">               <button                 onClick={handleCancel}                 className="flex-1 p
+
+Line 11943:             </div>                          <button               onClick={handleCancel}               className="w-full py-3 px-4 rounded-xl font-bol
+
+Line 12056:     <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">     
+
+Line 12154:             </p>              <button                  onClick={onClose}                 className="w-full bg-white border-2 border-slate-200 text-sla
+
+Line 12328:         {displayedText}         {isTruncated && displayedText.length === text?.length && (             <button                  onClick={(e) => {     
+
+Line 13705:               {!isDragging && !isPoofing && !isSleeping && (                   <>                     <button                          type="button"  
+
+Line 13719:                     </button>                      <button                          type="button"                         onClick={(e) => {           
+
+Line 13735:                      {onToggleMute && (                         <button                              type="button"                             onClick
+
+Line 13752:                      {onMicClick && (                         <button                              type="button"                             onClick={
+
+Line 14599:         </div>         <div className="p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0">              <button   
+
+Line 14609:                            <div className="grid grid-cols-2 gap-3">                  <button                      onClick={() => { onClose(); if(onCon
+
+Line 14615:                      <MapIcon size={18} /> {t('adventure.start_sequel') || "Continue"}                  </button>                  <button            
+
+Line 14623:              </div>               <button                  onClick={onClose}                 className="w-full py-2 text-xs font-bold text-slate-500 h
+
+Line 15054:                 />                 <div className="mt-4 flex justify-end">                     <button                          onClick={onSubmit}    
+
+Line 15100:                      <span className="text-xs font-bold text-slate-600">{t('mastery.current_progress')}: {gradingDetails?.rawScore}/100</span>        
+
+Line 15132:         </div>         <div className="sticky bottom-6 z-50 flex justify-center">             <button                  onClick={onSubmit}             
+
+Line 15181:         )}          <button              onClick={onCancel}              className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-12 ro
+
+Line 15215:       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all ani
+
+Line 16124:           </p>           <div className="flex gap-3">               <button                 onClick={() => {                     if (this.props.onRetr
+
+Line 16947:           </button>            <button onClick={onClose} className="text-slate-500 hover:text-slate-600 p-1" aria-label={t('memory.close_aria')}><X si
+
+Line 16961:           </div>           <p className="text-slate-600 mb-6">{t('memory.cleared_message', { moves })}</p>           <button              onClick={ini
+
+Line 17254:                         <RefreshCw size={18}/>                     </button>                     <button                          onClick={onClose}   
+
+Line 17651:                    <span className="font-bold text-sm">{score} pts</span>                </div>                <button onClick={onClose} className="p-
+
+Line 18018:                 <span className="font-bold text-sm">{score} pts</span>             </div>             <button onClick={onClose} className="p-2 hover:b
+
+Line 18048:                            </div>                            {keyboardSelectedItemId && (                                <button                      
+
+Line 18307:                       {t('common.score')}: {score}                   </div>                   <button                        onClick={onClose}        
+
+Line 18341:                         <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>                
+
+Line 18344:                                 {getTitle('setA')}                             </button>                             <button onClick={() => handleKeyb
+
+Line 18347:                                 {getTitle('setB')}                             </button>                             <button onClick={() => handleKeyb
+
+Line 18350:                                 {getTitle('shared') || t('concept_map.venn.shared_fallback')}                             </button>                   
+
+Line 18354:                             </button>                         </div>                         <button onClick={() => setKeyboardSelectedItemId(null)} c
+
+Line 18816:              )}               <button onClick={onClose} className="hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-off
+
+Line 19033:            <div className="flex items-center gap-4">                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow
+
+Line 19043:                    <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>                    <p className="text-sla
+
+Line 19054:                     {userOrder.length === 0 && <span className="text-slate-500 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}<
+
+Line 19065:                 <div className="h-12">                     {gameStatus === 'correct' ? (                         <button                              
+
+Line 19073:                         </button>                     ) : (                         <button                              id="check-btn"               
+
+Line 19085:                 <div className="flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-200 min-h-[100px]">     
+
+Line 19222:     <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">     
+
+Line 19265:                         </label>                          <button                              onClick={onGenerate}                             classN
+
+Line 19273:                         </button>                         <div className="w-px h-6 bg-slate-300 mx-2"></div>                         <button          
+
+Line 19286:                         </button>                         <div className="w-px h-6 bg-slate-300 mx-2"></div>                         <button          
+
+Line 19296:                 ) : (                     <div className="flex items-center gap-4 w-full justify-between">                          <button           
+
+Line 19318:                                 <span className="text-xs font-mono w-8 text-right">{callDelay}s</span>                             </div>             
+
+Line 19327:                             </button>                              <button                                  onClick={prevCall}                        
+
+Line 19337:                             </button>                              <button                                  onClick={toggleAutoPlay}                  
+
+Line 19345:                             </button>                              <button                                  onClick={() => { setIsAutoPlaying(false); 
+
+Line 19636:                      </div>                  </div>                  <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transit
+
+Line 19761:     <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">         <div c
+
+Line 19786:                             {t('games.scramble.score')}: {score}                         </div>                         <button                       
+
+Line 19831:                             />                             <div className="flex gap-2 w-full">                                 <button                
+
+Line 19837:                                     {t('games.scramble.skip')}                                 </button>                                 <button      
+
+Line 19996:       onClick={onComplete}      >       <button          onClick={(e) => { e.stopPropagation(); onComplete(); }}         className="absolute top-6 rig
+
+Line 20050:                 <p className="text-indigo-200 text-sm font-bold mt-1 ml-1">{t('adventure.shop_desc')}</p>             </div>             <button onCli
+
+Line 20097:                             {t(`adventure.shop_items.${item.id}_desc`) || item.description}                         </p>                             <
+
+Line 20224:       <div className="border-t border-slate-100 pt-4">           <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">{t
+
+Line 20300:     >       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animat
+
+Line 20372:         </div>          <button onClick={onClose} className="mt-6 text-sm text-slate-500 hover:text-slate-600 underline focus:outline-none focus:ring-
+
+Line 20391:     >       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-
+
+Line 20909:                 </span>               </div>               <button onClick={() => setSelectedPuzzle(null)} className="text-slate-400 hover:text-white 
+
+Line 20925:                   </div>                 ) : (                   <button                     onClick={async () => {                       if ((escapeS
+
+Line 21015:                     <div className="flex flex-wrap gap-2 justify-center">                       {currentPuzzle.wordbank.map((word, idx) => (          
+
+Line 21095:                           <span className="flex-1">{item}</span>                           <div className="flex gap-1" role="group" aria-label={t('esc
+
+Line 21108:                               className="w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple
+
+Line 21127:                 </div>                 {sequenceOrder.length === 0 && (                   <button                     onClick={() => setSequenceOrder(
+
+Line 21135:                 )}                 {sequenceOrder.length > 0 && (                   <button                     onClick={() => {                      
+
+Line 21161:                       const isSelected = matchingSelected?.side === 'left' && matchingSelected?.item === item;                       return (         
+
+Line 21192:                       const isSelected = matchingSelected?.side === 'right' && matchingSelected?.item === item;                       return (        
+
+Line 21230:                 )}                 {matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && (                   <button                     onCl
+
+Line 21378:             {formatTime(escapeState.timeRemaining || 0)}           </span>           <button             onClick={handlePauseToggle}             class
+
+Line 21384:             {isPaused ? '▶️ ' + t('escape_room.resume') : '⏸️ ' + t('escape_room.pause')}           </button>           <button             onClick={(
+
+Line 21442:             <p className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>             <div className="flex gap-3">               <button 
+
+Line 21448:                 {t('cancel')}               </button>               <button                 onClick={handleEndGame}                 className="flex-1 
+
+Line 21812:                      )}                      {mode !== 'live-pulse' && (                          <button                               onClick={() =>
+
+Line 21829:                         })}                      </div>                      <button onClick={handleEndQuiz} className="text-xs bg-red-500 hover:bg-re
+
+Line 21852:                                 className="text-sm p-1.5 rounded border border-slate-300 flex-1"                              />                      
+
+Line 21868:                                         <div className="flex items-center gap-2">                                             <span className="text-sm
+
+Line 21966:                      <div className="space-y-3 mt-auto">                          {phase === 'answering' ? (                              <button     
+
+Line 21973:                              </button>                          ) : (                              <button                                  onClick={h
+
+Line 21982:                           <div className="flex gap-3 pt-2">                              <button                                  onClick={handlePrevQ
+
+Line 21989:                                 <ArrowDown className="rotate-90" size={16}/> {t('common.prev')}                              </button>                
+
+Line 22577:             <div className="flex items-center gap-2">                 {dashboardData.length > 0 && (                     <button                      
+
+Line 22587:                 )}                 {dashboardData.length > 0 && (                     <button                          onClick={handleClearAll}       
+
+Line 22596:                     </button>                 )}                 <button                  onClick={onClose}                 className="p-2 rounded-ful
+
+Line 22608:           {dashboardData.length > 0 && dashboardView === 'list' && (               <div className="flex px-6 gap-6">                   <button        
+
+Line 22614:                       {t('dashboard.tab_students')} ({dashboardData.length})                   </button>                   <button                    
+
+Line 22628:                  <div className="flex items-center justify-between gap-6 mb-6 border-b border-slate-200 pb-6 sticky top-0 bg-slate-50 z-10 pt-2">     
+
+Line 22849:                                                  </td>                                                  <td className="p-4 text-right">               
+
+Line 22874:                                     <p className="text-xs text-slate-500">{t('dashboard.insights.generated_date')} {new Date().toLocaleDateString()}</
+
+Line 22954:                   <p className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>                   <div className="flex gap-3">                
+
+Line 22960:                           {t('common.cancel')}                       </button>                       <button                            onClick={confi
+
+Line 23241:               </div>               <div className="flex items-center gap-4">                   <button                      onClick={handleSkip}      
+
+Line 23247:                     {t('common.skip')}                   </button>                   <button onClick={onClose} className="p-2 rounded-full text-slate-
+
+Line 23258:                           <div className="grid grid-cols-4 gap-3">                               {grades.map((g) => (                                 
+
+Line 23295:                                     placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')}   
+
+Line 23347:                                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">                               <button    
+
+Line 23360:                                 <span className="text-xs text-slate-500 mt-1">{t('wizard.upload_desc')}</span>                               </button>
+
+Line 23373:                                 <span className="text-xs text-slate-500 mt-1">{t('wizard.url_desc')}</span>                               </button>   
+
+Line 23386:                                 <span className="text-xs text-slate-500 mt-1">{t('wizard.search_desc')}</span>                               </button>
+
+Line 23420:                                       autoFocus                                   />                                   <button                        
+
+Line 23438:                                           {localData.fetchedContent.substring(0, 300)}...                                       </p>                  
+
+Line 23463:                                       autoFocus                                   />                                   <button                        
+
+Line 23477:                                       {localData.searchOptions.map((opt, idx) => (                                           <div key={idx} className=
+
+Line 23525:                                       </p>                                       <div className="flex gap-2">                                         
+
+Line 23531:                                               {t('wizard.back_to_results')}                                           </button>                       
+
+Line 23672:                                             {!isIndependentMode && (                                             <div className="flex bg-white rounded
+
+Line 23678:                                                     {t('standards.ai_match')}                                                 </button>               
+
+Line 23708:                                                         className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 foc
+
+Line 23721:                                                     <div ref={standardsListRef} className="max-h-32 overflow-y-auto custom-scrollbar border border-sla
+
+Line 23763:                                                     className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:r
+
+Line 23782:                                                       {std.split(':')[0]}                                                   </span>                   
+
+Line 23843:                                     <button                                       onClick={() => setStep(4)}                                       dis
+
+Line 23863:                               </p>                                                              <button                                   onClick={() 
+
+Line 23915:                                         disabled={localData.languages.length >= 4}                                       />                           
+
+Line 23943:                                           <span key={lang} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indig
+
+Line 23967:                                         disabled={localData.interests.length >= 5}                                       />                           
+
+Line 23980:                                           <span key={interest} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-p
+
+Line 23995:                                                      <div className="flex justify-between pt-4 mt-4 border-t border-slate-100">                       
+
+Line 24001:                                 <ArrowDown className="rotate-90" size={16}/> {t('common.back')}                               </button>               
+
+Line 24015:               <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">                   {step > 1 ? (  
+
+Line 24026:                    {step === 1 && (                       <button                          onClick={handleNext}                         disabled={!loc
+
+Line 24111:             >                 <div className="flex items-center gap-4">                      <button onClick={onClose} className="p-2 hover:bg-slate-1
+
+Line 24179:    const ToggleButton = ({ active, onClick, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (     <button       onClick={onC
+
+Line 24299:        {/* Close Button */}       <button         onClick={onClose}         title={t('immersive.close')}         className="ml-4 shrink-0 p-2 rounded-
+
+Line 24484:             </div>         </div>         <button              onClick={() => setIsEditing(!isEditing)}             className={`p-2 rounded-lg text-xs
+
+Line 24530:                             </div>                         </div>                         <button                              onClick={() => handleDe
+
+Line 24540:                 ))}             </div>             <button                  onClick={handleAddStep}                 className="w-full py-2 border-2 bo
+
+Line 24573:       {/* Footer Actions */}       <div className="flex gap-3 pt-3 border-t border-slate-100">           <button              onClick={onCancel}      
+
+Line 24579:             {t('blueprint.cancel')}           </button>           <button              onClick={onConfirm}             className="flex-[2] py-2.5 bg-i
+
+Line 24636:                     <span className="text-3xl text-slate-400 font-bold">?</span>                     {onRetryPortrait && (                         <bu
+
+Line 29596:                   {isVenn ? (                       <div className="flex items-center justify-center w-full gap-4">                           <button 
+
+Line 29603:                               <RefreshCw size={14} /> {t('concept_map.venn.reset_board')}                           </button>                         
+
+Line 29613:                           <div className="w-px h-6 bg-slate-300 mx-2"></div>                                                      <button             
+
+Line 29625:                           <div className="w-px h-6 bg-slate-300 mx-2"></div>                            <button                                onClick
+
+Line 29639:                             {!isChallengeActive && (                                 <>                                     <button                   
+
+Line 29660:                                 disabled={isChallengeActive || isMapLocked}                             />                             <button        
+
+Line 29670:                             <div className="w-px h-6 bg-slate-300 mx-1 hidden sm:block"></div>                                                        
+
+Line 29680:                             </button>                             {!isChallengeActive && (                                 <button                    
+
+Line 29693:                              {!isChallengeActive && (                                 <button                                      onClick={handleClea
+
+Line 29704:                             )}                             <div className="w-px h-6 bg-slate-300 mx-2"></div>                             <button     
+
+Line 29727:                                           <option value="ai">{t('concept_map.challenge.ai_mode')}</option>                                       </sel
+
+Line 29758:                                               )                                           )}                                           <button        
+
+Line 29768:                                           </button>                                            <button                                                
+
+Line 29778:                                                                                      {isTeacherMode && (                                              
+
+Line 29981:                                                {!isChallengeActive && !isMapLocked && (                               <button                         
+
+Line 32127:             const resourceId = resourceMatch[2];             return (                 <button                      key={pIdx}                     onCl
+
+Line 32155:                       const resourceId = url.split(':')[1];                       return (                           <button                          
+
+Line 41680:             </head>             <body>                 <button class="print-btn" onclick="window.print()">${strPrint}</button>                        
+
+Line 41844:             <h2 style="margin-top:0; color: #3730a3; font-family: sans-serif;">${t(titleKey)}</h2>             <p style="color: #4338ca; font-family: 
+
+Line 48197:                                         className="flex-grow text-xs p-2 rounded border border-rose-200 outline-none focus:ring-2 focus:ring-rose-400"
+
+Line 48203:                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between ite
+
+Line 48220:                                         className="flex-grow text-xs p-2 rounded border border-purple-200 outline-none focus:ring-2 focus:ring-purple-
+
+Line 48226:                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between i
+
+Line 48243:                                         className="flex-grow text-xs p-2 rounded border border-blue-200 outline-none focus:ring-2 focus:ring-blue-400"
+
+Line 48249:                                         <div key={i} className="bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between ite
+
+Line 48257:                         </div>                          <button                              className="w-full py-4 bg-indigo-600 text-white rounded-x
+
+Line 48270:                 <div className="max-w-3xl mx-auto py-8">                     <div className="flex justify-center mb-8 gap-3">                         
+
+Line 48520:                                      </p>                                      {isTeacherMode && (                                          <button   
+
+Line 50529:         <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShow
+
+Line 50555:                 <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">                     <p className="text-[10px] text-slate-500
+
+Line 50566:                 {sessionData && (                     <div className="mb-6 text-center animate-in slide-in-from-bottom-2">                         <bu
+
+Line 50582:                 {sessionData && (                     <div className="mb-8 flex justify-center">                         <button                      
+
+Line 50600:                  <div className="flex gap-3 justify-center">                     <button                          onClick={() => setShowSessionModal(f
+
+Line 50606:                         {t('session.action_close')}                     </button>                     <button                          onClick={async 
+
+Line 50903:                                         <div className="flex justify-between items-center mb-3">                                             <span cla
+
+Line 50968:                 {/* Footer */}                 <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0">             
+
+Line 51391:                                                         className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indi
+
+Line 51535:                     <div id="tour-header-tools" className={`relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner
+
+Line 51742:                                                                     className="w-full text-center font-mono font-bold text-lg border border-slate-300 
+
+Line 51875:                 <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">                     <h3 className="font-bold
+
+Line 51880:                               <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">                     <button                       
+
+Line 51886:                         {t('about.tab_about')}                     </button>                     <button                          onClick={() => setIn
+
+Line 51941:                                 </div>                                 <div className="border-t border-slate-200 pt-2 mt-2">                          
+
+Line 52063:                         <Lightbulb size={20} className="fill-yellow-500 text-yellow-600"/> {t('hints.title')}                     </h3>               
+
+Line 52085:                                 <div className="flex justify-end gap-2">                                     {hint.isExtension ? (                    
+
+Line 52092:                                         </button>                                     ) : (                                         <button           
+
+Line 52251:                 </button>                                  <button                   onClick={() => setShowStorybookExportModal(false)}               
+
+Line 52320:                              </div>                                                            <button                                  onClick={handl
+
+Line 52330:                         {/* Panel Mode Control Toolbar - Feature parity with single interview */}                         <div className="shrink-0 px-
+
+Line 52488:                                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">                                             {persona
+
+Line 52523:                                                 disabled={personaState.isLoading}                                             />                      
+
+Line 52570:                                         </div>                                         <div className="mt-6">                                         
+
+Line 52597:                                         </div>                                         <div className="mt-6 flex gap-3">                              
+
+Line 52598:                                         <div className="mt-6 flex gap-3">                                             <button onClick={() => setIsPers
+
+Line 52630:                              <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">                                  <His
+
+Line 52706:                 </div>                 <div className="flex-1 flex flex-col h-full bg-white relative min-w-0">                     <button            
+
+Line 52974:                             }`}>                                 {personaState.suggestions.map((q, i) => (                                     <button
+
+Line 53004:                                     disabled={personaState.isLoading}                                 />                                 <button      
+
+Line 53064:                                                                          <div className="mt-6">                                         <button       
+
+Line 53114:                                      <div className="mt-6 flex gap-3">                                         <button                                
+
+Line 53121:                                             {t('persona.back_to_chat')}                                         </button>                             
+
+Line 53243:                            {!msg.type && msg.role === 'model' && msg.isActionable && idx > 0 && (                 <button                    onClick={
+
+Line 53287:                       className={`flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}                   />                
+
+Line 53300:                   <div className={`max-h-32 overflow-y-auto custom-scrollbar border rounded divide-y ${theme === 'dark' ? 'bg-slate-900 border-slate-7
+
+Line 53521:                         accept="image/*,application/pdf,.txt,.md,.csv,.json,.html,.xml,video/*,audio/*"                       />                      
+
+Line 53530:                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}                      </button>                      <
+
+Line 53543:                         {showUrlInput ? t('common.cancel') : t('common.link')}                      </button>                      <button            
+
+Line 53566:                   <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3">                       <div
+
+Line 53572:                               {t('wizard.paste_link_label')}                           </button>                           <button                    
+
+Line 53593:                                       autoFocus                                   />                                   <button                        
+
+Line 53607:                                       {searchOptions.map((opt, idx) => (                                           <div key={idx} className="relative 
+
+Line 53653:                                   autoFocus                                 />                                 <button                                
+
+Line 53734:                                 {!isIndependentMode && (                                 <div className="flex bg-white rounded-md border border-slate-
+
+Line 53740:                                         {t('standards.ai_match')}                                     </button>                                     <b
+
+Line 53768:                                             className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 fo
+
+Line 53781:                                         <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-200 rounded bg-white divide-y di
+
+Line 53821:                                         className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:
+
+Line 53837:                                     <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-green-10
+
+Line 53961:             <div className="flex justify-between items-center px-1">                 <p className="text-xs font-semibold text-slate-500 uppercase trac
+
+Line 54105:                         aria-label={t('common.target_language_aria')}                     />                     <button                          onCl
+
+Line 54150:                     </div>                 </div>                 <button                     onClick={() => handleGenerate('glossary')}              
+
+Line 54293:                                 </label>                                 <div className="flex bg-white rounded-md border border-slate-200 p-0.5 shadow
+
+Line 54299:                                         AI Match                                     </button>                                     <button            
+
+Line 54319:                                             className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 fo
+
+Line 54332:                                         <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-200 rounded bg-white divide-y di
+
+Line 54372:                                         className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-pink-500 focus:ring-4 focus:ri
+
+Line 54388:                                     <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-green-10
+
+Line 54413:                                     className="flex-grow text-sm px-2 py-1.5 border border-slate-300 rounded-md shadow-sm focus:border-pink-500 focus:
+
+Line 54480:                         </div>                 </div>                 <button                     onClick={() => handleGenerate('simplified')}        
+
+Line 54494:                 ${activeView === 'ui-tool-wordsounds' ? 'border-pink-600 shadow-xl shadow-pink-500/20' : 'border-slate-200 hover:border-pink-200 shado
+
+Line 54639:                         </div>                     </div>                     <button                     onClick={() => handleGenerate('image')}     
+
+Line 54690:                         </div>                     </div>                     <button                     onClick={() => handleGenerate('faq')}       
+
+Line 54742:                         </div>                     </div>                     <button                     onClick={() => handleGenerate('sentence-fram
+
+Line 54778:                         </div>                     </div>                     <button                     onClick={() => handleGenerate('brainstorm')}
+
+Line 54897:                     </div>                     {(personaState.options.length > 0 || (generatedContent && generatedContent.type === 'persona')) && (   
+
+Line 54967:                         </div>                     </div>                     <button                         onClick={() => handleGenerate('timeline'
+
+Line 55007:                                     className="flex-grow text-sm px-2 py-1 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-200 outli
+
+Line 55019:                                     <span key={c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 t
+
+Line 55217:                 <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3">                     {hasSavedAdventure && (       
+
+Line 55393:                                                 <label className="text-xs text-amber-700 font-medium">{t('adventure.system_state_mode_label')}:</label
+
+Line 55403:                                                         🤖 {t('adventure.system_state_ai_decides')}                                                    
+
+Line 55474:                                                                 title="Unit (e.g., %, people, days)"                                                  
+
+Line 55486:                                                         </div>                                                     ))}                                
+
+Line 55651:                                     </div>                                                                          <button                           
+
+Line 55686:                             </div>                              <button                                 onClick={handleStartAdventure}                
+
+Line 55776:                              )}                      </div>                      <button                      onClick={() => handleGenerate('quiz')}  
+
+Line 55819:                     </div>                                          <button                         onClick={handleGenerateLessonPlan}                
+
+Line 55908:                     {isJoinPanelExpanded ? (                         <div className="text-center relative">                             <button       
+
+Line 55942:                                     className="w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 border-slate-200 rounded-2xl
+
+Line 55952:                         </div>                     ) : (                         <button                              onClick={() => setIsJoinPanelExp
+
+Line 56000:                   </div>                   <div className="flex gap-2">                      <button                         onClick={() => projectFil
+
+Line 56006:                        <FolderOpen size={14}/> {t('student.load_file')}                      </button>                      <button                   
+
+Line 56012:                        <Download size={14}/> {t('student.save_drive')}                      </button>                      <button                    
+
+Line 56056:                                      {hasSavedAdventure ? (                                          <div className="grid grid-cols-2 gap-3">         
+
+Line 56064:                                                  {t('adventure.resume')}                                              </button>                       
+
+Line 56073:                                          </div>                                      ) : (                                          <button           
+
+Line 56144:                                 {t('profiles.active_profile')}: <span className="font-bold text-indigo-700">{profiles.find(p => p.id === selectedProfi
+
+Line 56168:                                     onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}                                 />                    
+
+Line 56318:                                 ))}                             </select>                             <button                                  onClick
+
+Line 56327:                             </button>                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && (                    
+
+Line 56351:                                     onKeyDown={(e) => e.key === 'Enter' && handleCreateUnit()}                                 />                     
+
+Line 56352:                                 />                                 <button onClick={handleCreateUnit} className="text-xs bg-indigo-600 text-white px-2
+
+Line 56408:                                                 autoFocus                                             />                                             <
+
+Line 56409:                                             />                                             <button onClick={(e) => handleSaveEdit(e)} className="p-1 t
+
+Line 56433:                                             </div>                                             {isTeacherMode && (                                    
+
+Line 56450:                             <div className="flex items-center justify-between mt-2 pt-2 border-t border-indigo-800/30" onClick={e => e.stopPropagation
+
+Line 56458:                                         <ChevronUp size={12} />                                     </button>                                     <but
+
+Line 56469:                                                                 <div className="relative">                                         <button            
+
+Line 56480:                                                 <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider px-2 py-1">{t('history.mo
+
+Line 56487:                                                     </button>                                                     {units.map(u => (                   
+
+Line 56507:                                     </div>                                 </div>                                 <button                             
+
+Line 56538:         >           {isZenMode && (               <button                 onClick={() => setIsZenMode(false)}                 className="absolute top-
+
+Line 56573:                 <div className="bg-slate-800/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl border border-slate-600 flex items-cente
+
+Line 56597:                     <div className="h-6 w-px bg-slate-600"></div>                      <button                          onClick={stopPlayback}        
+
+Line 56629:                 {isTeacherMode && generatedContent && (                     <div className="hidden md:flex items-center bg-white rounded-full border b
+
+Line 56640:                             <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">     
+
+Line 56649:                                 ))}                                 <div className="w-px h-4 bg-slate-200 mx-1"></div>                                
+
+Line 56660:             <div className="flex items-center gap-2">                 {!isZenMode && (                     <button                          onClick={(
+
+Line 56766:                     <AlertCircle size={48} className="mb-4 text-red-200" />                     <p className="text-lg font-medium">{error}</p>        
+
+Line 56942:                                                                                                     {isTeacherMode && (                               
+
+Line 57108:                                                                                              {isTeacherMode && realGrammarErrors.some(g => !g.startsWi
+
+Line 57118:                                               )}                                               {isTeacherMode && realGrammarErrors.length > 0 && realG
+
+Line 57150:                                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('output.common_original')}</h4>          
+
+Line 57176:                                         />                                     </div>                                     <button                     
+
+Line 57399:                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" size={14} />                     
+
+Line 57405:                     {isInteractiveFlashcards && generatedContent?.data && (                         <div className="fixed inset-0 z-[100] bg-slate-900
+
+Line 57414:                              <div className="absolute top-6 left-6 z-50 hidden sm:flex flex-col gap-2">                                 <button       
+
+Line 57423:                                 </button>                                                          <button                                      onClic
+
+Line 57480:                                         )}                                         <div className="sm:hidden flex gap-1">                             
+
+Line 57486:                                                 <ImageIcon size={14} />                                             </button>                         
+
+Line 57684:                                                               return (                                                                  <button       
+
+Line 57980:                                 <div className="flex gap-2">                                     {isTeacherMode && (                                  
+
+Line 57988:                                         </button>                                     )}                                     {isTeacherMode && <button
+
+Line 57989:                                     )}                                     {isTeacherMode && <button onClick={handlePrintGame} className="text-xs flex
+
+Line 58068:                             disabled={isAddingTerm}                         />                         <button                              onClick={h
+
+Line 58165:                                                             className="w-full bg-white border border-blue-300 rounded px-2 py-1 outline-none focus:rin
+
+Line 58231:                                                                         onKeyDown={(e) => e.key === 'Enter' && handleRefineGlossaryImage(idx)}        
+
+Line 58245:                                                     </div>                                                 ) : (                                      
+
+Line 58284:                                                                                          <div className="flex items-center gap-1 opacity-50 group-hove
+
+Line 58285:                                             <div className="flex items-center gap-1 opacity-50 group-hover/row:opacity-100 transition-opacity">       
+
+Line 58313:                                                         dir="ltr"                                                     >                               
+
+Line 58314:                                                     >                                                         <button onClick={() => handleSpeak(item.
+
+Line 58713:                               <div className="flex justify-between items-start mb-2">                                   <h5 className="font-bold text-
+
+Line 58739:                               <div className="flex justify-between items-start mb-3">                                   <h5 className="font-black text
+
+Line 58754:                                               <div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div>   
+
+Line 58824:                                             className="text-xs bg-slate-700 border-none rounded-full px-3 py-1.5 focus:ring-1 focus:ring-indigo-400 ou
+
+Line 58831:                                               <ArrowRight size={12}/>                                           </button>                             
+
+Line 58841:                                       <>                                         {interactionMode === 'explain' && (                                  
+
+Line 58852:                                         {interactionMode === 'revise' && (                                             <>                             
+
+Line 58859:                                                 </button>                                                 <div className="w-px h-3 bg-slate-600"></div
+
+Line 58870:                                                                             {interactionMode === 'define' && (                                        
+
+Line 58880:                                                                             {interactionMode === 'add-glossary' && (                                  
+
+Line 58922:                                        t('simplified.revision.header_explain')}                                   </h5>                               
+
+Line 58931:                                     </div>                                     {(revisionData.type === 'simplify' || revisionData.type === 'custom') &
+
+Line 59083:                                       </p>                                   </div>                                   <button onClick={() => {        
+
+Line 59120:                                          <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1 flex items-center gap-1"><Spar
+
+Line 59130:                                  )}                                  </div>                                  <button onClick={() => {                 
+
+Line 59201:                               {/* Toolbar */}                               <div className="flex items-center gap-1 p-2 bg-orange-50 border-b border-o
+
+Line 59208:                                       <Bold size={16} strokeWidth={3} />                                   </button>                                  
+
+Line 59215:                                       <Italic size={16} />                                   </button>                                   <button      
+
+Line 59223:                                   </button>                                   <div className="w-px h-4 bg-orange-200 mx-1"></div>                     
+
+Line 59230:                                       H1                                   </button>                                   <button                        
+
+Line 59238:                                   </button>                                   <div className="w-px h-4 bg-orange-200 mx-1"></div>                     
+
+Line 59797:                         <div className="flex gap-2">                             {isTeacherMode && ( (generatedContent?.data?.structureType !== 'Venn 
+
+Line 59819:                              {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (                                 <button 
+
+Line 59828:                             )}                             {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (                            
+
+Line 59850:                                         <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-in
+
+Line 59868:                                             className="px-3 py-2 rounded-xl border-2 border-indigo-100 text-sm focus:border-indigo-400 outline-none w-
+
+Line 59879:                                 <p className="text-slate-500 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive d
+
+Line 59904:                             {isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && (                                 <>          
+
+Line 59921:                                     </span>                                 </div>                                 <button                            
+
+Line 59935:                                 </>                             )}                             <button                                  onClick={() =>
+
+Line 59944:                                 {isPresentationMode ? t('common.close') : t('quiz.presentation')}                             </button>               
+
+Line 59954:                                 {isReviewGame ? t('common.close') : t('quiz.review_game')}                             </button>                      
+
+Line 59982:                             </button>                             {isTeacherMode && !isIndependentMode && (                                 <button   
+
+Line 59995:                                 <>                                     {!isIndependentMode && (                                     <button           
+
+Line 60003:                                     </button>                                     )}                                     <button onClick={() => setSho
+
+Line 60041:                             />                             <div className="flex justify-end px-4">                                 <button            
+
+Line 60086:                                     </div>                                     <div className="flex gap-2">                                         <b
+
+Line 60093:                                             {soundEnabled ? <Volume2 size={20}/> : <MicOff size={20}/>}                                         </butt
+
+Line 60122:                                                                                       <div className="flex gap-2 mt-2 opacity-50 group-hover:opacity-1
+
+Line 60123:                                             <div className="flex gap-2 mt-2 opacity-50 group-hover:opacity-100 transition-opacity">                   
+
+Line 60126:                                             </div>                                             {gameTeams.length > 1 && (                             
+
+Line 60133:                                     ))}                                     {gameTeams.length < 6 && (                                         <button
+
+Line 60154:                                                 const isClaimed = reviewGameState.claimed.has(q.originalIndex);                                       
+
+Line 60185:                                                 {reviewGameState.activeQuestion.points}                                             </div>            
+
+Line 60219:                                             <div className="flex flex-col items-center gap-6 mt-auto pt-4 border-t border-blue-700">                  
+
+Line 60230:                                                         <div className="flex flex-wrap justify-center gap-3">                                         
+
+Line 60238:                                                                 </button>                                                             ))}             
+
+Line 60287:                                             </span>                                         </div>                                         <button    
+
+Line 60375:                                             {/* Actions */}                                             <div className="flex gap-4 mt-4">             
+
+Line 60382:                                                     {t('escape_room.play_again')}                                                 </button>           
+
+Line 60398:                                             {!isEscapeTimerRunning ? (                                                 <div className="mt-4">         
+
+Line 60418:                                                 const isDisabled = isSolved || !isEscapeTimerRunning;                                                 
+
+Line 60453:                                                 return (                                                     <>                                       
+
+Line 60473:                                                                 {/* Get Hint Button */}                                                               
+
+Line 60506:                                                             <div className="grid gap-3" role="radiogroup" aria-label={t('escape_room.answer_options') 
+
+Line 60576:                                                                                 {/* Move buttons for accessibility */}                                
+
+Line 60585:                                                                                         <ChevronUp size={16} className="text-slate-400"/>             
+
+Line 60602:                                                                     })()}                                                                 </div>      
+
+Line 60635:                                                                                 const isSelected = escapeRoomState.textInput === word;                
+
+Line 60661:                                                                     />                                                                 )}             
+
+Line 60698:                                                                             const isSelected = escapeRoomState.matchingSelected?.item === item && esca
+
+Line 60730:                                                                             const isSelected = escapeRoomState.matchingSelected?.item === item && esca
+
+Line 60796:                                                                     {t('escape_room.scramble_hint_sr') || 'Type the correct word using the scrambled l
+
+Line 60832:                                                                         >                                                                             
+
+Line 60868:                                                                 )}                                                                                    
+
+Line 60888:                                 {escapeRoomState.finalDoorUnlocked && escapeRoomState.finalDoorPuzzle && !escapeRoomState.isEscaped && (              
+
+Line 60910:                                     >                                         <div className="bg-gradient-to-b from-slate-800 to-slate-900 w-full max-
+
+Line 60939:                                                         <div className="flex flex-wrap gap-2 justify-center">                                         
+
+Line 60971:                                                     </>                                                 )}                                            
+
+Line 60989:                             <div className="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg">                      
+
+Line 61038:                                                  return (                                                     <button                                 
+
+Line 61069:                                             <div className="flex gap-2">                                                 {q.factCheck && (            
+
+Line 61077:                                                     </button>                                                 )}                                      
+
+Line 61149:                                         </div>                                         {isTeacherMode && (                                         <bu
+
+Line 61202:                                             <Stamp label={t('quiz.verified_stamp')} position="top-2 right-2" size="small" />                          
+
+Line 61279:                                 dangerouslySetInnerHTML={{ __html: t('udl_advice.header_description') }}                             />               
+
+Line 61315:                                     />                                 </div>                                 <button                                 
+
+Line 61601:                                 <div className="flex items-center gap-2">                                     {!isParentMode && (                     
+
+Line 61615:                                     {generatedContent.data.rubric && (                                         <>                                     
+
+Line 61623:                                                 {rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')}                               
+
+Line 61670:                                             placeholder={t('dashboard.grading.work_placeholder')}                                         />          
+
+Line 61711:                                         </div>                                                                                  <button               
+
+Line 61730:                         <p className="text-sm text-yellow-800 flex-grow"><strong>UDL Goal:</strong> Providing options for engagement. Connecting conce
+
+Line 61795:                                          </div>                                      ) : (                                          <button           
+
+Line 61836:                         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in dur
+
+Line 61851:                                  <div className="mt-4 flex flex-col gap-2">                                     <button                               
+
+Line 61863:                                     </button>                                      <button                                          onClick={() => set
+
+Line 62013:                         <div className="flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0">                             {isTeache
+
+Line 62024:                             )}                             {activeSessionCode && (                                 <button                            
+
+Line 62038:                                 </button>                             )}                             <button                                  onClick=
+
+Line 62046:                                 <span className="hidden sm:inline">{t('adventure.log_button')}</span>                             </button>           
+
+Line 62059:                                 <span className="hidden sm:inline">{adventureState.isImmersiveMode ? t('adventure.view_standard') : t('adventure.view_
+
+Line 62072:                             </button>                             {!isZenMode && (                             <button                                
+
+Line 62082:                             )}                              <button                                  onClick={handleStartAdventure}                   
+
+Line 62105:                                                     {t('adventure.paused_desc')}                                                 </p>                 
+
+Line 62113:                                             </div>                                                                                          <button   
+
+Line 62123:                                         <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl border-2 border-indigo-100 overflow-hidden rel
+
+Line 62346:                                              <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-center">                          
+
+Line 62489:                                     <div className="text-sm text-slate-500 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>      
+
+Line 62570:                                     <div className="flex flex-col items-end gap-2">                                         <div className="flex gap-2
+
+Line 62582:                                             </button>                                              <button                                            
+
+Line 62590:                                             </button>                                              <button                                            
+
+Line 62604:                                                                              <div className="relative">                                             <b
+
+Line 62659:                                                             <div className="grid grid-cols-4 gap-2">                                                  
+
+Line 62692:                                     <div className="bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-6 rounded-2xl shadow-lg relative min-h-[
+
+Line 62712:                                                             {t('adventure.interrupted_desc')}                                                         
+
+Line 62736:                                                                     autoFocus                                                                 />      
+
+Line 62762:                                                          return (                                                             <button                 
+
+Line 62785:                                                                                     <div className="flex items-center gap-2">                         
+
+Line 62903:                                                 {t('adventure.interrupted_desc')}                                             </p>                    
+
+Line 62926:                                                             placeholder={t('adventure.option_placeholder', { n: idx + 1 })}                           
+
+Line 62935:                                                     </div>                                                 ))}                                        
+
+Line 62943:                                             </div>                                             <div className="flex gap-2 mt-4 pt-3 border-t border-in
+
+Line 62949:                                                     <Wifi size={18} /> {t('adventure.broadcast')}                                                 </bu
+
+Line 62971:                                                      return (                                                         <button                         
+
+Line 62997:                                     ) : (                                         <div className="flex gap-2 animate-in fade-in slide-in-from-bottom-2
+
+Line 63026:                                                 }}                                             />                                             <button 
+
+Line 63041:                                                 {t('adventure.sequel_prompt')}                                             </p>                       
+
+Line 63062:                         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in dur
+
+Line 63085:                                     <div className="flex gap-3 w-full">                                         {selectedInventoryItem.effectType === 
+
+Line 63092:                                             </button>                                         ) : (                                             <butto
+
+Line 63156:                                     onKeyDown={(e) => e.key === 'Enter' && handleRefineImage()}                                 />                    
+
+Line 63314:                             </div>                             <div className="flex gap-2">                                 <button                   
+
+Line 63321:                                 </button>                                 {isTeacherMode && (                                     <button             
+
+Line 63343:                                     className="flex-grow min-w-[200px] text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-
+
+Line 63422:                                                 )}                                             </div>                                             <but
+
+Line 63431:                                         </div>                                     ))}                                     <button                    
+
+Line 63469:                                                 {t('timeline.ready_desc')}                                             </p>                           
+
+Line 63584:                                         </button>                                     )}                                     <button                  
+
+Line 63697:                                         <div className="ml-12 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm text-slate-500 it
+
+Line 63751:                                  <div className="flex gap-2 no-print">                                     {isTeacherMode && (                        
+
+Line 63976:                                                                  </div>                                                              ) : (            
+
+Line 64011:                         </div>                         <div className="flex justify-center pb-8">                              <button onClick={() => 
+
+Line 64021:                                                          {!progressionData ? (                                 <button                                
+
+Line 64042:                                     <div className="flex justify-between items-center mb-2 px-2">                                          <h4 classNa
+
+Line 64069:                                                     "{option.rationale}"                                                 </p>                         
+
+Line 64113:                                                                                          <div className="flex justify-end pt-2 border-t border-slate-7
+
+Line 64151:                              <div className="flex bg-white/60 p-1 rounded-lg border border-yellow-200 shrink-0">                                 <butt
+
+Line 64157:                                     {t('persona.mode_single')}                                 </button>                                 <button      
+
+Line 64239:                         {personaState.mode === 'panel' && (                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-
+
+Line 64276:                       </h4>                       <div className="flex items-center gap-2">                         <button                           
+
+Line 64286:                             <RefreshCw size={12}/> Reset                         </button>                         <button                            
+
+Line 64323:           {generatedContent && (             <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center shrink-0 z-30
+
+Line 64335:                 </div>                  <button                      onClick={() => handleNavigateResource('next')}                     disabled={!has
+
+Line 64736:                     ) : (                         <>                             <button onClick={() => setRunTour(false)} className="text-xs font-bol
+
+Line 64738:                             <button onClick={() => setRunTour(false)} className="text-xs font-bold text-slate-500 hover:text-slate-600">{t('common.ski
+
+Line 64745:                                     {t('common.back')}                                 </button>                                 <button              
+
+Line 64806:                             </div>                         )}                         <button                              onClick={() => { setIsFluen
+
+Line 64934:                     <div className="flex gap-4 items-center">                         {fluencyStatus === 'complete' && (                             <
+
+Line 64948:                         )}                          <button                              onClick={toggleFluencyRecording}                             
+
+Line 65010:                     </div>                      <button                          onClick={() => setShowGlobalLevelUp(false)}                         c
+
+Line 65024:         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={
+
+Line 65048:                         <div className="grid grid-cols-3 gap-2">                             {['easy', 'normal', 'hard'].map(diff => (                
+
+Line 65089:                  <div className="flex gap-3">                     <button                         onClick={() => setEscapeRoomState(prev => ({ ...prev
+
+Line 65095:                         {t('common.cancel')}                     </button>                     <button                         onClick={launchEscapeRo
+
+Line 65135:                 </h3>                 <div className="flex items-center gap-1">                     <button                          onClick={() => se
+
+Line 65143:                         <Volume2 size={14}/>                     </button>                     <button                          onClick={() => setSocr
+
+Line 65151:                         <Mic size={14}/>                     </button>                     <button                          onClick={() => setIsSocrat
+
+Line 65159:                         {isSocraticExpanded ? <Minimize2 size={14}/> : <Maximize2 size={14}/>}                     </button>                     <butt
+
+Line 65181:             </div>             <div className="p-3 bg-white border-t border-slate-100 flex gap-2 shrink-0">                 <button                   
+
+Line 65213:                     disabled={isSocraticThinking}                 />                 <button                      onClick={handleSocraticSubmit}      
+
+Line 65361:                   )}                   {(isTeacherMode || studentProjectSettings.allowDictation) && (                   <button                      t
+
+Line 65436:         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" o
+
+Line 65460:                 </div>                 <div className="flex gap-3 justify-end">                     <button                          onClick={() => se
+
+Line 65466:                         {t('modals.save_project.cancel_btn')}                     </button>                     <button                          onCli
+
+Line 65480:         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" o
+
+Line 65501:                      <div className="flex gap-2">                         <button                             onClick={() => { setTranslateScope('sing
+
+Line 65508:                             {t('translate.action_current')}                         </button>                         <button                         
+
+Line 65540:                     </div>                     <div className="flex gap-3">                         <button                              onClick={() =
+
+Line 65546:                             {t('modals.cloud_sync.cancel_btn')}                         </button>                         <button                     
+
+Line 65639:         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" o
+
+Line 65902:                         className="w-24 p-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center fo
+
+Line 65924:                 </div>                 <div className="flex gap-3">                     <button                          onClick={() => {             
+
+
+
+=== RESOURCE PACK / FULLPACK STYLING ===
+
+Line 55833: <div id="tour-tool-fullpack" data-help-key="tool_fullpack" className="bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3
+Line 55845: <Sparkles size={10} className="text-yellow-300 fill-current"/> {t('fullpack.auto_configure')}
+Line 55876: <span className="text-[10px] text-slate-500 block mt-0.5">{t('fullpack.helper_text')}</span>

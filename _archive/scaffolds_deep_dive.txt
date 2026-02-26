@@ -1,0 +1,102 @@
+=== SCAFFOLDS PANEL DEEP DIVE ===
+
+--- SCAFFOLD STATE VARIABLES ---
+[scaffold] Line 26221: const [isEditingScaffolds, setIsEditingScaffolds] = useState(false);
+[sentence] Line 18940: const [sentences, setSentences] = useState([]);
+[sentence] Line 18941: const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
+[sentence] Line 31005: const [frameType, setFrameType] = useState('Sentence Starters');
+[sentence] Line 31016: const [playbackState, setPlaybackState] = useState({ sentences: [], currentIdx: -1 });
+[paragraph] Line 26468: const [focusedParagraphIndex, setFocusedParagraphIndex] = useState(null);
+[frame] Line 31005: const [frameType, setFrameType] = useState('Sentence Starters');
+[frame] Line 31006: const [frameCustomInstructions, setFrameCustomInstructions] = useState('');
+[frame] Line 31496: const [udlStandardFramework, setUdlStandardFramework] = useState('Common Core ELA');
+[rubric] Line 26546: const [isGeneratingRubric, setIsGeneratingRubric] = useState(false);
+[rubric] Line 26547: const [rubricZoom, setRubricZoom] = useState(false);
+
+--- SCAFFOLD TYPES ---
+[sentence frame] Line 27238: • **Sentence Frames**: List-based sentence starters to help students begin their thoughts.
+[paragraph frame] Line 8378: scaffolds_settings_desc: "Select the type of support: Sentence Starters, Paragraph Frames, or Discussion Prompts
+[word bank] Line 2564: {/* Word Bank (Scattered below) */}
+[graphic organizer] Line 8410: sidebar_scaffolds_desc: "Get teaching strategies, discussion prompts, and scaffolded activities tailored to your
+[starter] Line 8378: scaffolds_settings_desc: "Select the type of support: Sentence Starters, Paragraph Frames, or Discussion Prompts
+[template] Line 6691: grid-template-columns: 1fr;
+
+--- RUBRIC/GRADING FEATURES ---
+[rubric] Line 6916: rubric_generation_failed: "Failed to generate rubric.",
+[rubric] Line 7096: rubric_failed: "Rubric generation failed.",
+... and 86 more for 'rubric'
+[criteria] Line 10801: criteria_check: "Checking against rubric criteria",
+[criteria] Line 10820: instruction: "Write your response below. Focus on the rubric criteria.",
+... and 10 more for 'criteria'
+[grade] Line 9376: work_placeholder: "Paste student work here to grade against the rubric above..."
+[grade] Line 46829: Create writing supports (Scaffolds) based on the text below for ${gradeLevel} students.
+... and 1 more for 'grade'
+[score] Line 50068: handleScoreUpdate(100, "Mastery Writing", generatedContent.id);
+[score] Line 50181: const speakText = t('scaffolds.grading_speech', { score: data.totalScore, glow: data.feedback.glow });
+[feedback] Line 8396: tool_writing_desc: "Launch the collaborative writing environment where students can draft, revise, and receive A
+[feedback] Line 9890: scaffolds_feedback_interface: "The grading interface where Allobot provides feedback on student drafts.",
+... and 3 more for 'feedback'
+[assessment] Line 28114: 'mastery_draft_input': "Show your understanding! This draft feeds into the mastery assessment rubric.",
+[assessment] Line 50083: const rubricType = isIndependentMode ? "Student Self-Assessment Checklist" : "Grading Rubric";
+[evaluate] Line 9885: scaffolds_grading: "Start an automated mastery check to evaluate student responses.",
+[evaluate] Line 27279: • **Reflection Grading**: AI evaluates open-ended answers with rubric-based feedback.
+... and 2 more for 'evaluate'
+
+--- CHECKLIST FEATURES ---
+[checklist] Line 7097: checklist_generated: "Checklist generated!",
+[self-assess] Line 50083: const rubricType = isIndependentMode ? "Student Self-Assessment Checklist" : "Grading Rubric";
+[criteria] Line 11121: - Do NOT include criteria related to: Handwriting, Neatness, Penmanship, Paper Quality, or Physical Margins.
+[success] Line 27240: • **Checklists & Rubrics**: Auto-generated success criteria for self-monitoring.
+[goal] Line 9883: scaffolds_goal_panel: "This tool provides sentence starters and frames to support student expression (UDL Option for
+
+--- AUTO-GRADER SPECIFIC ---
+[autograd] Line 9650: quiz_autograder: "I can grade open-ended reflection answers with the Auto-Grader!",
+[auto-grad] Line 8584: auto_grader: "AI Auto-Grader",
+[ai grad] Line 9210: reflection_placeholder: "Type your reflection here for AI grading...",
+[instant feedback] Line 27243: • **AI Auto-Grader**: Provide instant feedback on student drafts using the built-in grading tool.
+[automated] Line 9885: scaffolds_grading: "Start an automated mastery check to evaluate student responses.",
+
+--- DIFFERENTIATION/LEVELS ---
+[level] Line 38977: 7. Independent Practice: Instructions for individual work. **Explicitly reference** the "Writing Scaffolds" or "
+[support] Line 8203: adjust_scaffolding: "Adjust Scaffolding Support",
+[complexity] Line 8557: header_description: "<strong>Source Material Analysis:</strong> Reviewing the complexity and key components of the s
+
+--- SCAFFOLD UI LABELS/TRANSLATIONS ---
+Line 43: 'tour-tool-scaffolds': 'sentence-frames',
+Line 7191: tool_scaffolds: "Writing Scaffolds",
+Line 7192: tool_scaffolds_parent: "Writing Help",
+Line 8378: scaffolds_settings_desc: "Select the type of support: Sentence Starters, Paragraph Frames, or Discussion Prompts."
+Line 8579: title: "Writing Scaffolds",
+Line 9772: tool_scaffolds: "Create writing scaffolds, sentence starters, and paragraph frames.",
+Line 9883: scaffolds_goal_panel: "This tool provides sentence starters and frames to support student expression (UDL Option for Action & Expression
+Line 9886: scaffolds_edit_toggle: "Switch to edit mode to customize the sentence starters or paragraph frames.",
+Line 9887: scaffolds_item: "A sentence starter or frame item. Students complete the sentence in the text box.",
+Line 9889: scaffolds_paragraph_frame: "A fill-in-the-blank paragraph frame to guide structured writing.",
+Line 10661: title: "Writing Scaffolds",
+Line 10838: scaffolds_title: "Writing Scaffolds",
+Line 10839: scaffolds_desc: "Provides sentence starters, paragraph frames, and discussion prompts to support student writing and expression.",
+Line 10900: scaffolds: "Writing Scaffolds",
+Line 10918: constructing_scaffolds: "Constructing writing scaffolds...",
+Line 24454: { value: 'sentence-frames', label: t('blueprint.tools.scaffolds') },
+Line 26828: 'tour-tool-scaffolds': 'sentence-frames',
+Line 26967: 'scaffolds_type': 'sentence-frames',
+Line 26968: 'scaffolds_custom_instructions': 'sentence-frames',
+Line 27005: 'tool_scaffolds': 'sentence-frames',
+Line 27033: 'tour-scaffolds-settings': 'sentence-frames',
+Line 27594: 'tool_scaffolds': "Create writing scaffolds and organizers to support student composition.",
+Line 27731: 'tour-scaffolds-settings': "Configure scaffold generation options including frame types and context.",
+Line 27822: 'scaffolds_type': "Choose between Sentence Starters, Paragraph Frames, or Discussion Prompts.",
+Line 27823: 'scaffolds_custom_instructions': "Tailor the sentence frames to specific rhetorical functions (e.g., 'agreeing/disagreeing').",
+Line 27995: 'scaffolds_edit_toggle': "Teacher mode: Edit scaffold prompts and sentence starters. Students see read-only prompts when this is OFF.",
+Line 27996: 'scaffolds_goal_panel': "Set visible learning targets (e.g., 'I can identify the main idea'). Shown to students as success criteria.",
+Line 27998: 'scaffolds_item': "A sentence starter or guiding prompt. Students complete the thought—great for structured writing practice.",
+Line 27999: 'scaffolds_paragraph_frame': "A fill-in-the-blank paragraph structure. Students insert key ideas while the frame provides organization."
+Line 28001: 'scaffolds_student_input': "Active writing area. Students can use voice dictation (FAB microphone) or type their response here.",
+Line 28470: 'sentence-frames': 'tour-tool-scaffolds',
+Line 38844: case 'sentence-frames': return t('scaffolds.title');
+Line 38927: const type = scaffoldItem.data.mode === 'list' ? "Sentence Starters" : "Paragraph Frame";
+Line 38977: 7. Independent Practice: Instructions for individual work. **Explicitly reference** the "Writing Scaffolds" or "Worksheets" (Leveled
+Line 56712: activeView === 'sentence-frames' ? <><Quote className="text-rose-500" size={20} /> Scaffolds</> :
+Line 59047: generatedContent.type === 'sentence-frames' ? t('simplified.complexity_controls.adjust_scaffolding') :
+Line 61530: <p className="text-sm text-rose-800 flex-grow"><strong>UDL Goal:</strong> Providing options for Action & Expression.
+Line 61713: {rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')}

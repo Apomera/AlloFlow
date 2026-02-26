@@ -1,0 +1,16 @@
+L12218: alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+L12220: alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+L17386: bot_events: {
+L20799: speak(t('bot_events.intro_greeting'));
+L20913: ? t('bot_events.feedback_analysis_result', { level }) || `I've analyzed the text. It reads at a ${level} level.`
+L43995: alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L47065: alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+L47893: const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
+L49307: alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+L52271: alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
+L54195: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L55236: //      const feedback = t('bot_events.feedback_analysis_result').replace('{level}', analysisData.readingLevel.range);
+L55367: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinking');
+L55937: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L56012: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L57991: let contextMsg = t('bot_events.feedback_audit_start').replace('{standard}', targetStandards[0]?.id || "Standard");

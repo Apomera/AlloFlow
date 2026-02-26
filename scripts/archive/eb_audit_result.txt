@@ -1,0 +1,49 @@
+WRAPPED (16):
+  + Venn Game encountered an error.
+  + Live Quiz encountered an error. waiting for sync...
+  + Escape Room encountered an error. Waiting for sync...
+  + Interview Interface encountered an error. Please close and reopen.
+  + The content viewer encountered an error. It might be due to complex data formatt
+  + Memory Game encountered an error.
+  + Crossword Puzzle encountered an error.
+  + Matching Game encountered an error.
+  + Bingo Generator encountered an error.
+  + Bingo Game encountered an error.
+  + Word Scramble Game encountered an error.
+  + Word Sounds encountered an error.
+  + Sequence Game encountered an error.
+  + Concept Sort Game encountered an error.
+  + t(
+  + t(
+
+COMPONENTS (45):
+  NO EB: GlobalMuteButton (L163)
+  NO EB: LargeFileTranscriptionModal (L449)
+  NO EB: StudentAnalyticsPanel (L10393)
+  NO EB: StudentSubmitModal (L17159)
+  NO EB: SpeechBubble (L17408)
+  NO EB: AlloBot (L17631)
+  NO EB: MissionReportCard (L19768)
+  NO EB: DraftFeedbackInterface (L20206)
+  NO EB: TeacherGate (L20407)
+  NO EB: InfoTooltip (L21164)
+  NO EB: ConfettiExplosion (L21635)
+  NO EB: ComplexityGauge (L21671)
+  NO EB: ClozeInput (L21762)
+  NO EB: InventoryGrid (L24872)
+  NO EB: DiceOverlay (L24928)
+  NO EB: RoleSelectionModal (L25072)
+  NO EB: StudentEntryModal (L25205)
+  NO EB: StudentWelcomeModal (L25316)
+  NO EB: SimpleBarChart (L25368)
+  NO EB: EscapeRoomTeacherControls (L26163)
+  NO EB: TeacherLiveQuizControls (L26332)
+  NO EB: LongitudinalProgressChart (L27049)
+  NO EB: TeacherDashboard (L27111)
+  NO EB: QuickStartWizard (L27772)
+  NO EB: SpeedReaderOverlay (L28863)
+  NO EB: ImmersiveToolbar (L29018)
+  NO EB: ImmersiveWord (L29142)
+  NO EB: InteractiveBlueprintCard (L29204)
+  NO EB: CharacterColumn (L29432)
+  NO EB: ImmersiveWord (L37215)

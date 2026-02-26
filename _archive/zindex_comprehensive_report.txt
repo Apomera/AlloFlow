@@ -1,0 +1,444 @@
+
+================================================================================
+SECTION 1: ALL Z-INDEX VALUES (Sorted by Value)
+================================================================================
+
+Total z-index declarations found: 326
+Unique z-index values: 32
+
+
+--- z-index: 11000 (2 occurrences) ---
+  Line 69608: className="fixed z-[11000] animate-in fade-in zoom-in-95 duration-200"
+  Line 69792: className={`fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex fl
+
+--- z-index: 10999 (1 occurrences) ---
+  Line 69706: <div className="fixed pointer-events-none animate-pulse z-[10999]"
+
+--- z-index: 10998 (1 occurrences) ---
+  Line 69595: data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
+
+--- z-index: 10002 (1 occurrences) ---
+  Line 25924: <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+
+--- z-index: 10001 (8 occurrences) ---
+  Line 25200: <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+  Line 25913: <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+  Line 32813: z-index: 10001 !important; /* Above any backdrops */
+  Line 56413: <div className={`fixed top-20 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 dur
+  Line 56517: <div className={`fixed top-20 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 dura
+  ... and 3 more
+
+--- z-index: 10000 (6 occurrences) ---
+  Line 18302: className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale
+  Line 25565: <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
+  Line 56412: <div className="fixed inset-0 z-[10000]" onClick={() => setShowTextSettings(false)}></div>
+  Line 56516: <div className="fixed inset-0 z-[10000]" onClick={() => setShowVoiceSettings(false)}></div>
+  Line 69730: <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }}>
+  ... and 1 more
+
+--- z-index: 9999 (10 occurrences) ---
+  Line 10580: z-index: 9999 !important;
+  Line 25390: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center j
+  Line 25402: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justif
+  Line 25427: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center ju
+  Line 25451: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+  ... and 5 more
+
+--- z-index: 1000 (3 occurrences) ---
+  Line 19388: <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-whi
+  Line 19873: <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in 
+  Line 71260: <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full
+
+--- z-index: 400 (2 occurrences) ---
+  Line 55584: <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 po
+  Line 61745: ${(playingContentId && playingContentId.startsWith('persona-message-')) ? 'fixed bottom-32 z-[400]' : 'absolute bottom-8
+
+--- z-index: 300 (16 occurrences) ---
+  Line   455: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-i
+  Line 16495: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in f
+  Line 16702: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in f
+  Line 24825: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-
+  Line 24961: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-i
+  ... and 11 more
+
+--- z-index: 250 (1 occurrences) ---
+  Line 69998: {showFluencyConfetti && <div className="absolute inset-0 pointer-events-none z-[250] flex items-center justify-center"><
+
+--- z-index: 220 (1 occurrences) ---
+  Line 61745: ${(playingContentId && playingContentId.startsWith('persona-message-')) ? 'fixed bottom-32 z-[400]' : 'absolute bottom-8
+
+--- z-index: 210 (3 occurrences) ---
+  Line 63550: className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out"
+  Line 63555: className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out"
+  Line 63560: className="fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 e
+
+--- z-index: 202 (1 occurrences) ---
+  Line 24662: className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transiti
+
+--- z-index: 201 (1 occurrences) ---
+  Line 30171: z-index: 201;
+
+--- z-index: 200 (17 occurrences) ---
+  Line  2245: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-
+  Line  9469: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in zoom-
+  Line 19198: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in d
+  Line 22946: <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key="venn_game_containe
+  Line 24657: className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center"
+  ... and 12 more
+
+--- z-index: 190 (1 occurrences) ---
+  Line 61303: <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 sha
+
+--- z-index: 160 (1 occurrences) ---
+  Line 55818: <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" 
+
+--- z-index: 150 (3 occurrences) ---
+  Line 24700: className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in du
+  Line 55602: <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" 
+  Line 61716: className="absolute top-4 right-4 z-[150] bg-slate-800/80 hover:bg-slate-800 text-white px-4 py-2 rounded-full backdrop-
+
+--- z-index: 110 (2 occurrences) ---
+  Line 57132: <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in f
+  Line 70336: className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate
+
+--- z-index: 109 (1 occurrences) ---
+  Line 70452: className="fixed inset-0 z-[109] cursor-grabbing"
+
+--- z-index: 100 (24 occurrences) ---
+  Line  1432: <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in
+  Line  9591: <div className="fixed bottom-4 right-4 z-[100] w-80 bg-white rounded-xl shadow-2xl border-2 border-violet-200 animate-in
+  Line 10262: <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in">
+  Line 21559: <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-
+  Line 21889: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden animate-in fade-in duration-300">
+  ... and 19 more
+
+--- z-index: 90 (7 occurrences) ---
+  Line 56831: <div className="fixed inset-0 z-[90]" onClick={() => setIsJoinPopoverOpen(false)}></div>
+  Line 56920: {showExportMenu && <div className="fixed inset-0 z-[90]" onClick={() => setShowExportMenu(false)}></div>}
+  Line 61643: <div className="fixed inset-0 z-[90]" onClick={() => setMovingItemId(null)}></div>
+  Line 63908: {definitionData && <div className="fixed inset-0 z-[90]" onClick={closeDefinition}></div>}
+  Line 63972: {phonicsData && <div className="fixed inset-0 z-[90]" onClick={closePhonics}></div>}
+  ... and 2 more
+
+--- z-index: 60 (5 occurrences) ---
+  Line  1475: <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fa
+  Line 28922: <div className="sticky top-0 z-[60] p-4 bg-white/95 backdrop-blur-sm border-b border-slate-200 flex justify-between item
+  Line 56375: className={`relative z-[60] flex items-center gap-2 px-3 py-2 rounded-2xl backdrop-blur-xl border shadow-inner transitio
+  Line 56395: <div id="tour-header-settings" className={`relative z-[60] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl bord
+  Line 58556: className={`absolute inset-0 pointer-events-none z-[60] transition-colors duration-300 ${
+
+--- z-index: 50 (49 occurrences) ---
+  Line  2252: <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hove
+  Line  2285: <div className="relative z-50">
+  Line  2333: <div className="relative z-50" style={{ pointerEvents: 'auto' }}>
+  Line  9648: className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in"
+  Line 10610: z-index: 50 !important;
+  ... and 44 more
+
+--- z-index: 40 (7 occurrences) ---
+  Line 20228: <div className={`w-full bg-slate-900/95 backdrop-blur-md border-y-4 ${borderColor} p-4 shadow-2xl animate-in slide-in-fr
+  Line 23110: <div className="h-44 bg-slate-50 border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40" data-help-key
+  Line 25507: <div className="fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40" d
+  Line 56610: <div id="tour-header-tools" className={`relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border sh
+  Line 66067: <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  ... and 2 more
+
+--- z-index: 30 (8 occurrences) ---
+  Line 21561: <div className={`flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 ${isFullscreen ? 'sticky top-0 z-30 b
+  Line 22068: <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end no-print z-30">
+  Line 22319: <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
+  Line 22619: statusClass = "border-yellow-400 bg-yellow-50 ring-4 ring-yellow-200 z-30 scale-105";
+  Line 22948: <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+  ... and 3 more
+
+--- z-index: 20 (46 occurrences) ---
+  Line  8682: className={`relative group transition-all duration-300 ${playingOptionIndex === idx ? 'scale-105 ring-4 ring-pink-300 ro
+  Line 19213: <div className="text-center mb-2 relative z-20">
+  Line 19220: <div className="relative z-20">
+  Line 19232: <div className="grid grid-cols-2 gap-4 relative z-20">
+  Line 19247: <div className="mt-4 pt-4 border-t border-slate-700/50 relative z-20">
+  ... and 41 more
+
+--- z-index: 10 (87 occurrences) ---
+  Line  3502: className="absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-500 hover:text-white text-violet-600 rounded-x
+  Line  3598: className="w-10 h-10 rounded-full hover:bg-orange-200 text-slate-500 hover:text-orange-600 flex items-center justify-cen
+  Line  3927: <div className="grid grid-cols-2 md:grid-cols-3 gap-3 relative z-10">
+  Line  8700: className="absolute top-1 right-1 w-8 h-8 bg-pink-100 hover:bg-pink-500 hover:text-white text-pink-600 rounded-lg flex i
+  Line  9419: <div className="text-center pointer-events-none p-4 z-10">
+  ... and 82 more
+
+--- z-index: 2 (2 occurrences) ---
+  Line 41286: ${isDecision ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-i
+  Line 41302: innerContent = `<div style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; ma
+
+--- z-index: 1 (1 occurrences) ---
+  Line 41286: ${isDecision ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-i
+
+--- z-index: 0 (8 occurrences) ---
+  Line 17033: <div className="absolute inset-0 pointer-events-none z-0">
+  Line 20246: <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0"></div>
+  Line 20247: <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
+  Line 22332: <div className="absolute left-3 sm:left-1/2 top-0 bottom-0 w-1.5 bg-indigo-100 rounded-full -translate-x-1/2 z-0"></div>
+  Line 34439: {!isMapLocked && <div className="absolute inset-0 bg-dot-pattern pointer-events-none z-0"></div>}
+  ... and 3 more
+
+================================================================================
+SECTION 2: VOICE SETTINGS PANEL CONTEXT
+================================================================================
+
+Searching for showVoiceSettings and voice panel elements...
+Line 31213: const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+Line 56504: onClick={() => { setShowVoiceSettings(!showVoiceSettings); setShowTextSettings(false); }}
+Line 56512: {showVoiceSettings ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+Line 56514: {showVoiceSettings && (
+Line 56516: <div className="fixed inset-0 z-[10000]" onClick={() => setShowVoiceSettings(false)}></div>
+
+================================================================================
+SECTION 3: HEADER ELEMENTS (tour-header-*)
+================================================================================
+
+Searching for tour-header-* elements...
+
+--- tour-header-utils ---
+Line 31872: { id: 'tour-header-utils', text: t('tour.utils_text'), title: t('tour.utils_title') },
+
+--- tour-header-settings ---
+Line 10614: #tour-header-settings .absolute.top-full {
+
+--- tour-header ---
+Line 10614: #tour-header-settings .absolute.top-full {
+
+================================================================================
+SECTION 4: BUTTONS MENTIONED BY USER
+================================================================================
+
+Searching for specific button elements mentioned by user...
+
+--- Pattern: student.*view ---
+Line 31978: 'word_sounds_review_move_word': "Drag this word to a new position in the activity sequence. Reordering helps: build from simple to complex, 
+Line 32059: 'export_share_button': "Create a shareable link or send to others. Share options include: copy link (anyone with link can view), email direc
+Line 32085: 'math_generate_button': "Create math content based on your specifications. Generation includes: problems with step-by-step solutions, visual
+Line 32099: 'quiz_generate_button': "Generate the assessment based on your settings. AI creates: questions aligned to source content, answer options, co
+Line 32148: 'math_toggle_answers': "Control visibility of solutions. When hidden: student practice mode, answers are concealed, self-assessment enabled 
+Line 32276: 'brainstorm_generate_button': "Start the configured brainstorming session. Clicking initiates: the selected simulation type, AI facilitation
+Line 32349: 'header_submit': "Student submission button for completed assignments. When clicked: your current work is packaged and sent to the teacher d
+Line 32381: 'outline_generate_button': "Generate an organized representation of your content. Output options include: Traditional Outline (hierarchical 
+Line 32393: 'dashboard_detail_back': "Navigate back to the class roster from individual student detail. Returns to: full student list, class-wide statis
+Line 32541: 'faq_edit_toggle': "Switch between view and edit modes for FAQ content. When ON (Teacher Mode): click any Q&A to edit text, add new question
+Line 56621: data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+
+--- Pattern: teacher.*view ---
+Line 32064: 'resource_delete_button': "Remove this resource permanently. Deletion is irreversible—deleted content cannot be recovered. Confirmation dial
+Line 32085: 'math_generate_button': "Create math content based on your specifications. Generation includes: problems with step-by-step solutions, visual
+Line 32099: 'quiz_generate_button': "Generate the assessment based on your settings. AI creates: questions aligned to source content, answer options, co
+Line 32148: 'math_toggle_answers': "Control visibility of solutions. When hidden: student practice mode, answers are concealed, self-assessment enabled 
+Line 32349: 'header_submit': "Student submission button for completed assignments. When clicked: your current work is packaged and sent to the teacher d
+Line 32541: 'faq_edit_toggle': "Switch between view and edit modes for FAQ content. When ON (Teacher Mode): click any Q&A to edit text, add new question
+Line 56621: data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+
+--- Pattern: isTeacherMode ---
+Line 56621: data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+Line 61303: <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo
+Line 63166: {isTeacherMode && <button onClick={handlePrintGame} className="text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-1 rounded-f
+
+--- Pattern: live.*session ---
+Line 32099: 'quiz_generate_button': "Generate the assessment based on your settings. AI creates: questions aligned to source content, answer options, co
+Line 32336: 'group_create_button': "Add the named group to your session. Click after entering a group name. New group appears in the group panel ready f
+
+--- Pattern: export.*option ---
+Line 32059: 'export_share_button': "Create a shareable link or send to others. Share options include: copy link (anyone with link can view), email direc
+
+================================================================================
+SECTION 5: HELP MODE OVERLAY / SPOTLIGHT
+================================================================================
+
+Searching for spotlight and help overlay elements...
+
+--- spotlight ---
+Line 32418: 'fab_toggle': "Show or hide the floating accessibility button panel. When visible: quick access to focus tools, dictation, timers, and readi
+Line 58268: <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-al
+
+--- SpotlightMessage ---
+
+--- spotlight-message ---
+
+--- showSpotlight ---
+
+================================================================================
+SECTION 6: FIXED POSITION ELEMENTS
+================================================================================
+
+Fixed elements create stacking contexts. Listing all fixed elements with z-index...
+Line   455: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+Line  1432: <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in slide-in-from-bottom-10 fade-
+Line  1475: <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+Line  2245: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+Line  9469: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in zoom-in duration-300">
+Line  9591: <div className="fixed bottom-4 right-4 z-[100] w-80 bg-white rounded-xl shadow-2xl border-2 border-violet-200 animate-in slide-in-from-bottom-10 fade-
+Line  9648: className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in"
+Line 10262: <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in">
+Line 16495: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+Line 16702: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+Line 18302: className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none foc
+Line 19198: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
+Line 19388: <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`} data-help-key="
+Line 19873: <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-hel
+Line 21559: <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none' 
+Line 21889: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden animate-in fade-in duration-300">
+Line 22297: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300">
+Line 22665: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
+Line 22723: className={`bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-transform durati
+Line 22946: <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key="venn_game_container">
+Line 23448: <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-300" data-help-key="crossword_game_container">
+Line 23689: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+Line 23883: <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+Line 24287: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95 dur
+Line 24422: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+Line 24657: className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center"
+Line 24700: className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+Line 24825: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
+Line 24961: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+Line 25052: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+
+Total fixed elements with z-index: 104
+
+================================================================================
+SECTION 7: HELP MODE CSS RULES
+================================================================================
+
+Extracting help-mode CSS rules...
+Line 32780:       style.id = 'help-mode-styles';
+Line 32781: 
+Line 32782:         const isContrast = theme === 'contrast';
+Line 32783:         const isDark = theme === 'dark';
+Line 32784: 
+Line 32785:         // High Contrast: Black BG, Yellow Text, Yellow Border
+Line 32786:         const popoverBg = isContrast ? '#000000' : (isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)');
+Line 32787:         const popoverText = isContrast ? '#FFFF00' : (isDark ? '#ffffff' : '#1e293b');
+Line 32788:         const popoverBorder = isContrast ? '4px solid #FFFF00' : (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px soli
+Line 32789: 
+Line 32790:         style.innerHTML = `
+Line 32791:         .help-mode-active {
+Line 32792:             cursor: help !important;
+Line 32793:         }
+Line 32794: 
+Line 32795:         /* FIX: Header Interactivity */
+Line 32796:         .help-mode-active #tour-header-utils button {
+Line 32797:             pointer-events: auto !important;
+Line 32798:             cursor: pointer !important;
+Line 32799:             z-index: 200 !important; /* Ensure on top */
+Line 32800:         }
+Line 32801: 
+Line 32802:         /* FIX: Header Settings Interactivity (voice, text, etc) */
+Line 32803:         .help-mode-active #tour-header-settings button,
+Line 32804:         .help-mode-active #tour-header-settings select,
+Line 32805:         .help-mode-active #tour-header-settings [data-help-key] {
+Line 32806:             pointer-events: auto !important;
+Line 32807:             cursor: pointer !important;
+Line 32808:             z-index: 200 !important;
+Line 32809:         }
+Line 32810: 
+Line 32811:         /* FIX: Ensure AlloBot stays visible and interactive in Help Mode */
+Line 32812:         .help-mode-active [data-help-key="bot_avatar"] {
+Line 32813:             z-index: 10001 !important; /* Above any backdrops */
+Line 32814:             pointer-events: auto !important;
+Line 32815:         }
+Line 32816: 
+Line 32817:         /* FIX: AlloBot buttons also need interactivity */
+Line 32818:         .help-mode-active [data-help-key="bot_avatar"] button {
+Line 32819:             pointer-events: auto !important;
+Line 32820:             cursor: pointer !important;
+Line 32821:         }
+Line 32822: 
+Line 32823:         /* High Contrast / Theme Overrides for Help Elements */
+Line 32824:         /* Target the ID and ALL children to override Tailwind classes */
+Line 32825:         #spotlight-message-panel {
+Line 32826:             background-color: ${popoverBg} !important;
+Line 32827:             border: ${popoverBorder} !important;
+Line 32828:             box-shadow: ${isContrast ? 'none' : '0 0 40px rgba(139,92,246,0.3)'} !important;
+Line 32829:         }
+Line 32830: 
+Line 32831:         #spotlight-message-panel h3,
+Line 32832:         #spotlight-message-panel p,
+Line 32833:         #spotlight-message-panel span,
+Line 32834:         #spotlight-message-panel div,
+Line 32835:         #spotlight-message-panel strong,
+Line 32836:         #spotlight-message-panel em {
+Line 32837:              color: ${popoverText} !important;
+Line 32838:              /* text-shadow: ${isContrast ? 'none' : 'inherit'} !important; */
+Line 32839:         }
+Line 32840: 
+Line 32841:         /* Fix the connection arrow too */
+Line 32842:         #spotlight-message-panel + svg {
+Line 32843:             color: ${popoverBg} !important; /* match bg */
+Line 32844:         }
+Line 32845: 
+Line 32846:         .help-mode-active [data-help-key] {
+Line 32847:           cursor: help !important;
+Line 32848:           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+Line 32849:           position: relative; /* Ensure z-index works */
+Line 32850:         }
+Line 32851: 
+Line 32852:         /* Allow clicking disabled buttons */
+Line 32853:         .help-mode-active button[aria-disabled="true"] {
+Line 32854:              pointer-events: auto !important;
+Line 32855:              cursor: help !important;
+Line 32856:              opacity: 0.8 !important;
+Line 32857:         }
+Line 32858:         .help-mode-active [data-help-key]:hover {
+Line 32859:           z-index: 50;
+Line 32860:           box-shadow: 0 0 0 2px #8b5cf6, 0 0 15px rgba(139, 92, 246, 0.6) !important; /* Violet-500 Glow */
+Line 32861:           background-color: rgba(139, 92, 246, 0.1) !important;
+Line 32862:           transform: scale(1.02);
+Line 32863:         }
+Line 32864:         /* Fix for rounded buttons to keep glow shape */
+Line 32865:         .help-mode-active button.rounded-full[data-help-key]:hover {
+Line 32866:           border-radius: 9999px;
+Line 32867:         }
+Line 32868:         /* Make History panel more visible in Help Mode */
+Line 32869:         .help-mode-active #tour-history-panel {
+Line 32870:           background-color: rgb(79, 70, 229) !important; /* Brighter indigo */
+Line 32871:           box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3) !important;
+Line 32872:         }
+Line 32873:         /* BLOCK ALL BUTTON CLICKS in Help Mode - prevents UI activation */
+Line 32874:         .help-mode-active button:not([data-help-ignore]),
+Line 32875:         .help-mode-active a:not([data-help-ignore]),
+Line 32876:         .help-mode-active input:not([data-help-ignore]),
+Line 32877:         .help-mode-active select:not([data-help-ignore]),
+Line 32878:         .help-mode-active [role="button"]:not([data-help-ignore]) {
+Line 32879:           pointer-events: none !important;
+Line 32880:         }
+Line 32881:         /* ALLOW ignored elements (close button, toggle, etc) to receive clicks */
+Line 32882:         .help-mode-active [data-help-ignore],
+Line 32883:         .help-mode-active [data-help-toggle] {
+Line 32884:           pointer-events: auto !important;
+Line 32885:           cursor: pointer !important;
+Line 32886:         }
+Line 32887:         /* The help-key elements should receive pointer events for the glow effect */
+Line 32888:         .help-mode-active [data-help-key] {
+Line 32889:           pointer-events: auto !important;
+Line 32890:         }
+Line 32891:       `;
+Line 32892:       document.head.appendChild(style);
+
+================================================================================
+SECTION 8: Z-INDEX HIERARCHY SUMMARY
+================================================================================
+
+Recommended Z-Index Hierarchy (based on analysis):
+
+HIGHEST PRIORITY (should be on top):
+  - Modal overlays (escape room, game over states): z-[9999]
+  - Settings panel dropdowns (voice, text): z-[10001]
+  - Settings backdrop overlays: z-[10000]
+  - AlloBot container: z-[10000] -> CONFLICT with backdrop!
+
+MEDIUM PRIORITY:
+  - Teacher gate modal: z-[1000]
+  - Tour header utils: z-[100]
+  - Spotlight message panel: needs high z-index
+  
+LOW PRIORITY:
+  - Help mode interactive hover: z-10
+  - AlloBot buttons: z-50
+  - Header settings container: z-[60]

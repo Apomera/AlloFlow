@@ -1,0 +1,4 @@
+﻿L696: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+L702: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+L3338: 'counting':       'hidden',       // Count phonemes by ear - text reveals letter count
+L32039: 'glossary_word_sounds': "Launch Word Sounds Studio directly with these glossary terms. Students practice explicit phonics skills: hearing individual p

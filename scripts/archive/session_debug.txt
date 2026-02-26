@@ -1,0 +1,42 @@
+=== uploadSessionAssets ===
+L21338: const uploadSessionAssets = async (appId, resources) => {
+L42365:         const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+L42456:               const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+
+=== error_generic ===
+L14474:     error_generic: "Failed to start session. Data may be too large.",
+L42433:             addToast(t('session.error_generic'), "error");
+
+=== too_large / too large ===
+L12070:     file_large: "File is too large (>20MB). Please compress it or upload text directly.",
+L12071:     file_too_large_chunking: "Video files over 15MB cannot be processed directly. Please compress the video or extract frames as images.",
+L14474:     error_generic: "Failed to start session. Data may be too large.",
+L35048:                warnLog(`Cloud Save too large (${sizeInBytes} bytes). Stripping assets...`);
+L35605:             warnLog(`Grammar fix length change too large: ${(lengthChange * 100).toFixed(1)}%`);
+L60823:                                           warnLog(`Grammar fix length change too large: ${(lengthChange * 100).toFixed(1)}%`);
+
+=== lightweightResources ===
+L42365:         const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+L42368:             resources: lightweightResources,
+L42456:               const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+L42458:               await updateDoc(sessionRef, { resources: lightweightResources });
+L42459:               debugLog("Session resources synced:", lightweightResources.length);
+
+=== Failed to start ===
+L12133:     adventure_start_failed: "Failed to start adventure. Please try again.",
+L12134:     adventure_failed: "Failed to start adventure.",
+L12186:     panel_start_failed: "Failed to start panel.",
+L12222:     adventure_start_failed_retry: "Adventure failed to start. Please retry.",
+L14474:     error_generic: "Failed to start session. Data may be too large.",
+
+=== session_start ===
+L32560:     'header_session_start': "Creates a session code students can join. You'll see live student activity, can push content to all devices, and monitor 
+L42358:         addToast(t('session.error_no_resources'), "error");
+L42433:             addToast(t('session.error_generic'), "error");
+L42471:           addToast(t('session.error_invalid_code'), "error");
+L42488:               addToast(t('session.error_not_found') || "Session not found. It may have ended.", "error");
+L42513:           addToast(t('session.error_not_found') || "Could not join session.", "error");
+L54543:                                         addToast(t('session.error_end_session') || "Failed to end session.", "error");
+L55548:                                     data-help-key="header_session_start"
+L55549:                                     title={t('session.start_tooltip')}
+L55552:                                     {activeSessionCode ? `Live: ${activeSessionCode}` : <span className="hidden lg:inline">{t('session.start')}</span>

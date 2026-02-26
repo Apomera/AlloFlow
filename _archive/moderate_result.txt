@@ -1,0 +1,44 @@
+Loaded 72991 lines
+  [FIX1] L3933: Guarded data.distractors.map()
+  [FIX1] L4004: Guarded data.distractors.map()
+
+FIX 1: Guarded 2 .map() calls on data.distractors / data.options
+  [FIX2] L1384: Added console.warn to silent catch
+  [FIX2] L1439: Added console.warn to silent catch
+  [FIX2] L5397: Added console.warn to silent catch
+  [FIX2] L5494: Added console.warn to silent catch
+  [FIX2] L5596: Added console.warn to silent catch
+  [FIX2] L5751: Added console.warn to silent catch
+  [FIX2] L6154: Added console.warn to silent catch
+  [FIX2] L7074: Added console.warn to silent catch
+  [FIX2] L8178: Added console.warn to silent catch
+  [FIX2] L8196: Added console.warn to silent catch
+  [FIX2] L8202: Added console.warn to silent catch
+  [FIX2] L17383: Added console.warn to silent catch
+  [FIX2] L17715: Added console.warn to silent catch
+  [FIX2] L17757: Added console.warn to silent catch
+  [FIX2] L18483: Added console.warn to silent catch
+  [FIX2] L21848: Added console.warn to silent catch
+  [FIX2] L21852: Added console.warn to silent catch
+  [FIX2] L21853: Added console.warn to silent catch
+  [FIX2] L21856: Added console.warn to silent catch
+  [FIX2] L21908: Added console.warn to silent catch
+  [FIX2] L31563: Added console.warn to silent catch
+  [FIX2] L36781: Added console.warn to silent catch
+  [FIX2] L37492: Added console.warn to silent catch
+  [FIX2] L57442: Added console.warn to silent catch
+  [FIX2] L72088: Added console.warn to silent catch
+
+FIX 2: Added console.warn to 25 silent catch blocks
+
+Backup saved to C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\AlloFlowANTI.txt.bak_moderate
+Wrote patched file: 7302803 bytes
+
+============================================================
+VERIFICATION
+============================================================
+  ✅ All data.distractors.map() calls are guarded
+  ⚠️  5 silent catch blocks remain
+
+Total changes applied: 27
+Done!

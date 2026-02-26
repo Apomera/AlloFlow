@@ -1,0 +1,69 @@
+L20041:                 {currentQuestion && showTranslated && currentQuestion.question_en && (
+L20043:                         {currentQuestion.question_en}
+L35524:   const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
+L36156:       setLeveledTextLanguage(profile.config.leveledTextLanguage || 'English');
+L36627:           if (leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage]) {
+L36680:                           {leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage] && (
+L37994:                  - Move the current "question" text to "question_en" if "question_en" doesn't exist.
+L37999:               2. Do the same for reflections (text -> text_en).
+L39879:     if (leveledTextLanguage === lang) setLeveledTextLanguage('English');
+L39880:     if (leveledTextLanguage === 'All Selected Languages' && newLangs.length === 0) setLeveledTextLanguage('English');
+L39981:           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+L40041:           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+L40160:           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+L41220:                   const textEn = typeof r === 'object' && r.text_en ? r.text_en : null;
+L41243:                                 ${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.questi
+L41301:                               ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin-top: 0; margin-bottom: 5px; 
+L41327:           const { mode, items, text, text_en } = item.data;
+L41336:                           ${i.text_en ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${i.text_en})</span>` : ''}
+L41352:                   ${text_en ? `<div style="margin-top:20px; color:#666; font-style:italic;"><strong>Translation:</strong><br>${tex
+L46335:         if (isEn) updatedQuestion.question_en = value;
+L46370:         newReflections[rIndex] = { ...newReflections[rIndex], text_en: value };
+L46404:             ${leveledTextLanguage !== 'English' ? `- After the explanation, add a new line "--- English Translation ---" and provi
+L46797:                                      if (leveledTextLanguage === 'English') setLeveledTextLanguage(lang);
+L47359:           if (leveledTextLanguage !== 'English') {
+L50580:           Return ONLY valid JSON format: { "questions": [{ "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": 
+L50894:             Format: Return ONLY a JSON array of objects with "question", "answer" ${effectiveLanguage !== 'English' ? ', "question
+L50895:             Example: [{"question": "Why is the sky blue? ☁️", "answer": "...", "question_en": "...", "answer_en": "..."}]
+L50976:                 "items": [{ "text": "..."${effectiveLanguage !== 'English' ? ', "text_en": "..."' : ''} }] (if mode is list),
+L50977:                 "text": "..." (if mode is paragraph)${effectiveLanguage !== 'English' ? ', "text_en": "..."' : ''},
+L52039:                         {(main_en || leveledTextLanguage !== 'English') && (
+L52066:                              {(branch.title_en || leveledTextLanguage !== 'English') && (
+L52094:                                         {(branch.items_en?.[iIdx] || leveledTextLanguage !== 'English') && (
+L52147:             const isNonEnglish = leveledTextLanguage !== 'English';
+L52640:                                                     {(branch.title_en || leveledTextLanguage !== 'English') && (
+L52669:                                                             {(branch.items_en?.[k] || leveledTextLanguage !== 'English') && (
+L52717:           if (leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages') {
+L53589:             updatedItem.text_en = value;
+L53967:                 ${leveledTextLanguage !== 'English' ? `Ensure translations (suffix _en) match the new difficulty.` : ''}
+L53984:                 ${leveledTextLanguage !== 'English' ? `Ensure translations match the new structure.` : ''}
+L63500:                                 {leveledTextLanguage !== 'English' && <span className="inline-block bg-blue-100 text-blue-800 bord
+L63902:                                                 {reviewGameState.activeQuestion.question_en && (
+L63903:                                                     <p className="text-blue-200 text-lg italic mt-4">{formatInlineText(reviewGameS
+L64691:                                                 {q.question_en && <p className="text-lg text-slate-500 italic mt-2">{formatInlineT
+L64786:                                             {(typeof ref === 'object' && ref.text_en) && (
+L64787:                                                 <p className="text-lg text-indigo-300 italic text-center mt-4">"{ref.text_en}"</p>
+L64812:                                                         {q.question_en !== undefined && (
+L64814:                                                                 value={q.question_en || ''}
+L64817:                                                                 rows={getRows(q.question_en || '')}
+L64825:                                                         {q.question_en && <p className="text-sm text-slate-500 italic px-2">{q.que
+L64907:                                     const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
+L64918:                                                 {(textEn !== null || leveledTextLanguage !== 'English') && (
+L65036:                                                 {(faq.question_en !== undefined || leveledTextLanguage !== 'English') && (
+L65038:                                                         value={faq.question_en || ''}
+L65039:                                                         onChange={(e) => handleFaqChange(idx, 'question_en', e.target.value)}
+L65041:                                                         rows={getRows(faq.question_en || '')}
+L65053:                                                     {(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && (
+L65085:                                                 {faq.question_en && <p className="text-sm text-slate-500 italic mb-2">({faq.questi
+L65197:                                                     {(item.text_en || leveledTextLanguage !== 'English') && (
+L65199:                                                             value={item.text_en || ''}
+L65200:                                                             onChange={(e) => handleScaffoldChange(idx, 'text_en', e.target.value, 
+L65202:                                                             rows={getRows(item.text_en || '')}
+L65210:                                                     {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm te
+L65254:                             {(leveledTextLanguage !== 'English' || generatedContent.data.text_en) && (
+L65259:                                             value={generatedContent.data.text_en || ''}
+L65260:                                             onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
+L65262:                                             rows={getRows(generatedContent.data.text_en || '')}
+L65266:                                         generatedContent.data.text_en && <p className="text-slate-500 italic leading-relaxed px-2 
+L67041:                                                 {(item.event_en || leveledTextLanguage !== 'English') && (
+L67947:                           if (leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage]) {

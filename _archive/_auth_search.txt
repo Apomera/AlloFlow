@@ -1,0 +1,17 @@
+﻿33: import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+16702: analyzing: "Analyzing context and designing a lesson blueprint... (You'll be able to review and modify the plan before we generate the resources).",
+16713: designing: "Designing a {count}-resource lesson blueprint... You'll be able to suggest revisions to the plan once I generate it.",
+16714: error: "I encountered an error designing the blueprint. Let's try Step-by-Step instead.",
+17155: designing_adventure: "Designing adventure scenario...",
+17162: designing_structure: "Designing long-form structure...",
+31590: const [user, setUser] = useState(auth.currentUser);
+31592: return onAuthStateChanged(auth, (u) => setUser(u));
+37446: if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+37447: await signInWithCustomToken(auth, __initial_auth_token);
+37449: await signInAnonymously(auth);
+37465: const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+41976: setGenerationStep(t('status_steps.designing_structure'));
+42142: You are designing an educational dialogue scene.
+45011: console.error("Error assigning student:", error);
+49895: sendBotMsg(t('chat_guide.pack.designing', { count: countDisplay }));
+55077: setGenerationStep(t('status_steps.designing_adventure'));

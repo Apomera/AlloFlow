@@ -1,0 +1,60 @@
+=== FEATURE LOCATION RESEARCH ===
+
+
+=== Storybook Export ===
+  L10016: export_storybook_images: "Export your adventure story with illustrations (HTML f
+  L10017: export_storybook_text: "Export your adventure story as text only (Markdown forma
+  L10289: storybook: "Export Storybook PDF",
+  L10293: storybook_export_description: "Would you like to include the scene illustrations
+  L10338: cloud_storage_desc: "(For Storybook export only)",
+  L10693: storybook_xp_desc: "XP earned *inside* the Adventure required to export.",
+  L26878: const [showStorybookExportModal, setShowStorybookExportModal] = useState(false);
+  L27792: • **Storybook Export**: Export illustrated adventures as HTML with AI-generated 
+  L27959: • **Storybook Export**: Save Adventure Mode stories as PDF with or without image
+
+=== Copy to Clipboard ===
+  L21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout,
+
+=== QTI Export ===
+  L907: 'ie': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGF
+
+=== Language Pack ===
+  L21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout,
+
+=== Translate Function ===
+  L33825: const handleTranslateAction = async () => {
+
+=== App Language ===
+  L11816: const [currentUiLanguage, setUiLanguage] = useState('English');
+
+=== JSON Language ===
+  L8547: upload_tooltip: "Upload Language JSON",
+
+=== Export Language ===
+  L7903: export_language: "Language Cards",
+
+=== Header Translate ===
+  L9972: header_translate: "Instantly translate all generated lesson resources into anoth
+
+=== HTML Export ===
+  L9376: html_success: "HTML Pack downloaded!",
+
+
+=== TRANSLATION HELP KEYS ===
+  data-help-key="header_translate"
+
+
+=== LANGUAGE HELP KEYS ===
+  data-help-key="ui_language_select"
+  data-help-key="glossary_puzzle_lang"
+  data-help-key="ui_lang_export_btn"
+  data-help-key="ui_lang_import_btn"
+  data-help-key="simplified_language"
+  data-help-key="adventure_language"
+  data-help-key="ui_lang_manual_input"
+  data-help-key="ui_lang_manual_submit"
+  data-help-key="glossary_language_flashcards"
+  data-help-key="glossary_export_language"
+  data-help-key="ui_lang_regenerate_btn"
+  data-help-key="header_language"
+  data-help-key="glossary_language_input"

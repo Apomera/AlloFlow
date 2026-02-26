@@ -1,0 +1,623 @@
+arn("[AudioBank] Auto-fetch failed:", err.message, "- Use the Upload button in the header to load audio_bank.json manually.");
+    }
+}
+_initAudioBank();
+window.addEventListener('audio_bank_loaded', () => {
+    if (typeof _CACHE_PHONEME_AUDIO_BANK !== 'undefined') _CACHE_PHONEME_AUDIO_BANK = null;
+    if (typeof _CACHE_INSTRUCTION_AUDIO !== 'undefined') _CACHE_INSTRUCTION_AUDIO = null;
+    if (typeof _CACHE_LETTER_NAME_AUDIO !== 'undefined') _CACHE_LETTER_NAME_AUDIO = null;
+    if (typeof _CACHE_ISOLATION_AUDIO !== 'undefined') _CACHE_ISOLATION_AUDIO = null;
+    console.log("[AudioBank] Caches invalidated - audio data now available.");
+});
+
+let _CACHE_WORD_AUDIO_BANK = null;
+async function loadWordAudioBank() {
+    if (_CACHE_WORD_AUDIO_BANK) return;
+    try {
+        const response = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/word_audio_bank.json");
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        _CACHE_WORD_AUDIO_BANK = await response.json();
+        console.log("Word Audio Bank loaded successfully. Categories:", Object.keys(_CACHE_WORD_AUDIO_BANK).length);
+    } catch (err) {
+        console.warn("[WordAudioBank] Auto-fetch failed:", err.message);
+        _CACHE_WORD_AUDIO_BANK = {}; 
+    }
+}
+// #region --- CONFIGURATION & SETUP ---
+const firebaseConfig = typeof __firebase_config !== 'undefined'
+  ? JSON.parse(__firebase_config)
+  : {
+      apiKey: process.env.REACT_APP_API_KEY || '',
+      authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
+      projectId: process.env.REACT_APP_PROJECT_ID || '',
+      storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
+      messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
+      appId: process.env.REACT_APP_APP_ID || '',
+      measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
+    };
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+const appId = typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id');
+const apiKey = typeof __firebase_config !== 'undefined'
+  ? ""
+  : (process.env.REACT_APP_GEMINI_API_KEY || '');
+const DEBUG_LOG = false;
+const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
+const warnLog = (...args) => { console.warn(...args); };
+const fisherYatesShuffle = (arr) => {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+const STYLE_POINTER_EVENTS_NONE = { pointerEvents: 'none' };
+const STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
+const STYLE_TEXT_SHADOW_WHITE = { textShadow: '0 2px 4px rgba(255,255,255,1)' };
+const STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };
+const TRANSLATION_VERSION = 'v1';
+const DOM_TO_TOOL_ID_MAP = {
+  'ui-tool-wordsounds': 'word-sounds-generator',
+  'tour-input-panel': 'source-input',
+  'ui-tool-glossary': 'glossary',
+  'ui-tool-simplified': 'simplified',
+  'tour-tool-outline': 'outline',
+  'tour-tool-visual': 'image',
+  'tour-tool-faq': 'faq',
+  'tour-tool-scaffolds': 'sentence-frames',
+  'tour-tool-brainstorm': 'brainstorm',
+  'tour-tool-timeline': 'timeline',
+  'tour-tool-concept-sort': 'concept-sort',
+  'tour-tool-math': 'math',
+  'tour-tool-adventure': 'adventure',
+  'ui-tool-quiz': 'quiz',
+  'tour-tool-alignment': 'alignment-report',
+  'tour-tool-lesson-plan': 'lesson-plan',
+  'tour-tool-analysis': 'analysis',
+  'tour-tool-persona': 'persona',
+  'tour-tool-fullpack': 'lesson-plan',
+};
+const APP_CONFIG = {
+  _cfg_validation_key: "",
+  features: {
+    adventureMode: true,
+    mathSolver: true,
+    answerKeys: true,
+    scaffolds: true
+  }
+};
+const TEACHER_ONLY_TYPES = [
+    'lesson-plan',
+    'udl-advice',
+    'brainstorm',
+    'alignment-report'
+];
+let globalAudioCtx = null;
+let globalTtsQueue = Promise.resolve();
+let globalTtsUrlCache = new Map();
+
+const safeGetItem = (key, fallback = null) => {
+    try { return localStorage.getItem(key); } catch(e) { return fallback; }
+};
+const safeSetItem = (key, value) => {
+    try { localStorage.setItem(key, value); } catch(e) { /* silent - storage unavailable */ }
+};
+const safeRemoveItem = (key) => {
+    try { localStorage.removeItem(key); } catch(e) { /* silent */ }
+};
+
+const sanitizeHtml = (html) => {
+    if (!html || typeof html !== 'string') return '';
+    let clean = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+    clean = clean.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    clean = clean.replace(/\s+on\w+\s*=\s*\S+/gi, '');
+    clean = clean.replace(/<\/?(iframe|object|embed|form|link|meta|base)[^>]*>/gi, '');
+    clean = clean.replace(/href\s*=\s*["']?javascript:/gi, 'href="');
+    clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
+    return clean;
+};
+let globalMuteEnabled = safeGetItem('alloflow-global-muted') === 'true';
+let globalCachedKey = "";
+const getGlobalAudioContext = () => {
+    if (globalAudioCtx) return globalAudioCtx;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+        globalAudioCtx = new AudioContext();
+    }
+    return globalAudioCtx;
+};
+const setGlobalMute = (muted) => {
+    globalMuteEnabled = muted;
+    safeSetItem('alloflow-global-muted', muted ? 'true' : 'false');
+
+    window.dispatchEvent(new CustomEvent('alloflow-mute-changed', { detail: { muted } }));
+};
+const isGlobalMuted = () => globalMuteEnabled;
+const GlobalMuteButton = React.memo(({ className = '' }) => {
+    const [muted, setMuted] = React.useState(isGlobalMuted());
+    React.useEffect(() => {
+        const handler = (e) => setMuted(e.detail.muted);
+        window.addEventListener('alloflow-mute-changed', handler);
+        return () => window.removeEventListener('alloflow-mute-changed', handler);
+    }, []);
+    const toggle = () => {
+        const newState = !muted;
+        setGlobalMute(newState);
+        setMuted(newState);
+    };
+    return (
+        <button
+            onClick={toggle}
+            className={`flex items-center gap-2 ${className} ${muted ? 'ring-2 ring-red-400 !bg-red-500 !text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]' : ''}`}
+            data-help-key="global_mute_toggle"
+            title={muted ? 'Unmute All Audio' : 'Mute All Audio (Classroom Mode)'}
+            aria-label={muted ? 'Unmute all audio' : 'Mute all audio'}
+        >
+            {muted ? <VolumeX size={18} className="animate-pulse" /> : <Volume2 size={18} />}
+        </button>
+    );
+});
+const LargeFileHandler = {
+    CHUNK_DURATION_SECONDS: 600,
+    TARGET_SAMPLE_RATE: 16000,
+    MAX_CHUNK_SIZE_BYTES: 15 * 1024 * 1024,
+    isProcessing: false,
+    cancelRequested: false,
+    needsChunking(file) {
+        return file.size > this.MAX_CHUNK_SIZE_BYTES;
+    },
+    getFileType(file) {
+        const type = file.type.toLowerCase();
+        if (type.startsWith('audio/')) return 'audio';
+        if (type.startsWith('video/')) return 'video';
+        if (type === 'application/pdf') return 'pdf';
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
+        if (['mp4', 'webm', 'mov', 'avi'].includes(ext)) return 'video';
+        if (ext === 'pdf') return 'pdf';
+        return 'unknown';
+    },
+    readFileAsArrayBuffer(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsArrayBuffer(file);
+        });
+    },
+    formatDuration(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.round(seconds % 60);
+        if (mins === 0) return `${secs}s`;
+        return `${mins}m ${secs}s`;
+    },
+    async processAudioFile(file, transcribeChunk, onProgress = () => {}) {
+        this.isProcessing = true;
+        this.cancelRequested = false;
+        try {
+            onProgress(0, 1, 'Reading file...');
+            const arrayBuffer = await this.readFileAsArrayBuffer(file);
+            const audioCtx = getGlobalAudioContext();
+            if (!audioCtx) {
+                throw new Error('Web Audio API not supported');
+            }
+            onProgress(0, 1, 'Decoding audio...');
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+            const totalDuration = audioBuffer.duration;
+            const sampleRate = audioBuffer.sampleRate;
+            const numberOfChannels = audioBuffer.numberOfChannels;
+            const chunkCount = Math.ceil(totalDuration / this.CHUNK_DURATION_SECONDS);
+            onProgress(0, chunkCount, `Preparing ${chunkCount} chunks...`);
+            const transcripts = [];
+            for (let i = 0; i < chunkCount; i++) {
+                if (this.cancelRequested) {
+                    throw new Error('Cancelled');
+                }
+                onProgress(i + 1, chunkCount, `Transcribing chunk ${i + 1} of ${chunkCount}...`);
+                const startSample = Math.floor(i * this.CHUNK_DURATION_SECONDS * sampleRate);
+                const endSample = Math.min(
+                    Math.floor((i + 1) * this.CHUNK_DURATION_SECONDS * sampleRate),
+                    audioBuffer.length
+                );
+                const chunkLength = endSample - startSample;
+                const chunkBuffer = audioCtx.createBuffer(
+                    numberOfChannels,
+                    chunkLength,
+                    sampleRate
+                );
+                for (let channel = 0; channel < numberOfChannels; channel++) {
+                    const sourceData = audioBuffer.getChannelData(channel);
+                    const destData = chunkBuffer.getChannelData(channel);
+                    for (let j = 0; j < chunkLength; j++) {
+                        destData[j] = sourceData[startSample + j];
+                    }
+                }
+                const wavBlob = this.audioBufferToWav(chunkBuffer);
+                const base64 = await this.blobToBase64(wavBlob);
+                const chunkTranscript = await transcribeChunk(base64, 'audio/wav');
+                transcripts.push(chunkTranscript);
+            }
+            const fullTranscript = transcripts.join(' ');
+            return {
+                transcript: fullTranscript,
+                duration: totalDuration
+            };
+        } finally {
+            this.isProcessing = false;
+        }
+    },
+    audioBufferToWav(buffer) {
+        const originalSampleRate = buffer.sampleRate;
+        const targetSampleRate = this.TARGET_SAMPLE_RATE;
+        const format = 1;
+        const bitDepth = 16;
+        const numChannels = 1;
+        const originalLength = buffer.length;
+        const monoData = new Float32Array(originalLength);
+        const channelCount = buffer.numberOfChannels;
+        for (let i = 0; i < originalLength; i++) {
+            let sum = 0;
+            for (let ch = 0; ch < channelCount; ch++) {
+                sum += buffer.getChannelData(ch)[i];
+            }
+            monoData[i] = sum / channelCount;
+        }
+        const resampleRatio = targetSampleRate / originalSampleRate;
+        const newLength = Math.floor(originalLength * resampleRatio);
+        const resampledData = new Float32Array(newLength);
+        for (let i = 0; i < newLength; i++) {
+            const srcIndex = i / resampleRatio;
+            const srcIndexFloor = Math.floor(srcIndex);
+            const srcIndexCeil = Math.min(srcIndexFloor + 1, originalLength - 1);
+            const fraction = srcIndex - srcIndexFloor;
+            resampledData[i] = monoData[srcIndexFloor] * (1 - fraction) + monoData[srcIndexCeil] * fraction;
+        }
+        const dataLength = resampledData.length * (bitDepth / 8);
+        const wavBuffer = new ArrayBuffer(44 + dataLength);
+        const view = new DataView(wavBuffer);
+        const writeString = (offset, str) => {
+            for (let i = 0; i < str.length; i++) {
+                view.setUint8(offset + i, str.charCodeAt(i));
+            }
+        };
+        writeString(0, 'RIFF');
+        view.setUint32(4, 36 + dataLength, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, format, true);
+        view.setUint16(22, numChannels, true);
+        view.setUint32(24, targetSampleRate, true);
+        view.setUint32(28, targetSampleRate * numChannels * (bitDepth / 8), true);
+        view.setUint16(32, numChannels * (bitDepth / 8), true);
+        view.setUint16(34, bitDepth, true);
+        writeString(36, 'data');
+        view.setUint32(40, dataLength, true);
+        let offset = 44;
+        for (let i = 0; i < resampledData.length; i++) {
+            const sample = Math.max(-1, Math.min(1, resampledData[i]));
+            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            offset += 2;
+        }
+        return new Blob([wavBuffer], { type: 'audio/wav' });
+    },
+    blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const base64 = dataUrl.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = () => reject(new Error('Failed to convert to base64'));
+            reader.readAsDataURL(blob);
+        });
+    },
+    cancel() {
+        this.cancelRequested = true;
+    },
+    async extractAudioFromVideo(videoFile, onProgress = () => {}) {
+        onProgress(0, 1, 'Extracting audio from video...');
+        const arrayBuffer = await this.readFileAsArrayBuffer(videoFile);
+        const audioCtx = getGlobalAudioContext();
+        if (!audioCtx) {
+            throw new Error('Web Audio API not supported');
+        }
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+        const wavBlob = this.audioBufferToWav(audioBuffer);
+        const audioFileName = videoFile.name.replace(/\.[^.]+$/, '.wav');
+        return new File([wavBlob], audioFileName, { type: 'audio/wav' });
+    },
+    async processVideoFile(file, transcribeChunk, onProgress = () => {}) {
+        onProgress(0, 1, 'Extracting audio from video...');
+        const audioFile = await this.extractAudioFromVideo(file, onProgress);
+        return this.processAudioFile(audioFile, transcribeChunk, onProgress);
+    }
+};
+const LargeFileTranscriptionModal = React.memo(({
+    isOpen,
+    file,
+    onClose,
+    onConfirm,
+    progress,
+    totalChunks,
+    status,
+    isProcessing,
+    t
+}) => {
+    if (!isOpen || !file) return null;
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    const estimatedChunks = Math.ceil(file.size / (15 * 1024 * 1024));
+    const progressPercent = totalChunks > 0 ? Math.round((progress / totalChunks) * 100) : 0;
+    const isVideo = LargeFileHandler.getFileType(file) === 'video';
+    return (
+        <div
+            className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-200"
+                role="dialog" onClick={e => e.stopPropagation()}
+            >
+                <button
+                    aria-label="Close"
+                    onClick={onClose} data-help-key="dashboard_close_btn"
+                    disabled={isProcessing}
+                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
+                >
+                    <span className="text-xl">×</span>
+                </button>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-amber-100 p-3 rounded-full">
+                        <span className="text-2xl">{isVideo ? '🎬' : '🎵'}</span>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-black text-slate-800">
+                            {isVideo
+                                ? (t?.('large_file.title_video') || 'Large Video File Detected')
+                                : (t?.('large_file.title') || 'Large Audio File Detected')}
+                        </h3>
+                        <p className="text-sm text-slate-500 font-medium">{file.name}</p>
+                    </div>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-amber-800 leading-relaxed">
+                        {isVideo
+                            ? (t?.('large_file.description_video') ||
+                                `This video is ${fileSizeMB} MB. The audio will be extracted and split into ~${estimatedChunks} smaller chunks for transcription, then combined.`)
+                            : (t?.('large_file.description') ||
+                                `This file is ${fileSizeMB} MB and exceeds the 20MB limit for direct transcription. It will be split into ~${estimatedChunks} smaller chunks and transcribed separately, then combined.`)}
+                    </p>
+                </div>
+                {isProcessing && (
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                {status || 'Processing...'}
+                            </span>
+                            <span className="text-xs font-bold text-indigo-600">
+                                {progress}/{totalChunks} ({progressPercent}%)
+                            </span>
+                        </div>
+                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300 ease-out"
+                                style={{ width: `${progressPercent}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
+                <div className="flex gap-3 justify-end">
+                    <button
+                        aria-label="Close"
+                        onClick={onClose}
+                        disabled={isProcessing}
+                        className="px-4 py-2 text-slate-500 font-bold hover:text-slate-700 transition-colors disabled:opacity-50"
+                    >
+                        {t?.('common.cancel') || 'Cancel'}
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        disabled={isProcessing}
+                        className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
+                    >
+                        {isProcessing ? (
+                            <>
+                                <span className="animate-spin">⏳</span>
+                                {t?.('modals.large_file.processing') || 'Transcribing...'}
+                            </>
+                        ) : (
+                            <>
+                                <span>✨</span>
+                                {t?.('modals.large_file.confirm') || 'Start Chunked Transcription'}
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    );
+});
+const getSpeechLangCode = (friendlyName) => {
+    if (!friendlyName) return 'en-US';
+    const normalize = (str) => str.toLowerCase().trim();
+    const input = normalize(friendlyName);
+    const map = {
+        'english': 'en-US',
+        'spanish': 'es-ES',
+        'french': 'fr-FR',
+        'german': 'de-DE',
+        'portuguese': 'pt-BR',
+        'mandarin': 'zh-CN',
+        'chinese': 'zh-CN',
+        'chinese (mandarin)': 'zh-CN',
+        'arabic': 'ar-SA',
+        'vietnamese': 'vi-VN',
+        'russian': 'ru-RU',
+        'japanese': 'ja-JP',
+        'italian': 'it-IT',
+        'korean': 'ko-KR',
+        'hindi': 'hi-IN',
+        'dutch': 'nl-NL',
+        'polish': 'pl-PL',
+        'indonesian': 'id-ID',
+        'turkish': 'tr-TR',
+        'hebrew': 'he-IL',
+        'swedish': 'sv-SE',
+        'danish': 'da-DK',
+        'norwegian': 'no-NO',
+        'finnish': 'fi-FI',
+        'greek': 'el-GR',
+        'thai': 'th-TH',
+        'czech': 'cs-CZ',
+        'hungarian': 'hu-HU',
+        'romanian': 'ro-RO',
+        'ukrainian': 'uk-UA',
+        'cantonese': 'zh-HK',
+        'tagalog': 'fil-PH',
+        'filipino': 'fil-PH',
+        'bengali': 'bn-IN',
+        'urdu': 'ur-PK',
+        'malay': 'ms-MY',
+        'swahili': 'sw-KE',
+        'bulgarian': 'bg-BG',
+        'croatian': 'hr-HR',
+        'serbian': 'sr-RS',
+        'slovak': 'sk-SK',
+        'persian': 'fa-IR',
+        'farsi': 'fa-IR',
+        'tamil': 'ta-IN',
+        'amharic': 'am-ET',
+        'afrikaans': 'af-ZA',
+        'kurdish': 'ku-TR',
+    };
+    return map[input] || 'en-US';
+};
+const isRtlLang = (languageName) => {
+    if (!languageName) return false;
+    const rtlLanguages = [
+        'Arabic', 'Hebrew', 'Persian', 'Urdu', 'Kurdish',
+        'Pashto', 'Farsi', 'Yiddish'
+    ];
+    return rtlLanguages.includes(languageName);
+};
+const getContentDirection = (languageName) => {
+    return isRtlLang(languageName) ? 'rtl' : 'ltr';
+};
+// #endregion
+const SafetyContentChecker = {
+    patterns: {
+        self_harm: /\b(hurt myself|kill myself|suicide|want to die|end it all|self.?harm|cutting myself|don't want to live)\b/i,
+        harm_to_others: /\b(hurt (him|her|them|someone)|kill (him|her|them|someone|you)|bring a (gun|weapon|knife)|shoot|attack|bomb)\b/i,
+        bullying: /\b(hate (him|her|them|you)|loser|stupid|ugly|fat|worthless|kill yourself|nobody likes)\b/i,
+        inappropriate_language: /\b(fuck|shit|damn|bitch|ass|dick|cock|pussy|slut|whore|n[i1]gg[ae3]r|f[a4]g)\b/i,
+        concerning_content: /\b(abuse|molest|rape|touch me|scared of|hit me|hurt me|locked in|won't let me|secret|don't tell)\b/i,
+        off_task_gaming: /\b(fortnite|minecraft|roblox|among us|pokemon|call of duty|valorant|apex|gta|fifa|playstation|xbox|nintendo|twitch|discord|tiktok|youtube|instagram|snapchat)\b/i,
+        off_task_social: /\b(boyfriend|girlfriend|crush|dating|party|hangout|skip class|skip school|boring|hate school|hate this|so bored|don't care|whatever|this is dumb|this is stupid|waste of time)\b/i,
+        gibberish: /^[^a-zA-Z]*$|(.){4,}|^[a-z]{1,2}$|asdf|qwer|zxcv|lol{3,}|haha{4,}|bruh{3,}/i
+    },
+    check(text) {
+        if (!text || typeof text !== 'string') return [];
+        const flags = [];
+        const lowerText = text.toLowerCase();
+        for (const [category, pattern] of Object.entries(this.patterns)) {
+            const match = lowerText.match(pattern);
+            if (match) {
+                flags.push({
+                    category,
+                    match: match[0],
+                    severity: this.getSeverity(category),
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+        return flags;
+    },
+    getSeverity(category) {
+        const severityMap = {
+            self_harm: 'critical',
+            harm_to_others: 'critical',
+            bullying: 'high',
+            inappropriate_language: 'medium',
+            concerning_content: 'high',
+            off_task_gaming: 'low',
+            off_task_social: 'low',
+            gibberish: 'low',
+            behavioral_rushing: 'medium',
+            behavioral_idle: 'low',
+            behavioral_repetitive: 'low',
+        };
+        return severityMap[category] || 'medium';
+    },
+    getCategoryLabel(category, t) {
+        const labelMap = {
+            self_harm: t('class_analytics.flag_self_harm'),
+            harm_to_others: t('class_analytics.flag_harm_others'),
+            bullying: t('class_analytics.flag_bullying'),
+            inappropriate_language: t('class_analytics.flag_inappropriate'),
+            concerning_content: t('class_analytics.flag_concerning'),
+            off_task_gaming: '🎮 Off-Task (Gaming/Media)',
+            off_task_social: '💬 Off-Task (Social/Disengaged)',
+            gibberish: '🔤 Gibberish Input',
+            behavioral_rushing: '⚡ Quiz Rushing',
+            behavioral_idle: '💤 Extended Inactivity',
+            behavioral_repetitive: '🔁 Repetitive Answers',
+        };
+        return labelMap[category] || category;
+    },
+    async aiCheck(text, source, apiKey, onFlag) {
+        if (!text || text.length < 5 || !apiKey) return;
+        const regexFlags = this.check(text);
+        if (regexFlags.some(f => f.severity === 'critical')) return;
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.safety}:generateContent?key=${apiKey}`;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `You are a K-12 student safety classifier for an educational platform. Analyze this student message and respond with ONLY a JSON object. Be sensitive to context — educational discussions about difficult topics (history, health) are NOT flags.
+
+Student message: "${text.substring(0, 500)}"
+
+Respond ONLY with this JSON (no markdown, no explanation):
+{"safe": true/false, "category": "none|self_harm|harm_to_others|bullying|inappropriate|off_task|concerning", "confidence": 0.0-1.0, "reason": "brief explanation"}` }] }],
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+                })
+            });
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return;
+            const result = JSON.parse(jsonMatch[0]);
+            const isCriticalCategory = ['self_harm', 'harm_to_others'].includes(result.category);
+            const confidenceThreshold = isCriticalCategory ? 0.5 : 0.6;
+            if (!result.safe && result.confidence > confidenceThreshold && result.category !== 'none') {
+                const flag = {
+                    category: `ai_${result.category}`,
+                    match: result.reason || 'AI-detected concern',
+                    severity: isCriticalCategory ? 'critical' : 'medium',
+                    source: source,
+                    context: text.substring(0, 100),
+                    timestamp: new Date().toISOString(),
+                    aiGenerated: true,
+                    confidence: result.confidence
+                };
+                if (onFlag) onFlag(flag);
+            }
+        } catch (e) {
+        }
+    }
+};
+const WORD_SOUNDS_STRINGS = {
+    'word_sounds.title': 'Word Sounds',
+    'word_sounds.welcome': 'Welcome to Word Sounds! Choose an activity to get started.',
+    'word_sounds.subtitle': 'Phonemic Awareness Practice',
+    'word_sounds.activity_counting': 'Count Sounds',
+    'word_sounds.activity_isolation': 'Find Sounds',
+    'word_sounds.activity_blending': 'Blend Sounds',
+    'word_sounds.activity_segmentation': 'Break Apart',
+    'word_soun

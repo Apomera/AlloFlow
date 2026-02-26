@@ -1,0 +1,107 @@
+MONOLITH PROFILE
+======================================================================
+Total lines: 72983
+Total chars: 7,298,237
+Total bytes: 7,302,417
+
+======================================================================
+1. INLINE BASE64 DATA
+======================================================================
+  Base64 data: 2,809,470 chars (38.5% of file)
+  Lines with base64: 102
+  Estimated raw audio size: ~2,057 KB
+
+  Top base64 blocks (by size):
+    L1040-L1049: 605,074 chars (443KB) | '2nd': "data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQ
+    L998-L1023: 598,222 chars (438KB) | "b": "data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoK
+    L1058-L1082: 506,011 chars (370KB) | 'ow': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQo
+    L1027-L1035: 446,075 chars (326KB) | blending: "data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84
+    L1084-L1103: 405,628 chars (297KB) | 'r': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoK
+    L1107-L1118: 248,460 chars (181KB) | PHONEME_AUDIO_BANK['dh'] = 'data:audio/webm;base64,GkXfo59Ch
+
+======================================================================
+2. INLINE CSS
+======================================================================
+  CSS data: 40,341 chars (0.6% of file)
+  Style blocks: 13
+    L19605-L19860: 12,018 chars (256 lines)
+    L25710-L25749: 1,596 chars (40 lines)
+    L26765-L26775: 370 chars (11 lines)
+    L40472-L40484: 951 chars (13 lines)
+    L43562-L43674: 5,906 chars (113 lines)
+
+======================================================================
+3. COMPONENT SIZE DISTRIBUTION
+======================================================================
+  Total components found: 74
+
+  Component                            Start   Lines       Size
+  ----------------------------------- ------ ------- ----------
+  LargeFileTranscriptionModal            435     718    2780 KB
+  LanguageSelector                     57180   15803    1226 KB
+  ImmersiveWord                        38832   15868     756 KB
+  AlloFlowContent                      31103    7640     632 KB
+  StudentAnalyticsPanel                10217    7622     409 KB
+  SoundMappingView                      4099    3926     198 KB
+  LetterTraceView                       8025    2192     122 KB
+  BranchItem                           54727    2453     121 KB
+  BotConfettiBurst                     18622    2117     102 KB
+  QuickStartWizard                     29200    1101      76 KB
+  WordSoundsGenerator                   1153     897      62 KB
+  WordSoundsReviewPanel                 2050     835      62 KB
+  TeacherLiveQuizControls              27690     762      46 KB
+  TeacherDashboard                     28519     681      42 KB
+  WordSoundsModal                       2885     752      36 KB
+  StudentEscapeRoomOverlay             26796     707      35 KB
+  BingoGame                            25327     426      24 KB
+  StudentQuizOverlay                   20860     350      21 KB
+  VennGame                             24359     344      20 KB
+  CrosswordGame                        24703     460      19 KB
+  OrthographyView                       3731     368      19 KB
+  MatchingGame                         23271     374      18 KB
+  TimelineGame                         23645     357      18 KB
+  AdventureAmbience                    21822     438      17 KB
+  ConceptSortGame                      24002     357      17 KB
+
+======================================================================
+4. SECTION ANALYSIS
+======================================================================
+  UI_STRINGS + Config            L    1-900      38 KB (38 code + 0 data)
+  PHONEME_AUDIO_BANK             L  900-1140   2760 KB (16 code + 2743 data)
+  State Declarations             L 1140-2500     90 KB (90 code + 0 data)
+  Word Sounds Views              L 2500-4300    106 KB (106 code + 0 data)
+  Phoneme Engine                 L 4300-6500    109 KB (109 code + 0 data)
+  Word Sounds Modal              L 6500-10000   187 KB (187 code + 0 data)
+  Localization                   L10000-13000   143 KB (143 code + 0 data)
+  Games (Bingo/Scramble)         L13000-18000   286 KB (286 code + 0 data)
+  Infrastructure Components      L18000-28000   472 KB (472 code + 0 data)
+  AlloFlowContent Main           L28000-57000  1698 KB (1698 code + 0 data)
+  LargeFileTranscriber+          L57000-65000   580 KB (580 code + 0 data)
+  Final Renders                  L65000-72983   653 KB (653 code + 0 data)
+
+======================================================================
+5. REACT HOOK USAGE
+======================================================================
+  React.useState: 113
+  React.useCallback: 41
+  React.useEffect: 38
+  React.useRef: 36
+  React.useMemo: 23
+  React.useContext: 2
+
+======================================================================
+6. MEMOIZATION OPPORTUNITIES
+======================================================================
+  React.memo components: 17
+  useCallback: 41
+  useMemo: 23
+  Total state variables (useState): 113
+  Total effects (useEffect): 38
+  Total refs (useRef): 36
+
+======================================================================
+7. RE-RENDER RISK (inline object/array literals in JSX)
+======================================================================
+  Inline style/object props: 156
+  Inline arrow functions in JSX: 647
+  (Each creates a new reference per render, defeating React.memo)

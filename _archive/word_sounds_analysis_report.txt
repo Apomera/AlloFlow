@@ -1,0 +1,339 @@
+================================================================================
+SECTION 1: SUBMISSION LOCK ANALYSIS (submissionLockRef)
+================================================================================
+Lock ENGAGED (=true): 1 locations
+  L7323: submissionLockRef.current = true;
+Lock RELEASED (=false): 2 locations
+  L7529: submissionLockRef.current = false;
+  L7718: submissionLockRef.current = false;
+
+================================================================================
+SECTION 2: EMPTY/SILENT CATCH BLOCKS
+================================================================================
+Found 54 potentially silent catch blocks:
+  L1387: } catch (e) {}
+  L1387: } catch (e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L1442: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e){}
+  L1442: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e){} // NEXT LINE IS JUST '}' -> silent swallow
+  L5400: } catch(e){}
+  L5497: } catch (e) { }
+  L5599: } catch(e){}
+  L5754: } catch (e) { }
+  L6157: } catch(e) {}
+  L6157: } catch(e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L7076: try { audio.pause(); } catch (e) {}
+  L8167: } catch (e) {}
+  L8185: } catch (e) {}
+  L8191: try { audioCtxRef.current.close(); } catch (e) {}
+  L8191: try { audioCtxRef.current.close(); } catch (e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L17287: } catch (e) { console.error("storageDB Clear Error:", e); } // NEXT LINE IS JUST '}' -> silent swallow
+  L17370: } catch (e) {}
+  L17370: } catch (e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L17702: try { await storageDB.set(storageKey, cloudPack); } catch (e) {}
+  L17744: try { await storageDB.set(storageKey, accumulatedPack); } catch (e) {}
+  L18470: } catch (e) {}
+  L18470: } catch (e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L21835: } catch (e) {}
+  L21835: } catch (e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L21839: try { node.stop(); } catch(e) {}
+  L21840: try { node.disconnect(); } catch(e) {}
+  L21843: try { oldGain.disconnect(); } catch(e) {}
+  L21843: try { oldGain.disconnect(); } catch(e) {} // NEXT LINE IS JUST '}' -> silent swallow
+  L21895: } catch(e) {}
+  L21895: } catch(e) {} // NEXT LINE IS JUST '}' -> silent swallow
+
+================================================================================
+SECTION 3: AudioContext CREATION & REUSE ANALYSIS
+================================================================================
+AudioContext CREATIONS: 2
+  L81: globalAudioCtx = new AudioContext();
+  L7262: audioCtxRef.current = new AudioContext();
+AudioContext STATE CHECKS: 1
+  L7261: if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+
+================================================================================
+SECTION 4: checkAnswer FUNCTION DEFINITIONS (Shadowing Risk)
+================================================================================
+Found 4 checkAnswer definitions:
+  L7295: const checkAnswer = React.useCallback((answer, expectedAnswer) => {
+  L23422: const checkAnswers = () => {
+  L24125: const checkAnswers = () => {
+  L25221: const checkAnswer = () => {
+  ⚠️  SHADOWING HAZARD: Multiple checkAnswer definitions can cause wrong function invocation
+
+================================================================================
+SECTION 5: setIsPlayingAudio BALANCE
+================================================================================
+setIsPlayingAudio(true): 3
+  L3218: setIsPlayingAudio(true);
+  L3419: setIsPlayingAudio(true);
+  L8518: setIsPlayingAudio(true);
+setIsPlayingAudio(false): 7
+  L3232: setIsPlayingAudio(false);
+  L3254: setIsPlayingAudio(false);
+  L3411: setIsPlayingAudio(false);
+  L3440: setIsPlayingAudio(false);
+  L6255: setIsPlayingAudio(false);
+  L7080: setIsPlayingAudio(false);
+  L8532: setIsPlayingAudio(false);
+
+================================================================================
+SECTION 6: ASYNC AUDIO FUNCTIONS - try/catch/finally ANALYSIS
+================================================================================
+Async audio function definitions found: 2
+  L3416: const playBlending = React.useCallback(async () => {
+  L7093: const runInstructionSequence = async () => {
+Total 'finally' blocks in file: 81
+
+================================================================================
+SECTION 7: CANCELLATION FLAG ANALYSIS (useEffect async patterns)
+================================================================================
+cancelled = true (cleanup): 1
+  L7249: return () => { cancelled = true; };
+if (cancelled) checks: 7
+  L7095: if (cancelled) return; // GUARD: Stop if effect was cancelled
+  L7167: if (cancelled) return; // GUARD
+  L7173: if (cancelled) return; // GUARD after audio
+  L7179: if (cancelled) return; // FIX: Check before expensive operation
+  L7186: if (cancelled) break;
+  L7207: if (cancelled) break; // FIX: Allow cancellation during loop
+  L7224: if (cancelled) break;
+
+================================================================================
+SECTION 8: WORD SOUNDS STATE VARIABLE DEFINITIONS
+================================================================================
+  ⚠️  DUPLICATE STATE: 'wordSoundsSessionGoal' defined at lines: [1199, 32086]
+  ✓ 'showPhonemeBank' at L2093
+  ✓ 'draggedPhoneme' at L2095
+  ✓ 'playingWordIndex' at L2097
+  ✓ 'playingAudioKey' at L2099
+  ✓ 'isLoadingPhonemes' at L2994
+  ✓ 'phonemeError' at L2995
+  ✓ 'isPlayingAudio' at L2996
+  ✓ 'rhymeOptions' at L3038
+  ✓ 'highlightedRhymeIndex' at L3039
+  ✓ 'highlightedIsoIndex' at L3040
+  ✓ 'highlightedBlendIndex' at L3041
+  ✓ 'blendingProgress' at L3042
+  ✓ 'blendingOptions' at L3043
+  ✓ 'isolationState' at L3045
+  ⚠️  DUPLICATE STATE: 'playingIndex' defined at lines: [3458, 3649]
+  ✓ 'playingOptionIndex' at L4535
+  ✓ 'isAutoPlaying' at L25331
+  ✓ 'isAudioPlaying' at L25332
+  ⚠️  DUPLICATE STATE: 'isPlaying' defined at lines: [30299, 37199]
+  ✓ 'wordSoundsAutoReview' at L31105
+  ✓ 'wordSoundsCustomTerms' at L31973
+  ✓ 'wordSoundsOracleData' at L31974
+  ✓ 'wordSoundsHistory' at L32068
+  ✓ 'wordSoundsDifficulty' at L32083
+  ✓ 'wordSoundsAccuracyHistory' at L32084
+  ✓ 'wordSoundsStreak' at L32085
+  ✓ 'wordSoundsSessionProgress' at L32087
+  ✓ 'wordSoundsBadges' at L32088
+  ✓ 'phonemeMastery' at L32097
+  ✓ 'wordSoundsDailyProgress' at L32106
+  ✓ 'wordSoundsConfusionPatterns' at L32123
+  ✓ 'wordSoundsFamilies' at L32134
+  ✓ 'wordSoundsAudioLibrary' at L32135
+  ✓ 'wordSoundsTtsSpeed' at L32137
+  ✓ 'isWordSoundsMode' at L32540
+  ✓ 'wordSoundsActivity' at L32541
+  ✓ 'wordSoundsScore' at L32542
+  ✓ 'currentWordSoundsWord' at L32543
+  ✓ 'wordSoundsPhonemes' at L32544
+  ✓ 'wordSoundsLanguage' at L32545
+  ✓ 'wordSoundsFeedback' at L32546
+  ✓ 'isVennPlaying' at L34979
+  ✓ 'playingContentId' at L37201
+
+================================================================================
+SECTION 9: isMountedRef USAGE ANALYSIS
+================================================================================
+isMountedRef SET operations: 1
+  L8194: isMountedRef.current = false;
+isMountedRef CHECK operations: 1
+  L6746: if (!isMountedRef.current) return;
+
+================================================================================
+SECTION 10: RACE CONDITION PATTERNS
+================================================================================
+Searching for sequential await calls without cancellation guards...
+Sequential awaits without cancellation guard: 9
+  L7126 -> L7130: 'await new Promise(r => setTimeout(r, 200));' -> 'await handleAudio(LETTER_NAME_AUDIO[lowLet]);'
+  L7130 -> L7132: 'await handleAudio(LETTER_NAME_AUDIO[lowLet]);' -> 'await handleAudio(upperLet);'
+  L7132 -> L7134: 'await handleAudio(upperLet);' -> 'await new Promise(r => setTimeout(r, 200));'
+  L7134 -> L7138: 'await new Promise(r => setTimeout(r, 200));' -> 'await handleAudio(INSTRUCTION_AUDIO['for']);'
+  L7139 -> L7143: 'await new Promise(r => setTimeout(r, 200));' -> 'await handleAudio(currentWordSoundsWord);'
+  L7155 -> L7158: 'await handleAudio(currentWordSoundsWord); // Chain target word after instruction' -> 'await handleAudio("Which word rhymes with");'
+  L7169 -> L7171: 'await handleAudio(instructionAudioSrc);' -> 'await handleAudio(instructionText);'
+  L7180 -> L7184: 'await playBlending(); // Play phoneme sequence ONLY' -> 'await new Promise(r => setTimeout(r, 600)); // Gap after phonemes'
+  L7218 -> L7222: 'await handleAudio(currentWordSoundsWord);' -> 'await new Promise(r => setTimeout(r, 600)); // Gap after word'
+
+================================================================================
+SECTION 11: SPEECH SYNTHESIS CLEANUP
+================================================================================
+speechSynthesis.cancel(): 9
+  L937: window.speechSynthesis.cancel();
+  L3569: window.speechSynthesis.cancel();
+  L7071: window.speechSynthesis.cancel();
+  L8177: window.speechSynthesis.cancel();
+  L19096: window.speechSynthesis.cancel(); // Clears queue for immediate playback
+  L32559: window.speechSynthesis.cancel();
+  L32595: if (window.speechSynthesis) window.speechSynthesis.cancel();
+  L55602: window.speechSynthesis.cancel();
+  L68149: onClick={(e) => { e.stopPropagation(); audioRef.current?.pause(); playbackSessionRef.current = null; window.speechSynthe
+speechSynthesis.speak(): 5
+  L944: window.speechSynthesis.speak(utterance);
+  L3572: window.speechSynthesis.speak(utter);
+  L19110: window.speechSynthesis.speak(utterance);
+  L32576: window.speechSynthesis.speak(utterance);
+  L55619: window.speechSynthesis.speak(utterance);
+
+================================================================================
+SECTION 12: PHONEME_AUDIO_BANK DUPLICATE KEY SCAN
+================================================================================
+  ⚠️  DUPLICATE KEYS FOUND:
+    Key 'ph' at lines: [1076, 3373]
+    Key 'c' at lines: [1092, 3372]
+    Key 'ir' at lines: [1104, 3369]
+
+================================================================================
+SECTION 13: WORD SOUNDS useEffect HOOKS (Dependency Audit)
+================================================================================
+Word Sounds related useEffect hooks: 24
+  L2087: React.useEffect(() => { (deps not found nearby)
+  L5193: React.useEffect(() => { (deps not found nearby)
+  L6020: React.useEffect(() => { (deps not found nearby)
+  L6038: React.useEffect(() => { (deps not found nearby)
+  L6432: React.useEffect(() => { (deps not found nearby)
+  L6448: React.useEffect(() => { (deps not found nearby)
+  L6512: React.useEffect(() => { (deps not found nearby)
+  L6652: React.useEffect(() => { (deps not found nearby)
+  L6732: React.useEffect(() => { (deps not found nearby)
+  L6970: React.useEffect(() => { (deps not found nearby)
+  L6997: React.useEffect(() => { (deps not found nearby)
+  L7019: React.useEffect(() => { (deps not found nearby)
+  L7084: React.useEffect(() => { (deps not found nearby)
+  L7729: React.useEffect(() => { (deps not found nearby)
+  L8991: React.useEffect(() => { (deps not found nearby)
+  L31102: useEffect(() => { (deps not found nearby)
+  L32173: useEffect(() => { (deps not found nearby)
+  L32178: useEffect(() => { (deps not found nearby)
+  L32184: useEffect(() => { (deps not found nearby)
+  L32189: useEffect(() => { (deps not found nearby)
+
+================================================================================
+SECTION 14: NULL/UNDEFINED ACCESS PATTERNS
+================================================================================
+Potential unsafe access patterns: 12
+  L6665: console.log("✅ Using pre-generated isolation options:", isolationState.isoOptions);
+  L6764: for (let i = 0; i < isolationState.isoOptions.length; i++) {
+  L6766: await handleAudio(isolationState.isoOptions[i]);
+  L6779: for (let i = 0; i < rhymeOptions.length; i++) {
+  L7185: for (let i = 0; i < blendingOptions.length; i++) {
+  L7206: for (let i = 0; i < rhymeOptions.length; i++) {
+  L7223: for (let i = 0; i < isolationState.isoOptions.length; i++) {
+  L7226: await handleAudio(isolationState.isoOptions[i]);
+  L7597: setElkoninBoxes(new Array(phonemeData.phonemeCount || phonemeData.phonemes.length).fill(null));
+  L8842: blendingOptions.length > 0 && (
+  L8847: for (let i = 0; i < blendingOptions.length; i++) {
+  L8865: {blendingOptions.map((word, idx) => (
+
+================================================================================
+SECTION 15: setTimeout IN WORD SOUNDS AREA (Cleanup Audit)
+================================================================================
+setTimeout calls in WS area (L2500-L10000): 68
+  L3163: setTimeout(() => setErrorMessage(null), duration);
+  L3182: setTimeout(resolve, 5000); // Fail-safe timeout
+  L3203: setTimeout(resolve, 5000); // Fail-safe timeout
+  L3227: setTimeout(resolve, 3000); // Fail-safe
+  L3247: setTimeout(resolve, 1000);
+  L3431: await new Promise(r => setTimeout(r, 900));
+  L3481: await new Promise(r => setTimeout(r, 750));
+  L3496: //                 const timer = setTimeout(() => {
+  L3676: await new Promise(r => setTimeout(r, 600));
+  L3800: setTimeout(() => onCheckAnswer(userSpelling), 500);
+  L3960: setTimeout(() => onCheckAnswer('correct'), 1000);
+  L3965: setTimeout(() => setShakenWord(null), 500);
+  L4138: const timer = setTimeout(() => {
+  L4166: setTimeout(() => onCheckAnswer('correct'), 1000);
+  L5049: await new Promise(r => setTimeout(r, 500));
+  L5411: await new Promise(r => setTimeout(r, 50));
+  L5688: if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt)); // Backoff
+  L6041: const timer = setTimeout(() => {
+  L6195: setTimeout(async () => {
+  L6332: await new Promise(r => setTimeout(r, backoffMs));
+clearTimeout calls in WS area: 5
+  L3500: //                     clearTimeout(timer);
+  L4142: return () => clearTimeout(timer);
+  L6047: return () => clearTimeout(timer);
+  L6452: return () => clearTimeout(timer);
+  L6791: return () => clearTimeout(timer);
+  ⚠️  Timer cleanup deficit: 63 timers may lack cleanup
+
+================================================================================
+SECTION 16: handleAudio FUNCTION ANALYSIS
+================================================================================
+handleAudio definitions: 2
+  L3168: const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+  L19076: const handleAudioError = (e) => {
+  ⚠️  Multiple handleAudio definitions - potential shadowing
+
+================================================================================
+SECTION 17: INSTRUCTION/ISOLATION AUDIO BANK PRESENCE
+================================================================================
+  INSTRUCTION_AUDIO: 11 references (first at L1028)
+  ISOLATION_AUDIO: 4 references (first at L1041)
+  LETTER_NAME_AUDIO: 7 references (first at L999)
+  PHONEME_AUDIO_BANK: 36 references (first at L1058)
+  SOUND_MATCH_POOL: 2 references (first at L1056)
+
+================================================================================
+SECTION 18: ORPHANED RETURN PATTERNS IN useEffect
+================================================================================
+Potential orphaned returns in if-blocks: 25
+  L6047: within 'if (!showReviewPanel && !currentWordSoundsWord && !hasStarte' -> return () => clearTimeout(timer);
+  L6452: within 'if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhone' -> return () => clearTimeout(timer);
+  L8996: within 'if (wordSoundsActivity === 'spelling_bee' && currentWordSoun' -> return () => { spellingBeeInitRef.current = false; };
+  L18404: within 'if (focusableElements.length > 0) {' -> return () => {
+  L18478: within 'if (onTyping) onTyping(false);' -> return () => {
+  L18588: within 'if (particles.length > 80) {' -> return () => clearTimeout(timer);
+  L18750: within 'if (velocityTimerRef.current) clearTimeout(velocityTimerRef.' -> return () => clearTimeout(velocityTimerRef.current);
+  L18848: within 'if (Math.random() > 0.8) index = (index + 1) % mouthShapes.l' -> return () => clearInterval(interval);
+  L19169: within 'if (introFiredGlobal) return; // Double-check before speakin' -> return () => clearTimeout(timer);
+  L19270: within 'if (message) {' -> return () => {
+
+================================================================================
+SECTION 19: WORD INDEX SYNCHRONIZATION
+================================================================================
+currentWordIndex references in WS area: 8
+  L3068: // - Activity state: wordSoundsActivity, currentWordIndex, score
+  L3075: const [currentWordIndex, setCurrentWordIndex] = React.useState(0); // Index of current word in preloadedWords (persists 
+  L6911: // FIX: Sync currentWordIndex to skip this word in advancement loop (prevents duplicate)
+  L6918: setCurrentWordIndex(matchingIdx + 1); // Start AFTER this word
+  L6919: console.log("🔄 Synced currentWordIndex to", matchingIdx + 1, "to skip:", targetWord);
+  L7534: const wordIdx = currentWordIndex % preloadedWords.length;
+  L7621: setCurrentWordIndex(prev => (prev + 1) % Math.max(1, preloadedWords.length));
+  L9765: const firstWord = preloadedWords[currentWordIndex % Math.max(1, preloadedWords.length)];
+
+================================================================================
+SECTION 20: Array.isArray GUARD USAGE
+================================================================================
+Array.isArray checks: 204
+Potentially unguarded .map() in WS area: 16
+  L2612: {phonemes.map(p => (
+  L3936: ...data.distractors.map(w => ({ text: w, isFamily: false }))
+  L4007: {data.distractors.map((word, i) => (
+  L4058: {foundWords.map((word, i) => (
+  L4554: const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.map(pw => ({
+  L4655: const correctChips = phonemes.map((rawP, i) => {
+  L4668: const usedPhonemes = new Set(phonemes.map(p => (p || '').toLowerCase().trim()));
+  L5332: preloadedWords.map(w => (w.targetWord || w.word || w.singleWord || '').toLowerCase()).filter(Boolean)
+  L5483: const prefetchPromises = wordsToPreload.map(async (wordEntry, i) => {
+  L5782: phonemes = phonemes.map(p => normalizePhoneme(p));
+  L6461: const chips = phonemes.map((p, i) => ({
+  L6470: const usedPhonemes = new Set(phonemes.map(p => p.toLowerCase()));
+  L6691: const used = new Set([correctSound?.toLowerCase(), ...isoDistractors.map(d => d.toLowerCase())]);
+  L8865: {blendingOptions.map((word, idx) => (
+  L9373: {letterOptions.map((letter, idx) => (

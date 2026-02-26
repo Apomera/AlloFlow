@@ -1,0 +1,6064 @@
+[
+  {
+    "line": 471,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "dashboard_close_btn",
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 519,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 526,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onConfirm",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 1751,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "ws_gen_expand",
+    "icons": [
+      "Maximize2"
+    ],
+    "onclick": "() => setIsMinimized(false)",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"ws_gen_expand\" onClick={() => setIsMinimized(false)} clas"
+  },
+  {
+    "line": 1771,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "ws_gen_expand",
+    "icons": [],
+    "onclick": "() => setIsMinimized(false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 1797,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "ws_gen_minimize",
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "() => setIsMinimized(true)",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"ws_gen_minimize\" onClick={() => setIsMinimized(true)} cla"
+  },
+  {
+    "line": 1820,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "ws_gen_review_btn",
+    "icons": [
+      "Eye"
+    ],
+    "onclick": "onShowReview",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2025,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "ws_gen_quick_add_btn",
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"ws_gen_quick_add_btn\""
+  },
+  {
+    "line": 2086,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleAiGenerate",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2195,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "toggleAll",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2204,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleStart",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2677,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_regen_word",
+    "icons": [],
+    "onclick": "(e) => { \n                                                  ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2710,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_move_word",
+    "icons": [],
+    "onclick": "(e) => { e.stopPropagation(); moveWord(idx, 'up'); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2716,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_move_word",
+    "icons": [],
+    "onclick": "(e) => { e.stopPropagation(); moveWord(idx, 'down'); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2725,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_delete_word",
+    "icons": [],
+    "onclick": "(e) => {\n                                                   ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2751,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_play_word",
+    "icons": [],
+    "onclick": "async (e) => { \n                                            ",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"word_sounds_review_play_word\""
+  },
+  {
+    "line": 2785,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_play_phonemes",
+    "icons": [],
+    "onclick": "async (e) => { \n                                            ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2823,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_image_gen",
+    "icons": [
+      "RefreshCw",
+      "RefreshCw"
+    ],
+    "onclick": "(e) => { \n                                                  ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2836,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_image_gen",
+    "icons": [
+      "RefreshCw",
+      "ImageIcon"
+    ],
+    "onclick": "(e) => { \n                                                  ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2886,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "word_sounds_review_phoneme_bank",
+    "icons": [],
+    "onclick": "() => setShowPhonemeBank(showPhonemeBank === idx ? null : id",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2912,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => removePhoneme(idx, i)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2944,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => onPlayAudio && onPlayAudio(p)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2949,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => addPhoneme(idx, p)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 2987,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_play_distractor",
+    "icons": [],
+    "onclick": "async (e) => {\n                                             ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3000,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "async () => {\n                                              ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3017,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3044,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "word_sounds_review_play_distractor",
+    "icons": [],
+    "onclick": "async (e) => {\n                                             ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3057,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "async () => {\n                                              ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3074,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3130,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "RefreshCw",
+      "Sparkles"
+    ],
+    "onclick": "() => onGenerateImage && onGenerateImage(idx, word.targetWor",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3151,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Ban"
+    ],
+    "onclick": "() => onRefineImage && onRefineImage(idx, \"Remove all text, ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3168,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Send"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3195,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "word_sounds_review_back",
+    "icons": [
+      "ChevronLeft"
+    ],
+    "onclick": "onBackToSetup || onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3204,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "word_sounds_review_start",
+    "icons": [
+      "Play"
+    ],
+    "onclick": "onStartActivity",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3835,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(data.word)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3856,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "PlayCircle"
+    ],
+    "onclick": "playFullSequence",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3931,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => onCheckAnswer(opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3942,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "(e) => {\n                                        e.stopPropa",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3970,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(data.word)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 3984,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "PlayCircle"
+    ],
+    "onclick": "async () => {\n                        const opts = data.opti",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4010,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "(e) => {\n                                         e.stopProp",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4036,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "(e) => {\n                                        e.stopPropa",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4123,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(data.word)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4138,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(data.word)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4167,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => setUserSpelling('')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4199,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "ChevronRight"
+    ],
+    "onclick": "handleSubmit",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4285,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(word)",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => onPlayAudio(word)} className=\"p-2 text-violet-400 hover:t"
+  },
+  {
+    "line": 4288,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => onUpdateOption && onUpdateOption(i, null, 'remove_memb",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => onUpdateOption && onUpdateOption(i, null, 'remove_member'"
+  },
+  {
+    "line": 4294,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => onUpdateOption && onUpdateOption(-1, '', 'add_member')",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => onUpdateOption && onUpdateOption(-1, '', 'add_member')}"
+  },
+  {
+    "line": 4314,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(word)",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => onPlayAudio(word)} className=\"p-2 text-amber-400 hover:te"
+  },
+  {
+    "line": 4317,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => onUpdateOption && onUpdateOption(i, null, 'remove_dist",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => onUpdateOption && onUpdateOption(i, null, 'remove_distrac"
+  },
+  {
+    "line": 4323,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => onUpdateOption && onUpdateOption(-1, '', 'add_distract",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => onUpdateOption && onUpdateOption(-1, '', 'add_distractor'"
+  },
+  {
+    "line": 4343,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => onPlayAudio(data.targetChar || data.options?.[0] || da",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4407,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleWordClick(item)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 4527,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleChipClick(chip)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8288,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                            setResetKey(k => k + 1);",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8297,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "checkTracing",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8347,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Ear"
+    ],
+    "onclick": "() => wordSoundsActivity === 'blending' ? playBlending() : h",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8376,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => {\n                         // FIX: Use correct audio s",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8488,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "() => setIsMinimized(true)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8521,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Mic"
+    ],
+    "onclick": "handleMicInput",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8552,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Mic"
+    ],
+    "onclick": "handleMicInput",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8672,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                     if (elkoninBoxe",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8734,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "async () => {\n                                            co",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8757,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Mic"
+    ],
+    "onclick": "handleMicInput",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8776,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "PlayCircle"
+    ],
+    "onclick": "async () => {\n                                              ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8814,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8824,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "(e) => {\n                                                   ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8838,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Mic"
+    ],
+    "onclick": "handleMicInput",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8970,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => handleAudio(currentWordSoundsWord)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 8977,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleAudio(currentWordSoundsWord, null, 0.5)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9031,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "checkSpellingBee",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9053,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setUserAnswer(currentWordSoundsWord?.[0] || '')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9059,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                    // Progressive: ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9117,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => handleAudio(currentWordSoundsWord)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9181,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => { setUserAnswer(''); setUsedScrambleIndices([]); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9188,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "checkScramble",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9255,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => handleAudio(currentWordSoundsWord)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9283,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                        setUserAnswe",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9301,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "checkMissingLetter",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9335,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Mic"
+    ],
+    "onclick": "handleMicInput",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9374,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Mic"
+    ],
+    "onclick": "handleMicInput",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9594,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                     setTracingPhase",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9849,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                setShowSessionComple",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9861,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                setShowSessionComple",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9878,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                setShowSessionComple",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9949,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Maximize2"
+    ],
+    "onclick": "() => setIsMinimized(false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 9982,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setIsMinimized(false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10042,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "() => setIsMinimized(true)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10121,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setShowReviewPanel(true)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10130,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Check",
+      "Edit2"
+    ],
+    "onclick": "() => setIsEditing(prev => !prev)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10142,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Mic",
+      "MicOff"
+    ],
+    "onclick": "() => {\n                                    setUseMicInput(!",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10157,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setShowLetterHints(prev => !prev)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10194,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setPlayInstructions(prev => !prev)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10273,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => startActivity(activity.id)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10301,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => fetchWordData(phonemeError)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10692,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "dashboard_clear_btn",
+    "icons": [
+      "Trash2"
+    ],
+    "onclick": "() => setImportedStudents([])",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 10827,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "dashboard_detail_back",
+    "icons": [
+      "ChevronLeft"
+    ],
+    "onclick": "() => setSelectedStudent(null)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 17273,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 17446,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => { \n                    e.stopPropagation(); \n        ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 19777,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "MapIcon"
+    ],
+    "onclick": "() => { onClose(); if(onContinue) onContinue(); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 19790,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 20015,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "quiz_student_answer_option",
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "() => submitQuizResponse(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 20321,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onCancel",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 20384,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "teacher_gate_unlock",
+    "icons": [],
+    "onclick": null,
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 21173,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => {\n                    if (this.props.onRetry) this.pro",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 21985,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "initializeGame",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 22417,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "matching_check_btn",
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "checkAnswers",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 22747,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "timeline_check_btn",
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "checkOrder",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 23015,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleKeyboardMove(bucket.id)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 23044,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "concept_sort_check_answers",
+    "icons": [],
+    "onclick": "checkAnswers",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 23259,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "venn_back_btn",
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 23293,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "venn_move_a",
+    "icons": [],
+    "onclick": "() => handleKeyboardMove('setA')",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"venn_move_a\" onClick={() => handleKeyboardMove('setA')} c"
+  },
+  {
+    "line": 23296,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "venn_move_b",
+    "icons": [],
+    "onclick": "() => handleKeyboardMove('setB')",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"venn_move_b\" onClick={() => handleKeyboardMove('setB')} c"
+  },
+  {
+    "line": 23299,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "venn_move_shared",
+    "icons": [],
+    "onclick": "() => handleKeyboardMove('shared')",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"venn_move_shared\" onClick={() => handleKeyboardMove('shar"
+  },
+  {
+    "line": 23302,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "venn_move_bank",
+    "icons": [],
+    "onclick": "() => handleKeyboardMove('bank')",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"venn_move_bank\" onClick={() => handleKeyboardMove('bank')"
+  },
+  {
+    "line": 23306,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "venn_move_cancel",
+    "icons": [],
+    "onclick": "() => setKeyboardSelectedItemId(null)",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"venn_move_cancel\" onClick={() => setKeyboardSelectedItemI"
+  },
+  {
+    "line": 23791,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "checkPuzzle",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={checkPuzzle} className=\"px-3 py-1 bg-indigo-100 text-indigo-700"
+  },
+  {
+    "line": 23792,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "revealPuzzle",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={revealPuzzle} className=\"px-3 py-1 bg-red-100 text-red-700 roun"
+  },
+  {
+    "line": 23951,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "syntax_finish",
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"syntax_finish\" onClick={onClose} className=\"bg-indigo-600"
+  },
+  {
+    "line": 23962,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "syntax_dropped_word",
+    "icons": [],
+    "onclick": "() => handleWordClick(word, false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 23981,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "syntax_check",
+    "icons": [],
+    "onclick": "checkAnswer",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 23993,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "syntax_pool_word",
+    "icons": [],
+    "onclick": "() => handleWordClick(word, true)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 24663,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 24708,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "wizard_skip_btn",
+    "icons": [],
+    "onclick": "handleSkip",
+    "has_help_ignore": true,
+    "snippet": "<button data-help-ignore=\"true\""
+  },
+  {
+    "line": 24715,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleCheck",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 24964,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => onPurchase(item)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25042,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "role_student",
+    "icons": [
+      "GraduationCap"
+    ],
+    "onclick": "() => handleRoleClick('student')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25052,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "role_teacher",
+    "icons": [
+      "School"
+    ],
+    "onclick": "() => handleRoleClick('teacher')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25062,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "role_parent",
+    "icons": [
+      "Heart"
+    ],
+    "onclick": "() => handleRoleClick('parent')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25072,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "role_independent",
+    "icons": [
+      "UserCircle2"
+    ],
+    "onclick": "() => handleRoleClick('independent')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25085,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle",
+      "XCircle",
+      "RefreshCw",
+      "Mic"
+    ],
+    "onclick": "handleMicCheck",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25204,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "entry_start_new",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "() => handleConfirm('new')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25211,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "entry_load_exist",
+    "icons": [
+      "Upload"
+    ],
+    "onclick": "() => handleConfirm('load')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25219,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={onClose} className=\"mt-6 text-sm text-slate-500 hover:text-slat"
+  },
+  {
+    "line": 25252,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "welcome_load_btn",
+    "icons": [
+      "Upload"
+    ],
+    "onclick": "() => {\n                    onUpload();\n                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25262,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "welcome_skip_btn",
+    "icons": [],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25686,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "escape_room_object",
+    "icons": [],
+    "onclick": "() => !isSolved && puzzle && setSelectedPuzzle(obj.id)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25731,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "escape_room_hint_button",
+    "icons": [
+      "Lightbulb"
+    ],
+    "onclick": "async () => {\n                      if ((escapeState.hintsRe",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25765,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "escape_room_mcq_option",
+    "icons": [],
+    "onclick": "() => handleSubmitAnswer(currentPuzzle.id, idx, 'mcq')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25793,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "escape_room_cipher_submit",
+    "icons": [],
+    "onclick": "() => handleSubmitAnswer(currentPuzzle.id, userInput, 'ciphe",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25817,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setUserInput(word)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25841,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "escape_room_fillin_submit",
+    "icons": [],
+    "onclick": "() => handleSubmitAnswer(currentPuzzle.id, userInput, 'filli",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25869,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "escape_room_scramble_submit",
+    "icons": [],
+    "onclick": "() => handleSubmitAnswer(currentPuzzle.id, userInput, 'scram",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25926,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setSequenceOrder(currentPuzzle.shuffledItems || curren",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 25934,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                      // Convert current order to in",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26028,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleSubmitAnswer(currentPuzzle.id, matchingPairs, 'm",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26159,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handlePauseToggle",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26165,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setShowEndConfirm(true)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26219,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setShowEndConfirm(false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26225,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleEndGame",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26559,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "quiz_local_stats_btn",
+    "icons": [
+      "Gamepad2",
+      "Layout"
+    ],
+    "onclick": "() => setShowLocalStats(prev => !prev)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26575,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleEndQuiz",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleEndQuiz} className=\"text-xs bg-red-500 hover:bg-red-600 p"
+  },
+  {
+    "line": 26597,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "quiz_add_group_btn",
+    "icons": [],
+    "onclick": "handleCreateGroup",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26612,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleDeleteGroup(gid)",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleDeleteGroup(gid)} className=\"text-[10px] text-red-4"
+  },
+  {
+    "line": 26721,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "quiz_prev_question_btn",
+    "icons": [],
+    "onclick": "handlePrevQuestion",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 26728,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "quiz_next_question_btn",
+    "icons": [],
+    "onclick": "handleNextQuestion",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27315,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setActiveTab('students')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27321,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setActiveTab('insights')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27335,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setDashboardView('list')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27551,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "dashboard_review_btn",
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27576,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "dashboard_export_pdf_btn",
+    "icons": [
+      "FileDown"
+    ],
+    "onclick": "handleExportAnalyticsPDF",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27655,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setShowClearConfirm(false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27661,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "confirmClearAll",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 27925,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSkip",
+    "has_help_ignore": true,
+    "snippet": "<button"
+  },
+  {
+    "line": 27945,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => setIsHelpMode(false)",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => setIsHelpMode(false)} className=\"text-indigo-400 hover:te"
+  },
+  {
+    "line": 27957,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_grade_option",
+    "icons": [],
+    "onclick": "() => setLocalData(prev => ({ ...prev, grade: g.value ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28048,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_upload_source",
+    "icons": [
+      "Upload"
+    ],
+    "onclick": "() => {\n                                    setLocalData(pre",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"wizard_upload_source\""
+  },
+  {
+    "line": 28061,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_url_source",
+    "icons": [
+      "Link"
+    ],
+    "onclick": "() => {\n                                    setLocalData(pre",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"wizard_url_source\""
+  },
+  {
+    "line": 28074,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_search_source",
+    "icons": [
+      "Globe"
+    ],
+    "onclick": "() => {\n                                    setLocalData(pre",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"wizard_search_source\""
+  },
+  {
+    "line": 28087,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_generate_source",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "() => {\n                                    setLocalData(pre",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"wizard_generate_source\""
+  },
+  {
+    "line": 28121,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_url_fetch_btn",
+    "icons": [
+      "RefreshCw",
+      "Download"
+    ],
+    "onclick": "() => handleWizardUrlFetch(urlInput)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28139,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_content_next_btn",
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => setStep(4)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28180,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "wizard_search_result_select",
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => selectSearchOption(opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28229,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_back_results_btn",
+    "icons": [],
+    "onclick": "() => setLocalData(prev => ({ ...prev, fetchedContent: '', r",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28236,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => setStep(4)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28378,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_std_mode_ai",
+    "icons": [],
+    "onclick": "() => setStandardMode('ai')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28385,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_std_mode_manual",
+    "icons": [],
+    "onclick": "() => setStandardMode('manual')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28428,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28471,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "wizard_std_manual_add_btn",
+    "icons": [
+      "Plus"
+    ],
+    "onclick": "handleAddStandard",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28550,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => setStep(4)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28569,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Upload"
+    ],
+    "onclick": "() => {\n                                      onUpload(); \n ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28650,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_lang_remove_btn",
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => removeWizLanguage(lang)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28688,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_interest_remove_btn",
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => removeWizInterest(interest)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28703,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_prev_btn",
+    "icons": [],
+    "onclick": "() => setStep(s => s - 1)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28710,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wizard_complete_btn",
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "() => onComplete(localData)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28725,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setStep(s => s - 1)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 28831,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "ArrowLeft"
+    ],
+    "onclick": "onClose",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={onClose} className=\"p-2 hover:bg-slate-100 rounded-full text-sl"
+  },
+  {
+    "line": 28908,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onClick",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 29190,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "() => setIsEditing(prev => !prev)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 29235,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Trash2"
+    ],
+    "onclick": "() => handleDelete(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 29276,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "onCancel",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 29282,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "onConfirm",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 29338,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => onRetryPortrait(character)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 34280,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "ListOrdered"
+    ],
+    "onclick": "handleVennScrambleBank",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 34288,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "List"
+    ],
+    "onclick": "() => {\n                                  setIsInteractiveMa",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 34298,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Lock",
+      "Unlock"
+    ],
+    "onclick": "handleToggleIsMapLocked",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 36577,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ExternalLink"
+    ],
+    "onclick": "(e) => {\n                        e.stopPropagation();\n      ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 36604,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ExternalLink"
+    ],
+    "onclick": "(e) => {\n                                  e.stopPropagation",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 45845,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": null,
+    "has_help_ignore": false,
+    "snippet": "<button class=\"print-btn\" onclick=\"window.print()\">${strPrint}</button>"
+  },
+  {
+    "line": 45991,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": null,
+    "has_help_ignore": false,
+    "snippet": "<button onclick=\"window.print()\" style=\"background: #4f46e5; color: white; borde"
+  },
+  {
+    "line": 51938,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsVennPlayingToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 51950,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleInitializeVenn",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 53931,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Copy"
+    ],
+    "onclick": "() => copyToClipboard(appId)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 53941,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Users",
+      "ChevronRight"
+    ],
+    "onclick": "handleSetShowGroupModalToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 53956,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "toggleSessionMode",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 53973,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowSessionModalToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 53979,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "XCircle"
+    ],
+    "onclick": "async () => {\n                            if(confirm(t('sess",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 54125,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "group_create_button",
+    "icons": [
+      "Plus"
+    ],
+    "onclick": "() => handleCreateGroup()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 54312,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Check"
+    ],
+    "onclick": "handleSetShowGroupModalToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 54605,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "xp_modal_trigger",
+    "icons": [],
+    "onclick": "handleSetShowXPModalToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 54650,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "header_settings_text_reset",
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "resetFontSize",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={resetFontSize} data-help-key=\"header_settings_text_reset\" class"
+  },
+  {
+    "line": 54668,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "header_settings_text_bionic",
+    "icons": [
+      "Eye"
+    ],
+    "onclick": "handleToggleFocusMode",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 54692,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); set",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSli"
+  },
+  {
+    "line": 54987,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "header_session_start",
+    "icons": [
+      "Wifi"
+    ],
+    "onclick": "() => activeSessionCode ? setShowSessionModal(true) : startC",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55003,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "header_session_status",
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55021,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "header_session_join",
+    "icons": [
+      "WifiOff"
+    ],
+    "onclick": "handleToggleIsJoinPopoverOpen",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55055,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => joinClassSession(joinCodeInput)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55076,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "header_translate",
+    "icons": [
+      "Languages"
+    ],
+    "onclick": "handleSetIsTranslateModalOpenToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55084,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "header_export",
+    "icons": [
+      "Download",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "handleToggleShowExportMenu",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55096,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_qti",
+    "icons": [
+      "FolderDown"
+    ],
+    "onclick": "() => { handleExportQTI(); setShowExportMenu(false); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55104,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_print",
+    "icons": [
+      "Printer"
+    ],
+    "onclick": "() => { handleExport('print'); setShowExportMenu(false); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55111,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_worksheet",
+    "icons": [
+      "FileText"
+    ],
+    "onclick": "() => { handleExport('worksheet'); setShowExportMenu(false);",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55118,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_html",
+    "icons": [
+      "Code"
+    ],
+    "onclick": "() => { handleExport('html'); setShowExportMenu(false); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55135,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_ims",
+    "icons": [
+      "FolderDown"
+    ],
+    "onclick": "() => { handleExportIMS(); setShowExportMenu(false); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55149,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "header_submit",
+    "icons": [
+      "Send"
+    ],
+    "onclick": "handleSetShowSubmitModalToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55173,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetInfoModalTabToAbout",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55179,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetInfoModalTabToFeatures",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55232,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => {\n                                            localSto",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55367,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Save"
+    ],
+    "onclick": "() => handleSaveExtensionToHistory(hint)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55374,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Lightbulb"
+    ],
+    "onclick": "() => handleApplyHint(hint)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55498,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_storybook_images",
+    "icons": [
+      "ImageIcon"
+    ],
+    "onclick": "() => {\n                    setShowStorybookExportModal(fals",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55510,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "export_storybook_text",
+    "icons": [
+      "Type"
+    ],
+    "onclick": "() => {\n                    setShowStorybookExportModal(fals",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55522,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowStorybookExportModalToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55596,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_auto_read",
+    "icons": [
+      "Volume2",
+      "VolumeX"
+    ],
+    "onclick": "() => {\n                                    const newState =",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55613,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "persona_auto_send",
+    "icons": [
+      "Zap"
+    ],
+    "onclick": "handleTogglePersonaAutoSend",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55628,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "persona_show_hints",
+    "icons": [
+      "Eye",
+      "EyeOff"
+    ],
+    "onclick": "handleToggleShowPersonaHints",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55645,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_response_mode",
+    "icons": [
+      "MessageSquare",
+      "ListChecks"
+    ],
+    "onclick": "() => {\n                                    const newMode = ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55665,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_topic_spark",
+    "icons": [
+      "Lightbulb"
+    ],
+    "onclick": "handlePersonaTopicSpark",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55679,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "persona_save_chat",
+    "icons": [
+      "Save"
+    ],
+    "onclick": "handleSavePersonaChat",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55688,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_conclude",
+    "icons": [
+      "CheckCircle2",
+      "Lock"
+    ],
+    "onclick": "() => {\n                                    handleGenerateRe",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55759,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "handleSetPersonaDefinitionDataToNull",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55776,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => handleSpeak(personaDefinitionData.text, 'persona-defin",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55793,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => {\n                                                   ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55827,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Send"
+    ],
+    "onclick": "() => handlePanelChatSubmit(personaInput)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 55872,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "() => { setReflectionFeedback(null); setIsPersonaReflectionO",
+    "has_help_ignore": false,
+    "snippet": "<button aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFe"
+  },
+  {
+    "line": 55898,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetIsPersonaReflectionOpenToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingRef"
+  },
+  {
+    "line": 55931,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => handleRetryPortraitGeneration(personaState.selectedCha",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56032,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_auto_read",
+    "icons": [
+      "Volume2",
+      "VolumeX"
+    ],
+    "onclick": "() => {\n                                const newState = !pe",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56049,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "persona_auto_send",
+    "icons": [
+      "Zap"
+    ],
+    "onclick": "handleTogglePersonaAutoSend",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56064,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "persona_hints_toggle",
+    "icons": [
+      "Eye",
+      "EyeOff"
+    ],
+    "onclick": "handleToggleShowPersonaHints",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56080,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_response_mode",
+    "icons": [
+      "MessageSquare",
+      "ListChecks"
+    ],
+    "onclick": "() => {\n                                const newMode = !isP",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56124,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "persona_conclude",
+    "icons": [
+      "CheckCircle2",
+      "Lock"
+    ],
+    "onclick": "() => {\n                                handleGenerateReflec",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56248,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handlePersonaChatSubmit(q)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56275,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Send"
+    ],
+    "onclick": "() => handlePersonaChatSubmit()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56327,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "() => {\n                                                setR",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56374,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "persona_back_btn",
+    "icons": [],
+    "onclick": "handleSetIsPersonaReflectionOpenToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56409,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "chat_voice_mode",
+    "icons": [
+      "Headphones"
+    ],
+    "onclick": "(e) => {\n                        if (isHelpMode) return;\n   ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56448,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "chat_show_me",
+    "icons": [
+      "Eye"
+    ],
+    "onclick": "handleToggleIsShowMeMode",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56456,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "chat_expand",
+    "icons": [
+      "Minimize",
+      "Maximize"
+    ],
+    "onclick": "handleToggleIsUDLGuideExpanded",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56490,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "chat_save_advice_btn",
+    "icons": [
+      "RefreshCw",
+      "Save"
+    ],
+    "onclick": "() => saveUDLAdvice(msg.text, udlMessages[idx-1]?.role === '",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56545,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                  setStandardsInput(",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56607,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "chat_consult_btn",
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => handleSendUDLMessage(t('standards.prompts.identify_key",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56647,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "chat_send",
+    "icons": [
+      "Eye",
+      "Send"
+    ],
+    "onclick": "() => handleSendUDLMessage()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56699,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "sidebar_tab_create",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "handleSetActiveSidebarTabToCreate",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56706,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "sidebar_tab_history",
+    "icons": [
+      "History"
+    ],
+    "onclick": "() => {\n                  setActiveSidebarTab('history');\n  ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56719,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "tool_udl",
+    "icons": [
+      "MessageSquare",
+      "ChevronDown",
+      "ArrowRight"
+    ],
+    "onclick": "handleToggleShowUDLGuide",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56755,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Upload"
+    ],
+    "onclick": "() => fileInputRef.current.click()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56764,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "source_link_btn",
+    "icons": [
+      "Link"
+    ],
+    "onclick": "() => {\n                            if (!showUrlInput && !ex",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56777,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "source_generate_btn",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "() => {\n                            if (!showSourceGen && !e",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56799,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetIsUrlSearchModeToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56805,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetIsUrlSearchModeToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56839,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleSelectMainSearchOption(opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56882,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Download"
+    ],
+    "onclick": "() => handleUrlFetch()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56960,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetStandardModeToAi",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56966,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetStandardModeToManual",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 56993,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Search"
+    ],
+    "onclick": "() => handleFindStandards(gradeLevel)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57005,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57061,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => handleRemoveStandard(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57186,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_analysis",
+    "icons": [
+      "Search",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('analysis')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57210,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "analysis_generate_button",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('analysis')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57225,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_glossary",
+    "icons": [
+      "Globe",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('glossary')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57358,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('glossary')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57372,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_simplified",
+    "icons": [
+      "BookOpen",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('simplified')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57498,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetStandardModeToAi",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57504,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetStandardModeToManual",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57523,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Search"
+    ],
+    "onclick": "() => handleFindStandards(gradeLevel)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57535,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57591,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => handleRemoveStandard(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57682,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('simplified')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57696,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('ui-tool-wordsounds')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57713,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "wordsounds_open_btn",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "handleOpenWordSounds",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57726,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_outline",
+    "icons": [
+      "Layout",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('outline')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57764,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "outline_generate_button",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('outline')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57779,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_visual",
+    "icons": [
+      "ImageIcon",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('image')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57837,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('image')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57851,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_faq",
+    "icons": [
+      "FileQuestion",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('faq')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57887,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('faq')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57901,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_scaffolds",
+    "icons": [
+      "Quote",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('sentence-frames')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57938,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('sentence-frames')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57952,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_brainstorm",
+    "icons": [
+      "Lightbulb",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('brainstorm')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 57974,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('brainstorm')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58033,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "brainstorm_generate_button",
+    "icons": [
+      "RefreshCw",
+      "Terminal"
+    ],
+    "onclick": "() => handleGenerate('gemini-bridge')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58049,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_persona",
+    "icons": [
+      "History",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('persona')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58089,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "MessageCircleQuestion",
+      "ArrowRight"
+    ],
+    "onclick": "handleSetActiveViewToPersona",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58100,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "persona_generate_button",
+    "icons": [
+      "RefreshCw",
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => {\n                            handleGeneratePersonas()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58121,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_timeline",
+    "icons": [
+      "ListOrdered",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('timeline')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58157,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "timeline_generate_button",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('timeline')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58174,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_concept_sort",
+    "icons": [
+      "Filter",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('concept-sort')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58228,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "concept_sort_generate_button",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('concept-sort')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58243,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_math",
+    "icons": [
+      "Calculator",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('math')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58370,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "math_generate_button",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "handleGenerateMath",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58385,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_adventure",
+    "icons": [
+      "MapIcon",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('adventure')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58576,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetFactionResourceModeToAi",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58586,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetFactionResourceModeToManual",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58655,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58667,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Plus"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58830,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                            const mi",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58880,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_quiz",
+    "icons": [
+      "CheckSquare",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('quiz')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58952,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "quiz_generate_button",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('quiz')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58967,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "tool_lesson_plan",
+    "icons": [
+      "ClipboardList",
+      "ChevronUp",
+      "ChevronDown"
+    ],
+    "onclick": "() => toggleTool('lesson-plan')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 58994,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "handleGenerateLessonPlan",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59039,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "fullpack_generate",
+    "icons": [
+      "Sparkles",
+      "ArrowRight"
+    ],
+    "onclick": "handleGenerateFullPack",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59056,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "tool_alignment",
+    "icons": [
+      "ShieldCheck",
+      "ArrowRight"
+    ],
+    "onclick": "() => handleGenerate('alignment-report')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59081,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "handleSetIsJoinPanelExpandedToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59113,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => joinClassSession(joinCodeInput)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59123,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Wifi",
+      "ArrowRight"
+    ],
+    "onclick": "handleSetIsJoinPanelExpandedToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59171,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "FolderOpen"
+    ],
+    "onclick": "() => projectFileInputRef.current?.click()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59183,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Send"
+    ],
+    "onclick": "handleSetShowSubmitModalToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59234,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "adventure_start_btn",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "handleStartAdventure",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59243,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "adventure_start_btn",
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "handleStartAdventure",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59336,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSaveProfile",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleSaveProfile} className=\"text-xs bg-indigo-600 text-white "
+  },
+  {
+    "line": 59337,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetIsProfileModalOpenToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleSetIsProfileModalOpenToFalse} className=\"text-xs text-sla"
+  },
+  {
+    "line": 59517,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "history_save_unit_btn",
+    "icons": [],
+    "onclick": "handleCreateUnit",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"history_save_unit_btn\" onClick={handleCreateUnit} classNa"
+  },
+  {
+    "line": 59518,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "history_cancel_unit_btn",
+    "icons": [],
+    "onclick": "handleSetIsUnitModalOpenToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button data-help-key=\"history_cancel_unit_btn\" onClick={handleSetIsUnitModalOpe"
+  },
+  {
+    "line": 59601,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "history_rename_btn",
+    "icons": [
+      "Pencil"
+    ],
+    "onclick": "(e) => handleStartEdit(e, item)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59617,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "history_move_up_btn",
+    "icons": [
+      "ChevronUp"
+    ],
+    "onclick": "(e) => moveItem(e, idx, 'up')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59626,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "history_move_down_btn",
+    "icons": [
+      "ChevronDown"
+    ],
+    "onclick": "(e) => moveItem(e, idx, 'down')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59636,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "history_move_to_unit_btn",
+    "icons": [
+      "FolderInput"
+    ],
+    "onclick": "() => setMovingItemId(movingItemId === item.id ? null : item",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59648,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleMoveToUnit(item.id, 'uncategorized')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59655,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleMoveToUnit(item.id, u.id)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59676,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => {\n                                            e.stopP",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59709,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "resource_delete_button",
+    "icons": [
+      "Trash2"
+    ],
+    "onclick": "(e) => handleDeleteHistoryItem(e, item.id)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59740,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "handleSetIsZenModeToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59828,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Smile"
+    ],
+    "onclick": "handleToggleIsStickerMode",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59838,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setStickerType(type)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 59958,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetErrorToNull",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60260,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60291,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingAnalysis",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60329,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Bold"
+    ],
+    "onclick": "() => handleFormatText('bold', analysisEditorRef, generatedC",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60336,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Italic"
+    ],
+    "onclick": "() => handleFormatText('italic', analysisEditorRef, generate",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60343,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Highlighter"
+    ],
+    "onclick": "() => handleFormatText('highlight', analysisEditorRef, gener",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60351,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleFormatText('h1', analysisEditorRef, generatedCon",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60358,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleFormatText('h2', analysisEditorRef, generatedCon",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60366,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "List"
+    ],
+    "onclick": "() => handleFormatText('list', analysisEditorRef, generatedC",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60405,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_standard_flashcards",
+    "icons": [
+      "MonitorPlay"
+    ],
+    "onclick": "() => launchInteractiveFlashcards('standard')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60416,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_language_flashcards",
+    "icons": [
+      "Languages"
+    ],
+    "onclick": "() => launchInteractiveFlashcards('language')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60428,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_export_standard",
+    "icons": [
+      "GalleryHorizontal"
+    ],
+    "onclick": "() => handleExportFlashcards('standard')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60438,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_export_language",
+    "icons": [
+      "Languages"
+    ],
+    "onclick": "() => handleExportFlashcards('language')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60467,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_word_search",
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "() => generateWordSearch(wordSearchLang)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60477,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "glossary_memory_game",
+    "icons": [
+      "Brain"
+    ],
+    "onclick": "handleSetIsMemoryGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60485,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "glossary_crossword",
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsCrosswordGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60493,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "glossary_matching",
+    "icons": [
+      "GitMerge"
+    ],
+    "onclick": "handleSetIsMatchingGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60501,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "glossary_bingo",
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsBingoGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60509,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "glossary_play_bingo",
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsStudentBingoGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60517,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "glossary_scramble",
+    "icons": [
+      "Shuffle"
+    ],
+    "onclick": "handleSetIsWordScrambleGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60549,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "glossary_filter_all",
+    "icons": [],
+    "onclick": "handleSetGlossaryFilterToAll",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60556,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "glossary_filter_tier2",
+    "icons": [],
+    "onclick": "handleSetGlossaryFilterToAcademic",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60563,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "glossary_filter_tier3",
+    "icons": [],
+    "onclick": "handleSetGlossaryFilterToDomain",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60651,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "ImageIcon"
+    ],
+    "onclick": "handleToggleShowFlashcardImages",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60657,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Brain"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 60843,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => handleQuizOptionClick(e, opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61143,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Eye",
+      "MousePointerClick"
+    ],
+    "onclick": "handleToggleShowWordSearchAnswers",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61151,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Printer"
+    ],
+    "onclick": "handlePrintGame",
+    "has_help_ignore": false,
+    "snippet": "{isTeacherMode && <button onClick={handlePrintGame} className=\"text-xs flex item"
+  },
+  {
+    "line": 61258,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "(e) => { \n                                        e.stopProp",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61337,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Plus"
+    ],
+    "onclick": "async () => {\n                                              ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61483,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Trash2"
+    ],
+    "onclick": "() => handleDeleteGlossaryItem(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61508,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_regen_image",
+    "icons": [
+      "RefreshCw",
+      "RefreshCw"
+    ],
+    "onclick": "() => handleGenerateTermImage(idx, item.term)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61517,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_delete_image",
+    "icons": [
+      "Trash2"
+    ],
+    "onclick": "() => handleDeleteTermImage(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61529,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "glossary_remove_words",
+    "icons": [
+      "RefreshCw",
+      "Ban"
+    ],
+    "onclick": "() => handleRefineGlossaryImage(idx, \"Remove all text, label",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61547,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Send"
+    ],
+    "onclick": "() => handleRefineGlossaryImage(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61561,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "ImageIcon"
+    ],
+    "onclick": "() => handleGenerateTermImage(idx, item.term)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61573,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "glossary_speak_term",
+    "icons": [
+      "RefreshCw",
+      "StopCircle",
+      "Volume2"
+    ],
+    "onclick": "() => handleSpeak(item.term, `term-${idx",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleSpeak(item.term, `term-${idx}`)} disabled={isGenera"
+  },
+  {
+    "line": 61574,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "glossary_download_audio",
+    "icons": [
+      "RefreshCw",
+      "Download"
+    ],
+    "onclick": "() => handleDownloadAudio(item.term, `term-${idx",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-t"
+  },
+  {
+    "line": 61598,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "StopCircle",
+      "Volume2"
+    ],
+    "onclick": "() => handleSpeak(item.def, `def-${idx",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleSpeak(item.def, `def-${idx}`)} disabled={isGenerati"
+  },
+  {
+    "line": 61599,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Download"
+    ],
+    "onclick": "() => handleDownloadAudio(item.def, `def-${idx",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def"
+  },
+  {
+    "line": 61626,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "StopCircle",
+      "Volume2"
+    ],
+    "onclick": "() => handleSpeak(item.translations[lang], `trans-${idx",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleSpeak(item.translations[lang], `trans-${idx}-${lang"
+  },
+  {
+    "line": 61627,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Download"
+    ],
+    "onclick": "() => handleDownloadAudio(item.translations[lang], `trans-${",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx"
+  },
+  {
+    "line": 61898,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "simplified_immersive_reader",
+    "icons": [
+      "RefreshCw",
+      "BookOpen"
+    ],
+    "onclick": "() => {\n                                        if (generate",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61916,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "simplified_teacher_tools",
+    "icons": [
+      "Settings",
+      "ChevronLeft",
+      "ChevronRight"
+    ],
+    "onclick": "handleToggleIsTeacherToolbarExpanded",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61971,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "simplified_edit",
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingLeveledText",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 61980,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "simplified_download_audio",
+    "icons": [
+      "RefreshCw",
+      "Download"
+    ],
+    "onclick": "() => handleDownloadAudio(generatedContent.data, `leveled-te",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleDownloadAudio(generatedContent.data, `leveled-text-"
+  },
+  {
+    "line": 62034,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => {\n                                                if (",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62097,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ArrowRight"
+    ],
+    "onclick": "() => handleReviseSelection('custom', customReviseInstructio",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62104,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "handleSetIsCustomReviseOpenToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62114,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "HelpCircle"
+    ],
+    "onclick": "() => handleReviseSelection('explain')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62123,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "() => handleReviseSelection('simplify')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62130,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "PenTool"
+    ],
+    "onclick": "() => handleReviseSelection('custom-input')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62147,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Plus"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62444,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Bold"
+    ],
+    "onclick": "() => handleFormatText('bold')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62451,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Italic"
+    ],
+    "onclick": "() => handleFormatText('italic')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62458,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Highlighter"
+    ],
+    "onclick": "() => handleFormatText('highlight')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62466,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleFormatText('h1')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62473,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleFormatText('h2')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 62481,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "List"
+    ],
+    "onclick": "() => handleFormatText('list')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63006,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Layout",
+      "Share2"
+    ],
+    "onclick": "() => {\n                                        if (generate",
+    "has_help_ignore": false,
+    "snippet": "(generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn |"
+  },
+  {
+    "line": 63027,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingOutline",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63036,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => handleGenerate('outline')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63057,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => handleRemoveFromMapList(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63075,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Plus"
+    ],
+    "onclick": "() => handleAddToMapList(mapAddInput)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63108,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Wifi"
+    ],
+    "onclick": "async () => {\n                                        const ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63125,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Lock",
+      "Unlock"
+    ],
+    "onclick": "async () => {\n                                        const ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63139,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle",
+      "MonitorPlay"
+    ],
+    "onclick": "handleToggleIsPresentationMode",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63198,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingQuiz",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63206,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckSquare",
+      "CheckSquare"
+    ],
+    "onclick": "handleToggleShowQuizAnswers",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleToggleShowQuizAnswers} className=\"text-xs flex items-cent"
+  },
+  {
+    "line": 63242,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "XCircle"
+    ],
+    "onclick": "async () => {\n                                        if (wi",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63316,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleManualScore(team.id, -100)",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleManualScore(team.id, -100)} className=\"text-xs bg-w"
+  },
+  {
+    "line": 63317,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleManualScore(team.id, 100)",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleManualScore(team.id, 100)} className=\"text-xs bg-wh"
+  },
+  {
+    "line": 63376,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => closeReviewModal(false)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63410,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => { setReviewGameState(prev => ({ ...prev, showAnswer: t",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63421,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2"
+    ],
+    "onclick": "() => handleAwardPoints(team.id, reviewGameState.activeQuest",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63429,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => { playSound('incorrect'); closeReviewModal(true); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63566,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setEscapeRoomState(prev => ({ ...prev, isActive: false",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63582,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Play"
+    ],
+    "onclick": "handleSetIsEscapeTimerRunningToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63601,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => !isDisabled && handleSelectObject(obj)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63635,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => setEscapeRoomState(prev => ({ ...prev, selectedObject:",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63655,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Lightbulb"
+    ],
+    "onclick": "() => handleRevealHint(puzzle.id)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63687,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleEscapeRoomAnswer(puzzle.id, idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63780,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63811,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setEscapeRoomState(prev => ({ ...prev, textInput: word",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63837,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleCipherAnswer(puzzle.id, escapeRoomState.textInpu",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63871,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleMatchingSelect(puzzle.id, item, 'left')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63903,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleMatchingSelect(puzzle.id, item, 'right')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 63968,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleScrambleAnswer(puzzle.id, escapeRoomState.textIn",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64002,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setEscapeRoomState(prev => ({ ...prev, textInput: word",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64037,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleFillinAnswer(puzzle.id, escapeRoomState.textInpu",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64103,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setEscapeRoomState(prev => ({ ...prev, textInput: word",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64135,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Key"
+    ],
+    "onclick": "() => handleFinalDoorAnswer(escapeRoomState.textInput || '')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64197,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handlePresentationOptionClick(i, opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64228,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "ChevronUp",
+      "Info"
+    ],
+    "onclick": "() => togglePresentationExplanation(i)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64236,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Eye",
+      "MousePointerClick"
+    ],
+    "onclick": "() => togglePresentationAnswer(i)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64308,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "RefreshCw",
+      "ShieldCheck"
+    ],
+    "onclick": "() => handleFactCheck(i)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64358,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => handleFactCheck(i)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64432,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Copy"
+    ],
+    "onclick": "() => copyToClipboard(generatedContent.data)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64468,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => { e.stopPropagation(); audioRef.current?.pause(); pla",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64481,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "faq_edit_toggle",
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingFaq",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64629,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "scaffolds_edit_toggle",
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingScaffolds",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64762,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Maximize",
+      "Minimize"
+    ],
+    "onclick": "handleToggleRubricZoom",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64770,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Copy"
+    ],
+    "onclick": "() => copyToClipboard(generatedContent.data.rubric)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64854,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetGradingResultToNull",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64873,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingBrainstorm",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64938,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "ListChecks"
+    ],
+    "onclick": "() => handleGenerateGuide(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 64991,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "Download"
+    ],
+    "onclick": "() => {\n                                            setShowL",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65002,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowLedgerToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65172,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "BookOpen"
+    ],
+    "onclick": "handleSetShowLedgerToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65180,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Monitor"
+    ],
+    "onclick": "() => {\n                                    const newState =",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65192,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "adventure_immersive_autoread",
+    "icons": [
+      "Volume2",
+      "VolumeX"
+    ],
+    "onclick": "() => {\n                                    const newState =",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65206,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Maximize"
+    ],
+    "onclick": "handleSetIsZenModeToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65238,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "adventure_resume_btn",
+    "icons": [
+      "History"
+    ],
+    "onclick": "handleResumeAdventure",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65245,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "handleSetShowNewGameSetupToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65255,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowNewGameSetupToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65465,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "() => executeStartAdventure()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65680,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "adventure_immersive_autoread",
+    "icons": [
+      "Volume2",
+      "VolumeX"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65692,
+    "has_title": true,
+    "has_text": false,
+    "help_key": "adventure_immersive_toggle_ui",
+    "icons": [
+      "EyeOff",
+      "Eye"
+    ],
+    "onclick": "handleToggleImmersiveHideUI",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65699,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "adventure_immersive_exit",
+    "icons": [
+      "Minimize"
+    ],
+    "onclick": "() => setAdventureState(prev => ({ ...prev, isImmersiveMode:",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65711,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "adventure_immersive_inventory",
+    "icons": [
+      "Backpack"
+    ],
+    "onclick": "(e) => {\n                                                   ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65766,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => {\n                                                   ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65799,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "adventure_choice_toggle",
+    "icons": [
+      "BookOpen",
+      "MousePointerClick"
+    ],
+    "onclick": "handleToggleImmersiveShowChoices",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65842,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "adventure_input_send",
+    "icons": [
+      "Send"
+    ],
+    "onclick": "() => handleAdventureTextSubmit()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 65866,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "adventure_choice_btn",
+    "icons": [
+      "Volume2"
+    ],
+    "onclick": "() => handleAdventureChoice(opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66021,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "() => handleRemoveOptionSlot(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66038,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Wifi"
+    ],
+    "onclick": "handleBroadcastOptions",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66044,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetIsEditingOptionsToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66064,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "adventure_choice_btn",
+    "icons": [
+      "Scale"
+    ],
+    "onclick": "() => handleAdventureChoice(opt)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66090,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Mic",
+      "MicOff"
+    ],
+    "onclick": "() => {\n                                                    ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66118,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "adventure_input_send",
+    "icons": [
+      "Send"
+    ],
+    "onclick": "() => handleAdventureTextSubmit()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66133,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "handleStartSequel",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66173,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Lock"
+    ],
+    "onclick": null,
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66180,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "handleUseItem",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66266,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "visuals_download",
+    "icons": [
+      "Download"
+    ],
+    "onclick": "handleDownloadImage",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleDownloadImage} data-help-key=\"visuals_download\" className"
+  },
+  {
+    "line": 66398,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsTimelineGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66405,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingTimeline",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66426,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Loader2",
+      "Sparkles"
+    ],
+    "onclick": "() => handleTimelineRevision()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66504,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Trash2"
+    ],
+    "onclick": "() => handleDeleteTimelineStep(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66550,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsTimelineGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66580,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "concept_sort_start_button",
+    "icons": [
+      "Filter"
+    ],
+    "onclick": "handleSetIsConceptSortGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66595,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "concept_sort_start_button",
+    "icons": [
+      "Gamepad2"
+    ],
+    "onclick": "handleSetIsConceptSortGameToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66656,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "math_toggle_answers",
+    "icons": [
+      "EyeOff",
+      "Eye"
+    ],
+    "onclick": "handleToggleShowMathAnswers",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66665,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Copy"
+    ],
+    "onclick": "() => {\n                                            const te",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66777,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Eye"
+    ],
+    "onclick": "handleSetShowMathAnswersToTrue",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 66831,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "CheckCircle2",
+      "Pencil"
+    ],
+    "onclick": "handleToggleIsEditingLessonPlan",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67052,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw",
+      "ListChecks"
+    ],
+    "onclick": "() => handleGenerateExtensionGuide(idx)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67087,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Printer"
+    ],
+    "onclick": "() => handleExport('print')",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={() => handleExport('print')} className=\"flex items-center gap-2"
+  },
+  {
+    "line": 67117,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "handleSetProgressionDataToNull",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67144,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "() => handleActivateNextLesson(option)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67185,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Copy"
+    ],
+    "onclick": "() => copyToClipboard(promptStep)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67222,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setPersonaState(prev => ({ ...prev, mode: 'single', se",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67228,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setPersonaState(prev => ({ ...prev, mode: 'panel' ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67282,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "persona_select_button",
+    "icons": [
+      "MessageCircleQuestion",
+      "CheckCircle2",
+      "Plus"
+    ],
+    "onclick": "(e) => {\n                                            e.stopP",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67353,
+    "has_title": true,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => {\n                                setClozeCompletedSet",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67363,
+    "has_title": true,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "handleSetInteractionModeToRead",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67398,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleNavigateResource('prev')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67408,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => handleNavigateResource('next')",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 67503,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "(e) => {\n                                e.stopPropagation()",
+    "has_help_ignore": true,
+    "snippet": "<button"
+  },
+  {
+    "line": 67800,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "(e) => { \n                                e.stopPropagation(",
+    "has_help_ignore": true,
+    "snippet": "<button"
+  },
+  {
+    "line": 67815,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetRunTourToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button onClick={handleSetRunTourToFalse} className=\"text-xs font-bold text-slat"
+  },
+  {
+    "line": 67817,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handlePrevTourStep",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68155,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowGlobalLevelUpToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68190,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => updateEscapeRoomSetting('difficulty', diff)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68229,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => setEscapeRoomState(prev => ({ ...prev, showSettings: f",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68235,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Sparkles"
+    ],
+    "onclick": "launchEscapeRoomWithSettings",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68591,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "X"
+    ],
+    "onclick": "handleSetShowSaveModalToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68614,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowSaveModalToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68620,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [
+      "Save"
+    ],
+    "onclick": "executeSaveFile",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68652,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => { setTranslateScope('single'); handleTranslateAction()",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68659,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => { setTranslateScope('all'); handleTranslateAction(); ",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68691,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "handleSetShowCloudWarningToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68697,
+    "has_title": false,
+    "has_text": false,
+    "help_key": null,
+    "icons": [],
+    "onclick": "confirmEnableCloud",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68970,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "settings_close_btn",
+    "icons": [],
+    "onclick": "handleSetIsProjectSettingsOpenToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 68995,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "timer_close_btn",
+    "icons": [
+      "X"
+    ],
+    "onclick": "handleSetShowStudyTimerModalToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 69020,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "timer_duration_btn",
+    "icons": [],
+    "onclick": "() => {\n                                setStudyDuration(min",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 69047,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [],
+    "onclick": "() => {\n                            const mins = parseInt(cu",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 69068,
+    "has_title": false,
+    "has_text": true,
+    "help_key": null,
+    "icons": [
+      "Pause",
+      "Play"
+    ],
+    "onclick": "() => {\n                            if (isStudyTimerRunning)",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 69085,
+    "has_title": true,
+    "has_text": true,
+    "help_key": "timer_reset_btn",
+    "icons": [
+      "RefreshCw"
+    ],
+    "onclick": "() => {\n                            setIsStudyTimerRunning(f",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 69120,
+    "has_title": false,
+    "has_text": true,
+    "help_key": "adventure_confirm_new",
+    "icons": [],
+    "onclick": "() => {\n                            setShowAdventureConfirma",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  },
+  {
+    "line": 69130,
+    "has_title": false,
+    "has_text": false,
+    "help_key": "adventure_cancel_new",
+    "icons": [],
+    "onclick": "handleSetShowAdventureConfirmationToFalse",
+    "has_help_ignore": false,
+    "snippet": "<button"
+  }
+]

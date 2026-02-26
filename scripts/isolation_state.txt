@@ -1,0 +1,2 @@
+L4768: const [isolationState, setIsolationState] = React.useState(null); // Stable state for Isolation activity
+L7881: if (isolationState) setIsolationState(null); // Clear when leaving

@@ -1,0 +1,113 @@
+=== localStorage AUDIT (19 unique keys) ===
+
+=== WRITE-ONLY KEYS (0) — POTENTIAL ORPHANS ===
+(Data stored but never retrieved — may be dead storage)
+
+
+=== READ-ONLY KEYS (0) — EXTERNAL/LEGACY ===
+(Data read but never written in this codebase — may come from external source)
+
+
+=== BALANCED KEYS (19) — HEALTHY ===
+(Both read and written — functioning correctly)
+
+  'allo_adventure_cloud'
+    Written: L58733
+    Read: L30034
+  'allo_bot_intro_seen'
+    Written: L35890
+    Read: L30097
+  'allo_bot_pos_v2'
+    Written: L17711
+    Read: L17564
+  'allo_cloud_sync'
+    Written: L34847, L34855
+    Read: L30030
+  'allo_completed_activities'
+    Written: L30601
+    Read: L30584
+  'allo_escape_completions'
+    Written: L30787
+    Read: L30634
+  'allo_flashcard_engagement'
+    Written: L30797
+    Read: L30654
+  'allo_fluency_assessments'
+    Written: L30792
+    Read: L30644
+  'allo_game_completions'
+    Written: L30782
+    Read: L30614
+  'allo_help_onboarded'
+    Written: L30088, L30094
+    Read: L30084
+  'allo_phoneme_mastery'
+    Written: L30818
+    Read: L30731
+  'allo_time_on_task'
+    Written: L30802
+    Read: L30771
+  'allo_voice_preference'
+    Written: L29988
+    Read: L29983
+  'allo_wizard_completed'
+    Written: L27757, L30338
+    Read: L30222, removed at L55196
+  'allo_word_sounds_badges'
+    Written: L30813
+    Read: L30722
+  'allo_word_sounds_confusion'
+    Written: L30828
+    Read: L30757
+  'allo_word_sounds_daily'
+    Written: L30823
+    Read: L30740
+  'allo_word_sounds_history'
+    Written: L30807
+    Read: L30664
+  'alloflow-global-muted'
+    Written: L156
+    Read: L143
+
+=== DYNAMIC KEY OPERATIONS (7) ===
+(Variable-based keys — can't audit statically)
+
+  L891: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L893: localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L906: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L919: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L923: localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L5879: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L5880: if (bank[targetWord]) { delete bank[targetWord]; localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank)); }
+
+=== UNGUARDED setItem (0) ===
+(Missing try/catch — will throw if quota exceeded)
+
+
+=== LARGE DATA STORAGE (15) ===
+(JSON.stringify calls — potential quota hogs)
+
+  L893: bank — localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L923: bank — localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L5880: bank — if (bank[targetWord]) { delete bank[targetWord]; localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank)); }
+  L17711: position — try { localStorage.setItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed
+  L30601: Array — try { localStorage.setItem('allo_completed_activities', JSON.stringify(Array.from(completedActivities.entries()))); } ca
+  L30782: gameCompletions — try { localStorage.setItem('allo_game_completions', JSON.stringify(gameCompletions)); } catch(e) { warnLog('localStorage
+  L30787: escapeRoomCompletions — try { localStorage.setItem('allo_escape_completions', JSON.stringify(escapeRoomCompletions)); } catch(e) { warnLog('loca
+  L30792: fluencyAssessments — try { localStorage.setItem('allo_fluency_assessments', JSON.stringify(fluencyAssessments)); } catch(e) { warnLog('localS
+  L30797: flashcardEngagement — try { localStorage.setItem('allo_flashcard_engagement', JSON.stringify(flashcardEngagement)); } catch(e) { warnLog('loca
+  L30802: timeOnTask — try { localStorage.setItem('allo_time_on_task', JSON.stringify(timeOnTask)); } catch(e) { warnLog('localStorage write fa
+  L30807: wordSoundsHistory — try { localStorage.setItem('allo_word_sounds_history', JSON.stringify(wordSoundsHistory)); } catch(e) { warnLog('localSt
+  L30813: wordSoundsBadges — try { localStorage.setItem('allo_word_sounds_badges', JSON.stringify(wordSoundsBadges)); } catch(e) { warnLog('localStor
+  L30818: phonemeMastery — try { localStorage.setItem('allo_phoneme_mastery', JSON.stringify(phonemeMastery)); } catch(e) { warnLog('localStorage w
+  L30823: wordSoundsDailyProgress — try { localStorage.setItem('allo_word_sounds_daily', JSON.stringify(wordSoundsDailyProgress)); } catch(e) { warnLog('loc
+  L30828: wordSoundsConfusionPatterns — try { localStorage.setItem('allo_word_sounds_confusion', JSON.stringify(wordSoundsConfusionPatterns)); } catch(e) { warn
+
+=== SUMMARY ===
+  Total unique keys: 19
+  Write-only (orphans): 0
+  Read-only (external): 0
+  Balanced (healthy): 19
+  Dynamic operations: 7
+  Unguarded setItem: 0
+  Large data stores: 15

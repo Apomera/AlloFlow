@@ -1,0 +1,79 @@
+﻿JSX .map() calls missing key= : 78
+  L1501: const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
+  L1554: const words = result.replace(/[^a-zA-Z,\s-]/g, '').split(',').map(w => w.trim()).filter(w => w);
+  L1701: enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' ΓåÆ ') +
+  L4724: return wordPool.map(entry => ({
+  L4825: .map(h => h.word?.toLowerCase());
+  L5553: phonemes = phonemes.map(p => normalizePhoneme(p));
+  L6501: await Promise.allSettled(rhymeOptionsRef.current.map(w => callTTS(w)));
+  L6977: await Promise.allSettled(effectiveBlendingOptions.map(w => callTTS(w)));
+  L7003: await Promise.allSettled(rhymeOptionsRef.current.map(w => callTTS(w)));
+  L8686: const userPhonemes = elkoninBoxes.map(b => (b.phoneme || '').trim()).join('').toLowerCase();
+  L8687: const expectedPhonemes = expected.map(p => (p || '').trim()).join('').toLowerCase();
+  L10623: labels: cats.map(c => t(`class_analytics.flag_${c === 'harm_to_others' ? 'harm_others' : c}`)),
+  L10624: datasets: [{ data: cats.map(c => bd[c]), backgroundColor: cats.map(c => colorMap[c] || '#94a3b8') }]
+  L10636: const labels = assessments.map((a, i) => a.date ? new Date(a.date).toLocaleDateString() : `#${i + 1}`);
+  L10637: const wcpmData = assessments.map(a => a.wcpm || 0);
+  L18143: const termNames = terms.map(t => t.term || t.word || '').filter(Boolean);
+  L19600: const rendered = rows.map(row => {
+  L19601: const parts = row.split('&').map(p => p.trim());
+  L19609: const rendered = rows.map(row => {
+  L19610: const parts = row.split('&').map(p => p.trim());
+  L19611: return `<span style="display:flex;gap:4px;justify-content:center;">${parts.map(p => `<span>${p}</span>`).join('')}</span
+  L19621: return ch.split('').map(c => bbMap[c] || c).join('');
+  L21114: const marker = chunkIndices.map(i => {
+  L22655: const indexed = data.map((item, i) => ({
+  L23918: .map(s => s.trim().replace(/\s+/g, ' '))
+  L24474: .map(d => d.term)
+  L26312: const detailedStats = question.options.map((opt, idx) => {
+  L27017: .map(([question, count]) => ({ question, count }))
+  L27038: const maxXP = Math.max(...logs.map(l => l.xp), 100);
+  L27042: const points = logs.map(l => {
+  L27212: ${analytics.misconceptions.map((m, i) => `
+  L34339: setConceptMapNodes(prev => prev.map(node => {
+  L35374: const errorKeywords = errorDesc.match(/["']([^"']+)["']/g)?.map(s => s.replace(/["']/g, '')) || [];
+  L37090: const [targetText, englishText] = str.split(delimiter).map(s => s.trim());
+  L39091: .map(localId => localToGlobalMap.get(localId))
+  L39095: const label = " " + globalIds.map(id => `[${id}]`).join(', ');
+  L40498: const parts = text.split(' ').map(w => w.trim().replace(/[^a-zA-Z]/g, '')).filter(w => w.length > 2);
+  L40896: const cells = rawCells.map(c => c.trim());
+  L41010: ${item.data.map(gItem => `
+  L41017: ${hasAnyTranslations ? `<td style="text-align: ${align}">${Object.entries(gItem.translations || {}).map(([k, v]) => `<st
+  L41033: const renderList = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) =>
+  L41092: ${branches.map(b => {
+  L41099: ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; f
+  L41106: innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div><div style=
+  L41108: innerContent = `<div style="max-width: 800px; margin: 0 auto;"><div style="background: #fef2f2; border-left: 5px solid #
+  L41113: innerContent = `<div style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; ma
+  L41115: innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;"><div style="background: #4f46e5; colo
+  L41136: ? item.data.reflections.map(r => {
+  L41157: ${item.data.questions.map((q, i) => `
+  L41164: ${q.options.map((opt, optIdx) => `
+  L41216: ${item.data.map((faq, i) => `
+  L41233: ${item.data.map(idea => `
+  L41248: contentHtml = `<ul>${items.map((i, idx) => {
+  L41297: ${problems.map((p, i) => `
+  L41311: ${p.steps.map(s => `
+  L41344: ${items.map((t, i) => `
+  L41368: ${categories.map(cat => {
+  L41377: ${catItems.map(ci => `<li style="margin-bottom: 5px;">${ci.content}</li>`).join('')}
+  L41396: const heatmapHtml = wordData.map(w => {
+  L41500: extensionsHtml = extensions.map(ext => `
+  L41538: ${materialsNeeded.map(m => `<li>${renderBilingualField(m)}</li>`).join('')}
+  L41555: ${objectives.map(o => `<li>${renderBilingualField(o)}</li>`).join('')}
+  L41600: ${reports.map(report => `
+  L41647: const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses)).join('');
+  L41648: const teacherContent = historyItems.map(item => generateResourceHTML(item, true, responses)).join('');
+  L48033: ${activeQuests.length > 0 ? activeQuests.map(q => `- Quest ID ${q.id}: ${q.text} (Requires ${q.difficulty} Rapport)`).jo
+  L48249: const pendingIndices = newMessages.slice(1).map(m => m.index);
+  L49857: batch.map((item, idx) => generateImageWithRetry(item, i + idx, parsedContent.length))
+  L51931: setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
+  L60532: const errorKeywords = errorDesc.match(/["']([^"']+)["']/g)?.map(s => s.replace(/["']/g, '')) || [];
+  L61215: {flashcardOptions.map((opt, idx) => {
+  L62070: ?.map(w => w.text)
+  L63729: onChange={(e) => setGameTeams(prev => prev.map(t => t.id === team.id ? { ...t, name: e.target.value } : t))}
+  L64137: : (puzzle.shuffledItems || puzzle.items.map((_, i) => i));
+  L64211: : (puzzle.shuffledItems || puzzle.items.map((_, i) => i));
+  L64602: {q.options.map((opt, optIdx) => {
+  L67136: const text = generatedContent.data.problems.map((p, i) => `${i+1}. ${p.question}\nAnswer: ${p.answer}`).join('\n\n');
+  L68819: <p className="text-xs text-slate-500">≡ƒöù Pairs: {puzzle.pairs.map(p => `${p.left}Γåö${p.right}`).join(', ')}</p>

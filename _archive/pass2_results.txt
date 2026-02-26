@@ -1,0 +1,161 @@
+ANALYSIS 1: setTimeout with state updates but NO isMountedRef guard
+======================================================================
+Found 133 unguarded setTimeout with state updates:
+  L1100: const timer = setTimeout(sync, 2000); // 2s debounce
+  L1603: const timer = setTimeout(() => {
+  L2852: setTimeout(() => reject(new Error('Audio timeout')), 5000)
+  L4201: setTimeout(() => onCheckAnswer(userSpelling), 500);
+  L4546: const timer = setTimeout(() => {
+  L4568: setTimeout(() => onCheckAnswer('correct'), 1000);
+  L5907: const timer = setTimeout(() => {
+  L6058: setTimeout(async () => {
+  L6284: const timer = setTimeout(() => prefetchNextWords(), 1000);
+  L6765: setTimeout(() => {
+  L6789: setTimeout(() => {
+  L7177: setTimeout(() => handleAudio(currentWordSoundsWord), 300);
+  L7340: setTimeout(() => { autoDirectorCooldown.current = false; }, 15000);
+  L7496: setTimeout(() => {
+  L7586: setTimeout(() => prefetchNextWords(), 100);
+  L8232: setTimeout(() => onComplete(true), 800);
+  L8236: setTimeout(() => setFeedback(null), 2000);
+  L8239: setTimeout(() => setFeedback(null), 2000);
+  L8453: setTimeout(() => handleAudio(currentWordSoundsWord), 300);
+  L17691: const timeoutId = setTimeout(() => controller.abort(), 20000);
+  L17701: const timeoutId = setTimeout(() => controller.abort(), 20000);
+  L17722: const timeoutId = setTimeout(() => controller.abort(), 20000);
+  L18055: setTimeout(() => setIsTranslating(false), 500);
+  L18842: const timer = setTimeout(() => setParticles([]), 1500);
+  L18999: velocityTimerRef.current = setTimeout(() => {
+  L19038: const timer = setTimeout(() => {
+  L19072: timer = setTimeout(() => {
+  L19074: setTimeout(() => {
+  L19107: setTimeout(() => setAntennaAction(null), 1900);
+  L19110: setTimeout(() => setAntennaAction(null), 4000);
+  L19183: setTimeout(() => {
+  L19186: setTimeout(() => setIsLanding(false), 1000);
+  L19226: setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+  L19344: speechTimeoutRef.current = setTimeout(resetState, duration);
+  L19359: setTimeout(() => {
+  L19380: const timer = setTimeout(() => {
+  L19415: pendingSpeechTimerRef.current = setTimeout(() => {
+  L19600: ambientTimer = setTimeout(() => {
+  L19609: setTimeout(() => setIdleAnimation(null), 2000);
+  L22056: setTimeout(() => {
+  L22089: const autoKillTimer = setTimeout(() => {
+  L22682: const handler = setTimeout(() => {
+  L23059: setTimeout(() => setStatus('neutral'), 800);
+  L23203: setTimeout(() => {
+  L23214: setTimeout(() => {
+  L25278: setTimeout(() => btn.classList.remove('animate-pulse', 'bg-red-600'), 500);
+  L25450: autoPlayTimerRef.current = setTimeout(() => {
+  L25976: setTimeout(() => {
+  L25982: setTimeout(() => setFeedback('idle'), 800);
+  L26202: const rollTimer = setTimeout(() => {
+  L26205: const endTimer = setTimeout(() => onComplete(), 3500);
+  L26803: const _toastTimer = setTimeout(() => setTeamEscapeToast(null), 4000);
+  L26813: const _confettiTimer = setTimeout(() => setShowConfetti(false), 5000);
+  L27857: setTimeout(generateBossAsset, 100);
+  L29096: setTimeout(() => {
+  L29224: setTimeout(() => {
+  L31290: setTimeout(() => setShowTimerConfetti(false), 3000);
+  L31524: const timer = setTimeout(() => {
+  L31622: setTimeout(() => {
+  L31644: setTimeout(() => {
+  L31746: const handler = setTimeout(async () => {
+  L32625: setTimeout(() => setScoreAnimation({ teamId: null, points: 0 }), 1000);
+  L32908: const timer = setTimeout(() => {
+  L32931: const timer = setTimeout(saveAsync, 2000);
+  L32998: setTimeout(() => {
+  L33986: const _tourScrollTimer = setTimeout(() => {
+  L34027: setTimeout(() => {
+  L34058: setTimeout(() => expandAndShow(explicitHelp, key, deriveTitle(key), helpText), 100);
+  L34063: setTimeout(() => expandAndShow(explicitHelp, key, tourSteps[idx].title, tourSteps[idx].text), 100);
+  L34266: setTimeout(() => {
+  L34375: setTimeout(() => {
+  L34379: setTimeout(() => {
+  L34398: setTimeout(() => {
+  L34402: setTimeout(() => {
+  L34442: const timer = setTimeout(() => {
+  L34508: setTimeout(() => {
+  L34515: setTimeout(() => {
+  L36165: const timeoutId = setTimeout(() => {
+  L36358: setTimeout(() => initAuth(retryCount + 1), delay);
+  L36493: const timeoutId = setTimeout(saveHistory, 1000);
+  L36506: const timeoutId = setTimeout(saveProfiles, 1000);
+  L36519: const timeoutId = setTimeout(saveUnits, 1000);
+  L36801: const timeoutId = setTimeout(warmUpGlossaryAudio, 2000);
+  L36938: const saveDraft = setTimeout(async () => {
+  L37108: setTimeout(() => {
+  L37122: setTimeout(() => {
+  L37141: const _dictationTimer = setTimeout(() => {
+  L39070: glossaryHealthCheckTimerRef.current = setTimeout(() => {
+  L39078: setTimeout(() => {
+  L39733: setTimeout(() => { imagenRateLimitedRef.current = false; }, 30000);
+  L40033: setTimeout(() => win.print(), 500);
+  L40841: setTimeout(() => reject(new Error("Optimization timed out")), 60000)
+  L41427: setTimeout(() => {
+  L41595: watchdogTimer = setTimeout(() => {
+  L41614: setTimeout(() => {
+  L41620: setTimeout(() => {
+  L42027: setTimeout(() => URL.revokeObjectURL(audioUrl), 1000);
+  L43408: const timeoutId = setTimeout(syncResourcesToSession, 1500);
+  L43815: setTimeout(() => {
+  L44332: const timeout = setTimeout(() => {
+  L44973: setTimeout(() => {
+  L44994: setTimeout(() => {
+  L45007: setTimeout(() => udlInputRef.current?.focus(), 100);
+  L45020: setTimeout(() => udlInputRef.current?.focus(), 100);
+  L45083: const _readTimer = setTimeout(() => {
+  L45536: setTimeout(() => {
+  L45560: setTimeout(() => {
+  L45579: setTimeout(() => {
+  L45623: setTimeout(() => playAdventureEventSound('item_get'), 500);
+  L47569: const timer = setTimeout(() => {
+  L47585: setTimeout(() => {
+  L47898: setTimeout(async () => {
+  L47955: setTimeout(async () => {
+  L48154: setTimeout(async () => {
+  L48232: setTimeout(async () => {
+  L48313: setTimeout(() => handleGenerate('simplified'), 100);
+  L49499: setTimeout(async () => {
+  L49535: const timer = setTimeout(() => {
+  L50377: setTimeout(() => {
+  L50389: setTimeout(() => {
+  L50422: setTimeout(() => {
+  L52761: setTimeout(() => {
+  L53701: setTimeout(() => setFlashcardIndex(prev => prev + 1), 150);
+  L53731: setTimeout(() => {
+  L53746: setTimeout(() => setFlashcardIndex(prev => prev - 1), 150);
+  L53812: setTimeout(() => playNext(idx + 1), 500);
+  L53832: setTimeout(() => playNext(idx + 1), 500);
+  L54194: setTimeout(() => {
+  L54271: setTimeout(() => {
+  L57142: setTimeout(() => {
+  L65054: setTimeout(() => {
+  L67431: setTimeout(() => adventureInputRef.current.focus(), 100);
+  L68791: setTimeout(() => {
+
+ANALYSIS 2: setInterval cleanup status
+======================================================================
+  [OK] L2436 [CLEANED] var=interval: const interval = setInterval(checkAudio, 1000);
+  [OK] L18704 [CLEANED] var=timer: const timer = setInterval(() => {
+  [OK] L18823 [CLEANED] var=interval: const interval = setInterval(() => {
+  [OK] L18925 [CLEANED] var=pulseInterval: const pulseInterval = setInterval(() => {
+  [OK] L19090 [CLEANED] var=interval: const interval = setInterval(() => {
+  [OK] L19102 [CLEANED] var=timer: const timer = setInterval(() => {
+  [OK] L19631 [CLEANED] var=fallbackTimer: fallbackTimer = setInterval(checkFallbackInactivity, 10000);
+  [OK] L21890 [CLEANED] var=crackleInterval: const crackleInterval = setInterval(() => {
+  [OK] L21946 [CLEANED] var=birdInterval: const birdInterval = setInterval(() => {
+  [OK] L27428 [CLEANED] var=timer: const timer = setInterval(async () => {
+  [OK] L30123 [CLEANED] var=interval: interval = setInterval(() => {
+  [OK] L31273 [CLEANED] var=interval: interval = setInterval(() => {
+  [OK] L37217 [CLEANED] var=saveReminderIntervalRef.current: saveReminderIntervalRef.current = setInterval(() => {
+  [OK] L38851 [CLEANED] var=interval: const interval = setInterval(() => {
+  [OK] L50664 [CLEANED] var=interval: interval = setInterval(() => {
+
+ANALYSIS 3: Counts
+======================================================================
+Total setTimeout: 225
+Promise delays (safe): 64
+clearTimeout calls: 55
+Real timeouts: 161

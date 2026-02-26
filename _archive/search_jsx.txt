@@ -1,0 +1,10 @@
+--- Searching for 'runTour &&' ---
+Line 26782: if (runTour && tourSteps[tourStep]) {...
+Line 62881: {runTour && tourRect && (...
+
+--- Searching for '<Joyride' ---
+
+--- Searching for '<Tour ' ---
+
+--- Searching for 'stepIndex={' ---
+

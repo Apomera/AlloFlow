@@ -1,0 +1,68 @@
+﻿Width: 16256000, Height: 9144000
+Total slides: 22
+
+--- SLIDE 1 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,737,562 bytes
+
+--- SLIDE 2 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 897,452 bytes
+
+--- SLIDE 3 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,122,220 bytes
+
+--- SLIDE 4 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,633,991 bytes
+
+--- SLIDE 5 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,542,469 bytes
+
+--- SLIDE 6 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,674,827 bytes
+
+--- SLIDE 7 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 2,173,235 bytes
+
+--- SLIDE 8 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 711,586 bytes
+
+--- SLIDE 9 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 789,016 bytes
+
+--- SLIDE 10 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 852,327 bytes
+
+--- SLIDE 11 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,126,964 bytes
+
+--- SLIDE 12 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 500,394 bytes
+
+--- SLIDE 13 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,224,981 bytes
+
+--- SLIDE 14 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,247,047 bytes
+
+--- SLIDE 15 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 962,221 bytes
+
+--- SLIDE 16 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,948,000 bytes
+
+--- SLIDE 17 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,250,357 bytes
+
+--- SLIDE 18 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,274,721 bytes
+
+--- SLIDE 19 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,789,917 bytes
+
+--- SLIDE 20 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 912,410 bytes
+
+--- SLIDE 21 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 876,264 bytes
+
+--- SLIDE 22 (1 shapes) ---
+  Shape: PICTURE (13), Name: 'Picture 2', Size: 16256000x9067800 [IMAGE], Content-Type: image/jpeg, Size: 1,083,918 bytes

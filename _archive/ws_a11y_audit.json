@@ -1,0 +1,205 @@
+{
+  "img_no_alt": [
+    {
+      "line": 2654,
+      "code": "<img"
+    },
+    {
+      "line": 2953,
+      "code": "<img"
+    },
+    {
+      "line": 3685,
+      "code": "<img"
+    },
+    {
+      "line": 8353,
+      "code": "<img"
+    },
+    {
+      "line": 21136,
+      "code": "<img"
+    },
+    {
+      "line": 23366,
+      "code": "<img"
+    },
+    {
+      "line": 24344,
+      "code": "<img"
+    },
+    {
+      "line": 25823,
+      "code": "<img"
+    },
+    {
+      "line": 26292,
+      "code": "<img"
+    },
+    {
+      "line": 28403,
+      "code": "<img"
+    }
+  ],
+  "icon_button_no_label": [
+    {
+      "line": 1617,
+      "code": "<button data-help-key=\"ws_gen_expand\" onClick={() => setIsMinimized(false)} className=\"p-1 hover:bg-slate-100 rounded text-slate-500\">"
+    },
+    {
+      "line": 1667,
+      "code": "<button data-help-key=\"ws_gen_minimize\" onClick={() => setIsMinimized(true)} className=\"bg-white/10 hover:bg-white/20 p-2 rounded-full trans"
+    },
+    {
+      "line": 1691,
+      "code": "<button"
+    },
+    {
+      "line": 3036,
+      "code": "<button"
+    },
+    {
+      "line": 3046,
+      "code": "<button"
+    },
+    {
+      "line": 3819,
+      "code": "<button"
+    },
+    {
+      "line": 3985,
+      "code": "<button"
+    },
+    {
+      "line": 4002,
+      "code": "<button"
+    },
+    {
+      "line": 4032,
+      "code": "<button"
+    },
+    {
+      "line": 4157,
+      "code": "<button onClick={() => onPlayAudio(word)} className=\"p-2 text-violet-400 hover:text-violet-600\">"
+    },
+    {
+      "line": 4179,
+      "code": "<button onClick={() => onPlayAudio(word)} className=\"p-2 text-amber-400 hover:text-amber-600\">"
+    },
+    {
+      "line": 4203,
+      "code": "<button"
+    },
+    {
+      "line": 8504,
+      "code": "<button"
+    },
+    {
+      "line": 8536,
+      "code": "<button"
+    },
+    {
+      "line": 8818,
+      "code": "<button"
+    },
+    {
+      "line": 8961,
+      "code": "<button"
+    },
+    {
+      "line": 9117,
+      "code": "<button"
+    },
+    {
+      "line": 9256,
+      "code": "<button"
+    },
+    {
+      "line": 9380,
+      "code": "<button"
+    },
+    {
+      "line": 9742,
+      "code": "<button"
+    },
+    {
+      "line": 9847,
+      "code": "<button"
+    },
+    {
+      "line": 10114,
+      "code": "<button"
+    },
+    {
+      "line": 10432,
+      "code": "<button"
+    },
+    {
+      "line": 10547,
+      "code": "<button"
+    },
+    {
+      "line": 18112,
+      "code": "<button"
+    },
+    {
+      "line": 18319,
+      "code": "<button"
+    },
+    {
+      "line": 21579,
+      "code": "<button"
+    },
+    {
+      "line": 25631,
+      "code": "<button"
+    },
+    {
+      "line": 25652,
+      "code": "<button"
+    },
+    {
+      "line": 26127,
+      "code": "<button"
+    },
+    {
+      "line": 26667,
+      "code": "<button"
+    },
+    {
+      "line": 26758,
+      "code": "<button"
+    },
+    {
+      "line": 29815,
+      "code": "<button"
+    },
+    {
+      "line": 29914,
+      "code": "<button"
+    }
+  ],
+  "clickable_div_no_keyboard": [],
+  "input_no_label": [
+    {
+      "line": 17944,
+      "code": "<select"
+    },
+    {
+      "line": 18338,
+      "code": "<select"
+    },
+    {
+      "line": 18349,
+      "code": "<select"
+    },
+    {
+      "line": 26679,
+      "code": "<select"
+    },
+    {
+      "line": 26690,
+      "code": "<select"
+    }
+  ]
+}

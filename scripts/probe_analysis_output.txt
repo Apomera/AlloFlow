@@ -1,0 +1,648 @@
+=== CBM / DIBELS References ===
+  @724104: Probe_3_Activity', 'Probe_3_Accuracy', 'Probe_3_ItemsPerMin', 'Probe_3_Date',             'External_CBM_Source', 'External_CBM_Score', 'External_CBM_Date'         ];          const rows = students.map(s => {             const ins = s.insights;             const ext = (externalCBMScores?.[s.name] || [])[0] || {};             const p1 = s.probes[0] |
+  @724127: be_3_Accuracy', 'Probe_3_ItemsPerMin', 'Probe_3_Date',             'External_CBM_Source', 'External_CBM_Score', 'External_CBM_Date'         ];          const rows = students.map(s => {             const ins = s.insights;             const ext = (externalCBMScores?.[s.name] || [])[0] || {};             const p1 = s.probes[0] || {}, p2 = s.probes[1] 
+  @724149: _3_ItemsPerMin', 'Probe_3_Date',             'External_CBM_Source', 'External_CBM_Score', 'External_CBM_Date'         ];          const rows = students.map(s => {             const ins = s.insights;             const ext = (externalCBMScores?.[s.name] || [])[0] || {};             const p1 = s.probes[0] || {}, p2 = s.probes[1] || {}, p3 = s.probes[2
+  @724281: nst rows = students.map(s => {             const ins = s.insights;             const ext = (externalCBMScores?.[s.name] || [])[0] || {};             const p1 = s.probes[0] || {}, p2 = s.probes[1] || {}, p3 = s.probes[2] || {};             return [                 s.name, ins.snapshots || 0, ins.probes || 0,                 ins.profile?.phonological
+  @726155: esearch CSV exported with ' + students.length + ' students', 'success');     };      const [externalCBMScores, setExternalCBMScores] = React.useState(() => {         try { return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}'); } catch { return {}; }     });     const saveExternalCBM = (studentName, entry) => {         const exist
+  @726177: ith ' + students.length + ' students', 'success');     };      const [externalCBMScores, setExternalCBMScores] = React.useState(() => {         try { return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}'); } catch { return {}; }     });     const saveExternalCBM = (studentName, entry) => {         const existing = externalCBMScore
+  @726354: age.getItem('alloflow_external_cbm') || '{}'); } catch { return {}; }     });     const saveExternalCBM = (studentName, entry) => {         const existing = externalCBMScores[studentName] || [];         const updated = { ...externalCBMScores, [studentName]: [...existing, { ...entry, id: Date.now() }] };         setExternalCBMScores(updated);       
+  @726419: }; }     });     const saveExternalCBM = (studentName, entry) => {         const existing = externalCBMScores[studentName] || [];         const updated = { ...externalCBMScores, [studentName]: [...existing, { ...entry, id: Date.now() }] };         setExternalCBMScores(updated);         try { localStorage.setItem('alloflow_external_cbm', JSON.string
+  @726486:         const existing = externalCBMScores[studentName] || [];         const updated = { ...externalCBMScores, [studentName]: [...existing, { ...entry, id: Date.now() }] };         setExternalCBMScores(updated);         try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(updated)); } catch {}     };     const [showCBMModal, setShowCB
+  @726578: externalCBMScores, [studentName]: [...existing, { ...entry, id: Date.now() }] };         setExternalCBMScores(updated);         try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(updated)); } catch {}     };     const [showCBMModal, setShowCBMModal] = React.useState(false);     const [cbmForm, setCBMForm] = React.useState({ student:
+  @726713: ocalStorage.setItem('alloflow_external_cbm', JSON.stringify(updated)); } catch {}     };     const [showCBMModal, setShowCBMModal] = React.useState(false);     const [cbmForm, setCBMForm] = React.useState({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });      const renderCBMImportModal = () => {   
+  @726730: em('alloflow_external_cbm', JSON.stringify(updated)); } catch {}     };     const [showCBMModal, setShowCBMModal] = React.useState(false);     const [cbmForm, setCBMForm] = React.useState({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });      const renderCBMImportModal = () => {         if (!showCB
+  @726792: {}     };     const [showCBMModal, setShowCBMModal] = React.useState(false);     const [cbmForm, setCBMForm] = React.useState({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });      const renderCBMImportModal = () => {         if (!showCBMModal) return null;         const sources = ['DIBELS', 'AIMSw
+  @726842: ] = React.useState(false);     const [cbmForm, setCBMForm] = React.useState({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });      const renderCBMImportModal = () => {         if (!showCBMModal) return null;         const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];         c
+  @726936: rce: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });      const renderCBMImportModal = () => {         if (!showCBMModal) return null;         const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];         const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: [
+  @726974:  date: '', percentile: '', benchmark: '' });      const renderCBMImportModal = () => {         if (!showCBMModal) return null;         const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];         const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCB
+  @727027: st renderCBMImportModal = () => {         if (!showCBMModal) return null;         const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];         const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCBM: ['Passage Reading Fluency', 'Word Reading', 'Lette
+  @727052:  () => {         if (!showCBMModal) return null;         const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];         const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCBM: ['Passage Reading Fluency', 'Word Reading', 'Letter Names'], STAR: ['Scaled
+  @727110: onst sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];         const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCBM: ['Passage Reading Fluency', 'Word Reading', 'Letter Names'], STAR: ['Scaled Score', 'Percentile Rank'], MAP: ['RIT Score', 'Percentil
+  @727189:   const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCBM: ['Passage Reading Fluency', 'Word Reading', 'Letter Names'], STAR: ['Scaled Score', 'Percentile Rank'], MAP: ['RIT Score', 'Percentile'], Other: ['Custom'] };         return React.createElement('div', { className
+  @727222: F', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE', 'TEL', 'NWF'], easyCBM: ['Passage Reading Fluency', 'Word Reading', 'Letter Names'], STAR: ['Scaled Score', 'Percentile Rank'], MAP: ['RIT Score', 'Percentile'], Other: ['Custom'] };         return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate
+  @727949: nter gap-2' },                     React.createElement('span', null, '\u{1F4CB}'), 'Import External CBM Score'),                 React.createElement('div', { className: 'space-y-3' },                     React.createElement('div', null,                         React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' },
+  @728417: late-300 rounded-lg text-sm', value: cbmForm.student,                             onChange: e => setCBMForm(p => ({ ...p, student: e.target.value })) },                             React.createElement('option', { value: '' }, '-- Select Student --'),                             ...importedStudents.map(s => React.createElement('option', { key: s.id,
+  @728911:          React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'CBM Source'),                         React.createElement('select', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm', value: cbmForm.source,                             onChange: e => setCBMForm(p => ({ ...p, source: e.
+  @729129: slate-300 rounded-lg text-sm', value: cbmForm.source,                             onChange: e => setCBMForm(p => ({ ...p, source: e.target.value, measure: '' })) },                             ...sources.map(s => React.createElement('option', { key: s, value: s }, s))                         )                     ),                     React.create
+  @729731: late-300 rounded-lg text-sm', value: cbmForm.measure,                             onChange: e => setCBMForm(p => ({ ...p, measure: e.target.value })) },                             React.createElement('option', { value: '' }, '-- Select Measure --'),                             ...((measures[cbmForm.source] || []).map(m => React.createElement('opti
+  @730561: te-300 rounded-lg text-sm',                                 value: cbmForm.score, onChange: e => setCBMForm(p => ({ ...p, score: e.target.value })), placeholder: 'e.g. 72' })                         ),                         React.createElement('div', null,                             React.createElement('label', { className: 'text-xs font-bold te
+  @731070: ate-300 rounded-lg text-sm',                                 value: cbmForm.date, onChange: e => setCBMForm(p => ({ ...p, date: e.target.value })) })                         )                     ),                     React.createElement('div', { className: 'grid grid-cols-2 gap-3' },                         React.createElement('div', null,       
+  @731689: 0 rounded-lg text-sm',                                 value: cbmForm.percentile, onChange: e => setCBMForm(p => ({ ...p, percentile: e.target.value })), placeholder: 'e.g. 45' })                         ),                         React.createElement('div', null,                             React.createElement('label', { className: 'text-xs font-bo
+  @732207: 00 rounded-lg text-sm',                                 value: cbmForm.benchmark, onChange: e => setCBMForm(p => ({ ...p, benchmark: e.target.value })) },                                 React.createElement('option', { value: '' }, '-- Optional --'),                                 React.createElement('option', { value: 'Above' }, 'Above Benchmark'
+  @733146: e-600 hover:bg-slate-100 rounded-lg transition-colors',                         onClick: () => { setShowCBMModal(false); setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' }); } }, 'Cancel'),                     React.createElement('button', { className: 'px-4 py-2 text-sm bg-indigo-600 text-
+  @733170:  rounded-lg transition-colors',                         onClick: () => { setShowCBMModal(false); setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' }); } }, 'Cancel'),                     React.createElement('button', { className: 'px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:b
+  @733202:                         onClick: () => { setShowCBMModal(false); setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' }); } }, 'Cancel'),                     React.createElement('button', { className: 'px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors f
+  @733631:  || !cbmForm.date,                         onClick: () => {                             saveExternalCBM(cbmForm.student, { source: cbmForm.source, measure: cbmForm.measure, score: parseFloat(cbmForm.score), date: cbmForm.date, percentile: cbmForm.percentile ? parseInt(cbmForm.percentile) : null, benchmark: cbmForm.benchmark || null });             
+  @733900: cbmForm.percentile) : null, benchmark: cbmForm.benchmark || null });                             setShowCBMModal(false);                             setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });                         } }, 'Save Score')                 )             )         );    
+  @733952: mark || null });                             setShowCBMModal(false);                             setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });                         } }, 'Save Score')                 )             )         );     };      const [surveyResponses, setSurveyResponses]
+  @733984:              setShowCBMModal(false);                             setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' });                         } }, 'Save Score')                 )             )         );     };      const [surveyResponses, setSurveyResponses] = React.useState(() => {       
+  @745774: r) => s + (Array.isArray(arr) ? arr.length : 0), 0);         const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);         return React.createElement('div', { className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200 p-3' },            
+  @748332: merald-50 transition-all text-xs font-medium text-slate-700',                     onClick: () => setShowCBMModal(true)                 }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', { className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold' }, cb
+  @748426: => setShowCBMModal(true)                 }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', { className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold' }, cbmCount) : null),                 React.createElement('button', {                     className
+  @759579: r) => s + (Array.isArray(arr) ? arr.length : 0), 0);         const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);         const totalProbes = Object.values(probeHistory).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);         const studyStartDate = researchMode.startDa
+  @764392: Probes, 'Probe Results', 'bg-indigo-100 text-indigo-700'],                     [cbmCount, 'External CBM Scores', 'bg-teal-100 text-teal-700']                 ].map(([val, label, cls]) =>                     React.createElement('div', { key: label, className: 'text-center p-2 rounded-lg ' + cls },                         React.createElement('div', {
+  @3378007: 800 font-bold text-sm">                                     <Timer size={14} /> Math Fluency Probe (CBM-Math)                                 </div>                                 <div className="grid grid-cols-3 gap-2">                                     <div>                                         <label className="block text-xs text-slate-500
+
+=== Word Arrays ===
+
+  Array @41144 (8 words)
+  Context: ...v1'; const saveAudioToStorage = async (key, audioUrl) => {     try {         if (key.length > 3 && !
+  Words: ['sh', 'ch', 'th', 'ph', 'wh', 'ck', 'ng', 'qu']
+
+  Array @42773 (28 words)
+  Context: ...sole.warn("Failed to remove audio:", e);     } }; const WORD_FAMILY_PRESETS = {     'Short A (-at)':
+  Words: ['at', 'bat', 'cat', 'chat', 'fat', 'flat', 'gnat', 'hat', 'mat', 'pat', 'rat', 'sat', 'slat', 'spat', 'splat', 'stat', 'that', 'vat', 'brat', 'scat', 'drat', 'format', 'combat', 'acrobat', 'doormat', 'habitat', 'diplomat', 'copycat']
+
+  Array @43058 (27 words)
+  Context: ...bat', 'doormat', 'habitat', 'laundromat', 'diplomat', 'thermostat', 'copycat'],     'Short A (-an)':
+  Words: ['an', 'ban', 'bran', 'can', 'clan', 'fan', 'flan', 'gran', 'man', 'pan', 'plan', 'ran', 'scan', 'span', 'tan', 'than', 'van', 'began', 'pecan', 'sedan', 'suntan', 'caravan', 'minivan', 'cardigan', 'superman', 'pelican', 'toboggan']
+
+  Array @43313 (27 words)
+  Context: ...'suntan', 'caravan', 'minivan', 'cardigan', 'superman', 'pelican', 'toboggan'],     'Short A (-am)':
+  Words: ['am', 'bam', 'cam', 'clam', 'cram', 'dam', 'gram', 'ham', 'jam', 'lamb', 'pram', 'ram', 'scam', 'scram', 'sham', 'slam', 'spam', 'swam', 'tram', 'yam', 'exam', 'program', 'diagram', 'telegram', 'anagram', 'hologram', 'kilogram']
+
+  Array @43591 (28 words)
+  Context: ...ram', 'telegram', 'anagram', 'histogram', 'hologram', 'milligram', 'kilogram'],     'Short A (-ap)':
+  Words: ['cap', 'chap', 'clap', 'flap', 'gap', 'lap', 'map', 'nap', 'rap', 'sap', 'scrap', 'slap', 'snap', 'strap', 'tap', 'trap', 'wrap', 'zap', 'recap', 'mishap', 'kidnap', 'roadmap', 'hubcap', 'overlap', 'handicap', 'burlap', 'kneecap', 'nightcap']
+
+  Array @43883 (28 words)
+  Context: ...erlap', 'handicap', 'mousetrap', 'bootstrap', 'burlap', 'kneecap', 'nightcap'],     'Short E (-et)':
+  Words: ['bet', 'fret', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'vet', 'wet', 'yet', 'whet', 'duet', 'reset', 'upset', 'forget', 'regret', 'sunset', 'cadet', 'alphabet', 'brunette', 'cassette', 'clarinet', 'internet', 'omelette', 'bayonet', 'minaret']
+
+  Array @44186 (26 words)
+  Context: ...et', 'internet', 'marionette', 'omelette', 'silhouette', 'bayonet', 'minaret'],     'Short E (-en)':
+  Words: ['den', 'fen', 'glen', 'hen', 'men', 'pen', 'ten', 'then', 'when', 'wren', 'yen', 'zen', 'amen', 'citizen', 'garden', 'golden', 'happen', 'kitten', 'listen', 'mitten', 'open', 'oxen', 'wooden', 'oxygen', 'frozen', 'chosen']
+
+  Array @44432 (30 words)
+  Context: ...', 'listen', 'mitten', 'open', 'oxen', 'wooden', 'oxygen', 'frozen', 'chosen'],     'Short I (-in)':
+  Words: ['bin', 'chin', 'din', 'fin', 'gin', 'grin', 'in', 'kin', 'pin', 'shin', 'sin', 'skin', 'spin', 'thin', 'tin', 'twin', 'win', 'within', 'begin', 'cabin', 'dolphin', 'goblin', 'muffin', 'napkin', 'penguin', 'pumpkin', 'raisin', 'robin', 'vitamin', 'violin']
+
+  Array @44711 (18 words)
+  Context: ...ffin', 'napkin', 'penguin', 'pumpkin', 'raisin', 'robin', 'vitamin', 'violin'],     'Short I (-ig)':
+  Words: ['big', 'dig', 'fig', 'gig', 'jig', 'pig', 'rig', 'wig', 'brig', 'prig', 'swig', 'twig', 'sprig', 'whig', 'shindig', 'bigwig', 'earwig', 'periwig']
+
+  Array @44909 (30 words)
+  Context: ... 'whig', 'shindig', 'bigwig', 'earwig', 'periwig', 'thingamajig', 'whirligig'],     'Short I (-it)':
+  Words: ['bit', 'fit', 'grit', 'hit', 'kit', 'knit', 'lit', 'mitt', 'pit', 'quit', 'sit', 'skit', 'slit', 'spit', 'split', 'wit', 'writ', 'admit', 'commit', 'emit', 'omit', 'permit', 'submit', 'transmit', 'acquit', 'armpit', 'cockpit', 'outfit', 'moonlit', 'sunlit']
+
+  Array @45190 (28 words)
+  Context: ...it', 'transmit', 'acquit', 'armpit', 'cockpit', 'outfit', 'moonlit', 'sunlit'],     'Short O (-ot)':
+  Words: ['blot', 'clot', 'cot', 'dot', 'got', 'hot', 'jot', 'knot', 'lot', 'not', 'plot', 'pot', 'rot', 'shot', 'slot', 'snot', 'spot', 'squat', 'tot', 'trot', 'forgot', 'jackpot', 'hotshot', 'snapshot', 'crackpot', 'apricot', 'mascot', 'robot']
+
+  Array @45476 (29 words)
+  Context: ...slingshot', 'snapshot', 'crackpot', 'flowerpot', 'apricot', 'mascot', 'robot'],     'Short O (-op)':
+  Words: ['bop', 'chop', 'cop', 'crop', 'drop', 'flop', 'hop', 'lop', 'mop', 'plop', 'pop', 'prop', 'shop', 'slop', 'stop', 'swap', 'top', 'backdrop', 'desktop', 'laptop', 'lollipop', 'nonstop', 'raindrop', 'rooftop', 'treetop', 'workshop', 'bellhop', 'gumdrop', 'teardrop']
+
+  Array @45778 (27 words)
+  Context: ...oftop', 'treetop', 'workshop', 'barbershop', 'bellhop', 'gumdrop', 'teardrop'],     'Short U (-ug)':
+  Words: ['bug', 'chug', 'dug', 'hug', 'jug', 'lug', 'mug', 'plug', 'pug', 'rug', 'shrug', 'slug', 'smug', 'snug', 'thug', 'tug', 'debug', 'unplug', 'bedbug', 'earplug', 'firebug', 'ladybug', 'lovebug', 'stinkbug', 'superbug', 'waterbug', 'humbug']
+
+  Array @46067 (28 words)
+  Context: ...erbug', 'lovebug', 'shutterbug', 'stinkbug', 'superbug', 'waterbug', 'humbug'],     'Short U (-un)':
+  Words: ['bun', 'done', 'fun', 'hon', 'none', 'nun', 'one', 'pun', 'run', 'son', 'spun', 'stun', 'sun', 'ton', 'won', 'begun', 'grandson', 'homespun', 'outrun', 'overdone', 'redone', 'rerun', 'undone', 'everyone', 'anyone', 'someone', 'shotgun', 'overrun']
+
+  Array @46338 (21 words)
+  Context: ...ne', 'rerun', 'undone', 'everyone', 'anyone', 'someone', 'shotgun', 'overrun'],     'Long A (-ake)':
+  Words: ['bake', 'brake', 'cake', 'drake', 'fake', 'flake', 'lake', 'make', 'quake', 'rake', 'sake', 'shake', 'snake', 'stake', 'take', 'wake', 'awake', 'cupcake', 'mistake', 'pancake', 'namesake']
+
+  Array @46659 (25 words)
+  Context: ...'pancake', 'rattlesnake', 'snowflake', 'cheesecake', 'heartbreak', 'namesake'],     'Long A (-ate)':
+  Words: ['ate', 'crate', 'date', 'fate', 'gate', 'grate', 'hate', 'late', 'mate', 'plate', 'rate', 'skate', 'slate', 'state', 'wait', 'create', 'debate', 'donate', 'estate', 'great', 'locate', 'migrate', 'private', 'rotate', 'update']
+
+  Array @46960 (26 words)
+  Context: ...vate', 'rotate', 'translate', 'update', 'calculate', 'celebrate', 'chocolate'],     'Long A (-ail)':
+  Words: ['bail', 'fail', 'frail', 'hail', 'jail', 'mail', 'nail', 'pail', 'quail', 'rail', 'sail', 'snail', 'tail', 'trail', 'wail', 'detail', 'email', 'handrail', 'monorail', 'pigtail', 'ponytail', 'retail', 'toenail', 'cocktail', 'airmail', 'fishtail']
+
+  Array @47283 (19 words)
+  Context: ...ail', 'thumbnail', 'toenail', 'cocktail', 'airmail', 'fishtail', 'fairytale'],     'Long I (-ight)':
+  Words: ['bright', 'fight', 'flight', 'fright', 'knight', 'light', 'might', 'night', 'plight', 'right', 'sight', 'slight', 'tight', 'tonight', 'delight', 'insight', 'midnight', 'sunlight', 'twilight']
+
+  Array @47644 (26 words)
+  Context: ... 'streetlight', 'sunlight', 'taillight', 'twilight', 'copyright', 'oversight'],     'Long I (-ice)':
+  Words: ['dice', 'ice', 'lice', 'mice', 'nice', 'price', 'rice', 'slice', 'spice', 'splice', 'thrice', 'twice', 'vice', 'advice', 'device', 'entice', 'paradise', 'licorice', 'practice', 'justice', 'service', 'office', 'notice', 'novice', 'artifice', 'solstice']
+
+  Array @47973 (25 words)
+  Context: ...ffice', 'notice', 'novice', 'apprentice', 'artifice', 'solstice', 'armistice'],     'Long I (-ide)':
+  Words: ['bride', 'glide', 'guide', 'hide', 'pride', 'ride', 'side', 'slide', 'stride', 'tide', 'wide', 'aside', 'beside', 'collide', 'confide', 'decide', 'divide', 'inside', 'outside', 'provide', 'upside', 'fireside', 'hillside', 'poolside', 'seaside']
+
+  Array @48309 (23 words)
+  Context: ...e', 'hillside', 'landslide', 'poolside', 'riverside', 'seaside', 'waterslide'],     'Long O (-one)':
+  Words: ['bone', 'clone', 'cone', 'drone', 'groan', 'grown', 'known', 'loan', 'lone', 'moan', 'own', 'phone', 'prone', 'shown', 'stone', 'throne', 'tone', 'zone', 'alone', 'backbone', 'cyclone', 'postpone', 'timezone']
+
+  Array @48634 (30 words)
+  Context: ..., 'overthrown', 'postpone', 'saxophone', 'smartphone', 'timezone', 'xylophone'],     'Long O (-ow)':
+  Words: ['blow', 'bow', 'crow', 'flow', 'glow', 'grow', 'know', 'low', 'mow', 'row', 'show', 'slow', 'snow', 'stow', 'throw', 'tow', 'arrow', 'below', 'elbow', 'fellow', 'follow', 'hollow', 'meadow', 'pillow', 'rainbow', 'shadow', 'shallow', 'sparrow', 'window', 'yellow']
+
+  Array @48920 (30 words)
+  Context: ...adow', 'pillow', 'rainbow', 'shadow', 'shallow', 'sparrow', 'window', 'yellow'],     'Digraph (ch)':
+  Words: ['chain', 'chair', 'chalk', 'champ', 'chance', 'change', 'chant', 'chap', 'charm', 'chart', 'chase', 'chat', 'cheap', 'cheat', 'check', 'cheek', 'cheer', 'cheese', 'chest', 'chew', 'chick', 'chief', 'child', 'chill', 'chimp', 'chin', 'chip', 'choice', 'choke', 'choose']
+
+  Array @49212 (30 words)
+  Context: ...chief', 'child', 'chill', 'chimp', 'chin', 'chip', 'choice', 'choke', 'choose'],     'Digraph (sh)':
+  Words: ['shade', 'shake', 'shall', 'shame', 'shape', 'share', 'shark', 'sharp', 'shave', 'shed', 'sheep', 'sheet', 'shelf', 'shell', 'shift', 'shine', 'ship', 'shirt', 'shock', 'shoe', 'shook', 'shop', 'shore', 'short', 'shot', 'shout', 'show', 'shrub', 'shrug', 'shut']
+
+  Array @49497 (30 words)
+  Context: ...', 'shop', 'shore', 'short', 'shot', 'shout', 'show', 'shrub', 'shrug', 'shut'],     'Digraph (th)':
+  Words: ['thank', 'that', 'thaw', 'the', 'them', 'then', 'there', 'these', 'they', 'thick', 'thief', 'thigh', 'thin', 'thing', 'think', 'third', 'thirst', 'this', 'thorn', 'those', 'though', 'thought', 'thread', 'three', 'threw', 'thrill', 'throat', 'throne', 'through', 'thumb']
+
+  Array @49788 (30 words)
+  Context: ...t', 'thread', 'three', 'threw', 'thrill', 'throat', 'throne', 'through', 'thumb'],     'Blend (bl)':
+  Words: ['black', 'blade', 'blame', 'blank', 'blanket', 'blast', 'blaze', 'bleak', 'bleat', 'bleed', 'blend', 'bless', 'blind', 'blink', 'bliss', 'blister', 'block', 'blog', 'blonde', 'blood', 'bloom', 'blossom', 'blot', 'blouse', 'blow', 'blue', 'bluff', 'blunder', 'blunt', 'blur']
+
+  Array @50083 (30 words)
+  Context: ...'blossom', 'blot', 'blouse', 'blow', 'blue', 'bluff', 'blunder', 'blunt', 'blur'],     'Blend (br)':
+  Words: ['brace', 'brag', 'braid', 'brain', 'brake', 'branch', 'brand', 'brass', 'brave', 'bread', 'break', 'breath', 'breeze', 'brick', 'bride', 'bridge', 'brief', 'bright', 'bring', 'brisk', 'broad', 'broke', 'bronze', 'brook', 'broom', 'broth', 'brother', 'brown', 'brunch', 'brush']
+
+  Array @50381 (30 words)
+  Context: ...oke', 'bronze', 'brook', 'broom', 'broth', 'brother', 'brown', 'brunch', 'brush'],     'Blend (cr)':
+  Words: ['crab', 'crack', 'cradle', 'craft', 'crane', 'crash', 'crate', 'crawl', 'craze', 'crazy', 'creak', 'cream', 'create', 'creature', 'credit', 'creek', 'creep', 'crest', 'crew', 'crib', 'cricket', 'crisp', 'croak', 'crop', 'cross', 'crouch', 'crow', 'crowd', 'crown', 'crush']
+
+  Array @50675 (28 words)
+  Context: ..., 'crisp', 'croak', 'crop', 'cross', 'crouch', 'crow', 'crowd', 'crown', 'crush'],     'Blend (dr)':
+  Words: ['draft', 'drag', 'dragon', 'drain', 'drama', 'drank', 'drape', 'draw', 'dread', 'dream', 'dress', 'drew', 'drift', 'drill', 'drink', 'drip', 'drive', 'drool', 'droop', 'drop', 'drove', 'drown', 'drum', 'dry', 'dryer', 'drab', 'dresser', 'driveway']
+
+  Array @50957 (30 words)
+  Context: ...ve', 'drown', 'drum', 'dry', 'dryer', 'drab', 'dresser', 'driveway', 'drugstore'],     'Blend (gr)':
+  Words: ['grab', 'grace', 'grade', 'grain', 'grand', 'grant', 'grape', 'graph', 'grasp', 'grass', 'grave', 'gray', 'graze', 'grease', 'great', 'green', 'greet', 'grew', 'grid', 'grill', 'grim', 'grin', 'grind', 'grip', 'groan', 'groom', 'ground', 'group', 'grove', 'grow']
+
+  Array @51596 (52 words)
+  Context: ...ee', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you'],     'Kindergarten (Dolch)':
+  Words: ['all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this']
+
+  Array @52013 (41 words)
+  Context: ...nt', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes'],     '1st Grade (Dolch)':
+  Words: ['after', 'again', 'an', 'any', 'as', 'ask', 'by', 'could', 'every', 'fly', 'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his', 'how', 'just', 'know', 'let', 'live', 'may', 'of', 'old', 'once', 'open', 'over', 'put', 'round', 'some', 'stop', 'take', 'thank', 'them', 'then', 'think', 'walk', 'were']
+
+  Array @52752 (41 words)
+  Context: ... 'very', 'wash', 'which', 'why', 'wish', 'work', 'would', 'write', 'your'],     '3rd Grade (Dolch)':
+  Words: ['about', 'better', 'bring', 'carry', 'clean', 'cut', 'done', 'draw', 'drink', 'eight', 'fall', 'far', 'full', 'got', 'grow', 'hold', 'hot', 'hurt', 'if', 'keep', 'kind', 'laugh', 'light', 'long', 'much', 'myself', 'never', 'only', 'own', 'pick', 'seven', 'shall', 'show', 'six', 'small', 'start', 'ten', 'today', 'together', 'try']
+
+  Array @53115 (48 words)
+  Context: ...', 'show', 'six', 'small', 'start', 'ten', 'today', 'together', 'try', 'warm'],     'Fry First 100':
+  Words: ['the', 'of', 'and', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on', 'are', 'as', 'with', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'use']
+
+  Array @53488 (50 words)
+  Context: ...d', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if'],     'Fry Second 100':
+  Words: ['will', 'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go', 'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been', 'call', 'who', 'oil', 'its', 'now']
+
+  Array @65284 (255 words)
+  Context: ...roperty(_CACHE_ISOLATION_AUDIO, prop, descriptor);     return true;   } }); const SOUND_MATCH_POOL =
+  Words: ['bat', 'bed', 'big', 'bib', 'bud', 'bus', 'but', 'bag', 'ban', 'bit', 'cat', 'cap', 'cup', 'cut', 'cob', 'cub', 'cab', 'kit', 'kid', 'dog', 'den', 'did', 'dip', 'dug', 'dim', 'dot', 'dam', 'dub', 'fan', 'fin', 'fix', 'fog', 'fun', 'fig', 'fit', 'fat', 'fib', 'fox', 'gum', 'gas']
+
+  Array @67608 (10 words)
+  Context: ...'stop', 'stub', 'stun', 'swim', 'trap', 'trim', 'trip', 'trot' ];  const RIME_FAMILIES = {     'at':
+  Words: ['bat', 'cat', 'fat', 'hat', 'mat', 'pat', 'rat', 'sat', 'flat', 'chat']
+
+  Array @67692 (10 words)
+  Context: ...ES = {     'at': ['bat', 'cat', 'fat', 'hat', 'mat', 'pat', 'rat', 'sat', 'flat', 'chat'],     'an':
+  Words: ['ban', 'can', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'plan', 'clan']
+
+  Array @67776 (10 words)
+  Context: ...hat'],     'an': ['ban', 'can', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'plan', 'clan'],     'ap':
+  Words: ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'tap', 'clap', 'trap', 'snap']
+
+  Array @67861 (8 words)
+  Context: ...an'],     'ap': ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'tap', 'clap', 'trap', 'snap'],     'ig':
+  Words: ['big', 'dig', 'fig', 'jig', 'pig', 'rig', 'wig', 'twig']
+
+  Array @67930 (10 words)
+  Context: ...ap', 'trap', 'snap'],     'ig': ['big', 'dig', 'fig', 'jig', 'pig', 'rig', 'wig', 'twig'],     'in':
+  Words: ['bin', 'din', 'fin', 'pin', 'tin', 'win', 'chin', 'grin', 'spin', 'thin']
+
+  Array @68016 (10 words)
+  Context: ...g'],     'in': ['bin', 'din', 'fin', 'pin', 'tin', 'win', 'chin', 'grin', 'spin', 'thin'],     'ip':
+  Words: ['dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'chip', 'ship', 'trip']
+
+  Array @68101 (10 words)
+  Context: ...in'],     'ip': ['dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'chip', 'ship', 'trip'],     'it':
+  Words: ['bit', 'fit', 'hit', 'kit', 'pit', 'sit', 'wit', 'grit', 'spit', 'slit']
+
+  Array @68186 (10 words)
+  Context: ...ip'],     'it': ['bit', 'fit', 'hit', 'kit', 'pit', 'sit', 'wit', 'grit', 'spit', 'slit'],     'op':
+  Words: ['cop', 'hop', 'mop', 'pop', 'top', 'chop', 'crop', 'drop', 'shop', 'stop']
+
+  Array @68273 (10 words)
+  Context: ...'],     'op': ['cop', 'hop', 'mop', 'pop', 'top', 'chop', 'crop', 'drop', 'shop', 'stop'],     'ot':
+  Words: ['cot', 'dot', 'got', 'hot', 'jot', 'lot', 'not', 'pot', 'rot', 'shot']
+
+  Array @68356 (9 words)
+  Context: ...stop'],     'ot': ['cot', 'dot', 'got', 'hot', 'jot', 'lot', 'not', 'pot', 'rot', 'shot'],     'og':
+  Words: ['bog', 'cog', 'dog', 'fog', 'hog', 'jog', 'log', 'frog', 'blog']
+
+  Array @68433 (10 words)
+  Context: ...ot', 'shot'],     'og': ['bog', 'cog', 'dog', 'fog', 'hog', 'jog', 'log', 'frog', 'blog'],     'ug':
+  Words: ['bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'plug', 'slug', 'snug']
+
+  Array @68518 (9 words)
+  Context: ...og'],     'ug': ['bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'plug', 'slug', 'snug'],     'un':
+  Words: ['bun', 'fun', 'gun', 'nun', 'pun', 'run', 'sun', 'spun', 'stun']
+
+  Array @68595 (10 words)
+  Context: ...ug', 'snug'],     'un': ['bun', 'fun', 'gun', 'nun', 'pun', 'run', 'sun', 'spun', 'stun'],     'et':
+  Words: ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'vet', 'wet']
+
+  Array @68677 (9 words)
+  Context: ...'stun'],     'et': ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'vet', 'wet'],     'en':
+  Words: ['ben', 'den', 'hen', 'men', 'pen', 'ten', 'then', 'when', 'wren']
+
+  Array @68755 (8 words)
+  Context: ...et', 'wet'],     'en': ['ben', 'den', 'hen', 'men', 'pen', 'ten', 'then', 'when', 'wren'],     'ed':
+  Words: ['bed', 'fed', 'led', 'red', 'wed', 'shed', 'sled', 'shred']
+
+  Array @68828 (10 words)
+  Context: ... 'when', 'wren'],     'ed': ['bed', 'fed', 'led', 'red', 'wed', 'shed', 'sled', 'shred'],     'ell':
+  Words: ['bell', 'cell', 'fell', 'sell', 'tell', 'well', 'yell', 'shell', 'smell', 'spell']
+
+  Array @68924 (10 words)
+  Context: ...ll': ['bell', 'cell', 'fell', 'sell', 'tell', 'well', 'yell', 'shell', 'smell', 'spell'],     'ill':
+  Words: ['bill', 'fill', 'hill', 'mill', 'pill', 'will', 'chill', 'drill', 'grill', 'skill']
+
+  Array @69021 (9 words)
+  Context: ...l': ['bill', 'fill', 'hill', 'mill', 'pill', 'will', 'chill', 'drill', 'grill', 'skill'],     'all':
+  Words: ['ball', 'call', 'fall', 'hall', 'mall', 'tall', 'wall', 'small', 'stall']
+
+  Array @69108 (10 words)
+  Context: ...],     'all': ['ball', 'call', 'fall', 'hall', 'mall', 'tall', 'wall', 'small', 'stall'],     'ack':
+  Words: ['back', 'jack', 'pack', 'rack', 'sack', 'tack', 'black', 'crack', 'snack', 'track']
+
+  Array @69205 (10 words)
+  Context: ...k': ['back', 'jack', 'pack', 'rack', 'sack', 'tack', 'black', 'crack', 'snack', 'track'],     'ake':
+  Words: ['bake', 'cake', 'fake', 'lake', 'make', 'rake', 'take', 'wake', 'shake', 'snake']
+
+  Array @69300 (9 words)
+  Context: ...ake': ['bake', 'cake', 'fake', 'lake', 'make', 'rake', 'take', 'wake', 'shake', 'snake'],     'ame':
+  Words: ['came', 'fame', 'game', 'name', 'same', 'tame', 'blame', 'flame', 'frame']
+
+  Array @69388 (10 words)
+  Context: ...,     'ame': ['came', 'fame', 'game', 'name', 'same', 'tame', 'blame', 'flame', 'frame'],     'ate':
+  Words: ['date', 'fate', 'gate', 'hate', 'late', 'mate', 'rate', 'plate', 'skate', 'state']
+
+  Array @69484 (8 words)
+  Context: ...te': ['date', 'fate', 'gate', 'hate', 'late', 'mate', 'rate', 'plate', 'skate', 'state'],     'ide':
+  Words: ['hide', 'ride', 'side', 'wide', 'bride', 'glide', 'pride', 'slide']
+
+  Array @69565 (9 words)
+  Context: ...state'],     'ide': ['hide', 'ride', 'side', 'wide', 'bride', 'glide', 'pride', 'slide'],     'ine':
+  Words: ['dine', 'fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine']
+
+  Array @69652 (10 words)
+  Context: ...],     'ine': ['dine', 'fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine'],     'ore':
+  Words: ['bore', 'core', 'more', 'pore', 'sore', 'tore', 'wore', 'shore', 'store', 'score']
+
+  Array @69748 (8 words)
+  Context: ...re': ['bore', 'core', 'more', 'pore', 'sore', 'tore', 'wore', 'shore', 'store', 'score'],     'ook':
+  Words: ['book', 'cook', 'hook', 'look', 'nook', 'took', 'brook', 'shook']
+
+  Array @170643 (5 words)
+  Context: ...,                              "rhymeWord": "horn",                              "rhymeDistractors":
+  Words: ['dog', 'sun', 'bed', 'leg', 'cup']
+
+  Array @170732 (5 words)
+  Context: ...stractors": ["dog", "sun", "bed", "leg", "cup"],                              "blendingDistractors":
+  Words: ['cord', 'core', 'born', 'worn', 'torn']
+
+  Array @170924 (5 words)
+  Context: ...,                              "familyEnding": "-orn",                              "familyMembers":
+  Words: ['horn', 'born', 'worn', 'torn', 'morn']
+
+  Array @225816 (7 words)
+  Context: ...'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z'],         'Digraphs':
+  Words: ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck']
+
+  Array @225938 (9 words)
+  Context: ...h', 'ph', 'ng', 'ck'],         'Vowels (Short)': ['a', 'e', 'i', 'o', 'u'],         'Vowels (Long)':
+  Words: ['ay', 'ee', 'oa', 'ue', 'ai', 'ea', 'ie', 'ow', 'oo']
+
+  Array @226018 (5 words)
+  Context: ...    'Vowels (Long)': ['ay', 'ee', 'oa', 'ue', 'ai', 'ea', 'ie', 'ow', 'oo'],         'R-Controlled':
+  Words: ['ar', 'er', 'ir', 'or', 'ur']
+
+  Array @226859 (7 words)
+  Context: ...ONS[w]) return EXCEPTIONS[w];         const digraphs = (PHONEME_BANK && PHONEME_BANK['Digraphs']) ||
+  Words: ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck']
+
+  Array @227732 (5 words)
+  Context: ... return EXCEPTIONS[w];         const rControlled = (PHONEME_BANK && PHONEME_BANK['R-Controlled']) ||
+  Words: ['ar', 'er', 'ir', 'or', 'ur']
+
+  Array @227908 (5 words)
+  Context: ...(w.endsWith(rc)) return rc; }         const digraphs = (PHONEME_BANK && PHONEME_BANK['Digraphs']) ||
+  Words: ['sh', 'ch', 'th', 'ng', 'ck']
+
+  Array @312477 (36 words)
+  Context: ...ANK !== 'undefined' && PHONEME_AUDIO_BANK[trimmed]) return true;             const phonemePatterns =
+  Words: ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'dh', 'zh', 'ar', 'er', 'ir', 'or', 'ur', 'aw', 'ow', 'ou', 'oo', 'ee', 'ea', 'ay', 'ai', 'oa', 'ie', 'ue', 'oy', 'air', 'ear', 'igh', 'tch', 'dge', 'kn', 'wr', 'gn', 'mb', 'qu']
+
+  Array @371604 (18 words)
+  Context: ...d) => {         if (!word) return [];         const w = word.toLowerCase();         const digraphs =
+  Words: ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ar', 'er', 'ir', 'or', 'ur']
+
+  Array @398750 (9 words)
+  Context: ...st rhymeEndingShort = wordLower.slice(-2);             const rhymeFamilies = {                 'an':
+  Words: ['can', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'ban', 'dan']
+
+  Array @398837 (8 words)
+  Context: ...        'an': ['can', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'ban', 'dan'],                 'at':
+  Words: ['cat', 'bat', 'hat', 'mat', 'rat', 'sat', 'pat', 'fat']
+
+  Array @398917 (8 words)
+  Context: ...               'at': ['cat', 'bat', 'hat', 'mat', 'rat', 'sat', 'pat', 'fat'],                 'op':
+  Words: ['hop', 'mop', 'top', 'pop', 'stop', 'chop', 'drop', 'shop']
+
+  Array @399001 (7 words)
+  Context: ...           'op': ['hop', 'mop', 'top', 'pop', 'stop', 'chop', 'drop', 'shop'],                 'ig':
+  Words: ['big', 'dig', 'fig', 'pig', 'wig', 'jig', 'rig']
+
+  Array @399074 (7 words)
+  Context: ...op'],                 'ig': ['big', 'dig', 'fig', 'pig', 'wig', 'jig', 'rig'],                 'og':
+  Words: ['dog', 'fog', 'hog', 'log', 'jog', 'frog', 'blog']
+
+  Array @399149 (6 words)
+  Context: ...'],                 'og': ['dog', 'fog', 'hog', 'log', 'jog', 'frog', 'blog'],                 'un':
+  Words: ['bun', 'fun', 'run', 'sun', 'pun', 'spun']
+
+  Array @399216 (8 words)
+  Context: ...', 'blog'],                 'un': ['bun', 'fun', 'run', 'sun', 'pun', 'spun'],                 'ug':
+  Words: ['bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'plug']
+
+  Array @399297 (8 words)
+  Context: ...              'ug': ['bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'plug'],                 'in':
+  Words: ['bin', 'fin', 'pin', 'win', 'tin', 'spin', 'grin', 'chin']
+
+  Array @399380 (8 words)
+  Context: ...            'in': ['bin', 'fin', 'pin', 'win', 'tin', 'spin', 'grin', 'chin'],                 'it':
+  Words: ['bit', 'fit', 'hit', 'kit', 'pit', 'sit', 'wit', 'spit']
+
+  Array @399461 (8 words)
+  Context: ...              'it': ['bit', 'fit', 'hit', 'kit', 'pit', 'sit', 'wit', 'spit'],                 'ot':
+  Words: ['cot', 'dot', 'got', 'hot', 'lot', 'not', 'pot', 'shot']
+
+  Array @399542 (9 words)
+  Context: ...              'ot': ['cot', 'dot', 'got', 'hot', 'lot', 'not', 'pot', 'shot'],                 'et':
+  Words: ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'wet']
+
+  Array @399629 (8 words)
+  Context: ...        'et': ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'wet'],                 'en':
+  Words: ['ben', 'den', 'hen', 'men', 'pen', 'ten', 'when', 'then']
+
+  Array @399711 (7 words)
+  Context: ...             'en': ['ben', 'den', 'hen', 'men', 'pen', 'ten', 'when', 'then'],                 'ed':
+  Words: ['bed', 'fed', 'led', 'red', 'wed', 'shed', 'sled']
+
+  Array @399786 (9 words)
+  Context: ...'],                 'ed': ['bed', 'fed', 'led', 'red', 'wed', 'shed', 'sled'],                 'ap':
+  Words: ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'tap', 'trap', 'clap']
+
+  Array @399875 (10 words)
+  Context: ...      'ap': ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'tap', 'trap', 'clap'],                 'ip':
+  Words: ['dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'chip', 'ship', 'trip']
+
+  Array @399972 (8 words)
+  Context: ...p': ['dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'chip', 'ship', 'trip'],                 'ck':
+  Words: ['back', 'pack', 'rack', 'tack', 'black', 'crack', 'snack', 'track']
+
+  Array @400065 (9 words)
+  Context: ...  'ck': ['back', 'pack', 'rack', 'tack', 'black', 'crack', 'snack', 'track'],                 'ell':
+  Words: ['bell', 'cell', 'fell', 'sell', 'tell', 'well', 'yell', 'shell', 'spell']
+
+  Array @400164 (9 words)
+  Context: ...: ['bell', 'cell', 'fell', 'sell', 'tell', 'well', 'yell', 'shell', 'spell'],                 'ill':
+  Words: ['bill', 'fill', 'hill', 'mill', 'pill', 'will', 'chill', 'drill', 'skill']
+
+  Array @400264 (8 words)
+  Context: ... ['bill', 'fill', 'hill', 'mill', 'pill', 'will', 'chill', 'drill', 'skill'],                 'all':
+  Words: ['ball', 'call', 'fall', 'hall', 'mall', 'tall', 'wall', 'small']
+
+  Array @400354 (7 words)
+  Context: ...    'all': ['ball', 'call', 'fall', 'hall', 'mall', 'tall', 'wall', 'small'],                 'ook':
+  Words: ['book', 'cook', 'hook', 'look', 'took', 'brook', 'shook']
+
+  Array @400437 (10 words)
+  Context: ...           'ook': ['book', 'cook', 'hook', 'look', 'took', 'brook', 'shook'],                 'ake':
+  Words: ['bake', 'cake', 'fake', 'lake', 'make', 'rake', 'take', 'wake', 'shake', 'snake']
+
+  Array @400544 (10 words)
+  Context: ...', 'cake', 'fake', 'lake', 'make', 'rake', 'take', 'wake', 'shake', 'snake'],                 'ame':
+  Words: ['came', 'fame', 'game', 'name', 'same', 'tame', 'blame', 'flame', 'frame', 'shame']
+
+  Array @400653 (10 words)
+  Context: ... 'fame', 'game', 'name', 'same', 'tame', 'blame', 'flame', 'frame', 'shame'],                 'ate':
+  Words: ['date', 'fate', 'gate', 'hate', 'late', 'mate', 'rate', 'plate', 'skate', 'state']
+
+  Array @400761 (8 words)
+  Context: ..., 'fate', 'gate', 'hate', 'late', 'mate', 'rate', 'plate', 'skate', 'state'],                 'ide':
+  Words: ['hide', 'ride', 'side', 'wide', 'bride', 'glide', 'pride', 'slide']
+
+  Array @400854 (9 words)
+  Context: ... 'ide': ['hide', 'ride', 'side', 'wide', 'bride', 'glide', 'pride', 'slide'],                 'ine':
+  Words: ['dine', 'fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine']
+
+  Array @400953 (10 words)
+  Context: ...: ['dine', 'fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine'],                 'ore':
+  Words: ['bore', 'core', 'more', 'pore', 'sore', 'tore', 'wore', 'shore', 'store', 'score']
+
+  Array @402236 (40 words)
+  Context: ...ice(0, 3);             }             const blendingDistractors = [];             const commonWords =
+  Words: ['cat', 'dog', 'sun', 'run', 'big', 'hot', 'top', 'sit', 'hat', 'map', 'cup', 'bed', 'red', 'pen', 'bus', 'pig', 'bat', 'fan', 'pin', 'pot', 'net', 'jet', 'wet', 'bet', 'hen', 'leg', 'fox', 'box', 'nut', 'cut', 'bug', 'rug', 'hug', 'tub', 'cub', 'web', 'jam', 'ham', 'van', 'gap']
+
+  Array @416296 (5 words)
+  Context: ...ds": ["word1", "word2", "word3", "word4", "word5"]},   "rimeFamilyMembers": {"rime": "-at", "words":
+  Words: ['cat', 'bat', 'hat', 'mat', 'sat']
+
+  Array @419916 (18 words)
+  Context: ...                         const w = word.toLowerCase();                              const digraphs =
+  Words: ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ar', 'er', 'ir', 'or', 'ur']
+
+  Array @426079 (18 words)
+  Context: ...                  const trigraphs = ['tch', 'dge'];                                 const digraphs =
+  Words: ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ar', 'er', 'ir', 'or', 'ur']
+
+  Array @453971 (12 words)
+  Context: ...rentWord;                 const generateNearRhymes = (word) => {                     const endings =
+  Words: ['at', 'an', 'en', 'in', 'op', 'ot', 'ug', 'un', 'ake', 'ine', 'ight', 'ound']
+
+  Array @454123 (8 words)
+  Context: ...ke', 'ine', 'ight', 'ound'];                     const commonWords = {                         'at':
+  Words: ['cat', 'hat', 'bat', 'mat', 'rat', 'sat', 'fat', 'pat']
+
+  Array @454211 (8 words)
+  Context: ...       'at': ['cat', 'hat', 'bat', 'mat', 'rat', 'sat', 'fat', 'pat'],                         'an':
+  Words: ['can', 'fan', 'man', 'pan', 'ran', 'van', 'tan', 'plan']
+
+  Array @454300 (8 words)
+  Context: ...'an': ['can', 'fan', 'man', 'pan', 'ran', 'van', 'tan', 'plan'],                         'en':
+  Words: ['hen', 'pen', 'ten', 'men', 'den', 'then', 'when', 'wren']
+
+  Array @454391 (8 words)
+  Context: ...'en': ['hen', 'pen', 'ten', 'men', 'den', 'then', 'when', 'wren'],                         'in':
+  Words: ['pin', 'win', 'tin', 'bin', 'fin', 'sin', 'chin', 'thin']
+
+  Array @454481 (8 words)
+  Context: ...'in': ['pin', 'win', 'tin', 'bin', 'fin', 'sin', 'chin', 'thin'],                         'op':
+  Words: ['hop', 'mop', 'top', 'pop', 'cop', 'drop', 'shop', 'stop']
+
+  Array @454572 (8 words)
+  Context: ...'op': ['hop', 'mop', 'top', 'pop', 'cop', 'drop', 'shop', 'stop'],                         'ot':
+  Words: ['hot', 'pot', 'cot', 'dot', 'got', 'lot', 'not', 'shot']
+
+  Array @454661 (8 words)
+  Context: ...'ot': ['hot', 'pot', 'cot', 'dot', 'got', 'lot', 'not', 'shot'],                         'ug':
+  Words: ['bug', 'hug', 'mug', 'rug', 'tug', 'dug', 'jug', 'plug']
+
+  Array @454750 (7 words)
+  Context: ...'ug': ['bug', 'hug', 'mug', 'rug', 'tug', 'dug', 'jug', 'plug'],                         'un':
+  Words: ['bun', 'fun', 'run', 'sun', 'pun', 'spun', 'stun']
+
+  Array @454834 (8 words)
+  Context: ...           'un': ['bun', 'fun', 'run', 'sun', 'pun', 'spun', 'stun'],                         'ake':
+  Words: ['bake', 'cake', 'lake', 'make', 'take', 'wake', 'shake', 'snake']
+
+  Array @454933 (8 words)
+  Context: ...: ['bake', 'cake', 'lake', 'make', 'take', 'wake', 'shake', 'snake'],                         'ine':
+  Words: ['fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine']
+
+  Array @455033 (8 words)
+  Context: ... ['fine', 'line', 'mine', 'nine', 'pine', 'vine', 'shine', 'spine'],                         'ight':
+  Words: ['light', 'night', 'right', 'sight', 'tight', 'bright', 'flight', 'slight']
+
+  Array @455142 (8 words)
+  Context: ..., 'night', 'right', 'sight', 'tight', 'bright', 'flight', 'slight'],                         'ound':
+  Words: ['bound', 'found', 'ground', 'hound', 'mound', 'pound', 'round', 'sound']
+
+  Array @457312 (5 words)
+  Context: ...tLetter = word.charAt(0);                     const similarSoundMap = {                         'b':
+  Words: ['ball', 'big', 'bus', 'box', 'bed']
+
+  Array @457379 (5 words)
+  Context: ... = {                         'b': ['ball', 'big', 'bus', 'box', 'bed'],                         'c':
+  Words: ['car', 'cup', 'cat', 'can', 'cow']
+
+  Array @457445 (5 words)
+  Context: ...ed'],                         'c': ['car', 'cup', 'cat', 'can', 'cow'],                         'k':
+  Words: ['car', 'cup', 'kit', 'key', 'kid']
+
+  Array @457511 (5 words)
+  Context: ...ow'],                         'k': ['car', 'cup', 'kit', 'key', 'kid'],                         'd':
+  Words: ['dog', 'dig', 'den', 'dot', 'dip']
+
+  Array @457577 (5 words)
+  Context: ...id'],                         'd': ['dog', 'dig', 'den', 'dot', 'dip'],                         'f':
+  Words: ['fun', 'fog', 'fit', 'fan', 'fox']
+
+  Array @457643 (5 words)
+  Context: ...ip'],                         'f': ['fun', 'fog', 'fit', 'fan', 'fox'],                         'g':
+  Words: ['go', 'get', 'gum', 'gap', 'got']
+
+  Array @457708 (5 words)
+  Context: ...fox'],                         'g': ['go', 'get', 'gum', 'gap', 'got'],                         'h':
+  Words: ['hot', 'hop', 'hug', 'hen', 'hit']
+
+  Array @457774 (5 words)
+  Context: ...ot'],                         'h': ['hot', 'hop', 'hug', 'hen', 'hit'],                         'j':
+  Words: ['jog', 'jet', 'jug', 'jam', 'job']
+
+  Array @457840 (5 words)
+  Context: ...it'],                         'j': ['jog', 'jet', 'jug', 'jam', 'job'],                         'l':
+  Words: ['let', 'log', 'lip', 'leg', 'lit']
+
+  Array @457906 (5 words)
+  Context: ...ob'],                         'l': ['let', 'log', 'lip', 'leg', 'lit'],                         'm':
+  Words: ['mud', 'mop', 'mix', 'met', 'map']
+
+  Array @457972 (5 words)
+  Context: ...it'],                         'm': ['mud', 'mop', 'mix', 'met', 'map'],                         'n':
+  Words: ['nap', 'net', 'nod', 'nut', 'not']
+
+  Array @458038 (5 words)
+  Context: ...ap'],                         'n': ['nap', 'net', 'nod', 'nut', 'not'],                         'p':
+  Words: ['pop', 'pet', 'pig', 'pen', 'pot']
+
+  Array @458104 (5 words)
+  Context: ...ot'],                         'p': ['pop', 'pet', 'pig', 'pen', 'pot'],                         'r':
+  Words: ['run', 'red', 'rip', 'rug', 'rob']
+
+  Array @458170 (5 words)
+  Context: ...ot'],                         'r': ['run', 'red', 'rip', 'rug', 'rob'],                         's':
+  Words: ['sun', 'sit', 'set', 'sob', 'sip']
+
+  Array @458236 (5 words)
+  Context: ...ob'],                         's': ['sun', 'sit', 'set', 'sob', 'sip'],                         't':
+  Words: ['top', 'tin', 'ten', 'tub', 'tap']
+
+  Array @458302 (5 words)
+  Context: ...ip'],                         't': ['top', 'tin', 'ten', 'tub', 'tap'],                         'w':
+  Words: ['win', 'wet', 'wag', 'web', 'wig']
+
+  Array @458368 (5 words)
+  Context: ...ap'],                         'w': ['win', 'wet', 'wag', 'web', 'wig'],                         'z':
+  Words: ['zip', 'zap', 'zoo', 'zig', 'zest']
+
+  Array @458491 (5 words)
+  Context: ...'zig', 'zest']                     };                     let pool = similarSoundMap[firstLetter] ||
+  Words: ['dog', 'cat', 'run', 'sun', 'bed']
+
+  Array @461640 (4 words)
+  Context: ...        'oi': ['oy','ou','aw'], 'oy': ['oi','ow','o'],             'ar': ['or','er','a','ah'], 'or':
+  Words: ['ar', 'er', 'aw', 'ore']
+
+  Array @461670 (4 words)
+  Context: ..., 'oy': ['oi','ow','o'],             'ar': ['or','er','a','ah'], 'or': ['ar','er','aw','ore'], 'er':
+  Words: ['ar', 'or', 'ur', 'ir']
+
+  Array @480412 (12 words)
+  Context: ...// Fallback to TTS generation if audio is missing                         const ordinalNames =
+  Words: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth']
+
+  Array @516487 (5 words)
+  Context: ...Data?.rhymeWord;                             const distractorPool = phonemeData?.rhymeDistractors ||
+  Words: ['dog', 'cat', 'run', 'bed', 'sit']
+
+  Array @630080 (4 words)
+  Context: ...Sound Sort matches:", aiMatches);                 }                 const pool = SOUND_MATCH_POOL ||
+  Words: ['bat', 'cat', 'dog', 'sit']
+
+  Array @1792570 (4 words)
+  Context: ...th < 120; attempt++) {           let a, b, answer, op;           const ops = operation === 'mixed' ?
+  Words: ['add', 'sub', 'mul', 'div']
+
+  Array @1892764 (4 words)
+  Context: ...er('offline', handleOffline);       };   }, []);   const toggleOverlay = () => {       const modes =
+  Words: ['none', 'blue', 'peach', 'yellow']
+
+  Array @1930967 (8 words)
+  Context: ...(structureType === 'Venn Diagram') {               const newNodes = [];               const colors =
+  Words: ['yellow', 'green', 'blue', 'orange', 'purple', 'pink', 'teal', 'rose']
+
+  Array @3505460 (4 words)
+  Context: ...slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">                                 {
+  Words: ['star', 'check', 'idea', 'love']
+
+=== Word Sounds Activity Patterns ===
+
+=== Phonics Categories ===
+  @30859: rd_sounds.activity_blending': 'Blend Sounds',     'word_sounds.activity_segmentation': 'Break Apart',   
+  @35034: d_sounds.badge_blend_wizard': 'Blend Wizard',     'word_sounds.badge_daily_star': 'Daily Star',     'wor
+  @228912: _GUIDE = {     'a':  { label: 'Short A',     ipa: 'æ',  examples: 'cat, bat, map',        tip: 'As 
+  @229055:  ['ay'] },     'e':  { label: 'Short E',     ipa: 'ɛ',  examples: 'bed, pet, red',        tip: 'As 
+  @229200:  ['ee'] },     'i':  { label: 'Short I',     ipa: 'ɪ',  examples: 'sit, kid, pig',        tip: 'As 
+  @229343:  ['ie'] },     'o':  { label: 'Short O',     ipa: 'ɒ',  examples: 'hot, pot, dog',        tip: 'As 
+  @229484:  ['oa'] },     'u':  { label: 'Short U',     ipa: 'ʌ',  examples: 'cup, bus, fun',        tip: 'As 
+  @229627:  ['oo'] },     'ay': { label: 'Long A',      ipa: 'eɪ', examples: 'cake, rain, play',     tip: 'Sa
+  @229763: : ['a'] },     'ee': { label: 'Long E',      ipa: 'iː', examples: 'tree, see, meat',      tip: 'Sa
+  @229899: : ['e'] },     'ie': { label: 'Long I',      ipa: 'aɪ', examples: 'kite, my, pie',        tip: 'Sa
+  @230036: : ['i'] },     'oa': { label: 'Long O',      ipa: 'oʊ', examples: 'boat, go, bone',       tip: 'Sa
+  @230172: : ['o'] },     'oo': { label: 'Long OO',     ipa: 'uː', examples: 'moon, food, blue',     tip: 'As 
+  @230323: short'] },     'ue': { label: 'Long U',      ipa: 'juː',examples: 'cute, mule, use',      tip: 'Sa
+  @230473: ] },     'oo_short': { label: 'Short OO', ipa: 'ʊ', examples: 'book, put, wood',    tip: 'Shorter th
+  @266779:                  category === 'Short Vowels' ? 'Quick vowel sounds — as in cat, pet, sit, hot, cup' :   
+  @266928:                  category === 'Long Vowels' ? 'Vowels that say their letter name — cake, tree, kite, bo
+  @311296: 'oo', 'ui': 'oo',             'long u': 'oo', 'short u': 'u',             'ə': 'u',         };    
+  @311312: ,             'long u': 'oo', 'short u': 'u',             'ə': 'u',         };         if (specialM
+  @2524014: : "permanent", "description": "Short description" } } OR null,               "voices": { "Narrator": "Allo" }
+  @2667702: ,                     "role": "Short Description",                     "year": "Relevant Year or Era",       
+  @2878370:                       "role": "Short Description",                         "year": "Relevant Year or Era",   
+
+=== SUMMARY ===
+Total word arrays found: 143
+Total unique words: 1186
+All unique words: ['about', 'acquit', 'acrobat', 'add', 'admit', 'advice', 'after', 'again', 'ai', 'air', 'airmail', 'ake', 'all', 'alone', 'alphabet', 'am', 'amen', 'an', 'anagram', 'and', 'any', 'anyone', 'apricot', 'ar', 'are', 'armpit', 'arrow', 'artifice', 'as', 'aside', 'ask', 'at', 'ate', 'aw', 'awake', 'ay', 'back', 'backbone', 'backdrop', 'bag', 'bail', 'bake', 'ball', 'bam', 'ban', 'bang', 'bar', 'bat', 'bath', 'bayonet', 'be', 'bed', 'bedbug', 'been', 'began', 'begin', 'begun', 'bell', 'bellhop', 'below', 'ben', 'beside', 'bet', 'better', 'bib', 'big', 'bigwig', 'bill', 'bin', 'bird', 'bit', 'black', 'blade', 'blame', 'blank', 'blanket', 'blast', 'blaze', 'bleak', 'bleat', 'bleed', 'blend', 'bless', 'blind', 'blink', 'bliss', 'blister', 'block', 'blog', 'blonde', 'blood', 'bloom', 'blossom', 'blot', 'blouse', 'blow', 'blue', 'bluff', 'blunder', 'blunt', 'blur', 'bog', 'bone', 'book', 'bop', 'bore', 'born', 'bound', 'bow', 'box', 'brace', 'brag', 'braid', 'brain', 'brake', 'bran', 'branch', 'brand', 'brass', 'brat', 'brave', 'bread', 'break', 'breath', 'breeze', 'brick', 'bride', 'bridge', 'brief', 'brig', 'bright', 'brim', 'bring', 'brisk', 'broad', 'broke', 'bronze', 'brook', 'broom', 'broth', 'brother', 'brown', 'brunch', 'brunette', 'brush', 'bud', 'bug', 'bun', 'burlap', 'burn', 'bus', 'bush', 'but', 'by', 'cab', 'cabin', 'cadet', 'cake', 'call', 'cam', 'came', 'can', 'cap', 'car', 'caravan', 'cardigan', 'carry', 'cash', 'cassette', 'cat', 'cell', 'ch', 'chain', 'chair', 'chalk', 'champ', 'chance', 'change', 'chant', 'chap', 'charm', 'chart', 'chase', 'chat', 'cheap', 'cheat', 'check', 'cheek', 'cheer', 'cheese', 'chest', 'chew', 'chick', 'chief', 'child', 'chill', 'chimp', 'chin', 'chip', 'choice', 'choke', 'choose', 'chop', 'chosen', 'chug', 'citizen', 'ck', 'clam', 'clan', 'clap', 'clarinet', 'clean', 'clip', 'clone', 'clot', 'cob', 'cockpit', 'cocktail', 'cog', 'collide', 'combat', 'come', 'commit', 'cone', 'confide', 'cook', 'cop', 'copycat', 'cord', 'core', 'corn', 'cot', 'could', 'cow', 'crab', 'crack', 'crackpot', 'cradle', 'craft', 'cram', 'crane', 'crash', 'crate', 'crawl', 'craze', 'crazy', 'creak', 'cream', 'create', 'creature', 'credit', 'creek', 'creep', 'crest', 'crew', 'crib', 'cricket', 'crisp', 'croak', 'crop', 'cross', 'crouch', 'crow', 'crowd', 'crown', 'crush', 'cub', 'cup', 'cupcake', 'curb', 'cut', 'cyclone', 'dam', 'dan', 'dark', 'date', 'day', 'debate', 'debug', 'decide', 'deck', 'delight', 'den', 'desktop', 'detail', 'device', 'dge', 'dh', 'diagram', 'dice', 'did', 'dig', 'dim', 'din', 'dine', 'dip', 'diplomat', 'dirt', 'dish', 'div', 'divide', 'do', 'dog', 'dolphin', 'donate', 'done', 'doormat', 'dot', 'down', 'drab', 'draft', 'drag', 'dragon', 'drain', 'drake', 'drama', 'drank', 'drape', 'drat', 'draw', 'dread', 'dream', 'dress', 'dresser', 'drew', 'drift', 'drill', 'drink', 'drip', 'drive', 'driveway', 'drone', 'drool', 'droop', 'drop', 'drove', 'drown', 'drum', 'dry', 'dryer', 'dub', 'duck', 'duet', 'dug', 'ea', 'each', 'ear', 'earplug', 'earwig', 'eat', 'ee', 'eight', 'eighth', 'elbow', 'eleventh', 'email', 'emit', 'en', 'entice', 'er', 'estate', 'every', 'everyone', 'exam', 'fail', 'fake', 'fall', 'fame', 'fan', 'far', 'fat', 'fate', 'fed', 'fell', 'fellow', 'fen', 'fern', 'fib', 'fifth', 'fig', 'fight', 'fill', 'fin', 'find', 'fine', 'firebug', 'fireside', 'firm', 'first', 'fish', 'fishtail', 'fit', 'fix', 'flake', 'flame', 'flan', 'flap', 'flat', 'flight', 'flop', 'flow', 'fly', 'fog', 'follow', 'for', 'forget', 'forgot', 'fork', 'form', 'format', 'found', 'four', 'fourth', 'fox', 'frail', 'frame', 'fret', 'fright', 'frog', 'from', 'frozen', 'full', 'fun', 'fur', 'gab', 'game', 'gap', 'garden', 'gas', 'gate', 'get', 'gh', 'gig', 'gin', 'girl', 'give', 'glen', 'glide', 'glow', 'gn', 'gnat', 'go', 'gob', 'goblin', 'going', 'golden', 'good', 'got', 'grab', 'grace', 'grade', 'grain', 'gram', 'gran', 'grand', 'grandson', 'grant', 'grape', 'graph', 'grasp', 'grass', 'grate', 'grave', 'gray', 'graze', 'grease', 'great', 'green', 'greet', 'grew', 'grid', 'grill', 'grim', 'grin', 'grind', 'grip', 'grit', 'groan', 'groom', 'ground', 'group', 'grove', 'grow', 'grown', 'guide', 'gum', 'gumdrop', 'gun', 'gush', 'gut', 'habitat', 'had', 'hail', 'hall', 'ham', 'handicap', 'handrail', 'happen', 'has', 'hat', 'hate', 'have', 'he', 'hen', 'her', 'hide', 'hill', 'hillside', 'him', 'hip', 'his', 'hit', 'hog', 'hold', 'hollow', 'hologram', 'homespun', 'hon', 'hook', 'hop', 'horn', 'hot', 'hotshot', 'hound', 'how', 'hub', 'hubcap', 'hug', 'hum', 'humbug', 'hung', 'hurt', 'hut', 'ice', 'idea', 'ie', 'if', 'igh', 'ight', 'in', 'inch', 'ine', 'inside', 'insight', 'internet', 'into', 'ir', 'is', 'it', 'its', 'jab', 'jack', 'jackpot', 'jail', 'jam', 'jar', 'jet', 'jig', 'job', 'jog', 'jot', 'jug', 'just', 'justice', 'jut', 'keep', 'key', 'kick', 'kid', 'kidnap', 'kilogram', 'kin', 'kind', 'king', 'kit', 'kitten', 'kn', 'kneecap', 'knight', 'knit', 'knot', 'know', 'known', 'ladybug', 'lake', 'lamb', 'lap', 'laptop', 'late', 'laugh', 'led', 'leg', 'let', 'lice', 'licorice', 'lid', 'light', 'like', 'line', 'lip', 'listen', 'lit', 'live', 'loan', 'locate', 'lock', 'log', 'lollipop', 'lone', 'long', 'look', 'lop', 'lot', 'love', 'lovebug', 'low', 'luck', 'lug', 'lung', 'made', 'mail', 'make', 'mall', 'man', 'many', 'map', 'mark', 'mascot', 'mash', 'mat', 'mate', 'math', 'may', 'mb', 'meadow', 'men', 'met', 'mice', 'midnight', 'might', 'migrate', 'mill', 'minaret', 'mine', 'minivan', 'mishap', 'mistake', 'mitt', 'mitten', 'mix', 'moan', 'mob', 'mom', 'monorail', 'moonlit', 'mop', 'more', 'morn', 'mound', 'mow', 'much', 'mud', 'muffin', 'mug', 'mul', 'must', 'my', 'myself', 'nab', 'nag', 'nail', 'name', 'namesake', 'nap', 'napkin', 'neck', 'net', 'never', 'new', 'ng', 'nice', 'night', 'nightcap', 'nine', 'ninth', 'nip', 'no', 'nod', 'none', 'nonstop', 'nook', 'not', 'notice', 'novice', 'now', 'number', 'nun', 'nut', 'oa', 'of', 'office', 'oil', 'old', 'omelette', 'omit', 'on', 'once', 'one', 'only', 'oo', 'op', 'open', 'or', 'orange', 'ore', 'ot', 'other', 'ou', 'ound', 'our', 'out', 'outfit', 'outrun', 'outside', 'over', 'overdone', 'overlap', 'overrun', 'ow', 'own', 'oxen', 'oxygen', 'oy', 'pack', 'pail', 'pan', 'pancake', 'paradise', 'park', 'part', 'pat', 'path', 'peach', 'pecan', 'peg', 'pelican', 'pen', 'penguin', 'people', 'periwig', 'permit', 'pet', 'ph', 'phone', 'pick', 'pig', 'pigtail', 'pill', 'pillow', 'pin', 'pine', 'pink', 'pit', 'plan', 'plate', 'please', 'plight', 'plop', 'plot', 'plug', 'pod', 'ponytail', 'poolside', 'pop', 'pore', 'postpone', 'pot', 'pound', 'practice', 'pram', 'pretty', 'price', 'pride', 'prig', 'private', 'program', 'prone', 'prop', 'provide', 'pub', 'pug', 'pumpkin', 'pun', 'pup', 'purple', 'put', 'qu', 'quail', 'quake', 'quit', 'rack', 'rag', 'rail', 'rainbow', 'raindrop', 'raisin', 'rake', 'ram', 'ran', 'rap', 'rat', 'rate', 'recap', 'red', 'redone', 'regret', 'rerun', 'reset', 'retail', 'rib', 'rice', 'rich', 'rid', 'ride', 'rig', 'right', 'rim', 'ring', 'rip', 'roadmap', 'rob', 'robin', 'robot', 'rock', 'rod', 'rooftop', 'rose', 'rot', 'rotate', 'round', 'row', 'rub', 'rug', 'run', 'rush', 'rut', 'sack', 'said', 'sail', 'sake', 'same', 'sap', 'sat', 'saw', 'say', 'scam', 'scan', 'scat', 'score', 'scram', 'scrap', 'seaside', 'second', 'sedan', 'see', 'sell', 'service', 'set', 'seven', 'seventh', 'sh', 'shade', 'shadow', 'shake', 'shall', 'shallow', 'sham', 'shame', 'shape', 'share', 'shark', 'sharp', 'shave', 'she', 'shed', 'sheep', 'sheet', 'shelf', 'shell', 'shift', 'shin', 'shindig', 'shine', 'ship', 'shirt', 'shock', 'shoe', 'shook', 'shop', 'shore', 'short', 'shot', 'shotgun', 'shout', 'show', 'shown', 'shred', 'shrub', 'shrug', 'shut', 'side', 'sight', 'sin', 'sing', 'sip', 'sir', 'sit', 'six', 'sixth', 'skate', 'skill', 'skin', 'skit', 'slam', 'slap', 'slat', 'slate', 'sled', 'slice', 'slide', 'slight', 'slit', 'slop', 'slot', 'slow', 'slug', 'small', 'smell', 'smug', 'snack', 'snail', 'snake', 'snap', 'snapshot', 'snot', 'snow', 'snug', 'so', 'sob', 'sock', 'sod', 'solstice', 'some', 'someone', 'son', 'song', 'soon', 'sore', 'sound', 'spam', 'span', 'sparrow', 'spat', 'spell', 'spice', 'spin', 'spine', 'spit', 'splat', 'splice', 'split', 'spot', 'sprig', 'spun', 'squat', 'stake', 'stall', 'star', 'start', 'stat', 'state', 'stinkbug', 'stone', 'stop', 'store', 'stow', 'strap', 'stride', 'stun', 'sub', 'submit', 'such', 'sum', 'sun', 'sunlight', 'sunlit', 'sunset', 'suntan', 'superbug', 'superman', 'surf', 'swam', 'swap', 'swig', 'tab', 'tack', 'tag', 'tail', 'take', 'tall', 'tame', 'tan', 'tap', 'tch', 'teal', 'teardrop', 'telegram', 'tell', 'ten', 'tenth', 'th', 'than', 'thank', 'that', 'thaw', 'the', 'their', 'them', 'then', 'there', 'these', 'they', 'thick', 'thief', 'thigh', 'thin', 'thing', 'think', 'third', 'thirst', 'this', 'thorn', 'those', 'though', 'thought', 'thread', 'three', 'threw', 'thrice', 'thrill', 'throat', 'throne', 'through', 'throw', 'thug', 'thumb', 'tide', 'tight', 'time', 'timezone', 'tin', 'tip', 'to', 'toboggan', 'today', 'toenail', 'together', 'ton', 'tone', 'tonight', 'too', 'took', 'top', 'tore', 'torn', 'tot', 'tow', 'track', 'trail', 'tram', 'transmit', 'trap', 'treetop', 'trip', 'trot', 'try', 'tub', 'tug', 'turn', 'twelfth', 'twice', 'twig', 'twilight', 'twin', 'two', 'ue', 'ug', 'un', 'under', 'undone', 'unplug', 'up', 'update', 'upset', 'upside', 'ur', 'use', 'van', 'vat', 'vet', 'vice', 'vim', 'vine', 'violin', 'vitamin', 'vow', 'wag', 'wail', 'wait', 'wake', 'walk', 'wall', 'want', 'warm', 'was', 'water', 'waterbug', 'wax', 'way', 'we', 'web', 'wed', 'well', 'went', 'were', 'wet', 'wh', 'what', 'when', 'whet', 'which', 'whig', 'whip', 'white', 'whiz', 'who', 'wide', 'wig', 'will', 'win', 'window', 'wish', 'wit', 'with', 'within', 'wok', 'won', 'wooden', 'word', 'wore', 'workshop', 'worn', 'would', 'wr', 'wrap', 'wren', 'writ', 'write', 'yak', 'yam', 'yap', 'yell', 'yellow', 'yen', 'yes', 'yet', 'you', 'your', 'zap', 'zen', 'zest', 'zh', 'zig', 'zip', 'zone', 'zoo']

@@ -1,0 +1,30 @@
+﻿10326: const studentName = data.studentNickname ||
+10468: t('class_analytics.student_name'),
+10640: <th className="p-2 rounded-l-lg">{t('class_analytics.student_name')}</th>
+11590: • **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.
+13049: student_name: "Student Name",
+14388: header_nickname: "Nickname",
+14491: student_entry_sub: "Enter your Class Codename or Nickname to begin.",
+14495: student_name_label: "Student Name / Nickname",
+14496: student_name_placeholder: "Enter your name...",
+14539: subtitle: "Enter your Class Codename or Nickname to begin.",
+18364: const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "" }) => {
+18371: // Parse currentNickname into adj + animal (format: "Adjective Animal")
+18372: const parseNickname = useCallback((nickname) => {
+18373: if (!nickname || typeof nickname !== 'string') return { adj: '', animal: '' };
+18374: const parts = nickname.trim().split(' ');
+18400: const parsed = parseNickname(currentNickname);
+18405: // Nickname doesn't match format, randomize
+18409: }, [isOpen, currentNickname, parseNickname, randomizeName]);
+18475: <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">{t('modals.student_name_label')}</label>
+28437: <div className="font-bold truncate" title={student.displayName}>{student.displayName || "Anonymous"}</div>
+28992: studentNickname: parsed.studentNickname || parsed.settings?.nickname || "Anonymous",
+29034: const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
+29151: {selectedStudent.studentNickname.charAt(0).toUpperCase()}
+29159: {selectedStudent.studentNickname}
+29315: <th className="p-4">{t('dashboard.header_nickname')}</th>
+29332: {student.studentNickname.charAt(0).toUpperCase()}
+29340: {student.studentNickname}
+31933: const [studentNickname, setStudentNickname] = useState('');
+31988: nickname: '',
+33711: setStudentNickname(name);

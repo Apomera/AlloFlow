@@ -1,0 +1,38 @@
+=== Component containing fetchTTSBytes ===
+CURR fetchTTSBytes at L38289, enclosing scope L38179: const applyAIConfig = (config) => {
+BAK fetchTTSBytes at L41460, enclosing scope L41333: const applyAIConfig = (config) => {
+
+=== What is different between L38200-38300 curr vs L41400-41500 bak? ===
+CURR:
+  L38238:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey}`;
+  L38265:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey}`;
+  L38291:     console.log("[fetchTTSBytes] ▶ CALLED. text:", text?.substring(0, 30), "apiKey:", apiKey ? "PRESENT(" + apiKey.length + " chars)" : "EMPTY");
+  L38303:         const url = `${baseUrl}?key=${apiKey}`;
+BAK:
+  L41400:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey}`;
+  L41431:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey}`;
+  L41472:         // Using apiKey directly (auto-injected by platform)
+  L41478:         // console.log("TTS Key Debug:", {
+  L41483:         // console.log("TTS Key Check:", { hasKey: !!effectiveKey, usedCache: !!globalCachedKey });
+  L41490:         // TTS Key logging removed
+  L41494:         const url = `${baseUrl}?key=${apiKey}`;
+
+=== globalCachedKey or key caching ===
+CURR L144: let globalCachedKey = ""; // Cache key to prevent false negatives if window.apiKey is transient
+BAK L161: let globalCachedKey = ""; // Cache key to prevent false negatives if window.apiKey is transient
+BAK L41479:         //    effectiveKey: effectiveKey ? 'PRESENT' : 'MISSING'
+BAK L41483:         // console.log("TTS Key Check:", { hasKey: !!effectiveKey, usedCache: !!globalCachedKey });
+BAK L41486:         // if (!effectiveKey) throw new Error("Missing API Key");
+
+=== globalTtsQueue definition ===
+CURR L142: let globalTtsQueue = Promise.resolve();
+CURR L38293:     const queuedTask = globalTtsQueue.then(async () => {
+BAK L159: let globalTtsQueue = Promise.resolve();
+BAK L41466:     const queuedTask = globalTtsQueue.then(async () => {
+
+=== ttsQuotaExhausted definition ===
+CURR L3444:     const ttsQuotaExhausted = React.useRef(false); // Fast-skip cloud TTS when quota known exhausted
+
+=== ttsFailureCount definition ===
+CURR L3443:     const ttsFailureCount = React.useRef(0); // Track consecutive TTS failures for quota handling
+BAK L3560:     const ttsFailureCount = React.useRef(0); // Track consecutive TTS failures for quota handling

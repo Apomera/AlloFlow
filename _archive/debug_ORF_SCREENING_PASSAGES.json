@@ -1,0 +1,514 @@
+{
+    "K": {
+        "A": [
+            {
+                "grade": "K",
+                "season": "Fall",
+                "level": "A",
+                "title": "My Pet Dog",
+                "wordCount": 17,
+                "text": "I see the dog. The dog is big. The dog can run. I like the big dog.",
+                "questions": [
+                    {
+                        "question": "What animal is in the story?",
+                        "options": [
+                            "A cat",
+                            "A dog",
+                            "A bird",
+                            "A fish"
+                        ],
+                        "answer": "A dog"
+                    },
+                    {
+                        "question": "What size is the dog?",
+                        "options": [
+                            "Little",
+                            "Small",
+                            "Big",
+                            "Tiny"
+                        ],
+                        "answer": "Big"
+                    },
+                    {
+                        "question": "What can the dog do?",
+                        "options": [
+                            "Sleep",
+                            "Fly",
+                            "Run",
+                            "Swim"
+                        ],
+                        "answer": "Run"
+                    }
+                ]
+            }
+        ],
+        "B": [
+            {
+                "grade": "K",
+                "season": "Winter",
+                "level": "B",
+                "title": "Snow Days",
+                "wordCount": 29,
+                "text": "Look at the snow falling down. It is very cold outside. We can make a snowman. I will give him a red hat. We have fun in the snow.",
+                "questions": [
+                    {
+                        "question": "What is falling outside?",
+                        "options": [
+                            "Rain",
+                            "Leaves",
+                            "Snow",
+                            "Dirt"
+                        ],
+                        "answer": "Snow"
+                    },
+                    {
+                        "question": "What will they make?",
+                        "options": [
+                            "A snowman",
+                            "A fort",
+                            "A ball",
+                            "A sled"
+                        ],
+                        "answer": "A snowman"
+                    },
+                    {
+                        "question": "What color is the hat?",
+                        "options": [
+                            "Blue",
+                            "Green",
+                            "Red",
+                            "Yellow"
+                        ],
+                        "answer": "Red"
+                    }
+                ]
+            }
+        ],
+        "C": [
+            {
+                "grade": "K",
+                "season": "Spring",
+                "level": "C",
+                "title": "The Little Bird",
+                "wordCount": 30,
+                "text": "A little bird sits in the tree. The bird has a nest. It is singing a sweet song. I can see the baby birds. They are hungry for a worm.",
+                "questions": [
+                    {
+                        "question": "Where is the bird sitting?",
+                        "options": [
+                            "On a rock",
+                            "In a tree",
+                            "On the grass",
+                            "In the water"
+                        ],
+                        "answer": "In a tree"
+                    },
+                    {
+                        "question": "What is the bird doing?",
+                        "options": [
+                            "Sleeping",
+                            "Eating",
+                            "Singing",
+                            "Flying"
+                        ],
+                        "answer": "Singing"
+                    },
+                    {
+                        "question": "What are the baby birds hungry for?",
+                        "options": [
+                            "A seed",
+                            "A bug",
+                            "A worm",
+                            "A berry"
+                        ],
+                        "answer": "A worm"
+                    }
+                ]
+            }
+        ]
+    },
+    "1": {
+        "A": [
+            {
+                "grade": "1",
+                "season": "Fall",
+                "level": "E",
+                "title": "Playing at the Park",
+                "wordCount": 53,
+                "text": "Today we went to the big park. The sun was hot and bright. I walked to the pond and saw a little duck. It was swimming in the cool water. Then I went to the swings. I went up high in the sky. It was a very good day at the park.",
+                "questions": [
+                    {
+                        "question": "What was the weather like?",
+                        "options": [
+                            "Cold and rainy",
+                            "Hot and bright",
+                            "Cloudy and dark",
+                            "Snowy and windy"
+                        ],
+                        "answer": "Hot and bright"
+                    },
+                    {
+                        "question": "What animal was in the pond?",
+                        "options": [
+                            "A frog",
+                            "A turtle",
+                            "A fish",
+                            "A duck"
+                        ],
+                        "answer": "A duck"
+                    },
+                    {
+                        "question": "Where did the child go high in the sky?",
+                        "options": [
+                            "On the slide",
+                            "On the swings",
+                            "In a tree",
+                            "On the monkey bars"
+                        ],
+                        "answer": "On the swings"
+                    }
+                ]
+            }
+        ],
+        "B": [
+            {
+                "grade": "1",
+                "season": "Winter",
+                "level": "G",
+                "title": "A Winter Walk",
+                "wordCount": 61,
+                "text": "We put on our thick coats and warm hats to go for a winter walk. The white snow covered the ground and crunched under our boots. We saw animal tracks near the trees. My brother said they were from a small rabbit. We followed the tracks until it started to get dark. Then we went home for hot chocolate.",
+                "questions": [
+                    {
+                        "question": "What covered the ground?",
+                        "options": [
+                            "Green grass",
+                            "Fallen leaves",
+                            "White snow",
+                            "Wet mud"
+                        ],
+                        "answer": "White snow"
+                    },
+                    {
+                        "question": "Who said the tracks were from a rabbit?",
+                        "options": [
+                            "Mom",
+                            "Dad",
+                            "My brother",
+                            "My sister"
+                        ],
+                        "answer": "My brother"
+                    },
+                    {
+                        "question": "What did they have when they got home?",
+                        "options": [
+                            "Hot tea",
+                            "Hot chocolate",
+                            "Warm soup",
+                            "Apple cider"
+                        ],
+                        "answer": "Hot chocolate"
+                    }
+                ]
+            }
+        ],
+        "C": [
+            {
+                "grade": "1",
+                "season": "Spring",
+                "level": "I",
+                "title": "The Garden",
+                "wordCount": 68,
+                "text": "In the spring, my family plants a garden. We dig in the soft brown dirt and put in tiny seeds. Every day we give them water and watch the sun shine on them. After many days, we see small green leaves poking through the soil. By summer, we have big red tomatoes and long green beans. I like to pick them and eat them for dinner. Gardening is hard work, but it makes me happy.",
+                "questions": [
+                    {
+                        "question": "When does the family plant a garden?",
+                        "options": [
+                            "In the winter",
+                            "In the fall",
+                            "In the spring",
+                            "In the summer"
+                        ],
+                        "answer": "In the spring"
+                    },
+                    {
+                        "question": "What do they see poking through the soil?",
+                        "options": [
+                            "Flowers",
+                            "Rocks",
+                            "Small green leaves",
+                            "Worms"
+                        ],
+                        "answer": "Small green leaves"
+                    },
+                    {
+                        "question": "What vegetables do they grow?",
+                        "options": [
+                            "Corn and carrots",
+                            "Tomatoes and beans",
+                            "Peas and potatoes",
+                            "Lettuce and peppers"
+                        ],
+                        "answer": "Tomatoes and beans"
+                    }
+                ]
+            }
+        ]
+    },
+    "2": {
+        "A": [
+            {
+                "grade": "2",
+                "season": "Fall",
+                "level": "K",
+                "title": "The Lost Kitten",
+                "wordCount": 89,
+                "text": "Maya was walking home from school when she heard a soft sound coming from behind the bushes. She bent down and saw a tiny gray kitten with bright green eyes. The kitten was shaking because it was cold and scared. Maya carefully picked up the kitten and wrapped it in her warm jacket. She carried it home and gave it a bowl of milk. Her mother said they could keep the kitten if no one came to find it. Maya named the kitten Misty and gave it a soft bed by the fireplace. Soon Misty was purring loudly and felt safe at last.",
+                "questions": [
+                    {
+                        "question": "Where did Maya find the kitten?",
+                        "options": [
+                            "At school",
+                            "Behind the bushes",
+                            "At a pet store",
+                            "In her house"
+                        ],
+                        "answer": "Behind the bushes"
+                    },
+                    {
+                        "question": "What color was the kitten?",
+                        "options": [
+                            "Black",
+                            "Orange",
+                            "White",
+                            "Gray"
+                        ],
+                        "answer": "Gray"
+                    },
+                    {
+                        "question": "What did Maya name the kitten?",
+                        "options": [
+                            "Smoky",
+                            "Shadow",
+                            "Misty",
+                            "Fluffy"
+                        ],
+                        "answer": "Misty"
+                    }
+                ]
+            }
+        ],
+        "B": [
+            {
+                "grade": "2",
+                "season": "Winter",
+                "level": "L",
+                "title": "The Snow Fort",
+                "wordCount": 95,
+                "text": "After the big snowstorm, Carlos and his friends decided to build the biggest snow fort on the block. They rolled enormous snowballs and stacked them into thick walls. Carlos used a shovel to pack the snow tightly so the walls would be strong. His friend Ana made a special window so they could see outside. They even built a tunnel to crawl through to get inside. When the fort was finished, they brought out cups of hot cocoa and sat inside their snowy castle. The wind blew outside, but they were warm and cozy. They felt like real explorers who had built their very own shelter.",
+                "questions": [
+                    {
+                        "question": "What did Carlos use to pack the snow?",
+                        "options": [
+                            "His hands",
+                            "A bucket",
+                            "A shovel",
+                            "A rake"
+                        ],
+                        "answer": "A shovel"
+                    },
+                    {
+                        "question": "What did Ana make in the fort?",
+                        "options": [
+                            "A door",
+                            "A window",
+                            "A flag",
+                            "A bench"
+                        ],
+                        "answer": "A window"
+                    },
+                    {
+                        "question": "What did they drink inside the fort?",
+                        "options": [
+                            "Juice",
+                            "Warm tea",
+                            "Hot cocoa",
+                            "Cold water"
+                        ],
+                        "answer": "Hot cocoa"
+                    }
+                ]
+            }
+        ],
+        "C": [
+            {
+                "grade": "2",
+                "season": "Spring",
+                "level": "M",
+                "title": "The Butterfly Garden",
+                "wordCount": 102,
+                "text": "Mrs. Patel"s second grade class started a butterfly garden at their school. First, they learned which plants butterflies like best. They planted milkweed for the monarch butterflies and lavender for the painted ladies. Every morning, the students would check the garden for caterpillars. One exciting day, they found five tiny green caterpillars munching on the milkweed leaves. The class watched carefully as the caterpillars grew bigger each day. After two weeks, each caterpillar formed a chrysalis. The students waited patiently for ten more days. Then one bright morning, beautiful orange and black butterflies came out of the chrysalis. The whole class cheered as the butterflies spread their new wings and flew into the spring sky.\",
+                \"questions\": [
+                    {
+                        \"question\": \"What did they plant for monarch butterflies?\",
+                        \"options\": [
+                            \"Roses\",
+                            \"Daisies\",
+                            \"Milkweed\",
+                            \"Sunflowers\"
+                        ],
+                        \"answer\": \"Milkweed\"
+                    },
+                    {
+                        \"question\": \"How many caterpillars did they find?\",
+                        \"options\": [
+                            \"Three\",
+                            \"Five\",
+                            \"Seven\",
+                            \"Ten\"
+                        ],
+                        \"answer\": \"Five\"
+                    },
+                    {
+                        \"question\": \"What colors were the butterflies?\",
+                        \"options\": [
+                            \"Blue and white\",
+                            \"Red and yellow\",
+                            \"Orange and black\",
+                            \"Purple and green\"
+                        ],
+                        \"answer\": \"Orange and black\"
+                    }
+                ]
+            }
+        ]
+    },
+    \"3-5\": {
+        \"A\": [
+            {
+                \"grade\": \"3\",
+                \"season\": \"Fall\",
+                \"level\": \"O\",
+                \"title\": \"The Science Fair Project\",
+                \"wordCount\": 128,
+                \"text\": \"Jamal couldn"t wait for the school science fair. He had been working on his project for three whole weeks. His experiment tested which type of soil helped plants grow the tallest. He used three different kinds of soil: sandy soil from the beach, dark garden soil from his backyard, and clay soil that his uncle brought from his farm. Jamal planted the same type of bean seed in each pot and gave them equal amounts of water and sunlight every day. He measured each plant carefully with a ruler and wrote down the results in his notebook. After twenty-one days, the plant in the garden soil was the tallest at twelve inches. The sandy soil plant grew to eight inches, and the clay soil plant only reached five inches. Jamal made a colorful chart showing his results and practiced explaining his conclusions.",
+                "questions": [
+                    {
+                        "question": "How many types of soil did Jamal test?",
+                        "options": [
+                            "Two",
+                            "Three",
+                            "Four",
+                            "Five"
+                        ],
+                        "answer": "Three"
+                    },
+                    {
+                        "question": "Which soil grew the tallest plant?",
+                        "options": [
+                            "Sandy soil",
+                            "Clay soil",
+                            "Garden soil",
+                            "Rocky soil"
+                        ],
+                        "answer": "Garden soil"
+                    },
+                    {
+                        "question": "How long did the experiment last?",
+                        "options": [
+                            "Fourteen days",
+                            "Twenty-one days",
+                            "Thirty days",
+                            "Seven days"
+                        ],
+                        "answer": "Twenty-one days"
+                    }
+                ]
+            }
+        ],
+        "B": [
+            {
+                "grade": "4",
+                "season": "Winter",
+                "level": "R",
+                "title": "The Underground Railroad",
+                "wordCount": 142,
+                "text": "In the 1800s, many brave people helped enslaved African Americans escape to freedom through a secret network called the Underground Railroad. It wasn"t actually underground, and it wasn"t a railroad. Instead, it was a series of safe houses, called stations, connected by secret routes. The people who guided the freedom seekers were called conductors. One of the most famous conductors was Harriet Tubman. She had escaped slavery herself and then risked her life by returning to the South nineteen times to help over three hundred people reach freedom. The journey was dangerous and could take weeks or even months. Travelers moved mostly at night, following the North Star to guide their way. Many communities in the North and in Canada provided shelter and support. The courage of both the freedom seekers and those who helped them remains one of the most important stories in American history.",
+                "questions": [
+                    {
+                        "question": "What were the safe houses called?",
+                        "options": [
+                            "Camps",
+                            "Stations",
+                            "Hotels",
+                            "Shelters"
+                        ],
+                        "answer": "Stations"
+                    },
+                    {
+                        "question": "How many times did Harriet Tubman return to the South?",
+                        "options": [
+                            "Ten times",
+                            "Fifteen times",
+                            "Nineteen times",
+                            "Twenty-five times"
+                        ],
+                        "answer": "Nineteen times"
+                    },
+                    {
+                        "question": "What did travelers follow to guide their way?",
+                        "options": [
+                            "A compass",
+                            "A map",
+                            "The North Star",
+                            "River paths"
+                        ],
+                        "answer": "The North Star"
+                    }
+                ]
+            }
+        ],
+        "C": [
+            {
+                "grade": "5",
+                "season": "Spring",
+                "level": "T",
+                "title": "Ocean Exploration",
+                "wordCount": 156,
+                "text": "The ocean covers more than seventy percent of Earth"s surface, yet scientists estimate that we have explored less than five percent of it. The deepest part of the ocean, the Mariana Trench in the Pacific Ocean, reaches nearly seven miles below the surface. The pressure at that depth is so intense that it would crush most submarines. In 1960, two explorers named Jacques Piccard and Don Walsh became the first humans to reach the bottom of the Mariana Trench in a vessel called the Trieste. They spent only twenty minutes at the bottom before returning to the surface. More recently, filmmaker James Cameron made a solo dive to the trench floor in 2012. Scientists continue to discover remarkable creatures living in the deepest parts of the ocean, including fish that produce their own light and giant tube worms that can survive without sunlight. Each new expedition reveals something unexpected about the mysterious world beneath the waves, reminding us how much there is still left to learn about our own planet.\",
+                \"questions\": [
+                    {
+                        \"question\": \"How much of the ocean has been explored?\",
+                        \"options\": [
+                            \"Less than five percent\",
+                            \"About twenty percent\",
+                            \"Nearly half\",
+                            \"Over seventy percent\"
+                        ],
+                        \"answer\": \"Less than five percent\"
+                    },
+                    {
+                        \"question\": \"When was the first dive to the Mariana Trench?\",
+                        \"options\": [
+                            \"1950\",
+                            \"1960\",
+                            \"1970\",
+                            \"1980\"
+                        ],
+                        \"answer\": \"1960\"
+                    },
+                    {
+                        \"question\": \"What can some deep-sea fish produce?\",
+                        \"options\": [
+                            \"Electricity\",
+                            \"Poison\",
+                            \"Their own light\",
+                            \"Fresh water\"
+                        ],
+                        \"answer\": \"Their own light\"
+                    }
+                ]
+            }
+        ]
+    }
+}"

@@ -1,0 +1,82 @@
+=== MATH SOLVER DEEP DIVE RESEARCH ===
+
+--- MATH STATE & MODES ---
+[mathMode] Line 25790: const [mathMode, setMathMode] = useState('Problem Set Generator');
+[setMathMode] Line 25790: const [mathMode, setMathMode] = useState('Problem Set Generator');
+
+--- PROBLEM TYPES ---
+[algebra] Line 55448: <option value="Algebra">{t('math.subjects.algebra')}</option>
+[geometry] Line 32091: - If Math/Physics/Economics: Generate a self-contained SVG graph (plots, curves, geometry) in the "graphData" field.
+[calculus] Line 55450: <option value="Calculus">{t('math.subjects.calculus')}</option>
+[equation] Line 11082: math_desc: "Solves equations and explains STEM concepts step-by-step. Can generate similar practice problems and visual graphs.",
+[fraction] Line 14724: '<span class="math-fraction inline-flex flex-col text-center align-middle mx-1" style="vertical-align: -0.4em;"><span class="border-
+[percent] Line 407: const progressPercent = totalChunks > 0 ? Math.round((progress / totalChunks) * 100) : 0;
+[ratio] Line 181: const chunkCount = Math.ceil(totalDuration / this.CHUNK_DURATION_SECONDS);
+[graphing] Line 9146: python_desc: "Best for: Graphing data, math plotting, and statistics.",
+[statistics] Line 9146: python_desc: "Best for: Graphing data, math plotting, and statistics.",
+[word problem] Line 8592: math_desc: "Generate relevant word problems and connections to math concepts.",
+
+--- STEP-BY-STEP FEATURES ---
+[step-by-step] Line 7496: procedural: "Step-by-Step / Procedural"
+[solve] Line 60: mathSolver: true,
+
+--- SCRATCH PAD / DRAWING ---
+[scratch] Line 39815: msg = t('chat_guide.flow.start_scratch');
+[canvas] Line 25059: const isCanvas = React.useMemo(() => {
+[draw] Line 26761: drawPile: [],
+
+--- GAMIFICATION ---
+
+--- LATEX / EQUATION RENDERING ---
+[LaTeX] Line 32481: // UPDATED REGEX: Added LaTeX patterns ($$..$$ and $..$) at the very start
+[latex] Line 14736: Object.entries(symbolMap).forEach(([latex, unicode]) => {
+[equation] Line 9084: placeholder_eq: "Enter equation (e.g. 2x+5=10) or problem...",
+[formula] Line 8790: formula: "Formula",
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 47: 'tour-tool-math': 'math',
+Line 48: 'tour-tool-adventure': 'adventure',
+Line 49: 'ui-tool-quiz': 'quiz',
+Line 50: 'tour-tool-alignment': 'alignment-report',
+Line 51: 'tour-tool-lesson-plan': 'lesson-plan',
+Line 52: 'tour-tool-analysis': 'analysis',
+Line 53: 'tour-tool-persona': 'persona',
+Line 54: 'tour-tool-fullpack': 'lesson-plan'
+Line 55: };
+Line 56: const APP_CONFIG = {
+Line 57: _cfg_validation_key: "",
+Line 58: features: {
+Line 59: adventureMode: true,
+Line 60: mathSolver: true,
+Line 61: answerKeys: true,
+Line 62: scaffolds: true
+Line 63: }
+Line 64: };
+Line 65: const TEACHER_ONLY_TYPES = [
+Line 66: 'lesson-plan',
+Line 67: 'udl-advice',
+Line 68: 'brainstorm',
+Line 69: 'alignment-report'
+Line 70: ];
+Line 71: let globalAudioCtx = null;
+Line 72: let globalTtsQueue = Promise.resolve();
+Line 73: let globalCachedKey = ""; // Cache key to prevent false negatives if window.apiKey is transient
+Line 74: 
+Line 75: const getGlobalAudioContext = () => {
+Line 76: if (globalAudioCtx) return globalAudioCtx;
+Line 77: 
+Line 78: const AudioContext = window.AudioContext || window.webkitAudioContext;
+Line 79: if (AudioContext) {
+Line 80: globalAudioCtx = new AudioContext();
+Line 81: }
+Line 82: return globalAudioCtx;
+Line 83: };
+Line 84: 
+Line 85: // --- LARGE FILE HANDLER FOR CHUNKED TRANSCRIPTION ---
+Line 86: // Enables transcription of audio files larger than 20MB by chunking
+Line 87: const LargeFileHandler = {
+
+--- MATH HANDLERS ---
+
+--- MATH UI PATTERNS ---
+[MathInput] Line 25792: const [mathInput, setMathInput] = useState('');

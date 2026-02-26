@@ -1,0 +1,165 @@
+=== TOUR UI IMPROVEMENT ANALYSIS ===
+
+--- KEYBOARD EVENT HANDLERS ---
+Line 24077: Potential keyboard useEffect
+  24077:     React.useEffect(() => {
+  24078:         const handleKeyDown = (e) => {
+  24079:             if (!isOpen) return;
+  24080:             if (e.code === 'Space') {
+  24081:                 e.preventDefault();
+  24082:                 setIsPlaying(p => !p);
+  24083:             } else if (e.code === 'ArrowLeft') {
+  24084:                 setCurrentIndex(p => Math.max(0, p - 1));
+  24085:             } else if (e.code === 'ArrowRight') {
+  24086:                 setCurrentIndex(p => Math.min(words.length - 1, p + 1));
+  24087:             } else if (e.key === 'Escape') {
+Line 2228: onKeyDown={(e) => e.stopPropagation()}
+Line 2299: onKeyDown={(e) => e.stopPropagation()}
+Line 2317: onKeyDown={(e) => {
+Line 2700: onKeyDown={(e) => e.stopPropagation()}
+Line 5165: onKeyDown={(e) => handleKeyDown(e, chip, () => handleMoveKey(chip, 'box'
+Line 5211: onKeyDown={(e) => e.stopPropagation()}
+Line 5220: onKeyDown={(e) => handleKeyDown(e, chip, () => handleMoveKey(chip, 'pool'))}
+Line 5338: onKeyDown={(e) => e.stopPropagation()}
+Line 5546: const handleCountKeyDown = (e, num) => {
+Line 5595: onKeyDown={(e) => handleCountKeyDown(e, num)}
+Line 11741: onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
+Line 12168: const handleKeyDown = (e) => {
+Line 12190: document.addEventListener('keydown', handleKeyDown);
+Line 12198: document.removeEventListener('keydown', handleKeyDown);
+Line 12950: const handleKeyDown = (e) => {
+Line 13137: window.addEventListener('keydown', resetInactivity);
+Line 13148: window.removeEventListener('keydown', resetInactivity);
+Line 13638: onKeyDown={handleKeyDown}
+Line 13775: onKeyDown={(e) => {
+Line 16842: const handleKeyDown = (e, index) => {
+Line 16987: onKeyDown={(e) => handleKeyDown(e, index)}
+Line 17092: const handleTermKeyDown = (e, termId) => {
+Line 17106: const handleDefKeyDown = (e, defId) => {
+Line 17339: onKeyDown={(e) => handleTermKeyDown(e, item.id)}
+Line 17352: onKeyDown={(e) => handleTermKeyDown(e, item.id)}
+Line 17372: onKeyDown={(e) => handleDefKeyDown(e, def.id)}
+Line 17393: onKeyDown={(e) => handleDefKeyDown(e, def.id)}
+Line 17554: const handleKeyDown = (e, index) => {
+Line 17689: onKeyDown={(e) => handleKeyDown(e, idx)}
+Line 17854: const handleCardKeyDown = (e, item) => {
+Line 17967: onKeyDown={(e) => handleCardKeyDown(e, item)}
+Line 18099: onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+Line 18180: const handleItemKeyDown = (e, item) => {
+Line 18385: onKeyDown={(e) => handleItemKeyDown(e, item)}
+Line 18411: onKeyDown={(e) => handleItemKeyDown(e, item)}
+Line 18438: onKeyDown={(e) => handleItemKeyDown(e, item)}
+Line 18461: onKeyDown={(e) => handleItemKeyDown(e, item)}
+Line 18660: const handleKeyDown = (e) => {
+Line 18919: onKeyDown={handleKeyDown}
+Line 18930: onKeyDown={handleKeyDown}
+Line 19651: onKeyDown={(e) => {
+Line 19819: onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
+Line 22791: <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center
+Line 23291: onKeyDown={(e) => e.key === 'Enter' && handleGoalSearch()}
+Line 23417: onKeyDown={(e) => e.key === 'Enter' && handleWizardUrlFetch(urlInput)}
+Line 23460: onKeyDown={(e) => e.key === 'Enter' && handleWizardAiSearch()}
+Line 23704: onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
+Line 23759: onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+Line 23910: onKeyDown={(e) => e.key === 'Enter' && addWizLanguage()}
+Line 23962: onKeyDown={(e) => e.key === 'Enter' && addWizInterest()}
+Line 24078: const handleKeyDown = (e) => {
+Line 24091: window.addEventListener('keydown', handleKeyDown);
+Line 24092: return () => window.removeEventListener('keydown', handleKeyDown);
+Line 25026: window.removeEventListener('keydown', handleInteraction);
+Line 25030: window.addEventListener('keydown', handleInteraction);
+Line 25034: window.removeEventListener('keydown', handleInteraction);
+Line 29654: onKeyDown={(e) => e.key === 'Enter' && !isChallengeActive && !isMapLocked && handleAddMa
+Line 31558: window.addEventListener('keydown', handleEsc);
+Line 31559: return () => window.removeEventListener('keydown', handleEsc);
+Line 32591: const handleKeyDown = (e) => {
+Line 33006: window.addEventListener('keydown', handleFluencyKey);
+Line 33007: return () => window.removeEventListener('keydown', handleFluencyKey);
+Line 35167: const handleInterestKeyDown = (e) => {
+Line 35178: const handleKeyDown = (e) => {
+Line 35192: const handleConceptKeyDown = (e) => {
+Line 48192: onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('setA')}
+Line 48215: onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('shared')}
+Line 48238: onKeyDown={(e) => e.key === 'Enter' && handleAddVennItem('setB')}
+Line 51736: onKeyDown={(e) => e.key === 'Enter' && joinClassSess
+Line 52517: onKeyDown={(e) => e.key === 'Enter' && handlePanelChatSubmit(personaInpu
+Line 52997: onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSub
+Line 53282: onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
+Line 53398: onKeyDown={(e) => e.key === 'Enter' && handleSendUDLMessage()}
+Line 53589: onKeyDown={(e) => e.key === 'Enter' && handleAiUrlSearch()}
+Line 53649: onKeyDown={(e) => e.key === 'Enter' && handleUrlFetch()}
+Line 53676: onKeyDown={(e) => e.key === 'Enter' && handleGenerateSource()}
+Line 53763: onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
+Line 53816: onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+Line 54099: onKeyDown={handleKeyDown}
+Line 54314: onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
+Line 54367: onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+Line 54408: onKeyDown={handleInterestKeyDown}
+Line 55002: onKeyDown={handleConceptKeyDown}
+Line 55936: onKeyDown={(e) => e.key === 'Enter' && joinClassSession(joinCodeInput)}
+Line 56165: onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
+Line 56348: onKeyDown={(e) => e.key === 'Enter' && handleCreateUnit()}
+Line 57169: onKeyDown={(e) => e.key === 'Enter' && handleAiRefineSource()}
+Line 57501: onKeyDown={(e) => {
+Line 57533: onKeyDown={(e) => {
+Line 57559: onKeyDown={(e) => {
+Line 57602: onKeyDown={(e) => {
+Line 57618: onKeyDown={(e) => {
+Line 57703: onKeyDown={(e) => {
+Line 57728: onKeyDown={(e) => {
+Line 57771: onKeyDown={(e) => {
+Line 57789: onKeyDown={(e) => {
+Line 58062: onKeyDown={(e) => e.key === 'Enter' && handleAddGlossaryTerm()}
+Line 58228: onKeyDown={(e) => e.key === 'Enter' && handleRef
+Line 58816: onKeyDown={(e) => {
+Line 59296: onKeyDown={(e) => {
+Line 59329: onKeyDown={(e) => {
+Line 59369: onKeyDown={(e) => {
+Line 59542: onKeyDown={(e) => {
+Line 59569: onKeyDown={(e) => {
+Line 59707: onKeyDown={(e) => {
+Line 59746: onKeyDown={(e) => {
+Line 59863: onKeyDown={(e) => e.key === 'Enter' && handleAddToMapList(mapAddInput)}
+Line 60561: onKeyDown={(e) => {
+Line 60700: onKeyDown={(e) => {
+Line 60732: onKeyDown={(e) => {
+Line 62725: onKeyDown={(e) => {
+Line 63018: onKeyDown={(e) => {
+Line 63153: onKeyDown={(e) => e.key === 'Enter' && handleRefineImage()}
+Line 65206: onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSocraticSubmit()}
+Line 65454: onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
+
+--- TOUR STEP HANDLERS ---
+Line 28517: const handleNextTourStep = () => {
+Line 28525: const handlePrevTourStep = () => {
+Line 64738: onClick={handlePrevTourStep}
+Line 64745: onClick={handleNextTourStep}
+
+--- POTENTIAL FLOATING TOOLBARS ---
+Line 6675: [class*="fixed"][class*="bottom-"] {
+Line 14727: <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`} data-help-k
+Line 18063: className={`bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-
+Line 21260: <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+Line 52294: style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+Line 53144: <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all
+Line 56556: className="fixed left-0 right-0 bottom-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+Line 56568: ${(playingContentId && playingContentId.startsWith('persona-message-')) ? 'fixed bottom-32 z-[400]' : 'absolute bottom-8 z-[220]'}
+Line 58374: className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75
+Line 58796: className="fixed z-[100] flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200"
+Line 60886: <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-5
+Line 64564: className={`fixed top-0 bottom-0 bg-white p-8 shadow-2xl w-[500px] h-screen overflow-y-auto flex flex-col gap-6 animate-in duration-50
+Line 65108: className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-
+Line 65254: <div className="fixed bottom-24 md:bottom-8 right-6 z-[10000] flex flex-col items-end gap-4 no-print">
+Line 66032: <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg bor
+
+--- runTour STATE REFERENCES ---
+Line 26812: const [runTour, setRunTour] = useState(false);
+Line 28131: if (runTour && tourSteps[tourStep]) {
+Line 28147: }, [runTour, tourStep]);
+Line 28320: if (!runTour) return;
+Line 28373: }, [runTour, tourStep, spotlightMessage]);
+Line 28497: if (false && isSpotlightMode && !runTour) { // DISABLED: Handled by dedicated Backdrop
+Line 28515: }, [isSpotlightMode, runTour]);
+Line 28531: if (!runTour) {
+Line 28561: }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage]);
+Line 64493: {runTour && tourRect && (

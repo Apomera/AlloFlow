@@ -1,0 +1,62 @@
+=== OUTLINE PANEL DEEP DIVE RESEARCH ===
+
+--- OUTLINE STATE & MODES ---
+[outlineType] Line 31057: const [outlineType, setOutlineType] = useState('Venn Diagram');
+[setOutline] Line 26370: const [outlineTranslationMode, setOutlineTranslationMode] = useState('bilingual');
+
+--- OUTLINE TYPES & GENERATION ---
+[outline] Line 40: 'tour-tool-outline': 'outline',
+[outline] Line 422: className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 f
+[outline] Line 1209: className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 ou
+... and 466 more for 'outline'
+[Outline] Line 7180: outline_generated: "Outline generated!",
+[Outline] Line 8578: structured: "Structured Outline",
+[Outline] Line 9925: // Visual Organizer (Outline) Help
+... and 70 more for 'Outline'
+[hierarchical] Line 46395: promptInstructions = "Create a hierarchical outline with main topics and sub-points.";
+[toggle] Line 54788: onClick={() => toggleTool('outline')}
+[expand] Line 54792: {expandedTools.includes('outline') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} className="t
+[expand] Line 54795: {expandedTools.includes('outline') && (
+
+--- INTERACTIVE FEATURES ---
+[drag] Line 13775: className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''}
+[drop] Line 62995: className="w-full bg-black/50 text-white border border-white/30 rounded-
+[edit] Line 18490: <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-500 hover:text-slate-600
+[moveItem] Line 17875: <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-5
+
+--- EXPORT OPTIONS ---
+
+--- TTS & AUDIO ---
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 40: 'tour-tool-outline': 'outline',
+Line 41: 'tour-tool-visual': 'image',
+Line 42: 'tour-tool-faq': 'faq',
+Line 43: 'tour-tool-scaffolds': 'sentence-frames',
+Line 44: 'tour-tool-brainstorm': 'brainstorm',
+Line 45: 'tour-tool-timeline': 'timeline',
+Line 46: 'tour-tool-concept-sort': 'concept-sort',
+Line 47: 'tour-tool-math': 'math',
+Line 48: 'tour-tool-adventure': 'adventure',
+Line 49: 'ui-tool-quiz': 'quiz',
+Line 50: 'tour-tool-alignment': 'alignment-report',
+Line 51: 'tour-tool-lesson-plan': 'lesson-plan',
+Line 52: 'tour-tool-analysis': 'analysis',
+Line 53: 'tour-tool-persona': 'persona',
+Line 54: 'tour-tool-fullpack': 'lesson-plan'
+Line 55: };
+Line 56: const APP_CONFIG = {
+Line 57: _cfg_validation_key: "",
+Line 58: features: {
+Line 59: adventureMode: true,
+Line 60: mathSolver: true,
+Line 61: answerKeys: true,
+Line 62: scaffolds: true
+Line 63: }
+Line 64: };
+Line 65: const TEACHER_ONLY_TYPES = [
+Line 66: 'lesson-plan',
+Line 67: 'udl-advice',
+Line 68: 'brainstorm',
+Line 69: 'alignment-report'
+Line 70: ];

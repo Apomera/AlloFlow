@@ -1,0 +1,254 @@
+================================================================
+   COMPREHENSIVE PSYCHOMETRIC AUDIT — LITERACY PROBES
+================================================================
+
+
+--- Grade 1 / Form A / BLENDING (10 items) ---
+  [0] sh-i-p → "ship" [sh-i-p] distractors=[gulp, shop, skip] ✅
+  [1] th-a-t → "that" [th-a-t] distractors=[disk, flat, then] ✅
+  [2] ch-i-n → "chin" [ch-i-n] distractors=[chop, grin, west] ✅
+  [3] t-r-a-p → "trap" [t-r-a-p] distractors=[belt, clap, trim] ✅
+  [4] c-l-a-p → "clap" [k-l-a-p] distractors=[clam, help, slap] ✅
+  [5] s-t-e-p → "step" [s-t-e-p] distractors=[fast, hand, stub] ✅
+  [6] g-r-a-b → "grab" [g-r-a-b] distractors=[camp, crab, grin] ✅
+  [7] b-l-o-ck → "block" [b-l-o-ck] distractors=[back, rock, thin] ✅
+  [8] f-r-o-g → "frog" [f-r-o-g] distractors=[clog, kept, list] ✅
+  [9] s-p-i-n → "spin" [s-p-i-n] distractors=[chin, fast, spit] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade 1 / Form A / ISOLATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form A / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form A / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form B / BLENDING (10 items) ---
+  [0] ch-o-p → "chop" [ch-o-p] distractors=[chin, drop, vest] ✅
+  [1] c-r-a-b → "crab" [k-r-a-b] distractors=[crop, grab, wind] ✅
+  [2] s-k-i-p → "skip" [s-k-i-p] distractors=[fact, flip, gust] ✅
+  [3] g-r-i-t → "grit" [g-r-i-t] distractors=[clog, grip, spit] ✅
+  [4] p-l-o-d → "plod" [p-l-o-d] distractors=[plum, rock, vest] ✅
+  [5] s-l-a-p → "slap" [s-l-a-p] distractors=[disk, slip, snap] ✅
+  [6] g-r-i-p → "grip" [g-r-i-p] distractors=[grin, rest, ship] ✅
+  [7] b-r-i-m → "brim" [b-r-i-m] distractors=[brag, gulp, swim] ✅
+  [8] f-l-e-d → "fled" [f-l-e-d] distractors=[flat, shed, shut] ✅
+  [9] b-l-o-t → "blot" [b-l-o-t] distractors=[past, ramp, trot] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade 1 / Form B / ISOLATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form B / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form B / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form C / BLENDING (10 items) ---
+  [0] c-r-o-p → "crop" [k-r-o-p] distractors=[chop, crab, snap] ✅
+  [1] s-l-u-g → "slug" [s-l-u-g] distractors=[plug, shut, slam] ✅
+  [2] s-p-i-t → "spit" [s-p-i-t] distractors=[grit, spot, this] ✅
+  [3] sh-e-d → "shed" [sh-e-d] distractors=[hunt, shut, sled] ✅
+  [4] c-l-i-p → "clip" [k-l-i-p] distractors=[clap, grip, sink] ✅
+  [5] s-m-o-g → "smog" [s-m-o-g] distractors=[frog, melt, nest] ✅
+  [6] p-r-i-m → "prim" [p-r-i-m] distractors=[prop, stem, swim] ✅
+  [7] b-l-e-d → "bled" [b-l-e-d] distractors=[shed, snip, stub] ✅
+  [8] s-w-i-g → "swig" [s-w-i-g] distractors=[pond, swim, twig] ✅
+  [9] c-l-o-g → "clog" [k-l-o-g] distractors=[clam, frog, grid] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade 1 / Form C / ISOLATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form C / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 1 / Form C / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 2 / Form A / BLENDING (10 items) ---
+  [0] s-p-l-a-sh → "splash" [s-p-l-a-sh] distractors=[cramp, smart, strand] ✅
+  [1] s-t-r-i-ng → "string" [s-t-r-i-ng] distractors=[splash, spring, stripe] ✅
+  [2] s-p-r-i-ng → "spring" [s-p-r-i-ng] distractors=[brand, sprint, string] ✅
+  [3] s-k-r-ay-p → "scrape" [s-k-r-ay-p] distractors=[sport, stretch, trend] ✅
+  [4] th-r-e-d → "thread" [th-r-e-d] distractors=[drink, spring, strand] ✅
+  [5] sh-r-i-m-p → "shrimp" [sh-r-i-m-p] distractors=[plant, shrink, sprint] ✅
+  [6] b-r-a-n-ch → "branch" [b-r-a-n-ch] distractors=[brand, spend, strand] ✅
+  [7] s-t-r-o-ng → "strong" [s-t-r-o-ng] distractors=[cramp, smart, string] ✅
+  [8] s-t-r-ee-m → "stream" [s-t-r-ee-m] distractors=[grand, strike, tramp] ✅
+  [9] s-t-r-ie-p → "stripe" [s-t-r-ie-p] distractors=[short, sprint, stretch] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade 2 / Form A / RHYMING (5 items) ---
+  [0] target="cake" options=[lake, make, rake, desk] answer="lake" ✅
+  [1] target="light" options=[night, fight, right, list] answer="night" ✅
+  [2] target="train" options=[rain, brain, main, trim] answer="rain" ✅
+  [3] target="dream" options=[stream, cream, team, drum] answer="stream" ✅
+  [4] target="ground" options=[sound, found, round, green] answer="sound" ✅
+  SUMMARY: 5 items, 0 with issues
+
+--- Grade 2 / Form A / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 2 / Form A / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 2 / Form B / BLENDING (10 items) ---
+  [0] sh-r-ee-k → "shriek" [sh-r-ee-k] distractors=[shrink, sprint, strike] ✅
+  [1] s-t-e-n-ch → "stench" [s-t-e-n-ch] distractors=[drink, spend, stamp] ✅
+  [2] s-p-r-i-n-t → "sprint" [s-p-r-i-n-t] distractors=[drink, spring, strong] ✅
+  [3] th-r-o-ng → "throng" [th-r-o-ng] distractors=[short, sprint, strong] ✅
+  [4] s-p-l-i-n-t → "splint" [s-p-l-i-n-t] distractors=[brand, splash, sprint] ✅
+  [5] s-t-r-u-ng → "strung" [s-t-r-u-ng] distractors=[cramp, smart, stream] ✅
+  [6] th-r-i-f-t → "thrift" [th-r-i-f-t] distractors=[cramp, smart, strong] ✅
+  [7] s-k-r-aw-l → "scrawl" [s-k-r-aw-l] distractors=[plant, stretch, trend] ✅
+  [8] s-p-r-ow-t → "sprout" [s-p-r-ow-t] distractors=[sprint, stamp, string] ✅
+  [9] s-k-w-o-sh → "squash" [s-k-w-o-sh] distractors=[cramp, smart, storm] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade 2 / Form B / RHYMING (5 items) ---
+  [0] target="bake" options=[sake, flake, wake, best] answer="sake" ✅
+  [1] target="bright" options=[slight, tight, knight, brick] answer="slight" ✅
+  [2] target="chain" options=[strain, brain, plain, charm] answer="strain" ✅
+  [3] target="steam" options=[gleam, beam, seam, stem] answer="gleam" ✅
+  [4] target="mound" options=[hound, bound, wound, mouse] answer="hound" ✅
+  SUMMARY: 5 items, 0 with issues
+
+--- Grade 2 / Form B / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 2 / Form B / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 2 / Form C / BLENDING (10 items) ---
+  [0] s-k-r-ee-ch → "screech" [s-k-r-ee-ch] distractors=[spring, strand, strike] ✅
+  [1] s-t-r-ay-n → "strain" [s-t-r-ay-n] distractors=[clamp, start, strand] ✅
+  [2] s-p-r-u-ng → "sprung" [s-p-r-u-ng] distractors=[drink, spring, strong] ✅
+  [3] s-k-w-e-l-ch → "squelch" [s-k-w-e-l-ch] distractors=[spring, strand, string] ✅
+  [4] s-t-r-e-ch → "stretch" [s-t-r-e-ch] distractors=[spring, sprint, string] ✅
+  [5] sh-r-ie-n → "shrine" [sh-r-ie-n] distractors=[grand, shrink, tramp] ✅
+  [6] s-k-r-i-p-t → "script" [s-k-r-i-p-t] distractors=[grand, stream, tramp] ✅
+  [7] s-p-l-o-ch → "splotch" [s-p-l-o-ch] distractors=[splash, stream, string] ✅
+  [8] th-r-a-sh → "thrash" [th-r-a-sh] distractors=[cramp, smart, splash] ✅
+  [9] s-p-l-ie-s → "splice" [s-p-l-ie-s] distractors=[skirt, splash, storm] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade 2 / Form C / RHYMING (5 items) ---
+  [0] target="gate" options=[late, crate, fate, gift] answer="late" ✅
+  [1] target="kite" options=[write, quite, spite, kiss] answer="write" ✅
+  [2] target="blame" options=[flame, shame, frame, blaze] answer="flame" ✅
+  [3] target="peach" options=[reach, teach, beach, pearl] answer="reach" ✅
+  [4] target="town" options=[brown, gown, clown, toast] answer="brown" ✅
+  SUMMARY: 5 items, 0 with issues
+
+--- Grade 2 / Form C / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 2 / Form C / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 3-5 / Form A / RHYMING (5 items) ---
+  [0] target="station" options=[nation, creation, vacation, garden] answer="nation" ✅
+  [1] target="measure" options=[treasure, pleasure, leisure, master] answer="treasure" ✅
+  [2] target="motion" options=[ocean, potion, lotion, button] answer="potion" ✅
+  [3] target="careful" options=[cheerful, peaceful, playful, carpet] answer="cheerful" ✅
+  [4] target="birthday" options=[doorway, halfway, pathway, brother] answer="doorway" ✅
+  SUMMARY: 5 items, 0 with issues
+
+--- Grade 3-5 / Form A / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 3-5 / Form A / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 3-5 / Form B / RHYMING (5 items) ---
+  [0] target="direction" options=[connection, protection, selection, diamond] answer="connection" ✅
+  [1] target="feature" options=[creature, teacher, preacher, feather] answer="creature" ✅
+  [2] target="condition" options=[position, tradition, permission, kitchen] answer="position" ✅
+  [3] target="wonderful" options=[plentiful, merciful, beautiful, wandered] answer="plentiful" ✅
+  [4] target="someday" options=[display, relay, hooray, sunset] answer="display" ✅
+  SUMMARY: 5 items, 0 with issues
+
+--- Grade 3-5 / Form B / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 3-5 / Form B / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 3-5 / Form C / RHYMING (5 items) ---
+  [0] target="attention" options=[invention, dimension, convention, antique] answer="invention" ✅
+  [1] target="adventure" options=[furniture, signature, temperature, average] answer="furniture" ✅
+  [2] target="election" options=[perfection, reflection, collection, electric] answer="perfection" ✅
+  [3] target="powerful" options=[sorrowful, meaningful, bountiful, poverty] answer="sorrowful" ✅
+  [4] target="stairway" options=[railway, hallway, freeway, standard] answer="railway" ✅
+  SUMMARY: 5 items, 0 with issues
+
+--- Grade 3-5 / Form C / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade 3-5 / Form C / SPELLING (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade K / Form A / BLENDING (10 items) ---
+  [0] b-a-t → "bat" [b-a-t] distractors=[ban, hot, mat] ✅
+  [1] c-u-p → "cup" [k-u-p] distractors=[cap, pup, wag] ✅
+  [2] s-i-t → "sit" [s-i-t] distractors=[lit, mud, sub] ✅
+  [3] r-e-d → "red" [r-e-d] distractors=[bed, nod, rod] ✅
+  [4] h-o-p → "hop" [h-o-p] distractors=[fat, hat, top] ✅
+  [5] d-o-g → "dog" [d-o-g] distractors=[cog, den, hat] ✅
+  [6] p-i-n → "pin" [p-i-n] distractors=[bin, dug, pus] ✅
+  [7] b-u-s → "bus" [b-u-s] distractors=[bet, fat, pus] ✅
+  [8] f-a-n → "fan" [f-a-n] distractors=[fit, pat, van] ✅
+  [9] n-e-t → "net" [n-e-t] distractors=[can, jet, nod] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade K / Form A / ISOLATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade K / Form A / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade K / Form B / BLENDING (10 items) ---
+  [0] h-e-n → "hen" [h-e-n] distractors=[den, fat, hop] ✅
+  [1] p-i-g → "pig" [p-i-g] distractors=[bed, dig, pop] ✅
+  [2] t-u-b → "tub" [t-u-b] distractors=[pan, rub, tin] ✅
+  [3] j-a-m → "jam" [j-a-m] distractors=[gut, jig, tax] ✅
+  [4] w-e-t → "wet" [w-e-t] distractors=[get, mug, wag] ✅
+  [5] d-i-p → "dip" [d-i-p] distractors=[box, din, sip] ✅
+  [6] f-o-g → "fog" [f-o-g] distractors=[fed, hog, sub] ✅
+  [7] n-u-t → "nut" [n-u-t] distractors=[let, net, rut] ✅
+  [8] w-i-g → "wig" [w-i-g] distractors=[fig, jet, wax] ✅
+  [9] c-o-d → "cod" [k-o-d] distractors=[can, pod, tub] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade K / Form B / ISOLATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade K / Form B / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade K / Form C / BLENDING (10 items) ---
+  [0] k-i-t → "kit" [k-i-t] distractors=[cup, nut, sit] ✅
+  [1] m-u-d → "mud" [m-u-d] distractors=[dud, map, pig] ✅
+  [2] s-o-b → "sob" [s-o-b] distractors=[bog, cob, sun] ✅
+  [3] w-a-x → "wax" [w-a-k-s] distractors=[max, nag, wag] ✅
+  [4] z-i-p → "zip" [z-i-p] distractors=[jog, sit, tip] ✅
+  [5] h-u-g → "hug" [h-u-g] distractors=[hat, mug, rip] ✅
+  [6] d-e-n → "den" [d-e-n] distractors=[bin, dug, ten] ✅
+  [7] p-o-t → "pot" [p-o-t] distractors=[max, not, pan] ✅
+  [8] r-i-b → "rib" [r-i-b] distractors=[cut, rip, wax] ✅
+  [9] t-a-g → "tag" [t-a-g] distractors=[had, rag, top] ✅
+  SUMMARY: 10 items, 0 with issues
+
+--- Grade K / Form C / ISOLATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+--- Grade K / Form C / SEGMENTATION (15 items) ---
+  All 15 items OK ✅ (open response — no distractors needed)
+
+================================================================
+   END OF AUDIT
+================================================================

@@ -1,0 +1,14 @@
+L54906: </button>
+L54907: <button
+L54908: data-help-ignore="true"
+L54909: onClick={handleToggleIsHelpMode}
+L54910: className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+L54911: title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+L54912: aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+L54913: >
+
+=== SET ACTIVE VIEW TO WORD SOUNDS ===
+L31123: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+L60385: {(activeView === 'glossary' || activeView === 'word-sounds') && (
+L61062: onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+L67404: {activeView === 'word-sounds-generator' && (

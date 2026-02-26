@@ -1,0 +1,421 @@
+﻿============================================================
+TASK 2: Sampling Refresh label contexts
+============================================================
+
+--- L22001 ---
+     L21986: </div>
+     L21987: {safeStats.conceptsFound.length > 0 && (
+     L21988: <div className="mt-4 pt-4 border-t border-slate-700/50 relative z-20">
+     L21989: <div className="text-[10px] text-slate-500 font-bold uppercase mb-2">{t('adventure.mission_report.concepts_secured')}</d
+     L21990: <div className="flex flex-wrap gap-2">
+     L21991: {safeStats.conceptsFound.map((c, i) => (
+     L21992: <span key={i} className="px-2 py-1 rounded-md bg-cyan-900/30 text-cyan-200 text-xs border border-cyan-800/50">
+     L21993: {c}
+     L21994: </span>
+     L21995: ))}
+     L21996: </div>
+     L21997: </div>
+     L21998: )}
+     L21999: </div>
+     L22000: <div className="p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0">
+ >>> L22001: <button aria-label="Refresh"
+     L22002: onClick={onExport}
+     L22003: disabled={isProcessing}
+     L22004: className="w-full py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg fle
+     L22005: >
+
+
+--- L22017 ---
+     L22002: onClick={onExport}
+     L22003: disabled={isProcessing}
+     L22004: className="w-full py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg fle
+     L22005: >
+     L22006: {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <BookOpen size={18}/>}
+     L22007: {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
+     L22008: </button>
+     L22009: 
+     L22010: <div className="grid grid-cols-2 gap-3">
+     L22011: <button
+     L22012: onClick={() => { onClose(); if(onContinue) onContinue(); }}
+     L22013: className="w-full py-3 rounded-xl font-bold bg-green-600 text-white hover:bg-green-500 transition-colors shadow-lg flex 
+     L22014: >
+     L22015: <MapIcon size={18} /> {t('adventure.start_sequel') || "Continue"}
+     L22016: </button>
+ >>> L22017: <button aria-label="Refresh"
+     L22018: onClick={() => { onClose(); if(onNewGame) onNewGame(); }}
+     L22019: className="w-full py-3 rounded-xl font-bold bg-slate-700 text-slate-500 hover:bg-slate-600 hover:text-white transition-c
+     L22020: >
+     L22021: <RefreshCw size={18} /> {t('adventure.new_game') || "New Game"}
+
+
+--- L30770 ---
+     L30755: placeholder={t('standards.region_placeholder')}
+     L30756: className="w-full sm:w-1/3 text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focu
+     L30757: />
+     L30758: )}
+     L30759: 
+     L30760: <div className="flex-grow flex gap-2">
+     L30761: <input aria-label="Enter Learning Goal"
+     L30762: type="text"
+     L30763: value={learningGoal}
+     L30764: onChange={(e) => setLearningGoal(e.target.value)}
+     L30765: onKeyDown={(e) => e.key === 'Enter' && handleGoalSearch()}
+     L30766: className="w-full text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-in
+     L30767: data-help-key="wizard_growth_goal_input"
+     L30768: placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')}
+     L30769: />
+ >>> L30770: <button aria-label="Refresh"
+     L30771: data-help-key="wizard_find_standard_btn"
+     L30772: onClick={handleGoalSearch}
+     L30773: disabled={isSearching || !learningGoal.trim()}
+     L30774: className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all flex items-ce
+
+
+--- L30944 ---
+     L30929: <div>
+     L30930: <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.ai_search')}</label>
+     L30931: <p className="text-slate-500 mb-4 text-sm">{t('wizard.search_helper')}</p>
+     L30932: 
+     L30933: <div className="flex gap-2 mb-6">
+     L30934: <input aria-label="Enter Local Data"
+     L30935: type="text"
+     L30936: value={localData.searchQuery}
+     L30937: onChange={(e) => setLocalData(prev => ({ ...prev, searchQuery: e.target.value }))}
+     L30938: data-help-key="wizard_search_input"
+     L30939: placeholder={t('wizard.search_placeholder')}
+     L30940: className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 
+     L30941: onKeyDown={(e) => e.key === 'Enter' && handleWizardAiSearch()}
+     L30942: autoFocus
+     L30943: />
+ >>> L30944: <button aria-label="Refresh"
+     L30945: data-help-key="wizard_search_btn"
+     L30946: onClick={handleWizardAiSearch}
+     L30947: disabled={isFetching || !localData.searchQuery}
+     L30948: className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex
+
+
+--- L37628 ---
+     L37613: x: 100 + Math.random() * 600,
+     L37614: y: 530 + Math.random() * 50
+     L37615: };
+     L37616: }
+     L37617: return node;
+     L37618: }));
+     L37619: addToast(t('concept_map.venn.toast_scramble'), "info");
+     L37620: };
+     L37621: 
+     L37622: return (
+     L37623: <div className="flex flex-col gap-4">
+     L37624: <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200 justify-between min
+     L37625: 
+     L37626: {isVenn ? (
+     L37627: <div className="flex items-center justify-center w-full gap-4">
+ >>> L37628: <button aria-label="Refresh"
+     L37629: onClick={handleVennResetBoard}
+     L37630: disabled={isMapLocked}
+     L37631: className={`flex items-center gap-2 bg-white text-indigo-600 border border-indigo-200 px-4 py-2 rounded-full text-xs fon
+     L37632: >
+
+
+--- L37800 ---
+     L37785: </div>
+     L37786: )}
+     L37787: </div>
+     L37788: )
+     L37789: )}
+     L37790: <button
+     L37791: onClick={handleRetryChallenge}
+     L37792: className="flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-300 hover:border-in
+     L37793: title={t('concept_map.challenge.retry_tooltip')}
+     L37794: aria-label={t('concept_map.challenge.retry_tooltip')}
+     L37795: >
+     L37796: <RefreshCw size={14} />
+     L37797: <span className="hidden sm:inline">{t('concept_map.challenge.retry')}</span>
+     L37798: </button>
+     L37799: 
+ >>> L37800: <button aria-label="Refresh"
+     L37801: onClick={handleCheckChallengeRouter}
+     L37802: disabled={isCheckingChallenge}
+     L37803: className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold tran
+     L37804: >
+
+
+--- L57333 ---
+     L57318: <div className="inline-flex items-center justify-center p-3 bg-blue-100 text-blue-600 rounded-full mb-4 shadow-sm border
+     L57319: <CheckCircle2 size={24} />
+     L57320: </div>
+     L57321: 
+     L57322: {outcomeBranch ? (
+     L57323: <div className="text-left">
+     L57324: <BranchItem branch={outcomeBranch} bIdx={outcomeIndex} colorClass="bg-transparent border-none shadow-none p-0" />
+     L57325: </div>
+     L57326: ) : (
+     L57327: <>
+     L57328: <h3 className="text-xl font-black text-blue-900 mb-2">{t('outline.labels.outcome')}</h3>
+     L57329: <p className="text-sm text-blue-800/80 max-w-lg mx-auto leading-relaxed italic">
+     L57330: Analyze the results here. Did the proposed solutions effectively address the challenge? What were the trade-offs or fina
+     L57331: </p>
+     L57332: {isTeacherMode && (
+ >>> L57333: <button aria-label="Refresh"
+     L57334: onClick={handleGenerateOutcome}
+     L57335: disabled={isProcessing}
+     L57336: className="mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors f
+     L57337: >
+
+
+--- L60642 ---
+     L60627: onClick={() => { handleExport('worksheet'); setShowExportMenu(false); }}
+     L60628: className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 text-xs font-b
+     L60629: data-help-key="export_worksheet"
+     L60630: >
+     L60631: <FileText size={14} /> {t('export_menu.worksheet')}
+     L60632: </button>
+     L60633: 
+     L60634: <button
+     L60635: onClick={() => { handleExport('html'); setShowExportMenu(false); }}
+     L60636: className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-indigo-50 text-indigo-700 text-xs font
+     L60637: data-help-key="export_html"
+     L60638: >
+     L60639: <Code size={14} /> {t('export_menu.html')}
+     L60640: </button>
+     L60641: 
+ >>> L60642: <button aria-label="Refresh"
+     L60643: onClick={() => { handleExportSlides(); setShowExportMenu(false); }}
+     L60644: disabled={!pptxLoaded}
+     L60645: className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-orange-50 text-orange-700 text-xs font
+     L60646: data-help-key="export_slides"
+
+
+--- L60926 ---
+     L60911: <button
+     L60912: onClick={() => handleApplyHint(hint)}
+     L60913: className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-lg font-bold hover:bg-yellow-200 transition-colors 
+     L60914: title={t('hints.apply_brainstorm_tooltip')}
+     L60915: >
+     L60916: <Lightbulb size={12}/> {t('hints.apply_brainstorm')}
+     L60917: </button>
+     L60918: )}
+     L60919: </div>
+     L60920: </div>
+     L60921: ))
+     L60922: )}
+     L60923: </div>
+     L60924: 
+     L60925: <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0">
+ >>> L60926: <button aria-label="Refresh"
+     L60927: onClick={handleGenerateLessonIdeas}
+     L60928: disabled={isGeneratingExtension || history.length === 0}
+     L60929: className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cu
+     L60930: data-help-key="hints_generate_extension"
+
+
+--- L61467 ---
+     L61452: <div className="flex-1 overflow-y-auto">
+     L61453: <div className="space-y-4">
+     L61454: <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+     L61455: <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">{t('persona.reflection_prompt_label') ||
+     L61456: {isGeneratingReflectionPrompt ? (
+     L61457: <div className="flex items-center gap-2 text-indigo-500 text-sm italic"><RefreshCw size={14} className="animate-spin"/> 
+     L61458: ) : (
+     L61459: <p className="text-slate-700 text-sm leading-relaxed">{dynamicReflectionQuestion || t('persona.default_reflection_prompt
+     L61460: )}
+     L61461: </div>
+     L61462: <textarea value={personaReflectionInput} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('per
+     L61463: </div>
+     L61464: </div>
+     L61465: <div className="mt-6 flex gap-3">
+     L61466: <button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-sla
+ >>> L61467: <button aria-label="Refresh" onClick={handleSaveReflection} disabled={!personaReflectionInput.trim() || isGradingReflect
+     L61468: {isGradingReflection ? <RefreshCw size={18} className="animate-spin"/> : <Sparkles size={18} className="text-yellow-400 
+     L61469: {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
+     L61470: </button>
+     L61471: </div>
+
+
+--- L61989 ---
+     L61974: placeholder={t('persona.reflection_placeholder')}
+     L61975: className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-4
+     L61976: disabled={isGradingReflection}
+     L61977: />
+     L61978: </div>
+     L61979: </div>
+     L61980: 
+     L61981: <div className="mt-6 flex gap-3">
+     L61982: <button
+     L61983: onClick={handleSetIsPersonaReflectionOpenToFalse} data-help-key="persona_back_btn"
+     L61984: disabled={isGradingReflection}
+     L61985: className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
+     L61986: >
+     L61987: {t('persona.back_to_chat')}
+     L61988: </button>
+ >>> L61989: <button aria-label="Refresh"
+     L61990: onClick={handleSaveReflection} data-help-key="persona_submit_btn"
+     L61991: disabled={!personaReflectionInput.trim() || isGradingReflection}
+     L61992: className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active
+     L61993: >
+
+
+--- L62461 ---
+     L62446: </div>
+     L62447: 
+     L62448: {isUrlSearchMode ? (
+     L62449: <div className="animate-in fade-in slide-in-from-right-2">
+     L62450: <label className="block text-xs font-medium text-indigo-900 mb-1">{t('wizard.topic_find_label')}</label>
+     L62451: <div className="flex gap-2 mb-2">
+     L62452: <input aria-label="Enter Url Search Query"
+     L62453: type="text"
+     L62454: value={urlSearchQuery}
+     L62455: onChange={(e) => setUrlSearchQuery(e.target.value)}
+     L62456: placeholder={`e.g. Photosynthesis for ${gradeLevel}...`}
+     L62457: className="flex-grow text-sm p-2 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+     L62458: onKeyDown={(e) => e.key === 'Enter' && handleAiUrlSearch()}
+     L62459: autoFocus
+     L62460: />
+ >>> L62461: <button aria-label="Refresh"
+     L62462: onClick={handleAiUrlSearch}
+     L62463: disabled={!urlSearchQuery.trim() || isExtracting}
+     L62464: className="bg-teal-600 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors disabled:opaci
+     L62465: >
+
+
+--- L62778 ---
+     L62763: id="includeCitations"
+     L62764: type="checkbox"
+     L62765: checked={includeSourceCitations}
+     L62766: onChange={(e) => setIncludeSourceCitations(e.target.checked)}
+     L62767: className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
+     L62768: />
+     L62769: <label htmlFor="includeCitations" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-cen
+     L62770: <Search size={12} className="text-purple-600"/> {t('input.verify_facts')}
+     L62771: </label>
+     L62772: </div>
+     L62773: {includeSourceCitations && (
+     L62774: <p className="text-[10px] text-purple-700 ml-6 leading-relaxed">{t('input.verify_facts_desc')}</p>
+     L62775: )}
+     L62776: </div>
+     L62777: 
+ >>> L62778: <button aria-label="Refresh"
+     L62779: data-help-key="source_generate_button"
+     L62780: onClick={handleGenerateSource}
+     L62781: disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource}
+     L62782: className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors dis
+
+
+--- L64086 ---
+     L64071: className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-purple-50 transit
+     L64072: >
+     L64073: <div className="flex items-center gap-2">
+     L64074: <div className="bg-purple-100 p-1 rounded-md text-purple-700"><MapIcon size={16}/></div>
+     L64075: <div>
+     L64076: <span className="text-sm font-bold text-slate-700 block">{t('sidebar.tool_adventure')}</span>
+     L64077: </div>
+     L64078: </div>
+     L64079: {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} classN
+     L64080: </button>
+     L64081: 
+     L64082: {expandedTools.includes('adventure') && (
+     L64083: <div className="animate-in slide-in-from-top-2 duration-200">
+     L64084: <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3">
+     L64085: {hasSavedAdventure && (
+ >>> L64086: <button aria-label="Refresh"
+     L64087: data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
+     L64088: disabled={isResumingAdventure}
+     L64089: className="w-full bg-white border-2 border-purple-200 text-purple-700 text-sm font-bold py-2 rounded-md hover:bg-purple-
+     L64090: >
+
+
+--- L64926 ---
+     L64911: <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+     L64912: <div
+     L64913: className="h-full bg-purple-500 transition-all duration-1000"
+     L64914: style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
+     L64915: ></div>
+     L64916: </div>
+     L64917: <div className="text-[10px] text-right text-slate-500 font-mono">
+     L64918: {globalPoints} / {studentProjectSettings.adventureUnlockXP} XP
+     L64919: </div>
+     L64920: </div>
+     L64921: ) : (
+     L64922: !activeSessionCode ? (
+     L64923: <div className="flex flex-col gap-2">
+     L64924: {hasSavedAdventure ? (
+     L64925: <div className="grid grid-cols-2 gap-3">
+ >>> L64926: <button aria-label="Refresh"
+     L64927: data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
+     L64928: disabled={isResumingAdventure}
+     L64929: className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hov
+     L64930: >
+
+
+--- L65864 ---
+     L65849: onChange={() => toggleDiscrepancySelection(i)}
+     L65850: className="mt-1 w-4 h-4 text-red-600 border-red-300 rounded focus:ring-red-500 cursor-pointer shrink-0"
+     L65851: title={isSelected ? "Include in correction" : "Ignore this error"}
+     L65852: />
+     L65853: )}
+     L65854: <div className={`text-xs text-slate-700 leading-relaxed ${!isSelected ? 'line-through text-slate-500' : ''} w-full`}>
+     L65855: <BilingualFieldRenderer text={d} />
+     L65856: </div>
+     L65857: </div>
+     L65858: );
+     L65859: })}
+     L65860: </div>
+     L65861: 
+     L65862: 
+     L65863: {isTeacherMode && (
+ >>> L65864: <button aria-label="Refresh"
+     L65865: onClick={handleAutoCorrectSource}
+     L65866: disabled={isProcessing || selectedDiscrepancies.size === 0}
+     L65867: className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-100 px
+     L65868: >
+
+
+--- L66031 ---
+     L66016: onChange={() => toggleGrammarErrorSelection(idx)}
+     L66017: className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0"
+     L66018: title={isSelected ? "Include in correction" : "Ignore this error"}
+     L66019: />
+     L66020: )}
+     L66021: {isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" />}
+     L66022: <div className={`text-sm text-slate-700 leading-relaxed ${!isSelected && !isFixed ? 'line-through text-slate-400' : ''}`
+python : Traceback (most 
+recent call last):
+At line:1 char:1
++ python 
+audit_remaining_a11y.py 
+2>&1 | Out-File -FilePath 
+'_remaining_ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (T  
+  raceback (most recent   
+  call last)::String)     
+[], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+  File "C:\Users\cabba\One
+Drive\Desktop\UDL-Tool-Upd
+ated\audit_remaining_a11y.
+py", line 35, in <module>
+    
+print(f"{marker}L{j+1}: 
+{line.strip()[:120]}")
+    ~~~~~^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\e
+ncodings\cp1252.py", line 
+19, in encode
+    return codecs.charmap_
+encode(input,self.errors,e
+ncoding_table)[0]
+           ~~~~~~~~~~~~~~~
+~~~~~~^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
+UnicodeEncodeError: 
+'charmap' codec can't 
+encode character '\u2713' 
+in position 55: character 
+maps to <undefined>

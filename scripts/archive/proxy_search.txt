@@ -1,0 +1,13 @@
+L1029: const LETTER_NAME_AUDIO = new Proxy({}, { get: function(target, prop) { if (!_CACHE_LETTER_NAME_AUDIO) _CACHE_LETTER_NAME_AUDIO = _LOAD_LETTER_NAME_AU
+L1049: const INSTRUCTION_AUDIO = new Proxy({}, {
+L1165: const ISOLATION_AUDIO = new Proxy({}, {
+L1346: const PHONEME_AUDIO_BANK = new Proxy({}, {
+L21339:     const safeResources = structuredClone(resources);
+L21373:     const hydrated = structuredClone(resources);
+L35044:           const safeHistory = structuredClone(sanitizedHistory);
+L35382:                     parsedData = structuredClone(dataToSave);
+L42943:           const cleanItem = structuredClone(item);
+L43409:     const contentCopy = structuredClone(generatedContent);
+L45306:           const restoredState = structuredClone(lastTurnSnapshot.current);
+L45385:     lastTurnSnapshot.current = structuredClone(adventureState);
+L45713:     lastTurnSnapshot.current = structuredClone(adventureState);

@@ -1,0 +1,137 @@
+
+============================================================
+BANK: PHONEME_AUDIO_BANK
+============================================================
+  DEF at L1056: const PHONEME_AUDIO_BANK = {
+  Total references: 16
+    L1056: const PHONEME_AUDIO_BANK = {
+    L1119: if (!PHONEME_AUDIO_BANK['ch']) PHONEME_AUDIO_BANK['ch'] = PHONEME_AUDIO_BANK['sh'];
+    L1121: if (typeof PHONEME_AUDIO_BANK !== 'undefined') {
+    L1122: if (PHONEME_AUDIO_BANK['or'] && !PHONEME_AUDIO_BANK['orr']) PHONEME_AUDIO_BANK['orr'] = PHONEME_AUDI
+    L1123: if (PHONEME_AUDIO_BANK['ar'] && !PHONEME_AUDIO_BANK['ahrr']) PHONEME_AUDIO_BANK['ahrr'] = PHONEME_AU
+    L1124: if (PHONEME_AUDIO_BANK['er'] && !PHONEME_AUDIO_BANK['err']) PHONEME_AUDIO_BANK['err'] = PHONEME_AUDI
+    L2198: return PHONEME_AUDIO_BANK[audioKey] || null;
+    L3184: if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[text]) {
+    L3186: const audio = new Audio(PHONEME_AUDIO_BANK[text]);
+    L3296: const bankKey = (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[normalizedKey])
+    L3300: if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[bankKey]) {
+    L3303: return loadAndPlay(PHONEME_AUDIO_BANK[bankKey]);
+    L3330: if (isPhoneme && typeof PHONEME_AUDIO_BANK !== 'undefined') {
+    L3372: if (match && PHONEME_AUDIO_BANK[match]) {
+    L3374: return loadAndPlay(PHONEME_AUDIO_BANK[match]);
+    L37148: if (PHONEME_AUDIO_BANK && (PHONEME_AUDIO_BANK[bankKey] || PHONEME_AUDIO_BANK[term.trim()])) {
+
+============================================================
+BANK: INSTRUCTION_AUDIO
+============================================================
+  DEF at L1026: const INSTRUCTION_AUDIO = {
+  Total references: 11
+    L1026: const INSTRUCTION_AUDIO = {
+    L7092: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO[wordSoundsActivity]) {
+    L7093: instructionAudioSrc = INSTRUCTION_AUDIO[wordSoundsActivity];
+    L7114: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['trace_letter']) {
+    L7115: await handleAudio(INSTRUCTION_AUDIO['trace_letter']); // "Trace the letter"
+    L7128: if (INSTRUCTION_AUDIO['for']) {
+    L7129: await handleAudio(INSTRUCTION_AUDIO['for']);
+    L7143: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['rhyming']) {
+    L7145: await handleAudio(INSTRUCTION_AUDIO['rhyming']);
+    L8500: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO[wordSoundsActivity]) {
+    L8501: handleAudio(INSTRUCTION_AUDIO[wordSoundsActivity]);
+
+============================================================
+BANK: LETTER_NAME_AUDIO
+============================================================
+  DEF at L997: const LETTER_NAME_AUDIO = {
+  Total references: 7
+    L997: const LETTER_NAME_AUDIO = {
+    L3748: if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowerL]) {
+    L3751: onPlayAudio(LETTER_NAME_AUDIO[lowerL]);
+    L7120: if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowLet]) {
+    L7121: await handleAudio(LETTER_NAME_AUDIO[lowLet]);
+    L7136: } else if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowLet]) {
+    L7137: instructionAudioSrc = LETTER_NAME_AUDIO[lowLet];
+
+============================================================
+BANK: ISOLATION_AUDIO
+============================================================
+  DEF at L1039: const ISOLATION_AUDIO = {
+  Total references: 3
+    L1039: const ISOLATION_AUDIO = {
+    L7100: if (typeof ISOLATION_AUDIO !== 'undefined' && ISOLATION_AUDIO[posKey]) {
+    L7101: instructionAudioSrc = ISOLATION_AUDIO[posKey];
+
+============================================================
+COMPONENTS WITHOUT React.memo
+============================================================
+
+With React.memo (16):
+  L18662: AlloBot
+  L22725: ConfettiExplosion
+  L22763: ComplexityGauge
+  L22947: MemoryGame
+  L23271: MatchingGame
+  L23645: TimelineGame
+  L24002: ConceptSortGame
+  L24359: VennGame
+  L24703: CrosswordGame
+  L25163: SyntaxScramble
+  L25327: BingoGame
+  L25753: StudentBingoGame
+  L25922: WordScrambleGame
+  L26139: InventoryGrid
+  L26198: DiceOverlay
+  L30604: ImmersiveWord
+
+Without React.memo (52):
+  L99: GlobalMuteButton
+  L435: LargeFileTranscriptionModal
+  L1153: WordSoundsGenerator
+  L2050: WordSoundsReviewPanel
+  L2885: WordSoundsModal
+  L3637: RhymeView
+  L3731: OrthographyView
+  L4099: SoundMappingView
+  L8025: LetterTraceView
+  L10217: StudentAnalyticsPanel
+  L17976: LargeFileImportModal
+  L18173: StudentSubmitModal
+  L18437: SpeechBubble
+  L18558: LandingDust
+  L18568: JetpackParticles
+  L18614: ReactionBubble
+  L18622: BotConfettiBurst
+  L20739: MathSymbol
+  L20749: MissionReportCard
+  L20860: StudentQuizOverlay
+  L21210: DraftFeedbackInterface
+  L21418: TeacherGate
+  L21748: ClimaxProgressBar
+  L21822: AdventureAmbience
+  L22260: InfoTooltip
+  L22747: Stamp
+  L22784: Sticker
+  L22820: AnimatedNumber
+  L22863: ClozeInput
+  L23253: SkeletonLoader
+  L26255: AdventureShop
+  L26345: RoleSelectionModal
+  L26485: StudentEntryModal
+  L26605: StudentWelcomeModal
+  L26658: SimpleBarChart
+  L26711: SimpleDonutChart
+  L26750: ConfettiEffect
+  L26796: StudentEscapeRoomOverlay
+  L27503: EscapeRoomTeacherControls
+  L27690: TeacherLiveQuizControls
+  L28452: LongitudinalProgressChart
+  L28519: TeacherDashboard
+  L29200: QuickStartWizard
+  L30301: SpeedReaderOverlay
+  L30469: ImmersiveToolbar
+  L30472: ToggleButton
+  L30671: InteractiveBlueprintCard
+  L30886: HarmonyMeter
+  L30909: CharacterColumn
+  L31044: MarkdownRenderer
+  L38743: BilingualFieldRenderer
+  L54727: BranchItem

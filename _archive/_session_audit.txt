@@ -1,0 +1,80 @@
+============================================================
+1. wordSoundsSessionGoal STATE DECLARATIONS
+============================================================
+L1474: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30); // Items per session (default 30)
+L30563: const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, wordSoundsSessionProgress, wordSoundsTtsSpeed, wordSoundsFamilie
+L30569: const setWordSoundsSessionGoal = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsSessionGoal', value: v });
+L30606: // [PHASE 4 MIGRATED] const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(30); // Items per session
+
+============================================================
+2. includeSpelling / includeOrthographic STATE
+============================================================
+L774: 'word_sounds.include_spelling_activities': 'Include Spelling Activities',
+L1473: const [includeOrthographic, setIncludeOrthographic] = React.useState(false); // OFF by default for pre-readers
+L2077: className={`p-3 rounded-xl border-2 transition-all ${includeLessonPlan ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${includeOrthographic && !includeLessonPlan ? 'bg-indigo-50 border-indigo-5
+L2078: onClick={() => !includeLessonPlan && setIncludeOrthographic(!includeOrthographic)}
+L2082: <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeOrthographic && !includeLessonPlan ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
+L2083: {includeOrthographic && !includeLessonPlan && <Check size={14} className="text-white" />}
+L2087: <span className="font-bold text-slate-700">{t('word_sounds.include_spelling_activities', 'Include Spelling Activities')}</span>
+L3260: includeOrthographic = false,
+L4561: if (includeOrthographic) {
+L4565: }, [includeOrthographic]);
+L7333: } else if (includeOrthographic) {
+L11788: include_spelling_activities: 'Include Spelling Activities',
+
+============================================================
+3. SESSION SLIDER / ITEMS PER SESSION UI
+============================================================
+L771: 'word_sounds.activity_length': '🎯 Items per Session',
+L1474: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30); // Items per session (default 30)
+L1850: {/* Activity Length / Items per Session */}
+L1853: <span className="font-bold text-slate-700">{t('word_sounds.activity_length', '🎯 Items per Session')}</span>
+L1858: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+L11782: activity_length: '🎯 Items per Session',
+L30606: // [PHASE 4 MIGRATED] const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(30); // Items per session
+
+============================================================
+4. SESSION GOAL USAGE (comparisons)
+============================================================
+L1854: <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
+L7615: if (wordSoundsScore.correct >= wordSoundsSessionGoal) {
+L30569: const setWordSoundsSessionGoal = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsSessionGoal', value: v });
+
+============================================================
+5. ADAPTIVE DIRECTOR TRANSITIONS (phono->ortho)
+============================================================
+L2077: className={`p-3 rounded-xl border-2 transition-all ${includeLessonPlan ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${includeOrthographic && !includeLessonPlan ? 'bg-indigo-50 border-indigo-5
+L7342: message: ts('word_sounds.fb_spelling_transition') || `Great spelling! Let's try ${nextOrtho.replace(/_/g, ' ')}! 🏆`,
+L7353: // First transition from phonological to orthographic
+L7356: message: ts('word_sounds.fb_spelling_transition') || "You're a pro! Testing your spelling now! 👁️",
+L11769: fb_spelling_transition: "You're a pro! Testing your spelling now! 👁️",
+
+============================================================
+6. ALL wordSoundsSessionGoal REFERENCES
+============================================================
+L1474: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30); // Items per session (default 30)
+L1854: <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
+L1858: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+L3265: wordSoundsSessionGoal = 10,
+L7615: if (wordSoundsScore.correct >= wordSoundsSessionGoal) {
+L29574: wordSoundsSessionGoal: 30,
+L30569: const setWordSoundsSessionGoal = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsSessionGoal', value: v });
+L30606: // [PHASE 4 MIGRATED] const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(30); // Items per session
+L60985: wordSoundsSessionGoal={wordSoundsSessionGoal}
+
+============================================================
+7. LESSON PLAN / ADVANCED SETTINGS for Word Sounds
+============================================================
+L844: 'word_sounds.preview_title': 'Lesson Preview',
+L1796: <p className="text-indigo-100 font-medium opacity-90">{t('word_sounds.subtitle', 'Design your phonics lesson')} • {gradeLevel || 'K-2'}</p>
+L2194: <h3 className="text-2xl font-black text-slate-700">{t('word_sounds.preview_title', 'Lesson Preview')}</h3>
+L7235: } else if (hasLessonPlan && isCorrect && shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig)) {
+L7291: } else if (!hasLessonPlan && isCorrect && wordSoundsActivity !== 'orthography') {
+L10063: width: `${Math.min(100, ((masteryStats[wordSoundsActivity]?.attempted || 0) / (lessonPlanConfig.activities?.find(a => a.id === wordSoundsActivity)?.count || 5)) * 100)}%`
+L10068: <span>{masteryStats[wordSoundsActivity]?.attempted || 0}/{lessonPlanConfig.activities?.find(a => a.id === wordSoundsActivity)?.count || 5} items</span>
+L13482: wordsounds_desc: "Design targeted phonics and phoneme awareness lessons using glossary terms or word families.",
+L42512: const relevantTypes = ['quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline', 'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds'];
+
+============================================================
+8. SESSION COMPLETION LOGIC (score/progress)
+============================================================

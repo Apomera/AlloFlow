@@ -1,0 +1,7 @@
+L32709: "                    .replace(/^(header_|tool_|export_|sidebar_|chat_|bot_|glossary_|quiz_|math_|word_sounds_|xp_|persona_|brainstorm_|dashboard_|outline_|faq_|timeline_|lesson_plan_|simplified_|scaffolds_|concept_sort_|adventure_|alignment_|source_)/, '') // Strip common prefixes\n"
+L32710: "                    .replace(/_/g, ' ') // Underscores to spaces\n"
+L32711: '                    .replace(/\\b\\w/g, c => c.toUpperCase()) // Title Case\n'
+L32712: '                    .replace(/\\b(Udl|Xp|Tts|Dok|Qti|Faq|Pdf|Csv|Ai|Url|Ipa|Ell|Iep|Sel|Rti|Api)\\b/g, m => m.toUpperCase()) // Fix acronyms\n'
+L32713: "                    .replace(/\\bBtn\\b/g, 'Button').replace(/\\bChk\\b/g, 'Check').replace(/\\bDesc\\b/g, '').replace(/\\bLbl\\b/g, '').replace(/\\bAria\\b/g, ''); // Clean abbreviations\n"
+L32714: "                return (title || 'Help').replace(/\\s{2,}/g, ' ').trim();\n"
+L32715: '            };\n'

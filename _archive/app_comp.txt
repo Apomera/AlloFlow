@@ -1,0 +1,30 @@
+71441: 
+71442: rosterKey={rosterKey}
+71443: 
+71444: setRosterKey={setRosterKey}
+71445: 
+71446: latestProbeResult={latestProbeResult}
+71447: 
+71448: setLatestProbeResult={setLatestProbeResult}
+71449: 
+71450: rosterQueue={rosterQueue}
+71451: 
+71452: setRosterQueue={setRosterQueue}
+71453: 
+71454: screenerSession={screenerSession}
+71455: 
+71456: setScreenerSession={setScreenerSession}
+71457: onLaunchORF={handleLaunchORF}
+71458: probeHistory={probeHistory}
+71459: interventionLogs={interventionLogs}
+71460: addToast={addToast}
+71461: 
+71462: />
+71463: 
+71464: </ErrorBoundary>
+71465: )}
+71466: {showAdventureConfirmation && (
+71467: <div role="button" tabIndex={0} className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowAdventureConfirmationToFalse}>
+71468: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-4 border-indigo-100 text-center" role="dialog" onClick={e => e.stopPropagation()}>
+71469: <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-200">
+71470: <AlertCircle size={32} />

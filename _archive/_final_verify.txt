@@ -1,0 +1,46 @@
+Total lines: 72926
+
+=== FIX 1: onShowReview has setTimeout remount ===
+  L1266:     const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], on
+  L1267:         // Guard: Ensure t is always a valid function
+  L1268:         const t = tProp || ((key, fallback) => fallback || key);
+  L1269: 
+  L1270:         // Image Visibility Mode (session-level setting)
+  L1271:         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+  L1272:         // SMART IMAGE VISIBILITY - Activity-specific optimal image behavior
+  L1273:         const SMART_IMAGE_VISIBILITY = {
+  L1274:             'counting':       'afterCompletion',  // High rigor - no visual hints
+  L1275:             'isolation':      'progressive',       // Reveal after 1st attempt
+  L1276:             'blending':       'afterCompletion',  // Auditory-first, reveal as reward
+  L1277:             'segmentation':   'alwaysOn',          // Word is known, image supports VAKT
+
+  L71176:               onShowReview={() => {
+  L71177:                   // Navigate to word sounds modal with review panel
+  L71178:                   // Force unmount-remount to reset internal refs (hasStartedFromReview)
+  L71179:                   setIsWordSoundsMode(false);
+  L71180:                   setTimeout(() => {
+  L71181:                       setWordSoundsActivity('word-sounds');
+  L71182:                       setWordSoundsAutoReview(true);
+  L71183:                       setIsWordSoundsMode(true);
+  L71184:                       setActiveView('output');
+  L71185:                   }, 0);
+  L71186:               }}
+  L71187:           />
+
+
+=== FIX 2: Image concurrency (generatingImageSet) ===
+  L3315: const [generatingImageSet, setGeneratingImageSet] = React.useState(new Set()); // Track concurrent image generations (max 5)
+  L6138: if (generatingImageSet.size >= 5) { console.warn("⚠️ Max 5 concurrent image generations"); return; } // Concurrency limit
+
+=== FIX 3: Dead code checks ===
+  DISABLE_GEMINI_PHONEMES (not V2): 1 refs
+  DISABLE_GEMINI_PHONEMES_V2: 0 refs (should be 0)
+  prefetchNextWords body lines: 5
+
+=== FIX 4: Audio preload flow intact ===
+  Audio prefetch found at L5800
+  ttsReady references: 12
+
+=== SUMMARY ===
+Total lines removed: 360
+All checks passed: True

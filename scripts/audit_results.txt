@@ -1,0 +1,57 @@
+﻿============================================================
+WORD SOUNDS ACTIVITIES
+============================================================
+  Blend Sounds: 2 hits -> L[662, 4096]
+  Blending: 49 hits -> first 5: L[3251, 4094, 4517, 4518, 4532]
+  Counting: 3 hits -> L[3256, 3709, 6167]
+  Dictation: 43 hits -> first 5: L[29838, 29913, 31532, 31536, 35284]
+  Family: 54 hits -> first 5: L[752, 805, 2263, 2313, 2331]
+  Find Sounds: 3 hits -> L[661, 3250, 4155]
+  Isolation: 21 hits -> first 5: L[4522, 4529, 7359, 7363, 7366]
+  LetterTrace: 2 hits -> L[8776, 10325]
+  Mapping: 7 hits -> L[666, 3257, 5617, 5636, 5717, 5731, 9740]
+  Orthography: 18 hits -> first 5: L[4521, 4531, 5212, 6448, 7256]
+  Rhyme Time: 3 hits -> L[664, 3254, 4033]
+  Rhyming: 10 hits -> L[4530, 7268, 7274, 7626, 8362, 8372, 8482, 13485, 13495, 49839]
+  Segmentation: 14 hits -> first 5: L[5996, 7513, 8627, 8679, 9245]
+  Sound Counting: 1 hits -> L[3256]
+  Spelling: 34 hits -> first 5: L[745, 755, 757, 2999, 3003]
+  Spelling Bee: 2 hits -> L[755, 5732]
+  activityType: 2 hits -> L[12097, 12102]
+  dictation: 12 hits -> first 5: L[35397, 35404, 43721, 66721, 69695]
+  rhyme_time: 1 hits -> L[4035]
+  spelling: 74 hits -> first 5: L[667, 670, 745, 746, 748]
+  spellingBee: 5 hits -> L[9262, 9265, 9266, 9270, 9272]
+  spelling_bee: 31 hits -> first 5: L[749, 755, 756, 757, 758]
+  wordSoundsActivity: 127 hits -> first 5: L[4323, 4488, 4495, 5801, 5806]
+
+--- Looking for activity type lists ---
+  L8119: const currentIdx = uniqueActivities.indexOf(wordSoundsActivity);
+  L10870: width: `${Math.min(100, ((masteryStats[wordSoundsActivity]?.attempted || 0) / (lessonPlanConfig.activities?.find(a => a.
+  L10875: <span>{masteryStats[wordSoundsActivity]?.attempted || 0}/{lessonPlanConfig.activities?.find(a => a.id === wordSoundsActi
+  L35545: totalActivities: (history?.length || 0) + (wordSoundsHistory?.length > 0 ? 1 : 0) + (gameCompletions?.length || 0),
+
+============================================================
+UNIQUE BUTTON LABELS
+============================================================
+Found 2 unique button labels:
+  Apply
+  Close
+
+============================================================
+HELP_STRINGS KEYS (feature areas)
+============================================================
+Found 0 HELP_STRINGS keys:
+
+============================================================
+ALL VIEW/TAB/MODE VALUES
+============================================================
+activeView values (14): ['adventure', 'analysis', 'brainstorm', 'dashboard', 'faq', 'glossary', 'image', 'input', 'math', 'outline', 'persona', 'quiz', 'simplified', 'timeline']
+activeTab values (2): ['insights', 'students']
+mode values (20): ['adventure', 'explain', 'first', 'independent', 'language', 'last', 'list', 'load', 'panel', 'paragraph', 'persona', 'print', 'script', 'single', 'student', 'sync', 'translate', 'visual', 'wordsearch', 'worksheet']
+
+============================================================
+RESOURCE TYPES
+============================================================
+resourceType values (0): []
+type comparisons (54): ['ADV_RESET', 'ADV_SET', 'CS_RESET', 'CS_SET', 'Deep Dive', 'GLOSS_RESET', 'GLOSS_SET', 'QUIZ_RESET', 'QUIZ_SET', 'Remediation', 'SETTINGS_RESET', 'SETTINGS_SET', 'UI_RESET', 'UI_SET', 'WS_RESET', 'WS_SET', 'add', 'adventure', 'analysis', 'arrow', 'bar', 'blueprint', 'brainstorm', 'branch', 'choice', 'cipher', 'circle', 'correct', 'custom', 'del', 'donut', 'error', 'faq', 'feedback', 'fillin', 'free', 'freehand', 'glossary', 'highlight', 'image', 'main', 'matching', 'math', 'mcq', 'outline', 'persona', 'quiz', 'scene', 'scramble', 'sequence', 'simplified', 'simplify', 'success', 'timeline']

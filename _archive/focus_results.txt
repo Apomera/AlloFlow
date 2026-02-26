@@ -1,0 +1,5 @@
+WordSoundsModal found at line 916
+SET_ACTIVITY at 921: setWordSoundsActivity,
+SET_ACTIVITY at 3121: setWordSoundsActivity(activityId);
+SET_ACTIVITY at 3231: }, [getAdaptiveRandomWord, fetchWordData, setWordSoundsActivity, setCurrentWordSoundsWord, setWordSoundsFeedback, wordPool, preloadedWords]);
+SET_ACTIVITY at 3335: setTimeout(() => setWordSoundsActivity('orthography'), 2000);

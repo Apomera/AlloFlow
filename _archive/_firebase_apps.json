@@ -1,0 +1,15 @@
+﻿{
+  "status": "success",
+  "result": [
+    {
+      "name": "projects/prismflow-911fe/webApps/1:252114883460:web:9b200707dee54c18f1c3d1",
+      "displayName": "PrismFlow",
+      "platform": "WEB",
+      "appId": "1:252114883460:web:9b200707dee54c18f1c3d1",
+      "namespace": "NWM1OWI0NTUtZTBmOS00OWY3LTliNTItOGMxNzdiYWEwMDE4",
+      "apiKeyId": "fb24dc15-3679-48de-a6dd-7ef6920f4611",
+      "state": "ACTIVE",
+      "expireTime": "1970-01-01T00:00:00Z"
+    }
+  ]
+}

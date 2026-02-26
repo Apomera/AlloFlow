@@ -1,0 +1,40 @@
+﻿python : Traceback 
+(most recent call 
+last):
+At line:1 char:32
++ ... nv:PYTHONIOENCO
+DING='utf-8'; python 
+compare_help_keys.py 
+2>&1 | Out-F ...
++                    
+              ~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo   
+           : 
+NotSpecified: (Trace 
+   back (most recent 
+call     
+last)::String) [], 
+Remo    teException
+    + FullyQualifiedE
+rrorId     : 
+NativeCommandError
+ 
+  File "C:\Users\cabb
+a\OneDrive\Desktop\UD
+L-Tool-Updated\compar
+e_help_keys.py", 
+line 14, in <module>
+    with 
+open(BACKUP, 'r', 
+encoding='utf-8') as 
+f:
+         ~~~~^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^
+FileNotFoundError: 
+[Errno 2] No such 
+file or directory: 'A
+lloFlowANTI-backup.tx
+t'

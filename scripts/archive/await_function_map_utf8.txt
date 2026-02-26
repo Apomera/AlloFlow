@@ -1,0 +1,58 @@
+﻿callGemini defined at L37650, has try/catch: True
+
+12 async functions contain unguarded callGemini calls:
+  handleWizardStandardLookup (L30284): 1 unguarded calls at [30311]
+  handleGenerateMath (L36255): 1 unguarded calls at [36344]
+  handleReviseSelection (L39837): 1 unguarded calls at [39928]
+  generateHelpfulHint (L43632): 1 unguarded calls at [43716]
+  generateStandardChatResponse (L46315): 1 unguarded calls at [46356]
+  handleGeneratePersonas (L47228): 1 unguarded calls at [47315]
+  handlePersonaChatSubmit (L48025): 1 unguarded calls at [48094]
+  autoConfigureSettings (L48583): 1 unguarded calls at [48653]
+  checkedQuestions (L50373): 1 unguarded calls at [50487]
+  anon_L51135 (L51135): 1 unguarded calls at [51233]
+  handleMasteryGrading (L53417): 1 unguarded calls at [53428]
+  handleComplexityAdjustment (L53652): 1 unguarded calls at [53732]
+
+5 async functions contain unguarded audio calls:
+  anon_L4013 (L4013): 1 audio calls at [4017]
+  timer (L6527): 3 audio calls at [6535, 6539, 6547]
+  runInstructionSequence (L6850): 9 audio calls at [6894, 6899, 6901, 6906, 6911, 6955, 6957, 6963, 6965]
+  anon_L8778 (L8778): 1 audio calls at [8782]
+  anon_L8821 (L8821): 1 audio calls at [8824]
+
+32 async functions contain unguarded medium-risk calls:
+  anon_L417 (L417): 1 calls
+  anon_L439 (L439): 1 calls
+  fetchAudio (L5578): 1 calls
+  callApi (L16674): 2 calls
+  uploadSessionAssets (L21345): 1 calls
+  hydrateSessionAssets (L21379): 1 calls
+  handlePauseToggle (L26212): 1 calls
+  handleEndGame (L26216): 1 calls
+  handleRevealResults (L26457): 1 calls
+  handleNextQuestion (L26536): 1 calls
+  handlePrevQuestion (L26547): 1 calls
+  handleBatchUpload (L27270): 1 calls
+  initStorage (L29845): 4 calls
+  handleInitializeMap (L33975): 1 calls
+  toggleFluencyRecording (L37521): 3 calls
+  fetchGoogleCloudTTS (L38347): 1 calls
+  executeRequest (L38518): 2 calls
+  handleDownloadAudio (L40696): 3 calls
+  generateAdventureImage (L43897): 1 calls
+  handleAdventureTextSubmit (L45128): 1 calls
+  handleAdventureChoice (L45432): 1 calls
+  generateBlueprint (L46526): 1 calls
+  anon_L46700 (L46700): 4 calls
+  anon_L46757 (L46757): 15 calls
+  anon_L46956 (L46956): 5 calls
+  anon_L47034 (L47034): 3 calls
+  handleSelectPersona (L47791): 1 calls
+  generateImageWithRetry (L49688): 1 calls
+  handleGenerateFullPack (L51391): 1 calls
+  anon_L61555 (L61555): 2 calls
+  anon_L63348 (L63348): 1 calls
+  anon_L63366 (L63366): 1 calls
+
+TOTAL unique functions needing try/catch: 49

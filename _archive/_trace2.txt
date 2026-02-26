@@ -1,0 +1,47 @@
+=== nextWord / advance word after correct (search startActivity call in checkAnswer) ===
+L7271: startActivity(nextActivity);
+L7291: startActivity(firstRevisit.activityId, firstRevisit.word);
+
+=== Correct answer → next word flow (L7160-7230) ===
+L7160: setTimeout(() => handleAudio(expectedAnswer), 300);
+L7164: setTimeout(() => {
+L7171: setTimeout(() => { if (isMountedRef.current) setWordSoundsFeedback?.(null); }, 3000);
+L7180: const newStreak = isCorrect
+L7184: if (isCorrect) {
+L7187: setTimeout(() => { if (isMountedRef.current) setIsCelebrating(false); }, 2500);
+L7193: if (!isCorrect && effectiveCheckMode === 'afterCompletion') {
+L7198: correct: prev.correct + (isCorrect ? 1 : 0),
+L7204: if (!isCorrect && !showLetterHints && newStreak === 0) {
+L7220: if (isCorrect) {
+
+=== startActivity function def ===
+L6531: const startActivity = React.useCallback((activityId, forceWord = null, excludeWord = null, recursionDepth = 0) => {
+L6532:         setWordSoundsActivity(activityId);
+L6533:         setWordSoundsFeedback?.(null);
+L6534:         setUserAnswer('');
+L6535:         setAttempts(0); // Reset attempts
+L6536:         setBlendingProgress(0);
+L6537:         setSoundChips([]);
+L6538:         // CRITICAL: Reset streak when changing activities (manual or auto)
+L6539:         setWordSoundsScore(prev => ({ ...prev, streak: 0 }));
+L6540:         if (setWordSoundsStreak) setWordSoundsStreak(0);
+L6541:         debugLog("🔄 Streak reset on activity change to:", activityId);
+L6542:         setElkoninBoxes([]);
+L6543:         setSegmentationErrors([]);
+L6544:         setNextWordBuffer(null); // Clear buffer on new activity start
+L6545:         lastPlayedWord.current = null; // Reset audio loop check
+L6546:         // Reset session progress for the new batch
+L6547:         if (setWordSoundsSessionProgress) setWordSoundsSessionProgress(0);
+L6548:         // === NEW: Initialize Session Queue for this Activity ===
+L6549:         // Only generate if we aren't forcing a specific word (e.g. debug/resume)
+L6550:         if (!forceWord) {
+L6551:              const effectiveDiff = getEffectiveDifficulty();
+L6552:              // Always generate a fresh queue when entering a new activity
+L6553:              generateSessionQueue(activityId, effectiveDiff);
+L6554:         }
+L6555:         // Use adaptive difficulty-based word selection (now pulls from queue)
+L6556:         const word = forceWord || getAdaptiveRandomWord(excludeWord ? null : null); // excludeWord deprecated by queue logic
+L6557:         if (!word) {
+L6558:             // FIX: Check for both wordPool AND preloadedWords before showing loading
+L6559:             const hasAnyWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+L6560:             if (!hasAnyWords) {

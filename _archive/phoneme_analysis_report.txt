@@ -1,0 +1,116 @@
+======================================================================
+PHONEME ARCHITECTURE ANALYSIS REPORT
+======================================================================
+
+### 1. SEARCHING FOR 'ih' (case-insensitive in phoneme contexts) ###
+L3617: SHORT VOWELS: a, e, i, o, u (NOT 'ih', 'ah', 'uh' - just single letters)
+L3622: IMPORTANT: Use simple letters for short vowels (a, e, i, o, u), NOT 'ih', 'ah', 'uh', etc.
+
+### 2. PHONEME_BANK CONTENTS ###
+L1557:     const PHONEME_BANK = {
+L1558:         'Consonants': ['b', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z'],
+L1559:         'Digraphs': ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck'],
+L1560:         'Vowels (Short)': ['a', 'e', 'i', 'o', 'u'],
+L1561:         'Vowels (Long)': ['ay', 'ee', 'igh', 'oa', 'ue', 'ai', 'ea', 'ie', 'ow', 'oo'],
+L1562:         'R-Controlled': ['ar', 'er', 'ir', 'or', 'ur']
+L1563:     };
+L1564: 
+L1565:     // Add phoneme to a word's phoneme list
+L1566:     const addPhoneme = (wordIdx, phoneme) => {
+
+### 3. commonPhonemes ARRAYS ###
+L3390: const commonPhonemes = ['s', 't', 'r', 'n', 'l', 'k', 'p', 'm', 'b', 'd', 'sh', 'ch', 'th', 'ar', 'er'];
+L3396: const p = commonPhonemes[Math.floor(Math.random() * commonPhonemes.length)];
+L3716: const commonPhonemes = ['b', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'w', 'ch', 'sh', 'th'];
+L3717: commonPhonemes.sort(() => Math.random() - 0.5);
+L4494: const commonPhonemes = ['s', 't', 'm', 'p', 'k', 'n', 'r', 'l', 'b', 'g', 'f', 'h', 'd', 'sh', 'ch', 'th', 'a', 'e', 'i', 'o', 'u'];
+L4498: const shuffledCommon = [...commonPhonemes].sort(() => Math.random() - 0.5);
+
+### 4. isoCommon ARRAYS ###
+L4669: const isoCommon = ['b', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'w'];
+L4675: const r = isoCommon.splice(Math.floor(Math.random() * isoCommon.length), 1)[0];
+
+### 5. estimatePhonemesBasic FUNCTION ###
+L3076: const estimatePhonemesBasic = React.useCallback((word) => {
+L3077:         if (!word) return [];
+L3078:         const w = word.toLowerCase();
+L3079:         const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb'];
+L3080:         const trigraphs = ['igh', 'tch', 'dge'];
+L3081:         let result = [];
+L3082:         let i = 0;
+L3083:         while (i < w.length) {
+L3084:             if (i < w.length - 2 && trigraphs.includes(w.slice(i, i + 3))) {
+L3085:                 result.push(w.slice(i, i + 3));
+L3086:                 i += 3;
+L3087:             } else if (i < w.length - 1 && digraphs.includes(w.slice(i, i + 2))) {
+L3088:                 result.push(w.slice(i, i + 2));
+L3089:                 i += 2;
+L3090:             } else {
+L3091:                 result.push(w[i]);
+L3092:                 i++;
+L3093:             }
+L3094:         }
+L3095:         return result;
+
+### 6. GEMINI PROMPT PHONEME RULES ###
+L3608: STRICT PHONEME RULES:
+L3609: 1. Digraphs MUST stay together: 'ch', 'sh', 'th', 'ph', 'wh', 'ck', 'ng'. (e.g., 'fish' -> ['f', 'i', 'sh'])
+L3610: 2. R-Controlled Vowels MUST stay together: 'ar', 'or', 'er', 'ir', 'ur'. (e.g., 'star' -> ['s', 't', 'ar'])
+L3611: 3. Long Vowel Teams MUST stay together: 'ay', 'ee', 'ea', 'ai', 'oa', 'oe', 'ue', 'ui', 'igh'.
+L3612: 4. Split Digraphs (Magic E): Represent the vowel sound as a long vowel (e.g., 'cake' -> ['c', 'ay', 'k'], 'bone' -> ['b', 'oa', 'n']).
+L3613: 5. Consonant Blends SHOULD BE SPLIT: 'bl', 'st', 'fr', 'pl', 'gr'. (e.g., 'black' -> ['b', 'l', 'a', 'ck'], 'stop' -> ['s', 't', 'o', 'p']). EXCEPT if it creates a specific digraph sound.
+L3614: 6. Use ONLY these standard grapheme codes (NO IPA like /ʃ/, /ɪ/, /æ/):
+L3615:    CONSONANTS: b, d, f, g, h, j, k, l, m, n, p, r, s, t, v, w, y, z
+L3616:    DIGRAPHS: sh, ch, th, wh, ph, ng, ck
+L3617:    SHORT VOWELS: a, e, i, o, u (NOT 'ih', 'ah', 'uh' - just single letters)
+L3618:    LONG VOWELS: ay (cake), ee (tree), igh (night), oa (boat), ue (blue), ai, ea, ie, ow, oo
+L3619:    R-CONTROLLED: ar, er, ir, or, ur
+L3620:    SPECIAL: dh (voiced TH as in 'this'), zh (measure)
+L3621: 
+L3622:    IMPORTANT: Use simple letters for short vowels (a, e, i, o, u), NOT 'ih', 'ah', 'uh', etc.
+L3623: 
+L3624: Return ONLY valid JSON with this exact schema:
+L3625: {
+L3626:   "word": "${targetWord}",
+L3627:   "phonemes": ["p", "h", "o", "n", "e", "m", "e", "s"], // Follow the rules above strictly.
+L3628:   "syllables": ["syl", "la", "bles"],
+L3629:   "phonemeCount": 8,
+L3630:   "rhymeWord": "rhyming_word", // A simple, common word that rhymes
+L3631:   "rhymeDistractors": ["wrong1", "wrong2", "wrong3"], // 3 words that do NOT rhyme
+L3632:   "blendingDistractors": ["distractor1", "distractor2", "distractor3"], // 3 words with similar sounds but different
+L3633:   "firstSound": "f",
+L3634:   "lastSound": "d",
+L3635:   "familyMembers": ["fam1", "fam2", "fam3"], // 3 other words in the same word family
+L3636:   "mappingGraphemes": ["ph", "o", "n", "e", "m", "e", "s"] // Graphemes corresponding to phonemes (for Sound Mapping)
+L3637: }`;
+
+### 7. WHERE phonemes ARE ASSIGNED FROM GEMINI RESPONSE ###
+L1173: phonemes: data.phonemes,
+L4139: phonemes: phonemeData,
+L4270: phonemes: phonemeData.phonemes || [],
+
+### 8. FALLBACK PHONEME GENERATION ###
+L836: // Maps phonemes to pronounceable text for browser TTS fallback.
+L3075: // Smart phoneme estimation with digraph/trigraph detection for fallback accuracy
+L3651: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLowerCase().split('');
+L3654: phonemes: fallbackPhonemes,
+L3655: phonemeCount: fallbackPhonemes.length,
+L3660: mappingGraphemes: fallbackPhonemes,
+L3661: firstSound: fallbackPhonemes[0],
+L3662: lastSound: fallbackPhonemes[fallbackPhonemes.length - 1]
+L3679: // CRISIS FALLBACK: Ensure phonemeData is populated even if Try block crashed
+L3682: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(fallbackWord) : fallbackWord.toLowerCase().split(
+L3685: phonemes: fallbackPhonemes,
+L3686: phonemeCount: fallbackPhonemes.length,
+L3691: mappingGraphemes: fallbackPhonemes,
+L3692: firstSound: fallbackPhonemes[0],
+L3693: lastSound: fallbackPhonemes[fallbackPhonemes.length - 1]
+L3695: console.warn("Activated Crisis Fallback for phonemeData");
+L3767: const generateFallbackData = (word) => {
+L4065: // Fallback logic with digraph detection for better phoneme counting
+L4538: // FIX: Use phonemes array length as fallback for phonemeCount
+L34929: console.warn("Gemini TTS Refused (safety/phoneme). Switching to fallback.");
+
+======================================================================
+SUMMARY & RECOMMENDATIONS
+======================================================================

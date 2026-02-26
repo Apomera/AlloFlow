@@ -1,0 +1,12 @@
+=== case 'isolation' in renderActivityContent ===
+
+=== isEditing in isolation rendering ===
+L10834: isEditing={isEditing}
+
+=== case 'rhyming' in renderActivityContent ===
+L10793: case 'rhyming': {
+
+=== case 'blending' in renderActivityContent ===
+L10013: case 'blending': {
+
+=== setIsolationState correctAnswer ===

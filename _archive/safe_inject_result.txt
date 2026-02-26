@@ -1,0 +1,33 @@
+﻿Starting: 70547 lines
+UI_STRINGS: L11216 to L17296
+  [word_sounds] Added 39 keys (skipped 0 existing)
+  [export] All 53 keys already exist ΓÇö skipping
+  [adventure] All 13 keys already exist ΓÇö skipping
+  [languages_list] NOT FOUND ΓÇö creating new section with 9 keys
+    Created section with 11 lines
+  [chat_guide] All 7 keys already exist ΓÇö skipping
+  [bingo] All 4 keys already exist ΓÇö skipping
+  [common] Added 2 keys (skipped 2 existing)
+  [language_selector] Added 4 keys (skipped 0 existing)
+  [escape_room] Added 1 keys (skipped 0 existing)
+  [mastery] All 1 keys already exist ΓÇö skipping
+  [persona] Added 1 keys (skipped 0 existing)
+  [quick_start] All 1 keys already exist ΓÇö skipping
+  [toasts] Added 1 keys (skipped 0 existing)
+  [tour] Added 1 keys (skipped 0 existing)
+  [adventure.results] All keys already exist ΓÇö skipping
+  [adventure.tooltips] Added 1 keys
+  [export.filenames] All keys already exist ΓÇö skipping
+  [export.storybook] All keys already exist ΓÇö skipping
+  [visuals.styles] All keys already exist ΓÇö skipping
+  [top-level] cancel already exists ΓÇö skipping
+  [top-level] move_up already exists ΓÇö skipping
+  [top-level] move_down already exists ΓÇö skipping
+  [adventure.climax_archetypes.default] All keys already exist
+
+=== SUMMARY ===
+Total lines added: 61
+Final file: 70608 lines
+
+Running structural validation...
+  UI_STRINGS closes at L11216 ΓÇö BALANCED Γ£à

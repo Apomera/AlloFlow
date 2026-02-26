@@ -1,0 +1,11 @@
+﻿WARNING: Could not find no-image word text to fix
+  L7070: const playKey = `${currentWordSoundsWord}-${wordSoundsActivity}`;
+  L7462: instructionText = `What is the ${posStr} sound in ${currentWordSoundsWord}?`;
+  L7495: instructionText = `Trace the letter ${upperLet} for ${currentWordSoundsWord}`;
+  L8964: {(getEffectiveTextMode() === 'alwaysOn' || showWordText) && <span className="text-lg font-bold text-
+  L9180: key={currentWordSoundsWord}
+  L9548: key={currentWordSoundsWord}
+  L9969: rhymes with "{currentWordSoundsWord}"
+  L10167: word={currentWordSoundsWord}
+  L66952: currentWordSoundsWord={currentWordSoundsWord}
+Saved

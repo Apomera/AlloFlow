@@ -1,0 +1,59 @@
+=== STUDENT PROGRESS / TEACHER DASHBOARD ANALYSIS ===
+
+
+Student Upload: 26 matches
+  import
+  Import
+
+Analytics: 91 matches
+  analytics.interview_xp')}</th>
+  Analytics_Report.pdf');
+  AnalyticsPDF = async () => {
+  analytics.misconceptions]);
+  Analytics Persistence
+
+Progress Track: 305 matches
+  Progress */}
+  ProgressionData(null)}
+  Progress(0, 1, 'Extracting audio from video...');
+  Progress Indicator */}
+  progression: {
+
+Student JSON: 6 matches
+  student JSON files to analyze",
+  Student JSON Files Here",
+  student profiles from a JSON file.",
+  student JSONs and class-wide analytics
+  student profiles to a JSON file.",
+
+Class Report: 24 matches
+  class
+  grade
+  Class
+
+Class Grade: 122 matches
+  gradeLevel
+  GradeLevel
+
+Student Count: 1 matches
+  studentCount, avgLevel: classAvgLevel } = getClassMetrics();
+
+Roster: 37 matches
+  roster && Object.entries(sessionData.roster).length > 0
+  ROSTER ADDITION
+  roster) {
+  roster.",
+  roster[user.uid].groupId;
+
+
+=== TOUR STEPS WITH STUDENT/CLASS ===
+  id: 'tour-tool-analysis', 
+          text: `Review the AI's deep understanding of your content. This
+  id: 'ui-tool-glossary', 
+          text: `Generate a comprehensive Visual Glossary with strong vocab
+  id: 'ui-tool-simplified', 
+          text: `Differentiate your text for diverse learners. This tool 
+  id: 'tour-tool-wordsounds',
+          text: `Build foundational literacy skills with the Word Sounds
+  id: 'tour-tool-outline', 
+          text: `Create visual representations of your content's structure

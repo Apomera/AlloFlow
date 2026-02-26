@@ -1,0 +1,56 @@
+﻿============================================================
+SNAPSHOT FEATURE ANALYSIS
+============================================================
+L114:         setToolSnapshots,
+L123:         toolSnapshots,
+L336:                                     {toolSnapshots.length > 0 && (
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python c:\Users\cabb
+a\OneDrive\Desktop\UDL
+-Tool-Updated\scripts\
+analy ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Traceback    
+ (most recent call    
+ last)::String) [    
+], RemoteExceptio    n
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  File "c:\Users\cabba
+\OneDrive\Desktop\UDL-
+Tool-Updated\scripts\a
+nalyze_snapshots.py", 
+line 16, in <module>
+    print("L%d: %s" % 
+(i+1, 
+line.rstrip()[:150]))
+    ~~~~~^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "C:\Python314\L
+ib\encodings\cp1252.py
+", line 19, in encode
+    return codecs.char
+map_encode(input,self.
+errors,encoding_table)
+[0]
+           ~~~~~~~~~~~
+~~~~~~~~~~^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 
+'charmap' codec can't 
+encode character 
+'\U0001f4f8' in 
+position 103: 
+character maps to 
+<undefined>

@@ -1,0 +1,102 @@
+﻿L691: 'word_sounds.orthography_q': 'Which is the correct spelling?',
+L694: 'word_sounds.orthography_desc': 'Match sounds to spelling',
+L774: 'word_sounds.include_spelling_activities': 'Include Spelling Activities',
+L775: 'word_sounds.spelling_helper': 'Enable for students who know their letters',
+L778: 'word_sounds.orthography_prompt': 'Look at the word and choose the correct spelling!',
+L779: 'word_sounds.spelling_bee_prompt': 'Listen to the word and spell it!',
+L786: 'word_sounds.spelling_bee_title': 'Spelling Bee',
+L787: 'word_sounds.spelling_bee_subtitle': 'Listen and spell the word',
+L788: 'word_sounds.spelling_bee_check': 'Check Spelling Γ£ô',
+L789: 'word_sounds.spelling_bee_hear': 'Hear Word',
+L790: 'word_sounds.spelling_bee_slow': '≡ƒÉó Slow',
+L791: 'word_sounds.spelling_bee_first_letter': '≡ƒÆí First letter',
+L792: 'word_sounds.spelling_bee_show_answer': '≡ƒæü∩╕Å Show answer',
+L793: 'word_sounds.spelling_bee_correct': '≡ƒÄë Perfect!',
+L794: 'word_sounds.spelling_bee_almost': '{{count}}/{{total}} letters correct! Check the red boxes ≡ƒæÇ',
+L795: 'word_sounds.spelling_bee_try_again': 'Try again! Listen carefully ≡ƒöè',
+L1005: const ORTHOGRAPHIC_ACTIVITIES = ['mapping']; // 'spelling_bee' will be added later
+L1118: _LOAD_INSTRUCTION_AUDIO_RAW('inst_spelling_bee', getAudio('instructions', 'inst_spelling_bee'));
+L1454: 'orthography':    'afterCompletion',  // Spelling recognition
+L1457: 'spelling_bee':   'afterCompletion',  // Audio-first
+L1459: 'missing_letter': 'afterCompletion'   // Spelling task
+L2072: {/* Spelling Activities Toggle - Standalone Setting */}
+L2089: : t('word_sounds.spelling_helper', 'Enable for students who know their letters')
+L2394: // Graphemes are displayed to students based on word spelling
+L2396: // Mapping: IPA symbol -> possible grapheme spellings for display
+L2509: 'er': { label: 'ER Sound',    ipa: '╔£r', examples: 'her, fern, water',     tip: 'Same as IR and UR ΓÇö most common spelling', confusesWith: ['ir', 'ur']
+L3257: // Orthographic Settings (controls spelling activities visibility)
+L3329: 'spelling_bee':   'afterCompletion',
+L3346: 'spelling_bee':   'hidden',       // Dictation-based - no text
+L4047: const [userSpelling, setUserSpelling] = React.useState('');
+L4054: setUserSpelling('');
+L4083: setUserSpelling(prev => prev + letter);
+L4090: if (!userSpelling.trim()) return;
+L4092: const isCorrect = target && userSpelling.trim().toLowerCase() === target.toLowerCase();
+L4095: setTimeout(() => { if (isMountedRef.current) onCheckAnswer(userSpelling); }, 500);
+L4097: onCheckAnswer(userSpelling);
+L4109: <input aria-label="Edit Spelling Word"
+L4147: value={userSpelling}
+L4148: onChange={(e) => setUserSpelling(e.target.value)}
+L4158: {userSpelling && (
+L4161: onClick={() => setUserSpelling('')}
+L4193: disabled={!userSpelling}
+L4195: !userSpelling
+L4200: {ts('word_sounds.check_spelling') || 'Check Spelling'} <ChevronRight size={20} />
+L5286: // Helper: Generate orthography (spelling) distractors for Sight & Spell activity
+L5291: // Common misspelling patterns
+L5449: "orthographyDistractors": ["misspelling1", "misspelling2", "misspelling3"]
+L5457: - "orthographyDistractors": Create 3 plausible misspellings of the word (swap vowels, double letters, phonetic spellings). Must NOT be real words.
+L6795: if (wordSoundsActivity === 'orthography') return; // Spelling Bee speaks word automatically
+L6808: spelling_bee: 'inst_spelling_bee',
+L7332: message: ts('word_sounds.fb_spelling_transition') || "You're a pro! Testing your spelling now! ≡ƒæü∩╕Å",
+L8368: // Spelling Bee: Auto-play TTS ref
+L8369: const spellingBeeInitRef = React.useRef(false);
+L8371: if (wordSoundsActivity === 'spelling_bee' && currentWordSoundsWord && !spellingBeeInitRef.current) {
+L8372: spellingBeeInitRef.current = true;
+L8375: if (wordSoundsActivity !== 'spelling_bee') {
+L8376: spellingBeeInitRef.current = false;
+L8378: return () => { spellingBeeInitRef.current = false; };
+L8861: case 'spelling_bee': {
+L8862: // Spelling Bee - Enhanced Audio-first spelling activity
+L8879: const checkSpellingBee = () => {
+L8922: {ts('word_sounds.spelling_bee_hear')}
+L8929: {ts('word_sounds.spelling_bee_slow')}
+L8970: onKeyDown={(e) => e.key === 'Enter' && checkSpellingBee()}
+L8979: onClick={checkSpellingBee}
+L8987: {ts('word_sounds.spelling_bee_check') || 'Check Spelling Γ£ô'}
+L9004: {ts('word_sounds.spelling_bee_first_letter')}
+L9026: ? (ts('word_sounds.spelling_bee_hint_more') || '≡ƒÆí Show More')
+L9027: : (ts('word_sounds.spelling_bee_hint_vowels') || '≡ƒÆí Show Vowels')}
+L11185: ΓÇó **Word Scramble**: Unscramble vocabulary terms for spelling practice.
+L11230: ΓÇó **Sight & Spell**: Orthography and spelling practice.
+L11674: orthography_q: "Select the correct spelling",
+L11676: activity_spelling_bee: "Spelling Bee",
+L11695: spelling_bee_desc: "Spell the word you hear",
+L11696: spelling_bee_hint_more: "Show More",
+L11697: spelling_bee_hint_vowels: "Show Vowels",
+L11730: fb_spelling_transition: "You're a pro! Testing your spelling now! ≡ƒæü∩╕Å",
+L11735: check_spelling: "Check Spelling",
+L11749: include_spelling_activities: 'Include Spelling Activities',
+L11764: spelling_bee_check: 'Check Spelling Γ£ö',
+L11765: spelling_bee_first_letter: 'First letter hint',
+L11766: spelling_bee_hear: 'Hear the word',
+L11767: spelling_bee_slow: 'Slow',
+L11768: spelling_bee_subtitle: 'Spell the word',
+L11769: spelling_bee_title: 'Spelling Bee',
+L11770: spelling_helper: 'Enable for students who know their letters',
+L12670: phonetic_spelling: "Phonetic Spelling",
+L13651: no_grammar_errors: "No grammar or spelling errors detected.",
+L14232: analysis_grammar: "Grammar & Spelling Notes",
+L16287: - Focus ONLY on: Content, Digital Formatting (paragraphs), Spelling/Grammar, and Tone.
+L33147: const handleSetUserSpellingConst = React.useCallback(() => setUserSpelling(''), []);
+L35135: if (/^(none|no errors|no issues|no grammar|no spelling|none detected)/i.test(clean)) return false;
+L35142: if (/^(none|no errors|no issues|no grammar|no spelling|none detected)/i.test(clean)) return false;
+L35194: const fixPrompt = `Fix ONLY this specific grammar/spelling error in the text below. Return ONLY the corrected text segment, nothing else.
+L38976: ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocab
+L50170: 4. Potential Grammar/Spelling Issues (list specific examples or say "None detected")
+L52606: 2. Refine the term text if necessary (e.g. correct spelling or simplify for ${gradeLevel}).
+L59955: if (['none', 'n/a', 'no errors', 'no issues', 'none detected', 'no grammar errors', 'no spelling errors'].includes(clean)) return true;
+L59956: if (/^(none|no errors|no issues|no grammar|no spelling|none detected|no significant)/i.test(clean)) return true;
+L59957: if (clean.includes('no grammar errors') || clean.includes('no spelling errors') || clean.includes('no significant errors')) return true;
+L59987: const fixPrompt = `Fix ONLY this specific grammar/spelling error in the text below. Return ONLY the corrected text segment, nothing else.
+L60105: <span>{t('analysis.no_grammar_errors') || 'No grammar or spelling issues detected.'}</span>

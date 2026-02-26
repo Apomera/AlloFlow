@@ -1,0 +1,2 @@
+handleAudio found at line 1024
+loadAndPlay found at line 1050

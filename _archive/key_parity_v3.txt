@@ -1,0 +1,260 @@
+﻿UI_STRINGS defined keys: 5054
+Real t()/ts() keys (filtered): 2902
+Real orphan keys (WILL SHOW RAW STRINGS): 41
+
+[about] (1 keys):
+  L56814: t('about.features_list')
+        const featuresList = t('about.features_list', { returnObjects: true });
+
+[adventure] (20 keys):
+  L66791: t('adventure.back_to_resume')
+        title={t('adventure.back_to_resume')}
+  L22175: t('adventure.climax_archetypes.default.label')
+        const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.de
+  L22176: t('adventure.climax_archetypes.default.left')
+        const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes
+  L22177: t('adventure.climax_archetypes.default.right')
+        const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetyp
+  L52650: t('adventure.fallback_opening')
+        if (!content.text) content.text = t('adventure.fallback_opening');
+  L46386: t('adventure.generating_options_audio')
+        addToast(t('adventure.generating_options_audio'), "info");
+  L67349: t('adventure.interrupted_desc')
+        {t('adventure.interrupted_desc')}
+  L67347: t('adventure.interrupted_title')
+        <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3>
+  L66769: t('adventure.paused_desc')
+        {t('adventure.paused_desc')}
+  L66767: t('adventure.paused_title')
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_title')}</h2>
+  L45692: t('adventure.results.header')
+        feedbackText += `\n\n${t('adventure.results.header')}\n`;
+  L45702: t('adventure.results.perf_score')
+        feedbackText += t('adventure.results.perf_score', { total: total });
+  L45696: t('adventure.results.roll_calc')
+        feedbackText += t('adventure.results.roll_calc', {
+  L67355: t('adventure.retry_action')
+        <RefreshCw size={18} /> {t('adventure.retry_action')}
+  L45856: t('adventure.save_reminder')
+        addToast(t('adventure.save_reminder') || "≡ƒÆ╛ Consider saving your adventure progress!", "info");
+  L66801: t('adventure.setup_subtitle')
+        <p className="text-indigo-200 text-sm font-medium">{t('adventure.setup_subtitle')}</p>
+  L66782: t('adventure.start_overwrite')
+        <RefreshCw size={12}/> {t('adventure.start_overwrite')}
+  L67185: t('adventure.system_simulation')
+        <span>≡ƒÅ¢∩╕Å</span> {t('adventure.system_simulation')}
+  L67264: t('adventure.system_state')
+        <span>≡ƒôè</span> {t('adventure.system_state')}
+  L67188: t('adventure.tooltips.stability')
+        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border borde
+
+[cancel] (1 keys):
+  L27772: t('cancel')
+        {t('cancel')}
+
+[export] (16 keys):
+  L44149: t('export.filenames.assignment')
+        const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.json`;
+  L47608: t('export.filenames.flashcards')
+        link.download = `${t('export.filenames.flashcards')}-${mode}-${Date.now()}.html`;
+  L44068: t('export.filenames.html_pack')
+        link.download = `${t('export.filenames.html_pack')}.html`;
+  L37562: t('export.filenames.profiles')
+        downloadAnchorNode.setAttribute("download", `${t('export.filenames.profiles')}.json`);
+  L44309: t('export.filenames.project_student')
+        let filenamePrefix = t('export.filenames.project_student');
+  L44303: t('export.filenames.project_teacher')
+        setSaveFileName(`${t('export.filenames.project_teacher')}-${new Date().toISOString().split('T')[0]}`
+  L43933: t('export.filenames.slides_prefix')
+        pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.pptx` });
+  L44044: t('export.filenames.zip_pack')
+        link.download = `${t('export.filenames.zip_pack')}-${new Date().toISOString().split('T')[0]}.zip`;
+  L47336: t('export.storybook.chapter_separator')
+        const strSeparator = t('export.storybook.chapter_separator');
+  L47331: t('export.storybook.epilogue_badge')
+        const strEpilogue = t('export.storybook.epilogue_badge');
+  L47332: t('export.storybook.log_header')
+        const strLogHeader = t('export.storybook.log_header');
+  L47330: t('export.storybook.meta_info')
+        const strMeta = t('export.storybook.meta_info', { date, level: adventureState.level });
+  L47328: t('export.storybook.page_title')
+        const strPageTitle = t('export.storybook.page_title', { title });
+  L47333: t('export.storybook.print_button')
+        const strPrint = t('export.storybook.print_button');
+  L47329: t('export.storybook.subtitle')
+        const strSubtitle = t('export.storybook.subtitle');
+  L47335: t('export.storybook.user_label')
+        const strUser = t('export.storybook.user_label');
+
+[move_down] (1 keys):
+  L24269: t('move_down')
+        <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 tex
+
+[move_up] (1 keys):
+  L24268: t('move_up')
+        <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-500 hover
+
+[visuals] (1 keys):
+  L59359: t('visuals.styles.default')
+        <option value="Default">{t('visuals.styles.default')}</option>
+
+Unused UI_STRINGS keys (defined but never used): 2193
+
+By category:
+  help_mode: 1184 unused
+  adventure: 257 unused
+  quiz: 122 unused
+  escape_room: 66 unused
+  toasts: 55 unused
+  games: 43 unused
+  modals: 23 unused
+  class_analytics: 22 unused
+  lesson_headers: 21 unused
+  output: 19 unused
+  persona: 17 unused
+  bot_events: 16 unused
+  export: 16 unused
+  settings: 16 unused
+  chat_guide: 14 unused
+  tips: 14 unused
+  about: 13 unused
+  large_file: 13 unused
+  lesson_plan: 13 unused
+  wizard: 11 unused
+  common: 10 unused
+  concept_map: 10 unused
+  sidebar: 10 unused
+  bridge: 9 unused
+  filenames: 8 unused
+  fluency: 8 unused
+  storybook: 8 unused
+  session: 7 unused
+  glossary: 5 unused
+  immersive: 5 unused
+  math: 5 unused
+  tools: 5 unused
+  groups: 4 unused
+  outline: 4 unused
+  simplified: 4 unused
+  status: 4 unused
+  alignment: 3 unused
+  blueprint: 3 unused
+  dashboard: 3 unused
+  errors: 3 unused
+  results: 3 unused
+  scaffolds: 3 unused
+  visuals: 3 unused
+  word_sounds: 3 unused
+  flashcards: 2 unused
+  header: 2 unused
+  student: 2 unused
+  timeline: 2 unused
+  activity_label: 1 unused
+  analysis: 1 unused
+  analysis_source_label: 1 unused
+  answer_label: 1 unused
+  back_to_resume: 1 unused
+  bundle_downloaded: 1 unused
+  cancel: 1 unused
+  categories_label: 1 unused
+  category: 1 unused
+  color: 1 unused
+  date_label: 1 unused
+  def_col: 1 unused
+  def_label: 1 unused
+  default_lesson_title: 1 unused
+  desc: 1 unused
+  district_resource: 1 unused
+  download_complete: 1 unused
+  english_trans_label: 1 unused
+  entry: 1 unused
+  export_menu: 1 unused
+  fallback_opening: 1 unused
+  features_list: 1 unused
+  footer_generated: 1 unused
+  generated_date_label: 1 unused
+  generating_bundle: 1 unused
+  generating_options_audio: 1 unused
+  generating_pdf: 1 unused
+  html_page_title: 1 unused
+  icon: 1 unused
+  ims_resource_pack: 1 unused
+  incomplete_sort: 1 unused
+  input: 1 unused
+  interrupted_desc: 1 unused
+  interrupted_title: 1 unused
+  interview_figure_label: 1 unused
+  items_label: 1 unused
+  keep_separate_note: 1 unused
+  key_concepts_label: 1 unused
+  label: 1 unused
+  language_selector: 1 unused
+  left: 1 unused
+  main_label: 1 unused
+  meta: 1 unused
+  move_down: 1 unused
+  move_up: 1 unused
+  name_label: 1 unused
+  no_active_scene: 1 unused
+  no_events: 1 unused
+  no_ideas: 1 unused
+  no_personas: 1 unused
+  no_questions: 1 unused
+  no_student_content: 1 unused
+  no_teacher_content: 1 unused
+  no_terms: 1 unused
+  paused_desc: 1 unused
+  paused_title: 1 unused
+  ppt_correct_note: 1 unused
+  ppt_generated: 1 unused
+  ppt_grade_level: 1 unused
+  problem_label: 1 unused
+  process: 1 unused
+  qti_default_desc: 1 unused
+  qti_default_title: 1 unused
+  readme_contents: 1 unused
+  readme_generated: 1 unused
+  readme_html_desc: 1 unused
+  readme_json_desc: 1 unused
+  readme_title: 1 unused
+  readme_topic: 1 unused
+  retry_action: 1 unused
+  review_game: 1 unused
+  right: 1 unused
+  save_reminder: 1 unused
+  scenario_label: 1 unused
+  score_label: 1 unused
+  setup_subtitle: 1 unused
+  slides_master_footer: 1 unused
+  slides_question_title: 1 unused
+  slides_subject: 1 unused
+  slides_title_default: 1 unused
+  source_ref_title: 1 unused
+  stability: 1 unused
+  standards: 1 unused
+  start_overwrite: 1 unused
+  structure_label: 1 unused
+  student_copy: 1 unused
+  support_dev: 1 unused
+  system_simulation: 1 unused
+  system_state: 1 unused
+  teacher_copy_divider: 1 unused
+  teacher_copy_intro: 1 unused
+  teacher_key_title: 1 unused
+  term_col: 1 unused
+  term_label: 1 unused
+  text_tools: 1 unused
+  title: 1 unused
+  topic: 1 unused
+  trans_col: 1 unused
+  udl_strategy_advice: 1 unused
+  unknown_level: 1 unused
+
+======================================================================
+SUMMARY
+======================================================================
+Defined:     5054
+Used:        2902
+ORPHANS:     41 ΓåÉ BROKEN, will show raw key text!
+Unused:      2193 ΓåÉ dead but harmless
+Match rate:  2861/2902 (98%)

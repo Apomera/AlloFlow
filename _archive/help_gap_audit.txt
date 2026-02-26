@@ -1,0 +1,33 @@
+﻿python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python 
+audit_help_gaps.py 
+2>&1 | Out-File 
+-Encoding utf8 
+help_gap_aud ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Traceback    
+ (most recent call    
+ last)::String) [    
+], RemoteExceptio    n
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  File "C:\Users\cabba
+\OneDrive\Desktop\UDL-
+Tool-Updated\audit_hel
+p_gaps.py", line 72, 
+in <module>
+    out = open('help_g
+ap_audit.txt', 'w', 
+encoding='utf-8')
+PermissionError: 
+[Errno 13] Permission 
+denied: 
+'help_gap_audit.txt'

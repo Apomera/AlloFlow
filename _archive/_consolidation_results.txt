@@ -1,0 +1,20 @@
+=== PHONEME PIPELINE CONSOLIDATION RESULTS ===
+
+  ✅ FIX 3a: Replaced fetchWordData at L7081 (startActivity) with generateFallbackData
+  ✅ FIX 3b: Replaced fetchWordData at L7016 (queue retry) with preloaded lookup + fallback
+  ✅ FIX 3c: Replaced fetchWordData at L7886 (checkAnswer) with generateFallbackData
+  ✅ FIX 3d: Replaced fetchWordData at L7908 (queue refill) with preloaded lookup + fallback
+
+  ⚠️ 2 fixes could not be applied (see warnings above)
+
+
+=== VERIFICATION ===
+  ❌ R-CONTROLLED vowels NOT found in prompt
+  ❌ phonemeCount NOT found in processed.push()
+
+  Remaining fetchWordData calls (non-comment, non-definition): 3
+    L5520: const data = await fetchWordData(targetWord, 0, true); // isBackground = true
+    L6315: const phonemeData = await fetchWordData(targetWord, 0, false, true);
+    L6433: const freshData = await fetchWordData(targetWord, 0, true); // Force fresh fetch
+  ✅ handleRegenerateWord still uses fetchWordData (correct)
+  ✅ handleRegenerateAll still uses fetchWordData (correct)

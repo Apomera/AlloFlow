@@ -1,0 +1,108 @@
+=== All z-index declarations ===
+Line 10580: z=9999 | z-index: 9999 !important;
+Line 10610: z=50 | z-index: 50 !important;
+Line 18112: z=10 | z-index: 10;
+Line 30171: z=201 | z-index: 201;
+Line 32799: z=200 | z-index: 200 !important; /* Ensure on top */
+Line 32838: z=50 | z-index: 50;
+Line 41245: z=10 | <div style="position: absolute; top: 140px; left: 50%; transform: translateX(-50%); width: 180px; text-align: center; z-index: 10;">
+Line 41258: z=20 | <div style="background: white; color: #1e293b; padding: 15px 40px; border-radius: 50px; text-align: center; border: 2px solid #cbd5e1; margin-bottom: 
+Line 41265: z=1 | ${isDecision ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content:
+Line 41281: z=2 | innerContent = `<div style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; margin: 0 auto; padding: 20px;">
+
+
+=== Voice/TTS related lines ===
+Line 2851: selectedVoice,
+Line 3269: if (callTTS && selectedVoice && !isPhoneme) {
+Line 3271: const url = await callTTS(text, selectedVoice);
+Line 3290: }, [callTTS, selectedVoice, speakWord, wordSoundsLanguage, ttsSpeed, isPlayingAudio, wordSoundsAudioLibrary]);
+Line 7763: // Reusable Voice Input Overlay
+Line 7764: const renderVoiceInputOverlay = (label = "Say the word!") => (
+Line 8392: {renderVoiceInputOverlay("Say the sound (e.g. 'Buh')")}
+Line 8899: renderVoiceInputOverlay("Say the letters or word!")
+Line 9044: renderVoiceInputOverlay("Say the un-scrambled word!")
+Line 9171: renderVoiceInputOverlay("Say the missing letter!")
+Line 11301: • **Voice Selection**: Choose from multiple TTS voices (male/female, accents).
+Line 14425: header_settings_voice_select: "Choose a voice for text-to-speech.",
+Line 17098: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onM
+Line 17483: voice: selectedVoice,
+Line 17496: const audioPromise = onGenerateAudio(ttsText, selectedVoice, voiceSpeed, 1);
+Line 17566: }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio]);
+Line 23763: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRe
+Line 23807: const url = await onGenerateAudio(textToRead, selectedVoice);
+Line 29823: const [selectedVoice, setSelectedVoice] = useState(() => {
+Line 29830: localStorage.setItem('allo_voice_preference', selectedVoice);
+Line 29831: }, [selectedVoice]);
+Line 31789: 'wizard_tone_select': "Choose the tone of voice for the generated content.",
+Line 31922: 'tool_persona': "Launch AI-powered character conversations. Select from: historical figures (scientists, leaders, artists), literary characters (from 
+Line 31943: header_settings_voice: "Configure text-to-speech audio settings. Choose from multiple AI voices (male/female, different accents), adjust Speaking Spee
+Line 31944: header_settings_voice_select: "Choose the AI voice for text-to-speech.",
+Line 31980: 'word_sounds_review_play_word': "Preview how this word will be pronounced during the activity. Audio uses your current Voice settings (voice selection
+Line 32114: 'glossary_speak_term': "Click to hear this vocabulary term pronounced by the AI voice. Uses your selected voice and speed settings from Voice Settings
+Line 32342: 'header_settings_voice_pitch': "Fine-tune the pitch of the AI text-to-speech voice. Range: Low (deeper voice) to High (higher voice). Pitch preference
+Line 32486: 'profiles_select_dropdown': "Quick-select from saved profiles. Dropdown shows: all saved profiles by name, key settings preview, and last-used indicat
+Line 32487: 'profiles_save_button': "Create a named profile from current settings. Profile captures: reading level, voice selection, speech rate, theme, color ove
+Line 32498: 'ui_language_select': "Set the display language for all UI elements. Dropdown shows: pre-translated languages (immediate), recently generated language
+Line 32522: 'entry_start_new': "Start a brand new session with no previous data loaded. Use when: beginning a new topic, working with different students, or wanti
+Line 32606: 'chat_voice_mode': "Transform the AI Guide into a voice conversation assistant. When enabled: speak your questions using microphone input (no typing n
+Line 32657: adventure_immersive_autoread: "Control voice narration. When ON: new story text is automatically read aloud using TTS, hands-free story experience, im
+Line 33303: if (typeof callTTS === 'function') { const url = await callTTS(term, selectedVoice, 1, 1); if (url) glossaryAudioCache.current.set(term, url); }
+Line 35501: const url = await callTTS(effectiveText, selectedVoice).catch(e => { console.warn('TTS Rejection handled:', e.message); return null; });
+Line 35514: }, [filteredGlossaryData, activeView, isEditingGlossary, selectedVoice, t]);
+Line 40093: const audioUrl = await callTTS(word, selectedVoice);
+Line 40259: let currentVoice = activeSpeaker || selectedVoice;
+Line 40293: const distinctVoices = Object.values(voiceMap).filter(v => v !== selectedVoice);
+Line 40329: currentVoice = activeSpeaker || selectedVoice;
+Line 40332: currentVoice = selectedVoice;
+Line 40344: if (mode === 'persona' && activeSpeaker && activeSpeaker !== selectedVoice) {
+Line 40429: let targetVoice = selectedVoice;
+Line 40451: targetVoice = selectedVoice;
+Line 40471: targetVoice = activeSpeaker || selectedVoice;
+Line 40473: if (activeSpeaker && activeSpeaker !== selectedVoice) {
+Line 40630: callTTS(part, selectedVoice).then(url => {
+Line 40703: let activeSpeaker = selectedVoice;
+Line 40749: // Speaker not found in panel - use first character's voice as fallback
+Line 40756: if (personaState.selectedCharacter.voice) {
+Line 40757: activeSpeaker = personaState.selectedCharacter.voice;
+Line 40764: activeSpeaker = selectedVoice;
+Line 40767: activeSpeaker = selectedVoice;
+Line 40776: const audioUrl = await callTTS(effectiveText, selectedVoice);
+Line 40857: const voicePool = AVAILABLE_VOICES.filter(v => v !== selectedVoice);
+Line 40860: persistentVoiceMapRef.current = { "Narrator": selectedVoice, _poolIndex: 0 };
+Line 40863: voiceMap["Narrator"] = selectedVoice; // Ensure narrator uses current selected voice
+Line 40926: let targetVoice = selectedVoice;
+Line 40929: targetVoice = selectedVoice;
+Line 45482: const voiceId = adventureState.voiceMap?.['Narrator'] || selectedVoice || 'Leda';
+Line 47985: VOICE SELECTION:
+Line 48007: "voice": "SelectedVoiceName",
+Line 49190: await callTTS(textWithName, selectedVoice);
+Line 49198: callTTS(nextMsg.msg.text, selectedVoice).catch(() => {});
+Line 53908: const audioUrl = await callTTS(sequence[idx], selectedVoice);
+Line 56504: value={selectedVoice}
+Line 56505: onChange={(e) => setSelectedVoice(e.target.value)}
+Line 56506: data-help-key="header_settings_voice_select"
+Line 63043: selectedVoice={selectedVoice}
+Line 63098: selectedVoice={selectedVoice}
+Line 71221: selectedVoice={selectedVoice}
+
+
+=== showAllobot/hideAllobot ===
+Line 11306: • **Show/Hide AlloBot**: Toggle the animated assistant character.
+Line 14405: header_bot_toggle: "Show or hide the AlloBot character.",
+Line 14452: chat_send: "Send your message to AlloBot (or toggle 'Show Me' mode).",
+Line 17098: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onM
+Line 31880: 'global_mute_toggle': "Universal audio mute toggle. When enabled, ALL sounds are silenced including: AI text-to-speech voices, AlloBot's typing bleeps
+Line 31954: header_bot_toggle: "Toggle AlloBot visibility on the screen. When hidden: AlloBot does not appear or offer proactive tips, but remains accessible via 
+Line 31959: hints_recall: "Open a history of contextual tips AlloBot has provided during your session. Hint history shows: tips organized chronologically, the con
+Line 31964: bot_sleep_btn: "Temporarily hide AlloBot from the screen. Use when: AlloBot is distracting during focused work, you want maximum screen space, or stud
+Line 31966: bot_mute_btn: "Toggle AlloBot voice output on or off. When muted: AlloBot still displays text responses but does not speak aloud. Visual indicator sho
+Line 32395: 'dashboard_detail_transcript': "Access complete logs of student interactions with AI features. Includes: AlloBot chat conversations, Persona interview
+Line 32611: 'chat_close': "Dismiss the chat interface. Closing does not: lose your conversation, stop AI processing, or reset context. Conversation is preserved w
+Line 35964: if (lastMsg.role === 'model' && alloBotRef.current && isBotVisible) {
+Line 35991: // AlloBot TTS reminder if bot is visible
+Line 35992: if (isBotVisible && alloBotRef.current) {
+Line 39813: if (isBotVisible && alloBotRef.current) {
+Line 47798: if (isBotVisible && alloBotRef.current) {
+Line 52558: if (isBotVisible && alloBotRef.current) {
+Line 55142: if (isBotVisible && alloBotRef.current) {
+Line 71215: onVoiceSettingsClick={() => { if (alloBotRef.current && typeof alloBotRef.current.dismissMessage === 'function') alloBotRef.current.dismissMessage(); 

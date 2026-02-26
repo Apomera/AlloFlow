@@ -1,0 +1,15 @@
+L6539: DEF: const applyWordDataToState = (data) => {
+L6573: DEF: const fetchWordData = React.useCallback(async (word, retryCount = 0, isBackground = false, forceRefresh = false) => {
+L6719: DEF: const generateFallbackData = (word) => {
+L6733: DEF: // const fetchWordData = ... (replaced by fetchWordData)
+L6835: DEF: const prefetchNextWords = React.useCallback(async () => {
+L6844: DEF: const preloadInitialBatch = React.useCallback(async () => {
+L7420: DEF: const phonemeData = await fetchWordData(targetWord, 0, false, true);
+L7524: DEF: const freshData = await fetchWordData(targetWord, 0, true); // Force fresh fetch
+L7677: DEF: const timer = setTimeout(() => prefetchNextWords(), 1000);
+L8136: DEF: const fallback = generateFallbackData(retryTargetWord);
+L8215: DEF: const fallback = generateFallbackData(targetWord);
+L8249: DEF: if (typeof preloadInitialBatch === 'function') {
+L9235: DEF: const fallback = generateFallbackData(targetWord);
+L9293: DEF: const fallback = generateFallbackData(target);
+L11592: DEF: const fallback = generateFallbackData(firstMissed);

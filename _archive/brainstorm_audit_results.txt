@@ -1,0 +1,60 @@
+=== BRAINSTORM PANEL DEEP DIVE ===
+
+
+State Variables (Brainstorm): 2 matches
+  const [brainstormCustomInstructions, setBrainstormCustomInstructions]
+  const [isEditingBrainstorm, setIsEditingBrainstorm]
+
+
+=== BRAINSTORM PANEL UI ELEMENTS ===
+
+Help Keys: 7 matches
+  data-help-key="brainstorm_step_count"
+  data-help-key="brainstorm_custom_instructions"
+  data-help-key="brainstorm_generate_button"
+  data-help-key="brainstorm_guide"
+  data-help-key="brainstorm_simulation_type"
+  data-help-key="brainstorm_panel"
+  data-help-key="brainstorm_card"
+
+Translation Keys: 35 matches
+  brainstorm_panel
+  brainstorm_step_count
+  brainstorm_generated
+  brainstorm_simulation_detailed
+  brainstorm_card
+  brainstorm_simulation_type
+  brainstorm_title
+  brainstorm_tooltip
+  brainstorm_desc
+  brainstorm_custom_instructions
+  brainstorm_step_count_detailed
+  brainstorm_guide
+  brainstorm_generate_button
+
+
+=== SETTER CALLS ===
+Brainstorm setters: 4 calls
+  setBrainstormCustomInstructions
+
+
+=== IDEA TYPE OPTIONS ===
+
+
+=== SIMULATION TYPE OPTIONS ===
+
+
+=== CANVAS INTEGRATION ===
+  Canvas.",
+  canvasRef}
+  Canvas || isCloudSyncEnabled) && (
+  canvas-quiz-export.zip`;
+  canvasRect = canvasRef.current.getBoundingClientRect();
+  canvas_prompt')}
+  canvasRef.current) return;
+  canvas.height = height;
+  Canvas Quiz (QTI)",
+  canvasWidth = mapContainerRef.current ? mapContainerRef.current.of
+
+
+=== OUTPUT FORMATS ===

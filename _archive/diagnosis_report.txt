@@ -1,0 +1,107 @@
+================================================================================
+HELP MODE IMPLEMENTATION
+================================================================================
+29888:   const [isHelpMode, setIsHelpMode] = useState(false);
+32695:     if (!isHelpMode) return;
+32769:   }, [isHelpMode, tourSteps]);
+32775:     if (isHelpMode) {
+32905:   }, [isHelpMode, theme]);
+56662:                             onClick={() => setIsHelpMode(!isHelpMode)}
+56663:                             className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+56664:                             title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+56665:                             aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+58258:                         if (isHelpMode) return;
+
+================================================================================
+HELP MODE OVERLAY / CLICK HANDLING
+================================================================================
+119: data-help-key="global_mute_toggle"
+
+... (showing only first few data-help-key instances)
+
+================================================================================
+ALLOBOT CONTAINER Z-INDEX AND VISIBILITY
+================================================================================
+35945:   const [hasUsedAutoFill, setHasUsedAutoFill] = useState(false);
+35946:   const [isShowMeMode, setIsShowMeMode] = useState(false);
+35947:   const [isBotVisible, setIsBotVisible] = useState(true);
+35948:   const handleBotIntroSeen = useCallback(() => {
+35949:     setHasSeenBotIntro(true);
+35950:     try { localStorage.setItem('allo_bot_intro_seen', 'true'); } catch {}
+35951:   }, []);
+
+---
+35952:   const lastSpokenMessageIndexRef = useRef(-1);
+35953:   useEffect(() => {
+35954:       if (!isBotVisible) {
+35955:           setShowUDLGuide(false);
+35956:           if (isUDLGuideExpanded) setIsUDLGuideExpanded(false);
+35957:       }
+35958:   }, [isBotVisible, isUDLGuideExpanded]);
+
+---
+35956:           if (isUDLGuideExpanded) setIsUDLGuideExpanded(false);
+35957:       }
+35958:   }, [isBotVisible, isUDLGuideExpanded]);
+35959:   useEffect(() => {
+35960:       if (udlMessages.length > 0) {
+35961:           const lastIndex = udlMessages.length - 1;
+35962:           const lastMsg = udlMessages[lastIndex];
+
+---
+35962:           const lastMsg = udlMessages[lastIndex];
+35963:           if (lastIndex > lastSpokenMessageIndexRef.current) {
+35964:               if (lastMsg.role === 'model' && alloBotRef.current && isBotVisible) {
+35965:                   alloBotRef.current.speak(lastMsg.text);
+35966:                   lastSpokenMessageIndexRef.current = lastIndex;
+35967:                   if (!showUDLGuide) {
+35968:                       const centerX = window.innerWidth / 2;
+
+---
+
+================================================================================
+TOUR-HEADER-SETTINGS CURRENT STATE
+================================================================================
+56371:                              </div>
+56372:                         </div>
+56373:                     </button>
+56374:                     <div id="tour-header-settings" className={`relative z-[10002] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+56375:                         {/* Global Mute Toggle - for classroom use */}
+56376:                         <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`} />
+56377:                         <div className="relative">
+56378:                             <button
+56379:                                 onClick={() => { setShowTextSettings(!showTextSettings); setShowVoiceSettings(false); }}
+56380:                                 data-help-key="header_settings_text"
+
+================================================================================
+HIGH Z-INDEX ELEMENTS THAT COULD BLOCK HELP MODE
+================================================================================
+z=11000  Line 69771 : className={`fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex fl
+z=11000  Line 69587 : className="fixed z-[11000] animate-in fade-in zoom-in-95 duration-200"
+z=10999  Line 69685 : <div className="fixed pointer-events-none animate-pulse z-[10999]"
+z=10998  Line 69574 : data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
+z=10002  Line 56374 : <div id="tour-header-settings" className={`relative z-[10002] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl b
+z=10002  Line 25924 : <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+z=10001  Line 61716 : className="fixed left-0 right-0 pointer-events-none z-[10001] border-t border-b border-yellow-400/30 bg-yellow-100/5"
+z=10001  Line 61712 : className="fixed left-0 right-0 bottom-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+z=10001  Line 61708 : className="fixed top-0 left-0 right-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+z=10001  Line 56496 : <div className={`absolute top-full right-0 mt-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-
+z=10001  Line 25913 : <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+z=10001  Line 25200 : <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+z=10000  Line 70460 : <div className={`fixed bottom-24 md:bottom-8 z-[10000] flex flex-col items-end gap-4 no-print transition-all duration-30
+z=10000  Line 69709 : <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }}>
+z=10000  Line 56495 : <div className="fixed inset-0 z-[10000]" onClick={() => setShowVoiceSettings(false)}></div>
+z=10000  Line 25565 : <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
+z=10000  Line 18302 : className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale
+z=9999   Line 69701 : <div className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
+z=9999   Line 57548 : className="fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in zoom-in-95 d
+z=9999   Line 57348 : className="fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-
+z=9999   Line 55559 : className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:
+z=9999   Line 26098 : <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+z=9999   Line 25451 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+z=9999   Line 25427 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center ju
+z=9999   Line 25402 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justif
+z=9999   Line 25390 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center j
+z=1000   Line 71239 : <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full
+z=1000   Line 19873 : <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in 
+z=1000   Line 19388 : <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-whi

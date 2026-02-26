@@ -1,0 +1,35 @@
+Line 647 [Rhyme Time]: 'word_sounds.activity_rhyming': 'Rhyme Time',
+Line 676 [Blend these sounds together]: 'word_sounds.blending_prompt': 'Blend these sounds together!',
+Line 686 [letter_tracing]: 'word_sounds.letter_tracing_prompt': 'Trace the letter to practice writing!',
+Line 687 [letter_tracing]: 'word_sounds.activity_letter_tracing': 'Letter Trace',
+Line 688 [letter_tracing]: 'word_sounds.letter_tracing_desc': 'Trace the first letter',
+Line 698 [word_families]: 'word_sounds.activity_word_families': 'Word Families',
+Line 699 [word_families]: 'word_sounds.word_families_desc': 'Explore patterns and related words',
+Line 735 [word_families]: 'word_sounds.word_families_prompt': 'Which words belong in this house?',
+Line 991 [word_families]: word_families: "data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAA
+Line 2214 [Rhyme Time]: <label className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-2 block">Rhyme Time 
+Line 2553 [playInstruction]: const [playInstructions, setPlayInstructions] = React.useState(true);
+Line 2555 [playInstruction]: const playInstructions2 = playInstructions; // Alias for legacy/crash fix
+Line 3665 [word_families]: { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠'
+Line 3666 [letter_tracing]: { id: 'letter_tracing', label: ts('word_sounds.activity_letter_tracing') || 'Letter Trace', icon: '✍
+Line 6076 [Rhyme Time]: // Use composite key for Rhyme Time to ensure it replays if options change (though word usually chan
+Line 6109 [Rhyme Time]: // 2. Rhyme Time Specific: Play Options Sequentially
+Line 6383 [playInstruction]: if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
+Line 6401 [letter_tracing]: } else if (wordSoundsActivity === 'letter_tracing') {
+Line 6422 [playInstruction]: }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.curren
+Line 7014 [word_families]: } else if (wordSoundsActivity === 'word_families') {
+Line 7618 [case 'isolation':]: case 'isolation': {
+Line 7680 [case 'blending':]: case 'blending': {
+Line 8519 [word_families]: case 'word_families': {
+Line 8585 [letter_tracing]: case 'letter_tracing': {
+Line 9052 [playInstruction]: onClick={() => setPlayInstructions(!playInstructions)}
+Line 9054 [playInstruction]: playInstructions
+Line 9058 [playInstruction]: title={playInstructions ? "Instructions are ON" : "Instructions are OFF"}
+Line 9060 [playInstruction]: <span>{playInstructions ? '🗣️' : '🔇'}</span>
+Line 10039 [Rhyme Time]: • **Rhyme Time**: Find rhyming words from options.
+Line 10580 [Rhyme Time]: activity_rhyming: "Rhyme Time",
+Line 10586 [word_families]: activity_word_families: "Word Families",
+Line 10587 [word_families]: word_families_desc: "Explore patterns",
+Line 12657 [word_families]: activity_word_families: "Word Families",
+Line 12658 [word_families]: word_families_desc: "Build the word family house! Find words that belong to the family.",
+Line 12659 [word_families]: word_families_prompt: "Which words belong in this house?",

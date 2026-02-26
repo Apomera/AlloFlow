@@ -1,0 +1,30 @@
+﻿data-lucide="presentation"
+                                    style="width:44px;height:44px;margin-bottom:16px;opacity:0.9;color:#818cf8"></i>
+                                <h4 style="font-family:'Outfit';font-weight:800;font-size:1.3rem;margin-bottom:6px">UDL
+                                    Architecture Briefing</h4>
+                                <p style="font-size:0.85rem;opacity:0.8">Interactive Slide Deck</p>
+                            </div>
+                            <div
+                                style="position:absolute;bottom:12px;right:12px;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:6px;font-size:0.7rem;font-weight:700;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1)">
+                                Click to Explore <i data-lucide="external-link"
+                                    style="width:10px;height:10px;display:inline-block;margin-left:2px"></i></div>
+                        </div>
+                        <div
+                            style="padding:12px 20px;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+                            <span style="font-size:0.85rem;font-weight:800;color:#475569">Slide 1 of 12</span>
+                            <div style="display:flex;gap:8px">
+                                <button aria-label="Previous slide"
+                                    style="background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:6px;cursor:pointer;color:#64748b;transition:background 0.2s"><i
+                                        data-lucide="chevron-left" style="width:18px;height:18px"></i></button>
+                                <button aria-label="Next slide"
+                                    style="background:var(--slate-900);border:1px solid var(--slate-900);border-radius:6px;padding:6px;cursor:pointer;color:#fff;transition:background 0.2s"><i
+                                        data-lucide="chevron-right" style="width:18px;height:18px"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Highlights (Condensed ù link to full page) -->
+        <section cla

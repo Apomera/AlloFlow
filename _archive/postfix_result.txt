@@ -1,0 +1,19 @@
+Loaded 72991 lines
+[FIX1] Removing unguarded alias block at L1120-L1125
+After FIX 1: 72983 lines
+[FIX2] L4119: Guarded data.graphemes.length
+FIX 2: 1 .graphemes guards added
+
+Backup saved to C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\AlloFlowANTI.txt.bak_postfix
+Wrote patched file: 7302417 bytes
+
+============================================================
+VERIFICATION
+============================================================
+  'orr' assignments: 1 ✅
+  'ahrr' assignments: 1 ✅
+  'err' assignments: 1 ✅
+  Unguarded data.graphemes access: 0
+  Guarded data.graphemes access: 1
+
+Total changes: 2

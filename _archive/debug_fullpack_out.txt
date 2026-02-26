@@ -1,0 +1,17 @@
+RAW SNIPPET:
+id: 'tour-tool-fullpack',
+          text: `The 'Easy Button' for comprehensive lesson prep. This single click generates, organizes, and bundles every available resource (Text, Quiz, Scaffolds, etc.) into a cohesive unit.
+
+
+### Bundle Contents
+ **Core Resources**: Lesson Plan, Quiz, Glossary, and Scaffolds.
+ **Consistency**: Ensures all resources use the same vocabulary and themes.
+ **Efficiency**: Reduces preparation time by 80-90%.
+ **Export**: Bundles everything into a single organized ZIP or PDF output. }
+      },
+      ...(isTeacherMode ? [{
+          id: 'tour-fab-analytics',
+          title: t('tour.teacher_dashboard') || 'Teacher Dashboard',
+          text: `Monitor student success in real-time. The Teacher Dashboard provides a bird's-eye view of class performance and individual stu
+---END---
+REPR: "id: 'tour-tool-fullpack',\n          text: `The 'Easy Button' for comprehensive lesson prep. This single click generates, organizes, and bundles every available resource (Text, Quiz, Scaffolds, etc.) into a cohesive unit.\n\n\n### Bundle Contents\n **Core Resources**: Lesson Plan, Quiz, Glossary, and Scaffolds.\n **Consistency**: Ensures all resources use the same vocabulary and themes.\n **Efficiency**: Reduces preparation time by 80-90%.\n **Export**: Bundles everything into a single organized ZIP or PDF output. }\n      },\n      ...(isTeacherMode ? [{\n          id: 'tour-fab-analytics',\n          title: t('tour.teacher_dashboard') || 'Teacher Dashboard',\n          text: `Monitor student success in real-time. The Teacher Dashboard provides a bird's-eye view of class performance and individual stu"

@@ -1,0 +1,294 @@
+﻿======================================================================
+  STUDENT PROFILE INFRASTRUCTURE AUDIT
+======================================================================
+
+Student Group refs: 3 matches
+  L19845: const studentGroupId = sessionData.roster?.[user?.uid]?.groupId;
+  L19846: const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
+  L19847: const groupLanguage = studentGroup?.language; // e.g., "Spanish" or null
+
+Accommodation refs: 16 matches
+  L11610: ΓÇó **Differentiation**: Specific accommodations for IEP/504 students.
+  L11612: The 'Differentiation' section generates specific IEP accommodations that you can copy directly into official paperwork.
+  L31988: 'tool_lesson_plan': "Create fully-structured lesson plans following Universal Design for Learning principles. Each plan 
+  L32045: 'tool_simplified': "Transform source text into accessible versions at multiple reading levels (grades 1-12+). Features i
+  L32055: 'word_sounds_review_phoneme_bank': "Access the complete phoneme library containing all English speech sounds. Use when: 
+  ... and 11 more
+
+IEP refs: 22 matches
+  L11610: ΓÇó **Differentiation**: Specific accommodations for IEP/504 students.
+  L11612: The 'Differentiation' section generates specific IEP accommodations that you can copy directly into official paperwork.
+  L11659: For students with IEPs requiring text modifications, configure Reading Accessibility settings onceΓÇöthey persist across a
+  L31989: 'tool_fullpack': "One-click comprehensive resource generation. Creates a complete lesson package including: AI-analyzed 
+  L31990: 'tool_alignment': "Analyze how your content aligns with educational standards. Select framework (Common Core, NGSS, stat
+  ... and 17 more
+
+ELL refs: 812 matches
+  L279: throw new Error('Cancelled');
+  L630: concerning_content: /\b(abuse|molest|rape|touch me|scared of|hit me|hurt me|locked in|won't let me|secret|don't tell)\b/
+  L692: 'word_sounds.activity_orthography': 'Sight & Spell',
+  L694: 'word_sounds.orthography_q': 'Which is the correct spelling?',
+  L697: 'word_sounds.orthography_desc': 'Match sounds to spelling',
+  ... and 807 more
+
+Reading Level refs: 37 matches
+  L18179: const rawLevel = latest.data?.readingLevel?.range;
+  L21450: scRate: '0', readingLevel: 'frustrational'
+  L21466: let readingLevel = 'frustrational';
+  L21467: if (accuracyPct >= 95) readingLevel = 'independent';
+  L21468: else if (accuracyPct >= 90) readingLevel = 'instructional';
+  ... and 32 more
+
+Grade Level refs: 127 matches
+  L1404: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLev
+  L1552: const prompt = `Generate a list of 15 phonics-rich words related to the topic: "${aiTopic}". Target Grade Level: ${grade
+  L1572: Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || 'Early Readers (K-2)'}
+  L1760: <p className="text-indigo-100 font-medium opacity-90">{t('word_sounds.subtitle', 'Design your phonics lesson')} ΓÇó {grade
+  L18157: const level = latest.data?.gradeLevel;
+  ... and 122 more
+
+Proficiency refs: 11 matches
+  L11267: simplified_text: `Differentiate your text for diverse learners. This tool rewrites content to specific proficiency level
+  L15435: proficiency_rating: "Proficiency Rating",
+  L19737: const proficiency = climax?.masteryScore || 0;
+  L19739: if (proficiency >= 90) ratingLabel = t('adventure.mission_report.rating_mastery');
+  L19740: else if (proficiency >= 70) ratingLabel = t('adventure.mission_report.rating_proficient');
+  ... and 6 more
+
+Student Welcome refs: 8 matches
+  L25282: const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
+  L30249: const [showStudentWelcome, setShowStudentWelcome] = useState(false);
+  L30252: const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
+  L30261: }, [showStudentWelcome, hasSelectedRole, isTeacherMode]);
+  L30948: const handleCloseStudentWelcome = useCallback(() => setShowStudentWelcome(false), []);
+  ... and 3 more
+
+Show Student Welcome refs: 5 matches
+  L30249: const [showStudentWelcome, setShowStudentWelcome] = useState(false);
+  L30252: const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
+  L30261: }, [showStudentWelcome, hasSelectedRole, isTeacherMode]);
+  L30948: const handleCloseStudentWelcome = useCallback(() => setShowStudentWelcome(false), []);
+  L69411: isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
+
+Student Interest refs: 40 matches
+  L30335: setStudentInterests(interestArray);
+  L35287: const [studentInterests, setStudentInterests] = useState([]);
+  L35695: studentInterests,
+  L35717: studentInterests,
+  L35751: if (parsed.studentInterests) setStudentInterests(parsed.studentInterests);
+  ... and 35 more
+
+Persona refs: 717 matches
+  L123: 'tour-tool-persona': 'persona',
+  L10496: if (data.personaState) {
+  L10497: stats.interviewXP = data.personaState.accumulatedXP || data.personaState.totalXP || 0;
+  L10498: if (data.personaState.chatHistory?.length > 0) stats.totalActivities++;
+  L10502: // Extract safety flags from persona chat history
+  ... and 712 more
+
+Roster refs: 43 matches
+  L11671: ΓÇó **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.
+  L14910: modal_subtitle: "Create groups, assign differentiated resources, and manage your roster.",
+  L14922: roster_title: "Student Roster & Assignment",
+  L14923: roster_assignment: "Assign Students to Groups",
+  L15228: group_roster_list: "List of students in the selected group.",
+  ... and 38 more
+
+Target Grade refs: 5 matches
+  L16161: const getDifferentiationGrades = (targetGrade, range) => {
+  L16162: if (range === 'None') return [targetGrade];
+  L16163: const targetIdx = GRADE_ORDER.indexOf(targetGrade);
+  L16164: if (targetIdx === -1) return [targetGrade];
+  L38108: TargetGrade: gradeLevel,
+
+Selected Role refs: 9 matches
+  L30248: const [hasSelectedRole, setHasSelectedRole] = useState(false);
+  L30252: const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
+  L30261: }, [showStudentWelcome, hasSelectedRole, isTeacherMode]);
+  L30949: const handleCloseStudentEntry = useCallback(() => { setShowStudentEntry(false); setHasSelectedRole(false); }, []);
+  L31644: setHasSelectedRole(true);
+  ... and 4 more
+
+Has Selected Role refs: 9 matches
+  L30248: const [hasSelectedRole, setHasSelectedRole] = useState(false);
+  L30252: const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
+  L30261: }, [showStudentWelcome, hasSelectedRole, isTeacherMode]);
+  L30949: const handleCloseStudentEntry = useCallback(() => { setShowStudentEntry(false); setHasSelectedRole(false); }, []);
+  L31644: setHasSelectedRole(true);
+  ... and 4 more
+
+======================================================================
+  STATE VARIABLES (useState/useRef with student/profile/group)
+======================================================================
+  L3257: const [isStudentLocked, setIsStudentLocked] = React.useState(false); // Teacher Lock
+  L10350: const [importedStudents, setImportedStudents] = React.useState([]);
+  L10351: const [selectedStudent, setSelectedStudent] = React.useState(null);
+  L16788: const [languagePack, setLanguagePack] = useState(null);
+  L16955: const [currentUiLanguage, setUiLanguage] = useState('English');
+  L25040: const roleRef = useRef(null);
+  L25284: const welcomeRef = useRef(null);
+  L26583: const [newGroupName, setNewGroupName] = useState("");
+  L27093: const [gradedIds, setGradedIds] = useState(new Set());
+  L27094: const [activeTab, setActiveTab] = useState('students');
+  L27779: const [wizInterestInput, setWizInterestInput] = useState('');
+  L29765: const [studentProgressLog, setStudentProgressLog] = useState([]);
+  L30044: const [studentNickname, setStudentNickname] = useState('');
+  L30092: const [studentProjectSettings, setStudentProjectSettings] = useState({
+  L30248: const [hasSelectedRole, setHasSelectedRole] = useState(false);
+  L30249: const [showStudentWelcome, setShowStudentWelcome] = useState(false);
+  L30262: const [showStudentEntry, setShowStudentEntry] = useState(false);
+  L30472: const [studentResponses, setStudentResponses] = useState({});
+  L30473: const [studentWorkStatus, setStudentWorkStatus] = useState('idle');
+  L30474: const isStudentWorkLoaded = useRef(false);
+  L30591: const [isPersonaFreeResponse, setIsPersonaFreeResponse] = useState(true);
+  L30598: const [showPersonaHints, setShowPersonaHints] = useState(false);
+  L30599: const [personaTurnHintsViewed, setPersonaTurnHintsViewed] = useState(false);
+  L30600: const showPersonaHintsRef = useRef(showPersonaHints);
+  L30607: const [isPersonaReflectionOpen, setIsPersonaReflectionOpen] = useState(false);
+  L30608: const [personaReflectionInput, setPersonaReflectionInput] = useState('');
+  L30620: const [selectedStudentId, setSelectedStudentId] = useState(null);
+  L31070: const [showGlobalLevelUp, setShowGlobalLevelUp] = useState(false);
+  L31071: const prevGlobalLevelRef = useRef(globalLevel);
+  L31101: const [profiles, setProfiles] = useState([]);
+  L31102: const [selectedProfileId, setSelectedProfileId] = useState('');
+  L31103: // [PHASE 4 MIGRATED] const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  L31104: const [newProfileName, setNewProfileName] = useState('');
+  L31105: const profileInputRef = useRef(null);
+  L31117: const [isEditingLeveledText, setIsEditingLeveledText] = useState(false);
+  L31152: const [fluencyBenchmarkGrade, setFluencyBenchmarkGrade] = useState('3');
+  L31161: // [PHASE 4 MIGRATED] const [wordSoundsLanguage, setWordSoundsLanguage] = useState('en');
+  L31351: const [isCheckingLevel, setIsCheckingLevel] = useState(false);
+  L31355: const [complexityLevel, setComplexityLevel] = useState(5);
+  L31394: const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
+  L31418: const [studentWorkInput, setStudentWorkInput] = useState('');
+  L31480: const [personaState, setPersonaState] = useState({
+  L31498: const [personaAutoRead, setPersonaAutoRead] = useState(false);
+  L31500: // [PHASE 4 MIGRATED] const [personaDefinitionData, setPersonaDefinitionData] = useState(null);
+  L31501: const [isPersonaDefining, setIsPersonaDefining] = useState(false);
+  L31502: const personaDefinitionCache = React.useRef(new Map()); // Cache definitions
+  L31505: const [personaAutoSend, setPersonaAutoSend] = useState(false);
+  L31506: const lastReadPersonaIndexRef = useRef(-1);
+  L31507: const [personaInput, setPersonaInput] = useState('');
+  L31508: const [isPersonaChatOpen, setIsPersonaChatOpen] = useState(false);
+  L31509: const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
+  L31510: const personaScrollRef = useRef(null);
+  L31512: // [PHASE 4 MIGRATED] const [adventureEffects, setAdventureEffects] = useState({ xp: null, energy: null, levelUp: null });
+  L31519: // [PHASE 4 MIGRATED] const [adventureLanguageMode, setAdventureLanguageMode] = useState('English');
+  L31541: const [isStudentLinkMode, setIsStudentLinkMode] = useState(false);
+  L31550: // [PHASE 4 MIGRATED] const [showGroupModal, setShowGroupModal] = useState(false);
+  L31593: const [pendingRole, setPendingRole] = useState(null);
+  L35283: const [gradeLevel, setGradeLevel] = useState('3rd Grade');
+  L35286: const [leveledTextLength, setLeveledTextLength] = useState('Same as Source');
+  L35287: const [studentInterests, setStudentInterests] = useState([]);
+  L35288: const [interestInput, setInterestInput] = useState('');
+  L35289: const [leveledTextCustomInstructions, setLeveledTextCustomInstructions] = useState('');
+  L35292: const [personaCustomInstructions, setPersonaCustomInstructions] = useState('');
+  L35296: const [dokLevel, setDokLevel] = useState('');
+  L35439: const [languageInput, setLanguageInput] = useState('');
+  L35440: const [selectedLanguages, setSelectedLanguages] = useState([]);
+  L35442: const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
+  L35446: const [sourceLevel, setSourceLevel] = useState('5th Grade');
+  L36022: const [udlStandardGrade, setUdlStandardGrade] = useState(gradeLevel);
+  L42043: const [newGroupName, setNewGroupName] = useState("");
+
+======================================================================
+  FIRESTORE COLLECTIONS (student/profile related)
+======================================================================
+  L19871: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L19872: await updateDoc(sessionRef, {
+  L19889: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L19890: await updateDoc(sessionRef, {
+  L21316: const assetRef = doc(db, 'artifacts', appId, 'public', 'data', 'session_assets', assetId);
+  L21349: const assetRef = doc(db, 'artifacts', appId, 'public', 'data', 'session_assets', assetId);
+  L25535: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L25536: await updateDoc(sessionRef, {
+  L25567: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L25571: await updateDoc(sessionRef, {
+  L25592: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L25597: await updateDoc(sessionRef, {
+  L25796: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L25797: await updateDoc(sessionRef, {
+  L26146: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26149: await updateDoc(sessionRef, {
+  L26157: await updateDoc(sessionRef, { 'escapeRoomState.timeRemaining': newTime });
+  L26182: const sessionRef = doc(db, 'apps', appId, 'liveSessions', activeSessionCode);
+  L26183: await updateDoc(sessionRef, { 'escapeRoomState.isPaused': !isPaused });
+  L26188: const sessionRef = doc(db, 'apps', appId, 'liveSessions', activeSessionCode);
+  L26189: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+  L26376: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26377: await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": true });
+  L26393: await updateDoc(sessionRef, {
+  L26399: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26400: try { await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": false }); } catch(e) { warnLog('Firestore sync failed:', e
+  L26416: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26417: await updateDoc(sessionRef, { "quizState.bossStats.image": newImage });
+  L26424: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26425: try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestionIndex": c
+  L26430: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26506: try { await updateDoc(sessionRef, updatePayload); } catch(e) { warnLog('Firestore sync failed:', e); }
+  L26514: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26515: await updateDoc(sessionRef, {
+  L26527: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26528: await updateDoc(sessionRef, {
+  L26541: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26542: await updateDoc(sessionRef, {
+  L26552: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L26579: try { await updateDoc(sessionRef, updates); } catch(e) { warnLog('Firestore sync failed:', e); }
+  L30965: const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'adventure_images', imageId);
+  L30981: const imagesRef = collection(db, 'artifacts', appId, 'users', user.uid, 'adventure_images');
+  L31030: const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'adventure_images', item.imageId);
+  L32352: 'group_resource_library': "Collection of all generated materials available for assignment. Shows: quizzes, glossaries, adventures,
+  L32485: 'profiles_import_button': "Load profiles from an exported file. Accepts .json files created by profile export. Import adds to (doe
+  L34815: const historyRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'teacherHistory');
+  L34871: const historyRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'teacherHistory');
+  L34880: const historyRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'teacherHistory');
+  L34933: const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L35069: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L35073: updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
+  L35078: const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L35079: updateDoc(sessionRef, {
+  L42048: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42050: await updateDoc(sessionRef, {
+  L42061: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42063: await updateDoc(sessionRef, {
+  L42071: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42073: await updateDoc(sessionRef, {
+  L42082: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42094: await updateDoc(sessionRef, updates);
+  L42101: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42103: await updateDoc(sessionRef, {
+  L42120: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', code);
+  L42121: await setDoc(sessionRef, {
+  L42194: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42196: await updateDoc(sessionRef, { mode: newMode });
+  L42211: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L42212: await updateDoc(sessionRef, { resources: lightweightResources });
+  L42238: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', cleanCode);
+  L42240: const sessionSnap = await getDoc(sessionRef);
+  L42260: await updateDoc(sessionRef, {
+  L43134: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L43135: updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog("Sync error:", e));
+  L44968: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L44970: await updateDoc(sessionRef, { 'democracy.isActive': newState });
+  L45449: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L45450: await updateDoc(sessionRef, {
+  L45772: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+  L45773: updateDoc(sessionRef, { "democracy.votes": {} }).catch(e => warnLog("Vote reset failed", e));
+  L48970: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L48971: await updateDoc(sessionRef, {
+  L49012: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L49013: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+  L49066: const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'sessions', activeSessionCode);
+  L49071: updateDoc(sessionRef, {
+  L53152: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L53153: updateDoc(sessionRef, { currentResourceId: targetItem.id }).catch(e => warnLog("Sync error:", e));
+  L54280: const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+  L54281: await deleteDoc(sessionRef);
+  L54334: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L54335: await updateDoc(sessionRef, { resources });
+  L63523: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L63524: try { await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" }); } catch(e) { warnLog('Firestore sync
+  L63542: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L63543: try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync failed:', e)
+  L63672: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+  L63673: await updateDoc(sessionRef, {

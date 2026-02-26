@@ -1,0 +1,8 @@
+LINE 31949: handleGenerateSource({
+LINE 41300: const handleGenerateSource = async (overrides = {}, switchView = true) => {
+LINE 49150: await handleGenerateSource();
+LINE 49348: await handleGenerateSource({ topic: textToSend });
+LINE 51794: const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, {
+LINE 54821: const resultItem = await handleGenerate(type, null, !isLast, batchSourceText, stepConfig, false);
+LINE 60891: onKeyDown={(e) => e.key === 'Enter' && handleGenerateSource()}
+LINE 61126: onClick={handleGenerateSource}

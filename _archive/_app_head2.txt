@@ -1,0 +1,26 @@
+function App() {
+  return (
+    <LanguageProvider>
+      <AlloFlowContent />
+    </LanguageProvider>
+  );
+}
+if (typeof __firebase_config !== 'undefined') {
+  const container = document.getElementById('root');
+  if (container) {
+    if (ReactDOM.createRoot) {
+       const originalConsoleError = console.error;
+       console.error = (...args) => {
+         if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
+           return;
+         }
+         originalConsoleError(...args);
+       };
+       const root = ReactDOM.createRoot(container);
+       root.render(<App />);
+    } else {
+       ReactDOM.render(<App />, container);
+    }
+  }
+}
+// #endregion

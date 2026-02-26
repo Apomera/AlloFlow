@@ -1,0 +1,13 @@
+FIX 3a: Added cleanup for setTeamEscapeToast timer
+FIX 3b: Added cleanup for setShowConfetti timer
+FIX 3c: Added cleanup for tour scroll timer
+FIX 3d: Added cleanup for dictation mode timer
+FIX 3e: Added cleanup for auto-read TTS timer
+FIX 4a: Added key to renderCard .map() via React.Fragment wrapper
+FIX 4b: Added key to renderFlowShape .map() via React.Fragment wrapper
+INFO 4c: Found 1 occurrences of q.options.map without key
+SKIP 4c: q.options.map requires careful per-instance key insertion — needs more context
+
+Fixes applied: 7
+Output: 7,620,634 bytes, 73,848 lines
+Braces: 23711 open, 23719 close, diff=-8

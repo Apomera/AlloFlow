@@ -1,0 +1,39 @@
+=== PRELOADED WORDS STRUCTURE ANALYSIS ===
+
+--- PRODUCERS (what structures are created) ---
+Line 3716: return { ...wordEntry, ttsReady: true };
+Line 1893: const setPreloadedWords = setWsPreloadedWords || (() => {
+Line 3624: setPreloadedWords(prev => [...prev, ...newPreloadedWords]);
+Line 3805: // The existing code used `setPreloadedWords([...preloadedData])` incrementally.
+Line 3831: setPreloadedWords(validResults);
+Line 3875: setPreloadedWords(newOrder);
+Line 3881: setPreloadedWords(prev => {
+Line 3944: setPreloadedWords(prev => {
+Line 3973: }, [preloadedWords, fetchWordData, setPreloadedWords]);
+Line 3998: setPreloadedWords([]);
+Line 4659: setPreloadedWords(prev => prev.slice(1));
+Line 3613: newPreloadedWords.push({ targetWord, data });
+Line 3929: const refreshedWord = {
+Line 3947: updated[index] = refreshedWord;
+Line 3952: preloadedWordCache.current.set(targetWord.toLowerCase(), refreshedWord);
+Line 3953: console.log("✅ Refreshed phoneme data for:", targetWord, refreshedWord);
+
+--- CONSUMERS (what structures are expected) ---
+Line 4012: const firstWord = preloadedWords[0];
+Line 5706: const firstWord = preloadedWords[0];
+Line 4603: const { wordObj, targetWord, phonemeData } = bufferedWord;
+Line 4013: if (firstWord && firstWord.phonemes) {
+Line 4416: setWordSoundsPhonemes(preloadedWord.phonemes);
+
+--- PHONEMES DATA ACCESS PATTERNS ---
+[.phonemes] Line 4414: if (preloadedWord && preloadedWord.phonemes) {
+[.phonemes] Line 4416: setWordSoundsPhonemes(preloadedWord.phonemes);
+[phonemeData] Line 4603: const { wordObj, targetWord, phonemeData } = bufferedWord;
+[wordSoundsPhonemes] Line 4028: if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+[wordSoundsPhonemes] Line 4033: }, [wordSoundsPhonemes, nextWordBuffer, isLoadingPhonemes, prefetchNextWords]);
+
+--- TARGETWORD VS WORD PROPERTY ACCESS ---
+Line 3585: ...preloadedWords.map(w => w.targetWord?.toLowerCase())
+Line 3928: console.log("🔄 [REGEN] Starting regeneration for index:", index, "Current words:", preloadedWords.map(w => w.targetWord));
+Line 4614: const bufferedTargetWord = bufferedWord?.targetWord || bufferedWord?.word;
+Line 4629: const bufferedTargetWord = bufferedWord?.targetWord || bufferedWord?.word;

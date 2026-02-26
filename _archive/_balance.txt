@@ -1,0 +1,811 @@
+﻿  L5329: parens=2 braces=2 | const prefetchNextWords = React.useCallback(async () => {
+  L5330: parens=2 braces=2 | // DISABLED: Review Panel handles all preloading. Pre-fetch is legacy code.
+  L5331: parens=2 braces=2 | return;
+  L5332: parens=1 braces=1 | }, [preloadedWords, isPrefetching, currentWordSoundsWord, wordSoundsActivity, fetchWordData, getDiff
+  L5333: parens=1 braces=1 | 
+  L5334: parens=1 braces=1 | // BULK PRELOAD: Fetch 15 words with phoneme data and TTS on modal open
+  L5335: parens=1 braces=1 | // EAGER-START: Load first word immediately, start activity, preload rest in background
+  L5336: parens=1 braces=1 | // BULK PRELOAD: "Rolling Window" Strategy
+  L5337: parens=1 braces=1 | // Load first word immediately + next 2 words in background (3 total)
+  L5338: parens=1 braces=1 | // This ensures instant start without the massive initial delay of loading 15+ words
+  L5339: parens=2 braces=2 | const preloadInitialBatch = React.useCallback(async () => {
+  L5340: parens=2 braces=2 | if (isPreloading) return;
+  L5341: parens=2 braces=2 | // [FIX] STRICT ANTI-SHUFFLE: Prevent running if words already exist
+BRACE UNDERFLOW at L10150 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L10154 col52: 'isOpen, onClose, t }) => {'
+  Full line: const StudentAnalyticsPanel = ({ isOpen, onClose, t }) => {
+BRACE UNDERFLOW at L10160 col86: 'urrent: 0, total: 0 });'
+  Full line: const [importProgress, setImportProgress] = React.useState({ current: 0, total: 0 });
+BRACE UNDERFLOW at L10230 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L10280 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L10321 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L10361 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L10375 col4: '}, [importedStudents'
+  Full line: }, [importedStudents]);
+BRACE UNDERFLOW at L10382 col29: '{/* Header */}'
+  Full line: {/* Header */}
+BRACE UNDERFLOW at L10386 col43: '<Users size={24} className="text-in'
+  Full line: <Users size={24} className="text-indigo-600" />
+BRACE UNDERFLOW at L10389 col104: 'ss_analytics.title')}</h2>'
+  Full line: <h2 className="text-xl font-bold text-slate-800">{t('class_analytics.title')}</h2>
+BRACE UNDERFLOW at L10394 col29: ')}'
+  Full line: )}
+BRACE UNDERFLOW at L10397 col44: 'ton onClick={onClose} className="p-2 hov'
+  Full line: <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
+BRACE UNDERFLOW at L10398 col35: '<X size={20} className="text-sl'
+  Full line: <X size={20} className="text-slate-500" />
+BRACE UNDERFLOW at L10402 col30: '{/* Content */}'
+  Full line: {/* Content */}
+BRACE UNDERFLOW at L10404 col51: '& Export Controls */}'
+  Full line: {/* Import & Export Controls */}
+BRACE UNDERFLOW at L10411 col58: 'ge={handleFileImport}'
+  Full line: onChange={handleFileImport}
+BRACE UNDERFLOW at L10417 col48: '<Upload size={16} />'
+  Full line: <Upload size={16} />
+BRACE UNDERFLOW at L10418 col67: 'tics.import_button')}'
+  Full line: {t('class_analytics.import_button')}
+BRACE UNDERFLOW at L10441 col25: ')}'
+  Full line: )}
+BRACE UNDERFLOW at L10443 col49: 'rogress Indicator */}'
+  Full line: {/* Progress Indicator */}
+BRACE UNDERFLOW at L10451 col25: ')}'
+  Full line: )}
+BRACE UNDERFLOW at L10454 col46: 'ass Summary Cards */}'
+  Full line: {/* Class Summary Cards */}
+BRACE UNDERFLOW at L10486 col21: ')}'
+  Full line: )}
+BRACE UNDERFLOW at L10488 col40: '{/* Student Table */}'
+  Full line: {/* Student Table */}
+BRACE UNDERFLOW at L10539 col21: ')}'
+  Full line: )}
+BRACE UNDERFLOW at L10542 col52: 'dent Detail Modal */}'
+  Full line: {/* Selected Student Detail Modal */}
+BRACE UNDERFLOW at L10615 col17: ')}'
+  Full line: )}
+BRACE UNDERFLOW at L10620 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L10625 col80: 'category: 'default' },'
+  Full line: { id: 'default', label: 'Default (System)', cssClass: '', category: 'default' },
+BRACE UNDERFLOW at L10628 col122: 'ry: 'accessibility' },'
+  Full line: { id: 'opendyslexic', label: 'OpenDyslexic', cssClass: 'font-opendyslexic', googleFont: null, category: 'accessibility' },
+BRACE UNDERFLOW at L10629 col125: 'ry: 'accessibility' },'
+  Full line: { id: 'lexend', label: 'Lexend', cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700', category: 'accessibility' },
+BRACE UNDERFLOW at L10630 col155: 'ry: 'accessibility' },'
+  Full line: { id: 'atkinson', label: 'Atkinson Hyperlegible', cssClass: 'font-atkinson', googleFont: 'Atkinson+Hyperlegible:wght@400;700', category: 'accessibilit
+BRACE UNDERFLOW at L10631 col127: 'ry: 'accessibility' },'
+  Full line: { id: 'andika', label: 'Andika (SIL)', cssClass: 'font-andika', googleFont: 'Andika:wght@400;700', category: 'accessibility' },
+BRACE UNDERFLOW at L10634 col122: 'egory: 'sans-serif' },'
+  Full line: { id: 'inter', label: 'Inter', cssClass: 'font-inter', googleFont: 'Inter:wght@400;500;600;700', category: 'sans-serif' },
+BRACE UNDERFLOW at L10635 col122: 'egory: 'sans-serif' },'
+  Full line: { id: 'roboto', label: 'Roboto', cssClass: 'font-roboto', googleFont: 'Roboto:wght@400;500;700', category: 'sans-serif' },
+BRACE UNDERFLOW at L10636 col132: 'egory: 'sans-serif' },'
+  Full line: { id: 'opensans', label: 'Open Sans', cssClass: 'font-opensans', googleFont: 'Open+Sans:wght@400;600;700', category: 'sans-serif' },
+BRACE UNDERFLOW at L10637 col110: 'egory: 'sans-serif' },'
+  Full line: { id: 'lato', label: 'Lato', cssClass: 'font-lato', googleFont: 'Lato:wght@400;700', category: 'sans-serif' },
+BRACE UNDERFLOW at L10638 col122: 'egory: 'sans-serif' },'
+  Full line: { id: 'nunito', label: 'Nunito', cssClass: 'font-nunito', googleFont: 'Nunito:wght@400;600;700', category: 'sans-serif' },
+BRACE UNDERFLOW at L10639 col144: 'egory: 'sans-serif' },'
+  Full line: { id: 'sourcesans', label: 'Source Sans 3', cssClass: 'font-sourcesans', googleFont: 'Source+Sans+3:wght@400;600;700', category: 'sans-serif' },
+BRACE UNDERFLOW at L10642 col126: 'category: 'modern' },'
+  Full line: { id: 'poppins', label: 'Poppins', cssClass: 'font-poppins', googleFont: 'Poppins:wght@400;500;600;700', category: 'modern' },
+BRACE UNDERFLOW at L10643 col138: 'category: 'modern' },'
+  Full line: { id: 'montserrat', label: 'Montserrat', cssClass: 'font-montserrat', googleFont: 'Montserrat:wght@400;500;600;700', category: 'modern' },
+BRACE UNDERFLOW at L10644 col126: 'category: 'modern' },'
+  Full line: { id: 'raleway', label: 'Raleway', cssClass: 'font-raleway', googleFont: 'Raleway:wght@400;500;600;700', category: 'modern' },
+BRACE UNDERFLOW at L10645 col130: 'category: 'modern' },'
+  Full line: { id: 'quicksand', label: 'Quicksand', cssClass: 'font-quicksand', googleFont: 'Quicksand:wght@400;500;700', category: 'modern' },
+BRACE UNDERFLOW at L10646 col120: 'category: 'modern' },'
+  Full line: { id: 'comic', label: 'Comic Neue', cssClass: 'font-comic', googleFont: 'Comic+Neue:wght@400;700', category: 'modern' },
+BRACE UNDERFLOW at L10649 col137: ', category: 'serif' },'
+  Full line: { id: 'merriweather', label: 'Merriweather', cssClass: 'font-merriweather', googleFont: 'Merriweather:wght@400;700', category: 'serif' },
+BRACE UNDERFLOW at L10650 col132: ', category: 'serif' },'
+  Full line: { id: 'gentium', label: 'Gentium Plus', cssClass: 'font-gentium', googleFont: 'Gentium+Book+Plus:wght@400;700', category: 'serif' },
+BRACE UNDERFLOW at L10651 col109: ', category: 'serif' },'
+  Full line: { id: 'lora', label: 'Lora', cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
+BRACE UNDERFLOW at L10652 col141: ', category: 'serif' }'
+  Full line: { id: 'playfair', label: 'Playfair Display', cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
+BRACE UNDERFLOW at L12310 col6: '},'
+  Full line: },
+BRACE UNDERFLOW at L12323 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L12324 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12340 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12358 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12396 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12432 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12440 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L12441 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12452 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12491 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12504 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12509 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12552 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12573 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12580 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12599 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12630 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12636 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12652 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12841 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12890 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L12956 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12963 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12971 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L12993 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13003 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13004 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13060 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13078 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13083 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13099 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13118 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13166 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13212 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13222 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13223 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13254 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13255 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13278 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13290 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13303 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13304 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13317 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13327 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13332 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13356 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13361 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13364 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13392 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13409 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13455 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13463 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13494 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13511 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13517 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13524 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13530 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13540 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13569 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13574 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13596 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13615 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13637 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13652 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13658 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13672 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13673 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13686 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13707 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13708 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13718 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13727 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13736 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13740 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13766 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13767 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13798 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13813 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13816 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13820 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13830 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13905 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L13915 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L13916 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13936 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L13972 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14027 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14052 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14064 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14073 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14140 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14150 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14170 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14174 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14195 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14200 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14207 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14213 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14220 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14224 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14235 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14245 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14253 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14259 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L14260 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14268 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14274 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14301 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14309 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14319 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14323 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14334 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14341 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L14346 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L14347 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14379 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L14380 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14388 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14403 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14409 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14426 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14432 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14461 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L14490 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L15759 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L15786 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L15812 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L15816 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16130 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16135 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16186 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16192 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16209 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16214 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16238 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16252 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16257 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16265 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16319 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16334 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16361 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16366 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16375 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16392 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16408 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16467 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16477 col4: '},'
+  Full line: },
+BRACE UNDERFLOW at L16483 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L16484 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16490 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16496 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16519 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16542 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16546 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16565 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16571 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16587 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16788 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L16789 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16819 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16833 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16844 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16872 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16905 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L16906 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16935 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16958 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L16978 col2: '}'
+  Full line: }
+BRACE UNDERFLOW at L16979 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L16998 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17002 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17006 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17014 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17023 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17026 col2: '} catch (e) {'
+  Full line: } catch (e) {
+BRACE UNDERFLOW at L17029 col2: '}'
+  Full line: }
+BRACE UNDERFLOW at L17030 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17041 col59: 'et === -1) return "{}";'
+  Full line: if (firstBrace === -1 && firstBracket === -1) return "{}";
+BRACE UNDERFLOW at L17046 col4: '} else {'
+  Full line: } else {
+BRACE UNDERFLOW at L17049 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17052 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17056 col31: '= cleaned.replace(/}\s*{/g, '}, {');'
+  Full line: cleaned = cleaned.replace(/}\s*{/g, '}, {');
+BRACE UNDERFLOW at L17058 col31: '= cleaned.replace(/}\s*\[/g, '}, [');'
+  Full line: cleaned = cleaned.replace(/}\s*\[/g, '}, [');
+BRACE UNDERFLOW at L17060 col35: 'leaned.replace(/,\s*}/g, '}'); // Remove'
+  Full line: cleaned = cleaned.replace(/,\s*}/g, '}'); // Remove trailing commas in objects
+BRACE UNDERFLOW at L17062 col40: 'd.replace(/\.\.\.\s*}/g, '}'); // Handle'
+  Full line: cleaned = cleaned.replace(/\.\.\.\s*}/g, '}'); // Handle ellipsis at end of objects
+BRACE UNDERFLOW at L17073 col46: 'ace(/}\s*\n\s*{/g, '},\n{');'
+  Full line: cleaned = cleaned.replace(/}\s*\n\s*{/g, '},\n{');
+BRACE UNDERFLOW at L17080 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17088 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17091 col65: 'sion is too short." };'
+  Full line: return { isValid: false, error: "Submission is too short." };
+BRACE UNDERFLOW at L17092 col2: '}'
+  Full line: }
+BRACE UNDERFLOW at L17095 col79: 'etitive or spammy." };'
+  Full line: return { isValid: false, error: "Text appears too repetitive or spammy." };
+BRACE UNDERFLOW at L17096 col2: '}'
+  Full line: }
+BRACE UNDERFLOW at L17097 col38: ': true, error: null };'
+  Full line: return { isValid: true, error: null };
+BRACE UNDERFLOW at L17098 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17120 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L17122 col4: '});'
+  Full line: });
+BRACE UNDERFLOW at L17126 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17147 col22: 'let currentChunk = {};'
+  Full line: let currentChunk = {};
+BRACE UNDERFLOW at L17155 col22: 'currentChunk = {};'
+  Full line: currentChunk = {};
+BRACE UNDERFLOW at L17157 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17158 col2: '});'
+  Full line: });
+BRACE UNDERFLOW at L17160 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17166 col4: '} else {'
+  Full line: } else {
+BRACE UNDERFLOW at L17168 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17170 col2: '}, {});'
+  Full line: }, {});
+BRACE UNDERFLOW at L17171 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17174 col20: 'const result = {};'
+  Full line: const result = {};
+BRACE UNDERFLOW at L17180 col12: '} else {'
+  Full line: } else {
+BRACE UNDERFLOW at L17181 col43: 'c[key]) acc[key] = {};'
+  Full line: if (!acc[key]) acc[key] = {};
+BRACE UNDERFLOW at L17182 col12: '}'
+  Full line: }
+BRACE UNDERFLOW at L17184 col8: '}, result);'
+  Full line: }, result);
+BRACE UNDERFLOW at L17185 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17187 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17201 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L17203 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L17205 col4: '} catch (e) {'
+  Full line: } catch (e) {
+BRACE UNDERFLOW at L17208 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17209 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L17217 col4: '} catch (e) {'
+  Full line: } catch (e) {
+BRACE UNDERFLOW at L17220 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17221 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L17225 col4: '} catch (e) { consol'
+  Full line: } catch (e) { console.error(`storageDB Del Error [${key}]:`, e); }
+BRACE UNDERFLOW at L17226 col2: '},'
+  Full line: },
+BRACE UNDERFLOW at L17230 col4: '} catch (e) { consol'
+  Full line: } catch (e) { console.error("storageDB Clear Error:", e); }
+BRACE UNDERFLOW at L17231 col2: '}'
+  Full line: }
+BRACE UNDERFLOW at L17232 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17233 col59: 'nc (url, options = {}, maxRetries = 5) ='
+  Full line: const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) => {
+BRACE UNDERFLOW at L17239 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L17246 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L17251 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L17255 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L17256 col4: '} catch (error) {'
+  Full line: } catch (error) {
+BRACE UNDERFLOW at L17262 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L17263 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L17266 col2: '}'
+  Full line: }
+BRACE UNDERFLOW at L17268 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17272 col0: '};'
+  Full line: };
+BRACE UNDERFLOW at L17279 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L17281 col4: '} catch (e) {'
+  Full line: } catch (e) {
+BRACE UNDERFLOW at L19163 col52: 'e generated ${qCount} questions${topicSt'
+  Full line: message = `I've generated ${qCount} questions${topicStr}. The last one is a bit tricky!`;
+BRACE UNDERFLOW at L19164 col14: '} else if (type ==='
+  Full line: } else if (type === 'glossary') {
+BRACE UNDERFLOW at L19169 col14: '} else if (type ==='
+  Full line: } else if (type === 'simplified') {
+BRACE UNDERFLOW at L19174 col14: '} else if (type ==='
+  Full line: } else if (type === 'adventure') {
+BRACE UNDERFLOW at L19176 col14: '} else if (type ==='
+  Full line: } else if (type === 'analysis') {
+BRACE UNDERFLOW at L19179 col81: 'is_result', { level }) || `I've analyzed'
+  Full line: message = t('bot_events.feedback_analysis_result', { level }) || `I've analyzed the text. It looks like a ${level} reading level.`;
+BRACE UNDERFLOW at L19180 col18: '} else {'
+  Full line: } else {
+BRACE UNDERFLOW at L19182 col18: '}'
+  Full line: }
+BRACE UNDERFLOW at L19183 col14: '} else if (type ==='
+  Full line: } else if (type === 'scaffolds') {
+BRACE UNDERFLOW at L19185 col14: '} else if (type ==='
+  Full line: } else if (type === 'faq') {
+BRACE UNDERFLOW at L19187 col14: '} else if (type ==='
+  Full line: } else if (type === 'outline') {
+BRACE UNDERFLOW at L19189 col14: '} else if (type ==='
+  Full line: } else if (type === 'brainstorm') {
+BRACE UNDERFLOW at L19191 col14: '} else if (type ==='
+  Full line: } else if (type === 'concept-sort') {
+BRACE UNDERFLOW at L19193 col14: '} else if (type ==='
+  Full line: } else if (type === 'math') {
+BRACE UNDERFLOW at L19195 col14: '} else if (type ==='
+  Full line: } else if (type === 'persona') {
+BRACE UNDERFLOW at L19197 col14: '} else if (type ==='
+  Full line: } else if (type === 'alignment') {
+BRACE UNDERFLOW at L19199 col14: '} else {'
+  Full line: } else {
+BRACE UNDERFLOW at L19206 col14: '}'
+  Full line: }
+BRACE UNDERFLOW at L19210 col14: '}'
+  Full line: }
+BRACE UNDERFLOW at L19211 col10: '}, 2000);'
+  Full line: }, 2000);
+BRACE UNDERFLOW at L19217 col14: '}'
+  Full line: }
+BRACE UNDERFLOW at L19218 col10: '};'
+  Full line: };
+BRACE UNDERFLOW at L19219 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L19220 col2: '}, [history, speak,'
+  Full line: }, [history, speak, t, isTalking]);
+BRACE UNDERFLOW at L19238 col8: '} else if (activeVie'
+  Full line: } else if (activeView === 'glossary') {
+BRACE UNDERFLOW at L19241 col8: '} else if (activeVie'
+  Full line: } else if (activeView === 'quiz') {
+BRACE UNDERFLOW at L19243 col8: '} else if (activeVie'
+  Full line: } else if (activeView === 'adventure') {
+BRACE UNDERFLOW at L19245 col8: '} else if (activeVie'
+  Full line: } else if (activeView === 'input') {
+BRACE UNDERFLOW at L19248 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L19252 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L19254 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19264 col12: '}'
+  Full line: }
+BRACE UNDERFLOW at L19276 col12: '}'
+  Full line: }
+BRACE UNDERFLOW at L19279 col8: '}, delay);'
+  Full line: }, delay);
+BRACE UNDERFLOW at L19280 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19290 col13: '}'
+  Full line: }
+BRACE UNDERFLOW at L19292 col8: '}'
+  Full line: }
+BRACE UNDERFLOW at L19293 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19299 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19316 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19317 col2: '}, [speak, isDraggin'
+  Full line: }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t]);
+BRACE UNDERFLOW at L19325 col52: 'clientX, y: clientY };'
+  Full line: dragStartRef.current = { x: clientX, y: clientY };
+BRACE UNDERFLOW at L19326 col40: 'ent = { ...position };'
+  Full line: startPosRef.current = { ...position };
+BRACE UNDERFLOW at L19327 col51: 'clientX, y: clientY };'
+  Full line: prevDragPos.current = { x: clientX, y: clientY };
+BRACE UNDERFLOW at L19328 col2: '};'
+  Full line: };
+BRACE UNDERFLOW at L19340 col53: 'clientX, y: clientY };'
+  Full line: prevDragPos.current = { x: clientX, y: clientY };
+BRACE UNDERFLOW at L19344 col6: '});'
+  Full line: });
+BRACE UNDERFLOW at L19345 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19354 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19359 col77: 'e, { passive: false });'
+  Full line: window.addEventListener('touchmove', handleMouseMove, { passive: false });
+BRACE UNDERFLOW at L19361 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L19368 col4: '};'
+  Full line: };
+BRACE UNDERFLOW at L19369 col2: '}, [isDragging, onCl'
+  Full line: }, [isDragging, onClick]);
+BRACE UNDERFLOW at L19372 col129: 't('bot.mood_idle') },'
+  Full line: idle: { gradFrom: '#818CF8', gradTo: '#4338CA', eye: '#22D3EE', mouth: '#22D3EE', glow: '#6366F1', msg: t('bot.mood_idle') },
+BRACE UNDERFLOW at L19373 col131: 't('bot.mood_happy') },'
+  Full line: happy: { gradFrom: '#34D399', gradTo: '#059669', eye: '#FFFFFF', mouth: '#FFFFFF', glow: '#10B981', msg: t('bot.mood_happy') },
+BRACE UNDERFLOW at L19374 col137: 'bot.mood_thinking') },'
+  Full line: thinking: { gradFrom: '#FBBF24', gradTo: '#B45309', eye: '#FEF3C7', mouth: '#FEF3C7', glow: '#F59E0B', msg: t('bot.mood_thinking') },
+BRACE UNDERFLOW at L19375 col127: ': t('bot.mood_sad') }'
+  Full line: sad: { gradFrom: '#64748B', gradTo: '#334155', eye: '#E2E8F0', mouth: '#E2E8F0', glow: '#94A3B8', msg: t('bot.mood_sad') }
+BRACE UNDERFLOW at L19376 col2: '};'
+  Full line: };
+BRACE UNDERFLOW at L19391 col10: '};'
+  Full line: };
+BRACE UNDERFLOW at L19392 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L19394 col117: 'ckStroke: '#475569' };'
+  Full line: let c = { ...base, screenBg: '#1E1B4B', antenna: base.gradTo, jetpackFill: '#94A3B8', jetpackStroke: '#475569' };
+BRACE UNDERFLOW at L19396 col143: 'packFill: '#60A5FA' };'
+  Full line: c = { ...c, gradFrom: '#60A5FA', gradTo: '#2563EB', glow: '#93C5FD', screenBg: '#172554', antenna: '#2563EB', jetpackFill: '#60A5FA' };
+BRACE UNDERFLOW at L19397 col6: '} else if (colorOver'
+  Full line: } else if (colorOverlay === 'peach') {
+BRACE UNDERFLOW at L19398 col143: 'packFill: '#FB923C' };'
+  Full line: c = { ...c, gradFrom: '#FB923C', gradTo: '#EA580C', glow: '#FDBA74', screenBg: '#431407', antenna: '#EA580C', jetpackFill: '#FB923C' };
+BRACE UNDERFLOW at L19399 col6: '} else if (colorOver'
+  Full line: } else if (colorOverlay === 'yellow') {
+BRACE UNDERFLOW at L19400 col143: 'packFill: '#FACC15' };'
+  Full line: c = { ...c, gradFrom: '#FACC15', gradTo: '#CA8A04', glow: '#FEF08A', screenBg: '#422006', antenna: '#CA8A04', jetpackFill: '#FACC15' };
+BRACE UNDERFLOW at L19401 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L19413 col10: '}'
+  Full line: }
+BRACE UNDERFLOW at L19414 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L19417 col2: '};'
+  Full line: };
+BRACE UNDERFLOW at L19423 col32: 'rn { rx: 8.5, ry: 4 };'
+  Full line: return { rx: 8.5, ry: 4 };
+BRACE UNDERFLOW at L19425 col32: 'rn { rx: 6, ry: 7.5 };'
+  Full line: return { rx: 6, ry: 7.5 };
+BRACE UNDERFLOW at L19427 col30: 'turn { rx: 7, ry: 7 };'
+  Full line: return { rx: 7, ry: 7 };
+BRACE UNDERFLOW at L19430 col34: '{ rx: 6.5, ry: 6.5 };'
+  Full line: return { rx: 6.5, ry: 6.5 };
+BRACE UNDERFLOW at L19431 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L19432 col2: '};'
+  Full line: };
+BRACE UNDERFLOW at L19434 col31: 'x: eyeRx, ry: eyeRy } = getEyeDimensions'
+  Full line: const { rx: eyeRx, ry: eyeRy } = getEyeDimensions();
+BRACE UNDERFLOW at L19447 col6: '}'
+  Full line: }
+BRACE UNDERFLOW at L19448 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L19460 col4: '}'
+  Full line: }
+BRACE UNDERFLOW at L19461 col2: '};'
+  Full line: };
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python 
+scan_balance.py 
+2>&1 | Out-String | 
+Set-Content 
+-Encoding utf8 ...
++ ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (Trac   
+ eback (most rec    
+ent call last):    
+:String) [], Re    
+moteException
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+  File "C:\Users\cab
+ba\OneDrive\Desktop\
+UDL-Tool-Updated\sca
+n_balance.py", line 
+69, in <module>
+    print(f"BRACE 
+UNDERFLOW at 
+L{line_idx+1} 
+col{i}: '{line[max(0
+,i-20):i+20].strip()
+}'")
+    ~~~~~^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+  File "C:\Python314
+\Lib\encodings\cp125
+2.py", line 19, in 
+encode
+    return codecs.ch
+armap_encode(input,s
+elf.errors,encoding_
+table)[0]
+           ~~~~~~~~~
+~~~~~~~~~~~~^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+character '\u03c0' 
+in position 58: 
+character maps to 
+<undefined>
+

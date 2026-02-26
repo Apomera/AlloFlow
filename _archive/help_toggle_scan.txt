@@ -1,0 +1,8 @@
+L27668: const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode 
+L27717: setIsHelpMode(false);
+L27921: onClick={() => { setShowWizardHelp(h => !h); setIsHelpMode(prev => !prev); }}
+L27936: <button data-help-ignore="true" onClick={() => { setIsHelpMode(false); onClose(); }} className="p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 focus:bg-sla
+L27948: <button onClick={() => { setShowWizardHelp(false); setIsHelpMode(false); }} className="text-indigo-400 hover:text-indigo-600 shrink-0 p-1"><X size={14}/></button>
+L30025: const [isHelpMode, setIsHelpMode] = useState(false);
+L33355: const handleToggleIsHelpMode = React.useCallback(() => setIsHelpMode(prev => !prev), []);
+L68754: setIsHelpMode={setIsHelpMode}

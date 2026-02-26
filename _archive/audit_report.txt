@@ -1,0 +1,101 @@
+Found 942 total elements missing data-help-key. First 50:
+[419] <button>
+   Attrs: onClick={onClose}                     disabled={isProcessing}                   ...
+[471] <button>
+   Attrs: onClick={onClose}                         disabled={isProcessing}               ...
+[478] <button>
+   Attrs: onClick={onConfirm}                         disabled={isProcessing}             ...
+[1289] <button>
+   Attrs: onClick={() =
+[1311] <button>
+   Attrs: onClick={() =
+[1339] <button>
+   Attrs: onClick={() =
+[1342] <button>
+   Attrs: onClick={onClose} className="bg-white/10 hover:bg-white/20 p-2 rounded-full tran...
+[1363] <button>
+   Attrs: onClick={onShowReview}                                 className="px-4 py-1.5 bg...
+[1385] <input>
+   Attrs: type="range" min="5" max="40" step="1"                                          ...
+[1399] <input>
+   Attrs: type="range" min="5" max="200" step="5"                                         ...
+[1414] <input>
+   Attrs: type="text"                                         value={imageTheme}          ...
+[1433] <input>
+   Attrs: type="number" min="1" max="4"                                                  v...
+[1446] <input>
+   Attrs: type="number" min="1" max="4"                                                  v...
+[1486] <select>
+   Attrs: value={selectedFamily}                                             onChange={(e)...
+[1516] <textarea>
+   Attrs: value={customText} onChange={(e) =
+[1534] <select>
+   Attrs: value={selectedSightWordList}                                             onChan...
+[1558] <input>
+   Attrs: value={aiTopic} onChange={(e) =
+[1563] <button>
+   Attrs: onClick={handleAiGenerate} disabled={isAiGenerating}                            ...
+[1600] <button>
+   Attrs: onClick={toggleAll}                                                 className="t...
+[1609] <button>
+   Attrs: onClick={handleStart}                                     disabled={selectedIndi...
+[1895] <button>
+   Attrs: type="button"                                                 onClick={(e) =
+[1928] <button>
+   Attrs: onClick={(e) =
+[1934] <button>
+   Attrs: onClick={(e) =
+[1943] <button>
+   Attrs: type="button"                                                 onMouseDown={(e) =
+[1969] <button>
+   Attrs: onClick={async (e) =
+[2003] <button>
+   Attrs: onClick={async (e) =
+[2035] <button>
+   Attrs: onClick={(e) =
+[2048] <button>
+   Attrs: onClick={(e) =
+[2072] <select>
+   Attrs: value={word.difficulty || 'medium'}                                             ...
+[2100] <button>
+   Attrs: onClick={() =
+[2126] <button>
+   Attrs: onClick={() =
+[2147] <button>
+   Attrs: onClick={() =
+[2152] <button>
+   Attrs: onClick={() =
+[2173] <input>
+   Attrs: value={word.rhymeWord || ''}                                                    ...
+[2181] <input>
+   Attrs: value={d}                                                                 onChan...
+[2191] <button>
+   Attrs: onClick={async (e) =
+[2204] <button>
+   Attrs: onClick={async () =
+[2221] <button>
+   Attrs: onClick={() =
+[2240] <input>
+   Attrs: value={d}                                                                 onChan...
+[2249] <button>
+   Attrs: onClick={async (e) =
+[2262] <button>
+   Attrs: onClick={async () =
+[2279] <button>
+   Attrs: onClick={() =
+[2338] <button>
+   Attrs: onClick={() =
+[2360] <button>
+   Attrs: onClick={() =
+[2370] <input>
+   Attrs: type="text"                                                                     ...
+[2378] <button>
+   Attrs: onClick={() =
+[2406] <button>
+   Attrs: onClick={onBackToSetup || onClose}                          className="px-4 py-2...
+[2416] <button>
+   Attrs: onClick={onStartActivity}                              className="px-6 py-3 bg-g...
+[2885] <button>
+   Attrs: onClick={() =
+[2907] <button>
+   Attrs: onClick={playFullSequence}                                     disabled={isSeque...

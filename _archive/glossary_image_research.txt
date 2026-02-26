@@ -1,0 +1,29 @@
+=== GLOSSARY IMAGE GENERATION RESEARCH ===
+
+--- IMAGE GENERATION HANDLERS ---
+[imagePrompt] Line 1121: "imagePrompt": "Icon of ${rawWord}, white background"
+[imageUrl] Line 1127: let imageUrl = null;
+
+--- CUSTOM PROMPT INPUT ---
+[imagePrompt] Line 1121: "imagePrompt": "Icon of ${rawWord}, white background"
+[imagePrompt] Line 1132: const finalPrompt = data.imagePrompt
+[imagePrompt] Line 1133: ? `${themePrefix}${data.imagePrompt}`
+... and 4 more for 'imagePrompt'
+[generateWith] Line 49747: const handleRegenerateWithRigor = async () => {
+[generateWith] Line 59255: onClick={handleRegenerateWithRigor}
+
+--- TERM IMAGE STATE/COMPONENT ---
+[glossaryImage] Line 26676: const [glossaryImageStyle, setGlossaryImageStyle] = useState('');
+[glossaryImage] Line 26678: const [glossaryImageSize, setGlossaryImageSize] = useState(128);
+[isGeneratingTermImage] Line 26672: const [isGeneratingTermImage, setIsGeneratingTermImage] = useState({});
+
+--- REGENERATE IMAGE UI ---
+[regenerate] Line 9809: visuals_regenerate: "Re-create the image with the same settings.",
+[refresh] Line 21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout, HelpCircle, CircleHelp, CheckCircle2, RefreshCw, Search, X,
+[retry] Line 4377: setCurrentWordImage(retryWord.image);
+[Sparkles] Line 21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout, HelpCircle, CircleHelp, CheckCircle2, RefreshCw, Search, X,
+[RefreshCw] Line 21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout, HelpCircle, CircleHelp, CheckCircle2, RefreshCw, Search, X,
+
+--- IMAGE DISPLAY IN GLOSSARY ---
+Line 2791: image: term.image || null, // Capture image for prompts
+Line 38369: if (term.image) term.image = null;

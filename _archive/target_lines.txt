@@ -1,0 +1,15 @@
+10950:                     {/* Session progress bar */}
+10951:                     {wordSoundsSessionProgress > 0 && (
+10952:                         <div className="mt-3">
+10953:                             <div className="flex justify-between text-xs text-violet-200 mb-1">
+10954:                                 <span>{ts('word_sounds.session_progress')}</span>
+10955:                                 <span>{Math.min(wordSoundsSessionProgress, wordSoundsSessionGoal)}/{wordSoundsSessionGoal}</span>
+10956:                             </div>
+10957:                             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+10958:                                 <div
+10959:                                     className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
+10960:                                     style={{ width: `${Math.min((wordSoundsSessionProgress / wordSoundsSessionGoal) * 100, 100)}%` }}
+10961:                                 />
+10962:                             </div>
+10963:                         </div>
+10964:                     )}

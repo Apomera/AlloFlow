@@ -1,0 +1,15 @@
+﻿=== handleAudio with non-word direct text ===
+
+=== Activity description/name near handleAudio ===
+L6850: await handleAudio(LETTER_NAME_AUDIO[lowLet]);
+
+=== What triggers when activity changes ===
+L6472: React.useEffect(() => {
+L6779: React.useEffect(() => {
+  L6792: }, [currentWordSoundsWord, wordSoundsActivity]);
+  L6797: if (wordSoundsActivity === 'orthography') return; // Spelling Bee speaks word automatically
+L6794: React.useEffect(() => {
+  L6797: if (wordSoundsActivity === 'orthography') return; // Spelling Bee speaks word automatically
+  L6822: const instKey = INST_KEY_MAP[wordSoundsActivity] || wordSoundsActivity;
+L8399: React.useEffect(() => {
+  L8408: }, [currentWordSoundsWord, wordSoundsActivity]);

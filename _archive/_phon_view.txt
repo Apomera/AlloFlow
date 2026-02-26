@@ -1,0 +1,137 @@
+const PhonologyView = React.useCallback(({
+        activity,
+        data,
+        showLetterHints,
+        onPlayAudio,
+        onCheckAnswer,
+        isEditing,
+        onUpdateOption,
+        highlightedIndex: externalHighlightedIndex
+    }) => {
+        const [playingIndex, setPlayingIndex] = React.useState(null);
+        const [isSequencing, setIsSequencing] = React.useState(false);
+        const sequenceRef = React.useRef(false);
+        const playFullSequence = async () => {
+            if (isSequencing) return;
+            setIsSequencing(true);
+            sequenceRef.current = true;
+            try {
+                setPlayingIndex(-1);
+                await onPlayAudio(data.word);
+                if (!sequenceRef.current) return;
+                for (let i = 0; i < (data.options?.length || 0); i++) {
+                    if (!sequenceRef.current) break;
+                    setPlayingIndex(i);
+                    await onPlayAudio(data.options[i]);
+                    await new Promise(r => setTimeout(r, 750));
+                }
+            } catch (e) {
+                warnLog("Sequence error", e);
+            } finally {
+                setPlayingIndex(null);
+                setIsSequencing(false);
+                sequenceRef.current = false;
+            }
+        };
+        if (activity === 'isolation') {
+            return (
+                <div className="flex flex-col items-center justify-center gap-8 animate-in zoom-in-50 duration-500">
+                    <div className="text-center space-y-4">
+                        <div className="relative">
+                            <button
+                                aria-label="Volume"
+                                onClick={() => onPlayAudio(data.word)}
+                                className={`w-32 h-32 rounded-full flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 group relative mb-4 mx-auto overflow-hidden ${
+                                    playingIndex === -1
+                                        ? 'bg-violet-400 text-white ring-4 ring-violet-200 scale-110 shadow-violet-300/50'
+                                        : 'bg-violet-100 hover:bg-violet-200 text-violet-600'
+                                }`}
+                            >
+                                {data.image ? (
+                                    <img loading="lazy"
+                                        src={data.image}
+                                        alt={data.word}
+                                        className={`w-full h-full object-cover rounded-full ${playingIndex === -1 ? 'ring-4 ring-violet-300' : ''}`}
+                                    />
+                                ) : (
+                                    <Volume2 size={64} className={playingIndex === -1 ? "animate-pulse" : "group-hover:animate-pulse"} />
+                                )}
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs py-1 rounded-b-full font-medium">👂</div>
+                            </button>
+                            {/* Play All Button */}
+                            {!isEditing && (
+                                <button
+                                    aria-label="Play All Sounds"
+                                    onClick={playFullSequence}
+                                    disabled={isSequencing}
+                                    className={`absolute -right-4 top-0 p-2 rounded-full shadow-md transition-all ${
+                                        isSequencing
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-white text-violet-500 hover:bg-violet-50 hover:text-violet-700'
+                                    }`}
+                                    title="Play All Sounds"
+                                >
+                                    {isSequencing ? (
+                                        <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full" />
+                                    ) : (
+                                        <PlayCircle size={24} />
+                                    )}
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                            <h3 className="text-2xl font-bold text-slate-700">
+                                {(() => {
+                                    const pos = typeof data.position === 'number' ? data.position : 0;
+                                    const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+                                    return `What is the ${ordinals[pos] || (pos + 1) + 'th'} sound?`;
+                                })()}
+                            </h3>
+                            {/* Repeat Instruction Button */}
+                            <button
+                                onClick={async () => {
+                                    const pos = typeof data.position === 'number' ? data.position : 0;
+                                    const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+                                    const ordinal = ordinals[pos] || (pos + 1) + 'th';
+                                    const bankAudio = ISOLATION_AUDIO[ordinal];
+                                    if (bankAudio) {
+                                        try {
+                                            const audio = new Audio(bankAudio);
+                                            audio.playbackRate = 0.9;
+                                            await audio.play();
+                                            return;
+                                        } catch (e) { /* fall through to Gemini TTS */ }
+                                    }
+                                    try {
+                                        const instruction = `What is the ${ordinal} sound?`;
+                                        const url = await callTTS(instruction, selectedVoice);
+                                        if (url) {
+                                            const audio = new Audio(url);
+                                            audio.playbackRate = 0.9;
+                                            await audio.play();
+                                        }
+                                    } catch (e) {
+                                        warnLog("Instruction audio failed:", e);
+                                    }
+                                }}
+                                className="p-2 rounded-full bg-slate-100 hover:bg-violet-100 text-slate-500 hover:text-violet-600 transition-colors"
+                                title="Repeat instruction"
+                                aria-label="Repeat instruction"
+                            >
+                                <RefreshCw size={18} />
+                            </button>
+                        </div>
+                        {/* Visual Word Hint (Only in Visual Mode) */}
+                        {showLetterHints && (
+                            <div className="text-4xl font-black tracking-widest text-slate-500">
+                                {data.word.split('').map((char, i) => (
+                                    <span key={i} className={(typeof data.position === 'number' && i === data.position) ? "text-violet-400" : ""}>
+                                        {char === ' ' ? '\u00A0' : '_'}
+                                    </span>
+                                ))}
+                        </div>
+                        )}
+                    </div>
+                    {/* Options Layout */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
+                        {(data.options

@@ -1,0 +1,19 @@
+﻿10307: // Enables batch import of student JSONs and class-wide analytics
+11603: • **Upload Student JSONs**: Students export their work as JSON files; upload them here for batch analysis.
+11615: Have students export their JSON saves at the end of class, then batch-upload them here for efficient overnight grading!`,
+13053: import_desc: "Drop or select student JSON files to analyze",
+13055: import_hint: "Select multiple .json files exported by students",
+14407: drop_files: "Drop Student JSON Files Here",
+14837: profiles_import_button: "Import student profiles from a JSON file.",
+14838: profiles_export_button: "Export all loaded student profiles to a JSON file. This file can be imported later to restore the dashboard data fo
+14996: dashboard_import_btn: "Import student JSON files to analyze class performance.",
+16796: import_tooltip: "Import Profiles JSON",
+16797: export_tooltip: "Export Profiles JSON",
+34219: 'dashboard_drop_zone_input': "Drag and drop saved student JSON files here to load them.",
+34669: 'profiles_import_button': "Load profiles from an exported file. Accepts .json files created by profile export. Import adds to (does not repl
+34670: 'profiles_export_button': "Download all saved profiles as a single JSON file. Export includes: all saved profiles, all settings within each 
+34681: 'ui_lang_import_btn': "Import a translation file to change the interface language. Accepts: standard JSON format with key-value pairs. Use f
+34682: 'ui_lang_export_btn': "Save current interface translations as a JSON file. Exported file contains: all UI strings in current language, key i
+38585: downloadAnchorNode.setAttribute("download", `${t('export.filenames.profiles')}.json`);
+45680: ${t('export.readme_json_desc')}`;
+45799: const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.json`;

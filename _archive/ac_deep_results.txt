@@ -1,0 +1,54 @@
+=== PROBE ADMINISTRATION IN AC ===
+L11001: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latest
+L12396: if (typeof onLaunchORF === 'function') {
+L12397: onLaunchORF(grade, form);
+L12424: setIsProbeMode(true);
+L13479: setIsProbeMode(true);
+L13496: setIsProbeMode(true);
+L13513: setIsProbeMode(true);
+
+=== PROBE COMPLETION ===
+L11001: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latest
+L31851: const saveProbeResult = (studentName, result) => {
+L61837: if (probeTargetStudent) saveProbeResult(probeTargetStudent, fullResult);
+L73058: saveProbeResult={saveProbeResult}
+
+=== SCREENER WORKFLOW ===
+L11001: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latest
+L12446: setScreenerSession(session);
+L12458: setScreenerSession(null);
+
+=== PROBE HISTORY DISPLAY ===
+L11001: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latest
+L11666: const probes = (probeHistory?.[s.name] || []);
+L12126: const totalProbes = Object.values(probeHistory).reduce((s, arr) => s + (Array.isArray(arr) ? ar
+L12323: const probes = (probeHistory?.[studentName] || []).sort((a, b) => new Date(a.date) - new Date(b
+
+=== DASHBOARD DATA POPULATION ===
+L27124: const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast,
+L27214: setDashboardData([]);
+L27318: if (validSubmissions.length > 0 && setDashboardData) {
+L27319: setDashboardData(prev => [...prev, ...validSubmissions]);
+L31105: const [dashboardData, setDashboardData] = useState([]);
+L70903: setDashboardData={setDashboardData}
+
+=== STUDENT EXPORT FORMAT ===
+
+=== LEARNER PROGRESS VIEW ===
+Starts at L26615
+Props: const LearnerProgressView = React.memo(({
+
+=== STUDENT FILE UPLOAD IN AC ===
+L13039: type="file"
+
+=== ROSTER MANAGEMENT ===
+L11167: setRosterKey(function(prev) {
+L11223: alloBotRef.current.speak("Progress snapshots saved for " + appendedCount + " student" + (append
+L11229: if (alloBotRef.current) { alloBotRef.current.speak("Tip: Create a Class Roster to track student
+L12454: const advanceRoster = () => {
+L12457: setRosterQueue(rest);
+
+=== QUIZ → DASHBOARD FLOW ===
+L27284: const handleBatchUpload = async (e) => {
+L27574: onChange={handleBatchUpload} data-help-key="dashboard_drop_zone_input"
+L27600: onChange={handleBatchUpload} data-help-key="dashboard_add_file_btn_input" className="absolute i

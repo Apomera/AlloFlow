@@ -1,0 +1,157 @@
+=== WORD SOUNDS STUDIO DEEP DIVE ===
+
+--- WORD SOUNDS STATE VARIABLES ---
+[wordSound] Line 1874: const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0); // Local speed state
+[wordSound] Line 25680: const [wordSoundsCustomTerms, setWordSoundsCustomTerms] = React.useState([]); // Custom Word List for Dedicated Generator
+[wordSound] Line 25681: const [wordSoundsOracleData, setWordSoundsOracleData] = React.useState(null); // Persistence Cache for Oracle Data
+[wordSound] Line 25775: const [wordSoundsHistory, setWordSoundsHistory] = useState(() => {
+[wordSound] Line 25790: const [wordSoundsDifficulty, setWordSoundsDifficulty] = useState('auto'); // 'easy', 'medium', 'hard', 'auto'
+[wordSound] Line 25791: const [wordSoundsAccuracyHistory, setWordSoundsAccuracyHistory] = useState([]); // Last 10 answers for adaptive difficulty
+[wordSound] Line 25792: const [wordSoundsStreak, setWordSoundsStreak] = useState(0);
+[wordSound] Line 25793: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(10);
+[wordSound] Line 25794: const [wordSoundsSessionProgress, setWordSoundsSessionProgress] = useState(0);
+[wordSound] Line 25795: const [wordSoundsBadges, setWordSoundsBadges] = useState(() => {
+[wordSound] Line 25813: const [wordSoundsDailyProgress, setWordSoundsDailyProgress] = useState(() => {
+[wordSound] Line 25830: const [wordSoundsConfusionPatterns, setWordSoundsConfusionPatterns] = useState(() => {
+[wordSound] Line 25841: const [wordSoundsFamilies, setWordSoundsFamilies] = useState({}); // { targetWord: { rhymes: [], minimalPairs: [] } }
+[wordSound] Line 25842: const [wordSoundsAudioLibrary, setWordSoundsAudioLibrary] = useState({}); // { text: base64String }
+[wordSound] Line 25844: const [wordSoundsTtsSpeed, setWordSoundsTtsSpeed] = useState(1.0);
+[wordSound] Line 26251: const [isWordSoundsMode, setIsWordSoundsMode] = useState(false);
+[wordSound] Line 26252: const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentati
+[wordSound] Line 26253: const [wordSoundsScore, setWordSoundsScore] = useState({ correct: 0, total: 0, streak: 0 });
+[wordSound] Line 26254: const [currentWordSoundsWord, setCurrentWordSoundsWord] = useState(null);
+[wordSound] Line 26255: const [wordSoundsPhonemes, setWordSoundsPhonemes] = useState(null);
+[wordSound] Line 26256: const [wordSoundsLanguage, setWordSoundsLanguage] = useState('en');
+[wordSound] Line 26257: const [wordSoundsFeedback, setWordSoundsFeedback] = useState(null); // { type: 'correct'|'incorrect', message: '' }
+[phoneme] Line 1463: const [showPhonemeBank, setShowPhonemeBank] = React.useState(null); // Which phoneme slot is being edited via bank
+[phoneme] Line 1851: const [isLoadingPhonemes, setIsLoadingPhonemes] = React.useState(false);
+[phoneme] Line 1852: const [phonemeError, setPhonemeError] = React.useState(null); // Track API errors for Retry UI
+[phoneme] Line 2592: const [slots, setSlots] = React.useState(new Array(data.phonemes?.length || 0).fill(null));
+[phoneme] Line 25804: const [phonemeMastery, setPhonemeMastery] = useState(() => {
+[phoneme] Line 26255: const [wordSoundsPhonemes, setWordSoundsPhonemes] = useState(null);
+[phonics] Line 1855: const [showLetterHints, setShowLetterHints] = React.useState(false); // Toggle for Pure Sound vs Phonics (Default: Sound Only)
+[phonics] Line 26239: const [phonicsData, setPhonicsData] = useState(null);
+[blending] Line 1868: const [blendingProgress, setBlendingProgress] = React.useState(0);
+[blending] Line 1869: const [blendingOptions, setBlendingOptions] = React.useState([]); // Word options for Blend Sounds activity
+[blending] Line 2958: const [soundChips, setSoundChips] = React.useState([]); // For Elkonin/Blending
+[blending] Line 26252: const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentati
+[segmentation] Line 2959: const [segmentationErrors, setSegmentationErrors] = React.useState([]); // For error feedback
+[segmentation] Line 26252: const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentati
+[isolation] Line 1871: const [isolationState, setIsolationState] = React.useState(null); // Stable state for Isolation activity
+[isolation] Line 26252: const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentati
+[rhyme] Line 1867: const [rhymeOptions, setRhymeOptions] = React.useState([]);
+[rhyme] Line 25841: const [wordSoundsFamilies, setWordSoundsFamilies] = useState({}); // { targetWord: { rhymes: [], minimalPairs: [] } }
+[rhyme] Line 26252: const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentati
+
+--- ACTIVITY TYPES ---
+[counting] Line 643: 'word_sounds.activity_counting': 'Count Sounds',
+[counting] Line 655: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+[counting] Line 661: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+... and 8 more matches for 'counting'
+[isolat] Line 644: 'word_sounds.activity_isolation': 'Find Sounds',
+[isolat] Line 656: 'word_sounds.isolation_desc': 'Identify the first or last sound in a word',
+[isolat] Line 669: 'word_sounds.isolation_first_prompt': 'What is the FIRST sound in this word?',
+... and 27 more matches for 'isolat'
+[segment] Line 646: 'word_sounds.activity_segmentation': 'Break Apart',
+[segment] Line 658: 'word_sounds.segmentation_desc': 'Break a word into its individual sounds',
+[segment] Line 679: 'word_sounds.segmentation_prompt': 'Break this word into sounds using the boxes below:',
+... and 16 more matches for 'segment'
+[blend] Line 645: 'word_sounds.activity_blending': 'Blend Sounds',
+[blend] Line 657: 'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+[blend] Line 675: 'word_sounds.blending_prompt': 'Listen to the sounds, then blend them together!',
+... and 41 more matches for 'blend'
+[rhyme] Line 647: 'word_sounds.activity_rhyming': 'Rhyme Time',
+[rhyme] Line 651: 'word_sounds.rhyming_q': 'Which word rhymes with the target?',
+[rhyme] Line 659: 'word_sounds.rhyming_desc': 'Find words that rhyme with the target',
+... and 53 more matches for 'rhyme'
+[mapping] Line 649: 'word_sounds.activity_mapping': 'Sound Mapping',
+[mapping] Line 654: 'word_sounds.mapping_desc': 'Connect sounds to letters',
+[mapping] Line 684: 'word_sounds.mapping_prompt': 'Tap the letters to hear their sounds!',
+... and 20 more matches for 'mapping'
+
+--- GAMIFICATION/XP/BADGES ---
+[score] Line 1788: wordSoundsScore,
+[streak] Line 687: 'word_sounds.streak': 'Streak',
+[xp] Line 695: 'word_sounds.word_families_desc': 'Explore patterns and related words',
+[badge] Line 704: 'word_sounds.badge_first_sound': 'First Sound',
+[star] Line 709: 'word_sounds.badge_daily_star': 'Daily Star',
+[level] Line 702: 'word_sounds.difficulty_adjusted': 'Difficulty adjusted to {{level}}',
+[progress] Line 697: 'word_sounds.session_progress': 'Session Progress',
+[correct] Line 650: 'word_sounds.orthography_q': 'Which is the correct spelling?',
+[attempt] Line 4493: ? (attempts > 0 ? wordSoundsScore.streak : wordSoundsScore.streak + 1)
+
+--- AUDIO/TTS FEATURES ---
+[audio] Line 785: // Use localStorage to cache generated phoneme audio permanently to reduce API usage.
+[tts] Line 829: // Maps phonemes to pronounceable text for browser TTS fallback.
+[speak] Line 860: // Speak a phoneme using browser TTS with proper pronunciation
+[pronounce] Line 829: // Maps phonemes to pronounceable text for browser TTS fallback.
+[listen] Line 657: 'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+
+--- VISUAL/IMAGE FEATURES ---
+[image] Line 763: 'word_sounds.image_theme': 'Image Style',
+[icon] Line 2732: { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_d
+[hint] Line 668: 'word_sounds.click_sound_hint': 'Click a sound to hear it, then select your answer',
+[letter] Line 654: 'word_sounds.mapping_desc': 'Connect sounds to letters',
+
+--- MODE/DIFFICULTY SETTINGS ---
+[mode] Line 720: 'word_sounds.mode_phonics': 'Phonics',
+[difficulty] Line 698: 'word_sounds.difficulty_easy': 'Easy',
+[grade] Line 1170: <p className="text-indigo-100 font-medium opacity-90">{t('word_sounds.subtitle', 'Design
+[level] Line 702: 'word_sounds.difficulty_adjusted': 'Difficulty adjusted to {{level}}',
+[easy] Line 698: 'word_sounds.difficulty_easy': 'Easy',
+[hard] Line 700: 'word_sounds.difficulty_hard': 'Hard',
+[sound only] Line 721: 'word_sounds.mode_sound': 'Sound Only',
+[phonics] Line 720: 'word_sounds.mode_phonics': 'Phonics',
+
+--- WORD SOUNDS UI LABELS/TRANSLATIONS ---
+Line 643: 'word_sounds.activity_counting': 'Count Sounds',
+Line 644: 'word_sounds.activity_isolation': 'Find Sounds',
+Line 645: 'word_sounds.activity_blending': 'Blend Sounds',
+Line 646: 'word_sounds.activity_segmentation': 'Break Apart',
+Line 647: 'word_sounds.activity_rhyming': 'Rhyme Time',
+Line 648: 'word_sounds.activity_orthography': 'Sight & Spell',
+Line 649: 'word_sounds.activity_mapping': 'Sound Mapping',
+Line 651: 'word_sounds.rhyming_q': 'Which word rhymes with the target?',
+Line 655: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+Line 656: 'word_sounds.isolation_desc': 'Identify the first or last sound in a word',
+Line 657: 'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+Line 658: 'word_sounds.segmentation_desc': 'Break a word into its individual sounds',
+Line 659: 'word_sounds.rhyming_desc': 'Find words that rhyme with the target',
+Line 661: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+Line 669: 'word_sounds.isolation_first_prompt': 'What is the FIRST sound in this word?',
+Line 671: 'word_sounds.isolation_prompt': 'What sound is in this word?',
+Line 672: 'word_sounds.isolation_last_prompt': 'What is the LAST sound in this word?',
+Line 675: 'word_sounds.blending_prompt': 'Listen to the sounds, then blend them together!',
+Line 679: 'word_sounds.segmentation_prompt': 'Break this word into sounds using the boxes below:',
+Line 683: 'word_sounds.rhyming_prompt': 'Which word rhymes with this one?',
+Line 685: 'word_sounds.loading_phonemes': 'Analyzing word sounds...',
+Line 686: 'word_sounds.select_activity': 'Choose an activity above to begin!',
+Line 687: 'word_sounds.streak': 'Streak',
+Line 694: 'word_sounds.activity_word_families': 'Word Families',
+Line 695: 'word_sounds.word_families_desc': 'Explore patterns and related words',
+Line 704: 'word_sounds.badge_first_sound': 'First Sound',
+Line 705: 'word_sounds.badge_on_fire': 'On Fire',
+Line 706: 'word_sounds.badge_perfect_10': 'Perfect 10',
+Line 707: 'word_sounds.badge_rhyme_master': 'Rhyme Master',
+Line 708: 'word_sounds.badge_blend_wizard': 'Blend Wizard',
+Line 709: 'word_sounds.badge_daily_star': 'Daily Star',
+Line 710: 'word_sounds.badge_earned': 'Badge earned: {{badge}}!',
+Line 714: 'word_sounds.words_today': '{{count}} words today',
+Line 717: 'word_sounds.phoneme_practice': 'Practice {{phoneme}} sounds',
+Line 720: 'word_sounds.mode_phonics': 'Phonics',
+Line 721: 'word_sounds.mode_sound': 'Sound Only',
+Line 742: 'word_sounds.count': 'Word Count',
+Line 743: 'word_sounds.auto_select_hint': 'Auto-selects {{count}} words',
+Line 756: 'word_sounds.start': 'Start Activity',
+Line 1371: {isProcessing ? t('status.generating', 'Generating...') : t('word_sounds.start', 'Start Activity')}
+Line 2732: { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+Line 2733: { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+Line 2734: { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+Line 2735: { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+Line 2736: { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+Line 2738: { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orth
+Line 2739: { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc'
+Line 2740: { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.w
+Line 5789: <span>{ts('word_sounds.streak')}: {wordSoundsScore.streak}</span>
+Line 5846: <span className="hidden sm:inline">{showLetterHints ? ts('word_sounds.mode_phonics') || 'Phonics' : ts('word
+Line 27643: 'glossary_word_sounds': "Practice phonemic awareness—hear, count, and blend the sounds in words. Great for early reading skills!",

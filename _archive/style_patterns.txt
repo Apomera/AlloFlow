@@ -1,0 +1,11 @@
+=== REPEATING STATIC STYLE PATTERNS (2+ occurrences) ===
+  [2x] minHeight: '200px'}
+       at: [10822, 10827]
+
+=== UNIQUE PATTERNS (1 occurrence) ===
+  49 unique patterns (skip for now)
+
+=== TOTAL STATIC PATTERNS: 50 ===
+  Repeating (2+): 1
+  Unique: 49
+  Total style replacements: 2

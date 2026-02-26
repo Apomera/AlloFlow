@@ -1,0 +1,131 @@
+=== BLEND SOUNDS / BLENDING ACTIVITY ===
+L3032: <label className="text-xs font-bold text-violet-500 uppercase tracking-wider mb-2 block">Blend Sounds Options</label>
+L5045: if (wordSoundsActivity === 'blending' && data.blendingDistractors && setBlendingOptions) {
+L5234: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes) {
+L6250: if (['segmentation', 'blending'].includes(wordSoundsActivity) && wordSoundsPhonemes.phonemes) {
+L6493: if (wordSoundsActivity === 'blending') {
+L6532: }, [currentWordSoundsWord, isLoadingPhonemes, handleAudio, wordSoundsActivity, rhymeOptions, playBlending]);
+L6967: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes?.phonemes) {
+L7055: }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.currentPosition, rhymeOptions, blendingOptions]);
+L7525: if (['segmentation', 'blending'].includes(wordSoundsActivity) && phonemeData?.phonemes) {
+L7532: if (wordSoundsActivity === 'blending' && phonemeData?.blendingDistractors) {
+L7586: if (wordSoundsActivity === 'blending' && preloadedMatch.blendingDistractors) {
+L7868: } else if (wordSoundsActivity === 'segmentation' || wordSoundsActivity === 'blending') {
+L8325: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+L8337: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+L8552: case 'blending': {
+L8700: {wordSoundsActivity === 'blending' && (
+L31079: // [PHASE 4 MIGRATED] const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentation' | 'rhyme'
+L32251: 'concept_sort_add_item': "Create a personalized item for the sorting activity. Teacher feature for customizing generated content. Enter: item text (what appears on the card) and correct category assig
+L32458: 'concept_sort_add_btn': "Add custom items to the sorting activity. Teacher feature for customizing content. Click to open input form. Enter: item text (word, phrase, or concept), optional starting pos
+
+=== PRE-LOAD / PRELOAD TTS LOGIC ===
+L1442: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview }) => {
+L1702: // PREFETCH TTS: Generate audio for all options now
+L2341: // I will rely on the fact that preloadedWords might be updated with ttsReady,
+L2347: ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length, // Proxy
+L5336: // BULK PRELOAD: Fetch 15 words with phoneme data and TTS on modal open
+L5538: // Audio Prefetching Logic
+L5741: }, [isPreloading, preloadedWords.length, wordPool, callGemini, handleAudio, wordSoundsLanguage]);
+L5754: // FIX: Active Audio Prefetcher for Preloaded Words
+L5755: // Ensures audio is available even if we skipped the blocking preloadInitialBatch
+L5760: const wordsNeedingAudio = preloadedWords.filter(w => !w.ttsReady && !w._audioRequested);
+L5762: debugLog(`🎧 Prefetching audio for ${wordsNeedingAudio.length} words...`);
+L5773: await handleAudio(text, false).catch(e => warnLog("Audio prefetch failed:", e));
+L5784: warnLog(`Audio prefetch failed for ${text}`, e);
+L5787: }, [preloadedWords, handleAudio, setWsPreloadedWords]);
+L5794: const readyWords = preloadedWords.filter(w => w.ttsReady === true);
+L5970: }, [preloadedWords, fetchWordData, setWsPreloadedWords, handleAudio]);
+L6001: // Prefetch audio for the new option
+L6008: }, [preloadedWords, callGemini, setWsPreloadedWords, handleAudio]); // Removed showError dependency if not stable, but it's likely stable
+L30601: const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, orthoSessionGoal, wordSoundsSessionProgress, wordSoundsTtsSpeed,
+L33436: // Prefetch Glossary Audio
+L35412: // --- GLOSSARY AUDIO WARM-UP (PRELOADER) ---
+L40002: const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0) => {
+L40008: if (!preloadedAudio) setIsGeneratingAudio(true);
+L40112: if (preloadedAudio) {
+L40113: audio = preloadedAudio;
+L40125: handlePlaybackError(new Error("Preloaded audio was invalid"));
+L40159: audio.preload = 'auto';
+L40217: audioBufferRef.current[nextBufferKey] = callTTS(textToPreload, targetVoice)
+L40244: let nextPreloadedAudio = null;
+L40247: nextPreloadedAudio = await nextAudioElementPromise;
+L40248: if (nextPreloadedAudio) {
+L40249: nextPreloadedAudio.muted = false;
+L40254: playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreloadedAudio, 0);
+L42974: const wordsWithFreshTtsFlags = item.wsPreloadedWords.map(w => ({
+L42979: setWsPreloadedWords(wordsWithFreshTtsFlags);
+L48173: // Preload NEXT message TTS while current plays
+
+=== BLENDING PRE-LOAD SPECIFICS ===
+L5044: // FIX: Immediate Blend Sounds Initialization (Pre-load Handover)
+L6658: setWordSoundsPhonemes(preloadedWord); // Full object with blendingDistractors
+L7531: // FIX: Set blending options from preloaded blendingDistractors
+L7536: debugLog("📋 Set blending options from preloaded:", options);
+L7582: // Set FULL preloaded data (not just .phonemes) to include blendingDistractors
+L7585: // SYNC FIX: Also set blending/rhyme options from preloaded data
+L7586: if (wordSoundsActivity === 'blending' && preloadedMatch.blendingDistractors) {
+L7587: const distractors = preloadedMatch.blendingDistractors.slice(0, 5);
+
+=== RESPONSE OPTIONS FOR BLENDING ===
+L3385: const [blendingOptions, setBlendingOptions] = React.useState([]); // Word options for Blend Sounds activity
+L5242: if (lastWordForBlending.current === targetToCheck && blendingOptions.length > 0) {
+L5287: // NOTE: blendingOptions removed from deps to prevent circular update (this effect sets it)
+L6973: let effectiveBlendingOptions = blendingOptions;
+L6978: if (blendingOptions && blendingOptions.length > 0) {
+L6979: effectiveBlendingOptions = blendingOptions;
+L7055: }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.currentPosition, rhymeOptions, blendingOptions]);
+L8762: blendingOptions.length > 0 && (
+L8767: for (let i = 0; i < blendingOptions.length; i++) {
+L8769: await handleAudio(blendingOptions[i]);
+L8785: {(blendingOptions || []).map((word, idx) => (
+L8791: const newOpts = [...blendingOptions];
+
+=== PRE-LOAD NEXT ITEM ===
+
+=== TTS CACHE / AUDIO CACHE ===
+L3377: const audioCache = providedAudioCache || internalAudioCache;
+L3585: const url = audioCache.current.get(text);
+L40002: const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0) => {
+
+=== BLENDING COMPONENT/SECTION ===
+L5045: if (wordSoundsActivity === 'blending' && data.blendingDistractors && setBlendingOptions) {
+  L5045: if (wordSoundsActivity === 'blending' && data.blendingDistractors && setBlendingOptions) {
+  L5046: const target = (data.word || '').trim().toLowerCase();
+  L5047: // Strict Filter & Dedup (Matches repair logic)
+L5234: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes) {
+  L5234: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes) {
+  L5235: const targetToCheck = (currentWordSoundsWord || wordSoundsPhonemes?.word || '').trim().toLowerCase();
+  L5236: // STABILIZATION: Clear if word changed
+L6493: if (wordSoundsActivity === 'blending') {
+  L6493: if (wordSoundsActivity === 'blending') {
+  L6494: // For blending, play the broken sounds sequence
+  L6495: await playBlending();
+L6967: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes?.phonemes) {
+  L6967: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes?.phonemes) {
+  L6968: await new Promise(r => setTimeout(r, 400)); // Small gap
+  L6969: if (cancelled) return; // FIX: Check before expensive operation
+L7532: if (wordSoundsActivity === 'blending' && phonemeData?.blendingDistractors) {
+  L7532: if (wordSoundsActivity === 'blending' && phonemeData?.blendingDistractors) {
+  L7533: const distractors = phonemeData.blendingDistractors.slice(0, 5);
+  L7534: const options = fisherYatesShuffle([targetWord, ...distractors]);
+L7586: if (wordSoundsActivity === 'blending' && preloadedMatch.blendingDistractors) {
+  L7586: if (wordSoundsActivity === 'blending' && preloadedMatch.blendingDistractors) {
+  L7587: const distractors = preloadedMatch.blendingDistractors.slice(0, 5);
+  L7588: const options = fisherYatesShuffle([targetWord, ...distractors]);
+L7868: } else if (wordSoundsActivity === 'segmentation' || wordSoundsActivity === 'blending') {
+  L7868: } else if (wordSoundsActivity === 'segmentation' || wordSoundsActivity === 'blending') {
+  L7869: // For segmentation/blending, we are editing PHONEMES directly
+  L7870: const newPhonemes = [...(wordSoundsPhonemes?.phonemes || [])];
+L8325: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+  L8325: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+  L8326: disabled={isPlayingAudio}
+  L8327: className={`p-3 rounded-full transition-colors shadow-sm mt-1 ${
+L8337: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+  L8337: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+  L8338: disabled={isPlayingAudio}
+  L8339: className={`flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all ${
+L8700: {wordSoundsActivity === 'blending' && (
+  L8700: {wordSoundsActivity === 'blending' && (
+  L8701: <div className="space-y-4 mt-6">
+  L8702: {/* EDIT MODE: Phoneme Editing for Blending */}

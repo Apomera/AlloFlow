@@ -1,0 +1,165 @@
+﻿File: 7,608,702 bytes, 73,720 lines
+
+=== Tier 2 block at line 35192 ===
+  35191:   // Persist wsPreloadedWords to currently active glossary/word-sounds history item
+  35192:   // === PHASE 1 TIER 2: Extracted useCallback Handlers ===
+  35193:   const handleToggleIsEditing = React.useCallback(() => setIsEditing(prev => !prev), []);
+  35194:   const handleToggleIsFullscreen = React.useCallback(() => setIsFullscreen(prev => !prev), []);
+  35195:   const handleToggleIsMapLocked = React.useCallback(() => setIsMapLocked(prev => !prev), []);
+  35196:   const handleToggleFocusMode = React.useCallback(() => setFocusMode(prev => !prev), []);
+  35197:   const handleTogglePersonaAutoSend = React.useCallback(() => setPersonaAutoSend(prev => !prev), []);
+  35198:   const handleToggleShowPersonaHints = React.useCallback(() => setShowPersonaHints(prev => !prev), []);
+  35199:   const handleToggleShowFlashcardImages = React.useCallback(() => setShowFlashcardImages(prev => !prev), []);
+  35200:   const handleSetIsMinimizedToFalse = React.useCallback(() => setIsMinimized(false), []);
+  35201:   const handleOnPlayAudio = React.useCallback(() => onPlayAudio(data.word), [data.word]);
+  35202:   const handleSetIsMinimizedToTrue = React.useCallback(() => setIsMinimized(true), []);
+  35203:   const handleHandleAudio = React.useCallback(() => handleAudio(currentWordSoundsWord), [currentWordSoundsWord]);
+  35204:   const handleSetStepTo4 = React.useCallback(() => setStep(4), []);
+  35205:   const handleSetStandardModeToAi = React.useCallback(() => setStandardMode('ai'), []);
+  35206:   const handleSetStandardModeToManual = React.useCallback(() => setStandardMode('manual'), []);
+  35207:   const handleHandleRemoveStandard = React.useCallback(() => handleRemoveStandard(idx), [idx]);
+  35208:   const handleSetShowSessionModalToFalse = React.useCallback(() => setShowSessionModal(false), []);
+  35209:   const handleSetShowGroupModalToFalse = React.useCallback(() => setShowGroupModal(false), []);
+  35210:   const handleSetShowLedgerToFalse = React.useCallback(() => setShowLedger(false), []);
+  35211:   const handleSetShowSaveModalToFalse = React.useCallback(() => setShowSaveModal(false), []);
+  35212:   const handleSetIsProjectSettingsOpenToFalse = React.useCallback(() => setIsProjectSettingsOpen(false), []);
+  35213:   const handleOnCheckAnswer = React.useCallback(() => onCheckAnswer(opt), [opt]);
+  35214:   const handleOnPlayAudioCb = React.useCallback(() => onPlayAudio(word), [word]);
+  35215:   const handleHandleAudioCb = React.useCallback(() => handleAudio(chip.phoneme), [chip.phoneme]);
+  35216:   const handleSetKeyboardSelectedItemIdToNull = React.useCallback(() => setKeyboardSelectedItemId(null), []);
+  35217:   const handleHandleDeleteGroup = React.useCallback(() => handleDeleteGroup(gid), [gid]);
+  35218:   const handleSetShowClearConfirmToFalse = React.useCallback(() => setShowClearConfirm(false), []);
+  35219:   const handleJoinClassSession = React.useCallback(() => joinClassSession(joinCodeInput), [joinCodeInput]);
+  35220:   const handleSetShowSubmitModalToTrue = React.useCallback(() => setShowSubmitModal(true), []);
+  35221:   const handleSetShowInfoModalToFalse = React.useCallback(() => setShowInfoModal(false), []);
+
+=== useCallback declarations (62 total) ===
+  L3388: const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+  L5946: const handleReorderPreloadedWords = React.useCallback((newOrder) => {
+  L5957: const handleUpdatePreloadedWord = React.useCallback((index, newData) => {
+  L5991: const handleDeleteWord = React.useCallback((idx) => {
+  L6026: const handleRegenerateWord = React.useCallback(async (index) =>  {
+  L6117: const handleRegenerateOption = React.useCallback(async (wordIdx, listKey, opIdx, currentVal) => {
+  L6160: const handleRegenerateAll = React.useCallback(async () => {
+  L6220: const handleGenerateWordImage = React.useCallback(async (index, word) => {
+  L6288: const handleRefineWordImage = React.useCallback(async (index, instruction) => {
+  L7748: const handleMicInput = React.useCallback(() => {
+  L7805: const handleChipClick = React.useCallback((chip, source, index) => {
+  L7839: const handleSegDrop = React.useCallback((e, targetSource, targetIndex = null) => {
+  L7884: const handleMoveKey = React.useCallback((item, source, index) => {
+  L35193: const handleToggleIsEditing = React.useCallback(() => setIsEditing(prev => !prev), []);
+  L35194: const handleToggleIsFullscreen = React.useCallback(() => setIsFullscreen(prev => !prev), []);
+  L35195: const handleToggleIsMapLocked = React.useCallback(() => setIsMapLocked(prev => !prev), []);
+  L35196: const handleToggleFocusMode = React.useCallback(() => setFocusMode(prev => !prev), []);
+  L35197: const handleTogglePersonaAutoSend = React.useCallback(() => setPersonaAutoSend(prev => !prev), []);
+  L35198: const handleToggleShowPersonaHints = React.useCallback(() => setShowPersonaHints(prev => !prev), []);
+  L35199: const handleToggleShowFlashcardImages = React.useCallback(() => setShowFlashcardImages(prev => !prev), []);
+  ... and 42 more
+
+=== Brace check ===
+  Open braces: 23699
+  Close braces: 23707
+  Difference: -8
+
+=== WARNING: onClick references with no matching useCallback ===
+  handleAddGlossaryTerm
+  handleAddItem
+  handleAddManualNode
+  handleAddOptionSlot
+  handleAddStandard
+  handleAddStep
+  handleAddTeam
+  handleAddTimelineStep
+  handleAiGenerate
+  handleAiRefineSource
+  handleAiUrlSearch
+  handleAutoCorrectSource
+  handleAutoGrade
+  handleBotClick
+  handleBroadcastOptions
+  handleCancel
+  handleCardAudioSequence
+  handleCheck
+  handleCheckAlignment
+  handleCheckChallengeRouter
+  handleCheckLevel
+  handleClearAll
+  handleClearEdges
+  handleClearHistory
+  handleClick
+  handleClosePersonaChat
+  handleCloudToggleClick
+  handleContentClick
+  handleCreateChallenge
+  handleCreateGroup
+  handleCreateUnit
+  handleDefineSelection
+  handleDeleteImage
+  handleDeleteUnit
+  handleDownloadImage
+  handleDuplicateResource
+  handleEndGame
+  handleEndQuiz
+  handleExitChallenge
+  handleExportAnalyticsPDF
+  handleExportCSV
+  handleExportPDF
+  handleExportProfiles
+  handleExportQTI
+  handleFindStandards
+  handleFixGrammarErrors
+  handleGenerateFullPack
+  handleGenerateLessonIdeas
+  handleGenerateLessonPlan
+  handleGenerateMath
+  handleGenerateOutcome
+  handleGenerateProgression
+  handleGenerateRubric
+  handleGenerateSimilar
+  handleGenerateSource
+  handleGoalSearch
+  handleInitializeMap
+  handleInitializeVenn
+  handleManualSubmit
+  handleMicCheck
+  handleNext
+  handleNextQuestion
+  handleNextTourStep
+  handleOpenWordSounds
+  handlePauseToggle
+  handlePersonaTopicSpark
+  handlePrevQuestion
+  handlePrevTourStep
+  handlePrintGame
+  handleRefineImage
+  handleRegenerate
+  handleRegenerateWithRigor
+  handleResetLayout
+  handleResetScaffolds
+  handleRestoreImage
+  handleResumeAdventure
+  handleRetryAdventureTurn
+  handleRetryChallenge
+  handleRevealResults
+  handleSavePersonaChat
+  handleSaveProfile
+  handleSaveReflection
+  handleSkip
+  handleSocraticSubmit
+  handleStart
+  handleStartAdventure
+  handleStartOptionEdit
+  handleStartPanelChat
+  handleStartQuestion
+  handleStartSequel
+  handleStartTranscription
+  handleSubmit
+  handleToggleAllTools
+  handleUseItem
+  handleVennResetBoard
+  handleVennScrambleBank
+  handleWizardAiSearch
+
+=== onClick breakdown ===
+  Inline arrows remaining: 579
+  Using useCallback refs: 243

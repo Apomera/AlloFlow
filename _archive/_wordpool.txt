@@ -1,0 +1,14 @@
+LINE 3243: const isMountedRef = React.useRef(true); // Track mount state for async cleanup
+LINE 3373: setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+LINE 4203: setTimeout(() => { if (isMountedRef.current) setShakenWord(null); }, 500);
+LINE 4589: const wordPool = React.useMemo(() => {
+LINE 4655: const randomIndex = Math.floor(Math.random() * wordPool.length);
+LINE 4656: const entry = wordPool[randomIndex];
+LINE 4784: const easyPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) === 'easy') : [], [wordPool, categorizeWordDifficulty]);
+LINE 4785: const mediumPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) === 'medium') : [], [wordPool, categorizeWordDifficulty]);
+LINE 4786: const hardPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) === 'hard') : [], [wordPool, categorizeWordDifficulty]);
+LINE 4792: const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.map(pw => ({
+LINE 5126: const poolEntry = wordPool.find(p => p.word === word.toLowerCase() && p.phonemes && p.phonemes.length > 0);
+LINE 5443: const difficultyPool = [...wordPool].sort(() => Math.random() - 0.5);
+LINE 6728: const hasAnyWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+LINE 6859: const hasWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);

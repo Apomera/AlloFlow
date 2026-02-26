@@ -1,0 +1,83 @@
+============================================================
+FEATURES IN CODE BUT POSSIBLY NOT IN TOUR DESCRIPTIONS
+============================================================
+
+
+### Glossary
+  - Term search/filter
+
+
+============================================================
+FEATURES ALREADY DOCUMENTED IN TOURS
+============================================================
+
+### Accessibility
+  [OK] Bionic Reading
+  [OK] Color Overlay (Irlen)
+  [OK] Focus Spotlight
+  [OK] Line Focus/Reading Guide
+
+### Adventure
+  [OK] Debate Mode
+  [OK] System Simulation mode
+  [OK] Social Story (SEL) mode
+  [OK] Story Mode (narrative)
+  [OK] Immersive Mode fullscreen
+  [OK] Auto-Read TTS
+  [OK] XP & Energy System
+  [OK] Level Progression
+  [OK] Resource Tracking (Gold/Health)
+
+### Export
+  [OK] Slides/PPTX Export
+
+### Glossary
+  [OK] Tier 2/Tier 3 vocabulary filter
+  [OK] Image size adjustment
+
+### Live Session
+  [OK] Session Join Code
+
+### Math
+  [OK] Conceptual mode
+  [OK] Real-World Application mode
+  [OK] Subject areas (Chemistry, Physics, etc)
+
+### Persona
+  [OK] Auto-Send (hands-free)
+  [OK] Topic Spark (random topic)
+  [OK] Save Chat transcript
+
+### Quiz
+  [OK] DOK Levels configuration
+  [OK] Reflection Questions
+  [OK] Fill-in-the-Blank
+  [OK] Matching questions
+
+### Scaffolds
+  [OK] Paragraph Frames
+  [OK] Discussion Prompts
+  [OK] Self-Assessment Checklists
+  [OK] Voice Dictation input
+  [OK] Rubric Zoom (enlarge)
+  [OK] Mastery XP rewards
+
+### Simplified
+  [OK] Differentiation (3 versions)
+  [OK] Cloze Mode (fill-in-blank)
+  [OK] Syntax Scramble game
+  [OK] Phonics Mode (syllables)
+  [OK] Karaoke/Read-Along TTS
+  [OK] Immersive Reader
+  [OK] Compare Mode (side-by-side)
+
+### Word Sounds
+  [OK] Spelling Bee activity
+  [OK] Word Scramble activity
+  [OK] Sight Words mode
+  [OK] Missing Letter activity
+  [OK] Sound Mapping activity
+  [OK] Oral Reading Fluency (WCPM)
+
+
+SUMMARY: 1 potentially undocumented, 46 already documented

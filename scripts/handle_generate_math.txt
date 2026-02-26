@@ -1,0 +1,150 @@
+﻿L30833:   const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+L30834:       const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
+L30835:       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L30836:       const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L30837:           ? latestAnalysis.data.originalText
+L30838:           : inputText;
+L30839:       let contextText = "";
+L30840:       if (useMathSourceContext) {
+L30841:           contextText = availableSource || "";
+L30842:       }
+L30843:       let mathContextPrompt = "";
+L30844:       if (contextText) {
+L30845:           mathContextPrompt += `Source Context: "${contextText.substring(0, 1500)}..."\n`;
+L30846:       }
+L30847:       if (studentInterests.length > 0) {
+L30848:           mathContextPrompt += `Interests: ${studentInterests.join(', ')}\n`;
+L30849:       }
+L30850:       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
+L30851:       if (!problemToSolve.trim()) {
+L30852:           console.error('[MATH] Empty input ù nothing to generate');
+L30853:           addToast('Please enter a topic or problem first', 'error');
+L30854:           return;
+L30855:       }
+L30856:       setIsProcessing(true);
+L30857:       setGenerationStep(t('status.solving'));
+L30858:       setError(null);
+L30859:       if (switchView) {
+L30860:           setGeneratedContent(null);
+L30861:           setActiveView('math');
+L30862:       }
+L30863:       setShowMathAnswers(false);
+L30864:       try {
+L30865:           let prompt = "";
+L30866:           if (mathMode === 'Freeform Builder') {
+L30867:               prompt = `
+L30868:                 You are an Expert Math Curriculum Designer creating a CUSTOM problem set.
+L30869:                 ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations,
+L30870:                 Teacher's Request: "${problemToSolve}"
+L30871:                 ${mathContextPrompt}
+L30872:                 Subject: ${mathSubject}
+L30873:                 Grade Level: ${gradeLevel}
+L30874: 
+L30875:                 INSTRUCTIONS:
+L30876:                 The teacher has described exactly what they want in natural language. Create the requested mix of problems.
+L30877:                 You may include ANY type of math problem: computation, word problems, geometry/volume, missing number, algebraic equations, 
+L30878:                 Follow the teacher's instructions precisely regarding:
+L30879:                 - Number and types of problems
+L30880:                 - Difficulty level
+L30881:                 - Specific topics or concepts
+L30882:                 - Any thematic context they requested
+L30883: 
+L30884:                 If the teacher's request is vague (e.g. "5 mixed problems for grade 3"), create a diverse set spanning multiple math domains
+L30885: 
+L30886:                 Return ONLY JSON in the following format:
+L30887:                 {
+L30888:                   "title": "Custom Problem Set: [brief description]",
+L30889:                   "problems": [
+L30890:                     {
+L30891:                       "question": "Problem text...",
+L30892:                       "expression": "Math expression (e.g. 3 * 4 + 5)",
+L30893:                       "answer": "The answer",
+L30894:                       "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression for this step" }],
+L30895:                       "type": "computation|word_problem|geometry|missing_number|fraction|algebra|measurement",
+L30896:                       "realWorld": "Why this matters..."
+L30897:                     }
+L30898:                   ],
+L30899:                   "graphData": null
+L30900:                 }
+L30901:               `;
+L30902:           } else if (mathMode === 'Problem Set Generator') {
+L30903:               prompt = `
+L30904:                 You are an expert Math Curriculum Designer.
+L30905:                 ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations,
+L30906:                 Topic/Skill: "${problemToSolve}"
+L30907:                 ${mathContextPrompt}
+L30908:                 Instruction: Create a set of 3-5 distinct word problems.
+L30909:                 Context Usage: Frame the word problems using characters, settings, or themes from the Source Context. Use names/concepts fro
+L30910:                 Output Format:
+L30911:                 Return a JSON object with a "problems" array.
+L30912:                 Each item in the array must have:
+L30913:                 - "question": The problem text.
+L30914:                 - "expression": The math expression that solves this (standard notation: +, -, *, /, ^, parentheses). Example: "15 - (3 * 4)
+L30915:                 - "answer": The numeric solution (a number).
+L30916:                 - "steps": An array of 2-5 step objects { "explanation": "Clear explanation of what to do in this step", "latex": "The math 
+L30917:                 Return ONLY JSON in the following format:
+L30918:                 {
+L30919:                   "title": "Problem Set: ${problemToSolve.substring(0, 30)}...",
+L30920:                   "problems": [
+L30921:                     {
+L30922:                       "question": "Problem 1 text...",
+L30923:                       "answer": "Answer 1",
+L30924:                       "steps": [{ "explanation": "First...", "latex": "x=..." }],
+L30925:                       "realWorld": "Connection...",
+L30926:                     }
+L30927:                   ],
+L30928:                   "graphData": null
+L30929:                 }
+L30930:               `;
+L30931:           } else {
+L30932:               prompt = `
+L30933:                 You are an Expert Math & Science Tutor.
+L30934:                 ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, rea
+L30935:                 Subject: ${mathSubject}
+L30936:                 Mode: ${mathMode}
+L30937:                 Problem: "${problemToSolve}",
+L30938:                 Context:
+L30939:                 ${mathContextPrompt}
+L30940:                 Instructions:
+L30941:                 Solve the problem or explain the concept based on the selected mode.
+L30942:                 - If "Step-by-Step": Provide a clear, numbered sequence of steps to reach the solution. Show work for every calculation.
+L30943:                 - If "Conceptual": Explain the "Why" and "How" behind the concept. Use analogies.
+L30944:                 - If "Real-World Application": Explain how this specific concept is used in real life (engineering, finance, nature, etc.).
+L30945:                 ${useMathSourceContext ? 'Relate the explanation to the Source Context concepts.' : ''}
+L30946:                 ${isMathGraphEnabled ? `
+L30947:                     VISUALS REQUIRED:
+L30948:                     - If Math/Physics/Economics: Generate a self-contained SVG graph (plots, curves, geometry) in the "graphData" field.
+L30949:                     - If Biology/Earth Science: Generate a self-contained SVG diagram (e.g. Punnett Square, Water Cycle Flowchart, Cell Stru
+L30950:                     - If Computer Science: Generate an SVG Flowchart or Logic Gate diagram in "graphData".
+L30951:                     - Keep SVG code clean, minimal, responsive (viewBox), and use standard colors.
+L30952:                 ` : ''}
+L30953:                 Return ONLY JSON in the following format:
+L30954:                 {
+L30955:                   "problem": "Clean Latex string of the input",
+L30956:                   "answer": "Final Answer string",
+L30957:                   "steps": [{ "explanation": "Step explanation", "latex": "Step math in Latex" }],
+L30958:                   "graphData": "SVG string or null",
+L30959:                   "realWorld": "Connection string explanation"
+L30960:                 }
+L30961:               `;
+L30962:           }
+L30963:           console.error('[MATH] Sending prompt to Gemini, mode:', mathMode, 'subject:', mathSubject);
+L30964:           const result = await callGemini(prompt, true);
+L30965:           console.error('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
+L30966:           let rawContent;
+L30967:           try {
+L30968:               let cleaned = cleanJson(result);
+L30969:               cleaned = cleaned.replace(/(?![/u"bfnrt])/g, "");
+L30970:               cleaned = cleaned.replace(/(f|n|r|t|b)(?=[a-zA-Z])/g, "$1");
+L30971:               rawContent = safeJsonParse(cleaned);
+L30972:               if (!rawContent) throw new Error("Parsed JSON is null");
+L30973:           } catch (parseErr) {
+L30974:               console.error('[MATH] JSON Parse Error:', parseErr, 'Cleaned input:', cleaned?.substring(0, 300));
+L30975:               warnLog("Math Parse Error:", parseErr);
+L30976:               throw new Error("Failed to parse Math JSON. The AI response was not valid.");
+L30977:           }
+L30978:           let normalizedContent = {
+L30979:               title: rawContent.title || 'Math & STEM Solver',
+L30980:               problems: [],
+L30981:               graphData: rawContent.graphData || null
+L30982:           };

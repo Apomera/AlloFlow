@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Library | AlloFlow</title>
+    <meta name="description"
+        content="Download free, curated lesson packs for AlloFlow. Standards-aligned content for ELA, STEM, Social Studies, SEL, and more.">
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .filter-btn {
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--indigo);
+            color: var(--indigo);
+        }
+
+        .filter-btn.active {
+            background: var(--indigo);
+            color: #fff;
+            border-color: var(--indigo);
+        }
+
+        .lesson-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, opacity 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lesson-card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-4px);
+            border-color: #cbd5e1;
+        }
+
+        .lesson-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-ela {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-stem {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-social {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-math {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .badge-sel {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+        .badge-cte {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: var(--indigo);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-top: auto;
+            transition: background 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #4338ca;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html" style="color:var(--indigo)">Library</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                        style="width:16px;height:16px"></i> Get Code</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+    <div id="mobileNav" class="mobile-nav">
+        <button class="close-btn" onclick="this.parentElement.classList.remove('open')">&times;</button>
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
+            href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    </div>
+
+    <!-- Page Header -->
+    <header class="section"
+        style="background:linear-gradient(135deg,#eff6ff,#eef2ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #dbeafe">
+        <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">📚 Lesson <span
+                class="gradient-text">Library</span></h1>
+        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto 24px">Download free, standards-aligned
+            lesson packs. Load any JSON file into AlloFlow to instantly explore the content.</p>
+        <div
+            style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:12px;font-size:0.8rem;color:#475569">
+            <i data-lucide="info" style="width:14px;height:14px;color:var(--indigo)"></i>
+            <span>Download a <strong>.json</strong> file → Open AlloFlow → Click <strong>"Load Project"</strong> →
+                Select the file</span>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <section class="section" style="padding-top:32px;padding-bottom:0">
+        <div class="section-inner" style="text-align:center">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="filters">
+                <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
+                <button class="filter-btn" onclick="filterCards('ela', this)">📖 ELA</button>
+                <button class="filter-btn" onclick="filterCards('stem', this)">🔬 STEM</button>
+                <button class="filter-btn" onclick="filterCards('social', this)">🌎 Social Studies</button>
+                <button class="filter-btn" onclick="filterCards('math', this)">🧮 Math</button>
+                <button class="filter-btn" onclick="filterCards('sel', this)">💛 SEL</button>
+                <button class="filter-btn" onclick="filterCards('cte', this)">🔧 CTE</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lesson Grid -->
+    <section class="section" style="padding-top:32px" id="lesson-grid">
+        <div class="section-inner">
+            <div class="grid-3" id="cards-container">
+
+                <!-- ELA Lessons -->
+                <div class="lesson-card" data-category="ela">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-ela">ELA</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grades 2-3</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🌊 The Water Cycle</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">How rain forms,
+                        evaporates, and returns to the sky. Cross-curricular with NGSS.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">CCSS.ELA-LITERACY.RI.3.1, RI.3.3</p>
+                    <a href="./examples/water_cycle.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="ela">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-ela">ELA</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grades 3-4</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🕷️ Anansi the Spider (Folktales)
+                    </h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Folktales from Around
+                        the World. Cultural responsiveness, compare and contrast.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">CCSS.ELA-LITERACY.RL.3.2, RL.3.9</p>
+                    <a href="./examples/anansi.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="social">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-social">Social Studies</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grade 5</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">⚔️ The American Revolution</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Causes and key events
+                        with timeline organizer and multiple perspectives.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">C3 D2.His.1.3-5, CCSS.RI.5.6</p>
+                    <a href="./examples/civil_war.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="stem">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-stem">STEM</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grades 3-5</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🪐 The Solar System</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Planets, moons, and the
+                        sun. Adventure Mode: "Space Explorer" RPG.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">NGSS 5-ESS1-1</p>
+                    <a href="./examples/solar_system.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="stem">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-stem">STEM</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grade 5</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🌱 Photosynthesis</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">How plants convert
+                        sunlight into energy. Visual organizers and vocabulary.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">NGSS 5-LS1-1</p>
+                    <a href="./examples/photosynthesis.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="sel">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-sel">SEL</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grades 2-4</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🤝 Conflict Resolution</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Using "I Statements" to
+                        solve problems. Adventure Mode: "Playground Peacemaker" RPG.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">CASEL: Relationship Skills</p>
+                    <a href="./examples/conflict_resolution.json" download class="download-btn"><i
+                            data-lucide="download" style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="social">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-social">Social Studies</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grades 4-5</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🏛️ Ancient Egypt</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Pyramids, Pharaohs, and
+                        the Nile. Includes STEM math (pyramid geometry).</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">C3 D2.His.3.3-5</p>
+                    <a href="./examples/ancient_egypt.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="cte">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-cte">CTE</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grades 4-8</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🔒 Digital Literacy & Online Safety
+                    </h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Passwords, phishing,
+                        and online safety. Escape Room: "Hack-Proof Challenge".</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">ACTE IT Cluster, ISTE 2.a</p>
+                    <a href="./examples/digital_literacy.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+                <div class="lesson-card" data-category="math">
+                    <div style="margin-bottom:12px"><span class="lesson-badge badge-math">Math</span> <span
+                            style="font-size:0.7rem;color:#94a3b8;margin-left:8px">Grade 3</span></div>
+                    <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🍕 Introduction to Fractions</h3>
+                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Parts of a whole.
+                        Visual models with pizza/pie analogy.</p>
+                    <p style="font-size:0.7rem;color:#94a3b8;margin-bottom:16px">CCSS.MATH.3.NF.A.1</p>
+                    <a href="./examples/fractions.json" download class="download-btn"><i data-lucide="download"
+                            style="width:14px;height:14px"></i> Download</a>
+                </div>
+
+            </div>
+
+            <!-- Submit CTA -->
+            <div
+                style="text-align:center;margin-top:48px;padding:32px;background:linear-gradient(135deg,#eff6ff,#eef2ff);border-radius:20px;border:1px solid #dbeafe">
+                <h3 style="font-weight:900;font-size:1.3rem;margin-bottom:8px">Created a great lesson?</h3>
+                <p style="font-size:0.9rem;color:#64748b;margin-bottom:16px">Submit your <strong>.json Project
+                        file</strong> to be featured in the community library.</p>
+                <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow Lesson Submission" class="download-btn"
+                    style="display:inline-flex"><i data-lucide="upload" style="width:14px;height:14px"></i> Submit a
+                    Lesson Pack</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <div class="footer-links"><a href="index.html">Home</a><a href="features.html">Features</a><a
+                    href="library.html">Library</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a></div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    </button>
+
+    <script>
+        lucide.createIcons();
+
+        function filterCards(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.lesson-card').forEach((card, i) => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'flex';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(12px)';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, i * 50);
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Back to Top Button
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backBtn.classList.toggle('visible', window.scrollY > 400);
+        }, { passive: true });
+    </script>
+</body>
+
+</html>

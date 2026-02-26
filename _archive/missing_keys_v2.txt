@@ -1,0 +1,9 @@
+dashboard_print_parent_report
+math_check_work
+tour-analysis-settings
+tour-faq-settings
+tour-glossary-settings
+tour-scaffolds-settings
+tour-simplified-settings
+tour-visual-settings
+tour-wordsounds-panel

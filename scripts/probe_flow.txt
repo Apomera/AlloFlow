@@ -1,0 +1,117 @@
+﻿=== PROBE LOADING ===
+ow.BENCHMARK_PROBE_BANKS = null;
+window.ORF_SCREENING_PASSAGES = null;
+
+const loadPsychometricProbes = async () => {
+    if (window.BENCHMARK_PROBE_BANKS && window.ORF_SCREENING_PASSAGES) return;
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.js');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const text = await response.text();
+        new Function(text)(); // Evaluate to attach to window
+    } catch (err) {
+        console.error('Failed to load psychometric probes:', err);
+    }
+};
+
+
+const GRADE_SUBTEST_BATTERIES = {
+
+  'K':   ['segmentation', 'blending', 'isolation'],
+
+  '1':   ['segmentation', 'blending', 'isolation', 'spelling', 'orf'],
+
+  '2':   ['segmentation', 'blending', 'rhyming', 'spelling', 'orf'],
+
+  '3-5': ['segmentation', 'rhyming', 'spelling', 'orf'],
+
+};
+
+cons
+
+=== PROBE ACTIVITY TYPES ===
+  setProbeActivity('orf')
+  setProbeActivity(activity)
+  setProbeActivity(firstActivity[g] || 'segmentation')
+  setProbeActivity(e.target.value)
+  setProbeActivity('orf')
+
+=== PROBE RENDER/LAUNCH ===
+  @297076: ig = null,     isProbeMode = false,     probeGradeLevel = 'K',     onProbeComplete, }) => {     const includeOrthographic = orthoSessio
+  @373750: row = [new Date().toLocaleDateString(), probeGradeLevel, wordSoundsActivity, total, correct, accuracy, itemsPerMin, Math.round(totalTim
+  @374139:              link.download = 'Probe_' + probeGradeLevel + '_' + wordSoundsActivity + '_' + new Date().toISOString().split('T')[0] + '.c
+  @374975: r mb-6">                         Grade {probeGradeLevel} ò {wordSoundsActivity} ò {new Date().toLocaleDateString()}                    
+  @686771: obeResult, rosterQueue, setRosterQueue, screenerSession, setScreenerSession, onLaunchORF, probeHistory, interventionLogs, addToa
+  @686808: e, screenerSession, setScreenerSession, onLaunchORF, probeHistory, interventionLogs, addToast }) => {      const [importedStudents,
+  @777859: ity === 'orf') {             if (typeof onLaunchORF === 'function') {                 onLaunchORF(grade, form);             }      
+  @777905: chORF === 'function') {                 onLaunchORF(grade, form);             }             return;         }         if (!bank || 
+  @780199: => {             launchScreeningSession(probeGradeLevel, probeForm, nextStudent);         }, 500);     };      const generateFluencySco
+  @780216: launchScreeningSession(probeGradeLevel, probeForm, nextStudent);         }, 500);     };      const generateFluencyScoreSheet = (
+  @837567:                                  value={probeGradeLevel}                                 onChange={(e) => {                            
+  @838638:                                  value={probeActivity}                                  onChange={(e) => setProbeActivity(e.target.va
+  @838990:     >                                  {probeGradeLevel === 'K' && <>                                      <option value="segmentation"
+  @839342:  </>}                                  {probeGradeLevel === '1' && <>                                      <option value="segmentation"
+  @839774:  </>}                                  {probeGradeLevel === '2' && <>                                      <option value="segmentation"
+  @840202:  </>}                                  {probeGradeLevel === '3-5' && <>                                      <option value="segmentatio
+  @840710: rm"                              value={probeForm}                              onChange={(e) => setProbeForm(e.target.value)}   
+  @842212:     onClick={() => launchBenchmarkProbe(probeGradeLevel, probeActivity, probeForm)}                             aria-label="Run benchma
+  @842229: > launchBenchmarkProbe(probeGradeLevel, probeActivity, probeForm)}                             aria-label="Run benchmark probe"      
+  @842244: rkProbe(probeGradeLevel, probeActivity, probeForm)}                             aria-label="Run benchmark probe"                 
+  @1829673: sProbeMode] = useState(false);   const [probeGradeLevel, setProbeGradeLevel] = useState('K');   const [probeActivity, setProbeActivity]
+  @1829736: beGradeLevel] = useState('K');   const [probeActivity, setProbeActivity] = useState('segmentation');   const [probeForm, setProbeForm
+  @1829806: y] = useState('segmentation');   const [probeForm, setProbeForm] = useState('A');   const [screenerSession, setScreenerSession] =
+  @1829857: setProbeForm] = useState('A');   const [screenerSession, setScreenerSession] = useState(null);   const [rosterQueue, setRosterQu
+  @1829997: ate([]);    useEffect(() => {      if (!screenerSession || screenerSession.status !== 'interstitial') return;      const timer =
+  @1830016: ct(() => {      if (!screenerSession || screenerSession.status !== 'interstitial') return;      const timer = setTimeout(() => {
+  @1830133: out(() => {        const nextActivity = screenerSession.subtests[screenerSession.currentIndex];        setScreenerSession(prev =
+  @1830158: nextActivity = screenerSession.subtests[screenerSession.currentIndex];        setScreenerSession(prev => ({ ...prev, status: 'ru
+  @1830286: nning' }));        launchBenchmarkProbe(screenerSession.grade, nextActivity, screenerSession.form);      }, 2000);      return (
+  @1830323: be(screenerSession.grade, nextActivity, screenerSession.form);      }, 2000);      return () => clearTimeout(timer);    }, [scre
+  @1830407: eturn () => clearTimeout(timer);    }, [screenerSession?.status, screenerSession?.currentIndex]);   React.useEffect(() => {     
+  @1830432: timer);    }, [screenerSession?.status, screenerSession?.currentIndex]);   React.useEffect(() => {     if (fluencyStatus !== 'co
+  @1830564: te' || !fluencyResult) return;     if (!screenerSession || screenerSession.status !== 'running') return;     const currentSubtes
+  @1830583: lt) return;     if (!screenerSession || screenerSession.status !== 'running') return;     const currentSubtest = screenerSession
+  @1830656: ng') return;     const currentSubtest = screenerSession.subtests[screenerSession.currentIndex];     if (currentSubtest !== 'orf'
+  @1830681: rrentSubtest = screenerSession.subtests[screenerSession.currentIndex];     if (currentSubtest !== 'orf') return;     const orfRe
+  @1830814: = {       activity: 'orf',       grade: screenerSession.grade,       form: screenerSession.form,       student: screenerSession.
+  @1830849: ade: screenerSession.grade,       form: screenerSession.form,       student: screenerSession.student,       correct: fluencyResu
+  @1830886: m: screenerSession.form,       student: screenerSession.student,       correct: fluencyResult.wcpm || 0,       total: fluencyRes
+  @1831330: Result);     const updatedResults = [...screenerSession.results, orfResult];     setIsFluencyMode(false);     setFluencyStatus('
+  @1831459: dle');     setActiveView(null);     if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {       setScreenerS
+  @1831494:  if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {       setScreenerSession({ ...screenerSession, result
+  @1831559: length) {       setScreenerSession({ ...screenerSession, results: updatedResults, currentIndex: screenerSession.currentIndex + 1
+  @1831615:  results: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });     } else {       setScree
+  @1831719:  } else {       setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });     }   }, [fluencyStat
+  @3614612: beMode}                                 probeGradeLevel={probeGradeLevel}                                 onProbeComplete={(results) =>
+  @3614629:                        probeGradeLevel={probeGradeLevel}                                 onProbeComplete={(results) => {               
+  @3615021:                                  grade: probeGradeLevel,                                              activity: probeActivity,         
+  @3615093:                               activity: probeActivity,                                              student: probeTargetStudent,     
+  @3615232:                                   form: probeForm,                                          };                                   
+  @3615661:                                     if (screenerSession && screenerSession.status === 'running') {                              
+  @3615680:                  if (screenerSession && screenerSession.status === 'running') {                                             cons
+  @3615791:              const updatedResults = [...screenerSession.results, fullResult];                                             if (sc
+  @3615877:                                     if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {                   
+  @3615912:  if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {                                                 setSc
+  @3616019:                 setScreenerSession({ ...screenerSession, results: updatedResults, currentIndex: screenerSession.currentIndex + 1
+  @3616075:  results: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });                            
+  @3616261:                 setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });                        
+  @3616634: L OVERLAY === */}                      {screenerSession && screenerSession.status === 'interstitial' && (                       
+  @3616653:                     {screenerSession && screenerSession.status === 'interstitial' && (                          <div className="
+  @3617416: >                                      {screenerSession.subtests[screenerSession.currentIndex - 1]?.replace(/^./, c => c.toUpper
+  @3617441:               {screenerSession.subtests[screenerSession.currentIndex - 1]?.replace(/^./, c => c.toUpperCase())} Complete!       
+  @3617772: >                                      {screenerSession.subtests[screenerSession.currentIndex]?.replace(/^./, c => c.toUpperCase
+  @3617797:               {screenerSession.subtests[screenerSession.currentIndex]?.replace(/^./, c => c.toUpperCase())}                     
+  @3618141: ion-500" style={{ width: `${Math.round((screenerSession.currentIndex / screenerSession.subtests.length) * 100)}%` }}></div>     
+  @3618172: h.round((screenerSession.currentIndex / screenerSession.subtests.length) * 100)}%` }}></div>                                  </
+  @3618337:  <p className="text-xs text-slate-400">{screenerSession.currentIndex} of {screenerSession.subtests.length} subtests complete</p>
+  @3618371: 400">{screenerSession.currentIndex} of {screenerSession.subtests.length} subtests complete</p>                              </di
+  @3618605: E SUMMARY === */}                      {screenerSession && screenerSession.status === 'complete' && (                          <
+  @3618624:                     {screenerSession && screenerSession.status === 'complete' && (                          <div className="fixe
+  @3619507: lassName="text-slate-500 text-sm mt-1">{screenerSession.student} &mdash; Grade {screenerSession.grade} &mdash; Form {screenerSes
+  @3619547: screenerSession.student} &mdash; Grade {screenerSession.grade} &mdash; Form {screenerSession.form}</p>                          
+  @3619584: e {screenerSession.grade} &mdash; Form {screenerSession.form}</p>                                  </div>                       
+  @3619754: >                                      {screenerSession.results.map((r, idx) => (                                          <div 
+  @3620972:      const risk = classifyScreeningRisk(screenerSession.results);                         return (                             <
+  @4501357: erQueue={setRosterQueue}                screenerSession={screenerSession}                setScreenerSession={setScreenerSession}
+  @4501374: rQueue}                screenerSession={screenerSession}                setScreenerSession={setScreenerSession}               on
+  @4501460: sion={setScreenerSession}               onLaunchORF={handleLaunchORF}               probeHistory={probeHistory}               inter

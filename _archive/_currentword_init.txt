@@ -1,0 +1,76 @@
+=== Auto-start effect L7085-7118 ===
+L7085:     // RETRY START UP ON DATA LOAD (Fix for race condition)
+L7086:     // Moved AFTER startActivity definition to avoid "Cannot access before initialization" error.
+L7087:     React.useEffect(() => {
+L7088:         // FIX: Don't auto-start if Review Panel is showing
+L7089:         if (showReviewPanel) {
+L7090:             // Silenced: console.log("📋 Review Panel is active - skipping auto-start");
+L7091:             return;
+L7092:         }
+L7093: 
+L7094:         // Auto-start when: (pool OR preloaded) ready + no active word + not already loading
+L7095:         // FIX: Allow activity to start with EITHER wordPool OR preloadedWords (standalone mode)
+L7096:         const hasWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+L7097:         if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
+L7098:             // SILENCED: console.log("WordSounds: Data loaded! Starting activity.");
+L7099: 
+L7100:             // Show Review Panel first if preloaded data exists
+L7101:             // FIX: Only show if user hasn't already started from review this session
+L7102:             if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+L7103:                 // SILENCED: console.log("📋 Showing Pre-Activity Review Panel");
+L7104:                 setShowReviewPanel(true);
+L7105:                 return; // Don't auto-start, wait for review
+L7106:             }
+L7107: 
+L7108:             // Start preloading - Review Panel will appear when words are ready
+L7109:             // SILENCED: console.log("Starting word preloading...");
+L7110:             setTimeout(() => {
+L7111:                 prefetchNextWords();
+L7112:                 // FIX: Also call preloadInitialBatch if not already running
+L7113:                 if (typeof preloadInitialBatch === 'function') {
+L7114:                     preloadInitialBatch();
+L7115:                 }
+L7116:             }, 100);
+L7117:         }
+L7118:     }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+L7119: 
+L7120:     // LESSON PLAN AUTO-START: When sequence is provided and modal is ready, start first activity
+
+=== Lesson plan auto-start L7120-7145 ===
+L7120:     // LESSON PLAN AUTO-START: When sequence is provided and modal is ready, start first activity
+L7121:     React.useEffect(() => {
+L7122:         // Only trigger when:
+L7123:         // 1. We have a lesson plan sequence
+L7124:         // 2. Activity is still on landing page ('word-sounds')
+L7125:         // 3. Words are preloaded and ready
+L7126:         // 4. Not already in review panel
+L7127:         if (activitySequence && activitySequence.length > 0 &&
+L7128:             wordSoundsActivity === 'word-sounds' &&
+L7129:             preloadedWords.length > 0 &&
+L7130:             !showReviewPanel) {
+L7131: 
+L7132:             console.log("🎯 Lesson Plan: Auto-starting first activity:", activitySequence[0]);
+L7133: 
+L7134:             // Mark that we've started from sequence (skip review panel)
+L7135:             hasStartedFromReview.current = true;
+L7136: 
+L7137:             // Use timeout to ensure state is settled
+L7138:             setTimeout(() => {
+L7139:                 startActivity(activitySequence[0]);
+L7140:             }, 100);
+L7141:         }
+L7142:     }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel]);
+L7143: 
+L7144:     // Check answer and update score with adaptive tracking
+L7145: 
+
+=== currentWordSoundsWord initial + early refs ===
+
+=== startActivity refs ===
+L6946:     // Start a new activity with LOOP PREVENTION
+L6947:     const startActivity = React.useCallback((activityId, forceWord = null, excludeWord = null, recursionDepth = 0) => {
+L6948:         setWordSoundsActivity(activityId);
+L6949:         setWordSoundsFeedback?.(null);
+L6950:         setUserAnswer('');
+L6951:         setAttempts(0); // Reset attempts
+---

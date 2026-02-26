@@ -1,0 +1,75 @@
+=== useCallback DEPENDENCY AUDIT (45 callbacks) ===
+
+=== EMPTY DEPS [] WITH STATE ACCESS (1) — HIGHEST RISK ===
+(These callbacks close over initial state values and NEVER update)
+
+  showSpotlight (L33008, 25 lines)
+    Deps: []
+    Missing: position
+
+
+=== PARTIAL DEPS WITH MISSING STATE (14) — MEDIUM RISK ===
+(These callbacks have some deps but are missing state refs)
+
+  toggleSetting (L28962, 200 lines)
+    Deps: [config]
+    Missing: draggedItemIndex, isEditing, isSpeedReaderActive, items, step, trigger
+
+  speak (L17845, 150 lines)
+    Deps: [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio]
+    Missing: error, isTalking, playbackRate, user
+
+  fetchTTSBytes (L38229, 153 lines)
+    Deps: [apiKey]
+    Missing: error, inputText, status
+
+  updateTourMetrics (L32947, 53 lines)
+    Deps: [runTour, tourStep, spotlightMessage]
+    Missing: expandedTools, step
+
+  generateNarrativeLedger (L43916, 34 lines)
+    Deps: [adventureState.narrativeLedger, t]
+    Missing: adventureState, items
+
+  handleGeneratePersonas (L47135, 137 lines)
+    Deps: [history, inputText, sourceTopic, gradeLevel, personaCustomInstructions, generatedContent]
+    Missing: error, leveledTextLanguage
+
+  handleScoreUpdate (L30822, 35 lines)
+    Deps: [completedActivities, t]
+    Missing: score
+
+  closeBingo (L30875, 9 lines)
+    Deps: [generatedContent?.id, handleScoreUpdate]
+    Missing: generatedContent
+
+  handleGameCompletion (L30884, 3 lines)
+    Deps: [generatedContent?.id, recordGameCompletion]
+    Missing: generatedContent
+
+  playSound (L31180, 65 lines)
+    Deps: [soundEnabled]
+    Missing: error
+
+  togglePause (L40020, 18 lines)
+    Deps: [isPaused]
+    Missing: error
+
+  generateAdventureImage (L43802, 109 lines)
+    Deps: [useLowQualityVisuals, adventureState.isImmersiveMode, isAdventureStoryMode, adventureInputMode, gradeLevel, adventureCustomInstructions]
+    Missing: adventureState
+
+  handleAdventureCrashRecovery (L45010, 23 lines)
+    Deps: [failedAdventureAction]
+    Missing: error
+
+  handleGenerateConceptItem (L52704, 44 lines)
+    Deps: [gradeLevel, callGemini, callImagen]
+    Missing: error
+
+
+=== SUMMARY ===
+  Total useCallbacks: 45
+  Empty deps with state access: 1 (HIGH risk)
+  Partial deps missing state: 14 (MEDIUM risk)
+  Clean (no issues found): 30

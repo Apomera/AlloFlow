@@ -1,0 +1,93 @@
+=== Escape key handlers ===
+  L27101: const allTeams = Object.keys(escapeState.teamProgress || {});
+  L27306: <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`} data-help-key="escape_room_team">
+  L27312: <div className="text-white font-mono" data-help-key="escape_room_progress">
+  L27319: <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.lives')} data-help-key="escape_room_lives">
+  L27321: <span key={i} className={`text-sm ${i < (escapeState.lives || 0) ? 'text-red-500' : 'text-slate-600'}`}>
+  L27336: <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse" data-help-key="escape_room_streak">
+  L27342: <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-700 text-white'}`} data-help-key="escape_room
+  L27351: <div className="fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40" data-help-key="escape_room_leaderboard">
+  L27389: data-help-key="escape_room_object"
+  L27417: <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white ro
+  L27450: data-help-key="escape_room_hint_button"
+  L27471: data-help-key="escape_room_mcq_option"
+  L27494: data-help-key="escape_room_cipher_input"
+  L27499: data-help-key="escape_room_cipher_submit"
+  L27543: data-help-key="escape_room_fillin_input"
+  L27551: data-help-key="escape_room_fillin_submit"
+  L27574: data-help-key="escape_room_scramble_input"
+  L27579: data-help-key="escape_room_scramble_submit"
+  L27589: <div className="space-y-4" data-help-key="escape_room_sequence_container">
+  L27599: <div key={idx} role="listitem" aria-label={`${t('escape_room.position') || 'Position'} ${idx + 1}: ${item}`} className="flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-whi
+  L27660: <div className="space-y-4" data-help-key="escape_room_matching_container">
+  L27838: const allTeams = Object.keys(escapeState.teamProgress || {});
+  L27842: const studentsAssigned = Object.keys(escapeState.teams || {}).length;
+  L27912: <div key={team} className={`p-3 rounded-xl border-2 ${escaped ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'}`}>
+  L30645: } else if (e.key === 'Escape') {
+  L33769: venn_back_btn: "Exit the Venn diagram activity and return to the Concept Sort configuration panel. Use when: finished with the activity, want to change settings, or need to generat
+  L33776: venn_move_cancel: "Close the move action menu without making changes. The selected item stays in its current location. Use when: you accidentally clicked, changed your mind, or wan
+  L33878: 'dashboard_close_btn': "Exit the dashboard panel and return to main workspace. Dashboard data persists—reopening shows same information. Changes made in dashboard (grading, notes) 
+  L34083: 'escape_room_sequence_container': "Sequencing puzzle where you arrange items chronologically, alphabetically, or logically. Drag items to reorder, or use arrow buttons for keyboard
+  L34157: 'escape_room_sequence_list': "Collection of items that need to be arranged in correct sequence. Items can be: historical events (chronological), process steps (procedural), story e
+  L34237: 'dashboard_detail_back': "Navigate back to the class roster from individual student detail. Returns to: full student list, class-wide statistics, and overview metrics. Does not los
+  L34281: 'settings_close_btn': "Exit settings panel. All changes are saved automatically as you make them. No explicit save button needed. Close returns you to your previous activity. Setti
+  L34299: 'simplified_immersive_reader': "Open full-screen reading mode with accessibility features. Immersive reader provides: adjustable text spacing, syllable highlighting, line focus, pi
+  L34500: adventure_immersive_exit: "Leave fullscreen immersive experience. Clicking exits to: standard adventure view, visible controls, and normal interface. Adventure continues from curre
+  L38104: if (e.key === 'Escape') {
+  L52430: const updateEscapeRoomSetting = (key, value) => {
+  L52431: setEscapeRoomState(prev => ({ ...prev, [key]: value }));
+  L65939: if(e.key === 'Escape') setIsCustomReviseOpen(false);
+  L67532: <div className={`flex-grow grid grid-cols-3 md:grid-cols-5 gap-4 place-items-center ${!isEscapeTimerRunning ? 'opacity-50 pointer-events-none' : ''}`}>
+  L67691: aria-label={`${t('escape_room.position') || 'Position'} ${displayIdx + 1}: ${puzzle.items[itemIdx]}. ${t('escape_room.use_arrows') || 'Use arrow keys to reorder.'}`}
+  L67795: <p className="text-purple-400 text-xs">{t('escape_room.matching_keyboard_hint') || 'Tip: Use Tab to switch columns, Enter to select'}</p>
+
+=== WordSoundsGenerator component effects (L1266-1600) ===
+  L1339: React.useEffect(() => {
+  L1340: if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
+  L1341: console.log("📋 Words preloaded! Auto-navigating to Review Panel...");
+  L1342: hasAutoNavigated.current = true;
+  L1343: // Small delay to ensure UI is settled
+  L1344: const timer = setTimeout(() => {
+  L1345: onShowReview();
+  L1346: }, 300);
+  ---
+  L1403: React.useEffect(() => {
+  L1404: const limit = Math.min(previewList.length, wordCount);
+  L1405: const indices = new Set();
+  L1406: for(let i=0; i<limit; i++) indices.add(i);
+  L1407: setSelectedIndices(indices);
+  L1408: }, [previewList, wordCount]);
+  L1409: 
+  L1410: const toggleSelection = (index) => {
+  ---
+
+=== Generator onClose/close references (L1266-1800) ===
+  L1266: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview }) => {
+  L1668: <button data-help-key="ws_gen_close" onClick={onClose} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Close">
+
+=== Generator 'Back' / close button (L1640-1670) ===
+  L1650: <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+  L1656: <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+  L1668: <button data-help-key="ws_gen_close" onClick={onClose} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors" title="Close">
+
+=== Generator render return ===
+  L1641:                                   Tap to Expand
+  L1642:                               </button>
+  L1643:                           </div>
+  L1644:                      )}
+  L1645:                 </div>
+  L1646:             );
+  L1647:         }
+  L1648: 
+  L1649:         return (
+  L1650:             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+  L1651:                 <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+  L1652: 
+  L1653:                     {/* Header */}
+  L1654:                     <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
+  L1655:                         <div className="flex items-center gap-4">
+  L1656:                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+  L1657:                                 <Sparkles size={32} className="text-yellow-300 animate-pulse" />
+  L1658:                             </div>
+  L1659:                             <div>
+  L1660:                                 <h2 className="text-3xl font-black tracking-tight">{t('word_sounds.title', 'Word Sounds Studio')}</h2>

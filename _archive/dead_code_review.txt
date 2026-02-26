@@ -1,0 +1,93 @@
+======================================================================
+1. ANALYTICS CALLBACKS (4 items)
+======================================================================
+
+--- recordEscapeRoomCompletion ---
+Escape room completion tracking references: 2
+  L32203: 'escape_room_progress': "Visual progress tracker showing completion status. Format: X of Y puzzles s
+  L32344: 'dashboard_detail_back': "Navigate back to the class roster from individual student detail. Returns 
+handleScoreUpdate calls near escape room: 0
+
+--- recordFluencyAssessment ---
+Fluency tracking references: 43
+  L10460: if (data.fluencyAssessments && data.fluencyAssessments.length > 0) {
+  L10461: const latest = data.fluencyAssessments[data.fluencyAssessments.length - 1];
+  L10463: stats.totalActivities += data.fluencyAssessments.length;
+  L10602: const assessments = selectedStudent.data?.fluencyAssessments;
+  L10851: {/* ORF Running Record & Fluency Trend */}
+
+--- recordFlashcardInteraction ---
+Flashcard tracking references: 19
+  L24690: <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcar
+  L29556: flashcardScore: 0,
+  L29731: const { isDraggingBank, dragBankOffset, isConceptSortGame, isInteractiveFlashcards, flashcardIndex, 
+  L29741: const setFlashcardScore = (v) => csDispatch({ type: 'CS_SET', field: 'flashcardScore', value: v });
+  L30649: // NEW: Track flashcard engagement
+
+--- trackResourceTime ---
+Resource time tracking references: 0
+
+======================================================================
+2. PERSONA FUNCTIONS (3 items)
+======================================================================
+
+Persona chat references: 21
+  L31450: const [isPersonaChatOpen, setIsPersonaChatOpen] = useState(false);
+  L47612: setIsPersonaChatOpen(true);
+  L47624: const handleClosePersonaChat = () => {
+  L47674: setIsPersonaChatOpen(false);
+  L47698: setIsPersonaChatOpen(true);
+handlePersonaChatSubmit exists: True
+Persona suggestion UI references: 19
+  L15163: persona_hints_toggle: "Show or hide response suggestions and conversation hints. When enabled, the s
+  L15171: persona_topic_spark: "Get a conversation starter or topic suggestion when you're not sure what to as
+  L31980: bot_avatar: "Meet AlloBot, your AI teaching assistant! Click to wake AlloBot and start a conversatio
+  L32003: 'persona_submit_btn': "Finalize and submit your written reflection on the persona conversation. Befo
+  L32190: 'persona_show_hints': "Control whether suggested questions appear during persona conversations. When
+Interview summary UI references: 2
+  L14396: title_single: "Interview Summary",
+  L48295: // Summary generation for interview session
+Persona word click UI references: 0
+
+======================================================================
+3. CONSTANTS (8 items)
+======================================================================
+
+--- PHONEME_PRONUNCIATIONS ---
+  Remaining references after deletion: 0
+
+--- PHONOLOGICAL_ACTIVITIES ---
+  Remaining references after deletion: 0
+
+--- ORTHOGRAPHIC_ACTIVITIES ---
+  Remaining references after deletion: 0
+
+--- SAFETY_BLACKLIST ---
+  Remaining references after deletion: 0
+
+--- IPA_GRAPHEME_OPTIONS ---
+  Remaining references after deletion: 0
+
+--- AUDIO_BANK_PHONEMES ---
+  Remaining references after deletion: 0
+
+--- PREFETCH_BUFFER_SIZE ---
+  Remaining references after deletion: 0
+
+--- MAX_CHUNK_SIZE ---
+  Remaining references after deletion: 2
+  L194: MAX_CHUNK_SIZE_BYTES: 15 * 1024 * 1024, // 15MB safety margin below 20MB limit
+  L204: return file.size > this.MAX_CHUNK_SIZE_BYTES;
+
+--- SAFETY ANALYSIS ---
+Content safety references: 85
+  L194: MAX_CHUNK_SIZE_BYTES: 15 * 1024 * 1024, // 15MB safety margin below 20MB limit
+  L620: // --- SAFETY CONTENT CHECKER FOR STUDENT INPUT ---
+  L622: const SafetyContentChecker = {
+  L628: inappropriate_language: /\b(fuck|shit|damn|bitch|ass|dick|cock|pussy|slut|whore|n[i1]gg[ae3]r|f[a4]g
+  L632: * Check text for safety concerns
+  L658: inappropriate_language: 'medium',
+  L674: inappropriate_language: t('class_analytics.flag_inappropriate'),
+  L828: // Safety / General
+  L829: 'word_sounds.unsafe_word_filtered': 'Filtered inappropriate content.',
+  L4514: // Activity types - filtered by orthographic toggle for pre-reader safety

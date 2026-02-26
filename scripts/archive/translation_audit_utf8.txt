@@ -1,0 +1,162 @@
+﻿=== showTranslated USAGE ===
+  L19848: const showTranslated = groupLanguage && groupLanguage !== 'English';
+  L20020: {currentQuestion && showTranslated && currentQuestion.question_en && (
+  L20072: {showTranslated && currentQuestion?.options_en?.[idx] && (
+  L20153: {showTranslated && currentQuestion.factCheck_en && (
+
+=== leveledTextLanguage USAGE ===
+  L35442: const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
+  L36546: const transString = item.translations[leveledTextLanguage];
+  L39263: const effectiveLanguage = leveledTextLanguage;
+  L39797: if (leveledTextLanguage === lang) setLeveledTextLanguage('English');
+  L39798: if (leveledTextLanguage === 'All Selected Languages' && newLangs.length === 0) setLeveledTextLanguage('English');
+  L39899: const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+  L39959: const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+  L40078: const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+  L40854: const isRtl = isRtlLang(leveledTextLanguage);
+  L40967: const isRtl = isRtlLang(leveledTextLanguage);
+  L41649: const isRtl = isRtlLang(leveledTextLanguage);
+  L46705: if (leveledTextLanguage === 'English') setLeveledTextLanguage(lang);
+  L49660: const effectiveLanguage = langOverride || leveledTextLanguage;
+  L52055: const isNonEnglish = leveledTextLanguage !== 'English';
+  L53411: const bilingualInstruction = getBilingualPromptInstruction(leveledTextLanguage);
+  L53828: const bilingualInstruction = getBilingualPromptInstruction(leveledTextLanguage);
+  L62168: const displayLang = generatedContent?.config?.language || leveledTextLanguage;
+  L63077: className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]
+  L67855: const transString = item.translations[leveledTextLanguage];
+
+=== selectedLanguages USAGE ===
+  L35440: const [selectedLanguages, setSelectedLanguages] = useState([]);
+  L38219: if (selectedLanguages.length < 4) {
+  L39777: if (languageInput.trim() && !selectedLanguages.includes(languageInput.trim()) && selectedLanguages.length < 4) {
+  L46731: if (selectedLanguages.length === 0) {
+  L48016: targetLang = selectedLanguages.length > 0 ? selectedLanguages[0] : 'English';
+  L52627: } else if (selectedLanguages.length > 0) {
+  L52850: if (selectedLanguages.length > 0) {
+  L52914: if (selectedLanguages.length > 0) {
+  L57651: disabled={!languageInput.trim() || selectedLanguages.length >= 4}
+  L57659: {selectedLanguages.map(lang => (
+  L57665: {selectedLanguages.length === 0 && <span className="text-xs text-slate-500 italic">{t('glossary.no_languages')}</span>}
+  L57806: {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+  L57807: {selectedLanguages.length > 0 && <option value="All Selected Languages">{t('languages.all_selected')}</option>}
+  L58832: {selectedLanguages.map(lang => (
+  L58842: {selectedLanguages.length > 1 && (
+  L60798: {selectedLanguages.length > 0 && (
+  L60822: {isTeacherMode && selectedLanguages.length > 0 && (
+  L60833: {selectedLanguages.length > 0 && (
+  L60847: {selectedLanguages.map(lang => (
+  L60856: className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${selectedLanguages.length >
+  L61004: {flashcardMode === 'standard' && selectedLanguages.length > 0 && (
+  L61012: {selectedLanguages.map(l => <option key={l} value={l}>+ {l}</option>)}
+  L61016: {flashcardMode === 'language' && selectedLanguages.length > 1 && (
+  L61023: {selectedLanguages.map(l => <option key={l} value={l}>{l}</option>)}
+  L62033: {generatedContent.data.length === 0 && <tr><td colSpan={3 + selectedLanguages.length} className="p-8 text-center text-slate-500 italic">{t('
+  L65771: {selectedLanguages.map(lang => (
+  L65781: {selectedLanguages.length > 1 && (
+
+=== translate / translation in prompts ===
+  L11271: ΓÇó **Language**: Translate the leveled text into a target language.
+  L11693: ### ≡ƒöä Translate Resources
+  L11694: The Translate button instantly converts **all generated content** to your target language:
+  L11708: Use "Translate Resources" after generating contentΓÇöstudents can access the same lesson in their home language instantly!
+  L12291: translate_button: "Translate",
+  L12292: translate_tooltip: "Translate Resources",
+  L12304: action_current: "Translate Current",
+  L12305: action_all: "Translate All",
+  L12826: tooltip_export_language: "Download language flashcards (English Front / Translated Back)",
+  L15073: simplified_language: "Translate the simplified text into another language for multilingual classrooms.",
+  L16635: const prompt = `You are a UI Translator. Translate the values of this JSON object into ${targetLanguage}. Keep keys identical. Return ONLY v
+  L19848: const showTranslated = groupLanguage && groupLanguage !== 'English';
+  L20020: {currentQuestion && showTranslated && currentQuestion.question_en && (
+  L20072: {showTranslated && currentQuestion?.options_en?.[idx] && (
+  L20153: {showTranslated && currentQuestion.factCheck_en && (
+  L29639: isTranslateModalOpen: false,
+  L29744: const { isTeacherToolbarExpanded, showStudyTimerModal, showTimerConfetti, showSubmitModal, showExportMenu, showHealthCheckPanel, isProfileMo
+  L29764: const setIsTranslateModalOpen = (v) => uiDispatch({ type: 'UI_SET', field: 'isTranslateModalOpen', value: v });
+  L32279: 'simplified_language': "Translate the simplified text into one or multiple target languages.",
+  L32357: 'header_language': "Set the display language for all UI elements (buttons, labels, menus). Available languages are pre-translated for immedi
+  L33328: // [PHASE 4 MIGRATED] const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
+  L33330: const [translateScope, setTranslateScope] = useState('single');
+  L33362: const handleSetIsTranslateModalOpenToTrue = React.useCallback(() => setIsTranslateModalOpen(true), []);
+  L33423: const handleSetIsTranslateModalOpenToFalse = React.useCallback(() => setIsTranslateModalOpen(false), []);
+  L37887: Task: Translate the following educational text into ${targetLanguage}.
+  L37897: Translate the terms and definitions in this glossary JSON into ${targetLanguage}.
+  L37903: 3. Format for translation field: "TranslatedTerm: TranslatedDefinition".
+  L37908: Translate this Quiz JSON into ${targetLanguage}.
+  L37922: Translate the content of this JSON object into ${targetLanguage}.
+  L37925: 1. Translate all display text values (titles, items, descriptions) into ${targetLanguage}.
+  L38000: meta: item.meta ? `${item.meta} (${targetLanguage})` : `Translated to ${targetLanguage}`,
+  L38008: const handleTranslateAction = async () => {
+  L38015: setIsTranslateModalOpen(false);
+  L43396: Translate complex educational jargon into simple, fun, everyday language for a parent.
+  L49771: Format: "Translated Term: Translated Definition",
+  L49772: Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": 
+  L50111: Translate the following ${effectiveLanguage} text into English.
+  L50114: Text to Translate:
+  L50575: const isTranslatedAnalysis = targetUiLang !== 'English';
+  L50594: ${isTranslatedAnalysis ? `5. Translated Text: A full, fluent translation of the source text into ${targetUiLang}.` : ''}
+  L50601: ${isTranslatedAnalysis ? `
+  L50603: - Translate all analysis fields (concepts, explanations, accuracy reasons, grammar notes) into ${targetUiLang}.
+  L50620: "grammar": ["..."]${isTranslatedAnalysis ? ', \n"translatedText": "..."' : ''}
+  L50661: "grammar": ["..."]${isTranslatedAnalysis ? ', "translatedText": "..."' : ''}
+  L52859: Format: "Translated Term: Translated Definition",
+  L52860: Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "trans
+  L52923: Format: "Translated Term: Translated Definition",
+  L52924: Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "trans
+  L55379: onClick={handleSetIsTranslateModalOpenToTrue}
+  L69268: {isTranslateModalOpen && (
+  L69269: <div role="button" tabIndex={0} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 anima
+  L69271: <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-60
+  L69290: onClick={() => { setTranslateScope('single'); handleTranslateAction(); }}
+  L69297: onClick={() => { setTranslateScope('all'); handleTranslateAction(); }}
+
+=== question_en / option_en (pre-translated fields) ===
+  L20020: {currentQuestion && showTranslated && currentQuestion.question_en && (
+  L20022: {currentQuestion.question_en}
+  L37912: - Move the current "question" text to "question_en" if "question_en" doesn't exist.
+  L37917: 2. Do the same for reflections (text -> text_en).
+  L41138: const textEn = typeof r === 'object' && r.text_en ? r.text_en : null;
+  L41161: ${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}
+  L41219: ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin-top: 0; margin-bottom: 5px; font-style: italic;">(${faq.question_en}
+  L41221: ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin-top: 0; font-style: italic;">(${faq.answer_en})</p>` : ''}
+  L41245: const { mode, items, text, text_en } = item.data;
+  L41254: ${i.text_en ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${i.text_en})</span>` : ''}
+  L41270: ${text_en ? `<div style="margin-top:20px; color:#666; font-style:italic;"><strong>Translation:</strong><br>${text_en}</div>` : ''}
+  L46243: if (isEn) updatedQuestion.question_en = value;
+  L46278: newReflections[rIndex] = { ...newReflections[rIndex], text_en: value };
+  L50488: Return ONLY valid JSON format: { "questions": [{ "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"optio
+  L50802: Format: Return ONLY a JSON array of objects with "question", "answer" ${effectiveLanguage !== 'English' ? ', "question_en", "answer_en"' : '
+  L50803: Example: [{"question": "Why is the sky blue? Γÿü∩╕Å", "answer": "...", "question_en": "...", "answer_en": "..."}]
+  L50884: "items": [{ "text": "..."${effectiveLanguage !== 'English' ? ', "text_en": "..."' : ''} }] (if mode is list),
+  L50885: "text": "..." (if mode is paragraph)${effectiveLanguage !== 'English' ? ', "text_en": "..."' : ''},
+  L53497: updatedItem.text_en = value;
+  L63809: {reviewGameState.activeQuestion.question_en && (
+  L63810: <p className="text-blue-200 text-lg italic mt-4">{formatInlineText(reviewGameState.activeQuestion.question_en, false, true)}</p>
+  L64598: {q.question_en && <p className="text-lg text-slate-500 italic mt-2">{formatInlineText(q.question_en, false)}</p>}
+  L64693: {(typeof ref === 'object' && ref.text_en) && (
+  L64694: <p className="text-lg text-indigo-300 italic text-center mt-4">"{ref.text_en}"</p>
+  L64719: {q.question_en !== undefined && (
+  L64721: value={q.question_en || ''}
+  L64724: rows={getRows(q.question_en || '')}
+  L64732: {q.question_en && <p className="text-sm text-slate-500 italic px-2">{q.question_en}</p>}
+  L64814: const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
+  L64943: {(faq.question_en !== undefined || leveledTextLanguage !== 'English') && (
+  L64945: value={faq.question_en || ''}
+  L64946: onChange={(e) => handleFaqChange(idx, 'question_en', e.target.value)}
+  L64948: rows={getRows(faq.question_en || '')}
+  L64960: {(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && (
+  L64962: value={faq.answer_en || ''}
+  L64963: onChange={(e) => handleFaqChange(idx, 'answer_en', e.target.value)}
+  L64965: rows={getRows(faq.answer_en || '')}
+  L64992: {faq.question_en && <p className="text-sm text-slate-500 italic mb-2">({faq.question_en})</p>}
+  L65011: {faq.answer_en && <p className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}
+  L65104: {(item.text_en || leveledTextLanguage !== 'English') && (
+  L65106: value={item.text_en || ''}
+  L65107: onChange={(e) => handleScaffoldChange(idx, 'text_en', e.target.value, true)}
+  L65109: rows={getRows(item.text_en || '')}
+  L65117: {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-500 italic px-2">{item.text_en}</p>}
+  L65161: {(leveledTextLanguage !== 'English' || generatedContent.data.text_en) && (
+  L65166: value={generatedContent.data.text_en || ''}
+  L65167: onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
+  L65169: rows={getRows(generatedContent.data.text_en || '')}
+  L65173: generatedContent.data.text_en && <p className="text-slate-500 italic leading-relaxed px-2 py-1">{generatedContent.data.text_en}</p>

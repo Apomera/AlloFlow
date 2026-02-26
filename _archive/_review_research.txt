@@ -1,0 +1,70 @@
+
+=== setShowReviewPanel ===
+L3220:     const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false); // Pre-Activity Review Panel visibility
+L3275:             setShowReviewPanel(true);
+L6183:             setShowReviewPanel(true);
+L6194:                     setShowReviewPanel(true);
+L6590:                     setShowReviewPanel(true);
+L7104:                 setShowReviewPanel(true);
+L9997:                     setShowReviewPanel(false);
+L10009:                     setShowReviewPanel(false);
+L10216:                                     onClick={() => setShowReviewPanel(true)}
+Total: 9
+
+=== showReviewPanel ===
+L3220:     const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false); // Pre-Activity Review Panel visibility
+L3273:         if (initialShowReviewPanel && !showReviewPanel && !hasStartedFromReview.current && preloadedWords.length > 0) {
+L6181:         if (preloadedWords.length > 0 && hasReadyWords && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6185:     }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+L6189:         if (preloadedWords.length > 0 && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6192:                 if (!showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6199:     }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+L6588:                 if (!showReviewPanel && !hasStartedFromReview.current) {
+L6595:     }, [firstWordReady, preloadedWords, currentWordSoundsWord, isLoadingPhonemes, showReviewPanel]);
+L7089:         if (showReviewPanel) {
+L7118:     }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.leng
+L7130:             !showReviewPanel) {
+L7142:     }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel]);
+L7237:         if (showReviewPanel) return; // GUARD: Don't play instructions during Pre-Activity Review
+L9977:     if (showReviewPanel) {
+Total: 15
+
+=== hasReadyWords ===
+L6178:         const hasReadyWords = readyWords.length >= Math.ceil(preloadedWords.length / 2) ||
+L6181:         if (preloadedWords.length > 0 && hasReadyWords && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+Total: 2
+
+=== hasStartedFromReview ===
+L3221:     const hasStartedFromReview = React.useRef(false); // FIX: Track if user already started from review to prevent loop
+L3273:         if (initialShowReviewPanel && !showReviewPanel && !hasStartedFromReview.current && preloadedWords.length > 0) {
+L3279:     // FIX: Reset hasStartedFromReview when NEW preloaded words are loaded
+L3284:                 hasStartedFromReview.current = false;
+L3286:                 console.log("🔄 Reset hasStartedFromReview for new word set:", firstWord);
+L6181:         if (preloadedWords.length > 0 && hasReadyWords && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6189:         if (preloadedWords.length > 0 && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6192:                 if (!showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6588:                 if (!showReviewPanel && !hasStartedFromReview.current) {
+L7102:             if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+L7135:             hasStartedFromReview.current = true;
+L9995:                     hasStartedFromReview.current = true; // FIX: Remember user already started
+L71467:                   // preloadedWords.length > 0 && !hasStartedFromReview.current
+Total: 13
+
+=== preloadInitialBatch ===
+L5570:     const preloadInitialBatch = React.useCallback(async () => {
+L5574:             console.log("🛡️ Blocking preloadInitialBatch: words already loaded");
+L6118:         // DISABLED: preloadInitialBatch is blocking and redundant.
+L6122:             preloadInitialBatch();
+L6125:     }, [wordPool, preloadedWords.length, isPreloading, preloadInitialBatch]);
+L6129:     // Ensures audio is available even if we skipped the blocking preloadInitialBatch
+L7112:                 // FIX: Also call preloadInitialBatch if not already running
+L7113:                 if (typeof preloadInitialBatch === 'function') {
+L7114:                     preloadInitialBatch();
+L7738:                 // FIX: Extract with correct property names from preloadInitialBatch structure
+Total: 10
+
+=== WordSoundsReviewPanel ===
+L2162: const WordSoundsReviewPanel = ({
+L2189:         // SILENCED: console.log("🔍 WordSoundsReviewPanel MOUNTED - onDeleteWord defined:", !!onDeleteWord, typeof onDeleteWord);
+L9979:             <WordSoundsReviewPanel
+Total: 3

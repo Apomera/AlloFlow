@@ -1,0 +1,114 @@
+﻿TOP-LEVEL CATEGORIES:
+  instructions: 73 entries
+  isolation: 10 entries
+  letters: 26 entries
+  phonemes: 51 entries
+
+============================================================
+INSTRUCTION-RELATED AUDIO ENTRIES:
+============================================================
+  blending: HAS AUDIO (45499 chars)
+  counting: HAS AUDIO (51939 chars)
+  fb_almost: HAS AUDIO (53227 chars)
+  fb_amazing: HAS AUDIO (31331 chars)
+  fb_correct: HAS AUDIO (22315 chars)
+  fb_excellent: HAS AUDIO (28755 chars)
+  fb_great_job: HAS AUDIO (31331 chars)
+  fb_keep_going: HAS AUDIO (28755 chars)
+  fb_listen_again: HAS AUDIO (35195 chars)
+  fb_nice: HAS AUDIO (24891 chars)
+  fb_on_fire: HAS AUDIO (39059 chars)
+  fb_perfect: HAS AUDIO (24891 chars)
+  fb_super: HAS AUDIO (31331 chars)
+  fb_terrific: HAS AUDIO (28755 chars)
+  fb_try_again: HAS AUDIO (23603 chars)
+  fb_try_again_listen: HAS AUDIO (58379 chars)
+  fb_way_to_go: HAS AUDIO (26663 chars)
+  fb_wow: HAS AUDIO (23603 chars)
+  fb_you_got_it: HAS AUDIO (22315 chars)
+  for: HAS AUDIO (17163 chars)
+  inst_blending: HAS AUDIO (45499 chars)
+  inst_counting: HAS AUDIO (51939 chars)
+  inst_find_end_sound: HAS AUDIO (71259 chars)
+  inst_find_start_sound: HAS AUDIO (75123 chars)
+  inst_for: HAS AUDIO (17163 chars)
+  inst_letter_tracing: HAS AUDIO (36483 chars)
+  inst_missing_letter: HAS AUDIO (46787 chars)
+  inst_orthography: HAS AUDIO (77699 chars)
+  inst_rhyming: HAS AUDIO (49363 chars)
+  inst_segmentation: HAS AUDIO (55803 chars)
+  inst_sound_scramble: HAS AUDIO (68683 chars)
+  inst_spelling_bee: HAS AUDIO (55803 chars)
+  inst_tap_letters: HAS AUDIO (54515 chars)
+  inst_which_word: HAS AUDIO (42923 chars)
+  inst_word_families: HAS AUDIO (66627 chars)
+  inst_word_scramble: HAS AUDIO (64819 chars)
+  letter_a: HAS AUDIO (21027 chars)
+  letter_b: HAS AUDIO (18451 chars)
+  letter_c: HAS AUDIO (23603 chars)
+  letter_d: HAS AUDIO (19739 chars)
+  letter_e: HAS AUDIO (23603 chars)
+  letter_f: HAS AUDIO (24891 chars)
+  letter_g: HAS AUDIO (23603 chars)
+  letter_h: HAS AUDIO (22315 chars)
+  letter_i: HAS AUDIO (18451 chars)
+  letter_j: HAS AUDIO (21027 chars)
+  letter_k: HAS AUDIO (22315 chars)
+  letter_l: HAS AUDIO (23603 chars)
+  letter_m: HAS AUDIO (21027 chars)
+  letter_n: HAS AUDIO (21027 chars)
+  letter_o: HAS AUDIO (18451 chars)
+  letter_p: HAS AUDIO (21027 chars)
+  letter_q: HAS AUDIO (21027 chars)
+  letter_r: HAS AUDIO (23603 chars)
+  letter_s: HAS AUDIO (22315 chars)
+  letter_t: HAS AUDIO (30043 chars)
+  letter_u: HAS AUDIO (23603 chars)
+  letter_v: HAS AUDIO (30043 chars)
+  letter_w: HAS AUDIO (28755 chars)
+  letter_x: HAS AUDIO (26179 chars)
+  letter_y: HAS AUDIO (26179 chars)
+  letter_z: HAS AUDIO (22315 chars)
+  mapping: HAS AUDIO (54515 chars)
+  now_try_lowercase: HAS AUDIO (55803 chars)
+  rhyming: HAS AUDIO (49363 chars)
+  segmentation: HAS AUDIO (55803 chars)
+  sound_match_end: HAS AUDIO (71259 chars)
+  tap_letters: HAS AUDIO (54515 chars)
+  trace_letter: HAS AUDIO (36483 chars)
+  unscramble: HAS AUDIO (68683 chars)
+  which_word_did_you_hear: HAS AUDIO (42923 chars)
+  word_families: HAS AUDIO (66627 chars)
+  word_families_house: HAS AUDIO (66627 chars)
+
+INSTRUCTION KEYS IN OTHER CATEGORIES:
+
+FEEDBACK KEYS:
+  instructions.fb_amazing: HAS
+  instructions.fb_excellent: HAS
+  instructions.fb_great_job: HAS
+  instructions.fb_nice: HAS
+  instructions.fb_way_to_go: HAS
+  instructions.fb_you_got_it: HAS
+  instructions.fb_perfect: HAS
+  instructions.fb_correct: HAS
+  instructions.fb_on_fire: HAS
+  instructions.fb_keep_going: HAS
+  instructions.fb_try_again: HAS
+  instructions.fb_listen_again: HAS
+  instructions.fb_super: HAS
+  instructions.fb_terrific: HAS
+  instructions.fb_wow: HAS
+  instructions.fb_almost: HAS
+  instructions.fb_try_again_listen: HAS
+
+ISOLATION KEYS:
+  isolation.1st: HAS
+  isolation.2nd: HAS
+  isolation.3rd: HAS
+  isolation.4th: HAS
+  isolation.5th: HAS
+
+SOUND MATCH / TRACE KEYS:
+  instructions.trace_letter: HAS
+  instructions.sound_match_end: HAS

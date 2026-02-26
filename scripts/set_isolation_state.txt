@@ -1,0 +1,10 @@
+L4768: const [isolationState, setIsolationState] = React.useState(null); // Stable state for Isolation activity
+L7881: if (isolationState) setIsolationState(null); // Clear when leaving
+L7951: setIsolationState({
+L7982: setIsolationState({
+L8330: setIsolationState({
+L9140: setIsolationState(bufferedWord.isolationOptions);
+L9161: setIsolationState(generatedState);
+L9256: setIsolationState({
+L9495: setIsolationState(prev => ({ ...prev, correctSound: newValue, correctAnswer: newValue }));
+L9547: setIsolationState(prev => ({ ...prev, isoOptions: newOptions }));

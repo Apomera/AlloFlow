@@ -1,0 +1,4 @@
+﻿L27581:   const wizardStepHelp = {
+L27807:           {showWizardHelp && wizardStepHelp[step] && (
+L27812:                   <p className="font-bold text-sm text-indigo-800">{wizardStepHelp[step].title}</p>
+L27813:                   <p className="text-xs text-indigo-700 mt-1 leading-relaxed">{wizardStepHelp[step].text}</p>

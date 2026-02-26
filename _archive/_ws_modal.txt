@@ -1,0 +1,188 @@
+const WordSoundsModal = ({
+    audioCache: providedAudioCache,
+    glossaryTerms,
+    onClose,
+    wordSoundsActivity,
+    setWordSoundsActivity,
+    wordSoundsScore,
+    setWordSoundsScore,
+    currentWordSoundsWord,
+    setCurrentWordSoundsWord,
+    wordSoundsPhonemes,
+    setWordSoundsPhonemes,
+    wordSoundsLanguage,
+    setWordSoundsLanguage,
+    wordSoundsFeedback,
+    setWordSoundsFeedback,
+    wordSoundsHistory,
+    setWordSoundsHistory,
+    wordSoundsFamilies,
+    setWordSoundsFamilies,
+    wordSoundsAudioLibrary,
+    setWordSoundsAudioLibrary,
+    fetchTTSBytes,
+    onScoreUpdate,
+    speakWord,
+    callGemini,
+    callTTS,
+    callImagen,
+    selectedVoice,
+    t,
+    wordSoundsDifficulty = 'auto',
+    setWordSoundsDifficulty,
+    wordSoundsAccuracyHistory = [],
+    setWordSoundsAccuracyHistory,
+    wordSoundsTtsSpeed = 1.0,
+    setWordSoundsTtsSpeed,
+    orthoSessionGoal = 0,
+    setOrthoSessionGoal,
+    wordSoundsStreak = 0,
+    setWordSoundsStreak,
+    wordSoundsSessionGoal = 10,
+    setWordSoundsSessionGoal,
+    wordSoundsSessionProgress = 0,
+    setWordSoundsSessionProgress,
+    wordSoundsBadges = [],
+    setWordSoundsBadges,
+    wordSoundsLevel = 1,
+    setWordSoundsLevel,
+    phonemeMastery = {},
+    setPhonemeMastery,
+    wordSoundsDailyProgress = {},
+    setWordSoundsDailyProgress,
+    wordSoundsConfusionPatterns = {},
+    setWordSoundsConfusionPatterns,
+    playSound,
+    disableAnimations = false,
+    addToast,
+    wsPreloadedWords = [],
+    setWsPreloadedWords,
+    onBackToSetup,
+    initialShowReviewPanel = false,
+    initialActivitySequence = [],
+    lessonPlanConfig = null,
+    isProbeMode = false,
+    probeGradeLevel = 'K',
+    onProbeComplete,
+}) => {
+    const includeOrthographic = orthoSessionGoal > 0;
+    const latestRequestedWord = React.useRef(null);
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [isMinimized, setIsMinimized] = React.useState(false);
+    React.useEffect(() => {
+        if (typeof loadPsychometricProbes === 'function') {
+            loadPsychometricProbes();
+        }
+    }, []);
+    const [activitySequence, setActivitySequence] = React.useState(initialActivitySequence || []);
+    const [sequenceIndex, setSequenceIndex] = React.useState(0);
+    React.useEffect(() => {
+        if (initialActivitySequence && initialActivitySequence.length > 0) {
+            debugLog("🔄 Syncing activitySequence from prop:", initialActivitySequence);
+            setActivitySequence(initialActivitySequence);
+        }
+    }, [initialActivitySequence]);
+    const [isStudentLocked, setIsStudentLocked] = React.useState(false);
+    const audioCtxRef = React.useRef(null);
+    const [playInstructions, setPlayInstructions] = React.useState(true);
+
+    const [tracingPhase, setTracingPhase] = React.useState('upper');
+    const lastTracingWord = React.useRef(null);
+    const [isCelebrating, setIsCelebrating] = React.useState(false);
+    const playInstructions2 = playInstructions;
+    const [isLoadingPhonemes, setIsLoadingPhonemes] = React.useState(false);
+    const [phonemeError, setPhonemeError] = React.useState(null);
+    const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
+    const [userAnswer, setUserAnswer] = React.useState('');
+    const [showLetterHints, setShowLetterHints] = React.useState(false);
+    const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+    const [showImageForCurrentWord, setShowImageForCurrentWord] = React.useState(false);
+        const SMART_IMAGE_VISIBILITY = {
+            'counting':       'afterCompletion',
+            'isolation':      'progressive',
+            'blending':       'afterCompletion',
+            'segmentation':   'alwaysOn',
+            'rhyming':        'alwaysOn',
+            'letter_tracing': 'alwaysOn',
+            'mapping':        'alwaysOn',
+            'orthography':    'afterCompletion',
+            'sound_sort':     'progressive',
+            'spelling_bee':   'afterCompletion',
+            'word_scramble':  'afterCompletion',
+            'missing_letter': 'afterCompletion',
+        };
+        const SMART_TEXT_VISIBILITY = {
+            'counting':       'hidden',
+            'isolation':      'hidden',
+            'blending':       'hidden',
+            'segmentation':   'afterAnswer',
+            'rhyming':        'afterAnswer',
+            'letter_tracing': 'alwaysOn',
+            'mapping':        'alwaysOn',
+            'orthography':    'afterAnswer',
+            'sound_sort':     'afterAnswer',
+            'word_families':  'progressive',
+            'spelling_bee':   'hidden',
+            'word_scramble':  'alwaysOn',
+            'missing_letter': 'alwaysOn',
+        };
+        const getEffectiveImageMode = () => {
+            if (imageVisibilityMode === 'smart') {
+                return SMART_IMAGE_VISIBILITY[wordSoundsActivity] || 'progressive';
+            }
+            return imageVisibilityMode;
+        };
+        const getEffectiveTextMode = () => {
+            if (imageVisibilityMode === 'alwaysOn') return 'alwaysOn';
+            if (imageVisibilityMode === 'alwaysOff') return 'alwaysOn';
+            return SMART_TEXT_VISIBILITY[wordSoundsActivity] || 'afterAnswer';
+        };
+    const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
+    const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
+    const [isPrefetching, setIsPrefetching] = React.useState(false);
+    const internalAudioCache = React.useRef(new Map());
+    const audioInstances = React.useRef(new Map());
+    const isMountedRef = React.useRef(true);
+
+    React.useEffect(() => {
+        loadWordAudioBank();
+    }, []);
+
+    const audioCache = providedAudioCache || internalAudioCache;
+    const ttsQueue = React.useRef(Promise.resolve());
+    const [attempts, setAttempts] = React.useState(0);
+    const [rhymeOptions, setRhymeOptions] = React.useState([]);
+    const rhymeOptionsRef = React.useRef([]);
+    React.useEffect(() => { rhymeOptionsRef.current = rhymeOptions; }, [rhymeOptions]);
+    const [highlightedRhymeIndex, setHighlightedRhymeIndex] = React.useState(null);
+    const [highlightedIsoIndex, setHighlightedIsoIndex] = React.useState(null);
+    const [highlightedBlendIndex, setHighlightedBlendIndex] = React.useState(null);
+    const [blendingProgress, setBlendingProgress] = React.useState(0);
+    const [blendingOptions, setBlendingOptions] = React.useState([]);
+    const blendingOptionsRef = React.useRef([]);
+    React.useEffect(() => { blendingOptionsRef.current = blendingOptions; }, [blendingOptions]);
+    const [orthographyOptions, setOrthographyOptions] = React.useState([]);
+        const [isolationState, setIsolationState] = React.useState(null);
+    const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0);
+    const modalRef = React.useRef(null);
+    const submissionLockRef = React.useRef(false);
+    const sessionWordResults = React.useRef([]);
+    const feedbackAudioRef = React.useRef(null);
+    const isolationPositionRef = React.useRef(null);
+    const lastWordForIsolation = React.useRef(null);
+    const lastWordForRhyming = React.useRef(null);
+    const lastWordForOrthography = React.useRef(null);
+    const lastWordForBlending = React.useRef(null);
+    const autoDirectorCooldown = React.useRef(false);
+    const [useMicInput, setUseMicInput] = React.useState(false);
+    const [isListening, setIsListening] = React.useState(false);
+    const recognitionRef = React.useRef(null);
+    const preloadedWords = wsPreloadedWords || [];
+    const setPreloadedWords = setWsPreloadedWords || (() => {
+        console.warn("setWsPreloadedWords is not defined - updates won't persist");
+    });
+    const [currentWordIndex, setCurrentWordIndex] = React.useState(0);
+    const [preloadProgress, setPreloadProgress] = React.useState(0);
+    const [isPreloading, setIsPreloading] = React.useState(false);
+    const [firstWordReady, setFirstWordReady] = React.useState(false);
+    const preloadedWordCache = React.useRef(

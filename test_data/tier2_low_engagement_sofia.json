@@ -1,0 +1,16 @@
+{
+    "mode": "student",
+    "studentNickname": "Sofia Martinez",
+    "responses": {},
+    "history": [
+        {
+            "type": "resource",
+            "id": "res-1"
+        }
+    ],
+    "globalPoints": 25,
+    "timeOnTask": {
+        "totalSessionMinutes": 8
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

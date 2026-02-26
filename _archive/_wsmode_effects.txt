@@ -1,0 +1,37 @@
+=== useEffect with isWordSoundsMode in dependency array ===
+  L32883: }, [activeView, isWordSoundsMode]);
+    L32876: useEffect(() => {
+    L32878: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+
+=== Handlers triggered by isWordSoundsMode===
+  L32878: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+  L65028: {isWordSoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (
+
+=== handleWordSoundsStartGame (L38190-38210) ===
+  L38189:       // 2. Save to State
+  L38190:       setHistory(prev => [...prev, newItem]);
+  L38191:       setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+  L38192: 
+  L38193:       // 3. Launch Game
+  L38194:       // Set isWordSoundsMode to true so WordSoundsModal renders
+  L38195:       setIsWordSoundsMode(true);
+  L38196:       setActiveView('word-sounds');
+  L38197: 
+  L38198:       addToast("Word Sounds Ready!", "success");
+  L38199:   };
+  L38200: 
+  L38201:   const handleOpenWordSounds = () => {
+  L38202:         setActiveView('word-sounds-generator');
+  L38203:         // Parse sourceVocabulary string into array
+  L38204:         const rawText = sourceVocabulary || "";
+  L38205:         const derivedTerms = typeof rawText === 'string'
+  L38206:             ? rawText.split(/[\n,]+/).map(t => t.trim()).filter(t => t.length > 0)
+  L38207:             : (Array.isArray(rawText) ? rawText : []);
+  L38208: 
+  L38209:         setWordSoundsCustomTerms(derivedTerms);
+  L38210:     };
+  L38211: 
+  L38212:   const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+  L38213:       const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
+  L38214:       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+  L38215:       const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)

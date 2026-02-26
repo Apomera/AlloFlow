@@ -1,0 +1,12 @@
+L16741: quiz_group_language_select: "Choose the language for this student group's quiz presentation.",
+L19847: const groupLanguage = studentGroup?.language; // e.g., "Spanish" or null
+L19848: const showTranslated = groupLanguage && groupLanguage !== 'English';
+L26594: const handleSetGroupLanguage = onSetGroupLanguage;
+L26702: <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.language_label') || 'Quiz Language'}</span>
+L26704: value={group.language || ""} data-help-key="quiz_group_language_select"
+L26705: onChange={(e) => handleSetGroupLanguage(gid, e.target.value)}
+L26707: title={t('groups.language_tooltip') || 'Students see quizzes in this language'}
+L26709: <option value="">{t('groups.language_default') || 'English (Default)'}</option>
+L32091: 'quiz_group_language_select': "Set the translation language for students in this group.",
+L42100: const handleSetGroupLanguage = async (groupId, language) => {
+L63659: onSetGroupLanguage={handleSetGroupLanguage}

@@ -1,0 +1,42 @@
+LINE 10863: .prose div:not([class*="font-bold"]):not([class*="font-black"]) {
+LINE 10870: .prose strong, .prose b, .prose [class*="font-bold"], .prose [class*="font-black"] {
+LINE 20994: dangerouslySetInnerHTML={{ __html: htmlContent }}
+LINE 21435: className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap"
+LINE 21436: dangerouslySetInnerHTML={{
+LINE 22938: "source": "tour-source-input",
+LINE 22939: "inputs": "tour-source-input",
+LINE 26076: const isMarked = (r, c) => currentMarks.has(`${r}-${c}`);
+LINE 26079: if ([0,1,2,3,4].every(c => isMarked(r, c))) win = true;
+LINE 26082: if ([0,1,2,3,4].every(r => isMarked(r, c))) win = true;
+LINE 26084: if ([0,1,2,3,4].every(i => isMarked(i, i))) win = true;
+LINE 26085: if ([0,1,2,3,4].every(i => isMarked(i, 4-i))) win = true;
+LINE 26121: const isMarked = marks.has(`${r}-${c}`);
+LINE 26147: {isMarked && (
+LINE 28788: if (addToast) addToast(t('dashboard.toasts.marked_graded'), "success");
+LINE 29213: className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
+LINE 29214: dangerouslySetInnerHTML={{
+LINE 34072: 'simplified_format': "Change the structure and style of the text while keeping content. Options include: Narrative (standard prose), Dialogue (conversation format), News Article (journalistic style wi
+LINE 34216: 'dashboard_stat_flags': "Count of students with concerns requiring teacher review. Flags are raised for: low quiz scores (below threshold), concerning content in responses (safety filter triggers), ex
+LINE 34217: 'dashboard_stat_activities': "Aggregate count of completed learning activities. Includes: glossary reviews, quiz attempts, adventure chapters, sorting games, and all interactive features. Higher numbe
+LINE 34241: 'export_storybook_text': "Download adventure narrative as a text document. Export includes: complete story text, student choices, and adventure outcomes. Format options: Word (.docx), PDF, or plain te
+LINE 34294: 'matching_term_item': "Interactive term card for vocabulary matching. Click to select (card highlights). Then click the corresponding definition to create a match. Correctly matched pairs: show connec
+LINE 34909: 'source': 'tour-source-input',
+LINE 40991: flyToElement('tour-source-input');
+LINE 41033: flyToElement('tour-source-input');
+LINE 41590: flyToElement('tour-source-input');
+LINE 41973: flyToElement('tour-source-input');
+LINE 49276: if (isShowMeMode) performHighlight('tour-source-input');
+LINE 59854: <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</st
+LINE 60346: <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</st
+LINE 64127: dangerouslySetInnerHTML={{ __html: t('analysis.header_description') }}
+LINE 66935: className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode 
+LINE 68586: <div className="prose prose-sm text-slate-700 max-w-none leading-relaxed">
+LINE 68775: dangerouslySetInnerHTML={{ __html: t('udl_advice.header_description') }}
+LINE 68785: <div className="prose prose-sm text-slate-700 whitespace-pre-line font-serif leading-relaxed">
+LINE 69149: <div className="rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto">
+LINE 69288: <div className="prose prose-sm max-w-none">
+LINE 69934: <div className="prose prose-sm text-slate-800 font-medium font-serif leading-relaxed max-w-none">
+LINE 70672: <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('visuals.warning.desc') }}></p>
+LINE 70673: <p dangerouslySetInnerHTML={{ __html: t('visuals.warning.tip') }}></p>
+LINE 71107: dangerouslySetInnerHTML={{ __html: generatedContent.data.graphData }}
+LINE 71470: <div className="prose prose-sm max-w-none">

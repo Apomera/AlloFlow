@@ -1,0 +1,65 @@
+﻿======================================================================
+AUDIO BANK AUDIT
+======================================================================
+
+==================================================
+Category: instructions
+Keys in JSON: 47
+Keys referenced in code: 73
+
+  MISSING FROM JSON (28):
+    Γ¥î inst_sound_sort
+    Γ¥î letter_a
+    Γ¥î letter_b
+    Γ¥î letter_c
+    Γ¥î letter_d
+    Γ¥î letter_e
+    Γ¥î letter_f
+    Γ¥î letter_g
+    Γ¥î letter_h
+    Γ¥î letter_i
+    Γ¥î letter_j
+    Γ¥î letter_k
+    Γ¥î letter_l
+    Γ¥î letter_m
+    Γ¥î letter_n
+    Γ¥î letter_o
+    Γ¥î letter_p
+    Γ¥î letter_q
+    Γ¥î letter_r
+    Γ¥î letter_s
+    Γ¥î letter_t
+    Γ¥î letter_u
+    Γ¥î letter_v
+    Γ¥î letter_w
+    Γ¥î letter_x
+    Γ¥î letter_y
+    Γ¥î letter_z
+    Γ¥î sound_match_start
+
+  UNUSED IN CODE (2):
+    ΓÜá tap_letters (has audio data)
+    ΓÜá word_families_house (has audio data)
+
+==================================================
+Category: phonemes
+Keys in JSON: 52
+Keys referenced in code: 51
+
+  Γ£à All code-referenced keys exist in JSON
+
+  UNUSED IN CODE (1):
+    ΓÜá oo_long (has audio data)
+
+==================================================
+Category: feedback
+Keys in JSON: 0
+Keys referenced in code: 0
+
+  Γ£à All code-referenced keys exist in JSON
+
+==================================================
+NULL/EMPTY AUDIO DATA IN JSON:
+
+==================================================
+AUDIT COMPLETE

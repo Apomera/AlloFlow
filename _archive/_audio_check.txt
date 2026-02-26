@@ -1,0 +1,5 @@
+﻿phonemes (52 keys): ['a', 'air', 'ar', 'aw', 'ay', 'b', 'c', 'ch']
+instructions (47 keys): ['blending', 'counting', 'fb_almost', 'fb_amazing', 'fb_correct', 'fb_excellent', 'fb_great_job', 'fb_keep_going']
+letters (26 keys): ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+isolation (10 keys): ['10th', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th']
+misc (4 keys): ['g', 'k', 'p', 'th']

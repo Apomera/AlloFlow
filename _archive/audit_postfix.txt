@@ -1,0 +1,116 @@
+FILE: 72991 lines, 7298598 chars
+======================================================================
+
+## 1. BOM MARKERS
+   Total BOMs: 1 ✅
+
+## 2. PHONEME_AUDIO_BANK INTEGRITY
+   Bracket assignments: 19 keys
+   ❌ DUPLICATE KEYS: {'orr': 2, 'ahrr': 2, 'err': 2}
+   ✅ No duplicate object literal keys
+   'or': 1 bracket, 0 literal ✅
+
+## 3. TIMER CLEANUP (Word Sounds range L2500-L10000)
+   setTimeout:    68
+   clearTimeout:  5
+   Unguarded (no variable capture): 64
+     L3160: setTimeout(() => setErrorMessage(null), duration);
+     L3179: setTimeout(resolve, 5000); // Fail-safe timeout
+     L3200: setTimeout(resolve, 5000); // Fail-safe timeout
+     L3224: setTimeout(resolve, 3000); // Fail-safe
+     L3244: setTimeout(resolve, 1000);
+     L3428: await new Promise(r => setTimeout(r, 900));
+     L3478: await new Promise(r => setTimeout(r, 750));
+     L3493: //                 const timer = setTimeout(() => {
+     L3673: await new Promise(r => setTimeout(r, 600));
+     L3797: setTimeout(() => onCheckAnswer(userSpelling), 500);
+     ... and 54 more
+
+## 4. ASYNC CANCELLATION GUARDS (Word Sounds range)
+   await statements:    91
+   cancellation guards: 23
+   Guard ratio: 25% ⚠️
+
+## 5. UNGUARDED .map() CALLS (Word Sounds range)
+   Potentially unguarded: 16
+     L4551: preloadedWords.map() -> const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.ma
+     L5329: preloadedWords.map() -> preloadedWords.map(w => (w.targetWord || w.word || w.singleWord || '').toLowerCa
+     L5480: wordsToPreload.map() -> const prefetchPromises = wordsToPreload.map(async (wordEntry, i) => {
+     L6502: shuffledChips.map() -> return shuffledChips.map((chip, i) => ({
+     L6688: isoDistractors.map() -> const used = new Set([correctSound?.toLowerCase(), ...isoDistractors.map(d => d.
+     L7875: newChips.map() -> newChips = newChips.map(c => c.id === item.id ? { ...c, used: true } : c);
+     L7882: newChips.map() -> newChips = newChips.map(c => c.id === item.id ? { ...c, used: false } : c);
+     L7910: newChips.map() -> newChips = newChips.map(c => c.id === item.id ? { ...c, used: true } : c);
+     L7921: newChips.map() -> newChips = newChips.map(c => c.id === item.id ? { ...c, used: false } : c);
+     L8665: elkoninBoxes.map() -> {elkoninBoxes.map((chip, i) => {
+
+## 6. SILENT CATCH BLOCKS (Word Sounds range)
+   Single-line silent catches remaining: 5
+     L5494: } catch(e) { console.warn('Caught error:', e?.message || e);
+     L5751: } catch(e) { console.warn('Caught error:', e?.message || e);
+     L6154: } catch(e) { console.warn('Caught error:', e?.message || e);
+     L8196: } catch(e) { console.warn('Caught error:', e?.message || e);
+   Multi-line silent catches: 4
+
+## 7. useEffect MISSING DEPENDENCIES (Word Sounds range)
+     L5978: useEffect without dependency array
+     L6509: useEffect without dependency array
+     L6649: useEffect without dependency array
+     L7017: useEffect without dependency array
+     L7066: useEffect without dependency array
+     L7082: useEffect without dependency array
+     L8184: useEffect without dependency array
+   Effects without deps: 7 ⚠️
+
+## 8. isMountedRef PATTERN
+   Definitions: 1
+   Guard checks: 1
+
+## 9. SPEECH SYNTHESIS CLEANUP
+   speak() calls: 1
+   cancel() calls: 3
+   ✅
+
+## 10. AUDIO CONTEXT CREATION
+   AudioContext creations: 3
+   ⚠️ Multiple creations
+
+## 11. LOCALSTORAGE (within Word Sounds)
+   Keys used: set()
+   PHONEME_STORAGE_KEY definitions at lines: [841, 856, 872, 886, 6151, 6152]
+   ⚠️ Multiple key definitions
+
+## 12. NULL SAFETY PATTERNS (Word Sounds range)
+     L4127: setSlots(new Array(data.graphemes.length).fill(null));
+   Potentially unsafe deep access: 1
+
+## 13. EVENT LISTENERS (Word Sounds range)
+   addEventListener:    0
+   removeEventListener: 0
+   ✅ Balanced
+
+## 14. SUBMISSION LOCKS
+   Lock sets:   1
+   Lock clears: 2
+   ✅ Balanced
+
+## 15. INSTRUCTION_AUDIO / LETTER_NAME_AUDIO / ISOLATION_AUDIO
+   INSTRUCTION_AUDIO: 15 references
+   LETTER_NAME_AUDIO: 10 references
+   ISOLATION_AUDIO: 5 references
+
+## 16. FUNCTION DEFINITION DUPLICATES (Word Sounds range)
+   ⚠️  Functions defined multiple times:
+     'handleChipClick' at lines: [3753, 4144, 7823]
+     'handleDragStart' at lines: [3766, 8551]
+     'handleDragOver' at lines: [3773, 8556]
+     'key' at lines: [4563, 5947]
+     'hashA' at lines: [5100, 5129]
+     'hashB' at lines: [5101, 5130]
+
+## 17. POTENTIAL EMPTY/NULL STATE TRANSITIONS
+   setState(null) calls: 34
+
+======================================================================
+AUDIT SUMMARY
+======================================================================

@@ -1,0 +1,60 @@
+﻿1. Fixed missing ]; at end of SOUND_MATCH_POOL
+2. Fixed checkAnswer to pass 2 args (found 4 occurrences)
+3. Replaced 'Listen' text with Ear icon, removed duplicate Volume2
+4. Added missing localization keys for blending strings
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python 
+patch_multi_fix.py 
+2>&1 | Out-File 
+-Encoding utf8 
+_fix_result. ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Traceba   
+ ck (most recent     
+call last)::Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  File "C:\Users\cabb
+a\OneDrive\Desktop\UD
+L-Tool-Updated\patch_
+multi_fix.py", line 
+81, in <module>
+    print("5. 
+Replaced image 
+overlay '\U0001f50a 
+Listen' with ear 
+emoji")
+    ~~~~~^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^
+  File "C:\Python314\
+Lib\encodings\cp1252.
+py", line 19, in 
+encode
+    return codecs.cha
+rmap_encode(input,sel
+f.errors,encoding_tab
+le)[0]
+           ~~~~~~~~~~
+~~~~~~~~~~~^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+character 
+'\U0001f50a' in 
+position 27: 
+character maps to 
+<undefined>

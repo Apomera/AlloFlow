@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlloFlow Universal Design deep Dive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #060913;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        #slider-container {
+            width: 100%;
+            max-width: 900px;
+            height: 520px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            border: 1px solid #334155;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #slides-viewport {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 3rem 4rem;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .slide.prev {
+            transform: translateX(-50px);
+        }
+
+        .slide-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            align-self: flex-start;
+        }
+
+        .slide h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #a5b4fc, #67e8f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            max-width: 700px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .metrics-full {
+            grid-template-columns: 1fr;
+        }
+
+        .metric {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #f8fafc;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .metric-lbl {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        #controls {
+            padding: 16px 32px;
+            background: rgba(15, 23, 42, 0.8);
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #f8fafc;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #818cf8;
+            color: #818cf8;
+            transform: scale(1.05);
+        }
+
+        #indicator {
+            font-family: 'Outfit';
+            font-size: 1rem;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="slider-container">
+        <div id="slides-viewport">
+
+            <!-- Slide 1 -->
+            <div class="slide active">
+                <div class="slide-tag"><i data-lucide="globe"></i> Equity First</div>
+                <h3>Universal Access</h3>
+                <p>AlloFlow guarantees that every student—regardless of internet access at home—receives full
+                    pedagogical support.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #10b981;">
+                        <div class="metric-val" style="color:#10b981;"><i data-lucide="wifi-off"></i> 100% Offline
+                            Capability</div>
+                        <div class="metric-lbl">Once loaded, AlloFlow runs entirely inside Chrome as a self-contained
+                            application. There are no external databases, allowing schools to bridge the digital divide
+                            seamlessly.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="split"></i> Differentiation</div>
+                <h3>Instant Leveled Text</h3>
+                <p>A teacher's most scarce resource is time. Adapting a single reading passage for five different
+                    reading levels previously took hours of tedious manual rewriting.</p>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-val" style="color:#0ea5e9;"><i data-lucide="book-open"></i> Multi-Lexile
+                        </div>
+                        <div class="metric-lbl">Generate custom materials from Kindergarten to 12th grade complexity in
+                            seconds.</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-val" style="color:#f59e0b;"><i data-lucide="languages"></i> Multilingual
+                            Support</div>
+                        <div class="metric-lbl">Automatically translates materials to serve ELL and neurodivergent
+                            populations side-by-side.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="shapes"></i> Engagement</div>
+                <h3>Multi-Modal Learning</h3>
+                <p>One size never fits all. AlloFlow transforms dry standards into multiple interactive formats
+                    instantly, targeting diverse learning styles and IEP requirements.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #8b5cf6;">
+                        <div class="metric-val" style="color:#a78bfa;"><i data-lucide="gamepad-2"></i> Auto-Generated
+                            Activities</div>
+                        <div class="metric-lbl">Turn a single PDF or topic into engaging Escape Rooms, Bingo,
+                            Crosswords, Concept Sorts, and 3D Adventure games to reach students who struggle with
+                            traditional worksheets.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="ear"></i> Science of Reading</div>
+                <h3>Phonemic Precision</h3>
+                <p>Teaching reading remotely or independently is historically difficult because English spelling
+                    frequently violates spoken rules.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #ec4899;">
+                        <div class="metric-val" style="color:#f472b6;"><i data-lucide="mic-2"></i> Word Sounds Studio
+                        </div>
+                        <div class="metric-lbl">AlloFlow bridges the gap between visual letters (orthography) and
+                            auditory sounds (IPA). It automatically splits words into pure, un-accented phonemes for
+                            isolation, blending, and rhyming practice.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="bot"></i> Scaffolding</div>
+                <h3>Interactive Guidance</h3>
+                <p>Allobot isn't just a chatbot that spits out answers. It is an embodied pedagogical agent designed to
+                    guide students toward their own "aha!" moments.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #f59e0b;">
+                        <div class="metric-val" style="color:#fbbf24;"><i data-lucide="map-pin"></i> The Tour Engine
+                        </div>
+                        <div class="metric-lbl">When a student needs help, Allobot physically interacts with the
+                            application—pointing at buttons, opening sidebars, and speaking instructions out loud to
+                            guide learners visually and auditorily.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="shield-check"></i> FERPA Compliance</div>
+                <h3>Absolute Data Privacy</h3>
+                <p>We believe student data should never be collected, sold, or stored on corporate servers. AlloFlow
+                    solves data privacy by eliminating backend databases entirely.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #14b8a6;">
+                        <div class="metric-val" style="color:#2dd4bf;"><i data-lucide="hard-drive"></i> Local
+                            Persistence</div>
+                        <div class="metric-lbl">All quiz scores, XP, and progress points are heavily compressed and
+                            stored explicitly inside the district's local browser context. Data stays inside the
+                            classroom walls.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="home"></i> Community</div>
+                <h3>Empowering Families</h3>
+                <p>RTI (Response to Intervention) thrives when families are involved, but educational software is often
+                    gatekept by thousands of dollars in licensing fees.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #ef4444;">
+                        <div class="metric-val" style="color:#f87171;"><i data-lucide="heart-handshake"></i> At-Home
+                            Practice</div>
+                        <div class="metric-lbl">Because AlloFlow has a $0 software cost, parents can access the exact
+                            same Tier-3 reading and math interventions at the kitchen table that teachers use in the
+                            classroom.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8 -->
+            <div class="slide">
+                <div class="slide-tag"><i data-lucide="graduation-cap"></i> Mission</div>
+                <h3>The Open-Source Commitment</h3>
+                <p>Built by a public school educator to dismantle the "Differentiation Tax"—the unacceptable reality
+                    that teachers must spend their own money to support diverse learners.</p>
+                <div class="metrics metrics-full">
+                    <div class="metric" style="border-left: 4px solid #6366f1;">
+                        <div class="metric-val" style="color:#818cf8;"><i data-lucide="code-2"></i> Free Forever</div>
+                        <div class="metric-lbl">AlloFlow is completely open-source. Anyone can use, modify, and
+                            distribute it to ensure every student receives equitable, individualized instruction.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="controls">
+            <button class="btn" id="prev" aria-label="Previous"><i data-lucide="chevron-left"></i></button>
+            <div id="indicator">1 / 8</div>
+            <button class="btn" id="next" aria-label="Next"><i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const s = document.querySelectorAll('.slide');
+        let cur = 0;
+        function update() {
+            s.forEach((slide, i) => {
+                slide.className = 'slide';
+                if (i === cur) slide.classList.add('active');
+                else if (i < cur) slide.classList.add('prev');
+            });
+            document.getElementById('indicator').textContent = `${cur + 1} / ${s.length}`;
+        }
+        document.getElementById('prev').onclick = () => { if (cur > 0) { cur--; update(); } };
+        document.getElementById('next').onclick = () => { if (cur < s.length - 1) { cur++; update(); } };
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' && cur < s.length - 1) { cur++; update(); }
+            if (e.key === 'ArrowLeft' && cur > 0) { cur--; update(); }
+        });
+    </script>
+</body>
+
+</html>

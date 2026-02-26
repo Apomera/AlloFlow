@@ -1,0 +1,233 @@
+=== AUTO-OPEN EFFECT (L35165-35180) ===
+L35165: 
+L35166:   // FIX: Auto-open Word Sounds mode when preloaded words are set
+L35167:   const prevWsPreloadedWordsLengthRef = useRef(0);
+L35168:   useEffect(() => {
+L35169:       // Only auto-open when words are newly loaded (length goes from 0 to >0)
+L35170:       if (wsPreloadedWords.length > 0 && prevWsPreloadedWordsLengthRef.current === 0) {
+L35171:           console.log("🚀 Auto-opening Word Sounds mode for", wsPreloadedWords.length, "preloaded words");
+L35172:           setIsWordSoundsMode(true);
+L35173:           setWordSoundsAutoReview(true); // Ensure review panel opens
+L35174:       }
+L35175:       prevWsPreloadedWordsLengthRef.current = wsPreloadedWords.length;
+L35176:   }, [wsPreloadedWords.length]);
+L35177: 
+L35178:   const [isConceptMapReady, setIsConceptMapReady] = useState(false);
+L35179:   const [conceptMapNodes, setConceptMapNodes] = useState([]);
+L35180:   const [conceptMapEdges, setConceptMapEdges] = useState([]);
+
+=== wordSoundsAutoReview ===
+L31339:   const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false); // Review Fix
+L64985:                                 initialShowReviewPanel={wordSoundsAutoReview}
+
+=== setWsPreloadedWords calls ===
+L3106:     setWsPreloadedWords,
+L3212:     const setPreloadedWords = setWsPreloadedWords || (() => {
+L3213:         console.warn("setWsPreloadedWords is not defined - updates won't persist");
+L6142:         if (setWsPreloadedWords) {
+L6143:              setWsPreloadedWords(prev => prev.map(w =>
+L6155:                 if (setWsPreloadedWords) {
+L6156:                     setWsPreloadedWords(prev => prev.map(pw => {
+L6167:     }, [preloadedWords, handleAudio, setWsPreloadedWords]);
+L6203:         if (setWsPreloadedWords) {
+L6204:             setWsPreloadedWords(newOrder);
+L6205:             console.log("✅ Reordered words via setWsPreloadedWords");
+L6207:             console.error("❌ REORDER FAILED: setWsPreloadedWords is undefined!");
+L6209:     }, [setWsPreloadedWords]);
+L6214:         if (setWsPreloadedWords) {
+L6215:             setWsPreloadedWords(prev => {
+L6221:                 console.log("✅ Updated word at index", index, "via setWsPreloadedWords");
+L6225:             console.error("❌ UPDATE FAILED: setWsPreloadedWords is undefined!");
+L6239:         console.log("🗑️ DELETE: Attempting to remove word at index:", idx, "setWsPreloadedWords defined:", !!setWsPreloadedWords);
+L6259:         const usedLifted = performDelete(setWsPreloadedWords, 'setWsPreloadedWords');
+L6267:     }, [setWsPreloadedWords]);
+L6331:                 if (setWsPreloadedWords) {
+L6332:                     setWsPreloadedWords(prev => {
+L6355:     }, [preloadedWords, fetchWordData, setWsPreloadedWords, handleAudio]);
+L6384:                  setWsPreloadedWords(prev => {
+L6401:     }, [preloadedWords, callGemini, setWsPreloadedWords, handleAudio]); // Removed showError dependency if not stable, but it's likely stable
+L6447:         const setter = setWsPreloadedWords || setPreloadedWords;
+L6456:     }, [preloadedWords, fetchWordData, setWsPreloadedWords, setPreloadedWords, addToast]);
+L32313:   const [wsPreloadedWords, setWsPreloadedWords] = useState([]);
+L38140:       setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L45346:               setWsPreloadedWords(wordsWithFreshTtsFlags);
+L45350:               setWsPreloadedWords(item.data);
+L45405:     setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L57196:             setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L64986:                                 setWsPreloadedWords={setWsPreloadedWords}
+L71452:                    setWsPreloadedWords(words);
+
+=== preloadInitialBatch body (L5570-5590) ===
+L5570:     const preloadInitialBatch = React.useCallback(async () => {
+L5571:         if (isPreloading) return;
+L5572:         // [FIX] STRICT ANTI-SHUFFLE: Prevent running if words already exist
+L5573:         if (preloadedWords.length > 0) {
+L5574:             console.log("🛡️ Blocking preloadInitialBatch: words already loaded");
+L5575:             return;
+L5576:         }
+L5577: 
+L5578:         // SMART INCREMENTAL PRELOADING: Only preload words not already in cache
+L5579:         const alreadyCached = preloadedWordCache.current.size;
+L5580:         if (alreadyCached > 0) {
+L5581:             console.log(`✅ ${alreadyCached} words already cached, checking for new words...`);
+L5582:         }
+L5583:         if (!wordPool || wordPool.length === 0) {
+L5584:             console.warn("Word pool empty, skipping preload");
+L5585:             return;
+L5586:         }
+L5587: 
+L5588:         setIsPreloading(true);
+L5589:         setPreloadProgress(0);
+L5590:         setFirstWordReady(false);
+L5591: 
+L5592:         // FIX: Increased preload count for better word coverage
+L5593:         const PRELOAD_COUNT = 10; // Load more words for Review Panel
+L5594:         const wordsToPreload = [];
+L5595: 
+L5596:         // SMART FILTER: Skip words already in cache
+L5597:         const usedWords = new Set();
+L5598: 
+L5599:         // Select 3 unique words
+L5600:         const difficultyPool = [...wordPool].sort(() => Math.random() - 0.5);
+L5601:         for (const entry of difficultyPool) {
+L5602:             if (wordsToPreload.length >= PRELOAD_COUNT) break;
+L5603: 
+L5604:             // Skip if already cached (smart incremental)
+L5605:             const wordText = (entry.singleWord || entry.word || '').toLowerCase();
+L5606:             if (preloadedWordCache.current.has(wordText)) {
+L5607:                 console.log("⚡ Skipping cached word:", wordText);
+L5608:                 continue;
+L5609:             }
+L5610:             const word = entry.word?.toLowerCase() || entry.displayWord?.toLowerCase();
+L5611:             if (word && !usedWords.has(word)) {
+L5612:                 usedWords.add(word);
+L5613:                 wordsToPreload.push(entry);
+L5614:             }
+L5615:         }
+L5616: 
+L5617:         const totalSteps = wordsToPreload.length * 2;
+L5618:         let completedSteps = 0;
+L5619:         const preloadedData = [];
+L5620: 
+
+=== handleGenerateWordSounds / generatedContent / word generation ===
+L3104:     // Lifted state for preloaded words persistence
+L3105:     wsPreloadedWords = [],
+L3106:     setWsPreloadedWords,
+L3107:     // Navigation
+L3108:     onBackToSetup, // Navigate back to Word Sounds Generator
+---
+L3210:     // Use lifted state from props (persists across modal mount/unmount)
+L3211:     const preloadedWords = wsPreloadedWords || [];
+L3212:     const setPreloadedWords = setWsPreloadedWords || (() => {
+L3213:         console.warn("setWsPreloadedWords is not defined - updates won't persist");
+L3214:     });
+---
+L3211:     const preloadedWords = wsPreloadedWords || [];
+L3212:     const setPreloadedWords = setWsPreloadedWords || (() => {
+L3213:         console.warn("setWsPreloadedWords is not defined - updates won't persist");
+L3214:     });
+L3215:     const [currentWordIndex, setCurrentWordIndex] = React.useState(0); // Index of current word in preloadedWords (persists words across activities)
+---
+L6140: 
+L6141:         // 1. Mark as requested to prevent redundant loops
+L6142:         if (setWsPreloadedWords) {
+L6143:              setWsPreloadedWords(prev => prev.map(w =>
+L6144:                  wordsNeedingAudio.some(n => n.word === w.word) ? { ...w, _audioRequested: true } : w
+---
+L6141:         // 1. Mark as requested to prevent redundant loops
+L6142:         if (setWsPreloadedWords) {
+L6143:              setWsPreloadedWords(prev => prev.map(w =>
+L6144:                  wordsNeedingAudio.some(n => n.word === w.word) ? { ...w, _audioRequested: true } : w
+L6145:              ));
+---
+L6153: 
+L6154:                 // 3. Mark as ready
+L6155:                 if (setWsPreloadedWords) {
+L6156:                     setWsPreloadedWords(prev => prev.map(pw => {
+L6157:                         if (pw.word === text) {
+---
+L6154:                 // 3. Mark as ready
+L6155:                 if (setWsPreloadedWords) {
+L6156:                     setWsPreloadedWords(prev => prev.map(pw => {
+L6157:                         if (pw.word === text) {
+L6158:                             return { ...pw, ttsReady: true, _audioRequested: false };
+---
+L6165:             }
+L6166:         });
+L6167:     }, [preloadedWords, handleAudio, setWsPreloadedWords]);
+L6168: 
+L6169:     // NEW: Watch for preloaded words and show Review Panel when ready
+---
+L6201:     // Handler to reorder preloaded words list
+L6202:     const handleReorderPreloadedWords = React.useCallback((newOrder) => {
+L6203:         if (setWsPreloadedWords) {
+L6204:             setWsPreloadedWords(newOrder);
+L6205:             console.log("✅ Reordered words via setWsPreloadedWords");
+---
+L6202:     const handleReorderPreloadedWords = React.useCallback((newOrder) => {
+L6203:         if (setWsPreloadedWords) {
+L6204:             setWsPreloadedWords(newOrder);
+L6205:             console.log("✅ Reordered words via setWsPreloadedWords");
+L6206:         } else {
+---
+L6203:         if (setWsPreloadedWords) {
+L6204:             setWsPreloadedWords(newOrder);
+L6205:             console.log("✅ Reordered words via setWsPreloadedWords");
+L6206:         } else {
+L6207:             console.error("❌ REORDER FAILED: setWsPreloadedWords is undefined!");
+---
+L6205:             console.log("✅ Reordered words via setWsPreloadedWords");
+L6206:         } else {
+L6207:             console.error("❌ REORDER FAILED: setWsPreloadedWords is undefined!");
+L6208:         }
+L6209:     }, [setWsPreloadedWords]);
+---
+L6207:             console.error("❌ REORDER FAILED: setWsPreloadedWords is undefined!");
+L6208:         }
+L6209:     }, [setWsPreloadedWords]);
+L6210: 
+L6211:     // Handler for editing preloaded word data in Review Panel
+---
+L6212:     const handleUpdatePreloadedWord = React.useCallback((index, newData) => {
+L6213:         // Update state array (USE LIFTED STATE!)
+L6214:         if (setWsPreloadedWords) {
+L6215:             setWsPreloadedWords(prev => {
+L6216:                 const prevArray = Array.isArray(prev) ? prev : [];
+---
+L6213:         // Update state array (USE LIFTED STATE!)
+L6214:         if (setWsPreloadedWords) {
+L6215:             setWsPreloadedWords(prev => {
+L6216:                 const prevArray = Array.isArray(prev) ? prev : [];
+L6217:                 const updated = [...prevArray];
+---
+L6219:                     updated[index] = { ...updated[index], ...newData };
+L6220:                 }
+L6221:                 console.log("✅ Updated word at index", index, "via setWsPreloadedWords");
+L6222:                 return updated;
+L6223:             });
+---
+L6223:             });
+L6224:         } else {
+L6225:             console.error("❌ UPDATE FAILED: setWsPreloadedWords is undefined!");
+L6226:         }
+L6227: 
+---
+L6237:         // Delete a word from the preloaded list
+L6238:     const handleDeleteWord = React.useCallback((idx) => {
+L6239:         console.log("🗑️ DELETE: Attempting to remove word at index:", idx, "setWsPreloadedWords defined:", !!setWsPreloadedWords);
+L6240:         // CRITICAL FIX: Use direct state manipulation with functional update
+L6241:         // Try BOTH setters to ensure update happens
+---
+L6257: 
+L6258:         // Try lifted state setter first
+L6259:         const usedLifted = performDelete(setWsPreloadedWords, 'setWsPreloadedWords');
+L6260: 
+L6261:         // FALLBACK: Also force UI refresh using a local hack if lifted setter didn't exist
+---
+L6265:             console.error("❌ DELETE FAILED: No setter available! Please check wsPreloadedWords prop.");
+L6266:         }
+L6267:     }, [setWsPreloadedWords]);
+L6268: 
+L6269:     const handleRegenerateWord = React.useCallback(async (index) =>  {
+---

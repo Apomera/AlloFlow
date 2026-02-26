@@ -1,0 +1,59 @@
+=== 'error checking answer' or 'try again' in checkAnswer ===
+
+L9087: addToast("Error checking answer - please try again", 'error');
+  ctx L9072: const fallback = generateFallbackData(target);
+  ctx L9073: if (fallback) applyWordDataToState(fallback);
+  ctx L9074: }
+  ctx L9075: setIsLoadingPhonemes(false);
+  ctx L9076: } else {
+  ctx L9077: warnLog("❌ Refill failed (no words). Ending session.");
+  ctx L9078: setShowSessionComplete(true);
+  ctx L9079: }
+  ctx L9080: }
+  ctx L9081: }
+  ctx L9082: }
+  ctx L9083: }, isCorrect ? 2000 : 3000);
+  ctx L9084: } catch (e) {
+  ctx L9085: warnLog("CheckAnswer CRITICAL FAIL", e);
+  ctx L9086: submissionLockRef.current = false;
+
+L33821: [problemIdx]: { checking: false, verdict: 'error', score: 0, feedback: t('math.check.error') || 'Could not evaluate — please try again.', checked: false }
+  ctx L33806: const alreadyAwarded = mathCheckResults[resourceId]?.[problemIdx]?.xpAwarded;
+  ctx L33807: if (xpAwarded > 0 && !alreadyAwarded) {
+  ctx L33808: handleScoreUpdate(xpAwarded, "Math Problem", resourceId);
+  ctx L33809: }
+  ctx L33810: // Toast
+  ctx L33811: const toastMsg = verdict === 'correct' ? (t('math.check.correct') || 'Excellent work! ✨')
+  ctx L33812: : verdict === 'partial' ? (t('math.check.partial') || 'Good effort, keep going! 🟡')
+  ctx L33813: : (t('math.check.incorrect') || 'Not quite right — try again! 💪');
+  ctx L33814: addToast(toastMsg, verdict === 'correct' ? 'success' : verdict === 'partial' ? 'info' : 'warning');
+  ctx L33815: } catch (err) {
+  ctx L33816: warnLog("Math check failed:", err);
+  ctx L33817: setMathCheckResults(prev => ({
+  ctx L33818: ...prev,
+  ctx L33819: [resourceId]: {
+  ctx L33820: ...(prev[resourceId] || {}),
+
+L33824: addToast(t('math.check.error') || 'Evaluation failed — try again', 'error');
+  ctx L33809: }
+  ctx L33810: // Toast
+  ctx L33811: const toastMsg = verdict === 'correct' ? (t('math.check.correct') || 'Excellent work! ✨')
+  ctx L33812: : verdict === 'partial' ? (t('math.check.partial') || 'Good effort, keep going! 🟡')
+  ctx L33813: : (t('math.check.incorrect') || 'Not quite right — try again! 💪');
+  ctx L33814: addToast(toastMsg, verdict === 'correct' ? 'success' : verdict === 'partial' ? 'info' : 'warning');
+  ctx L33815: } catch (err) {
+  ctx L33816: warnLog("Math check failed:", err);
+  ctx L33817: setMathCheckResults(prev => ({
+  ctx L33818: ...prev,
+  ctx L33819: [resourceId]: {
+  ctx L33820: ...(prev[resourceId] || {}),
+  ctx L33821: [problemIdx]: { checking: false, verdict: 'error', score: 0, feedback: t('math.check.error') || 'Could not evaluate — please try again.', checked: false }
+  ctx L33822: }
+  ctx L33823: }));
+
+
+=== checkAnswer function definition ===
+DEF L8510: const checkAnswer = React.useCallback((answer, expectedAnswer) => {
+
+
+=== catch blocks in checkAnswer ===

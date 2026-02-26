@@ -1,0 +1,104 @@
+======================================================================
+TOUR DESCRIPTION LOCALIZATION ANALYSIS
+======================================================================
+
+Found 23 tour step definitions
+
+
+id: 'tour-input-panel',
+  Title: L27888: ✅ title localized
+  Text: L27866: ⚠️ HARDCODED: text: `Begin your lesson creation journey here. This Input P...
+
+id: 'tour-tool-analysis',
+  Title: L27911: ✅ title localized
+  Text: L27892: ⚠️ HARDCODED: text: `Review the AI's deep understanding of your content. T...
+
+id: 'ui-tool-glossary',
+  Title: L27948: ✅ title localized
+  Text: L27915: ⚠️ HARDCODED: text: `Generate a comprehensive Visual Glossary with strong ...
+
+id: 'ui-tool-simplified',
+  Title: L27979: ✅ title localized
+  Text: L27952: ⚠️ HARDCODED: text: `Differentiate your text for diverse learners. This to...
+
+id: 'tour-tool-wordsounds',
+  Title: L28025: ⚠️ title hardcoded
+  Text: L27983: ⚠️ HARDCODED: text: `Build foundational literacy skills with the Word Soun...
+
+id: 'tour-tool-outline',
+  Title: L28055: ✅ title localized
+  Text: L28029: ⚠️ HARDCODED: text: `Create visual representations of your content's struc...
+
+id: 'tour-tool-visual',
+  Title: L28082: ✅ title localized
+  Text: L28059: ⚠️ HARDCODED: text: `Enhance comprehension with AI-generated imagery. Crea...
+
+id: 'tour-tool-faq',
+  Title: L28104: ✅ title localized
+  Text: L28086: ⚠️ HARDCODED: text: `Anticipate student confusion before it happens. Autom...
+
+id: 'tour-tool-scaffolds',
+  Title: L28140: ✅ title localized
+  Text: L28108: ⚠️ HARDCODED: text: `Comprehensive writing support system with AI-powered ...
+
+id: 'ui-tool-quiz',
+  Title: L28187: ✅ title localized
+  Text: L28144: ⚠️ HARDCODED: text: `Gamified assessment with multiple competitive and imm...
+
+id: 'tour-tool-brainstorm',
+  Title: L28224: ✅ title localized
+  Text: L28191: ⚠️ HARDCODED: text: `Dual-purpose ideation and simulation generator. Creat...
+
+id: 'tour-tool-persona',
+  Title: L28252: ✅ title localized
+  Text: L28228: ⚠️ HARDCODED: text: `Persona Interview Mode brings content to life through...
+
+id: 'tour-tool-timeline',
+  Title: L28290: ✅ title localized
+  Text: L28256: ⚠️ HARDCODED: text: `Sequence Builder (Timeline) transforms events into an...
+
+id: 'tour-tool-concept-sort',
+  Title: L28321: ✅ title localized
+  Text: L28294: ⚠️ HARDCODED: text: `Reinforce categorization skills and conceptual relati...
+
+id: 'tour-tool-math',
+  Title: L28351: ✅ title localized
+  Text: L28325: ⚠️ HARDCODED: text: `A comprehensive STEM Problem Solver that goes beyond ...
+
+id: 'tour-tool-adventure',
+  Title: L28395: ✅ title localized
+  Text: L28355: ⚠️ HARDCODED: text: `Adventure Mode transforms content into immersive inte...
+
+id: 'tour-tool-alignment',
+  Title: L28419: ✅ title localized
+  Text: L28399: ⚠️ HARDCODED: text: `Ensure your lesson hits the mark. This report automat...
+
+id: 'tour-tool-lesson-plan',
+  Title: L28447: ✅ title localized
+  Text: L28423: ⚠️ HARDCODED: text: `Generate a complete, structured Lesson Plan that ties...
+
+id: 'tour-tool-fullpack',
+  Title: L28476: ✅ title localized
+  Text: L28451: ⚠️ HARDCODED: text: `The universal 'Easy Button' for instant, high-quality...
+
+id: 'tour-header-utils',
+  Title: L28514: ✅ title localized
+  Text: L28480: ⚠️ HARDCODED: text: `The Accessibility and Settings Hub. Customize the ent...
+
+id: 'tour-header-tools',
+  Title: L28542: ✅ title localized
+  Text: L28518: ⚠️ HARDCODED: text: `The Tool Navigation Bar and Teacher Dashboard access ...
+
+id: 'tour-header-actions',
+  Title: L28583: ✅ title localized
+  Text: L28546: ⚠️ HARDCODED: text: `The Action Bar: Language control, live sessions, tran...
+
+id: 'tour-history-panel',
+  Title: L28601: ✅ title localized
+  Text: L28587: ⚠️ HARDCODED: text: `Your Session History. Never lose a great generation....
+
+======================================================================
+SUMMARY
+======================================================================
+Localized descriptions: 0
+Hardcoded descriptions: 23

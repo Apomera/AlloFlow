@@ -1,0 +1,548 @@
+﻿
+AlloFlowANTI.txt:51:    
+if (typeof 
+_CACHE_ISOLATION_AUDIO 
+!== 'undefined') 
+_CACHE_ISOLATION_AUDIO = 
+null;
+AlloFlowANTI.txt:648:    '
+word_sounds.activity_isola
+tion': 'Find Sounds',
+AlloFlowANTI.txt:660:    '
+word_sounds.isolation_desc
+': 'Identify a specific 
+sound by position in a 
+word',
+AlloFlowANTI.txt:673:    '
+word_sounds.isolation_firs
+t_prompt': 'What is the 
+FIRST sound in this 
+word?',
+AlloFlowANTI.txt:675:    '
+word_sounds.isolation_prom
+pt': 'What sound is in 
+this word?',
+AlloFlowANTI.txt:676:    '
+word_sounds.isolation_last
+_prompt': 'What is the 
+LAST sound in this word?',
+AlloFlowANTI.txt:1071:let 
+_CACHE_ISOLATION_AUDIO = 
+null;
+AlloFlowANTI.txt:1072:func
+tion _LOAD_ISOLATION_AUDIO
+_RAW() {
+AlloFlowANTI.txt:1074:    
+'1st': 
+getAudio('isolation', 
+'1st'),
+AlloFlowANTI.txt:1075:    
+'2nd': 
+getAudio('isolation', 
+'2nd'),
+AlloFlowANTI.txt:1076:    
+'3rd': 
+getAudio('isolation', 
+'3rd'),
+AlloFlowANTI.txt:1077:    
+'4th': 
+getAudio('isolation', 
+'4th'),
+AlloFlowANTI.txt:1078:    
+'5th': 
+getAudio('isolation', 
+'5th'),
+AlloFlowANTI.txt:1079:    
+'6th': 
+getAudio('isolation', 
+'6th'),
+AlloFlowANTI.txt:1080:    
+'7th': 
+getAudio('isolation', 
+'7th'),
+AlloFlowANTI.txt:1081:    
+'8th': 
+getAudio('isolation', 
+'8th'),
+AlloFlowANTI.txt:1082:    
+'9th': 
+getAudio('isolation', 
+'9th'),
+AlloFlowANTI.txt:1083:    
+'10th': 
+getAudio('isolation', 
+'10th'),
+AlloFlowANTI.txt:1087:cons
+t ISOLATION_AUDIO = new 
+Proxy({}, {
+AlloFlowANTI.txt:1090:    
+if 
+(!_CACHE_ISOLATION_AUDIO) 
+{
+AlloFlowANTI.txt:1091:    
+  _CACHE_ISOLATION_AUDIO 
+= _LOAD_ISOLATION_AUDIO_RA
+W();
+AlloFlowANTI.txt:1093:    
+return _CACHE_ISOLATION_AU
+DIO[prop];
+AlloFlowANTI.txt:1096:    
+if 
+(!_CACHE_ISOLATION_AUDIO) 
+_CACHE_ISOLATION_AUDIO = _
+LOAD_ISOLATION_AUDIO_RAW()
+;
+AlloFlowANTI.txt:1097:    
+return prop in 
+_CACHE_ISOLATION_AUDIO;
+AlloFlowANTI.txt:1100:    
+if 
+(!_CACHE_ISOLATION_AUDIO) 
+_CACHE_ISOLATION_AUDIO = _
+LOAD_ISOLATION_AUDIO_RAW()
+;
+AlloFlowANTI.txt:1101:    
+return Reflect.ownKeys(_CA
+CHE_ISOLATION_AUDIO);
+AlloFlowANTI.txt:1104:    
+if 
+(!_CACHE_ISOLATION_AUDIO) 
+_CACHE_ISOLATION_AUDIO = _
+LOAD_ISOLATION_AUDIO_RAW()
+;
+AlloFlowANTI.txt:1105:    
+const desc = Reflect.getOw
+nPropertyDescriptor(_CACHE
+_ISOLATION_AUDIO, prop); 
+if (desc) { 
+desc.configurable = true; 
+desc.writable = true; } 
+return desc;
+AlloFlowANTI.txt:1108:    
+if 
+(!_CACHE_ISOLATION_AUDIO) 
+_CACHE_ISOLATION_AUDIO = _
+LOAD_ISOLATION_AUDIO_RAW()
+;
+AlloFlowANTI.txt:1109:    
+_CACHE_ISOLATION_AUDIO[pro
+p] = value;
+AlloFlowANTI.txt:1113:    
+if 
+(!_CACHE_ISOLATION_AUDIO) 
+_CACHE_ISOLATION_AUDIO = _
+LOAD_ISOLATION_AUDIO_RAW()
+;
+AlloFlowANTI.txt:1114:    
+Object.defineProperty(_CAC
+HE_ISOLATION_AUDIO, prop, 
+descriptor);
+AlloFlowANTI.txt:2583:    
+        'isolation':      
+'progressive',
+AlloFlowANTI.txt:2610:    
+        isolation: { 
+enabled: false, count: 5 
+},
+AlloFlowANTI.txt:2623:    
+        'isolation', 
+'blending', 
+'segmentation', 
+'orthography', 'rhyming',
+AlloFlowANTI.txt:3227:    
+                          
+                      
+isolation: { id: 
+'isolation', label: 'Find 
+Sounds', icon: ScanSearch 
+},
+AlloFlowANTI.txt:4277:    
+  isolation: ['mat','sit',
+'hop','bed','fun','tap','l
+ip','cot','rug','gem','bat
+','cup','red','dog','pin']
+AlloFlowANTI.txt:4287:    
+  isolation: ['hen','pig',
+'tub','jam','wet','dip','f
+og','nut','wig','cod','bud
+','lap','vet','gum','rob']
+AlloFlowANTI.txt:4297:    
+  isolation: ['kit','mud',
+'sob','wax','zip','hug','d
+en','pot','rib','tag','fin
+','log','dug','yam','cab']
+AlloFlowANTI.txt:4311:    
+  isolation: ['chip','thin
+','shop','black','grass','
+sting','truck','plum','cru
+mb','swift','step','flag',
+'drum','snap','swim'],
+AlloFlowANTI.txt:4323:    
+  isolation: ['chop','shru
+g','crop','pluck','grits',
+'sling','broom','slug','cr
+isp','twist','grip','plug'
+,'brim','fled','slap'],
+AlloFlowANTI.txt:4335:    
+  isolation: ['shed','spit
+','clip','smog','clog','sk
+ulk','snip','drab','glum',
+'stab','prim','bled','swig
+','crop','slug'],
+AlloFlowANTI.txt:4421:  
+'K':   ['segmentation', 
+'blending', 'isolation'],
+AlloFlowANTI.txt:4423:  
+'1':   ['segmentation', 
+'blending', 'isolation', 
+'spelling', 'orf'],
+AlloFlowANTI.txt:4527:    
+        'isolation':      
+'progressive',
+AlloFlowANTI.txt:4541:    
+        'isolation':      
+'hidden',
+AlloFlowANTI.txt:4585:    
+    const 
+[isolationState, 
+setIsolationState] = 
+React.useState(null);
+AlloFlowANTI.txt:4591:    
+const 
+isolationPositionRef = 
+React.useRef(null);
+AlloFlowANTI.txt:4592:    
+const 
+lastWordForIsolation = 
+React.useRef(null);
+AlloFlowANTI.txt:4952:    
+    if (activity === 
+'isolation') {
+AlloFlowANTI.txt:5012:    
+                          
+      const bankAudio = 
+ISOLATION_AUDIO[ordinal];
+AlloFlowANTI.txt:5749:    
+    { id: 'isolation', 
+label: ts('word_sounds.act
+ivity_isolation'), icon: 
+'🎯', description: ts('wor
+d_sounds.isolation_desc'),
+ tier: 'phonological' },
+AlloFlowANTI.txt:6189:    
+        { id: 
+'sound_detective', 
+condition: 
+history.filter(h => 
+h.activity === 
+'isolation' && 
+h.correct).length >= 20, 
+name: 'Sound Detective', 
+icon: '🔍' },
+AlloFlowANTI.txt:7350:    
+    if 
+(wordSoundsActivity !== 
+'isolation' || 
+!wordSoundsPhonemes) {
+AlloFlowANTI.txt:7351:    
+        if 
+(isolationState) 
+setIsolationState(null);
+AlloFlowANTI.txt:7355:    
+    const isNewWord = last
+WordForIsolation.current 
+!== currentWord;
+AlloFlowANTI.txt:7356:    
+    if (isNewWord && 
+isolationState && isolatio
+nState.correctSound && iso
+lationState.isoOptions?.le
+ngth > 0) {
+AlloFlowANTI.txt:7357:    
+        debugLog("✅ Using 
+pre-generated isolation 
+options:", isolationState.
+isoOptions);
+AlloFlowANTI.txt:7358:    
+        lastWordForIsolati
+on.current = currentWord;
+AlloFlowANTI.txt:7362:    
+        debugLog("⚠️ 
+Generating new isolation 
+options (fallback - not 
+pre-generated)");
+AlloFlowANTI.txt:7363:    
+        lastWordForIsolati
+on.current = currentWord;
+AlloFlowANTI.txt:7366:    
+        isolationPositionR
+ef.current = 
+positionIndex;
+AlloFlowANTI.txt:7367:    
+        const 
+currentPosition = isolatio
+nPositionRef.current || 
+'first';
+AlloFlowANTI.txt:7410:    
+        
+setIsolationState({
+AlloFlowANTI.txt:7426:    
+    if 
+(wordSoundsActivity !== 
+'isolation') return;
+AlloFlowANTI.txt:7428:    
+    if (isolationState?.wo
+rd?.toLowerCase() === curr
+entWordSoundsWord?.toLower
+Case()) return;
+AlloFlowANTI.txt:7431:    
+        debugLog("🔧 
+Auto-recovery: 
+isolationState stuck for 
+3s, forcing re-sync 
+for:", 
+currentWordSoundsWord);
+AlloFlowANTI.txt:7437:    
+        
+setIsolationState({
+AlloFlowANTI.txt:7447:    
+}, 
+[currentWordSoundsWord, 
+isolationState?.word, 
+wordSoundsActivity]);
+AlloFlowANTI.txt:7462:    
+                    if 
+(wordSoundsActivity === 
+'isolation' && isolationSt
+ate?.isoOptions?.length > 
+0) {
+AlloFlowANTI.txt:7464:    
+                        
+for (let i = 0; i < (isola
+tionState?.isoOptions?.len
+gth || 0); i++) {
+AlloFlowANTI.txt:7466:    
+                          
+   await handleAudio(isola
+tionState.isoOptions[i]);
+AlloFlowANTI.txt:7716:    
+            } else if 
+(wordSoundsActivity === 
+'isolation' && 
+isolationState) {
+AlloFlowANTI.txt:7718:    
+                const 
+posKey = ordinals[isolatio
+nState.currentPosition] 
+|| 'fallback';
+AlloFlowANTI.txt:7719:    
+                if 
+(typeof ISOLATION_AUDIO 
+!== 'undefined' && 
+ISOLATION_AUDIO[posKey]) {
+AlloFlowANTI.txt:7720:    
+                    
+instructionAudioSrc = 
+ISOLATION_AUDIO[posKey];
+AlloFlowANTI.txt:7723:    
+                    const 
+posStr = ordinalNames[isol
+ationState.currentPosition
+] || "target";
+AlloFlowANTI.txt:7880:    
+            if 
+(wordSoundsActivity === 
+'isolation' && 
+currentWordSoundsWord) {
+AlloFlowANTI.txt:7884:    
+                 if (isola
+tionState?.isoOptions?.len
+gth > 0) {
+AlloFlowANTI.txt:7887:    
+                     
+await Promise.all(isolatio
+nState.isoOptions.map(o 
+=> handleAudio(o, 
+false).catch(() => {})));
+AlloFlowANTI.txt:7889:    
+                     for 
+(let i = 0; i < (isolation
+State?.isoOptions?.length 
+|| 0); i++) {
+AlloFlowANTI.txt:7892:    
+                         
+await handleAudio(isolatio
+nState.isoOptions[i]);
+AlloFlowANTI.txt:7913:    
+}, [wordSoundsActivity, 
+currentWordSoundsWord, 
+playInstructions, 
+isMinimized, isolationStat
+e?.currentPosition]);
+AlloFlowANTI.txt:8150:    
+             const 
+PHONO_ORDER = 
+['counting', 'isolation', 
+'blending', 
+'segmentation', 
+'rhyming', 
+'word_families', 
+'sound_sort'];
+AlloFlowANTI.txt:8368:    
+            if 
+(wordSoundsActivity === 
+'isolation') {
+AlloFlowANTI.txt:8369:    
+                if (buffer
+edWord.isolationOptions) {
+AlloFlowANTI.txt:8370:    
+                    lastWo
+rdForIsolation.current = 
+targetWord;
+AlloFlowANTI.txt:8371:    
+                    isolat
+ionPositionRef.current = b
+ufferedWord.isolationOptio
+ns.currentPosition;
+AlloFlowANTI.txt:8372:    
+                    setIso
+lationState(bufferedWord.i
+solationOptions);
+AlloFlowANTI.txt:8373:    
+                } else if 
+(lastWordForIsolation.curr
+ent !== targetWord) {
+AlloFlowANTI.txt:8374:    
+                    
+debugLog("🔧 Generating 
+isolation state for:", 
+targetWord);
+AlloFlowANTI.txt:8390:    
+                    isolat
+ionPositionRef.current = 
+position;
+AlloFlowANTI.txt:8391:    
+                    lastWo
+rdForIsolation.current = 
+targetWord;
+AlloFlowANTI.txt:8392:    
+                    setIso
+lationState(generatedState
+);
+AlloFlowANTI.txt:8469:    
+                if 
+(wordSoundsActivity === 
+'isolation' && lastWordFor
+Isolation.current !== 
+targetWord) {
+AlloFlowANTI.txt:8470:    
+                    
+debugLog("🔧 [Fallback] 
+Generating isolation 
+state for:", targetWord);
+AlloFlowANTI.txt:8480:    
+                    isolat
+ionPositionRef.current = 
+iso_position;
+AlloFlowANTI.txt:8481:    
+                    lastWo
+rdForIsolation.current = 
+targetWord;
+AlloFlowANTI.txt:8482:    
+                    
+setIsolationState({
+AlloFlowANTI.txt:8685:    
+        } else if 
+(wordSoundsActivity === 
+'isolation') {
+AlloFlowANTI.txt:8686:    
+            
+setIsolationState(prev => 
+({ ...prev, correctSound: 
+newValue, correctAnswer: 
+newValue }));
+AlloFlowANTI.txt:8687:    
+            debugLog("✏️ 
+Teacher set correct 
+isolation answer to:", 
+newValue);
+AlloFlowANTI.txt:8729:    
+    } else if 
+(wordSoundsActivity === 
+'isolation') {
+AlloFlowANTI.txt:8730:    
+        const newOptions 
+= [...(isolationState?.iso
+Options || [])];
+AlloFlowANTI.txt:8732:    
+        
+setIsolationState(prev => 
+({ ...prev, isoOptions: 
+newOptions }));
+AlloFlowANTI.txt:9200:    
+                     if 
+(wordSoundsActivity === 
+'isolation' && typeof 
+ISOLATION_AUDIO !== 
+'undefined') {
+AlloFlowANTI.txt:9202:    
+                         
+const posKey = ordinals[is
+olationState?.currentPosit
+ion || 0] || 'fallback';
+AlloFlowANTI.txt:9203:    
+                         
+if 
+(ISOLATION_AUDIO[posKey]) 
+{ handleAudio(ISOLATION_AU
+DIO[posKey]); }
+AlloFlowANTI.txt:9204:    
+                         
+else { handleAudio(ts('wor
+d_sounds.isolation_prompt'
+)); }
+AlloFlowANTI.txt:9317:    
+        case 'isolation': 
+{
+AlloFlowANTI.txt:9318:    
+            const { word: 
+isoWord, currentPosition, 
+correctSound, isoOptions 
+} = isolationState || {};
+AlloFlowANTI.txt:9319:    
+            if 
+(!isolationState || 
+(isoWord && 
+isoWord.toLowerCase() !== 
+currentWordSoundsWord?.toL
+owerCase())) {
+AlloFlowANTI.txt:9321:    
+                     
+debugLog("⚠️ Isolation 
+state mismatch:", 
+isoWord, "vs", 
+currentWordSoundsWord, "- 
+will auto-sync");
+AlloFlowANTI.txt:9352:    
+                          
+  image: 
+isolationState?.image || 
+currentWordImage || 
+wordSoundsPhonemes?.image
+AlloFlowANTI.txt:13295:   
+                          
+       <option value="isol
+ation">Isolation</option>
+AlloFlowANTI.txt:13305:   
+                          
+       <option value="isol
+ation">Isolation</option>
+AlloFlowANTI.txt:50481:   
+          Rule 4: 
+SELF-CONTAINED ITEMS - 
+Each item must make sense 
+in isolation (no 
+"Then...", "Next...", 
+"It...").
+
+

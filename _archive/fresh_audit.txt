@@ -1,0 +1,76 @@
+=== FRESH FEATURE AUDIT (Feb 2026) ===
+Lines: 69,415
+Size: 4.4 MB
+
+=== CORE METRICS ===
+  useState: 712
+  useEffect: 209
+  useCallback: 257
+  useMemo: 58
+  React.memo: 53
+  ErrorBoundary: 54
+  callGemini calls: 106
+  callImagen calls: 13
+  addToast calls: 432
+  handleAudio calls: 71
+  Firebase ops: 53
+
+=== FEATURE REFERENCE COUNTS ===
+   891 refs: Phoneme Studio
+   823 refs: Word Sounds
+   271 refs: Adventure Mode
+   248 refs: Escape Room
+    79 refs: Concept Map
+    61 refs: Guided Workflow
+    59 refs: Glossary Health
+    52 refs: Export PPT
+    29 refs: Line Focus
+    28 refs: Democracy Mode
+    22 refs: Interview/Persona
+    21 refs: Color Overlay
+    17 refs: Speed Reader
+    15 refs: Blueprint Mode
+    14 refs: Dynamic Bridge
+     7 refs: Text Repair
+     6 refs: Source Generation
+     6 refs: Text Leveling
+     5 refs: Export PDF
+     4 refs: Auto Configure
+     4 refs: ORF Assessment
+     4 refs: Group Differentiation
+     3 refs: Text Analysis
+     3 refs: Glossary Generation
+     3 refs: Visual Organizer
+     3 refs: Brainstorm
+     3 refs: Lesson Plan
+     2 refs: Image Generation
+     2 refs: FAQ Generation
+     2 refs: Quiz Generation
+     2 refs: Sentence Frames
+     2 refs: Timeline
+     2 refs: Concept Sort
+     2 refs: Alignment Report
+     2 refs: Workflow Intent
+     2 refs: Syllabification
+     2 refs: Live Session
+     1 refs: Fidelity Check
+
+=== UNIQUE GAME TYPES: 0 ===
+
+=== ACTIVE VIEWS/MODES: 14 ===
+  - adventure
+  - analysis
+  - brainstorm
+  - dashboard
+  - faq
+  - glossary
+  - image
+  - input
+  - math
+  - outline
+  - persona
+  - quiz
+  - simplified
+  - timeline
+
+=== WORD SOUNDS ACTIVITIES: 0 ===

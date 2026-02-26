@@ -1,0 +1,367 @@
+===== renderSurveyModal =====
+Defined at L11844
+L11844: const renderSurveyModal = () => {
+L11845: if (!showSurveyModal) return null;
+L11846: const questions = SURVEY_QUESTIONS[showSurveyModal] || [];
+L11847: const typeLabel = showSurveyModal.charAt(0).toUpperCase() + showSurveyModal.slice(1);
+L11848: const allAnswered = questions.every(q => surveyAnswers[q.id] !== undefined);
+L11849: return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex it
+L11850: React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full border-2 border-p
+L11851: React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2' },
+L11852: React.createElement('span', null, '\u{1F4DD}'), typeLabel + ' Survey'),
+L11853: React.createElement('p', { className: 'text-xs text-slate-500 mb-4' }, 'Rate each item on a scale of 1-5. Your
+L11854: React.createElement('div', { className: 'mb-4' },
+L11855: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, showSurveyModal === 
+L11856: React.createElement('input', { type: 'text', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded
+L11857: value: surveyRespondent, onChange: e => setSurveyRespondent(e.target.value), placeholder: 'Enter name...' })
+L11858: ),
+L11859: React.createElement('div', { className: 'space-y-4' },
+L11860: ...questions.map(q =>
+L11861: React.createElement('div', { key: q.id, className: 'bg-slate-50 rounded-xl p-3' },
+L11862: React.createElement('p', { className: 'text-sm font-medium text-slate-700 mb-2' }, q.text),
+L11863: React.createElement('div', { className: 'flex gap-1' },
+L11864: ...q.labels.map((label, idx) =>
+L11865: React.createElement('button', {
+L11866: key: idx,
+L11867: className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' +
+L11868: (surveyAnswers[q.id] === idx + 1
+L11869: ? 'bg-purple-600 text-white shadow-md scale-105'
+L11870: : 'bg-white border border-slate-200 text-slate-600 hover:bg-purple-50 hover:border-purple-300'),
+L11871: onClick: () => setSurveyAnswers(p => ({ ...p, [q.id]: idx + 1 }))
+L11872: }, label)
+L11873: )
+L11874: )
+L11875: )
+L11876: )
+L11877: ),
+L11878: React.createElement('div', { className: 'flex justify-end gap-2 mt-5' },
+L11879: React.createElement('button', { className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg tra
+L11880: onClick: () => { setShowSurveyModal(null); setSurveyAnswers({}); setSurveyRespondent(''); } }, 'Cancel'),
+L11881: React.createElement('button', {
+L11882: className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-b
+L11883: disabled: !allAnswered || !surveyRespondent.trim(),
+L11884: onClick: () => {
+L11885: saveSurveyResponse(showSurveyModal, surveyRespondent.trim(), surveyAnswers);
+L11886: setShowSurveyModal(null); setSurveyAnswers({}); setSurveyRespondent('');
+L11887: addToast && addToast(typeLabel + ' survey saved!', 'success');
+L11888: }
+L11889: }, 'Submit Survey')
+L11890: )
+L11891: )
+L11892: );
+L11893: };
+L11894: 
+L11895: const renderScatterPlot = (studentName) => {
+
+===== renderAutoSurveyPrompt =====
+Defined at L12098
+L12098: const renderAutoSurveyPrompt = () => {
+L12099: if (!showAutoSurveyPrompt) return null;
+L12100: return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex it
+L12101: React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-p
+L12102: React.createElement('div', { className: 'w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center
+L12103: React.createElement('span', { className: 'text-3xl' }, '\u{1F4DD}')),
+L12104: React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, 'Quick Feedback Time!'),
+L12105: React.createElement('p', { className: 'text-sm text-slate-600 mb-4' },
+L12106: 'You\'ve completed ' + sessionCounter + ' sessions. Would you like to share your feedback?'),
+L12107: React.createElement('div', { className: 'flex gap-2 justify-center' },
+L12108: React.createElement('button', {
+L12109: className: 'px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-lg',
+L12110: onClick: () => setShowAutoSurveyPrompt(false)
+L12111: }, 'Skip'),
+L12112: React.createElement('button', {
+L12113: className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold',
+L12114: onClick: () => { setShowAutoSurveyPrompt(false); setShowSurveyModal('student'); }
+L12115: }, '\u{1F4DD} Take Survey')
+L12116: )
+L12117: )
+L12118: );
+L12119: };
+L12120: 
+L12121: const renderResearchDashboard = () => {
+
+===== renderResearchSetupModal =====
+Defined at L12035
+L12035: const renderResearchSetupModal = () => {
+L12036: if (!showResearchSetup) return null;
+L12037: return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex it
+L12038: React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-e
+L12039: React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-1 flex items-center gap-2' },
+L12040: React.createElement('span', null, '\u{1F52C}'), 'Research Mode Setup'),
+L12041: React.createElement('p', { className: 'text-xs text-slate-500 mb-4' }, 'Configure research data collection. Th
+L12042: React.createElement('div', { className: 'space-y-3' },
+L12043: React.createElement('div', null,
+L12044: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Study Name'),
+L12045: React.createElement('input', { type: 'text', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded
+L12046: value: researchSetupForm.studyName, onChange: e => setResearchSetupForm(p => ({ ...p, studyName: e.target.valu
+L12047: placeholder: 'e.g. AlloFlow Pilot Study Spring 2026' })
+L12048: ),
+L12049: React.createElement('div', null,
+L12050: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Auto-Survey Frequen
+L12051: React.createElement('select', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+L12052: value: researchSetupForm.surveyFrequency, onChange: e => setResearchSetupForm(p => ({ ...p, surveyFrequency: e
+L12053: React.createElement('option', { value: '3' }, 'Every 3 sessions'),
+L12054: React.createElement('option', { value: '5' }, 'Every 5 sessions'),
+L12055: React.createElement('option', { value: '10' }, 'Every 10 sessions'),
+L12056: React.createElement('option', { value: '15' }, 'Every 15 sessions'),
+L12057: React.createElement('option', { value: '0' }, 'Never (manual only)')
+L12058: )
+L12059: ),
+L12060: React.createElement('div', null,
+L12061: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'IRB Number (optiona
+L12062: React.createElement('input', { type: 'text', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded
+L12063: value: researchSetupForm.irb, onChange: e => setResearchSetupForm(p => ({ ...p, irb: e.target.value })),
+L12064: placeholder: 'e.g. IRB-2026-0042' })
+L12065: ),
+L12066: React.createElement('div', null,
+L12067: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Notes'),
+L12068: React.createElement('textarea', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm
+L12069: value: researchSetupForm.notes, onChange: e => setResearchSetupForm(p => ({ ...p, notes: e.target.value })),
+L12070: placeholder: 'Any additional study notes...' })
+L12071: )
+L12072: ),
+L12073: React.createElement('div', { className: 'flex justify-end gap-2 mt-5' },
+L12074: React.createElement('button', { className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
+L12075: onClick: () => setShowResearchSetup(false) }, 'Cancel'),
+L12076: React.createElement('button', {
+L12077: className: 'px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-bold',
+L12078: onClick: () => {
+L12079: toggleResearchMode({
+L12080: active: true,
+L12081: startDate: new Date().toISOString(),
+L12082: studyName: researchSetupForm.studyName || 'Untitled Study',
+L12083: surveyFrequency: researchSetupForm.surveyFrequency,
+L12084: irb: researchSetupForm.irb,
+L12085: notes: researchSetupForm.notes
+L12086: });
+L12087: setShowResearchSetup(false);
+L12088: setSessionCounter(0);
+L12089: try { localStorage.setItem('alloflow_session_counter', '0'); } catch {}
+L12090: addToast && addToast('Research Mode activated!', 'success');
+L12091: }
+L12092: }, '\u{1F52C} Activate Research Mode')
+L12093: )
+L12094: )
+L12095: );
+L12096: };
+L12097: 
+L12098: const renderAutoSurveyPrompt = () => {
+
+===== renderCBMImportModal =====
+Defined at L11729
+L11729: const renderCBMImportModal = () => {
+L11730: if (!showCBMModal) return null;
+L11731: const sources = ['DIBELS', 'AIMSweb', 'easyCBM', 'STAR', 'MAP', 'Other'];
+L11732: const measures = { DIBELS: ['ORF', 'NWF-CLS', 'NWF-WWR', 'PSF', 'LNF', 'Composite'], AIMSweb: ['R-CBM', 'MAZE'
+L11733: return React.createElement('div', { className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex it
+L11734: React.createElement('div', { className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-i
+L11735: React.createElement('h3', { className: 'text-lg font-black text-slate-800 mb-4 flex items-center gap-2' },
+L11736: React.createElement('span', null, '\u{1F4CB}'), 'Import External CBM Score'),
+L11737: React.createElement('div', { className: 'space-y-3' },
+L11738: React.createElement('div', null,
+L11739: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Student'),
+L11740: React.createElement('select', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+L11741: onChange: e => setCBMForm(p => ({ ...p, student: e.target.value })) },
+L11742: React.createElement('option', { value: '' }, '-- Select Student --'),
+L11743: ...importedStudents.map(s => React.createElement('option', { key: s.id, value: s.name }, s.name))
+L11744: )
+L11745: ),
+L11746: React.createElement('div', null,
+L11747: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'CBM Source'),
+L11748: React.createElement('select', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+L11749: onChange: e => setCBMForm(p => ({ ...p, source: e.target.value, measure: '' })) },
+L11750: ...sources.map(s => React.createElement('option', { key: s, value: s }, s))
+L11751: )
+L11752: ),
+L11753: React.createElement('div', null,
+L11754: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Measure'),
+L11755: React.createElement('select', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+L11756: onChange: e => setCBMForm(p => ({ ...p, measure: e.target.value })) },
+L11757: React.createElement('option', { value: '' }, '-- Select Measure --'),
+L11758: ...((measures[cbmForm.source] || []).map(m => React.createElement('option', { key: m, value: m }, m)))
+L11759: )
+L11760: ),
+L11761: React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+L11762: React.createElement('div', null,
+L11763: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Score'),
+L11764: React.createElement('input', { type: 'number', className: 'w-full mt-1 px-3 py-2 border border-slate-300 round
+L11765: value: cbmForm.score, onChange: e => setCBMForm(p => ({ ...p, score: e.target.value })), placeholder: 'e.g. 72
+L11766: ),
+L11767: React.createElement('div', null,
+L11768: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Date'),
+L11769: React.createElement('input', { type: 'date', className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded
+L11770: value: cbmForm.date, onChange: e => setCBMForm(p => ({ ...p, date: e.target.value })) })
+L11771: )
+L11772: ),
+L11773: React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+L11774: React.createElement('div', null,
+L11775: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Percentile (optiona
+L11776: React.createElement('input', { type: 'number', className: 'w-full mt-1 px-3 py-2 border border-slate-300 round
+L11777: value: cbmForm.percentile, onChange: e => setCBMForm(p => ({ ...p, percentile: e.target.value })), placeholder
+L11778: ),
+L11779: React.createElement('div', null,
+L11780: React.createElement('label', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Benchmark Status'),
+L11781: React.createElement('select', { className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+L11782: value: cbmForm.benchmark, onChange: e => setCBMForm(p => ({ ...p, benchmark: e.target.value })) },
+L11783: React.createElement('option', { value: '' }, '-- Optional --'),
+L11784: React.createElement('option', { value: 'Above' }, 'Above Benchmark'),
+L11785: React.createElement('option', { value: 'At' }, 'At Benchmark'),
+L11786: React.createElement('option', { value: 'Below' }, 'Below Benchmark'),
+L11787: React.createElement('option', { value: 'Well Below' }, 'Well Below Benchmark')
+L11788: )
+L11789: )
+L11790: )
+L11791: ),
+L11792: React.createElement('div', { className: 'flex justify-end gap-2 mt-5' },
+L11793: React.createElement('button', { className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg tra
+L11794: onClick: () => { setShowCBMModal(false); setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', d
+L11795: React.createElement('button', { className: 'px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-ind
+L11796: disabled: !cbmForm.student || !cbmForm.score || !cbmForm.date,
+L11797: onClick: () => {
+L11798: saveExternalCBM(cbmForm.student, { source: cbmForm.source, measure: cbmForm.measure, score: parseFloat(cbmForm
+L11799: setShowCBMModal(false);
+L11800: setCBMForm({ student: '', source: 'DIBELS', measure: '', score: '', date: '', percentile: '', benchmark: '' })
+L11801: } }, 'Save Score')
+L11802: )
+L11803: )
+L11804: );
+L11805: };
+L11806: 
+L11807: const [surveyResponses, setSurveyResponses] = React.useState(() => {
+L11808: try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}'); } catch { return {}; }
+L11809: });
+L11810: const saveSurveyResponse = (type, respondent, responses) => {
+L11811: const key = type + '_' + respondent;
+L11812: const existing = surveyResponses[key] || [];
+L11813: const updated = { ...surveyResponses, [key]: [...existing, { ...responses, timestamp: new Date().toISOString()
+L11814: setSurveyResponses(updated);
+L11815: try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(updated)); } catch {}
+L11816: };
+L11817: const [surveyAnswers, setSurveyAnswers] = React.useState({});
+L11818: const [surveyRespondent, setSurveyRespondent] = React.useState('');
+L11819: 
+L11820: const SURVEY_QUESTIONS = {
+L11821: student: [
+L11822: { id: 'engagement', text: 'How fun was this activity?', labels: ['\u{1F61E}', '\u{1F610}', '\u{1F642}', '\u{1F
+L11823: { id: 'difficulty', text: 'How hard was this for you?', labels: ['Too Easy', 'Easy', 'Just Right', 'Hard', 'To
+L11824: { id: 'improvement', text: 'Do you feel like you are getting better at reading?', labels: ['Not at all', 'A li
+L11825: { id: 'confidence', text: 'How confident do you feel about reading new words?', labels: ['\u{1F61F}', '\u{1F91
+L11826: { id: 'helpfulness', text: 'Did the app help you learn something new today?', labels: ['No', 'A little', 'Mayb
+L11827: ],
+L11828: teacher: [
+L11829: { id: 'alignment', text: 'How well does this student\'s AlloFlow performance match your classroom observations
+
+===== renderResearchToolbar =====
+Defined at L11938
+L11938: const renderResearchToolbar = () => {
+L11939: const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0
+L11940: const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0)
+L11941: return React.createElement('div', { className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 
+L11942: React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+L11943: React.createElement('span', { className: 'text-sm' }, '\u{1F52C}'),
+L11944: React.createElement('span', { className: 'text-xs font-bold text-indigo-800 uppercase tracking-wider' }, 'Rese
+L11945: ),
+L11946: React.createElement('div', { className: 'flex items-center justify-between mb-2 bg-white/60 rounded-lg px-3 py
+L11947: React.createElement('div', { className: 'flex items-center gap-2' },
+L11948: React.createElement('span', { className: 'text-xs font-medium text-slate-600' }, 'Research Mode'),
+L11949: researchMode && researchMode.active ? React.createElement('span', { className: 'flex items-center gap-1 bg-eme
+L11950: React.createElement('span', { className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse' }), 'Active')
+L11951: ),
+L11952: React.createElement('button', {
+L11953: className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (researchMode && researchMode.active ? '
+L11954: onClick: () => researchMode && researchMode.active ? toggleResearchMode(null) : setShowResearchSetup(true)
+L11955: }, researchMode && researchMode.active ? '\u{23F9} End Study' : '\u{1F52C} Start Study')
+L11956: ),
+L11957: React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+L11958: React.createElement('button', {
+L11959: className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-indigo-
+L11960: onClick: exportResearchCSV
+L11961: }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'),
+L11962: React.createElement('button', {
+L11963: className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-emerald
+L11964: onClick: () => setShowCBMModal(true)
+L11965: }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('spa
+L11966: React.createElement('button', {
+L11967: className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-purple-
+L11968: onClick: () => setShowSurveyModal('student')
+L11969: }, React.createElement('span', null, '\u{1F9D2}'), 'Student Survey'),
+L11970: React.createElement('button', {
+L11971: className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-40
+L11972: onClick: () => setShowSurveyModal('teacher')
+L11973: }, React.createElement('span', null, '\u{1F468}\u{200D}\u{1F3EB}'), 'Teacher Survey'),
+L11974: React.createElement('button', {
+L11975: className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slat
+L11976: onClick: () => setShowSurveyModal('parent')
+L11977: }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey',
+L11978: surveyCount > 0 ? React.createElement('span', { className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounde
+L11979: )
+L11980: );
+L11981: };
+L11982: 
+L11983: const [researchMode, setResearchMode] = React.useState(() => {
+L11984: try { return JSON.parse(localStorage.getItem('alloflow_research_mode') || 'null'); } catch { return null; }
+L11985: });
+L11986: 
+L11987: const toggleResearchMode = (settings) => {
+L11988: const mode = settings || null;
+L11989: setResearchMode(mode);
+L11990: try { localStorage.setItem('alloflow_research_mode', JSON.stringify(mode)); } catch {}
+L11991: };
+L11992: 
+L11993: const [fidelityLog, setFidelityLog] = React.useState(() => {
+L11994: try { return JSON.parse(localStorage.getItem('alloflow_fidelity_log') || '[]'); } catch { return []; }
+L11995: });
+L11996: 
+L11997: const logSession = React.useCallback((studentName, activityType, durationMinutes) => {
+L11998: if (!researchMode || !researchMode.active) return;
+L11999: const entry = {
+L12000: id: Date.now(),
+L12001: student: studentName || 'Unknown',
+L12002: activity: activityType || 'general',
+L12003: duration: durationMinutes || 0,
+L12004: date: new Date().toISOString(),
+L12005: weekday: new Date().toLocaleDateString('en-US', { weekday: 'short' }),
+L12006: researchStudy: researchMode.studyName || 'Untitled Study'
+L12007: };
+L12008: setFidelityLog(prev => {
+L12009: const updated = [...prev, entry];
+L12010: try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(updated)); } catch {}
+L12011: return updated;
+L12012: });
+L12013: }, [researchMode]);
+L12014: 
+L12015: const [sessionCounter, setSessionCounter] = React.useState(() => {
+L12016: try { return parseInt(localStorage.getItem('alloflow_session_counter') || '0'); } catch { return 0; }
+L12017: });
+L12018: const [showAutoSurveyPrompt, setShowAutoSurveyPrompt] = React.useState(false);
+L12019: 
+L12020: const incrementSessionAndCheckSurvey = React.useCallback(() => {
+L12021: if (!researchMode || !researchMode.active) return;
+L12022: const newCount = sessionCounter + 1;
+L12023: setSessionCounter(newCount);
+L12024: try { localStorage.setItem('alloflow_session_counter', String(newCount)); } catch {}
+L12025: const freq = parseInt(researchMode.surveyFrequency) || 5;
+L12026: if (newCount % freq === 0) {
+L12027: setShowAutoSurveyPrompt(true);
+L12028: }
+L12029: }, [researchMode, sessionCounter]);
+L12030: 
+L12031: const [researchSetupForm, setResearchSetupForm] = React.useState({
+L12032: studyName: '', surveyFrequency: '5', irb: '', notes: ''
+L12033: });
+L12034: 
+L12035: const renderResearchSetupModal = () => {
+
+===== TAM / SURVEY CONTENT SEARCH =====
+fidelity: L11993 - const [fidelityLog, setFidelityLog] = React.useState(() => {
+self-efficacy: L44248 - Focus on anticipating student misconceptions, pre-teaching difficult concepts, and buildin
+satisfaction: L11833 - { id: 'satisfaction', text: 'Overall, how satisfied are you with AlloFlow as an RTI tool?'
+
+===== LIVE SESSION / SYNC =====
+liveSync: L11070
+LiveSync: L11070
+isLiveListening: L11069
+liveSyncCode: L11070
+
+===== STUDENT PROJECT SETTINGS =====
+First ref at L30284

@@ -1,0 +1,15 @@
+1. t.def present: True
+2. handleQuickAddGlossary(gap.term): True
+3. setNewGlossaryTerm(gap.term): False
+4. Model Refusal throw: False
+5. DIAG logging: True
+
+Total lines: 73572
+
+DIAG at line 39701: console.log('[HealthCheck] DIAG: First term keys:', Object.keys(sample));
+
+DIAG at line 39702: console.log('[HealthCheck] DIAG: Sample fields:', JSON.stringify({
+
+DIAG at line 39719: console.log('[HealthCheck] DIAG: termList[0]:', JSON.stringify(termList[0]));
+
+DIAG at line 39720: console.log('[HealthCheck] DIAG: First line of prompt:',

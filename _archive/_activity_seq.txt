@@ -1,0 +1,26 @@
+﻿L2309: activitySequence,
+L3294: const [activitySequence, setActivitySequence] = React.useState(initialActivitySequence || []); // Ordered sequence of activity IDs
+L3295: const [sequenceIndex, setSequenceIndex] = React.useState(0); // Track position in sequence
+L3299: debugLog("≡ƒöä Syncing activitySequence from prop:", initialActivitySequence);
+L3418: const sequenceIndexRef = React.useRef(0); // Current position in lesson plan sequence
+L6614: const nextActivity = ACTIVITIES[nextIndex];
+L6703: if (activitySequence && activitySequence.length > 0 &&
+L6707: debugLog("≡ƒÄ» Lesson Plan: Auto-starting first activity:", activitySequence[0]);
+L6712: startActivity(activitySequence[0]);
+L6715: }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel]);
+L7226: const hasLessonPlan = currentLessonConfig && activitySequence && activitySequence.length > 0;
+L7239: const uniqueActivities = [...new Set(activitySequence)];
+L7242: const nextActivity = uniqueActivities[currentIdx + 1];
+L7245: message: `Γ£à Activity complete! Moving to ${nextActivity.replace('_', ' ')}! ≡ƒÄë`
+L7252: startActivity(nextActivity);
+L7308: const nextActivity = PHONO_ORDER[currentIdx + 1];
+L7311: message: (ts('word_sounds.fb_great_work_next') || `Great work! Let's try ${nextActivity}! ≡ƒÄë`)
+L7317: debugLog("≡ƒ¢æ Auto-director cooldown STARTED for:", nextActivity);
+L7320: setWordSoundsActivity(nextActivity);
+L9809: if (activitySequence.length > 0) {
+L9812: const nextIdx = (sequenceIndex + 1) % activitySequence.length;
+L9814: setWordSoundsActivity(activitySequence[nextIdx]);
+L9821: {activitySequence.length > 0 ? ('Γ₧í∩╕Å ' + (ts('word_sounds.session_next_activity') || 'Next Activity')) : (ts('word_sounds.choose_activity') || 'Choose 
+L9849: activitySequence={activitySequence}
+L10003: {lessonPlanConfig && activitySequence?.length > 0 && (
+L10032: const uniqueActs = [...new Set(activitySequence)];

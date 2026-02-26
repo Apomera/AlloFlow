@@ -1,0 +1,9 @@
+--- Match for '<AlloBot' at line 64004 ---
+64001:         </div>
+64002:       )}
+64003:       {isBotVisible && (
+64004:           <AlloBot 
+64005:             ref={alloBotRef} 
+64006:             canPlayIntro={canPlayBotIntro}
+64007:             topic={sourceTopic || inputText || t('common.this_topic')} 
+

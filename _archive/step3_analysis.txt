@@ -1,0 +1,91 @@
+=== TOUR STEP 3 (GLOSSARY) ANALYSIS ===
+
+--- GLOSSARY UI COMPONENT ---
+
+Line 38: 'ui-tool-glossary': 'glossary',
+Line 16457: "glossary": "ui-tool-glossary",
+Line 26823: 'ui-tool-glossary': 'glossary',
+Line 27088: id: 'ui-tool-glossary',
+Line 28337: if (['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary'].includes(step.id)) {
+Line 28347: if (targetY < 80 && !['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary'].includes(step.id)) {
+Line 28380: 'glossary': 'ui-tool-glossary',
+Line 42476: if (isShowMeMode) performHighlight('ui-tool-glossary');
+Line 42504: if (isShowMeMode) performHighlight('ui-tool-glossary');
+Line 45580: if (type === 'glossary') flyToElement('ui-tool-glossary');
+Line 47458: if (type === 'glossary') flyToElement('ui-tool-glossary');
+Line 53993: <div id="ui-tool-glossary" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+
+
+--- GLOSSARY FEATURES ---
+
+
+--- definitionLevel ---
+Line 26674: const [glossaryDefinitionLevel, setGlossaryDefinitionLevel] = useState('Same as Source Text');
+Line 45646: if (glossaryDefinitionLevel === 'Same as Source Text') {
+Line 45648: } else if (glossaryDefinitionLevel === 'Same as Global Level') {
+Total: 6
+
+--- imageStyle ---
+Line 26668: const [glossaryImageStyle, setGlossaryImageStyle] = useState('');
+Line 45728: const styleInstruction = glossaryImageStyle.trim() ? `Style: ${glossaryImageStyle}.` : 'Simple, clear, flat vector art style.';
+Line 48983: const styleInstruction = glossaryImageStyle.trim() ? `Style: ${glossaryImageStyle}.` : 'Simple, clear, flat vector art style.';
+Total: 7
+
+--- flashcard ---
+Line 6874: prev_flashcard: "Previous Flashcard",
+Line 6875: next_flashcard: "Next Flashcard",
+Line 7063: flashcards_generated: "Flashcards generated!",
+Total: 239
+
+--- Flashcard ---
+Line 6874: prev_flashcard: "Previous Flashcard",
+Line 6875: next_flashcard: "Next Flashcard",
+Line 7063: flashcards_generated: "Flashcards generated!",
+Total: 239
+
+--- glossaryTerms ---
+Line 990: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, gradeLevel, t: tProp }) => {
+Line 1034: if (includeGlossary && glossaryTerms) {
+Line 1035: const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
+Total: 27
+
+--- setGlossaryTerms ---
+Total: 0
+
+--- generateGlossary ---
+Total: 0
+
+--- glossary.*audio ---
+Line 24826: const glossaryAudioCache = useRef(new Map());
+Line 26866: 'glossary_download_audio': 'glossary',
+Line 27089: text: `Generate a comprehensive Visual Glossary to support vocabulary acquisition. This tool is essential for pre-teaching and front-loading
+Total: 23
+
+--- Word.*Search ---
+Line 2990: // 2. Fallback: If not enough words, broaden search
+Line 7559: word_search: "Word Search",
+Line 7560: word_search_key: "Word Search Answer Key",
+Total: 47
+
+--- Bingo ---
+Line 7064: bingo_generated: "Bingo cards generated!",
+Line 7487: bingo: {
+Line 7488: generator_title: "Bingo Generator",
+Total: 118
+
+
+--- GLOSSARY VIEW COMPONENT ---
+
+Line 13073: } else if (activeView === 'glossary') {
+Line 30830: const isGlossaryActive = activeView === 'glossary' || isEditingGlossary;
+Line 53994: ${activeView === 'glossary' ? 'border-sky-600 shadow-xl shadow-sky-500/20' : 'border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500
+Line 56595: activeView === 'glossary' ? <><Globe className="text-blue-600" size={20} /> Glossary</> :
+Line 57194: {(activeView === 'glossary' || activeView === 'word-sounds') && (
+
+
+--- GLOSSARY GAMES ---
+
+Line 26512: const [wordSearchLang, setWordSearchLang] = useState('English');
+Line 7064: bingo_generated: "Bingo cards generated!",
+Line 7577: matching: "Matching",
+Line 7066: memory_game_generated: "Memory game generated!",

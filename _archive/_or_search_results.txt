@@ -1,0 +1,76 @@
+
+============================================================
+Searching: Phoneme app.txt
+============================================================
+Total lines: 1136
+
+--- All PHONEME_AUDIO_BANK keys ---
+  Keys found: 0
+
+  *** 'or' is MISSING from bank ***
+  R-controlled present: []
+  R-controlled missing: ['ar', 'er', 'ir', 'or', 'ur', 'ear']
+
+--- Any line with 'or' as object key (anywhere in file) ---
+  Total: 0
+
+============================================================
+Searching: AlloFlowANTI.txt
+============================================================
+Total lines: 73214
+
+--- All PHONEME_AUDIO_BANK keys ---
+  Bank function starts at L1141
+  Keys found: 45
+    L1144: 'ear' <-- R-CONTROLLED
+    L1145: 'ow'
+    L1146: 'th'
+    L1147: 'l'
+    L1148: 'ie'
+    L1149: 'e'
+    L1150: 'y'
+    L1151: 'wh'
+    L1152: 'k'
+    L1153: 'u'
+    L1154: 'q'
+    L1155: 'n'
+    L1156: 'h'
+    L1157: 'b'
+    L1158: 'oy'
+    L1159: 'ph'
+    L1160: 'd'
+    L1161: 'oo'
+    L1162: 'z'
+    L1163: 's'
+    L1164: 'er' <-- R-CONTROLLED
+    L1165: 'sh'
+    L1166: 'g'
+    L1167: 'ng'
+    L1168: 'oa'
+    L1170: 'a'
+    L1171: 'r'
+    L1172: 'v'
+    L1173: 'ck'
+    L1174: 'ee'
+    L1175: 'c'
+    L1176: 't'
+    L1177: 'p'
+    L1178: 'm'
+    L1179: 'ch'
+    L1180: 'w'
+    L1181: 'ar' <-- R-CONTROLLED
+    L1182: 'o'
+    L1183: 'f'
+    L1184: 'i'
+    L1185: 'ay'
+    L1186: 'j'
+    L1187: 'ir' <-- R-CONTROLLED
+    L1188: 'ur' <-- R-CONTROLLED
+    L1189: 'air'
+
+  *** 'or' is MISSING from bank ***
+  R-controlled present: ['ar', 'er', 'ir', 'ur', 'ear']
+  R-controlled missing: ['or']
+
+--- Any line with 'or' as object key (anywhere in file) ---
+  Total: 0

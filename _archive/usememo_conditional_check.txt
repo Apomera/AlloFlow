@@ -1,0 +1,25 @@
+Remaining useMemo count: 12
+
+L29748: const isCanvas = React.useMemo(() => {
+
+L29811: const adventureImageDB = React.useMemo(() => ({
+
+L34756: const latestLessonPlan = React.useMemo(() => {
+
+L35443: const filteredGlossaryData = useMemo(() => {
+
+L36445: const latestGlossary = React.useMemo(() => {
+
+L36460: const isClozeComplete = React.useMemo(() => {
+
+L36465: const displayLanguages = React.useMemo(() => {
+
+L42649: const isScaffoldComplete = React.useMemo(() => {
+
+L54068: const botAccessory = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards]);
+
+L54070: const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingA
+
+L54373: const activeSessionGroups = useMemo(() => Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null), [ses
+
+L60426: const realGrammarErrors = useMemo(() => rawGrammarNotes.filter(g => !isInvalidGrammarNote(g)), [rawGrammarNotes, isInval

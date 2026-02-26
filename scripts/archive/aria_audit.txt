@@ -1,0 +1,163 @@
+======================================================================
+  ARIA-LABEL ACCESSIBILITY AUDIT
+======================================================================
+
+  Total buttons without aria-label: 526
+  Has title (can derive label):     34
+  Has visible text (adequate):      256
+  Has both title + text:            115
+  Has NEITHER (needs attention):    121
+    of which have icon components:  59
+
+======================================================================
+  STRATEGY
+======================================================================
+
+  1. Buttons with title= but no aria-label:
+     → Add aria-label matching the title (best practice)
+  
+  2. Buttons with visible text but no aria-label:
+     → Already accessible via text content (no change needed)
+     
+  3. Buttons with NEITHER title nor text (icon-only):
+     → Need manual label based on icon/context
+
+
+======================================================================
+  CATEGORY A: Has title, no aria-label (auto-fixable)
+======================================================================
+  L3856: <button
+  L28908: <button
+  L34298: <button
+  L54605: <button
+  L55021: <button
+  L55076: <button
+  L55084: <button
+  L55149: <button
+  L55613: <button
+  L55628: <button
+  L55679: <button
+  L56049: <button
+  L56064: <button
+  L56448: <button
+  L56456: <button
+  L59081: <button
+  L59183: <button
+  L59828: <button
+  L60477: <button
+  L60485: <button
+  L60493: <button
+  L60501: <button
+  L60509: <button
+  L60517: <button
+  L61916: <button
+  L63139: <button
+  L64762: <button
+  L65172: <button
+  L65206: <button
+  L65255: <button
+  ... 34 total
+
+======================================================================
+  CATEGORY B: Has visible text (already accessible)
+======================================================================
+  L526: <button
+  L1751: <button data-help-key="ws_gen_expand" onClick={() => setIsMinimized(false)} clas
+  L1771: <button
+  L1820: <button
+  L2025: <button data-help-key="ws_gen_quick_add_btn"
+  L2204: <button
+  L2886: <button
+  L3017: <button
+  L3074: <button
+  L3130: <button
+  ... 256 total
+
+======================================================================
+  CATEGORY C: Icon-only, no title, no text (needs label)
+======================================================================
+  L4199: icons=['ChevronRight'] | onClick=handleSubmit | help_key=N/A
+  L8757: icons=['Mic'] | onClick=handleMicInput | help_key=N/A
+  L9335: icons=['Mic'] | onClick=handleMicInput | help_key=N/A
+  L22417: icons=['CheckCircle2'] | onClick=checkAnswers | help_key=matching_check_btn
+  L22747: icons=['CheckCircle2'] | onClick=checkOrder | help_key=timeline_check_btn
+  L25085: icons=['CheckCircle', 'XCircle', 'RefreshCw', 'Mic'] | onClick=handleMicCheck | help_key=N/A
+  L27576: icons=['FileDown'] | onClick=handleExportAnalyticsPDF | help_key=dashboard_export_pdf_btn
+  L28831: icons=['ArrowLeft'] | onClick=onClose | help_key=N/A
+  L29282: icons=['Sparkles'] | onClick=onConfirm | help_key=N/A
+  L34280: icons=['ListOrdered'] | onClick=handleVennScrambleBank | help_key=N/A
+  L51938: icons=['Gamepad2'] | onClick=handleSetIsVennPlayingToTrue | help_key=N/A
+  L51950: icons=['Gamepad2'] | onClick=handleInitializeVenn | help_key=N/A
+  L53941: icons=['Users', 'ChevronRight'] | onClick=handleSetShowGroupModalToTrue | help_key=N/A
+  L54312: icons=['Check'] | onClick=handleSetShowGroupModalToFalse | help_key=N/A
+  L54650: icons=['RefreshCw'] | onClick=resetFontSize | help_key=header_settings_text_reset
+  L54668: icons=['Eye'] | onClick=handleToggleFocusMode | help_key=header_settings_text_bionic
+  L55759: icons=['X'] | onClick=handleSetPersonaDefinitionDataToNull | help_key=N/A
+  L56699: icons=['Sparkles'] | onClick=handleSetActiveSidebarTabToCreate | help_key=sidebar_tab_create
+  L56719: icons=['MessageSquare', 'ChevronDown', 'ArrowRight'] | onClick=handleToggleShowUDLGuide | help_key=tool_udl
+  L58089: icons=['MessageCircleQuestion', 'ArrowRight'] | onClick=handleSetActiveViewToPersona | help_key=N/A
+  L58370: icons=['Sparkles', 'ArrowRight'] | onClick=handleGenerateMath | help_key=math_generate_button
+  L58994: icons=['RefreshCw', 'Sparkles', 'ArrowRight'] | onClick=handleGenerateLessonPlan | help_key=N/A
+  L59039: icons=['Sparkles', 'ArrowRight'] | onClick=handleGenerateFullPack | help_key=fullpack_generate
+  L59123: icons=['Wifi', 'ArrowRight'] | onClick=handleSetIsJoinPanelExpandedToTrue | help_key=N/A
+  L59234: icons=['Sparkles'] | onClick=handleStartAdventure | help_key=adventure_start_btn
+  L59243: icons=['Sparkles'] | onClick=handleStartAdventure | help_key=adventure_start_btn
+  L59740: icons=['Minimize'] | onClick=handleSetIsZenModeToFalse | help_key=N/A
+  L60291: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingAnalysis | help_key=N/A
+  L60651: icons=['ImageIcon'] | onClick=handleToggleShowFlashcardImages | help_key=N/A
+  L61143: icons=['Eye', 'MousePointerClick'] | onClick=handleToggleShowWordSearchAnswers | help_key=N/A
+  L61151: icons=['Printer'] | onClick=handlePrintGame | help_key=N/A
+  L61971: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingLeveledText | help_key=simplified_edit
+  L62104: icons=['X'] | onClick=handleSetIsCustomReviseOpenToFalse | help_key=N/A
+  L63027: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingOutline | help_key=N/A
+  L63198: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingQuiz | help_key=N/A
+  L63206: icons=['CheckSquare', 'CheckSquare'] | onClick=handleToggleShowQuizAnswers | help_key=N/A
+  L63582: icons=['Play'] | onClick=handleSetIsEscapeTimerRunningToTrue | help_key=N/A
+  L64481: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingFaq | help_key=faq_edit_toggle
+  L64629: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingScaffolds | help_key=scaffolds_edit_toggle
+  L64873: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingBrainstorm | help_key=N/A
+  L65238: icons=['History'] | onClick=handleResumeAdventure | help_key=adventure_resume_btn
+  L65245: icons=['RefreshCw'] | onClick=handleSetShowNewGameSetupToTrue | help_key=N/A
+  L65799: icons=['BookOpen', 'MousePointerClick'] | onClick=handleToggleImmersiveShowChoices | help_key=adventure_choice_toggle
+  L66038: icons=['Wifi'] | onClick=handleBroadcastOptions | help_key=N/A
+  L66133: icons=['Sparkles'] | onClick=handleStartSequel | help_key=N/A
+  L66173: icons=['Lock'] | onClick=N/A | help_key=N/A
+  L66180: icons=['Sparkles'] | onClick=handleUseItem | help_key=N/A
+  L66266: icons=['Download'] | onClick=handleDownloadImage | help_key=visuals_download
+  L66398: icons=['Gamepad2'] | onClick=handleSetIsTimelineGameToTrue | help_key=N/A
+  L66405: icons=['CheckCircle2', 'Pencil'] | onClick=handleToggleIsEditingTimeline | help_key=N/A
+  L66550: icons=['Gamepad2'] | onClick=handleSetIsTimelineGameToTrue | help_key=N/A
+  L66580: icons=['Filter'] | onClick=handleSetIsConceptSortGameToTrue | help_key=concept_sort_start_button
+  L66595: icons=['Gamepad2'] | onClick=handleSetIsConceptSortGameToTrue | help_key=concept_sort_start_button
+  L66656: icons=['EyeOff', 'Eye'] | onClick=handleToggleShowMathAnswers | help_key=math_toggle_answers
+  L66777: icons=['Eye'] | onClick=handleSetShowMathAnswersToTrue | help_key=N/A
+  L68235: icons=['Sparkles'] | onClick=launchEscapeRoomWithSettings | help_key=N/A
+  L68591: icons=['X'] | onClick=handleSetShowSaveModalToFalse | help_key=N/A
+  L68620: icons=['Save'] | onClick=executeSaveFile | help_key=N/A
+  L68995: icons=['X'] | onClick=handleSetShowStudyTimerModalToFalse | help_key=timer_close_btn
+  ... 59 total
+
+======================================================================
+  CATEGORY D: No title, no text, no icons (needs investigation)
+======================================================================
+  L471: onClick=onClose | <button
+  L519: onClick=onClose | <button
+  L2086: onClick=handleAiGenerate | <button
+  L2195: onClick=toggleAll | <button
+  L9031: onClick=checkSpellingBee | <button
+  L9188: onClick=checkScramble | <button
+  L17273: onClick=onClose | <button
+  L19790: onClick=onClose | <button
+  L20321: onClick=onCancel | <button
+  L20384: onClick=N/A | <button
+  L21985: onClick=initializeGame | <button
+  L23259: onClick=onClose | <button
+  L23791: onClick=checkPuzzle | <button onClick={checkPuzzle} className="px-3 py-1 bg-indigo-100 text-indigo-700
+  L23792: onClick=revealPuzzle | <button onClick={revealPuzzle} className="px-3 py-1 bg-red-100 text-red-700 roun
+  L23951: onClick=onClose | <button data-help-key="syntax_finish" onClick={onClose} className="bg-indigo-600
+  L23981: onClick=checkAnswer | <button
+  L24663: onClick=onClose | <button
+  L24708: onClick=handleSkip | <button data-help-ignore="true"
+  L24715: onClick=handleCheck | <button
+  L25219: onClick=onClose | <button onClick={onClose} className="mt-6 text-sm text-slate-500 hover:text-slat
+  ... 62 total

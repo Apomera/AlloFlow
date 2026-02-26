@@ -1,0 +1,69 @@
+L31412: glossaryHealthCheck: null,
+L31476: showHealthCheckPanel: false,
+L31598: const { isTeacherToolbarExpanded, showStudyTimerModal, showTimerConfetti, showSubmitModal, showExportMenu, showHealthChe
+L31604: const setShowHealthCheckPanel = (v) => uiDispatch({ type: 'UI_SET', field: 'showHealthCheckPanel', value: v });
+L32666: const { glossaryHealthCheck, isEditingGlossary, definitionData, personaDefinitionData, isGeneratingTermImage, glossaryRe
+L32667: const setGlossaryHealthCheck = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'glossaryHealthCheck', value: v });
+L32681: const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
+L32682: // [PHASE 4 MIGRATED] const [showHealthCheckPanel, setShowHealthCheckPanel] = useState(false);
+L35651: const handleToggleShowHealthCheckPanel = React.useCallback(() => setShowHealthCheckPanel(prev => !prev), []);
+L40190: const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
+L40191: debugLog('🩺 [HealthCheck] runGlossaryHealthCheck called with', terms?.length, 'terms');
+L40196: console.log('[HealthCheck] DIAG: First term keys:', Object.keys(sample));
+L40197: console.log('[HealthCheck] DIAG: Sample fields:', JSON.stringify({
+L40201: if (!terms || terms.length === 0) { debugLog('🩺 [HealthCheck] ABORTED: No terms'); return null; }
+L40202: setIsRunningHealthCheck(true);
+L40203: setShowHealthCheckPanel(true);
+L40214: console.log('[HealthCheck] DIAG: termList[0]:', JSON.stringify(termList[0]));
+L40215: console.log('[HealthCheck] DIAG: First line of prompt:',
+L40247: debugLog('🩺 [HealthCheck] Calling Gemini API...');
+L40249: debugLog('🩺 [HealthCheck] Gemini returned:', result ? `${String(result).substring(0, 100)}...` : 'EMPTY/NULL');
+L40263: setGlossaryHealthCheck(parsed);
+L40264: setIsRunningHealthCheck(false);
+L40268: console.error('🩺 [HealthCheck] FAILED:', e.message || e);
+L40269: setGlossaryHealthCheck({ error: true, summary: 'Analysis could not be completed.' });
+L40271: setIsRunningHealthCheck(false);
+L40279: const glossaryHealthCheckIdRef = React.useRef(null);
+L40280: const glossaryHealthCheckTimerRef = React.useRef(null);
+L40283: if (glossaryHealthCheckIdRef.current !== generatedContent.id) {
+L40285: if (glossaryHealthCheckTimerRef.current) {
+L40286: clearTimeout(glossaryHealthCheckTimerRef.current);
+L40287: glossaryHealthCheckTimerRef.current = null;
+L40289: glossaryHealthCheckIdRef.current = generatedContent.id;
+L40290: setGlossaryHealthCheck(null);
+L40291: debugLog('🩺 [HealthCheck] Auto-trigger fired! Glossary has', generatedContent.data.length, 'terms. Waiting 12s...');
+L40298: glossaryHealthCheckTimerRef.current = setTimeout(() => {
+L40299: glossaryHealthCheckTimerRef.current = null;
+L40300: debugLog('🩺 [HealthCheck] Timer elapsed, calling runGlossaryHealthCheck now...');
+L40303: runGlossaryHealthCheck(currentData, sourceText).then(hc => {
+L40304: debugLog('🩺 [HealthCheck] runGlossaryHealthCheck returned:', hc ? 'SUCCESS' : 'NULL', hc?.error ? '(error)' : '', hc?.su
+L40319: }, [generatedContent, history, runGlossaryHealthCheck]);
+L65949: {(glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && (
+L65950: <div className="mb-4 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm overflow-h
+L65952: onClick={handleToggleShowHealthCheckPanel}
+L65959: {isRunningHealthCheck && <RefreshCw size={14} className="animate-spin text-amber-600"/>}
+L65960: {glossaryHealthCheck && !glossaryHealthCheck.error && !isRunningHealthCheck && (
+L65962: {glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : ''} — {glossaryHealthCheck.definitionGrade
+L65972: runGlossaryHealthCheck(generatedContent.data, latestAnalysis?.data?.originalText || '');
+L65975: disabled={isRunningHealthCheck}
+L65982: onClick={(e) => { e.stopPropagation(); setGlossaryHealthCheck(null); setShowHealthCheckPanel(false); }}
+L65988: <ChevronDown size={16} className={`text-amber-600 transition-transform ${showHealthCheckPanel ? 'rotate-180' : ''}`}/>
+L65992: {showHealthCheckPanel && glossaryHealthCheck && !glossaryHealthCheck.error && (
+L65995: <p className="text-sm text-amber-800 italic pt-2">{glossaryHealthCheck.summary}</p>
+L65998: {glossaryHealthCheck.definitionGradeLevel && (
+L66002: <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${glossaryHealthCheck.gradeAppropriate ? 'bg-emerald-100 
+L66003: {glossaryHealthCheck.definitionGradeLevel}
+L66005: {glossaryHealthCheck.gradeAppropriate ?
+L66014: {glossaryHealthCheck.tierAudit && (
+L66018: {(Array.isArray(glossaryHealthCheck.tierAudit.tier2) ? glossaryHealthCheck.tierAudit.tier2 : []).map((t, i) => (
+L66021: {(Array.isArray(glossaryHealthCheck.tierAudit.tier3) ? glossaryHealthCheck.tierAudit.tier3 : []).map((t, i) => (
+L66025: {Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && (
+L66027: {glossaryHealthCheck.tierAudit.notes.map((note, i) => (
+L66032: {typeof glossaryHealthCheck.tierAudit.notes === 'string' && glossaryHealthCheck.tierAudit.notes.length > 0 && (
+L66034: <p className="text-xs text-slate-500 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p>
+L66041: {Array.isArray(glossaryHealthCheck.coverageGaps) && glossaryHealthCheck.coverageGaps.length > 0 && (
+L66045: {glossaryHealthCheck.coverageGaps.map((gap, i) => (
+L66065: {Array.isArray(glossaryHealthCheck.conceptConnections) && glossaryHealthCheck.conceptConnections.length > 0 && (
+L66069: {glossaryHealthCheck.conceptConnections.map((cc, i) => (
+L66085: {showHealthCheckPanel && glossaryHealthCheck && glossaryHealthCheck.error && (
+L66091: {showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && (

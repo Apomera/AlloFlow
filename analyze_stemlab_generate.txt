@@ -1,0 +1,12 @@
+enge,     fracFeedback,     fracAnswer,     handleGenerateMath   } = props;    // STEM Lab modal JSX   retur
+  id: 'create',     label: '📝 Create',     desc: 'Generate & assess'   }, {     id: 'explore',     label: '🔧
+ode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, 
+temLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Problems'), /*#__PURE__*/React.createElement("div
+      setTimeout(() => {         if (typeof handleGenerateMath === 'function') handleGenerateMath('Create an
+ (typeof handleGenerateMath === 'function') handleGenerateMath('Create an assessment with these sections:\n'
+ct.createElement(Sparkles, {     size: 16   }), " Generate All (", assessmentBlocks.reduce((s, b) => s + b.q
+    }       }       return area;     };     const generateLBlock = () => {       const positions = new Set()
+ton", {       onClick: () => {         const lb = generateLBlock();         setCubePositions(lb.positions); 
+-600 transition-all shadow-md"   }, "\uD83C\uDFB2 Generate Challenge") : /*#__PURE__*/React.createElement("d
+-600 transition-all shadow-md"   }, "\uD83C\uDFB2 Generate Challenge") : /*#__PURE__*/React.createElement("d
+-600 transition-all shadow-md"   }, "\uD83C\uDFB2 Generate Challenge") : /*#__PURE__*/React.createElement("d

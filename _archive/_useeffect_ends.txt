@@ -1,0 +1,70 @@
+
+=== useEffect starting at L2205 ===
+  L2226:         return () => clearInterval(interval);
+  L2227:     }, [preloadedWords]);
+  L2228: 
+  L2229: 
+  >> Closes at L2227
+
+=== useEffect starting at L6662 ===
+  L6794:         }
+  L6795:     }, [wordSoundsPhonemes, wordSoundsActivity, currentWordSoundsWord, generateSoundChips]);
+  L6796: 
+  L6797: 
+  >> Closes at L6795
+
+=== useEffect starting at L6802 ===
+  L6873: 
+  L6874:     }, [wordSoundsActivity, wordSoundsPhonemes, handleAudio, currentWordSoundsWord]); // Removed isolationState to prevent loop
+  L6875: 
+  L6876: 
+  >> Closes at L6874
+
+=== useEffect starting at L18913 ===
+  L18941:       return () => window.removeEventListener('mousemove', handleMouseMove);
+  L18942:   }, []);
+  L18943:   const [customMessage, setCustomMessage] = useState(null);
+  L18944:   const [isTruncated, setIsTruncated] = useState(false);
+  >> Closes at L18942
+
+=== useEffect starting at L19621 ===
+  L19659:     };
+  L19660:   }, [isDragging, onClick]);
+  L19661: 
+  L19662:   const moodConfig = {
+  >> Closes at L19660
+
+=== useEffect starting at L27737 ===
+  L27771:     return () => clearInterval(timer);
+  L27772:   }, [escapeState?.isActive, escapeState?.isPaused, escapeState?.timeRemaining, activeSessionCode, appId]);
+  L27773: 
+  L27774:   if (!escapeState?.isActive) return null;
+  >> Closes at L27772
+
+=== useEffect starting at L34487 ===
+  L34573:     return () => document.removeEventListener('click', handleHelpClick, true);
+  L34574:   }, [isHelpMode, tourSteps]);
+  L34575: 
+  L34576:   // Apply/remove interactive class to help elements when Help Mode toggles
+  >> Closes at L34574
+
+=== useEffect starting at L36992 ===
+  L37074:     return () => clearTimeout(timeoutId);
+  L37075:   }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded]);
+  L37076:   useEffect(() => {
+  L37077:       if (!lzLoaded) return;
+  >> Closes at L37075
+
+=== useEffect starting at L37675 ===
+  L37796:     };
+  L37797:   }, [currentUiLanguage]);
+  L37798:   useEffect(() => {
+  L37799:       if (!recognitionRef.current) return;
+  >> Closes at L37797
+
+=== useEffect starting at L38376 ===
+  L38397:     };
+  L38398:   }, [isDraggingBank, dragBankOffset]);
+  L38399: 
+  L38400:   const handleBankMouseDown = (e) => {
+  >> Closes at L38398

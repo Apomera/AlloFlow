@@ -1,0 +1,65 @@
+=== CONCEPT SORT DEEP DIVE RESEARCH ===
+
+--- STATE & MODES ---
+[sortItems] Line 37201: const sortItems = item.data.items || [];
+
+--- DRAG AND DROP ---
+[onDragStart] Line 56748: onDragStart={(e) => handleDragStart(e, idx)}
+[onDragStart] Line 60932: onDragStart={(e) => e.dataTransfer.setData('text/plain', dis
+... and 2 more for 'onDragStart'
+[onDragEnd] Line 56751: onDragEnd={handleDragEnd}
+[onDragEnd] Line 63753: onDragEnd={handleTimelineDragEnd}
+[onDrop] Line 60934: onDrop={(e) => {
+[draggable] Line 27422: • **Venn Diagram**: Compare and contrast two or more concepts with draggable sections.
+[draggable] Line 56747: draggable={editingId === null}
+... and 3 more for 'draggable'
+[handleDrag] Line 56748: onDragStart={(e) => handleDragStart(e, idx)}
+[handleDrag] Line 56749: onDragEnter={(e) => handleDragEnter(e, idx)}
+... and 1 more for 'handleDrag'
+
+--- GAMIFICATION ---
+
+--- CATEGORY TYPES ---
+[categoryLabel] Line 626: getCategoryLabel(category, t) {
+
+--- INTERACTIVE FEATURES ---
+[showAnswer] Line 26536: const [reviewGameState, setReviewGameState] = useState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
+
+--- ACCESSIBILITY ---
+[aria] Line 8934: close_aria: "Close Concept Sort",
+[keyboard] Line 28419: 'concept_sort_card_item': "Drag to a category bin, or use arrow buttons for keyboard sorting. Double-click to edit.",
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 46: 'tour-tool-concept-sort': 'concept-sort',
+Line 47: 'tour-tool-math': 'math',
+Line 48: 'tour-tool-adventure': 'adventure',
+Line 49: 'ui-tool-quiz': 'quiz',
+Line 50: 'tour-tool-alignment': 'alignment-report',
+Line 51: 'tour-tool-lesson-plan': 'lesson-plan',
+Line 52: 'tour-tool-analysis': 'analysis',
+Line 53: 'tour-tool-persona': 'persona',
+Line 54: 'tour-tool-fullpack': 'lesson-plan'
+Line 55: };
+Line 56: const APP_CONFIG = {
+Line 57: _cfg_validation_key: "",
+Line 58: features: {
+Line 59: adventureMode: true,
+Line 60: mathSolver: true,
+Line 61: answerKeys: true,
+Line 62: scaffolds: true
+Line 63: }
+Line 64: };
+Line 65: const TEACHER_ONLY_TYPES = [
+Line 66: 'lesson-plan',
+Line 67: 'udl-advice',
+Line 68: 'brainstorm',
+Line 69: 'alignment-report'
+Line 70: ];
+Line 71: let globalAudioCtx = null;
+Line 72: let globalTtsQueue = Promise.resolve();
+Line 73: let globalCachedKey = ""; // Cache key to prevent false negatives if window.apiKey is transient
+Line 74: 
+Line 75: const getGlobalAudioContext = () => {
+Line 76: if (globalAudioCtx) return globalAudioCtx;
+
+--- UI SELECTOR OPTIONS ---

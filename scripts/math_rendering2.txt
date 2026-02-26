@@ -1,0 +1,207 @@
+
+                    : `I've solved the problem and generated some practice equations. Let's crunch some numbers!`;
+              } else if (type === 'persona') {
+                  const name = latest.data?.name || latest.data?.character?.name;
+                  message = name
+                    ? `${name} is ready for your interview! Ask them anything about the topic and they'll respond in character.`
+                    : `Your interview partner is ready. You can ask them anything about the topic!`;
+              } else if (type === 'alignment') {
+                  message = `I've audited the content against your standards. Check the Rigor Report to see how well it aligns.`;
+              } else {
+                  if (type === 'timeline') tips.push(t('tips.timeline_drag'));
+                  else if (type === 'lesson-plan') tips.push(t('tips.fallback_guide'));
+                  else if (type === 'image') tips.push("I've created a visual support for the topic! You can save it or use it as a discussion starter in class.");
+                  if (tips.length > 0) message = tips[Math.floor(Math.random() * tips.length)];
+              }
+              if (message) {
+                   speak(message, false);
+              }
+          }, 2000);
+          return () => {
+              if (pendingSpeechTimerRef.current) {
+                  clearTimeout(pendingSpeechTimerRef.current);
+                  pendingSpeechTimerRef.current = null;
+              }
+          };
+      }
+  }, [history, speak, t, isTalking]);
+  useEffect(() => {
+    let ambientTimer;
+    let fallbackTimer;
+    let lastActivityTime = Date.now();
+    let hasSpokenFallback = false;
+    const getRandomTip = () => {
+        const has = (type) => history && Array.isArray(history) && history.some(h => h && h.type === type);
+        const tips = [];
+
+        const latestText = history && Array.isArray(history) && history.find(h => h && h.type === 'simplified');
+        const topic = (latestText && latestText.topic) || (typeof generatedContent !== 'undefined' && generatedContent && generatedContent.topic) || '';
+        const glossaryEntry = history && Array.isArray(history) && history.find(h => h && h.type === 'glossary');
+        const glossaryTerms = (glossaryEntry && glossaryEntry.data && glossaryEntry.data.terms) || [];
+        const resourceCount = (history && Array.isArray(history)) ? history.length : 0;
+        const allTypes = ['quiz', 'glossary', 'adventure', 'lesson-plan', 'image', 'timeline', 'brainstorm'];
+        const missingTypes = allTypes.filter(tp => !has(tp));
+        const suggestion = missingTypes.length > 0 ? missingTypes[Math.floor(Math.random() * missingTypes.length)].replace('-', ' ') : 'review game';
+
+        const randomWord = glossaryTerms.length > 0
+            ? (glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)].term || glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)])
+            : '';
+        const term1 = glossaryTerms.length > 0 ? (glossaryTerms[0].term || glossaryTerms[0]) : '';
+        const term2 = glossaryTerms.length > 1 ? (glossaryTerms[1].term || glossaryTerms[1]) : '';
+
+        if (activeView === 'simplified') {
+            if (randomWord) {
+                tips.push(t('tips.simplified_def', { word: randomWord }));
+            } else {
+                tips.push(t('tips.simplified_def_fallback') || t('tips.simplified_def'));
+            }
+            if (!has('quiz')) tips.push(t('tips.simplified_quiz'));
+            if (!has('glossary')) {
+                if (term1 && term2) {
+                    tips.push(t('tips.simplified_glossary', { term1, term2 }));
+                } else {
+                    tips.push(t('tips.simplified_glossary_fallback') || t('tips.simplified_glossary'));
+                }
+            }
+        } else if (activeView === 'glossary') {
+            tips.push(t('tips.glossary_bingo'));
+            if (!has('image')) tips.push(t('tips.glossary_visuals'));
+        } else if (activeView === 'quiz') {
+            tips.push(t('tips.quiz_autograder'));
+        } else if (activeView === 'adventure') {
+            if (topic) {
+                tips.push(t('tips.adventure_context', { topic, suggestion }));
+            } else {
+                tips.push(t('tips.adventure_context_fallback') || t('tips.adventure_context'));
+            }
+        } else if (activeView === 'input') {
+            if (history.length === 0) {
+                tips.push(t('tips.input_ready'));
+            } else {
+                if (topic) {
+                    tips.push(t('tips.input_next', { count: resourceCount, topic, suggestion }));
+                } else {
+                    tips.push(t('tips.input_next_fallback') || t('tips.input_next'));
+                }
+            }
+        }
+
+        if (typeof userRole !== 'undefined' && userRole === 'parent') {
+            tips.push(t('tips.parent_bedtime'));
+            tips.push(t('tips.parent_adventure'));
+            tips.push(t('tips.parent_read_along'));
+        }
+
+        if (resourceCount >= 3 && !has('lesson-plan')) {
+            tips.push(t('tips.fallback_lesson_plan'));
+        }
+
+        if (tips.length === 0) {
+            tips.push(t('tips.fallback_brainstorm'));
+            if (topic && resourceCount > 0) {
+                tips.push(t('tips.fallback_export', { count: resourceCount, topic }));
+            } else {
+                tips.push(t('tips.fallback_export_fallback') || t('tips.fallback_export'));
+            }
+        }
+        return tips[Math.floor(Math.random() * tips.length)];
+    };
+    const scheduleAmbientAction = () => {
+        const delay = 60000 + Math.random() * 60000;
+        ambientTimer = setTimeout(() => {
+            if (isDragging || isTalking || customMessage || isIdleDisabled || isSleeping) {
+                scheduleAmbientAction();
+                return;
+            }
+            const anims = ['wave', 'backflip', 'shrug', 'look-around'];
+            const action = anims[Math.floor(Math.random() * anims.length)];
+            setIdleAnimation(action);
+            setTimeout(() => setIdleAnimation(null), 2000);
+            if (Math.random() < 0.3) {
+                 const tip = getRandomTip();
+                 speak(tip, true);
+            }
+            scheduleAmbientAction();
+        }, delay);
+    };
+    const checkFallbackInactivity = () => {
+        const now = Date.now();
+        if (now - lastActivityTime > 300000 && !hasSpokenFallback) {
+             if (!isDragging && !isTalking && !isSystemAudioActive && !customMessage && !isIdleDisabled && !isSleeping) {
+                 const tip = getRandomTip();
+                 speak(tip, false);
+                 hasSpokenFallback = true;
+             }
+             lastActivityTime = Date.now();
+        }
+    };
+    fallbackTimer = setInterval(checkFallbackInactivity, 10000);
+    const resetInactivity = () => {
+        lastActivityTime = Date.now();
+        hasSpokenFallback = false;
+    };
+    window.addEventListener('mousemove', resetInactivity);
+    window.addEventListener('keydown', resetInactivity);
+    window.addEventListener('click', resetInactivity);
+    window.addEventListener('scroll', resetInactivity);
+    scheduleAmbientAction();
+    return () => {
+        clearTimeout(ambientTimer);
+        clearInterval(fallbackTimer);
+        window.removeEventListener('mousemove', resetInactivity);
+        window.removeEventListener('keydown', resetInactivity);
+        window.removeEventListener('click', resetInactivity);
+        window.removeEventListener('scroll', resetInactivity);
+    };
+  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t]);
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setIsSquashed(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragStartRef.current = { x: clientX, y: clientY };
+    startPosRef.current = { ...position };
+    prevDragPos.current = { x: clientX, y: clientY };
+  };
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const deltaX = dragStartRef.current.x - clientX;
+      const deltaY = clientY - dragStartRef.current.y;
+      const velocityX = clientX - prevDragPos.current.x;
+      const rotation = Math.max(-20, Math.min(20, velocityX * -0.5));
+      setDragRotation(rotation);
+      prevDragPos.current = { x: clientX, y: clientY };
+      setPosition({
+        x: Math.max(10, startPosRef.current.x + deltaX),
+        y: Math.max(10, startPosRef.current.y + deltaY)
+      });
+    };
+    const handleMouseUp = (e) => {
+      setIsDragging(false);
+      setIsSquashed(false);
+      setDragRotation(0);
+      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      const dist = Math.hypot(clientX - dragStartRef.current.x, clientY - dragStartRef.current.y);
+      if (dist < 5 && onClick) onClick();
+    };
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleMouseMove, { passive: false });
+      window.addEventListener('touchend', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('touchend', handleMouseUp);
+    };
+  }, [isDragging, onClick]);
+  const moodConfig = {
+      idle: { gradFrom: '#818CF8', gradTo: '#4338CA', eye: '#22D3EE', mouth: '#22D3EE', glow: '#6366F1', msg: t('bot.mood_idle') },
+      happy: { gradFrom: '#34D399', gradTo: '#059669', eye: '#FFFFFF', mouth: '#FFFFFF', glow: '#10B981', msg: t('bot.mood_happy') },

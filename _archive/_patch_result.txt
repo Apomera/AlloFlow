@@ -1,0 +1,14 @@
+Raw file size: 4895304 bytes
+After dedup CR: 4895304 bytes
+Normalized: 4739592 chars
+FIX 1: Already clean (no duplicate)
+FIX 2a: usedScrambleIndices already exists
+FIX 2b: Tile already has depletion tracking
+FIX 2c WARNING: Clear button onClick not found near word_scramble_clear
+FIX 2d WARNING: correct handler pattern not found near Unscrambled
+FIX 2e WARNING: wrong handler not found near 'Not quite'
+FIX 3a: Already reports distractor clicks
+FIX 3b: Parent callback already fixed
+
+Total changes: 0
+Saved AlloFlowANTI.txt (4890724 chars)

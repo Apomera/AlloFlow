@@ -1,0 +1,68 @@
+=== TOUR TITLE SEARCH RESULTS ===
+
+
+
+Total tour titles found: 0
+
+
+=== SEARCHING FOR tour: OBJECT ===
+
+Found tour section (3257 chars):
+
+        spotlight_title: "Spotlight",
+        source_title: "Source Material",
+        source_desc: "Paste your text, upload a file, or enter a URL here to get started.",
+        analysis_title: "Text Analysis",
+        analysis_desc: "AI analyzes your content for grade level, key concepts, and vocabulary.",
+        glossary_title: "Smart Glossary",
+        glossary_desc: "Review and edit key terms extracted from the text. Click terms to modify.",
+        simplified_title: "Differentiation Tools",
+        simplified_desc: "Access simplified versions, translations, and modification tools for diverse learners.",
+        outline_title: "Visual Organizer",
+        outline_desc: "See a structured breakdown of the content including main ideas and details.",
+        visual_title: "Visual Aids",
+        visual_desc: "AI-generated images to support visual learning and comprehension.",
+        faq_title: "FAQ Generator",
+        faq_desc: "Anticipate student questions with these generated FAQs.",
+        scaffolds_title: "Instructional Scaffolds",
+        scaffolds_desc: "Get teaching strategies and scaffolds tailored to this content.",
+        quiz_title: "Exit Ticket",
+        quiz_desc: "Generate a quick assessment to check for understanding.",
+        fullpack_title: "Full Lesson Pack",
+        fullpack_desc: "Download all generated resources as a single comprehensive PDF.",
+        brainstorm_title: "Engagement Ideas",
+        brainstorm_desc: "Get creative ideas for opening hooks and class activities.",
+        timeline_title: "Timeline Builder",
+        timeline_desc: "Visualize the sequence of events or steps.",
+        concept_title: "Concept Sort",
+        concept_desc: "Interactive activity to categorize key concepts.",
+        math_title: "Math Application",
+        math_desc: "Generate relevant word problems and connections to math concepts.",
+        persona_title: "AI Persona",
+
+        persona_desc: "Simulate a conversation with a character or figure from the
+
+=== TITLES IN TOUR SECTION ===
+spotlight_title: Spotlight
+source_title: Source Material
+analysis_title: Text Analysis
+glossary_title: Smart Glossary
+simplified_title: Differentiation Tools
+outline_title: Visual Organizer
+visual_title: Visual Aids
+faq_title: FAQ Generator
+scaffolds_title: Instructional Scaffolds
+quiz_title: Exit Ticket
+fullpack_title: Full Lesson Pack
+brainstorm_title: Engagement Ideas
+timeline_title: Timeline Builder
+concept_title: Concept Sort
+math_title: Math Application
+persona_title: AI Persona
+wordsounds_title: Word Sounds Studio
+glossary_settings_title: Glossary Settings
+simplified_settings_title: Leveled Text Settings
+analysis_settings_title: Analysis Options
+visual_settings_title: Image Settings
+faq_settings_title: FAQ Generator
+scaffolds_settings_title: Scaffolding Options

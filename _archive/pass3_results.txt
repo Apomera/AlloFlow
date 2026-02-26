@@ -1,0 +1,114 @@
+======================================================================
+ANALYSIS 1: Event Listener Cleanup
+======================================================================
+addEventListener calls: 39
+removeEventListener calls: 38
+Ratio: 38/39
+
+Event type breakdown:
+  [WARN] 'DOMContentLoaded': add=1, remove=0
+    Unmatched add at L42994
+  [WARN] 'audio_bank_loaded': add=1, remove=0
+    Unmatched add at L57
+  [OK] 'click': add=4, remove=5
+  [OK] 'focusin': add=1, remove=1
+  [WARN] 'input': add=1, remove=0
+    Unmatched add at L42999
+  [OK] 'keydown': add=7, remove=8
+  [OK] 'mousemove': add=7, remove=7
+  [OK] 'mouseup': add=4, remove=4
+  [OK] 'offline': add=1, remove=1
+  [OK] 'online': add=1, remove=1
+  [OK] 'resize': add=1, remove=1
+  [OK] 'result': add=1, remove=1
+  [OK] 'scroll': add=2, remove=2
+  [OK] 'touchend': add=2, remove=2
+  [OK] 'touchmove': add=2, remove=2
+
+======================================================================
+ANALYSIS 2: Object URL Cleanup
+======================================================================
+createObjectURL calls: 13
+revokeObjectURL calls: 18
+  CREATE L10581: const url = URL.createObjectURL(blob);
+  CREATE L17944: const url = URL.createObjectURL(blob);
+  CREATE L28612: const url = URL.createObjectURL(blob);
+  CREATE L39679: const url = URL.createObjectURL(blob);
+  CREATE L42022: const audioUrl = URL.createObjectURL(blob);
+  CREATE L43130: const url = URL.createObjectURL(content);
+  CREATE L43219: const url = URL.createObjectURL(content);
+  CREATE L43845: const url = URL.createObjectURL(content);
+  CREATE L43869: const url = URL.createObjectURL(blob);
+  CREATE L43955: const url = URL.createObjectURL(blob);
+  CREATE L44091: const url = URL.createObjectURL(blob);
+  CREATE L47409: const url = URL.createObjectURL(blob);
+  CREATE L61036: const url = URL.createObjectURL(blob);
+  REVOKE L10588: URL.revokeObjectURL(url);
+  REVOKE L17951: URL.revokeObjectURL(url);
+  REVOKE L19170: URL.revokeObjectURL(lastAudioUrlRef.current);
+  REVOKE L19220: URL.revokeObjectURL(lastAudioUrlRef.current);
+  REVOKE L31326: activeBlobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+  REVOKE L36913: URL.revokeObjectURL(url);
+  REVOKE L41248: URL.revokeObjectURL(phonicsData.audioUrl);
+  REVOKE L41294: URL.revokeObjectURL(currentSrc);
+  REVOKE L41841: URL.revokeObjectURL(audioUrl);
+  REVOKE L42029: setTimeout(() => URL.revokeObjectURL(audioUrl), 1000);
+  REVOKE L43137: URL.revokeObjectURL(url);
+  REVOKE L43226: URL.revokeObjectURL(url);
+  REVOKE L43852: URL.revokeObjectURL(url);
+  REVOKE L43876: URL.revokeObjectURL(url);
+  REVOKE L43962: URL.revokeObjectURL(url);
+  REVOKE L44098: URL.revokeObjectURL(url);
+  REVOKE L47416: URL.revokeObjectURL(url);
+  REVOKE L61041: URL.revokeObjectURL(url);
+
+======================================================================
+ANALYSIS 3: Audio/Media Resources
+======================================================================
+new Audio() calls: 17
+  L3587: const audio = new Audio(textToPlay);
+  L3606: const audio = new Audio(PHONEME_AUDIO_BANK[text]);
+  L3642: const audio = new Audio(src);
+  L7172: const tryAgainAudio = new Audio(INSTRUCTION_AUDIO['fb_try_again_listen']);
+  L7203: const almostAudio = new Audio(INSTRUCTION_AUDIO['fb_almost']);
+  L7435: const audio = new Audio(INSTRUCTION_AUDIO['fb_amazing']);
+  L7475: const audio = new Audio(INSTRUCTION_AUDIO[feedbackAudioKey]);
+  L19296: const audio = new Audio(audioUrl);
+  L25405: const audio = new Audio(url);
+  L41193: const audio = new Audio(audioUrl);
+  L41483: audio = new Audio(audioUrl);
+  L41556: const a = new Audio(url);
+  L41707: const audio = new Audio(glossaryAudioCache.current.get(effectiveText));
+  L41831: const audio = new Audio(audioUrl);
+  L53810: const audio = new Audio(audioUrl);
+  L63374: const audio = new Audio(phonicsData.audioUrl);
+  L67226: const audio = new Audio(opt.audio);
+audio.src assignments: 1
+
+======================================================================
+ANALYSIS 4: useEffect Cleanup Returns
+======================================================================
+Total useEffect calls: 208
+With cleanup return: 79
+Without cleanup return: 129
+Effects without cleanup (first 20):
+  L1651: React.useEffect(() => {
+  L2405: React.useEffect(() => {
+  L3389: React.useEffect(() => {
+  L3547: React.useEffect(() => {
+  L3554: React.useEffect(() => {
+  L4159: React.useEffect(() => {
+  L4319: React.useEffect(() => {
+  L4527: React.useEffect(() => {
+  L5331: React.useEffect(() => {
+  L5843: React.useEffect(() => {
+  L5856: React.useEffect(() => {
+  L5888: React.useEffect(() => {
+  L6267: React.useEffect(() => {
+  L6340: React.useEffect(() => {
+  L6486: React.useEffect(() => {
+  L6550: React.useEffect(() => {
+  L6747: React.useEffect(() => {
+  L6777: React.useEffect(() => {
+  L6798: React.useEffect(() => {
+  L6818: React.useEffect(() => {

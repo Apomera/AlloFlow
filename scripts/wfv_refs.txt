@@ -1,0 +1,29 @@
+Total lines: 67535
+
+--- WordFamiliesView at L8728 ---
+      L8725:                 return (
+      L8726:                     <div className="space-y-4">
+      L8727:                     {renderPrompt()}
+  >>> L8728:                     <WordFamiliesView
+      L8729:                         key={`wf-${targetWord}`}
+      L8730:                         data={{
+      L8731:                             family: `-${targetRime} family`,
+
+--- WordFamiliesView at L31589 ---
+      L31586:                 return (
+      L31587:                     <div className="space-y-4">
+      L31588:                     {renderPrompt()}
+  >>> L31589:                     <WordFamiliesView
+      L31590:                         key={`wf-${targetWord}`}
+      L31591:                         data={{
+      L31592:                             family: `-${targetRime} family`,
+
+--- WordFamiliesView at L45181 ---
+      L45178:                 return (
+      L45179:                     <div className="space-y-4">
+      L45180:                     {renderPrompt()}
+  >>> L45181:                     <WordFamiliesView
+      L45182:                         key={`wf-${targetWord}`}
+      L45183:                         data={{
+      L45184:                             family: `-${targetRime} family`,
+

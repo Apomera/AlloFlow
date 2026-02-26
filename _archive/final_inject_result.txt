@@ -1,0 +1,62 @@
+﻿Starting line count: 71021
+Removed 125 ORPHAN FIX lines
+Removed 13 duplicate adventure keys
+UI_STRINGS: L11216 to L17705 (6490 lines)
+Defined keys after cleanup: 5122
+Still missing: 49 keys
+  adventure.back_to_resume
+  adventure.fallback_opening
+  adventure.generating_options_audio
+  adventure.interrupted_desc
+  adventure.interrupted_title
+  adventure.paused_desc
+  adventure.paused_title
+  adventure.retry_action
+  adventure.save_reminder
+  adventure.setup_subtitle
+  adventure.start_overwrite
+  adventure.system_simulation
+  adventure.system_state
+  chat_guide.blueprint.analyzing
+  chat_guide.blueprint.auto_fill_stop
+  chat_guide.blueprint.change_fail
+  chat_guide.blueprint.complete
+  chat_guide.blueprint.error
+  chat_guide.blueprint.presented
+  chat_guide.blueprint.reset
+  chat_guide.blueprint.updated
+  chat_guide.flow.adapting_text
+  chat_guide.flow.added_lang
+  chat_guide.flow.creating_worksheet
+  chat_guide.flow.generating_glossary
+  chat_guide.flow.generating_text
+  chat_guide.flow.generating_visual
+  chat_guide.flow.initial_prompt_context
+  chat_guide.flow.integrating_interest
+  chat_guide.flow.interest_check
+  chat_guide.flow.keyword_pack
+  chat_guide.flow.keyword_step
+  chat_guide.flow.no_langs_warning
+  chat_guide.flow.offer_analysis
+  chat_guide.flow.offer_glossary
+  chat_guide.flow.offer_text
+  chat_guide.flow.offer_visual
+  chat_guide.flow.option_pack
+  chat_guide.flow.option_step
+  chat_guide.flow.running_analysis
+  chat_guide.flow.skipping_analysis
+  chat_guide.flow.skipping_text
+  chat_guide.flow.skipping_visual
+  chat_guide.flow.source_prompt
+  chat_guide.flow.start_scratch
+  chat_guide.pack.comprehensive
+  chat_guide.pack.count_selection
+  chat_guide.pack.designing
+  chat_guide.pack.error
+  adventure: 13 keys -> insert before L17481
+  chat_guide.blueprint: 8 keys -> insert before L16767
+  chat_guide.flow: 24 keys -> insert before L16749
+  chat_guide.pack: 4 keys -> insert before L16777
+
+Final line count: 70887
+Done!

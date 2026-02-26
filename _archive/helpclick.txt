@@ -1,0 +1,4 @@
+﻿L32505:     const handleHelpClick = (e) => {
+L32576:     document.addEventListener('click', handleHelpClick, true); // Capture phase - block first, allow ignored
+L32577:     return () => document.removeEventListener('click', handleHelpClick, true);
+L32988:           // Help Mode manages its own state via handleHelpClick and Close button

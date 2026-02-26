@@ -1,0 +1,156 @@
+
+=== grounding: 76 matches ===
+  L11003: • **Fact Verification**: Enable web grounding to verify facts and include citations automatically.
+  L11016: • **Check Accuracy**: Enable web grounding to verify factual claims and identify potential inaccuracies in your source text.
+  L13517: grounding_desc: "Uses Grounded Search to verify facts and dates (slower).",
+  L20016: /* NEW: Shadow Pulse (Grounding) - Syncs with allo-float (3s) */
+  L22201: * 1. Wraps isolated citation markers (⁽¹⁾) with links if grounding data available
+  L22204: const validateAndRepairCitations = (text, groundingChunks) => {
+  L22205: if (!text || !groundingChunks || groundingChunks.length === 0) return text;
+  L22227: // Otherwise, try to add link from grounding chunk
+  ... and 68 more
+
+=== groundingMetadata: 23 matches ===
+  L29625: if (result && result.groundingMetadata?.groundingChunks) {
+  L29626: const rawChunks = result.groundingMetadata.groundingChunks;
+  L39820: groundingMetadata: data.candidates?.[0]?.groundingMetadata
+  L39844: if (useSearch) return { text: "Definition unavailable due to content safety filters.", groundingMetadata: null };
+  L41123: if (result && result.groundingMetadata?.groundingChunks) {
+  L41124: const rawChunks = result.groundingMetadata.groundingChunks;
+  L41413: metadata = result.groundingMetadata;
+  L41707: let processedSection = processGrounding(cleanedSection, result.groundingMetadata, 'Links Only', false, false);
+  ... and 15 more
+
+=== citation: 161 matches ===
+  L11003: • **Fact Verification**: Enable web grounding to verify facts and include citations automatically.
+  L11956: citations_unavailable: "Web citations unavailable for this topic. Content generated without sources.",
+  L12193: verify_facts_desc: "AI researches your topic and includes inline citations with linked references",
+  L12202: error_optimization_timeout: "Optimization timed out. Showing raw citations.",
+  L12246: verify_facts: "Research with Web Search (Includes Citations)",
+  L12279: citation_style: "Citation Style:",
+  L12296: input_citation_label: "Citation Style",
+  L13098: preserve_links: "Preserve Links & Citations",
+  ... and 153 more
+  webSearch: 0 matches
+  vertexai_link: 0 matches
+
+=== analyzeSource: 4 matches ===
+  L12130: tool_analysis: "Analyze Source Material",
+  L13196: use_analysis_context: "Use \"Analyze Source\" Context",
+  L13514: title: "Analyze Source Material",
+  L16830: title: "Analyze Source",
+
+=== sourceText: 136 matches ===
+  L10998: • **Generate Source Text**: Create original content by specifying topic, tone, grade level, and target standards.
+  L11016: • **Check Accuracy**: Enable web grounding to verify factual claims and identify potential inaccuracies in your source text.
+  L11403: • **Contextualized Problems**: Word problems use characters/themes from your source text
+  L11782: edit_source_text: "Edit source text here...",
+  L11846: no_text: "Please enter or generate source text first.",
+  L12180: placeholder: "Paste curriculum text here, upload a PDF/Image/Text/Audio file (max 20MB), or use 'Generate Source Text'...",
+  L12200: status_generating: "Generating source text...",
+  L12496: source: "Same as Source Text",
+  ... and 128 more
+
+=== handleGenerate: 39 matches ===
+  L46501: handleGenerate('brainstorm');
+  L49603: const resultItem = await handleGenerate('analysis');
+  L49661: const resultItem = await handleGenerate('glossary');
+  L49688: const resultItem = await handleGenerate('glossary');
+  L49727: const resultItem = await handleGenerate('simplified');
+  L49747: await handleGenerate('simplified');
+  L49771: await handleGenerate('simplified');
+  L49801: await handleGenerate('outline');
+  ... and 31 more
+
+=== generatedContent: 704 matches ===
+  L3186: lessonPlanConfig = null, // Lesson plan configuration from generatedContent
+  L21116: const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, activeSessionCode, targetAppId }) => {
+  L21118: if (!sessionData?.quizState?.isActive || !generatedContent || generatedContent.type !== 'quiz') return null;
+  L21121: const currentQuestion = generatedContent.data.questions?.[currentQuestionIndex];
+  L21224: {currentQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent.data.questions.length}</span>
+  L27951: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCre
+  L27955: const question = generatedContent.data.questions[currentQuestionIndex];
+  L28029: const topic = generatedContent.meta || "General Knowledge";
+  ... and 696 more
+
+=== dangerouslySetInnerHTML: 10 matches ===
+  L21000: dangerouslySetInnerHTML={{ __html: htmlContent }}
+  L21442: dangerouslySetInnerHTML={{
+  L29220: dangerouslySetInnerHTML={{
+  L60020: <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback
+  L60512: <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback
+  L64293: dangerouslySetInnerHTML={{ __html: t('analysis.header_description') }}
+  L68941: dangerouslySetInnerHTML={{ __html: t('udl_advice.header_description') }}
+  L70838: <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('visuals.warning.desc') }}></p>
+  ... and 2 more
+
+=== originalText: 68 matches ===
+  L34284: 'simplified_compare_mode': "Display original and simplified versions together. Side-by-side layout shows: original text on left, adapted ver
+  L34287: 'simplified_edit': "Open text editor for direct modification. Edit mode allows: typing changes, cut/copy/paste, and full text revision. Use 
+  L37394: const originalText = inputText;
+  L37395: let correctedText = originalText;
+  L37437: const lengthChange = Math.abs(correctedText.length - originalText.length) / originalText.length;
+  L38357: const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+  L38358: ? latestAnalysis.data.originalText
+  L39643: } else if (generatedContent?.data?.originalText) {
+  ... and 60 more
+
+=== grounding_chunks: 29 matches ===
+  L22204: const validateAndRepairCitations = (text, groundingChunks) => {
+  L22205: if (!text || !groundingChunks || groundingChunks.length === 0) return text;
+  L22229: const chunk = groundingChunks[chunkIdx];
+  L22253: const chunk = groundingChunks[num - 1];
+  L22276: if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
+  L22278: const chunks = metadata.groundingChunks;
+  L22334: const hasChunks = metadata.groundingChunks && metadata.groundingChunks.length > 0;
+  L22340: const chunks = metadata.groundingChunks;
+  ... and 21 more
+
+=== search_results: 6 matches ===
+  L13334: analysis_settings_desc: "Enable 'Check Accuracy' to have the AI verify facts against web search results.",
+  L15012: wizard_back_results_btn: "Return to the search results to select a different standard.",
+  L17654: wizard_back_results_btn: "Return to the search results to select a different standard.",
+  L31874: - Do NOT summarize the search results in plain text.
+  L33619: 'wizard_back_results_btn': "Go back to the search results list.",
+  L34195: 'chat_framework_select': "Choose the standards framework for curriculum alignment features. Available frameworks include: Common Core State 
+
+=== google_search_tool: 3 matches ===
+  L12316: google_search_result: "Google Search Result: {title}",
+  L29632: description: t('wizard.google_search_result', { title: chunk.web.title })
+  L39775: payload.tools = [{ google_search: {} }];
+  searchEntry: 0 matches
+
+=== webGrounding: 4 matches ===
+  L11003: • **Fact Verification**: Enable web grounding to verify facts and include citations automatically.
+  L11016: • **Check Accuracy**: Enable web grounding to verify factual claims and identify potential inaccuracies in your source text.
+  L33996: 'source_verify_checkbox': "Enable AI fact-checking via Google Search grounding. When ON: AI cross-references generated content against web s
+  L41050: .highlight { background-color: #bbf7d0 !important; color: #14532d; border-color: #86efac; -webkit-print-color-adjust: exact; print-color-adj
+
+=== source_analysis: 11 matches ===
+  L11816: analysis_standard: "Source Analysis",
+  L15187: persona_card: "An AI persona ready for conversation. Each card shows the character's name, time period, and expertise area. Click to start a
+  L15193: persona_panel: "The AI Persona chat panel - engage in authentic conversations with historical figures, scientists, literary characters, or c
+  L16263: persona_panel: "The AI Persona chat panel - engage in authentic conversations with historical figures, scientists, literary characters, or c
+  L16264: persona_card: "An AI persona ready for conversation. Each card shows the character's name, time period, and expertise area. Click to start a
+  L33970: 'persona_panel': "Engage in AI-powered conversations with historical figures, scientists, authors, or fictional characters. Students ask que
+  L49393: const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
+  L49407: const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
+  ... and 3 more
+
+=== markdown_render: 14 matches ===
+  L43334: const parseMarkdownToHTML = (text) => {
+  L43466: <div>${parseMarkdownToHTML(item.data)}</div>
+  L43673: ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; ma
+  L43688: ${parseMarkdownToHTML(item.data.accuracy.citations)}
+  L43701: <div style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(item.data.originalText)}</div>
+  L43710: ${parseMarkdownToHTML(item.data)}
+  L43742: ${idea.guide ? `<div style="margin-top:15px; padding-top:15px; border-top:1px dashed #ccc; font-size:0.9em; background:#fafafa; padding:10px
+  L43981: ${parseMarkdownToHTML(targetLangText)}
+  ... and 6 more
+
+=== marked_lib: 5 matches ===
+  L26085: if ([0,1,2,3,4].every(c => isMarked(r, c))) win = true;
+  L26088: if ([0,1,2,3,4].every(r => isMarked(r, c))) win = true;
+  L26090: if ([0,1,2,3,4].every(i => isMarked(i, i))) win = true;
+  L26091: if ([0,1,2,3,4].every(i => isMarked(i, 4-i))) win = true;
+  L33783: header_view_teacher: "Activate the full Teacher interface with complete tool access. Teacher Mode includes: all content generation tools and

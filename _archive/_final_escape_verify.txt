@@ -1,0 +1,67 @@
+Total lines: 72891
+
+setEscapeRoomState remaining: 0
+setEscapeTimeLeft remaining: 0
+setIsEscapeTimerRunning remaining: 0
+
+Total dispatchEscape calls: 46
+
+  type='FUNC_UPDATE': 4 calls
+  type='SET_TIMER_RUNNING': 3 calls
+  type='SET_TIME_LEFT': 2 calls
+  type='UNKNOWN': 1 calls
+  type='UPDATE': 36 calls
+
+=== FUNC_UPDATE SAMPLES ===
+  L32554:       case 'FUNC_UPDATE':
+  L32555:         return action.updater(state);
+  L32556:       case 'RESET':
+  L32557:         return { ...ESCAPE_ROOM_INITIAL_STATE, solvedPuzzles: new Set() };
+  L32558:       case 'SET_TIME_LEFT':
+  L32559:         return { ...state, timeLeft: action.value };
+  L32560:       case 'SET_TIMER_RUNNING':
+  L32561:         return { ...state, isTimerRunning: action.value };
+  ---
+  L51354:     dispatchEscape({type: 'FUNC_UPDATE', updater: (prev) => ({
+  L51355:       ...prev,
+  L51356:       isActive: true,
+  L51357:       isGenerating: true,
+  L51358:       room: null,
+  L51359:       puzzles: [],
+  L51360:       solvedPuzzles: new Set(),
+  L51361:       isEscaped: false,
+  ---
+  L51870:       dispatchEscape({type: 'FUNC_UPDATE', updater: (prev) => ({
+  L51871:         ...prev,
+  L51872:         matchingSelected: { item, column }
+  L51873:       }));
+  L51874:     } else if (currentSelected.column === column) {
+  L51875:       // Same column, switch selection
+  L51876:       dispatchEscape({type: 'FUNC_UPDATE', updater: (prev) => ({
+  L51877:         ...prev,
+  ---
+  L51876:       dispatchEscape({type: 'FUNC_UPDATE', updater: (prev) => ({
+  L51877:         ...prev,
+  L51878:         matchingSelected: { item, column }
+  L51879:       }));
+  L51880:     } else {
+  L51881:       // Different column, attempt to pair
+  L51882:       const pair = currentSelected.column === 'left'
+  L51883:         ? [currentSelected.item, item]
+  ---
+  L52044:     dispatchEscape({type: 'FUNC_UPDATE', updater: (prev) => ({
+  L52045:       ...prev,
+  L52046:       hintsRemaining: Math.max(0, (prev.hintsRemaining || 0) - 1),
+  L52047:       hintsUsed: {
+  L52048:         ...prev.hintsUsed,
+  L52049:         [puzzleId]: true
+  L52050:       },
+  L52051:       totalHintsUsed: (prev.totalHintsUsed || 0) + 1
+  ---
+
+=== UPDATE SAMPLES (first 5) ===
+  L51555: dispatchEscape({type: 'UPDATE', payload: {isGenerating: false,
+  L51568: dispatchEscape({type: 'UPDATE', payload: {isActive: false, isGenerating: false}});
+  L51584: dispatchEscape({type: 'UPDATE', payload: {isActive: true,
+  L51654: dispatchEscape({type: 'UPDATE', payload: {isGenerating: false,
+  L51668: dispatchEscape({type: 'UPDATE', payload: {isActive: false, isGenerating: false}});

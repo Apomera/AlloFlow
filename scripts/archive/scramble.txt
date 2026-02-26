@@ -1,0 +1,191 @@
+L782:     'word_sounds.word_scramble_prompt': 'Unscramble the letters to make the word!',
+L798:     'word_sounds.word_scramble_title': 'Word Scramble',
+L799:     'word_sounds.word_scramble_subtitle': 'Unscramble the letters!',
+L800:     'word_sounds.word_scramble_hint': 'Hear the word (hint)',
+L801:     'word_sounds.word_scramble_placeholder': 'Type or tap letters...',
+L802:     'word_sounds.word_scramble_clear': 'Clear',
+L803:     'word_sounds.word_scramble_check': 'Check ✓',
+L804:     'word_sounds.word_scramble_correct': '🎉 Unscrambled!',
+L805:     'word_sounds.word_scramble_incorrect': 'Not quite! Try again 🔀',
+L821:     'word_sounds.say_word': 'Say the un-scrambled word!',
+L826:     // Mapping (Unscramble)
+L827:     'word_sounds.mapping_unscramble_desc': 'The word is scrambled! Put the sounds in the right order.',
+L828:     'word_sounds.mapping_unscramble_prompt': 'Unscramble the sounds to make the word!',
+L1039:     unscramble: getAudio('instructions', 'unscramble'),
+L1091: _LOAD_INSTRUCTION_AUDIO_RAW('inst_word_scramble', getAudio('instructions', 'inst_word_scramble'));
+L1104: _LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_scramble', getAudio('instructions', 'inst_sound_scramble'));
+L1422:             'word_scramble':  'afterCompletion',  // Orthographic puzzle
+L1451:             word_scramble: { enabled: false, count: 5 },
+L1455:             'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble'
+L2090:                                                     word_scramble: { id: 'word_scramble', label: 'Word Scramble', icon: Shuffle },
+L3285:             'word_scramble':  'afterCompletion',
+L3302:             'word_scramble':  'alwaysOn',     // Must see letters to unscramble
+L4541:         { id: 'word_scramble', label: ts('word_sounds.activity_word_scramble') || 'Word Scramble', icon: '🔀', description: ts('word_sounds.word_scramb
+L6805:                     word_scramble: 'inst_word_scramble',
+L7332:                       const ORTHO_ORDER = ['orthography', 'mapping', 'spelling_bee', 'word_scramble', 'missing_letter'];
+L8364:                          const instKeyMap = { orthography: 'inst_orthography', spelling_bee: 'inst_spelling_bee', word_scramble: 'inst_word_scramble',
+L8419:     // Word Scramble: Deterministic scramble
+L8420:     const scrambleWord = (word) => {
+L8433:     const scrambledLetters = React.useMemo(() =>
+L8434:         scrambleWord(currentWordSoundsWord?.toLowerCase()),
+L8437:     const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
+L9092:             case 'word_scramble': {
+L9093:                 // Word Scramble - Unscramble letters to spell the word
+L9094:                 // scrambleWord + scrambledLetters hoisted to component level
+L9095:                 const checkScramble = () => {
+L9098:                         setWordSoundsFeedback({ type: 'correct', message: '🎉 Unscrambled!' });
+L9102:                             setUsedScrambleIndices([]);
+L9108:                         setUsedScrambleIndices([]);
+L9119:                             <h3 className="text-lg font-bold text-violet-700">{ts('word_sounds.word_scramble_title')}</h3>
+L9120:                             <p className="text-sm text-violet-600">{ts('word_sounds.word_scramble_subtitle')}</p>
+L9129:                             {ts('word_sounds.word_scramble_hint')}
+L9131:                         {/* Scrambled Letters */}
+L9133:                             {scrambledLetters.map((letter, idx) => {
+L9134:                                 const isUsed = usedScrambleIndices.includes(idx);
+L9146:                                         setUsedScrambleIndices((prev) => [...prev, idx]);
+L9169:                             renderVoiceInputOverlay("Say the un-scrambled word!")
+L9178:                             onKeyDown={(e) => e.key === 'Enter' && checkScramble()}
+L9189:                                 onClick={() => { setUserAnswer(''); setUsedScrambleIndices([]); }}
+L9192:                                 {ts('word_sounds.word_scramble_clear')}
+L9197:                                 onClick={checkScramble}
+L9205:                                 {ts('word_sounds.word_scramble_check')}
+L11256: • **Word Scramble**: Unscramble vocabulary terms for spelling practice.
+L11257: • **Syntax Scramble**: Reconstruct sentences using glossary terms.
+L11492: • **Reset Button**: Scramble events for a fresh attempt.
+L11748:     activity_word_scramble: "Word Scramble",
+L11771:     word_scramble_desc: "Unscramble the letters",
+L11848:         word_scramble_check: 'Check',
+L11849:         word_scramble_clear: 'Clear',
+L11850:         word_scramble_hint: 'Hint',
+L11851:         word_scramble_subtitle: 'Unscramble the letters',
+L11852:         word_scramble_title: 'Word Scramble',
+L12581:           title: "Syntax Scramble",
+L12591:       scramble: {
+L12592:           title: "Word Scramble",
+L12593:           subtitle: "Unscramble the vocabulary terms to win!",
+L12716:     scramble: "Word Scramble",
+L12725:       launch_scramble: "Launch Word Scramble",
+L13042:     puzzle_scramble: "Unscramble",
+L13049:     type_scramble: "Scramble",
+L13057:     scramble_hint: "Rearrange the letters to form the word",
+L13082:     // Scramble puzzle accessibility
+L13083:     scrambled_letters: "Scrambled letters to unscramble",
+L13084:     scramble_sr_desc: "Scrambled letters:",
+L13087:     enter_unscrambled: "Enter the unscrambled word",
+L13088:     scramble_hint_sr: "Type the correct word using the scrambled letters shown above",
+L13100:     unscramble_placeholder: "Type the unscrambled word...",
+L13276:     scramble_game: "Scramble",
+L13290:     tip_scramble: "Practice sentence structure game",
+L13880:       scramble: "Scramble",
+L13881:       scramble_tooltip: "Scramble node positions",
+L13923:       scramble_bank: "Scramble Bank",
+L13941:       toast_scramble: "Item bank scrambled.",
+L13985:     // Mapping (Unscramble)
+L13986:     mapping_unscramble_desc: "The word is scrambled! Put the sounds in the right order.",
+L13987:     mapping_unscramble_prompt: "Unscramble the sounds to make the word!",
+L15096:     glossary_scramble: "Generate a word scramble activity. Unscramble letters to spell vocabulary terms.",
+L15140:     escape_room_scramble_input: "Unscramble the letters to form the correct word.",
+L15141:     escape_room_scramble_submit: "Submit your unscrambled word answer.",
+L15699:     syntax_scramble: "Syntax Scramble encountered an error.",
+L16691:         simplified_scramble_game: "Create a word scramble game using vocabulary from the simplified text.",
+L19583: const scrambleWord = (word) => {
+L19592:       return scrambleWord(word);
+L23962: const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+L24002:         onGameComplete('syntaxScramble', {
+L24029:       if (onScoreUpdate) onScoreUpdate(newScore, "Syntax Scramble");
+L24686: const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) => {
+L24690:   const [scrambled, setScrambled] = useState('');
+L24709:         setScrambled(scrambleWord(items[0].term));
+L24716:           setScrambled(scrambleWord(gameItems[nextIdx].term));
+L24721:           if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
+L24761:                 <h2 className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
+L24762:                 <p className="text-slate-500 font-medium">{t('games.scramble.subtitle')}</p>
+L24771:                             {t('games.scramble.score')}: {score}
+L24784:                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('games.scramble.progress', { current: curr
+L24788:                             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Sea
+L24792:                             {scrambled.split('').map((char, idx) => (
+L24813:                                 placeholder={t('games.scramble.input_placeholder')}
+L24816:                                 aria-label={t('games.scramble.input_placeholder')}
+L24825:                                     {t('games.scramble.skip')}
+L24832:                                     {t('games.scramble.submit')}
+L24838:                     <p className="text-slate-500 italic">{t('games.scramble.loading')}</p>
+L25722:     } else if (answerType === 'cipher' || answerType === 'scramble' || answerType === 'fillin') {
+L26077:             {/* Scramble */}
+L26078:             {currentPuzzle.type === 'scramble' && (
+L26081:                   {(currentPuzzle.displayLetters || currentPuzzle.scrambledWord?.split('')).map((letter, idx) => (
+L26087:                 <input aria-label="escape_room.unscramble_placeholder"
+L26091:                   placeholder={t('escape_room.unscramble_placeholder')}
+L26092:                   data-help-key="escape_room_scramble_input"
+L26096:                   onClick={() => handleSubmitAnswer(currentPuzzle.id, userInput, 'scramble')}
+L26097:                   data-help-key="escape_room_scramble_submit"
+L30893:           syntaxScramble: [],
+L30895:           wordScramble: []
+L31174:   const handleCloseWordScramble = useCallback(() => setIsWordScrambleGame(false), []);
+L31619:   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
+L31925:     'glossary_scramble': 'glossary',
+L31970:     'simplified_scramble_game': 'simplified',
+L32197:     'glossary_scramble': "Unscramble vocabulary terms from jumbled letters. Gameplay: scrambled letters appear, type the correct term, advance to next
+L32405:     'simplified_scramble_game': "Convert any passage into an interactive word/sentence unscrambling activity. Students see scrambled words or sentence
+L32500:     'escape_room_scramble_input': "Unscramble the letters to form the correct word.",
+L32501:     'escape_room_scramble_submit': "Check if you've unscrambled the word correctly.",
+L32704:     'timeline_reset_btn': "Randomize event order to start timeline activity over. All events return to scrambled positions. Use when: you want a fresh
+L32803:     'tool_syntax_game': "Convert selected text into syntax reconstruction puzzles. When activated: sentences are shuffled word-by-word or phrase-by-ph
+L32818:     // Syntax Scramble
+L32819:     syntax_close: "Exit the Syntax Scramble game. Closing saves your current progress. You can resume from where you left off. Partially completed puz
+L32824:     syntax_next: "Advance to the next scrambled sentence. Click after successfully completing current puzzle. Next sentence: resets word pool, clears 
+L33625:   const handleSetIsWordScrambleGameToTrue = React.useCallback(() => setIsWordScrambleGame(true), []);
+L34471:       const scrambledNodes = conceptMapNodes.map(node => ({
+L34479:           nodes: scrambledNodes,
+L34568:       const handleVennScrambleBank = () => {
+L34579:           addToast(t('concept_map.venn.toast_scramble'), "info");
+L34595:                               onClick={handleVennScrambleBank}
+L34599:                               <ListOrdered size={14} /> {t('concept_map.venn.scramble_bank')}
+L34660:                                 title={t('concept_map.toolbar.scramble_tooltip')}
+L34661:                                 aria-label={t('concept_map.toolbar.scramble_tooltip')}
+L34663:                                 <RefreshCw size={14} /> <span className="hidden sm:inline">{t('concept_map.toolbar.scramble')}</span>
+L49062: 5. "scramble" - Unscramble letters to form a key vocabulary word from the content
+L49136:       "type": "scramble",
+L49138:       "question": "Unscramble this key term from the content:",
+L49139:       "scrambledWord": "NOMTPOAIHHS",
+L49167:         // Shuffle items for sequence puzzles and letters for scramble puzzles
+L49178:           // Shuffle scramble letters - filter out empty characters
+L49179:           if (p.type === 'scramble' && p.scrambledWord) {
+L49180:             processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(c => c.trim()));
+L49279:             displayLetters: p.type === 'scramble' && p.scrambledWord ? derangeShuffle(p.scrambledWord.split('')) : null
+L49373:       scrambleLetters: []
+L49539:   // Scramble puzzle handler
+L49540:   const handleScrambleAnswer = (puzzleId, userAnswer) => {
+L49604:       scrambleLetters: [],
+L49808:         if (p.type === 'scramble' && p.scrambledWord) {
+L49809:           processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(c => c.trim()));
+L61231:                                 data-help-key="glossary_scramble"
+L61232:                                 onClick={handleSetIsWordScrambleGameToTrue}
+L61234:                                 title={t('glossary.tooltips.launch_scramble')}
+L61236:                                 <Shuffle size={14} /> {t('glossary.scramble')}
+L61773:                     {isWordScrambleGame && (
+L61774:                         <ErrorBoundary fallbackMessage="Word Scramble Game encountered an error.">
+L61775:                             <WordScrambleGame
+L61777:                                 onClose={handleCloseWordScramble}
+L62590:                                     title={t('simplified.tip_scramble')}
+L62591:                                     aria-label={t('simplified.scramble_game')}
+L62592:                                     data-help-key="simplified_scramble_game"
+L62594:                                     <Gamepad2 size={12} /> {t('simplified.scramble_game')}
+L64682:                                                         {/* Scramble Puzzle Type */}
+L64683:                                                         {puzzle.type === 'scramble' && (
+L64685:                                                                 {/* Screen reader description of scrambled letters */}
+L64687:                                                                     {t('escape_room.scramble_sr_desc') || 'Scrambled letters:'} {(puzzle.displayLetter
+L64692:                                                                     aria-label={t('escape_room.scrambled_letters') || 'Scrambled letters to unscramble
+L64694:                                                                     {(puzzle.displayLetters || puzzle.scrambledWord?.split('')).map((letter, idx, arr)
+L64705:                                                                 <label className="sr-only" htmlFor="scramble-input">
+L64706:                                                                     {t('escape_room.enter_unscrambled') || 'Enter the unscrambled word'}
+L64709:                                                                     id="scramble-input"
+L64713:                                                                     placeholder={t('escape_room.unscramble_placeholder')}
+L64715:                                                                     aria-describedby="scramble-hint"
+L64717:                                                                 <p id="scramble-hint" className="sr-only">
+L64718:                                                                     {t('escape_room.scramble_hint_sr') || 'Type the correct word using the scrambled l
+L64721:                                                                     onClick={() => handleScrambleAnswer(puzzle.id, escapeRoomState.textInput || '')}
+L68644:         <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
+L68645:             <SyntaxScramble
+L69103:                                     puzzle.type === 'scramble' ? 'bg-yellow-100 text-yellow-700' :
+L69134:                                 {puzzle.type === 'scramble' && (
+L69422:                             title={t('simplified.tip_scramble')}

@@ -1,0 +1,2 @@
+﻿L30: import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc, collection, query, where, getDocs, writeBatch, limit } from 'firebase/fi
+L54667:                                         await deleteDoc(sessionRef);

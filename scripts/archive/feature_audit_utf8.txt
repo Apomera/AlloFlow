@@ -1,0 +1,13 @@
+﻿Content types: ['ADV_RESET', 'ADV_SET', 'Auto', 'CS_RESET', 'CS_SET', 'GLOSS_RESET', 'GLOSS_SET', 'QUIZ_RESET', 'QUIZ_SET', 'Remediation', 'SETTINGS_RESET', 'SETTINGS_SET', 'UI_RESET', 'UI_SET', 'WS_RESET', 'WS_SET', 'add', 'add_distractor', 'add_member', 'adventure', 'alignment', 'analysis', 'bar', 'bell', 'blob', 'blueprint', 'brainstorm', 'branch', 'choice', 'cipher', 'click', 'consumable', 'contain', 'correct', 'critical', 'custom', 'del', 'distractor', 'donut', 'doughnut', 'error', 'faq', 'feedback', 'fillin', 'free', 'glossary', 'image', 'incorrect', 'info', 'item', 'line', 'main', 'matching', 'math', 'mcq', 'member', 'neutral', 'number', 'outline', 'persona', 'quiz', 'remove_distractor', 'remove_member', 'reveal', 'same', 'scaffolds', 'scene', 'scramble', 'sequence', 'simplified', 'simplify', 'strategic', 'success', 'term', 'text', 'timeline']
+Word Sounds activities: ['blending', 'counting', 'isolation', 'letter_tracing', 'mapping', 'orthography', 'rhyming', 'segmentation', 'sound_sort', 'spelling_bee', 'word_families']
+Active views: ['adventure', 'alignment-report', 'analysis', 'brainstorm', 'concept-sort', 'dashboard', 'faq', 'gemini-bridge', 'glossary', 'image', 'input', 'lesson-plan', 'math', 'outline', 'persona', 'quiz', 'sentence-frames', 'simplified', 'timeline', 'udl-advice', 'ui-tool-wordsounds', 'word-sounds-generator']
+
+Teacher-mode gated functions: 8
+  L30121: const [isTeacherMode, setIsTeacherMode] = useState(true);
+  L30252: const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
+  L34072: const isWide = isFullscreen || !isTeacherMode;
+  L35987: const toastKey = isTeacherMode ? 'common.save_reminder_teacher' : 'common.save_reminder_student';
+  L35988: const fallbackMsg = isTeacherMode
+  L54060: const isSyncMode = !isTeacherMode && activeSessionCode && sessionData?.mode === 'sync';
+  L60632: {isTeacherMode && realGrammarErrors.some(g => !g.startsWith('Γ£ô FIXED:')) && (
+  L60642: {isTeacherMode && realGrammarErrors.length > 0 && realGrammarErrors.every(g => g.startsWith('Γ£ô FIXED

@@ -1,0 +1,7 @@
+Total lines: 64141
+USAGE at Line 25607: const [botSpotlightPos, setBotSpotlightPos] = useState(null);
+USAGE at Line 26756: setBotSpotlightPos({ x: targetX, y: targetY });
+USAGE at Line 26773: setBotSpotlightPos({ x: rect.left + rect.width/2, y: rect.top + rect.height/2 });
+USAGE at Line 26888: setBotSpotlightPos(null);
+USAGE at Line 26919: setBotSpotlightPos(null);
+USAGE at Line 40475: setBotSpotlightPos({ x: targetX, y: targetY });

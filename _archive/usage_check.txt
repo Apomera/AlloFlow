@@ -1,0 +1,29 @@
+﻿  LIVE (4x): HELP_STRINGS
+  LIVE (8x): DOM_TO_TOOL_ID_MAP
+  LIVE (3x): WORD_SOUNDS_STRINGS
+  LIVE (14x): LargeFileHandler
+  LIVE (2x): SOUND_MATCH_POOL
+  LIVE (18x): PHONEME_GUIDE
+  LIVE (4x): SafetyContentChecker
+  LIVE (3x): LETTER_SVG_PATHS
+  LIVE (2x): ADVENTURE_SHOP_ITEMS
+  LIVE (3x): IPA_TO_AUDIO
+  LIVE (2x): SYSTEM_STATE_EXAMPLES
+  DEAD: speakPhoneme
+  DEAD: getStudentUid
+  DEAD: useAutoSync
+  DEAD: isSafeWord
+  DEAD: getAudioForIPA
+  DEAD: renderSettingsControls
+  DEAD: getLangName
+  DEAD: LargeFileImportModal
+  DEAD: useDebounce
+  DEAD: selectGrade
+  DEAD: selectLength
+  DEAD: MarkdownRenderer
+  DEAD: getModeDescription
+  DEAD: getDifficultyDescription
+  DEAD: handleWordSoundsStartGame
+  DEAD: renderPersonaTextWithClickableWords
+  DEAD: LanguageSelector
+  DEAD: LoadAudioButton

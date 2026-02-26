@@ -1,0 +1,76 @@
+
+================================================================================
+1. Download Audio references
+================================================================================
+
+--- Line 40664 ---
+    40656:         link.href = audioUrl;
+    40657:         link.download = `${filename}.${extension}`;
+    40658:         document.body.appendChild(link);
+    40659:         link.click();
+    40660:         document.body.removeChild(link);
+    40661:         setTimeout(() => URL.revokeObjectURL(audioUrl), 1000);
+    40662:         addToast(t('common.audio_success', { ext: extension.toUpperCase() }), "success");
+    40663:     } catch (err) {
+>>> 40664:         warnLog("Download Audio Error:", err);
+    40665:         addToast(t('common.audio_failed'), "error");
+    40666:     } finally {
+    40667:         setDownloadingContentId(null);
+    40668:     }
+    40669:   };
+    40670:   const parseMarkdownToHTML = (text) => {
+    40671:       if (!text) return '';
+    40672:       let processedText = text.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
+
+================================================================================
+2. More Tools pattern
+================================================================================
+
+================================================================================
+3. activeView === simplified checks
+================================================================================
+
+--- Line 16781 ---
+    16778:         const term1 = glossaryTerms.length > 0 ? (glossaryTerms[0].term || glossaryTerms[0]) : '';
+    16779:         const term2 = glossaryTerms.length > 1 ? (glossaryTerms[1].term || glossaryTerms[1]) : '';
+    16780: 
+>>> 16781:         if (activeView === 'simplified') {
+    16782:             // Dynamic: mention a specific word, or fall back to generic
+    16783:             if (randomWord) {
+    16784:                 tips.push(t('tips.simplified_def', { word: randomWord }));
+
+--- Line 57634 ---
+    57631:               )}
+    57632:             </div>
+    57633:             <div id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+>>> 57634:                 ${activeView === 'simplified' ? 'border-indigo-600 shadow-xl shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10'}
+    57635:               `}>
+    57636:                 <button
+    57637:                     aria-label={t('common.read')}
+
+--- Line 60175 ---
+    60172:                 {isProcessing ? <><RefreshCw className="animate-spin text-indigo-600" size={20} /> {generationStep}</> :
+    60173:                 (activeView === 'input' || activeView === 'analysis') ? <><Sparkles className="text-indigo-600" size={20} /> {t('common.ready') || 'Ready'}</> :
+    60174:                 activeView === 'glossary' ? <><Globe className="text-blue-600" size={20} /> {t('glossary.title') || 'Glossary'}</> :
+>>> 60175:                 activeView === 'simplified' ? <><BookOpen className="text-green-600" size={20} /> {t('common.tool_simplified') || 'Text Adaptation'}</> :
+    60176:                 activeView === 'outline' ? <><Layout className="text-orange-600" size={20} /> {t('outline.title') || 'Organizer'}</> :
+    60177:                 activeView === 'quiz' ? <><CheckSquare className="text-teal-600" size={20} /> {t('quiz.title') || 'Exit Ticket'}</> :
+    60178:                 activeView === 'udl-advice' ? <><HelpCircle className="text-indigo-600" size={20} /> {t('udl_advice.title')}</> :
+
+--- Line 62214 ---
+    62211:                     )}
+    62212:                   </div>
+    62213:                 )}
+>>> 62214:                 {activeView === 'simplified' && (
+    62215:                   <div className="space-y-6">
+    62216:                     {isImmersiveReaderActive && generatedContent?.immersiveData && (
+    62217:                         <div
+
+--- Line 68324 ---
+    68321:               </ErrorBoundary>
+    68322:             )}
+    68323:           </div>
+>>> 68324:           {activeView === 'simplified' && interactionMode === 'cloze' && latestGlossary.length > 0 && (
+    68325:               <div
+    68326:                   ref={wordBankRef}
+    68327:                   style={wordBankPosition ? {

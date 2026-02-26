@@ -1,0 +1,15 @@
+Safe useEffects (state-sync, no cleanup needed): 136
+Risky useEffects without cleanup: 13
+  L6550 [setTimeout]: React.useEffect(() => {
+  L6747 [setTimeout]: React.useEffect(() => {
+  L6777 [setTimeout]: React.useEffect(() => {
+  L6872 [setTimeout]: React.useEffect(() => {
+  L18695 [setInterval]: useEffect(() => {
+  L19404 [setTimeout]: useEffect(() => {
+  L19662 [addEventListener]: useEffect(() => {
+  L22068 [setTimeout]: useEffect(() => {
+  L34004 [setTimeout]: useEffect(() => {
+  L34486 [setTimeout]: useEffect(() => {
+  L34784 [setTimeout]: useEffect(() => {
+  L39056 [setTimeout]: useEffect(() => {
+  L49480 [setTimeout]: useEffect(() => {

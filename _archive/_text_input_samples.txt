@@ -1,0 +1,212 @@
+Total: 184
+
+=== L1993 ===
+      L1991: <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold">{wordCount}</span>
+      L1992: </div>
+  >>> L1993: <input aria-label="Text input"
+      L1994: type="range" min="5" max="40" step="1"
+      L1995: data-help-key="ws_gen_count_slider" value={wordCount} onChange={(e) => setWordCount(parseInt(e.target.value))}
+
+=== L2007 ===
+      L2005: <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
+      L2006: </div>
+  >>> L2007: <input aria-label="Text input"
+      L2008: type="range" min="5" max="200" step="5"
+      L2009: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+
+=== L2022 ===
+      L2020: <Palette size={18} className="text-pink-500" />
+      L2021: </div>
+  >>> L2022: <input aria-label="Text input"
+      L2023: type="text"
+      L2024: data-help-key="ws_gen_theme_input" value={imageTheme}
+
+=== L2148 ===
+      L2146: {/* Quick Add Word Input */}
+      L2147: <div className="mt-3 flex gap-2">
+  >>> L2148: <input aria-label="Text input"
+      L2149: id="word-sounds-quick-add" data-help-key="ws_gen_quick_add_input"
+      L2150: type="text"
+
+=== L2223 ===
+      L2221: {includeAI && (
+      L2222: <div className="mt-3 flex gap-2">
+  >>> L2223: <input aria-label="Text input"
+      L2224: value={aiTopic} onChange={(e) => setAiTopic(e.target.value)}
+      L2225: placeholder="e.g. Space, Ocean..."
+  → placeholder: e.g. Space, Ocean...
+
+=== L2321 ===
+      L2319: <div className="flex items-center gap-2">
+      L2320: <GripVertical size={14} className="text-slate-400 cursor-grab active:cursor-grabbing" />
+  >>> L2321: <input aria-label="Text input"
+      L2322: type="checkbox"
+      L2323: checked={lessonPlan[activity.id]?.enabled}
+
+=== L2339 ===
+      L2337: </div>
+      L2338: {lessonPlan[activity.id].enabled && (
+  >>> L2339: <input aria-label="Text input"
+      L2340: type="range" min="1" max="20" step="1"
+      L2341: value={lessonPlan[activity.id].count}
+
+=== L3097 ===
+      L3095: {(word.rhymeDistractors || []).map((d, i) => (
+      L3096: <div key={i} className="flex items-center gap-1">
+  >>> L3097: <input aria-label="Text input"
+      L3098: value={d}
+      L3099: onChange={(e) => {
+
+=== L3156 ===
+      L3154: {(word.blendingDistractors || []).map((d, i) => (
+      L3155: <div key={i} className="flex items-center gap-1">
+  >>> L3156: <input aria-label="Text input"
+      L3157: value={d}
+      L3158: onChange={(e) => {
+
+=== L3286 ===
+      L3284: {/* Custom Refinement Input */}
+      L3285: <div className="flex gap-1">
+  >>> L3286: <input aria-label="Text input"
+      L3287: type="text"
+      L3288: value={imageRefinementInputs[idx] || ''}
+
+=== L4111 ===
+      L4109: isEditing ? (
+      L4110: <div key={idx} className="relative group">
+  >>> L4111: <input aria-label="Text input"
+      L4112: className="w-full h-32 rounded-2xl border-4 border-amber-300 bg-white text-center text-4xl font-bold outline-none focus:ring-4 focus:ring-amber-500 te
+      L4113: value={opt}
+
+=== L4202 ===
+      L4200: isEditing ? (
+      L4201: <div key={i} className="p-4 rounded-2xl bg-white border-2 border-amber-200 shadow-md flex items-center gap-2 relative">
+  >>> L4202: <input aria-label="Text input"
+      L4203: type="text"
+      L4204: value={opt}
+
+=== L4366 ===
+      L4364: className={`relative rounded-2xl transition-all ${draggedLetter ? 'scale-105 ring-4 ring-indigo-200 bg-indigo-50' : ''}`}
+      L4365: >
+  >>> L4366: <input aria-label="Text input"
+      L4367: type="text"
+      L4368: value={userSpelling}
+
+=== L4500 ===
+      L4498: {(data.options || []).map((word, i) => (
+      L4499: <div key={`opt-${i}`} className="flex gap-2">
+  >>> L4500: <input aria-label="Text input"
+      L4501: value={word}
+      L4502: onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value, 'member')}
+
+=== L4522 ===
+      L4520: {(data.distractors || []).map((word, i) => (
+      L4521: <div key={`dist-${i}`} className="flex gap-2">
+  >>> L4522: <input aria-label="Text input"
+      L4523: value={word}
+      L4524: onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value, 'distractor')}
+
+=== L4728 ===
+      L4726: data.graphemes?.map((g, i) => (
+      L4727: <div key={i} className="relative">
+  >>> L4728: <input aria-label="Text input"
+      L4729: value={g}
+      L4730: onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value)}
+
+=== L9244 ===
+      L9242: isEditing ? (
+      L9243: <div key={chip.id} className="relative">
+  >>> L9244: <input aria-label="Text input"
+      L9245: className="w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center text-center outline-none focus:ring-2 focus:ring-viole
+      L9246: style={{
+
+=== L9336 ===
+      L9334: <div className="flex flex-wrap gap-2 justify-center mt-2">
+      L9335: {(wordSoundsPhonemes?.phonemes || []).map((p, idx) => (
+  >>> L9336: <input aria-label="Text input"
+      L9337: key={`blend-ph-${idx}`}
+      L9338: value={p}
+
+=== L9397 ===
+      L9395: {(blendingOptions || []).map((word, idx) => (
+      L9396: isEditing ? (
+  >>> L9397: <input aria-label="Text input"
+      L9398: key={`blend-edit-${idx}`}
+      L9399: value={word}
+
+=== L9632 ===
+      L9630: renderVoiceInputOverlay("Say the letters or word!")
+      L9631: ) : (
+  >>> L9632: <input aria-label="Text input"
+      L9633: type="text"
+      L9634: inputMode="text"
+
+=== L9761 ===
+      L9759: renderVoiceInputOverlay("Say the un-scrambled word!")
+      L9760: ) : (
+  >>> L9761: <input aria-label="Text input"
+      L9762: type="text"
+      L9763: value={userAnswer || ''}
+
+=== L10714 ===
+      L10712: <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
+      L10713: <span className="text-xs opacity-80">🐢</span>
+  >>> L10714: <input aria-label="Text input"
+      L10715: type="range"
+      L10716: min="0.5"
+
+=== L11213 ===
+      L11211: <div className="flex flex-wrap gap-3 mb-4">
+      L11212: <label className="cursor-pointer">
+  >>> L11213: <input aria-label="Text input"
+      L11214: type="file"
+      L11215: accept=".json"
+
+=== L26391 ===
+      L26389: </div>
+      L26390: </div>
+  >>> L26391: <input aria-label="Text input"
+      L26392: type="text"
+      L26393: className="opacity-0 absolute h-0 w-0"
+
+=== L28467 ===
+      L28465: </div>
+      L28466: )}
+  >>> L28467: <input aria-label="Text input"
+      L28468: type="text"
+      L28469: value={userInput}
+
+=== L28516 ===
+      L28514: </div>
+      L28515: ) : (
+  >>> L28516: <input aria-label="Text input"
+      L28517: type="text"
+      L28518: value={userInput}
+
+=== L28547 ===
+      L28545: ))}
+      L28546: </div>
+  >>> L28547: <input aria-label="Text input"
+      L28548: type="text"
+      L28549: value={userInput}
+
+=== L29330 ===
+      L29328: <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{t('groups.title')}</h4>
+      L29329: <div className="flex gap-2 mb-3">
+  >>> L29330: <input aria-label="Text input"
+      L29331: type="text"
+      L29332: value={newGroupName} data-help-key="quiz_new_group_input"
+
+=== L30148 ===
+      L30146: </div>
+      L30147: <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selecte
+  >>> L30148: <input aria-label="Text input"
+      L30149: type="checkbox"
+      L30150: className="hidden"
+
+=== L30242 ===
+      L30240: <h3 className="text-2xl font-black text-slate-500 group-hover:text-indigo-700">{t('dashboard.drop_files')}</h3>
+      L30241: <p className="text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors
+  >>> L30242: <input aria-label="Text input"
+      L30243: type="file"
+      L30244: multiple

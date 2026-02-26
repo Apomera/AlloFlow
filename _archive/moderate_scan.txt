@@ -1,0 +1,57 @@
+Loaded 72991 lines
+
+============================================================
+ISSUE 1: DUPLICATE STATE DEFINITIONS
+============================================================
+Found 5 state names with multiple definitions:
+  'feedback' at lines: [3741, 8037]
+    L3741 inside: const OrthographyView = ({ data, onPlayAudio, onCheckAnswer,
+    L8037 inside: const LetterTraceView = ({ letter, word, onComplete }) => {
+  'imageVisibilityMode' at lines: [1166, 2997]
+    L1166 inside: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, o
+  'isMinimized' at lines: [1226, 2972, 10229]
+    L10229 inside: const StudentAnalyticsPanel = ({ isOpen, onClose, t }) => {
+  'isProcessing' at lines: [1225, 10228]
+    L10228 inside: const StudentAnalyticsPanel = ({ isOpen, onClose, t }) => {
+  'playingIndex' at lines: [3455, 3646]
+    L3646 inside: const RhymeView = ({ data, showLetterHints, onPlayAudio, onC
+
+============================================================
+ISSUE 2: UNGUARDED .map() CALLS (within Word Sounds range L2500-L10000)
+============================================================
+Found 40 unguarded .map() calls:
+  L2609: phonemes.map(...) -> {phonemes.map(p => (
+  L3879: alphabet.map(...) -> {alphabet.map((letter) => (
+  L3933: data.distractors.map(...) -> ...data.distractors.map(w => ({ text: w, isFamily: false }))
+  L4004: data.distractors.map(...) -> {data.distractors.map((word, i) => (
+  L4055: foundWords.map(...) -> {foundWords.map((word, i) => (
+  L4082: wordBank.map(...) -> {wordBank.map((item, idx) => {
+  L4156: prev.map(...) -> setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: true } : c));
+  L4177: prev.map(...) -> setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: false } : c));
+  L4184: prev.map(...) -> setChips(prev => prev.map(c => ({...c, isPlaced: false})));
+  L4192: slots.map(...) -> {slots.map((slot, i) => (
+  L4344: result.map(...) -> return result.map(p => PHONEME_NORMALIZE[p] || p);
+  L4475: wordPool.map(...) -> return wordPool.map(entry => ({
+  L4652: phonemes.map(...) -> const correctChips = phonemes.map((rawP, i) => {
+  L4665: phonemes.map(...) -> const usedPhonemes = new Set(phonemes.map(p => (p || '').toLowerCase().trim()));
+  L5230: merged.map(...) -> merged.map(d => d.trim().toLowerCase()).filter(d => d !== targetToCheck)
+  L5329: preloadedWords.map(...) -> preloadedWords.map(w => (w.targetWord || w.word || w.singleWord || '').toLowerCase()).filter(Boolean
+  L5480: wordsToPreload.map(...) -> const prefetchPromises = wordsToPreload.map(async (wordEntry, i) => {
+  L5493: keys.map(...) -> await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+  L5574: consonants.map(...) -> rhymeDistractors = consonants.map(c => c + rhymeEndingShort).filter(w => w !== wordLower).slice(0, 3
+  L5750: keys.map(...) -> await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+
+============================================================
+ISSUE 3: UNSAFE PROPERTY ACCESS (within Word Sounds range L2500-L10000)
+============================================================
+Found 3 potentially unsafe deep property accesses:
+  L6761: isolationState.isoOptions.length -> for (let i = 0; i < isolationState.isoOptions.length; i++) {
+  L7231: isolationState.isoOptions.length -> for (let i = 0; i < isolationState.isoOptions.length; i++) {
+  L7608: phonemeData.phonemes.length -> setElkoninBoxes(new Array(phonemeData.phonemeCount || phonemeData.phonemes.length).fill(null));
+
+============================================================
+ISSUE 4: SILENT CATCH BLOCKS (within Word Sounds range L2500-L10000)
+============================================================
+Found 2 silent catch blocks:
+  L5596: } catch(e){}
+  L6154: } catch(e) {}

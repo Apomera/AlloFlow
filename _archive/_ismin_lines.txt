@@ -1,0 +1,7 @@
+L2648:         const [isMinimized, setIsMinimized] = React.useState(false);
+L2873:         if (isMinimized) {
+L4385:     const [isMinimized, setIsMinimized] = React.useState(false);
+L7628:         if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
+L7858:     }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.currentPosition]);
+L10649:     if (isMinimized) {
+L11048:     const [isMinimized, setIsMinimized] = React.useState(false);

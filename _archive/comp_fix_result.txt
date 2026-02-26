@@ -1,0 +1,17 @@
+﻿Starting: 70770 lines
+
+--- Zone organizer/quick_start/move_up/move_down: L17376-L17399 ---
+  Start: organizer: {
+  End:   },
+
+--- Zone duplicate export block: L17400-L17507 ---
+  Start: export: {
+  End:   },
+
+Phase 1: Removed 132 lines (zones 1+2)
+Intermediate: 70638 lines
+
+cleanJson found at L17424
+
+No injected blocks found in cleanJson
+Final: 70638 lines

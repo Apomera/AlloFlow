@@ -1,0 +1,110 @@
+=== REACT.MEMO PROP AUDIT (53 components) ===
+
+=== WASTEFUL MEMOIZATION (15) ===
+(Components receiving inline objects/functions — React.memo is bypassed)
+
+  LargeFileTranscriptionModal (L449) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 2
+
+  WordSoundsGenerator (L1403) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 1
+
+  LetterTraceView (L7858) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 2
+
+  SpeechBubble (L17336) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 2
+
+  MissionReportCard (L19695) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 4
+
+  DraftFeedbackInterface (L20133) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 0
+
+  ClozeInput (L21689) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 1
+
+  RoleSelectionModal (L25002) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 1
+
+  StudentWelcomeModal (L25246) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 1
+
+  SimpleBarChart (L25298) — 4 usage(s)
+    Inline objects: 0, Inline functions: 0, Inline arrays: 1
+    Stable props: 2
+
+  QuickStartWizard (L27714) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 0
+
+  ImmersiveToolbar (L28960) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 10
+
+  ImmersiveWord (L29085) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 2
+
+  InteractiveBlueprintCard (L29147) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 3
+
+  ImmersiveWord (L37108) — 1 usage(s)
+    Inline objects: 0, Inline functions: 1, Inline arrays: 0
+    Stable props: 2
+
+
+=== EFFICIENT MEMOIZATION (35) ===
+(Components receiving only stable references — React.memo is working)
+
+  GlobalMuteButton (L163) — 1 usage(s), 0 stable props
+  StudentAnalyticsPanel (L10319) — 1 usage(s), 3 stable props
+  StudentSubmitModal (L17087) — 1 usage(s), 4 stable props
+  AlloBot (L17559) — 1 usage(s), 17 stable props
+  StudentQuizOverlay (L19802) — 1 usage(s), 5 stable props
+  TeacherGate (L20334) — 1 usage(s), 3 stable props
+  ClimaxProgressBar (L20633) — 1 usage(s), 0 stable props
+  AdventureAmbience (L20699) — 1 usage(s), 0 stable props
+  InfoTooltip (L21091) — 4 usage(s), 0 stable props
+  ConfettiExplosion (L21562) — 14 usage(s), 0 stable props
+  ComplexityGauge (L21598) — 1 usage(s), 1 stable props
+  MemoryGame (L21765) — 1 usage(s), 3 stable props
+  MatchingGame (L22073) — 1 usage(s), 4 stable props
+  TimelineGame (L22434) — 1 usage(s), 4 stable props
+  ConceptSortGame (L22766) — 1 usage(s), 5 stable props
+  VennGame (L23108) — 1 usage(s), 7 stable props
+  CrosswordGame (L23442) — 1 usage(s), 4 stable props
+  SyntaxScramble (L23867) — 1 usage(s), 4 stable props
+  BingoGame (L24024) — 1 usage(s), 9 stable props
+  StudentBingoGame (L24429) — 1 usage(s), 3 stable props
+  WordScrambleGame (L24591) — 1 usage(s), 3 stable props
+  InventoryGrid (L24802) — 1 usage(s), 1 stable props
+  DiceOverlay (L24858) — 1 usage(s), 2 stable props
+  AdventureShop (L24913) — 1 usage(s), 3 stable props
+  StudentEntryModal (L25135) — 1 usage(s), 2 stable props
+  StudentEscapeRoomOverlay (L25431) — 1 usage(s), 6 stable props
+  EscapeRoomTeacherControls (L26093) — 1 usage(s), 4 stable props
+  TeacherLiveQuizControls (L26266) — 1 usage(s), 11 stable props
+  LongitudinalProgressChart (L26990) — 1 usage(s), 0 stable props
+  TeacherDashboard (L27052) — 1 usage(s), 9 stable props
+  SpeedReaderOverlay (L28805) — 1 usage(s), 2 stable props
+  ToggleButton (L28963) — 8 usage(s), 2 stable props
+  CharacterColumn (L29375) — 2 usage(s), 2 stable props
+  BilingualFieldRenderer (L37025) — 13 usage(s), 3 stable props
+  BranchItem (L51627) — 6 usage(s), 12 stable props
+
+=== SUMMARY ===
+  Total React.memo: 53
+  Wasteful: 15 (receiving inline props)
+  Efficient: 35 (stable props only)
+  Total inline props defeating memo: 15

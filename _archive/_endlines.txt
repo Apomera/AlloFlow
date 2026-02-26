@@ -1,0 +1,25 @@
+﻿L74209:       <AlloFlowContent />
+L74210:     </LanguageProvider>
+L74211:   );
+L74212: }
+L74213: 
+L74214: // Canvas/standalone bootstrap ù CRA uses src/index.js instead
+L74215: if (typeof __firebase_config !== 'undefined') {
+L74216:   const container = document.getElementById('root');
+L74217:   if (container) {
+L74218:     if (ReactDOM.createRoot) {
+L74219:        const originalConsoleError = console.error;
+L74220:        console.error = (...args) => {
+L74221:          if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
+L74222:            return;
+L74223:          }
+L74224:          originalConsoleError(...args);
+L74225:        };
+L74226:        const root = ReactDOM.createRoot(container);
+L74227:        root.render(<App />);
+L74228:     } else {
+L74229:        ReactDOM.render(<App />, container);
+L74230:     }
+L74231:   }
+L74232: }
+L74233: // #endregion

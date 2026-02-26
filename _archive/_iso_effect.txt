@@ -1,0 +1,56 @@
+ymeOptions(distractors);
+                }
+            }
+        }
+    }, [wordSoundsPhonemes, wordSoundsActivity, currentWordSoundsWord, generateSoundChips]);
+    React.useEffect(() => {
+        if (wordSoundsActivity !== 'isolation' || !wordSoundsPhonemes) {
+            if (isolationState) setIsolationState(null);
+            return;
+        }
+        const currentWord = wordSoundsPhonemes?.word || currentWordSoundsWord;
+        const isNewWord = lastWordForIsolation.current !== currentWord;
+        if (isNewWord && isolationState && isolationState.correctSound && isolationState.isoOptions?.length > 0) {
+            debugLog("✅ Using pre-generated isolation options:", isolationState.isoOptions);
+            lastWordForIsolation.current = currentWord;
+            return;
+        }
+        if (isNewWord) {
+            debugLog("⚠️ Generating new isolation options (fallback - not pre-generated)");
+            lastWordForIsolation.current = currentWord;
+            const phonemeCount = wordSoundsPhonemes?.phonemes?.length || 2;
+            const positionIndex = Math.floor(Math.random() * phonemeCount);
+            isolationPositionRef.current = positionIndex;
+            const currentPosition = isolationPositionRef.current || 'first';
+            const phonemes = wordSoundsPhonemes?.phonemes || [];
+            const positionIdx = typeof currentPosition === 'number' ? currentPosition : 0;
+            const correctSound = phonemes[positionIdx] || wordSoundsPhonemes?.firstSound;
+            const isoAllPhonemes = wordSoundsPhonemes?.phonemes || [];
+            const isoDistractors = isoAllPhonemes.filter(p => p.toLowerCase() !== correctSound?.toLowerCase()).slice(0, 3);
+
+            const used = new Set([correctSound?.toLowerCase(), ...(isoDistractors || []).map(d => d.toLowerCase())]);
+            const SIMILAR_SOUNDS = {
+            'b': ['d','p','v','g'], 'd': ['b','t','g','n'], 'f': ['v','th','s','p'],
+            'g': ['k','d','b','j'], 'h': ['wh','f'], 'j': ['g','ch','zh','z'],
+            'k': ['g','t','c','ck'], 'l': ['r','w','n','y'], 'm': ['n','b','p','ng'],
+            'n': ['m','ng','d','l'], 'p': ['b','t','f','k'], 'r': ['l','w','y','er'],
+            's': ['z','sh','th','f'], 't': ['d','k','p','ch'], 'v': ['f','b','w','th'],
+            'w': ['r','l','wh','y'], 'y': ['w','l','ee','i'], 'z': ['s','zh','j','th'],
+            'sh': ['ch','s','zh','th'], 'ch': ['sh','j','t','tch'], 'th': ['f','v','s','d'],
+            'wh': ['w','h','f'], 'ng': ['n','m','nk'], 'ck': ['k','g','c'],
+            'a': ['e','u','o','ah'], 'e': ['i','a','u','eh'], 'i': ['e','ee','y','ih'],
+            'o': ['u','a','aw','ah'], 'u': ['o','oo','a','uh'],
+            'ee': ['i','ea','e','y'], 'oo': ['u','ew','o'], 'ai': ['ay','a','ei'],
+            'oa': ['o','ow','oe'], 'ou': ['ow','oo','u'], 'ow': ['ou','oa','o'],
+            'oi': ['oy','ou','aw'], 'oy': ['oi','ow','o'],
+            'ar': ['or','er','a','ah'], 'or': ['ar','er','aw','ore'], 'er': ['ar','or','ur','ir'],
+            'ir': ['er','ur','ear'], 'ur': ['er','ir','or'],
+            'aw': ['or','o','au','ow'], 'au': ['aw','o','ou'],
+            'c': ['k','s','ck','g'],
+            };
+            const similarPool = SIMILAR_SOUNDS[correctSound?.toLowerCase()] || [];
+            const wordSeed = (currentWordSoundsWord || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            const shuffledSimilar = [...similarPool].sort((a, b) => ((wordSeed * 31 + a.charCodeAt(0)) % 97) - ((wordSeed * 31 + b.charCodeAt(0)) % 97));
+            for (const sim of shuffledSimilar) {
+                if (isoDistractors.length >= 5) break;
+                if (!used.has(sim.toLowerCase())) { isoDistractors.

@@ -1,0 +1,604 @@
+=== Total lines: 75216 ===
+
+============================================================
+SECTION 1: Lines containing 'Tip:' as a string literal
+============================================================
+L15320: pro_tip_audio: "Pro Tip: Click directly on any text to hear just that part.",
+L15585: matching_keyboard_hint: "Tip: Use Tab to switch columns, Enter to select",
+L16181: tip: "<strong>Pro Tip:</strong> AI-generated text in diagrams can sometimes be inaccurate. Use the <strong>Nano Banana Refiner</strong> above to 'fix spelling' or 'remove text labels' before downloading.",
+L17384: pro_tip_label: "Pro Tip:",
+L18067: locked_tip: "Tip: Complete quizzes, word searches, or matching games to earn XP!",
+L35561: 'wizard_standard_select': "Toggle this standard in your selection list. Selected standards: appear highlighted, are used for alignment analysis, and appear in generated lesson plans. Click once to add, click again to remove. Multiple standards can be selected simultaneously. Selected standards are g
+L35664: 'glossary_export_standard': "Export your vocabulary flashcards as a printable PDF. Output includes: all terms and definitions, front/back card layout, and cut lines for easy separation. Print options: 4 cards per page (large, easy to handle), 8 cards (standard size), or 12 (compact). PDF is formatte
+L35665: 'glossary_export_language': "Export bilingual flashcards with terms in both languages. Each card shows: term in target language (front), translation in native language (back), and pronunciation guide. Supports dual-language literacy development and ELL vocabulary building. Print options match standa
+L35666: 'glossary_puzzle_lang': "Choose which language to use for puzzle generation. Options: primary language (terms), translated language (for bilingual puzzles), or both (advanced challenge). Language selection affects: word orientation, letter grids, and answer keys. Using translated language helps: bui
+L35667: 'glossary_word_search': "Create a printable word search puzzle with your vocabulary terms. Features: customizable grid size (12x12 to 20x20), adjustable difficulty (forward only vs. all directions), optional hints (definitions as clues), and styled themes (plain, themed borders, colored). AI arrange
+L35668: 'glossary_memory_game': "Launch interactive Memory Match using your vocabulary. Gameplay: cards start face-down, click two to flip, match terms with definitions. Features: adjustable pair count (6-12 pairs), timed or untimed play, score tracking, and visual/audio feedback. Cognitive benefits: workin
+L35669: 'glossary_crossword': "Create a professional crossword puzzle from your vocabulary. Features: automatic clue generation from definitions, optimized word placement, numbered grid with across/down sections, and adjustable difficulty. Output includes: printable puzzle sheet, separate answer key, and di
+L35670: 'glossary_matching': "Interactive term-definition matching activity. Gameplay: terms appear on left, definitions on right; draw lines or drag to connect pairs. Features: shuffled positions each game, immediate feedback on connections, timer option for challenge, and progress tracking. Easier than Me
+L35671: 'glossary_bingo': "Create printable Bingo cards with your vocabulary terms. Features: randomized card generation (each student gets unique card), customizable grid size (3x3, 4x4, 5x5), definitions as call-out prompts, and styled templates. Print class set with one click. Great for: whole-class revi
+L35672: 'glossary_play_bingo': "Launch live digital Bingo with your vocabulary. Features: animated card display, automated calling (definitions read aloud), mark squares with click/tap, automatic win detection, and celebration effects. Perfect for: smart board display, student devices in class, and remote l
+L35673: 'glossary_scramble': "Unscramble vocabulary terms from jumbled letters. Gameplay: scrambled letters appear, type the correct term, advance to next word. Features: hint system (reveal letters), timer option, difficulty adjustment (easier scrambles for beginners), and definitions as context clues. Bui
+L35674: 'glossary_edit': "Open the glossary editor to customize vocabulary content. Editor allows: modifying term names and definitions, adding/removing terms, regenerating individual images, adjusting translations, and reordering terms. Changes save automatically. Use when: AI-generated definitions need re
+L35693: 'tool_analysis': "AI-powered content analysis that examines your source text and extracts: main ideas and themes, key vocabulary with definitions, reading level assessment (Lexile, grade equivalent), text structure (chronological, compare-contrast, cause-effect), bias indicators, and factual claims 
+L35694: 'tool_glossary': "Create a comprehensive visual vocabulary resource from your source content. AI identifies: key academic vocabulary, context-specific terms, and words likely unfamiliar to target grade level. Each term includes: grade-appropriate definition, AI-generated image, pronunciation audio, 
+L35696: 'tour-wordsounds-panel': "Settings panel for Word Sounds Studio phonics instruction. Configure: word count (5-30 words), syllable range (1-4 syllables), word sources (glossary, word families, custom lists), image style (art style for visuals), and session goal (mastery threshold). Settings affect ge
+L35697: 'wordsounds_open_btn': "Launch the complete Word Sounds Studio after generating your word list. The Studio provides: interactive phonics activities (Break It Down, Rhyme Time, Letter Tracing), progress tracking, audio pronunciation, and mastery-based session goals. Opens in a modal overlay so you ca
+L35698: 'tool_scaffolds': "Generate supportive writing structures matched to your content. Options include: sentence starters (help students begin writing), paragraph frames (templates with blanks), graphic organizers (visual structures for planning), and response guides (structured formats for specific tex
+L35701: 'tool_brainstorm': "AI generates hands-on, engaging activity ideas related to your source content. Each activity includes: title and brief description, estimated time, materials needed, step-by-step instructions option, differentiation suggestions, and standards connections. Activities are designed 
+L35702: 'tool_persona': "Launch AI-powered character conversations. Select from: historical figures (scientists, leaders, artists), literary characters (from novels, plays, myths), or create custom personas. Interview mode: ask questions and receive character-authentic responses. Panel mode: select multiple
+L35703: 'tool_concept_sort': "Generate sorting challenges that develop classification skills. AI creates: categories (groups for sorting), items (things to sort), and correct placements. Activity types: simple sort (one category per item), Venn diagram (overlapping categories), and multi-category (3+ groups
+L35704: venn_back_btn: "Exit the Venn diagram activity and return to the Concept Sort configuration panel. Use when: finished with the activity, want to change settings, or need to generate new items. Progress is saved; returning to Venn continues where you left off. Back button is also available via keyboa
+L35706: venn_bank_item: "Item waiting to be classified. Located in the holding bank below the Venn diagram. Drag to the appropriate zone: Set A (left circle), Set B (right circle), or Shared (overlapping center). For keyboard users: click to select, then use zone buttons to place. Bank items represent conce
+L35707: venn_move_a: "Place the currently selected item into Set A (left circle). Set A represents one category in the comparison. Items in Set A only: belong exclusively to this category, do not share characteristics with Set B. Click when an item clearly belongs to just this group. Keyboard accessible. Af
+L35708: venn_move_b: "Place the currently selected item into Set B (right circle). Set B represents the second category in the comparison. Items in Set B only: belong exclusively to this category, do not share characteristics with Set A. Click when an item clearly belongs to just this group. Keyboard access
+L35709: venn_move_shared: "Place the currently selected item in the Shared zone (center overlap). Items in Shared: belong to BOTH categories, have characteristics of Set A AND Set B. This is the intersection in the Venn diagram. Click when an item fits both groups criteria. Shared items are often the most i
+L35710: venn_move_bank: "Remove the selected item from its current zone and return to the holding bank. Use when: reconsidering placement, made an error, or want to restart that item. Item returns to bank ready for re-placement. Does not affect other placed items. Useful for: changing your mind, correcting 
+L35711: venn_move_cancel: "Close the move action menu without making changes. The selected item stays in its current location. Use when: you accidentally clicked, changed your mind, or want to review before placing. Cancel does not affect any items or your progress. You can select the same or different item
+L35721: header_settings_voice: "Configure text-to-speech audio settings. Choose from multiple AI voices (male/female, different accents), adjust Speaking Speed (slower for comprehension, faster for fluent readers), set Volume level, and test voices before selecting. These settings affect all read-aloud feat
+L35726: header_settings_theme: "Change the visual appearance of the entire application. Light Mode: White backgrounds, dark text—best for well-lit rooms and print-like reading. Dark Mode: Dark backgrounds, light text—reduces eye strain in dim environments and conserves battery. High Contrast: Yellow on blac
+L35731: header_jump_lesson: "Quick navigation back to your most recently created or viewed lesson plan. Saves time when switching between tools and wanting to reference your lesson. The jump button remembers your last lesson plan even across sessions. If no lesson plan has been generated yet, this button op
+L35736: header_support: "Support AlloFlow development through donations or feedback. Ways to help: financial contributions help maintain servers and fund new features, feedback provides invaluable direction for improvements, bug reports help us fix issues quickly, and sharing with colleagues expands our com
+L35737: hints_recall: "Open a history of contextual tips AlloBot has provided during your session. Hint history shows: tips organized chronologically, the context when each hint appeared, and quick-reference formatting. Use to: revisit helpful guidance you may have dismissed, review tips for training purpos
+L35738: xp_modal_trigger: "Open the XP and Achievement dashboard. Panel shows: total XP earned this session and all-time, current level with progress to next level, achievement badges earned and locked, and achievement history. XP is earned from: completing activities, quiz mastery, consistent practice stre
+L35740: bot_avatar: "Meet AlloBot, your AI teaching assistant! Click to wake AlloBot and start a conversation—ask questions about features, get teaching suggestions, or request help with the current content. AlloBot provides: contextual tips based on what you are doing, vocabulary explanations for selected 
+L35751: 'word_sounds_review_regen_word': "Generate a replacement word from the same phoneme family or category. Use when: a word is too easy or too hard for your students, the AI-generated word is problematic, or you want more variety. The replacement matches your original criteria (syllable count, phoneme 
+L35752: 'word_sounds_review_move_word': "Drag this word to a new position in the activity sequence. Reordering helps: build from simple to complex, group thematic words together, sequence by phoneme difficulty, or match your lesson flow. Drag and drop or use arrow buttons for accessibility. Sequence order a
+L35753: 'word_sounds_review_delete_word': "Permanently remove this word from the current Word Sounds session. Use when: word does not fit lesson objectives, word is inappropriate for student population, or you want a shorter activity. Deletion is immediate and cannot be undone—if you might want the word lat
+L35756: 'word_sounds_review_image_gen': "Create a visual representation of this vocabulary word using AI image generation. Images support vocabulary acquisition by connecting words to concrete visuals (dual coding theory). For abstract words, AI creates metaphorical or contextual images. Art style follows y
+L35758: 'word_sounds_review_distractor_input': "Customize the answer choices for rhyming activities. For Rhyme Time: enter the correct rhyming word and distractor options that do not rhyme. Distractors should be: phonetically similar but not true rhymes (creates productive challenges), age-appropriate vocab
+L35761: 'persona_reflection_input': "Write a thoughtful reflection after your conversation with the historical/fictional character. Prompts guide reflection on: What surprised you? What did you learn? How did this change your thinking? Reflections are assessed using your learning objectives and earn XP base
+L35762: 'persona_back_btn': "Go back to the conversation with the historical/fictional character. Use when: you want to explore more topics, need clarification on something the character said, or want to test a different line of questioning. Your previous conversation is preserved—pick up exactly where you 
+L35768: 'bingo_close_btn': "Exit the Bingo card generator panel. Any unsaved cards will prompt for confirmation before closing. Generated cards remain accessible from the Bingo section until you start a new session or clear data. To return to Bingo later, click the Bingo tool button. Your settings (card cou
+L35769: 'bingo_card_count_input': "Specify the number of unique Bingo cards to create. Range: 1 card (individual or demonstration) to 30 cards (full class). Each card is uniquely randomized so no two students have identical arrangements—ensures fairness. Generate a few extras for late arrivals or replacemen
+L35771: 'bingo_regenerate_btn': "Generate fresh Bingo cards with new layouts. Each regeneration: randomly redistributes vocabulary terms, creates unique card arrangements per student, preserves your settings (images, card count), and replaces previous cards. Use when: students finish a round and need new ca
+L35776: 'bingo_toggle_history': "Control visibility of previously called items. When visible: students can reference what has been called, catch up if they missed an item, and verify their cards. History shows items in the order called. When hidden: increases challenge (students must rely on memory), focuse
+L35777: 'bingo_prev_clue': "Replay the last called item. Use when: students need to hear a definition again, noise interrupted the call, or reviewing before moving forward. Previous clue replays with the same audio and visual. Does not reverse game progress—just re-displays the item. Helpful for: students w
+L35778: 'bingo_toggle_autoplay': "Toggle between automatic and manual clue advancement. Auto-play: advances at your selected speed automatically, ideal for independent play or large groups. Manual: you control timing with Next button, better for discussion between clues and checking understanding. Toggle an
+L35779: 'bingo_next_clue': "Advance to the next vocabulary item. Click when students are ready for the next challenge. In manual mode: full control over pacing, wait for understanding before advancing. In auto-play mode: skips wait time and immediately advances. Items are called in random order to prevent p
+L35784: 'quiz_mode_select': "Choose how the live quiz session runs. Standard: Classic question-by-question with score tracking—great for formative assessment. Pulse: Fast-paced rounds with quick questions—builds energy and engagement. Boss Battle: Students collaborate to defeat a challenge boss by answering
+L35801: 'dashboard_clear_all_btn': "Delete all student records and reset analytics to empty. This is permanent and irreversible. All data is removed: student identifiers, activity records, quiz scores, and aggregate statistics. Use with extreme caution. Scenarios for clearing: end of semester reset, testing
+L35806: 'dashboard_add_file_btn_input': "Import additional student work files for class analytics. Supports: text files, PDFs, and exported session data. Files are processed and added to your current class analytics dashboard. Imported data includes: student responses, completion times, accuracy scores, and
+L35812: 'source_upload_btn': "Import content from files on your device. Supported formats: PDF (text extracted automatically, images analyzed via OCR), Images (JPG, PNG—text extracted via AI vision), Word documents (DOCX), Plain text (TXT), and PowerPoint (PPTX—speaker notes extracted). Large files are proc
+L35813: 'source_link_btn': "Import content directly from web pages. Paste any URL to extract: main article text (ads and navigation removed), images with captions, and embedded media descriptions. Works with: news articles, Wikipedia, educational sites, blog posts, and most public web pages. AI intelligentl
+L35819: 'export_copy_button': "Copy generated content in plain text format. Copied content can be pasted into: Word documents, Google Docs, email, PowerPoint, LMS discussions, or any text field. Formatting may be simplified during copy. For complex content with images, use PDF or Word export instead. Copy w
+L35820: 'export_pdf_button': "Create a professional PDF document. PDF includes: all generated content, images and diagrams, proper formatting, and printable layout. PDF is ideal for: printing, sharing via email, archiving lessons, and parent communication. File downloads to your default download folder. PDF
+L35822: 'resource_delete_button': "Remove this resource permanently. Deletion is irreversible—deleted content cannot be recovered. Confirmation dialog appears before deletion. Consider: exporting important resources before deleting, and whether you might need this content later. Deletion frees storage space
+L35825: 'history_clear_button': "Delete ALL resources from your history. This is permanent and irreversible. All generated content, saved activities, and cached resources are removed. Use with extreme caution. Consider before clearing: exporting important resources, backing up to cloud storage, and whether 
+L35830: 'persona_selection': "Browse and select personas for interactive conversation. Categories include: Historical Figures (scientists, leaders, inventors, artists), Fictional Characters (from literature, myths, and stories), Subject Experts (for domain-specific inquiry), and Custom (create your own). Ea
+L35838: 'math_generate_button': "Create math content based on your specifications. Generation includes: problems with step-by-step solutions, visual representations (number lines, graphs, diagrams), teacher answer keys, and student-facing practice pages. AI matches your difficulty and topic settings. Genera
+L35839: 'math_problem_count': "Specify quantity of problems to generate. Options range from: 3-5 (quick check, exit ticket), 10 (standard practice set), 15-20 (homework assignment), to 25+ (comprehensive practice or assessment). More problems take longer to generate. AI varies problem types within your para
+L35844: 'concept_sort_generate_button': "Create the sorting activity. Generation produces: sortable item cards, category bins, and randomized starting positions. Students drag items to correct categories. Immediate feedback option shows correctness on placement. Generation takes 10-15 seconds. Activity is i
+L35845: 'concept_sort_item_count': "Specify total number of items to generate. Recommended range: 8 items (quick activity, ~5 minutes), 12 items (standard activity, ~10 minutes), 15-20 items (comprehensive practice, ~15 minutes). Items are distributed roughly evenly across categories. More items increase di
+L35847: 'quiz_difficulty_mix': "Control question difficulty distribution. Options: Mixed (default—varies difficulty throughout), Easy Only (confidence building, struggling learners), Medium Only (standard assessment), Hard Only (challenge, advanced students). Mixed quizzes typically distribute roughly 30% e
+L35849: 'quiz_generate_button': "Generate the assessment based on your settings. AI creates: questions aligned to source content, answer options, correct answers, and feedback explanations. Generation takes 15-20 seconds. Output includes: student-facing quiz (answers hidden), teacher answer key, and exporta
+L35851: 'timeline_topic_detailed': "Describe your timeline topic with specificity. Strong examples: American Revolution 1775-1783, Stages of photosynthesis, Marie Curie biography, Civil Rights movement events. Specific topics help AI: identify the right events, select appropriate date ranges, and include re
+L35852: 'timeline_count_detailed': "Set how many events to include in your timeline. 5-8 events: concise overview, easier to sequence, good for introductions and quick activities. 10-15 events: comprehensive coverage, more challenging sequencing, suitable for detailed study. Consider: student age (younger =
+L35856: 'alignment_grade_select': "Choose the grade level for standards matching. Options typically span K-12 and may include grade bands (K-2, 3-5, 6-8, 9-12). AI matches your content to standards appropriate for the selected grade. Selecting a different grade than your actual students may be useful for: s
+L35857: 'alignment_generate_button': "Run standards alignment analysis on your source content. AI examines: vocabulary, concepts, skills, and themes in your content. Output shows: matched standards with percentage confidence, coverage gaps (standards not addressed), and suggestions for expanding coverage. A
+L35859: 'glossary_remove_words': "Control whether AI-generated vocabulary images include text overlays. When enabled: images are purely visual with no text, labels, or annotations. When disabled: images may include descriptive text or vocabulary terms. Text-free images are better for: vocabulary assessment 
+L35861: 'glossary_delete_image': "Remove the visual representation for this vocabulary term. Deletion is permanent for this image. The term and definition remain; only the image is removed. Use when: image is inaccurate, inappropriate, or distracting. After deletion: term shows without visual, you can regen
+L35862: 'glossary_speak_term': "Click to hear this vocabulary term pronounced by the AI voice. Uses your selected voice and speed settings from Voice Settings. For language learners: provides accurate pronunciation model. For early readers: reinforces phonetic awareness. For accessibility: supports audio le
+L35865: 'simplified_read_mode': "Return to default reading view without interactive features. Read Mode provides: clean text display, standard navigation, and minimal interface. Use when: students should read independently without supports, content is at appropriate level, or you want distraction-free readi
+L35869: 'simplified_add_term': "Quick-add vocabulary from your reading directly to glossary. Select any word in the simplified text, then click this button. The term is added to your glossary with: AI-generated definition at appropriate level, pronunciation audio, and visual (if visuals are enabled). Saves 
+L35874: 'simplified_download_audio': "Save the text-to-speech audio as a downloadable file. Audio uses your current voice settings (voice, speed, volume). File format is MP3 for universal compatibility. Use downloaded audio for: offline listening practice, accessibility accommodations, homework audio suppor
+L35875: 'simplified_complexity_slider': "Dynamic slider to modify reading level instantly. Drag to change complexity from simple (Grade 1) to advanced (Grade 12+). Text regenerates at new level when you release slider. Use for: quick differentiation during class, finding appropriate challenge level, and com
+L35876: 'simplified_overwrite_toggle': "Control version management when changing complexity. When ON (Overwrite): new level replaces current text, single version maintained, cleaner workspace. When OFF (Create New): each level creates a separate version, multiple versions available, easy comparison. Overwri
+L35879: 'brainstorm_card': "Individual activity idea card from brainstorm generation. Card shows: activity title, brief description, estimated time, and materials needed. Click to expand full details. Actions include: Edit (customize for your context), Connections (see related activities), and Generate Guid
+L35880: 'brainstorm_guide': "Detailed teacher implementation guide for the selected activity. Guide includes: learning objectives aligned to standards, materials checklist with quantities, time breakdown by phase, step-by-step instructions with teacher scripts, differentiation suggestions for various learne
+L35883: 'persona_card': "Individual character card for selection. Card shows: character name, portrait, brief description, and expertise tags. Click to select for conversation. Multiple selections (2-4): enables panel discussion mode where characters interact and debate. Selection options include: Historica
+L35887: 'concept_sort_category': "Drop zone for categorized items. Each category shows: category name/label, current items placed within, and capacity indicator (if limited). Drag items from the deck to their correct category. Categories are: color-coded for visual distinction, labeled clearly for identific
+L35888: 'concept_sort_item': "Individual sortable item representing a concept, term, or example. Items display: text content, optional image, and current placement indicator. Drag items to category bins above. Items can be: moved between categories, returned to the deck for reconsideration, and double-click
+L35891: 'math_toggle_answers': "Control visibility of solutions. When hidden: student practice mode, answers are concealed, self-assessment enabled via reveal button. When shown: teacher reference mode, full solutions displayed, step-by-step explanations visible. Toggle anytime without regenerating. For cla
+L35892: 'math_graph': "Interactive visual display of mathematical concepts. Graphs include: coordinate planes, number lines, bar graphs, pie charts, geometric figures, and function plots as appropriate to the problem type. Visuals are: interactive (zoom, pan on some types), accurate to problem data, and ali
+L35893: 'math_problem': "Individual math problem with work space. Problem display includes: problem number, problem statement, visual (if applicable), and expandable work area. Students show work by: typing in the work space, using the equation editor, or uploading handwritten work (photo). Work is saved wi
+L35894: 'math_student_work': "Expandable work area for problem-solving documentation. Students can: type mathematical expressions, use equation editor for proper notation, add text explanations of reasoning, and upload photos of handwritten work. Work is auto-saved as students type. Teachers see student wor
+L35898: 'header_utils': "Quick access to platform utilities. Includes: Help Mode toggle (? icon, activates contextual help), Settings (gear icon, opens preferences panel), User Account (profile icon, login status and options), and Notifications (bell icon, system messages). Utilities are always accessible f
+L35899: 'header_actions': "Content management actions. Includes: Save (disk icon, save current project), History (clock icon, access saved sessions), Share (share icon, export and distribution options), and Print (printer icon, generate printable versions). Save creates a named snapshot in your history. His
+L35903: 'source_settings_instructions': "Guide AI content generation with specific instructions. Examples: Make it engaging for reluctant readers, Focus on the water cycle, Include diverse character names, Avoid references to violence, and Use simple vocabulary for ELL students. Instructions shape: tone, co
+L35906: 'generator_actions': "Hub for all content generation tools. Available generators include: Quiz (assessment with answer keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q and A pairs), Analysis (content examination), Lesson Plan (instructional design), Timeline (chronologi
+L35908: 'tool_visual': "Access the visual generator tool. Creates AI-generated images including: vocabulary visuals, concept illustrations, scene depictions, diagrams, and infographics. Visual types: reference images (for learning), worksheets (for activities), and diagrams (for relationships). Visuals supp
+L35909: 'tool_udl': "Learn about UDL framework integration. Universal Design for Learning has three principles: Multiple Means of Representation (the what of learning—present information in different ways), Multiple Means of Action and Expression (the how of learning—let students demonstrate understanding d
+L35912: 'tour-analysis-settings': "Settings panel for content analysis generation. Options include: Analysis depth (quick overview vs. comprehensive examination), Focus areas (vocabulary, themes, structure, bias), Output format (list, narrative, comparative), and Target audience (teacher reference vs. stude
+L35913: 'tour-glossary-settings': "Settings panel for glossary generation. Options include: Term count (5-25 terms), Translation language (optional second language for bilingual glossaries), Image style (Photo-realistic, Cartoon, Sketch, Abstract, None), Definition complexity (matching student reading level
+L35914: 'tour-simplified-settings': "Settings panel for text simplification. Options include: Target grade level (1-12+), Format (paragraph, bullet points, outline), Accessibility features (chunking, white space, subheadings), Vocabulary handling (simplify, define in place, or glossary link), and Sentence l
+L35915: 'tour-visual-settings': "Settings panel for image and visual generation. Options include: Art style (Photo-realistic, Watercolor, Cartoon, Sketch, Abstract, Line Art), Worksheet mode (creates printable activity sheets instead of images), Custom instructions (guide visual content and style), Quality 
+L35916: 'tour-faq-settings': "Settings panel for FAQ generation. Options include: Question count (5-20 questions), Focus areas (main ideas, vocabulary, critical thinking, personal connection), Question types (who/what/when vs. analysis/evaluation), Reading level (match to student level), and Answer length (
+L35917: 'tour-scaffolds-settings': "Settings panel for writing scaffolds. Options include: Frame types (sentence starters, paragraph frames, graphic organizers), Complexity (heavily scaffolded to open-ended), Context (general or content-specific), Length (number of scaffolds to generate), and Purpose (brain
+L35919: 'math_quantity': "Configure how many math problems to create. Range 1-10 problems per generation. Fewer problems (1-3): quick practice, warm-up activities, exit tickets. Moderate (4-6): standard practice set, homework assignment. More problems (7-10): comprehensive practice, assessment preparation. 
+L35920: 'math_context': "Connect math problems to your source content themes. When enabled: problem scenarios reference your source material (if learning about ecosystems, problems involve animal populations). When disabled: problems use generic contexts (shopping, sports, basic scenarios). Contextual probl
+L35926: 'lesson_plan_custom_additions': "Customize lesson plan generation with specific requirements. Examples: Include a bell-ringer activity, Add SEL check-in moment, Use 5E model structure, Include station rotation, Add technology integration section, and Include parent communication note. AI incorporate
+L35929: 'adventure_difficulty': "Set overall adventure challenge level. Options: Story Mode (narrative focus, forgiving choices, no fail states, relaxed pace), Normal (balanced challenge, meaningful consequences, fair difficulty), Challenging (higher stakes, limited resources, harder decisions), Hardcore (s
+L35947: 'persona_save_chat': "Preserve this conversation for future reference. Saving captures: complete transcript with timestamps, reflection prompts and responses, and XP earned. Saved conversations appear in History for: reviewing what was learned, continuing conversations later, evidence for portfolios
+L35980: 'simplified_emojis': "Enhance paragraph headers with contextually appropriate emoji icons. Benefits: visual scanning (quickly identify sections), engagement (modern, appealing format), memory cues (emojis aid recall), and accessibility (additional visual markers for processing). Emoji selection is A
+L35981: 'simplified_citations': "Maintain academic integrity by preserving source attribution. When enabled: hyperlinks remain clickable, citation formats are preserved (APA, MLA, etc.), footnotes are retained, and source references stay intact. Essential for: research papers, academic texts, and verifiable
+L35982: 'simplified_charts': "Transform textual data into visual representations. AI identifies: numerical data, relationships, processes, and comparisons in your text, then generates appropriate visualizations. Output formats: data tables (organized information), flowcharts (processes), comparison charts (
+L35983: 'simplified_custom_instructions': "Provide custom guidance that shapes AI text adaptation. Examples: Use only present tense verbs, Avoid idioms and figurative language, Keep sentences under 10 words, Use active voice exclusively, Add transition words between paragraphs. Instructions apply to entire 
+L35985: 'visuals_worksheet_mode': "Create print-optimized illustrations for classroom activities. Worksheet mode generates: black and white line drawings, coloring book style outlines, printer-friendly (no heavy ink areas), and clear simple shapes. Perfect for: coloring activities, budget-conscious printing
+L35986: 'visuals_creative_mode': "Unlock advanced artistic generation for richer visuals. Creative mode adds: detailed backgrounds, artistic lighting effects, stylistic flourishes, and interpretive elements beyond literal depiction. Best for: inspiring creativity, bulletin board displays, student portfolios
+L35987: 'visuals_no_text': "Request text-free image generation. When enabled: AI avoids including words, labels, or text in generated images. Benefits: cleaner visuals, international usability (no language barriers), and focus on visual content. Note: AI text avoidance is imperfect—occasional text may appea
+L35988: 'visuals_low_quality': "Speed up image generation by reducing quality. Low quality mode: generates in 2-3 seconds (vs 8-10), uses less API resources, creates smaller file sizes, and is adequate for most classroom display. Trade-offs: less detail, lower resolution, simpler compositions. Perfect for: 
+L35989: 'visuals_art_style': "Select a visual aesthetic for generated images. Available styles include: Pixel Art (retro game look, kid-friendly), Watercolor (soft, artistic), Cartoon (bright, engaging), Realistic (accurate representation), Sketch (simple line work), Isometric (3D technical look), and more.
+L35990: 'visuals_custom_instructions': "Provide detailed guidance for image generation. Describe: specific objects to include, scene setting and background, character appearances, mood and atmosphere, and composition preferences. Examples: A scientist in a lab coat examining a plant under a microscope, Chil
+L35992: 'faq_count': "Control the quantity of FAQ items generated. Range: 3 questions (quick reference) to 20 questions (comprehensive coverage). Consider: content length (longer texts support more questions), student attention span, and purpose (overview vs. deep dive). Fewer questions: focused on main con
+L35993: 'faq_custom_instructions': "Guide AI to generate targeted FAQ content. Specify: particular topics to address, known student misconceptions, specific vocabulary to include, or questions students typically ask. Examples: Focus on the causes of the revolution, Address the common confusion between mitos
+L35995: 'scaffolds_type': "Select the scaffold format that best supports your learning objective. Sentence Starters: provide the beginning of thoughts for students to complete (The main idea is..., This reminds me of...). Paragraph Frames: offer structured templates with blanks for full paragraph constructi
+L35996: 'scaffolds_custom_instructions': "Customize scaffold content for specific purposes. Specify rhetorical functions: agreeing/disagreeing, comparing/contrasting, cause/effect, evidence citation, or claim-reason-evidence. Examples: Create starters for politely disagreeing with a peer, Focus on analyzing
+L35998: 'brainstorm_simulation_type': "Choose the collaborative thinking structure. Options include: Socratic Bridge (guided questioning toward understanding), Roleplay (assume perspectives to explore issues), Think-Pair-Share (structured peer discussion), Debate (argue opposing viewpoints), and more. Each 
+L35999: 'brainstorm_step_count': "Control simulation length and depth. Range: 3 steps (quick exploration) to 15 steps (deep dive). Each step involves: AI prompt or response, opportunity for student input, and progressive complexity. More steps allow: deeper exploration, more perspectives, and thorough cover
+L36000: 'brainstorm_custom_instructions': "Define the focus and constraints for brainstorming. Specify: the problem to solve, context or scenario, constraints to consider, roles or perspectives to include, and desired outcomes. Examples: Brainstorm solutions to reduce school cafeteria waste, Explore how his
+L36001: 'brainstorm_generate_button': "Start the configured brainstorming session. Clicking initiates: the selected simulation type, AI facilitation with your custom context, and interactive step-by-step progression. Generation takes 5-10 seconds to set up. Students then engage with prompts. Simulation can 
+L36003: 'timeline_topic': "Specify a different focus for timeline generation. By default: AI extracts the primary topic from your source text. Override to: narrow focus to specific aspect, broaden to related context, or redirect to connected topic. Examples: If source is about WWII, override to Battle of Mi
+L36004: 'timeline_count': "Control timeline length and detail. Range: 5 events (key milestones only) to 25 events (comprehensive chronology). Fewer events: cleaner visualization, focus on turning points, easier to memorize. More events: detailed progression, minor events included, complete picture. Consider
+L36006: 'outline_structure': "Select the visual organization pattern. Options include: Traditional Outline (hierarchical with Roman numerals), Venn Diagram (compare/contrast), Flow Chart (sequential processes), Concept Map (interconnected ideas), Cause-Effect Chart (causal relationships), and more. Choose b
+L36007: 'outline_custom_instructions': "Guide AI focus within the outline. Specify: key concepts that must be included, relationships to emphasize, depth for particular sections, or structural preferences. Examples: Emphasize the economic factors, Show how each character motivation connects to the theme, En
+L36009: 'concept_sort_categories': "Specify custom category labels for the sorting activity. Enter category names separated by commas. Examples: Living, Non-Living or Fact, Opinion or Cause, Effect, Both. AI generates items that fit your categories. Categories determine: the cognitive skill practiced, diffi
+L36012: 'fullpack_resource_count': "Control bundle size for appropriate cognitive load. Range: 3 resources (focused essentials) to 10 resources (comprehensive kit). Fewer resources: less overwhelming, quicker review, focused learning. More resources: thorough coverage, multiple activity options, differentia
+L36014: 'quiz_question_count': "Control quiz length for appropriate assessment. Range: 3 questions (quick check) to 25 questions (comprehensive assessment). Shorter quizzes: formative checks, exit tickets, warm-ups. Longer quizzes: unit assessments, thorough comprehension evaluation. Consider: content cover
+L36023: 'concept_sort_bucket': "Category bucket for item placement. Each bucket represents a distinct category with a clear label. Drop items that match this category here. Features: visual capacity indicator, accepts multiple items, highlights when item is dragged over (drop target feedback), and shakes br
+L36026: 'concept_sort_reset': "Return all items to the deck and clear category placements. Use when: you want to rethink your strategy, made too many errors, or want a fresh start. Reset does not affect: your lives, timer (if applicable), or overall progress. Items return to randomized positions in the deck
+L36027: 'concept_sort_add_item': "Create a personalized item for the sorting activity. Teacher feature for customizing generated content. Enter: item text (what appears on the card) and correct category assignment. Custom items blend with AI-generated items. Use to: add curriculum-specific terms, include tr
+L36033: 'venn_header': "Activity goal and progress display panel. Shows: the classification challenge (what you are sorting), category labels for each circle, current score and progress, and items remaining to sort. Header clarifies: what makes items belong to each category, success criteria (all items corr
+L36042: 'crossword_controls': "Puzzle control panel. Check Answers: evaluates all entries, shows correct (green) and incorrect (red) letters, does not reveal answers. Reveal Letter: shows one letter in selected cell (small XP penalty). Reveal Word: shows entire selected word (larger penalty). Reveal All: sh
+L36046: 'group_create_button': "Add the named group to your session. Click after entering a group name. New group appears in the group panel ready for student assignment. Groups can be: assigned different content, tracked separately in analytics, and managed as units during live sessions. No limit on number
+L36047: 'group_resource_library': "Collection of all generated materials available for assignment. Shows: quizzes, glossaries, adventures, activities, and all generated content from this session. Drag resources to reorder for presentation sequence. Resources can be: assigned to all students (default), assig
+L36049: 'group_roster_list': "List of all students currently connected to your session. Drag students to different groups or use the dropdown to assign. Default: all students join the General group. See at a glance: student name/codename, connection status (green = active, yellow = idle, gray = disconnected
+L36060: 'chat_send': "Submit your typed message to the AI assistant. Click or press Enter to send. AlloBot responds in 2-5 seconds with: answers to your questions, guidance for using features, pedagogical suggestions, and content explanations. Messages are logged for your session. You can send follow-up que
+L36061: 'chat_framework_select': "Choose the standards framework for curriculum alignment features. Available frameworks include: Common Core State Standards (ELA/Math), Next Generation Science Standards (NGSS), State-specific standards (where available), and International Baccalaureate (IB). Selection affe
+L36062: 'chat_grade_select': "Set the grade level filter for standards and content. Selection affects: which standards are shown, reading level recommendations, and age-appropriate suggestions. Grade bands available: Pre-K, K-2, 3-5, 6-8, 9-12, and Higher Ed. Standards consultation filters to selected grade
+L36063: 'chat_consult_btn': "Create a comprehensive curriculum alignment analysis. Report includes: standards addressed by your content (matched to selected framework), specific skills and objectives covered, alignment strength indicators, gap identification (important standards not covered), and suggested 
+L36064: 'chat_autofill': "Automatic configuration assistance from AI analysis. When enabled: AlloBot reads your source content, extracts key information (topic, vocabulary, themes, approximate grade level), and pre-fills tool settings. Benefits: faster setup, consistent alignment, and reduced manual configu
+L36066: 'lesson_plan_duration': "Specify how long your lesson should take. Common options: 30 minutes (mini-lesson), 45 minutes (standard period), 60 minutes (extended period), 90 minutes (block schedule). The AI allocates time proportionally across lesson components: opening/activator, direct instruction, 
+L36076: 'dashboard_import_btn': "Load student records from a spreadsheet file. CSV format must include: student identifier (name or codename in column A). Optional columns: group assignment, preset accommodations, prior scores, and custom fields. Template available for download showing expected format. Impo
+L36077: 'dashboard_export_csv': "Download complete analytics data as a spreadsheet. Export includes: student identifiers, group assignments, activity completion records, quiz scores by question, time on task, XP totals, flag history, and session timestamps. CSV opens in Excel, Google Sheets, or any spreadsh
+L36078: 'dashboard_clear_btn': "Permanently delete all student records from the dashboard. This action is irreversible. All data is removed: rosters, scores, activity logs, flags, and analytics. Requires confirmation before executing. Use with extreme caution only when: starting completely fresh with new st
+L36084: 'dashboard_student_row': "Expand to see comprehensive progress data for this individual student. Details include: all completed activities, accuracy and time metrics, strength areas (high performance topics), growth areas (topics needing attention), XP and achievement progress, and session history t
+L36085: 'dashboard_detail_back': "Navigate back to the class roster from individual student detail. Returns to: full student list, class-wide statistics, and overview metrics. Does not lose: individual student data (it is saved), any notes or flags you added, or your place in the roster. Use when: finished 
+L36089: 'adventure_allow_cloud': "Control whether AI-generated adventure images are stored in the cloud. When enabled: images save for future access, loading is faster on return visits, and images can be shared. When disabled: images generate fresh each time, no cloud storage used, and more private. Cloud s
+L36093: 'adventure_confirm_new': "Finalize creating a new adventure. Current adventure progress is automatically saved before switching. Click to confirm you want to start fresh with new settings. New adventure begins from the beginning with your selected topic and configuration. Previous adventure remains 
+L36094: 'adventure_lock_settings': "Prevent students from changing adventure configuration. When locked: difficulty, turn count, visual style, and safety settings are fixed. Students can only interact with story content, not setup options. Recommended for: younger students, standardized experiences, and cla
+L36095: 'adventure_low_quality': "Toggle image quality for adventure visuals. Low quality: faster generation (2-3 seconds vs 8-10), lower API costs, smaller file sizes, and adequate for most classroom uses. High quality: more detailed images, better for printing, and showcase quality. Quality affects: resol
+L36096: 'adventure_story_mode': "Control narrative richness in adventures. When enabled: longer descriptive passages, deeper character development, literary techniques, and immersive storytelling. When disabled: straightforward content delivery, shorter text, and direct-question format. Story mode builds: r
+L36098: 'export_html': "Download as a self-contained web page. HTML export includes: all content and formatting, embedded styles, and interactive elements if applicable. HTML files open in any web browser. Use for: embedding in websites, sharing without special software, and creating offline accessible vers
+L36099: 'export_ims': "Create LMS-compatible package. IMS Common Cartridge is a standard format recognized by: Canvas, Blackboard, Moodle, Schoology, and most learning management systems. Package includes: all content, quizzes with answer keys, and metadata for organization. Import into your LMS to: assign 
+L36100: 'export_print': "Send content to your printer. Print dialog opens with standard options: page selection, copies, printer selection, and layout. Content is formatted for printing: appropriate margins, page breaks at logical points, and print-friendly colors (unless you choose color). Print-specific s
+L36101: 'export_qti': "Download quiz in Question and Test Interoperability format. QTI is the industry standard recognized by: Canvas, Blackboard, Moodle, Brightspace, and most LMS platforms. Export includes: all questions, answer choices, correct answers, point values, and feedback text. Import preserves: 
+L36102: 'export_slides': "Create presentation-ready slides. Export formats: PowerPoint (.pptx) or PDF slides. Content is automatically organized into logical slides with: titles, key points, and supporting visuals. Slide design follows template with clean layout. Transitions and animations not included but 
+L36103: 'export_storybook_images': "Download all adventure images as a ZIP file. Package includes: all generated images from your adventure, organized by story sequence, with descriptive filenames. Images are full resolution as generated. Use for: printing illustrated storybooks, creating physical displays,
+L36104: 'export_storybook_text': "Download adventure narrative as a text document. Export includes: complete story text, student choices, and adventure outcomes. Format options: Word (.docx), PDF, or plain text. Chapters are organized with headings. Student choices are marked to show the path taken. Use for
+L36105: 'export_worksheet': "Create a print-ready student handout. Worksheet format includes: clear instructions, answer spaces, and organized layout. Content is reformatted for paper use with: line spacing for writing, numbered items, and appropriate margins. Worksheets can include: vocabulary lists, compr
+L36108: 'fab_dictation': "Convert speech to text for hands-free input. Click to activate microphone, speak clearly, and watch words appear. Works in: text inputs, writing scaffolds, chat, and any editable field. Supports: multiple languages, punctuation commands (say period, comma, new line), and editing co
+L36110: 'fab_line_focus': "Single-line reading isolation tool for focused reading. When activated: one text line is highlighted while others are dimmed, creating visual focus. Navigate with: arrow keys (up/down), click anywhere on text, or touch/swipe on mobile. Benefits: reduces visual crowding, supports t
+L36114: 'scaffolds_edit_toggle': "Toggle between teacher editing and student view mode. When ON (Edit Mode): click any scaffold to modify text, add new prompts, delete items, and reorder content. When OFF: scaffolds display as students see them (read-only). Edits save automatically. Students always see read
+L36116: 'scaffolds_grading': "Enable teacher grading interface. When on: grading panel appears alongside student work, rubric scoring available, and feedback text field provided. Students cannot see grading panel regardless of setting. Grading options include: point values, rubric criteria checkoff, written
+L36117: 'scaffolds_item': "Individual scaffold prompt or sentence starter. Students see: the prompt text and a completion area. Examples: The main idea is..., One example of this is..., I think this happened because.... Scaffolds support: getting started (overcoming blank page), organization (structured thi
+L36118: 'scaffolds_paragraph_frame': "Structured writing template with blanks for student completion. Frame provides: sentence starters, transition words, and organizational structure. Students focus on content while frame handles organization. Example frame: The main idea is ___. One supporting detail is _
+L36119: 'scaffolds_reset': "Remove all student input to prepare for reuse. When clicked: all typed responses are deleted, progress indicators reset, and the scaffold returns to blank template state. Use for: preparing for next period, starting fresh with new group, or after grading is complete. Warning: thi
+L36120: 'scaffolds_student_input': "Text entry field for student responses. Typing and dictation both work here. Input supports: spell check, auto-capitalization, and word count display. Voice dictation activated via FAB microphone. Content auto-saves as students type. Word/character count shows progress to
+L36122: 'settings_adventure_xp': "Configure XP reward for completing adventure activities. Default 50 XP provides meaningful reward for narrative engagement. Higher values (75-100): strongly incentivize adventure completion, motivate reluctant readers. Lower values (25): balance adventures with other activi
+L36123: 'settings_base_xp': "Set baseline XP awarded for typical activity completion. Default 10 XP creates gradual but satisfying progression. Higher values (15-20): faster leveling, more frequent rewards, higher engagement short-term. Lower values (5): slower progression, more meaningful milestones, longe
+L36124: 'settings_close_btn': "Exit settings panel. All changes are saved automatically as you make them. No explicit save button needed. Close returns you to your previous activity. Settings persist across sessions and devices if cloud sync is enabled. If you made changes that require reload (rare), a noti
+L36125: 'settings_free_response': "Control answer input format globally. Free response ON: students construct their own answers, higher cognitive demand, builds writing and explanation skills, requires more careful grading. Free response OFF: multiple choice only, faster completion, auto-graded, lower anxie
+L36127: 'settings_perm_custom': "Control whether students can modify AI prompts. When enabled: students can add custom instructions affecting AI output, allowing creative personalization and ownership. When disabled: students use only teacher-configured settings, ensuring consistent experiences and preventi
+L36128: 'settings_perm_difficulty': "Control whether students can change challenge level. When enabled: students adjust difficulty to their comfort level, supporting self-regulation and differentiation. When disabled: all students work at teacher-set difficulty, ensuring consistent expectations. Enable for:
+L36129: 'settings_perm_mode': "Control whether students can toggle between multiple choice and free response. When enabled: students choose answer format, accommodating different strengths and preferences. When disabled: answer format is locked to teacher setting, ensuring assessment consistency. Enable for
+L36130: 'settings_perm_visuals': "Control student access to image generation. When enabled: students can request AI-generated visuals, supporting visual learners and engagement. When disabled: image generation is teacher-only, reducing API costs and keeping focus on text. Enable for: creative projects, visu
+L36131: 'settings_persona_free': "Control persona conversation format. When ON: students type their own questions, enabling authentic inquiry, creative exploration, and communication skill development. When OFF: students choose from AI-generated conversation starters, providing scaffolding for struggling st
+L36132: 'settings_unlock_xp': "Configure XP required to unlock special features. Default threshold provides achievable but meaningful goal. Higher thresholds: extend engagement, create longer-term goals, and prevent early access. Lower thresholds: enable faster access, accommodate shorter programs, and redu
+L36135: 'simplified_check_level': "Analyze and display the reading level metrics for adapted text. Shows: Lexile measure, grade-level equivalent, Flesch-Kincaid score, and average sentence length. Use to: verify adaptation hit target level, compare to student reading levels, and document differentiation. An
+L36136: 'simplified_compare_mode': "Display original and simplified versions together. Side-by-side layout shows: original text on left, adapted version on right, with synchronized scrolling. Benefits: see exactly what changed, understand adaptation patterns, and verify key content is preserved. Students ca
+L36137: 'simplified_copy_text': "Copy simplified text for use elsewhere. Clicking copies: the complete adapted text, formatting preserved where possible, and clean text ready for pasting. Use for: pasting into documents, sharing via email, posting to LMS, or creating handouts. Copied text includes: all adap
+L36138: 'simplified_duplicate': "Clone the current adapted text for additional customization. Creates an independent copy that can be edited without affecting the original. Use for: creating multiple reading levels from same adaptation, making targeted changes for specific students, and experimenting with d
+L36139: 'simplified_edit': "Open text editor for direct modification. Edit mode allows: typing changes, cut/copy/paste, and full text revision. Use to: fix AI errors, add clarifying information, remove inappropriate content, and personalize for your context. Edits save automatically. Original text is preser
+L36140: 'simplified_immersive_reader': "Open full-screen reading mode with accessibility features. Immersive reader provides: adjustable text spacing, syllable highlighting, line focus, picture dictionary, and grammar tools. Text-to-speech reads aloud with word highlighting. Background colors and font choic
+L36141: 'simplified_rigor_report': "Create comprehensive text complexity analysis. Report includes: quantitative measures (Lexile, word count, sentence length), qualitative factors (text structure, vocabulary difficulty, prior knowledge demands), and reader-task considerations (purpose, motivation, backgrou
+L36142: 'simplified_teacher_tools': "Open advanced editing panel with teacher-specific features. Tools include: batch word replacement, glossary term injection, annotations/margin notes, reading checkpoints, and differentiation markers. Use to: customize content for your class, add teaching notes invisible 
+L36144: 'memory_mode_select': "Choose your memory game experience. Classic Mode: relaxed pace, no time pressure, focus on learning over speed, good for initial vocabulary exposure. Timed Mode: countdown clock adds urgency, XP bonus for fast completion, develops quick recall, and adds excitement. Study Mode:
+L36145: 'memory_reset_btn': "Start the memory game over with reshuffled card positions. Current matches are cleared and all cards flip face-down. Progress toward completion is lost. Use when: you want a fresh attempt, cards became too familiar, or you made too many wrong guesses. Timer resets if in timed mo
+L36146: 'memory_fullscreen_btn': "Enter distraction-free fullscreen mode. Game expands to fill entire screen, hiding: toolbars, other UI elements, and browser interface. Reduces visual clutter for better concentration. Exit by: pressing Escape, clicking the fullscreen button again, or pressing F11 (browser 
+L36147: 'memory_card_item': "Interactive memory card. Click to reveal what is underneath. Cards show vocabulary term on one card and definition (or image) on the matching card. Find the pair by remembering positions of previously viewed cards. Matched pairs stay face-up and are removed or highlighted. Non-m
+L36149: 'matching_reset_btn': "Remove all current match connections and restart. Matched pairs are disconnected but remain visible. Score is not affected until you submit for checking. Use reset when: you realize your approach was wrong, want to reconsider matches, or need a fresh perspective. Does not pena
+L36152: 'matching_check_btn': "Evaluate all your current matches. Correct pairs: confirmed with checkmark, locked in place, and count toward score. Incorrect pairs: highlighted briefly, then separated for retry. Partial credit: score reflects number of correct matches. After checking: correct matches cannot
+L36154: 'timeline_draggable_item': "Interactive timeline event card. Primary interaction: click and drag to reposition in the timeline sequence. Visual feedback: drop zones glow green when you are over a valid position, cards animate as you move them, and sequence numbers update in real-time. Alternative in
+L36155: 'timeline_move_up': "Move this event one position earlier in the sequence. Accessibility alternative to drag-and-drop. Click repeatedly to move multiple positions. Button is disabled when event is already first. Each click swaps this event with the one before it. Keyboard accessible: Tab to focus, E
+L36156: 'timeline_move_down': "Move this event one position later in the timeline. Accessibility alternative to drag-and-drop. Click repeatedly to move multiple positions. Button is disabled when event is already last. Each click swaps this event with the one after it. Keyboard accessible: Tab to focus, Ent
+L36157: 'timeline_reset_btn': "Randomize event order to start timeline activity over. All events return to scrambled positions. Use when: you want a fresh attempt, are confused about current arrangement, or want to practice again. Does not affect XP already earned from previous completions. Correct placemen
+L36158: 'timeline_check_btn': "Evaluate your timeline arrangement. When clicked: each event position is checked against correct chronology, correct placements show green checkmark and lock in place, and incorrect events shake briefly and remain movable. You can continue adjusting incorrect events and rechec
+L36160: 'visuals_download': "Download the image to your device. File saves as high-resolution PNG to your Downloads folder. Full generation resolution is preserved. Use downloaded images for: printing, presentations, worksheets, and external projects. Image is immediately available in your system Downloads 
+L36161: 'visuals_prompt': "See and modify the generation prompt. Shows: original prompt text, settings used (style, quality), and generation timestamp. Edit prompt to: refine details, change style, fix issues, or create variations. Modified prompts generate new images (original is preserved). Use for: itera
+L36162: 'visuals_refiner': "Open the image enhancement studio. Refiner allows: style changes (make more realistic, more cartoonish, change art style), detail additions (add more background detail, enhance faces), and specific fixes (remove an element, change colors). Describe what you want changed in natura
+L36163: 'visuals_regenerate': "Generate a fresh image with the same prompt settings. AI produces a new variation. Generates a completely different image even though the prompt is identical. Use when: current image is not quite right, you want options to choose from, or you need variety. Original image is pr
+L36166: 'role_teacher': "Complete platform access for educators. Teacher role includes: all content generation tools, full configuration options, student progress dashboard and analytics, answer keys and grading features, permission management for student access, session hosting and live monitoring, and exp
+L36167: 'role_student': "Age-appropriate learning interface with built-in supports. Student role includes: simplified tool selection, gamified XP and achievement system, reading level adaptation, and structured activity flow. Features are: teacher-controlled (some locked for focus), progress-tracked (visibl
+L36168: 'role_parent': "Family-centered experience for home learning support. Parent role includes: child progress visibility, age-appropriate interface language, co-learning activity options, and home-school connection features. Features are: designed for non-educators, supportive of parent involvement, an
+L36171: 'ui_language_select': "Set the display language for all UI elements. Dropdown shows: pre-translated languages (immediate), recently generated languages (if any), and option to generate new translations. Selecting a language updates: all buttons, menus, labels, messages, and help text. Interface lang
+L36172: 'ui_lang_regenerate_btn': "Generate fresh translations for the current language. Use when: translations seem incorrect, updates added new untranslated strings, or you want to try different translation quality. Generation process: AI translates all ~500 UI strings, progress indicator shows completion
+L36178: 'timer_task_input': "Name your focus session for tracking and accountability. Examples: Read Chapter 3, Complete Quiz, Write Reflection. Labels appear in: session history, XP log, and teacher dashboard (if connected). Naming sessions builds metacognitive awareness—students reflect on how they spend 
+L36180: 'timer_reset_btn': "Cancel the current timer and return to zero. Use when: you need to restart with different duration, an interruption requires full attention, or the session was set up incorrectly. Incomplete sessions do not award XP—this encourages commitment to focused work. If you need a brief 
+L36181: 'timer_close_btn': "Collapse the timer panel while keeping it active. The timer moves to a compact view in the header showing: time remaining, task name, and quick controls. Use to: maximize screen space while maintaining accountability, work on other tasks while timer runs, or reduce visual distrac
+L36183: 'welcome_load_btn': "Continue where you left off. Restores your complete last session: source content, all generated resources (glossary, quiz, lesson plan, etc.), student progress data, settings and preferences, and XP accumulated. Ideal for: multi-day projects, returning to interrupted work, and m
+L36184: 'welcome_skip_btn': "Begin immediately with an empty workspace. Choose this when: you know the platform well, want to start fresh without prior content, or need to quickly set up for a new topic. Skipping does not affect your saved data—previous sessions remain in History. The interactive tour is al
+L36186: 'xp_modal_summary': "Complete gamification dashboard showing student progress. Displays: Total XP earned (from quizzes, activities, reflections), Current Level with progress bar to next level, Daily Streak counter (consecutive days of activity—builds habits), and Upcoming Unlocks preview (custom the
+L36191: 'entry_start_new': "Start a brand new session with no previous data loaded. Use when: beginning a new topic, working with different students, or wanting a clean slate. Starting new does not delete your history—previous sessions remain accessible via History panel. You can load prior sessions anytime
+L36192: 'entry_load_exist': "Resume your previous session with all data intact. Loading restores: XP earned, activity progress, saved responses, settings preferences, and session history. Perfect for: multi-day projects, continuing interrupted work, and maintaining momentum. Your most recent session loads b
+L36197: 'teacher_gate_unlock': "Submit password for verification. If correct: teacher features unlock, gate disappears, you have full access until timeout. If incorrect: error message shows, attempts counter decrements, retry or reset. Once unlocked: access settings, view answer keys, see student data, chan
+L36203: 'faq_edit_toggle': "Switch between view and edit modes for FAQ content. When ON (Teacher Mode): click any Q&A to edit text, add new questions with the + button, delete irrelevant pairs, and reorder for logical flow. When OFF: read-only display as students see it. Edits save automatically. Use editin
+L36205: 'faq_item': "Individual question-and-answer pair. Click the question to expand and see the answer. When expanded: answer text appears, TTS button reads aloud, and related resources link below. Navigate with: click to expand/collapse, arrow keys to move between items, or swipe on touch devices. FAQ i
+L36207: 'flashcard_prev': "Navigate to the previous flashcard in the deck. Multiple input methods: click this button, press Left Arrow key, or swipe left on touch screens. Cycling back allows: reviewing difficult cards, comparing related terms, and self-paced study. The deck loops—going back from the first 
+L36208: 'flashcard_next': "Advance to the next flashcard in the deck. Multiple input methods: click this button, press Right Arrow key, or swipe right on touch screens. Moving forward is the primary study action—test your recall before flipping, then advance. The deck loops—after the last card, you return t
+L36209: 'flashcard_play_sequence': "Automatically cycle through all flashcards with spoken audio. Each card: appears, term is spoken, brief pause, definition is spoken, then advances to next card. Perfect for: passive review while doing other tasks, auditory learners, accessibility needs, and study while ey
+L36213: 'concept_sort_add_btn': "Add custom items to the sorting activity. Teacher feature for customizing content. Click to open input form. Enter: item text (word, phrase, or concept), optional starting position (in deck or pre-placed), and correct category assignment. Custom items blend with AI-generated
+L36214: 'concept_sort_card_item': "Interactive sorting card. Primary interaction: drag and drop to category bins above. Alternative: use arrow buttons for keyboard-accessible sorting (Tab to select, arrows to move). Touch devices: tap and hold to drag. Double-click (or press Enter twice) to edit item text i
+L36221: 'persona_select_button': "Begin an interactive interview with this character. Clicking opens: full-screen conversation interface, character portrait and introduction, conversation history panel, and input area for your questions. The persona responds based on: historical accuracy (for real figures),
+L36225: 'hints_generate_extension': "Generate advanced activities for students who need additional challenge. Extension activities: go deeper into concepts (analysis, synthesis, evaluation), connect to broader topics (cross-curricular links), require creative application (projects, designs), and incorporate
+L36228: 'history_save_teacher': "Save this project to your permanent teacher library. Teacher library is: persistent (does not auto-delete like session history), organized (add tags and categories), searchable (find by topic, date, or keyword), and shareable (send to colleagues). Use for: proven lesson mate
+L36229: 'history_save_student': "Add this work to your personal student portfolio. Portfolio items: persist across sessions, can be reviewed for studying, build a record of learning over time, and can be shared with teachers for assessment. Good portfolio additions: completed activities, strong quiz perform
+L36230: 'history_max_toggle': "Toggle history panel size between expanded and collapsed views. Expanded: shows full history list with previews, search, and filtering options. Collapsed: minimal sidebar showing recent items only. Keyboard shortcut Ctrl+H toggles between views. Use expanded for: browsing hist
+L36231: 'history_settings': "Customize how history is managed. Settings include: Auto-save frequency (every 1/5/10 minutes or on change only), Storage limit (maximum items before oldest are deleted), Cleanup rules (delete after 30/60/90 days or keep forever), and Sync preferences (cloud or local only). Adju
+L36233: 'lesson_edit_instruction': "Modify the AI prompts that control lesson generation. Advanced feature for experienced users. Instructions control: lesson structure, pedagogical approach, activity types, and content emphasis. Default instructions work well for most cases. Customize when: you have specif
+L36235: 'immersive_line_focus': "Enable single-line reading guide. When active: current reading line is fully visible, surrounding lines are dimmed, and focus follows as you navigate. Benefits: reduces visual overwhelm, improves tracking, and helps attention stay on current text. Navigate with: arrow keys, 
+L36236: 'immersive_syllables': "Visual syllable segmentation for decoding support. When enabled: words display with syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic words. Benefits: builds phonemic awareness, supports decoding strategies, develops morphological understanding, and aids p
+L36237: 'immersive_wide_text': "Expand text to use more horizontal screen space. When active: line length increases, less scrolling is needed, and more text is visible at once. Good for: fluent readers, wide displays, and when scanning for information. Default narrow width is better for: struggling readers,
+L36239: 'sidebar_tab_create': "Open the content generation panel with all AI-powered tools. Available generators: Quiz (assessments with answer keys), Glossary (visual vocabulary), Outline (graphic organizers), Analysis (content examination), Lesson Plan (structured instruction), Timeline (chronological act
+L36250: 'input_area': "Primary content input for all generation tools. Paste existing text (Ctrl+V), type original content, or use import options (upload file, fetch URL). This becomes the source material for all generators. Optimal length: 100-3000 words. Shorter content works for focused activities; longe
+L36251: 'fullpack_generate': "One-click comprehensive resource generation. Creates: Adapted text (multiple reading levels), Quiz (MCQ and reflection), Glossary (visual vocabulary with audio), Lesson plan (structured instruction), and Discussion questions (Socratic prompts). All resources are interconnected 
+L36254: 'chat_auto_send': "Control voice input behavior. When ON (Auto-send): message sends after 1-2 seconds of silence, enables hands-free conversation, and flows naturally like talking. When OFF (Manual): you review transcription before sending, can edit mistakes, and have more control. Auto-send is fast
+L36255: 'chat_save': "Preserve the chat conversation for future access. Saved conversations include: all messages (yours and AI), timestamps, and any generated content. Access saved chats from History panel. Use for: revisiting helpful explanations, sharing tutoring sessions with teachers, and tracking lear
+L36257: 'chat_expand': "Resize the chat interface. Expanded: full-screen chat, maximum conversation space, focused interaction. Compact: sidebar panel, see other content while chatting, multitasking friendly. Toggle with this button or keyboard shortcut. Expanded is better for: extended conversations, readi
+L36258: 'chat_close': "Dismiss the chat interface. Closing does not: lose your conversation, stop AI processing, or reset context. Conversation is preserved when you reopen. Reopen via: header Chat button, keyboard shortcut, or asking AlloBot. Close when: you need maximum workspace, chat is distracting, or 
+L36261: 'word_sounds_mic': "Voice input for phonics activities. Click to start recording your spoken answer. Browser will request microphone permission on first use. Speaking clearly: hold microphone button, say the word or sound, release when done. AI evaluates: pronunciation accuracy, phoneme identificati
+L36263: syntax_close: "Exit the Syntax Scramble game. Closing saves your current progress. You can resume from where you left off. Partially completed puzzles remain in your queue. XP is awarded for completed sentences only. Close when: you need a break, switching activities, or finished practicing. Progres
+L36264: syntax_finish: "End the session and view performance summary. Results show: sentences completed, accuracy percentage, time spent, XP earned, and common error patterns. Analytics identify: grammar concepts mastered, areas needing practice, and improvement over time. Results save to your progress hist
+L36265: syntax_dropped_word: "Word currently in your answer sentence. Click to remove and return to the word pool. Removing lets you: fix placement mistakes, try different arrangements, and reconsider order. Words snap back to pool immediately. Sentence automatically reflows when words are removed. You can 
+L36266: syntax_pool_word: "Available word to place in your sentence. Click to add to the end of your current sentence. Alternatively, drag to a specific position. Words disappear from pool when placed. All words must be used for complete sentence. Pool words are: color-coded by part of speech (if enabled), 
+L36267: syntax_check: "Evaluate your arranged sentence. Correct sentences: green highlight, success animation, XP awarded, and advance option appears. Incorrect sentences: wrong positions shake, feedback explains error, and retry is available. Checking uses remaining attempts if limited. Partial credit may 
+L36268: syntax_next: "Advance to the next scrambled sentence. Click after successfully completing current puzzle. Next sentence: resets word pool, clears answer area, and may adjust difficulty. Sentence difficulty increases gradually as you succeed. Skip option available if stuck (uses a hint). Progress bar
+L36270: 'ws_gen_minimize': "Collapse the Word Sounds Studio panel to a compact bar. The background becomes visible while the studio remains accessible. Use when: you need to reference other content, want less visual clutter, or checking something behind the panel. Studio state is preserved—all settings and 
+L36271: 'ws_gen_close': "Exit the Word Sounds Studio completely. Closing saves: current word list, session progress, and all settings. You can reopen and resume from the Word Sounds button. In-progress activities maintain their state. XP already earned is preserved. Close when: switching to other tools, tak
+L36272: 'ws_gen_expand': "Restore the Word Sounds Studio to full panel view. Expands from minimized state to show all controls and options. All settings and progress are preserved during minimize/expand cycles. Use to: access full configuration, see complete word list, or interact with all studio features. 
+L36274: 'ws_gen_review_btn': "Open a summary view of all words in the current phonics lesson. Review panel shows: complete word list, phonetic transcriptions, syllable counts, and source indicators (glossary, word family, custom). Use to: verify word selection before starting, check lesson coverage, and ide
+L36277: ws_gen_theme_input: "Customize the visual style for vocabulary images. Enter style descriptions like: pixel art (retro game look), watercolor (soft painterly), cartoon (bright kid-friendly), realistic photo (accurate reference), or sketch (simple line drawings). Style applies to all generated word i
+L36278: ws_gen_syllable_min: "Set the minimum syllable count for generated words. Range: 1 syllable (cat, dog) to 4+ syllables (hippopotamus). Syllable count correlates with decoding difficulty. 1-syllable words: CVC patterns, beginning readers, phoneme segmentation focus. 2-syllable words: introduce syllab
+L36279: ws_gen_syllable_max: "Set upper limit for word syllable count. Works with Minimum slider to create ranges. Examples: Min 1, Max 2 creates one and two syllable words. Min 2, Max 4 creates multisyllabic challenge words. Set both equal for specific syllable practice. Higher maximums include: longer wor
+L36280: ws_gen_src_glossary: "Pull vocabulary from your active glossary into phonics practice. Glossary words provide: curriculum-aligned vocabulary, familiar context for students, and reinforcement of lesson content. Only active glossary terms are included. Combine with other word sources for variety. Glos
+L36281: ws_gen_src_family: "Focus practice on rhyming word patterns. Word families (rimes) share: ending sounds, spelling patterns, and decoding strategies. Examples: -at family (cat, hat, bat), -ight family (light, night, right). Learning word families: builds pattern recognition, accelerates decoding of n
+L36282: ws_gen_family_select: "Choose the specific word family (rime pattern) for focused practice. Dropdown shows: common word families organized by vowel sound, example words for each, and difficulty indicators. Popular families include: -an, -at, -in, -op, -ug (CVC), -ake, -ight, -ound (long vowels). Sel
+L36283: ws_gen_src_custom: "Create a custom word list for targeted practice. Enable this option to add your own words. Use for: curriculum-specific vocabulary, commonly misspelled words, student-requested words, and intervention targets. Custom words receive full phonetic processing: IPA, syllables, images,
+L36284: ws_gen_quick_add_input: "Text input for custom word entry. Type one word at a time. Press Enter or click Add button to include. Added words appear in word list below. Words are validated: must be real English words, appropriate length, and phonetically processable. Invalid words show error message. 
+L36285: ws_gen_quick_add_btn: "Confirm adding the custom word. Alternative to pressing Enter. Button activates when valid word is typed. Click to add word to lesson list. Word appears in custom words section. Repeat for each word you want to include. Button shows loading briefly while validating. Invalid wo
+L36286: ws_modal_close: "Exit the Word Sounds Studio. Closing saves: current word list, session progress, and settings. You can resume from the Words Sounds button. Partially completed sessions maintain progress. XP is preserved for completed activities. Close when: switching to other tools, taking a break,
+L36288: adventure_setup_input_mode: "Select the primary gameplay mechanic. Choices: pick from AI-generated options each turn (easiest, story-focused). Debate: persuade NPCs through argument (builds rhetoric, critical thinking). System Simulation: manage resources like gold, health, reputation (teaches conse
+L36289: adventure_setup_difficulty: "Set overall adventure challenge. Story (easy): forgiving outcomes, narrative focus, no fail states. Normal: balanced challenge, meaningful consequences. Challenging: higher stakes, resource scarcity. Hardcore: strict penalties, possible failure. Difficulty affects: how f
+L36290: adventure_setup_language: "Choose narration and dialogue language. Options include: English (default), Spanish, French, German, Mandarin, and 30+ others. All AI text uses selected language. Vocabulary is grade-appropriate within chosen language. Bilingual mode shows both languages side-by-side. Lang
+L36291: adventure_setup_chk_freeresponse: "Enable open-ended response input. When ON: students type any action they want, AI adapts story accordingly, creative freedom is maximized. When OFF: students choose from 4 AI-generated options, structure guides the experience. Free response builds: composition skil
+L36292: adventure_setup_chk_chance: "Add tabletop RPG-style randomness. When enabled: risky actions trigger D20 roll, roll result affects success or failure, critical successes (20) and failures (1) create memorable moments. Teaches: probability concepts, risk vs. reward, accepting uncertain outcomes. Roll 
+L36293: adventure_setup_chk_story: "Simplify the interface for pure storytelling. When ON: resource panels are hidden, no stats to track, narrative-only experience. When OFF: full system visibility, resources displayed, game-like interface. Story mode is best for: younger students, reading focus, reduced co
+L36294: adventure_setup_chk_lowqual: "Reduce image complexity for performance. When ON: images generate faster, lower resolution, less detail. When OFF: full quality images, longer generation time, maximum visual impact. Low quality is useful for: slow internet connections, limited devices, and when speed m
+L36295: adventure_start_btn: "Launch the adventure with configured settings. Starting: generates opening scene, creates initial choices, and begins narrative. Uses all settings configured in setup panel. Starting new replaces any in-progress adventure (save first via Resume if needed). First scene takes 10-
+L36296: adventure_resume_btn: "Return to your in-progress adventure. Resume loads: your exact story position, all choices made, inventory and resources, and narrative context. Perfect for: multi-session adventures, continuing after breaks, and picking up where you left off. Resume is only available when sav
+L36297: adventure_immersive_toggle_ui: "Toggle UI visibility during adventure. When hidden: maximum story immersion, fullscreen narrative, minimal distraction. When shown: access to all controls, settings, and inventory. Toggle anytime during play. Hidden mode is great for: reading focus, presentations, and
+L36298: adventure_immersive_exit: "Leave fullscreen immersive experience. Clicking exits to: standard adventure view, visible controls, and normal interface. Adventure continues from current position. Progress is preserved. Use when: needing to access settings, switching activities, or finished playing. Imm
+L36299: adventure_immersive_autoread: "Control voice narration. When ON: new story text is automatically read aloud using TTS, hands-free story experience, immersive audiobook feel. When OFF: silent reading, student controls pace. Auto-read uses: your selected voice settings, appropriate dramatic pacing, an
+L36300: adventure_immersive_inventory: "Access collected items while in immersive view. Inventory shows: all items acquired during adventure, item descriptions and uses, and current resource counts. Items may be: usable (consumables), key items (story-important), or equipment (stat-affecting). Click items t
+L36301: adventure_choice_toggle: "Expand to show available options. Click to reveal 4 AI-generated choices for the current story beat. Choices are: contextually appropriate, varied in approach, and balanced in outcome potential. Hide again by clicking. Choice visibility can be controlled by teacher. Student
+L36302: adventure_choice_btn: "Confirm this choice to advance the narrative. Clicking: submits your decision, generates story continuation, and presents new scene and choices. Decision is logged for teacher review. XP may be awarded based on choice quality. Story adapts to your decision. Some choices have i
+L36303: adventure_input_field: "Free-text input for custom actions. Available when Free Response is enabled. Type any action you want your character to take. AI interprets: movement, dialogue, investigation, and creative actions. Clear, specific actions work best. Vague inputs may lead to unexpected interpr
+L36304: adventure_input_send: "Confirm and send your typed action. Click after typing your desired action. AI processes input and generates story response. Processing takes 5-10 seconds. Submission is logged for review. Cannot be undone after sending. AI handles most reasonable actions. Nonsensical inputs m
+L36305: adventure_edit_options: "Teacher-only feature to modify AI-generated options. Access to: edit choice text, add custom choices, remove inappropriate options, and reorder for emphasis. Use when: AI generated unsuitable options, you want to guide specific learning, or need curriculum alignment. Edits o
+L36306: democracy_toggle: "Collaborative decision-making mode. When ON: all connected students vote on next action, majority choice advances story, real-time vote display shows consensus. Creates: shared adventure experience, discussion opportunities, and democratic practice. Voting period is configurable. 
+L36308: crossword_close_btn: "Exit the crossword activity. Closing saves: current progress, filled letters, and completion status. Resume from Crossword tool to continue. Partially completed puzzles remain available. XP is awarded on full completion only. Close when: switching activities, needing a break, o
+L36309: inventory_item: "Interactive inventory item. Click to see: detailed description, possible uses, and action options. Items may be: usable (consume for effect), key items (required for story), equipment (provides benefits), or collectibles (for achievement). Use items when relevant to current challeng
+L68963: <p className="text-purple-400 text-xs">{t('escape_room.matching_keyboard_hint') || 'Tip: Use Tab to switch columns, Enter to select'}</p>
+
+============================================================
+SECTION 2: Lines containing 'Allobot'
+============================================================
+L13904: • **TTS Feedback**: Allobot reads grading results aloud for accessibility.
+L36726: // This forces Allobot to be at the Top-Right of the panel
+L44752: // FIX: Cancel any pending Allobot speech to prevent voice doubling
+L57916: // Allobot Trigger for Rigor Check
+
+============================================================
+SECTION 3: Lines containing 'glossary' AND ('bingo' or 'word game')
+============================================================
+L17362: glossary_bingo: "You can turn these terms into a Bingo game for a class activity!",
+L17391: glossary_generated: "Glossary complete! Turn these terms into a Bingo game or Memory match.",
+L17811: bingo_close_btn: "Close the Bingo game and return to the glossary.",
+L17813: glossary_play_bingo: "Launch the Bingo game using your glossary terms! Great for whole-class vocabulary review.",
+L20997: tips.push(t('tips.glossary_bingo'));
+L35407: 'glossary_bingo': 'glossary',
+L35408: 'glossary_play_bingo': 'glossary',
+L35671: 'glossary_bingo': "Create printable Bingo cards with your vocabulary terms. Features: randomized card generation (each student gets unique card), customizable grid size (3x3, 4x4, 5x5), definitions as call-out prompts, and styled templates. Print class set with one click. Great for: whole-class revi
+L35672: 'glossary_play_bingo': "Launch live digital Bingo with your vocabulary. Features: animated card display, automated calling (definitions read aloud), mark squares with click/tap, automatic win detection, and celebration effects. Perfect for: smart board display, student devices in class, and remote l
+L35694: 'tool_glossary': "Create a comprehensive visual vocabulary resource from your source content. AI identifies: key academic vocabulary, context-specific terms, and words likely unfamiliar to target grade level. Each term includes: grade-appropriate definition, AI-generated image, pronunciation audio, 
+L42724: const generateBingoCards = (glossaryData, count, size) => {
+L65574: data-help-key="glossary_bingo"
+L65577: title={t('glossary.tooltips.generate_bingo')}
+L65579: <Gamepad2 size={14} /> {t('glossary.bingo')}
+L65583: data-help-key="glossary_play_bingo"
+L65586: title={t('glossary.tooltips.launch_bingo')}
+L65588: <Gamepad2 size={14} /> {t('glossary.play_bingo')}
+
+============================================================
+SECTION 4: Lines containing 'grade' appearing twice
+============================================================
+L2980: const prompt = `Generate a list of 15 phonics-rich words related to the topic: "${aiTopic}". Target Grade Level: ${gradeLevel}.${syllableConstraint} Return ONLY a comma-separated list of words.`;
+L14702: reflection_grade_error: "Error grading reflection. Saved without grade.",
+L14934: grade_level: "Target Grade Level",
+L14953: grade_helper: "Select the target grade level for your resources.",
+L15387: grade_label: "Grade",
+L16273: auto_grader: "AI Auto-Grader",
+L16274: grade_work: "Grade Work",
+L16792: ppt_grade_level: "Grade Level",
+L17087: grade_another: "Grade Another Response",
+L17089: grade_work_btn: "Grade Work",
+L17120: mark_graded: "Mark as Graded",
+L17121: graded: "Graded",
+L17148: marked_graded: "Marked as Graded",
+L17366: quiz_autograder: "I can grade open-ended reflection answers with the Auto-Grader!",
+L17402: feedback_lesson_generic: "Crafting a UDL-optimized lesson for {grade} grade.",
+L17404: feedback_complexity_match: "The reading level fits your {grade} grade target perfectly.",
+L17405: feedback_complexity_mismatch: "This text might be a bit complex for {grade} grade students.",
+L17529: grade: 'Grade',
+L17723: wizard_grade_option: "Select the target grade level for your content. This affects vocabulary complexity, reading level, and conceptual depth.",
+L17787: simplified_grade_level: "Adjust the reading level of the text. Lower grades = simpler vocabulary and shorter sentences.",
+L18320: start_scratch: "I see we're starting from scratch! What kind of lesson would you like to build?\n\nTell me the **Topic**, **Grade Level**, and **Style** (e.g., 'A funny story about Gravity for 1st Graders' or 'A rigorous article on The Civil War for High School').\n\nI'll configure the source genera
+L18684: grade_select: "Grade",
+L18882: "Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade",
+L18883: "5th Grade", "6th Grade", "7th Grade", "8th Grade", "9th Grade",
+L18884: "10th Grade", "11th Grade", "12th Grade", "College", "Graduate Level"
+L18886: const getDifferentiationGrades = (targetGrade, range) => {
+L18888: const targetIdx = GRADE_ORDER.indexOf(targetGrade);
+L22925: <span className="text-xs font-medium text-slate-500">{t('mastery.achieved_level')}: {grade.score}/{grade.max || 5}</span>
+L22928: <div className={`mt-2 text-sm p-3 rounded-lg border-l-4 ${grade.score >= (grade.max || 5) * 0.8 ? 'bg-green-50 border-green-400 text-green-800' : 'bg-orange-50 border-orange-400 text-orange-800'}`}>
+L23869: "gradeLevel": "string (optional - e.g. '3rd Grade', 'High School')",
+L24231: const gradeKey = String(grade).replace(/\D/g, '') || 'K';
+L24232: const norms = FLUENCY_BENCHMARKS[gradeKey === '0' ? 'K' : gradeKey];
+L28517: groups: { ...(prev?.groups || {}), [id]: { name: newGroupName.trim(), color: newGroupColor, profile: { gradeLevel: '3rd Grade', leveledTextLanguage: 'English' } } },
+L28563: const GRADE_OPTIONS = ['Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade', '9th Grade', '10th Grade', '11th Grade', '12th Grade'];
+L28668: <ProfileField label={t('roster.grade') || 'Grade'} value={group.profile?.gradeLevel} field="gradeLevel" gId={gId} type="select" options={GRADE_OPTIONS} />
+L30620: const [gradedIds, setGradedIds] = useState(new Set());
+L30980: <span className="font-bold text-sm">{gradedIds.has(selectedStudent.id) ? t('dashboard.table.graded') : t('dashboard.table.mark_graded')}</span>
+L31119: const isGraded = gradedIds.has(student.id);
+L31134: {isGraded && <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider">{t('dashboard.table.graded')}</span>}
+L31286: grade: '3rd Grade',
+L31319: 1: { title: 'Step 1: Grade Level', text: 'Select the grade level for your content. This determines vocabulary complexity, sentence structure, and concept depth. All generated materials will be calibrated to this level. You can always change it later in settings.' },
+L31495: { label: t('grades_short.g1'), value: '1st Grade' },
+L31496: { label: t('grades_short.g2'), value: '2nd Grade' },
+L31497: { label: t('grades_short.g3'), value: '3rd Grade' },
+L31498: { label: t('grades_short.g4'), value: '4th Grade' },
+L31499: { label: t('grades_short.g5'), value: '5th Grade' },
+L31500: { label: t('grades_short.g6'), value: '6th Grade' },
+L31501: { label: t('grades_short.g7'), value: '7th Grade' },
+L31502: { label: t('grades_short.g8'), value: '8th Grade' },
+L31503: { label: t('grades_short.g9'), value: '9th Grade' },
+L31504: { label: t('grades_short.g10'), value: '10th Grade' },
+L31505: { label: t('grades_short.g11'), value: '11th Grade' },
+L31506: { label: t('grades_short.g12'), value: '12th Grade' },
+L31942: <option value="1st Grade">{t('grades.g1')}</option>
+L31943: <option value="2nd Grade">{t('grades.g2')}</option>
+L31944: <option value="3rd Grade">{t('grades.g3')}</option>
+L31945: <option value="4th Grade">{t('grades.g4')}</option>
+L31946: <option value="5th Grade">{t('grades.g5')}</option>
+L31947: <option value="6th Grade">{t('grades.g6')}</option>
+L31948: <option value="7th Grade">{t('grades.g7')}</option>
+L31949: <option value="8th Grade">{t('grades.g8')}</option>
+L31950: <option value="9th Grade">{t('grades.g9')}</option>
+L31951: <option value="10th Grade">{t('grades.g10')}</option>
+L31952: <option value="11th Grade">{t('grades.g11')}</option>
+L31953: <option value="12th Grade">{t('grades.g12')}</option>
+L33817: Target Grade Level: ${grade}
+L33854: setGradeLevel(finalData.grade);
+L33897: grade: finalData.grade,
+L34834: const [fluencyBenchmarkGrade, setFluencyBenchmarkGrade] = useState('3');
+L35557: 'wizard_grade_option': "Select the target grade level for the content.",
+L35599: 'wizard_next_grade_btn': "Confirm grade selection and proceed.",
+L35694: 'tool_glossary': "Create a comprehensive visual vocabulary resource from your source content. AI identifies: key academic vocabulary, context-specific terms, and words likely unfamiliar to target grade level. Each term includes: grade-appropriate definition, AI-generated image, pronunciation audio, 
+L35747: 'tool_simplified': "Transform source text into accessible versions at multiple reading levels (grades 1-12+). Features include: automatic Lexile/grade-level adjustment, vocabulary simplification with hover definitions, sentence shortening for struggling readers, and optional bilingual output. Suppor
+L35800: 'dashboard_export_csv_btn': "Export all student performance data as a CSV (spreadsheet) file compatible with Excel, Google Sheets, and most gradebook systems. Export includes: student identifiers (codenames), activity completion timestamps, quiz scores by question, time on task, XP earned, and sessi
+L35810: 'standards_query_input': "Search for educational standards by topic or skill. Enter concepts like: fractions grade 4, persuasive writing, cell division, or Revolutionary War causes. AI searches across your selected framework (or all frameworks) for matching standards. Results show: standard code, fu
+L35837: 'math_difficulty': "Adjust problem difficulty. Levels: Elementary (basic operations, simple concepts), Middle School (pre-algebra, ratios, basic geometry), High School (algebra, geometry, trigonometry), and Advanced (calculus, statistics, proofs). Difficulty affects: number complexity, required oper
+L35848: 'quiz_question_types': "Choose question formats for your quiz. Options: Multiple Choice (4 options, auto-graded), True/False (binary, quick), Short Answer (typed response, requires review), and Mixed (variety of types). Multiple choice: objective, auto-graded, good for vocabulary and comprehension. 
+L35856: 'alignment_grade_select': "Choose the grade level for standards matching. Options typically span K-12 and may include grade bands (K-2, 3-5, 6-8, 9-12). AI matches your content to standards appropriate for the selected grade. Selecting a different grade than your actual students may be useful for: s
+L35875: 'simplified_complexity_slider': "Dynamic slider to modify reading level instantly. Drag to change complexity from simple (Grade 1) to advanced (Grade 12+). Text regenerates at new level when you release slider. Use for: quick differentiation during class, finding appropriate challenge level, and com
+L35905: 'source_generate_button': "Create AI-written content on your specified topic. Click to begin generation using your: topic description, target length, grade level, and custom instructions. Generation takes 10-20 seconds. Output is reviewed by safety filters before display. Generated content can be: e
+L35914: 'tour-simplified-settings': "Settings panel for text simplification. Options include: Target grade level (1-12+), Format (paragraph, bullet points, outline), Accessibility features (chunking, white space, subheadings), Vocabulary handling (simplify, define in place, or glossary link), and Sentence l
+L35939: 'glossary_definition_level': "Control how definitions are written. Options: Same as Source (maintains original complexity—good for advanced students), On Grade (matches target grade level vocabulary), Simplified (uses common words, shorter sentences), and Kindergarten (very basic language, concrete 
+L35972: 'simplified_grade_level': "Set the reading complexity of simplified output. Options span: K (Kindergarten, shortest sentences, common words), Grades 1-5 (elementary, increasing complexity), Grades 6-8 (middle school, more academic vocabulary), Grades 9-12 (high school, advanced concepts), and Colleg
+L35973: 'simplified_differentiation': "Create three reading levels of the same content in one generation. Produces: Approaching (2-3 grades below target), On Grade (target level), and Advanced (1-2 grades above target). All versions preserve: key concepts, essential vocabulary, and core meaning. Differences
+L36062: 'chat_grade_select': "Set the grade level filter for standards and content. Selection affects: which standards are shown, reading level recommendations, and age-appropriate suggestions. Grade bands available: Pre-K, K-2, 3-5, 6-8, 9-12, and Higher Ed. Standards consultation filters to selected grade
+L36116: 'scaffolds_grading': "Enable teacher grading interface. When on: grading panel appears alongside student work, rubric scoring available, and feedback text field provided. Students cannot see grading panel regardless of setting. Grading options include: point values, rubric criteria checkoff, written
+L36336: wizard_grade_option: "Select this grade level for your lesson. Determines vocabulary and concept complexity.",
+L36348: wizard_next_grade_btn: "Proceed to the next step after selecting your grade level.",
+L38682: : { gradeLevel: '5th Grade', leveledTextLanguage: 'English' };
+L38686: const gradeLevel = myProfile.gradeLevel || '5th Grade';
+L39116: const [gradeLevel, setGradeLevel] = useState('3rd Grade');
+L39583: if (parsed.gradeLevel) setGradeLevel(parsed.gradeLevel);
+L39949: const [udlStandardGrade, setUdlStandardGrade] = useState(gradeLevel);
+L40000: setGradeLevel(profile.config.gradeLevel || '3rd Grade');
+L40057: if (p.gradeLevel) setGradeLevel(p.gradeLevel);
+L40107: grade: gradeLevel, lang: leveledTextLanguage,
+L40117: if (profile.gradeLevel) setGradeLevel(profile.gradeLevel);
+L40138: grade: profile.gradeLevel || gradeLevel,
+L40147: setGradeLevel(saved.grade);
+L40225: setUdlStandardGrade(gradeLevel);
+L40322: mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
+L41836: "definitionGradeLevel": "approximate reading level of definitions, e.g. '3rd-4th grade'",
+L41936: if (hc.definitionGradeLevel) followUp += ` Definitions are at a ${hc.definitionGradeLevel} reading level.`;
+L42202: TargetGrade: gradeLevel,
+L42282: let mappedGrade = config.gradeLevel;
+L42285: else if (input.includes('1st') || input === '1') mappedGrade = '1st Grade';
+L42286: else if (input.includes('2nd') || input === '2') mappedGrade = '2nd Grade';
+L42287: else if (input.includes('3rd') || input === '3') mappedGrade = '3rd Grade';
+L42288: else if (input.includes('4th') || input === '4') mappedGrade = '4th Grade';
+L42289: else if (input.includes('5th') || input === '5') mappedGrade = '5th Grade';
+L42290: else if (input.includes('6th') || input === '6') mappedGrade = '6th Grade';
+L42291: else if (input.includes('7th') || input === '7') mappedGrade = '7th Grade';
+L42292: else if (input.includes('8th') || input === '8') mappedGrade = '8th Grade';
+L42293: else if (input.includes('9th') || input === '9') mappedGrade = '9th Grade';
+L42294: else if (input.includes('10th') || input === '10') mappedGrade = '10th Grade';
+L42295: else if (input.includes('11th') || input === '11') mappedGrade = '11th Grade';
+L42296: else if (input.includes('12th') || input === '12') mappedGrade = '12th Grade';
+L42299: setGradeLevel(mappedGrade);
+L42300: changes.push(`Grade Level set to ${mappedGrade}`);
+L43350: GRADE LEVEL: ${gradeLevel}
+L43483: const effGrade = (overrides && typeof overrides.grade === 'string') ? overrides.grade : sourceLevel;
+L43783: ${effGrade === 'Kindergarten' || effGrade === '1st Grade' ? 'Use very simple words. Short sentences. Learner asks basic "what" and "why" questions.' : ''}
+L43784: ${effGrade === '2nd Grade' || effGrade === '3rd Grade' ? 'Simple vocabulary. Learner is curious and asks lots of follow-ups. Guide uses kid-friendly comparisons.' : ''}
+L43785: ${effGrade === '4th Grade' || effGrade === '5th Grade' ? 'Natural conversation flow. Can introduce vocabulary with immediate explanation in dialogue.' : ''}
+L43786: ${effGrade === '6th Grade' || effGrade === '7th Grade' || effGrade === '8th Grade' ? 'More sophisticated dialogue. Learner can push back, express skepticism, ask deeper questions.' : ''}
+L43826: - If "2nd Grade" or "3rd Grade": Target 1st Grade complexity. Use short, declarative sentences. High-frequency vocabulary only.
+L43827: - If "4th Grade" or "5th Grade": Target 3rd Grade complexity. Mostly simple sentences, limited compound sentences.
+L43828: - If "6th Grade" to "8th Grade": Target 5th Grade complexity. Straightforward syntax, avoid dense academic language.
+L43829: - If "9th Grade" to "12th Grade": Target 8th Grade complexity. Clear, standard English without unnecessary jargon.
+L46428: ctx += `\nGroup "${g.name}": Grade ${p.gradeLevel || 'N/A'}, Lang: ${p.leveledTextLanguage || 'English'}`;
+L46718: titleSlide.addText(`${t('export.ppt_grade_level')}: ${gradeLevel} | ${t('export.ppt_generated')}: ${new Date().toLocaleDateString()}`, {
+L46973: textContent += `${t('lesson_plan.grade_label')}: ${gradeLevel}
+L47650: if (dna.grade) dnaBlock += `Target Grade: ${dna.grade}\n`;
+L47737: Target Grade: ${gradeLevel}
+L47810: Target Grade: ${gradeLevel}
+L47851: Target Grade: ${gradeLevel}
+L47893: const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
+L47973: Target Grade: ${gradeLevel}
+L48006: Grade Level: ${gradeLevel}
+L48333: 'Kindergarten': '5 year old child', '1st Grade': '6 year old child', '2nd Grade': '7 year old child',
+L48334: '3rd Grade': '8 year old child', '4th Grade': '9 year old child', '5th Grade': '10 year old child',
+L48335: '6th Grade': '11 year old child', '7th Grade': '12 year old child', '8th Grade': '13 year old teen',
+L48336: '9th Grade': '14 year old teen', '10th Grade': '15 year old teen', '11th Grade': '16 year old teen',
+L48339: const ageDesc = gradeMap[gradeLevel] || 'student';
+L50821: - Grade Level: ${gradeLevel}
+L50978: 2. grade: The target grade level (e.g. "Kindergarten", "5th Grade", "College"). Infer from complexity if not stated.
+L50989: if (config.grade) setGradeLevel(config.grade);
+L50996: sendBotMsg(`I've configured the generator for **${config.topic}** (${config.grade || "Default Grade"}, ${config.tone || "Informative"}).\n\nDoes this look good to generate?`);
+L51264: sendBotMsg(t('chat_guide.flow.generating_text', { grade: gradeLevel }));
+L51285: sendBotMsg(t('chat_guide.flow.adapting_text', { grade: gradeLevel }));
+L51299: sendBotMsg(t('chat_guide.flow.offer_text', { grade: gradeLevel }));
+L51665: Target Grade Level: ${gradeLevel}
+L53067: "gradeLevel": "Target Grade",
+L53139: if (activeBlueprint.globalSettings.gradeLevel) setGradeLevel(activeBlueprint.globalSettings.gradeLevel);
+L54095: const effectiveGrade = configOverride.grade || gradeLevel;
+L54133: const gradesToGen = getDifferentiationGrades(gradeLevel, differentiationRange);
+L54138: const grade = gradesToGen[i];
+L54141: await handleGenerate('simplified', null, !isLast, textToProcess, { grade: grade }, false);
+L54390: } else if (effectiveGrade === '1st Grade') {
+L54399: } else if (['2nd Grade', '3rd Grade'].includes(effectiveGrade)) {
+L54408: } else if (['4th Grade', '5th Grade'].includes(effectiveGrade)) {
+L54416: } else if (['6th Grade', '7th Grade', '8th Grade'].includes(effectiveGrade)) {
+L54425: } else if (['9th Grade', '10th Grade'].includes(effectiveGrade)) {
+L54433: } else if (['11th Grade', '12th Grade'].includes(effectiveGrade)) {
+L54692: const repairContext = `Grade: ${effectiveGrade}, Topic: ${sourceTopic || "General"}, Format: ${textFormat}`;
+L55132: 1. Reading Level: Estimate a 3-grade range based on U.S. Grade Level standards (e.g. "3rd-5th Grade", "6th-8th Grade", "K-2nd Grade"). Provide a detailed pedagogical analysis of text complexity, citing specific examples of sentence structure and vocabulary load.
+L55522: TARGET GRADE LEVEL: ${gradeLevel}
+L55670: const mathContextPrompt = `Source Context: "${textToProcess.substring(0, 1500)}..."\nGrade Level: ${gradeLevel}\nInterests: ${studentInterests.join(', ')}`;
+L55760: Target Grade Level: ${gradeLevel}
+L55785: const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
+L56036: grade: effectiveGrade,
+L56104: grade: gradeLevel, lang: leveledTextLanguage, interests: studentInterests,
+L56142: setGradeLevel(savedSettings.grade);
+L56195: grade: gradeLevel,
+L57704: const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
+L57755: const gradeRegex = /\b(Kindergarten|1st Grade|2nd Grade|3rd Grade|4th Grade|5th Grade|6th Grade|7th Grade|8th Grade|9th Grade|10th Grade|11th Grade|12th Grade|College|Graduate Level)\b/gi;
+L57868: 1. Estimate the actual Grade Level equivalent (e.g., "3rd Grade", "5th-6th Grade").
+L57930: const effectiveGrade = (typeof gradeContext === 'string' && gradeContext) ? gradeContext : gradeLevel;
+L57938: Target Grade: ${effectiveGrade}
+L58004: Target Grade Level: ${gradeLevel}
+L61578: <option value="1st Grade">{t('standards.grades.1')}</option>
+L61579: <option value="2nd Grade">{t('standards.grades.2')}</option>
+L61580: <option value="3rd Grade">{t('standards.grades.3')}</option>
+L61581: <option value="4th Grade">{t('standards.grades.4')}</option>
+L61582: <option value="5th Grade">{t('standards.grades.5')}</option>
+L61583: <option value="6th Grade">{t('standards.grades.6')}</option>
+L61584: <option value="7th Grade">{t('standards.grades.7')}</option>
+L61585: <option value="8th Grade">{t('standards.grades.8')}</option>
+L61586: <option value="9th Grade">{t('standards.grades.9')}</option>
+L61587: <option value="10th Grade">{t('standards.grades.10')}</option>
+L61588: <option value="11th Grade">{t('standards.grades.11')}</option>
+L61589: <option value="12th Grade">{t('standards.grades.12')}</option>
+L61594: onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
+L62273: <option value="1st Grade">{t('grades.g1')}</option>
+L62274: <option value="2nd Grade">{t('grades.g2')}</option>
+L62275: <option value="3rd Grade">{t('grades.g3')}</option>
+L62276: <option value="4th Grade">{t('grades.g4')}</option>
+L62277: <option value="5th Grade">{t('grades.g5')}</option>
+L62278: <option value="6th Grade">{t('grades.g6')}</option>
+L62279: <option value="9th Grade">{t('grades.g9')}</option>
+L62280: <option value="10th Grade">{t('grades.g10')}</option>
+L62281: <option value="11th Grade">{t('grades.g11')}</option>
+L62282: <option value="12th Grade">{t('grades.g12')}</option>
+L62393: <option value="1st Grade">{t('grades.g1')}</option>
+L62394: <option value="2nd Grade">{t('grades.g2')}</option>
+L62395: <option value="3rd Grade">{t('grades.g3')}</option>
+L62396: <option value="4th Grade">{t('grades.g4')}</option>
+L62397: <option value="5th Grade">{t('grades.g5')}</option>
+L62398: <option value="6th Grade">{t('grades.g6')}</option>
+L62399: <option value="7th Grade">{t('grades.g7')}</option>
+L62400: <option value="8th Grade">{t('grades.g8')}</option>
+L62401: <option value="9th Grade">{t('grades.g9')}</option>
+L62402: <option value="10th Grade">{t('grades.g10')}</option>
+L62403: <option value="11th Grade">{t('grades.g11')}</option>
+L62404: <option value="12th Grade">{t('grades.g12')}</option>
+L64367: title={`${g.name} \u00B7 ${g.profile?.gradeLevel || 'No grade'} \u00B7 ${g.profile?.leveledTextLanguage || 'English'}`}
+L66852: const displayGrade = generatedContent?.config?.grade || gradeLevel;
+L69948: {isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn')}
+L72114: <div className="text-sm font-bold text-indigo-700">{t('lesson_plan.topic_label')}: {sourceTopic || "General"} | {t('lesson_plan.grade_label')}: {gradeLevel}</div>
+L72718: gradeLevel={gradeLevel || 'K-2'}
+L73228: <select aria-label="Grade" value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+L74132: const gradeLevel = firstGroup?.profile?.gradeLevel || '5th Grade';
+
+============================================================
+SECTION 5: Debug console.log/warn lines related to word sounds / phoneme / audio / tts
+============================================================
+L42: console.log("Initializing Audio Bank from " + _AUDIO_BANK_URL);
+L47: console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BANK));
+L50: console.warn("[AudioBank] Auto-fetch failed:", err.message, "- Use the Upload button in the header to load audio_bank.json manually.");
+L62: console.log("[AudioBank] Caches invalidated - audio data now available.");
+L968: console.warn("Storage quota full, could not persist phoneme:", key);
+L973: console.warn("Failed to persist audio:", e);
+L999: console.warn("Failed to remove audio:", e);
+L1126: // console.log("Lazy loading INSTRUCTION_AUDIO...");
+L1242: // console.log("Lazy loading ISOLATION_AUDIO...");
+L1423: // console.log("Lazy loading PHONEME_AUDIO_BANK...");
+L6995: console.log("[callTTS] ❌ Attempt failed:", e.message);
+L8236: // SILENCED: console.log("WordSounds: Data loaded! Starting activity.");
+L20730: console.log("[AlloBot] Cloud TTS result: cloudSuccess=", cloudSuccess, "audioStarted=", audioStarted);
+L20749: console.log("[AlloBot] ⚠️ BROWSER TTS FALLBACK! cloudSuccess:", cloudSuccess);
+L42414: console.log("[TTS] 🔓 Queue acquired. Processing:", text?.substring(0, 30));
+L42469: console.log("[TTS] Fetching:", url?.substring(0, 80));
+L42475: console.log("[TTS] API response:", response.status, response.statusText);
+L42478: console.warn("[TTS] Rate limited (429). Will retry...");
+L42532: console.log("[TTS] ✅ Gemini TTS succeeded! Audio data size:", base64Audio.length, "chars");
+L42550: console.warn("[TTS] Gemini TTS Fetch Error:", err.message);
+L42561: console.log("[callTTS] ▶ ENTRY. text:", text?.substring(0, 40), "voice:", voiceName, "muted:", isGlobalMuted());
+L42564: console.log('[TTS] Skipped due to global mute');
+L42570: // console.log("debug: callTTS attempt", attempt + 1);
+L42580: console.log("[callTTS] ✅ SUCCESS! Audio URL created:", url?.substring(0, 50));
+L44931: console.log("[handleSpeak] 🔊 Using DIRECT callTTS() for:", effectiveText.substring(0, 30), "contentId:", contentId);
+L57407: console.warn("[playSequence] ⚠️ Using BROWSER TTS for:", sequence[idx]?.substring(0, 30));
+
+============================================================
+SECTION 6: Lines with lightbulb emoji
+============================================================
+L865: 'word_sounds.spelling_bee_first_letter': '💡 First letter',
+L4301: <span className="text-xs text-slate-500 italic">💡 Hover any sound for teaching tips</span>
+L10776: ? (ts('word_sounds.spelling_bee_hint_more') || '💡 Show More')
+L10777: : (ts('word_sounds.spelling_bee_hint_vowels') || '💡 Show Vowels')}
+L10929: setWordSoundsFeedback({ type: 'incorrect', message: `💡 The missing letter is "${correctLetter.toUpperCase()}"` });
+L12080: {wordSoundsFeedback.isCorrect ? '🎉 ' : '💡 '}
+L13195: <div style={{ fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>💡 Recommendations:</div>
+L13951: ### 💡 Ideation Mode
+L22200: { name: 'Lucidity', icon: '💡', quantity: 50, type: 'strategic' },
+L24414: idea: '💡',
+L29545: <p className="mt-4 text-purple-400 text-sm italic">💡 {currentPuzzle.hint}</p>
+L31549: <p className="text-xs text-indigo-500 mt-2 italic">💡 Click any element below for a detailed explanation</p>
+L52601: addToast(`💡 ${t('persona.badges.rapport_builder')}!`, "success");
+L53833: addToast(`💡 ${t('escape_room.hint')}: ${hintText}`, 'info');
+L53861: addToast(`💡 ${t('escape_room.hint')}: ${hintText}`, 'info');
+L59054: brainstorm: '💡', persona: '🎭', timeline: '📅', 'concept-sort': '🗂️',
+L59885: 💡 Click <strong>?</strong> anytime for help!
+L64907: {{star: '⭐', check: '✅', idea: '💡', love: '❤️'}[type]}
+L66393: <p key={i} className="text-xs text-slate-500 italic">💡 {typeof note === 'string' ? note : JSON.stringify(note)}</p>
+L66399: <p className="text-xs text-slate-500 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p>
+L68655: <div className="text-2xl mb-1">💡</div>
+L68790: <p className="text-amber-400 text-sm mt-3 bg-amber-900/30 p-2 rounded-lg">💡 {puzzle.hint || puzzle.hints?.[0]}</p>
+
+Done.

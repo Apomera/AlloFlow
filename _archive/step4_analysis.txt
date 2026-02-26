@@ -1,0 +1,80 @@
+=== TOUR STEP 4 (LEVELED TEXT) ANALYSIS ===
+
+--- SIMPLIFIED UI COMPONENT ---
+
+Line 39: 'ui-tool-simplified': 'simplified',
+Line 16461: "text": "ui-tool-simplified",
+Line 16462: "simplified": "ui-tool-simplified",
+Line 26824: 'ui-tool-simplified': 'simplified',
+Line 27112: id: 'ui-tool-simplified',
+Line 28124: if (stepId === 'ui-tool-simplified') {
+Line 28340: if (['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary'].includes(step.id)) {
+Line 28350: if (targetY < 80 && !['ui-tool-simplified', 'tour-tool-adventure', 'ui-tool-quiz', 'tour-tool-visual', 'ui-tool-glossary'].includes(step.id)) {
+Line 28384: 'simplified': 'ui-tool-simplified',
+Line 42545: if (isShowMeMode) performHighlight('ui-tool-simplified');
+Line 42565: if (isShowMeMode) performHighlight('ui-tool-simplified');
+Line 42589: if (isShowMeMode) performHighlight('ui-tool-simplified');
+Line 45582: if (type === 'simplified') flyToElement('ui-tool-simplified');
+Line 46060: if (switchView) flyToElement('ui-tool-simplified');
+Line 47460: if (type === 'simplified') flyToElement('ui-tool-simplified');
+Line 54146: <div id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+
+
+--- SIMPLIFIED FEATURES ---
+
+
+--- gradeLevel ---
+Line 990: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, gradeLevel, t: tProp }) => {
+Line 1090: const prompt = `Generate a list of 15 phonics-rich words related to the topic: "${aiTopic}". Target Grade Level: ${gradeLevel}.${s
+Total: 121
+
+--- simplifyMode ---
+Total: 0
+
+--- Compare ---
+Line 21: import { Inbox, BookOpen, Globe, Layers, ArrowRight, Sparkles, FileText, Layout, HelpCircle, CircleHelp, CheckCircle2, RefreshCw, 
+Line 3021: selection = [...freshCandidates].sort((a,b) => (a.word || '').localeCompare(b.word || ''));
+Total: 46
+
+--- immersive ---
+Line 7399: immersive_options: "Immersive Options",
+Line 8119: immersive: "Immersive Reader",
+Total: 126
+
+--- Karaoke ---
+Total: 0
+
+--- Focus.*Reader ---
+Line 24115: <span className="font-bold text-lg">Focus Reader</span>
+Line 24251: title="Focus Reader (RSVP)"
+Total: 3
+
+--- bionic ---
+Line 7425: bionic: "Bionic Reading Style",
+Line 7426: bionic_sub: "Bolds start of words to guide eye"
+Total: 7
+
+--- Cloze ---
+Line 8108: cloze_instructions: "Drag words into the blanks or type them manually.",
+Line 8115: cloze_mode: "Cloze",
+Total: 61
+
+--- interactionMode ---
+Line 26480: const [interactionMode, setInteractionMode] = useState('read');
+Line 35204: if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'define' || interactionMode === 'add-glos
+Total: 74
+
+--- zenMode ---
+Line 31411: const [isZenMode, setIsZenMode] = useState(false);
+Line 31539: if (isZenMode) {
+Total: 24
+
+--- lineSpacing ---
+Line 37877: lineSpacing: 18
+Line 37915: lineSpacing: 18
+Total: 2
+
+--- textSize ---
+Line 24211: value={settings.textSize}
+Line 24212: onChange={(e) => setSettings(prev => ({...prev, textSize: parseInt(e.target.value)}))}
+Total: 8

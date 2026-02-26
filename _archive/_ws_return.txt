@@ -1,0 +1,40 @@
+return (
+        <div
+            className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-200"
+                role="dialog" onClick={e => e.stopPropagation()}
+            >
+                <button
+                    aria-label="Close"
+                    onClick={onClose} data-help-key="dashboard_close_btn"
+                    disabled={isProcessing}
+                    className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
+                >
+                    <span className="text-xl">×</span>
+                </button>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-amber-100 p-3 rounded-full">
+                        <span className="text-2xl">{isVideo ? '🎬' : '🎵'}</span>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-black text-slate-800">
+                            {isVideo
+                                ? (t?.('large_file.title_video') || 'Large Video File Detected')
+                                : (t?.('large_file.title') || 'Large Audio File Detected')}
+                        </h3>
+                        <p className="text-sm text-slate-500 font-medium">{file.name}</p>
+                    </div>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-amber-800 leading-relaxed">
+                        {isVideo
+                            ? (t?.('large_file.description_video') ||
+                                `This video is ${fileSizeMB} MB. The audio will be extracted and split into ~${estimatedChunks} smaller chunks for transcription, then combined.`)
+                            : (t?.('large_file.description') ||
+                                `This file is ${fileSizeMB} MB and exceeds the 20MB limit for direct transcription. It will be split into ~${estimatedChunks} smaller chunks and transcribed separately, then combined.`)}
+                    </p>
+                </div>
+     

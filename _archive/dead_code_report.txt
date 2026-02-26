@@ -1,0 +1,128 @@
+=== DEAD CODE (0 references outside definition): 15 ===
+
+--- CALLBACK (4) ---
+  L30956: recordEscapeRoomCompletion (total:1, usage:0)
+       const recordEscapeRoomCompletion = useCallback((resourceId, data) => {
+  L30964: recordFluencyAssessment (total:1, usage:0)
+       const recordFluencyAssessment = useCallback((resourceId, data) => {
+  L30972: recordFlashcardInteraction (total:1, usage:0)
+       const recordFlashcardInteraction = useCallback((resourceId, action, totalCards) => {
+  L30988: trackResourceTime (total:1, usage:0)
+       const trackResourceTime = useCallback((resourceType) => {
+
+--- ARROW_FN (3) ---
+  L47692: generatePersonaSuggestions (total:1, usage:0)
+       const generatePersonaSuggestions = async (history, character) => {
+  L48036: handlePersonaWordClick (total:1, usage:0)
+       const handlePersonaWordClick = async (rawWord, e) => {
+  L48481: generateInterviewSummary (total:1, usage:0)
+       const generateInterviewSummary = async () => {
+
+--- CONSTANT (8) ---
+  L932: PHONEME_PRONUNCIATIONS (total:1, usage:0)
+       const PHONEME_PRONUNCIATIONS = {
+  L1005: PHONOLOGICAL_ACTIVITIES (total:1, usage:0)
+       const PHONOLOGICAL_ACTIVITIES = ['counting', 'isolation', 'segmentation', 'blending', 'rhyme'];
+  L1006: ORTHOGRAPHIC_ACTIVITIES (total:1, usage:0)
+       const ORTHOGRAPHIC_ACTIVITIES = ['mapping']; // 'spelling_bee' will be added later
+  L1430: SAFETY_BLACKLIST (total:1, usage:0)
+       const SAFETY_BLACKLIST = new Set([
+  L2405: IPA_GRAPHEME_OPTIONS (total:1, usage:0)
+       const IPA_GRAPHEME_OPTIONS = {
+  L4619: AUDIO_BANK_PHONEMES (total:1, usage:0)
+       const AUDIO_BANK_PHONEMES = new Set([
+  L5333: PREFETCH_BUFFER_SIZE (total:1, usage:0)
+       const PREFETCH_BUFFER_SIZE = 10;
+  L19481: MAX_CHUNK_SIZE (total:1, usage:0)
+       const MAX_CHUNK_SIZE = 8000;
+
+
+=== LOW USE (1 reference outside definition): 438 ===
+--- COMPONENT (41) ---
+  L163: GlobalMuteButton
+  L449: LargeFileTranscriptionModal
+  L3990: RhymeView
+  L4086: OrthographyView
+  L4463: SoundMappingView
+  L7943: LetterTraceView
+  L10404: StudentAnalyticsPanel
+  L17172: StudentSubmitModal
+  L17421: SpeechBubble
+  L19781: MissionReportCard
+  L19888: StudentQuizOverlay
+  L20219: DraftFeedbackInterface
+  L20420: TeacherGate
+  L20719: ClimaxProgressBar
+  L20785: AdventureAmbience
+  ... and 26 more
+
+--- CALLBACK (33) ---
+  L31008: closeBingo
+  L31009: closeStudentBingo
+  L31010: closeCrossword
+  L31011: closeMemory
+  L31012: closeMatching
+  L31021: handleCloseClassAnalytics
+  L31022: handleCloseSubmitModal
+  L31023: handleCloseGate
+  L31025: handleCloseSpeedReader
+  L31026: handleCloseImmersiveReader
+  L31027: handleCloseStudentWelcome
+  L31028: handleCloseStudentEntry
+  L31029: handleCloseWordScramble
+  L31030: handleOpenStorybookExport
+  L31031: closeTimeline
+  ... and 18 more
+
+--- ARROW_FN (332) ---
+  L879: saveAudioToStorage
+  L903: loadAudioFromStorage
+  L1573: toggleSelection
+  L1579: toggleAll
+  L1586: handleAiGenerate
+  L1601: handleStart
+  L2584: removePhoneme
+  L2590: handlePhonemeReorder
+  L3827: playFullSequence
+  L4513: handleSlotClick
+  L4891: activityHistory
+  L4931: hue
+  L5274: repairBlendingDistractors
+  L5548: estimatePhonemes
+  L5653: estimatePhonemesEnhanced
+  ... and 317 more
+
+--- FUNCTION (9) ---
+  L41: _initAudioBank
+  L1029: _LOAD_LETTER_NAME_AUDIO_RAW
+  L29596: quizReducer
+  L29622: glossaryReducer
+  L29653: conceptSortReducer
+  L29685: uiChromeReducer
+  L29704: settingsReducer
+  L29738: advReducer
+  L29768: wsReducer
+
+--- CONSTANT (23) ---
+  L1229: SOUND_MATCH_POOL
+  L2438: IPA_TO_AUDIO
+  L2565: GRAPHEME_TO_IPA
+  L3361: SMART_TEXT_VISIBILITY
+  L4632: PHONEME_NORMALIZE
+  L4643: HARD_G_EXCEPTIONS
+  L5402: PRELOAD_COUNT
+  L6463: SIMILAR_SOUNDS
+  L6862: INST_KEY_MAP
+  L7351: MIN_PRACTICE
+  L16431: RELEVANCE_GATE_PROMPT
+  L16442: DIGITAL_RUBRIC_CONSTRAINT
+  L19482: MAX_OFFLINE_ITEMS
+  L19483: LENGTH_THRESHOLDS
+  L19501: SYSTEM_STATE_EXAMPLES
+  ... and 8 more
+
+
+=== SUMMARY ===
+  Total definitions: 1141
+  Dead (0 refs): 15
+  Low use (1 ref): 438

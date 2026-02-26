@@ -1,0 +1,5 @@
+﻿L809:             const range = gridRange.max - gridRange.min;
+L811:             const toSvg = (v, axis) => axis === 'x' ? (v - gridRange.min) * step : gridH - (v - gridRange.min) * step;
+L812:             const fromSvg = (px, axis) => axis === 'x' ? Math.round(px / step + gridRange.min) : Math.round((gridH - px) / step + gridRange.
+L817:                 if (x < gridRange.min || x > gridRange.max || y < gridRange.min || y > gridRange.max) return;
+L847:                             const v = gridRange.min + i;

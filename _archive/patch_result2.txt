@@ -1,0 +1,38 @@
+﻿Total lines: 69184
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python 
+patch_build_and_ui.py 
+2>&1 | Out-File 
+-Encoding utf8 
+patch_res ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Traceback    
+ (most recent call    
+ last)::String) [    
+], RemoteExceptio    n
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  File "C:\Users\cabba
+\OneDrive\Desktop\UDL-
+Tool-Updated\patch_bui
+ld_and_ui.py", line 
+162, in <module>
+    with open('patch_r
+esult2.txt', 'w', 
+encoding='utf-8') as 
+f:
+         ~~~~^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
+PermissionError: 
+[Errno 13] Permission 
+denied: 
+'patch_result2.txt'

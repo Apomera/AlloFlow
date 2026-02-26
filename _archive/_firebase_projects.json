@@ -1,0 +1,16 @@
+﻿{
+  "status": "success",
+  "result": [
+    {
+      "projectId": "prismflow-911fe",
+      "projectNumber": "252114883460",
+      "displayName": "PrismFlow",
+      "name": "projects/prismflow-911fe",
+      "resources": {
+        "hostingSite": "prismflow-911fe"
+      },
+      "state": "ACTIVE",
+      "etag": "1_9964ca60-b1bd-4f8f-9d57-41b8c12cc75b"
+    }
+  ]
+}

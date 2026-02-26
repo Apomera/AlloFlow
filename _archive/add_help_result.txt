@@ -1,0 +1,8 @@
+﻿HELP_STRINGS: L31734-L32412
+Existing HELP_STRINGS keys: 491
+New keys to add: 131
+Skipped (already exist): 0
+
+Added 131 entries
+File: 68917 -> 69048 lines (+131)
+New HELP_STRINGS size: 354283 bytes (346.0 KB, 0.338 MB)

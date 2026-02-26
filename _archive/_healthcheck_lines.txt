@@ -1,0 +1,47 @@
+﻿python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python -c "
++ ~~~~~~~~~~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (Trac   
+ eback (most rec    
+ent call last):    
+:String) [], Re    
+moteException
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+  File "<string>", 
+line 6, in <module>
+    print(f'LINE 
+{i}: {line.rstrip()[
+:180]}')
+    ~~~~~^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "C:\Python314
+\Lib\encodings\cp125
+2.py", line 19, in 
+encode
+    return codecs.ch
+armap_encode(input,s
+elf.errors,encoding_
+table)[0]
+           ~~~~~~~~~
+~~~~~~~~~~~~^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+characters in 
+position 17-19: 
+character maps to 
+<undefined>
+LINE 32345:   const [glossaryHealthCheck, setGlossaryHealthCheck] = useState(null);
+LINE 32346:   const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
+LINE 32347:   const [showHealthCheckPanel, setShowHealthCheckPanel] = useState(false);

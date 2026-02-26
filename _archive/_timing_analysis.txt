@@ -1,0 +1,41 @@
+=== WordSoundsModal Prop Defaults (L3100-3115) ===
+L3100:     // Utilities
+L3101:     playSound,
+L3102:     disableAnimations = false,
+L3103:     addToast, // Fix ReferenceError
+L3104:     // Lifted state for preloaded words persistence
+L3105:     wsPreloadedWords = [],
+L3106:     setWsPreloadedWords,
+L3107:     // Navigation
+L3108:     onBackToSetup, // Navigate back to Word Sounds Generator
+L3109:     initialShowReviewPanel = false,
+L3110:     initialActivitySequence = [],
+L3111:     lessonPlanConfig = null, // Lesson plan configuration from generatedContent
+L3112: }) => {
+L3113:     const latestRequestedWord = React.useRef(null);
+L3114:     const [isEditing, setIsEditing] = React.useState(false);
+L3115:     const [isMinimized, setIsMinimized] = React.useState(false);
+
+=== wordSoundsAutoReview all references ===
+L31339:   const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false); // Review Fix
+L35173:           setWordSoundsAutoReview(true); // Ensure review panel opens
+L38127:     setWordSoundsAutoReview(false); // Force Play Mode
+L64985:                                 initialShowReviewPanel={wordSoundsAutoReview}
+L71455:                    setWordSoundsAutoReview(true);
+L71469:                   setWordSoundsAutoReview(true); // Force Review Mode
+
+=== isWordSoundsMode changes ===
+L32774:   const [isWordSoundsMode, setIsWordSoundsMode] = useState(false);
+L32830:           setIsWordSoundsMode(false);
+L35172:           setIsWordSoundsMode(true);
+L38144:       setIsWordSoundsMode(true);
+L45336:           setIsWordSoundsMode(true);
+L64981:                                 onClose={() => { setIsWordSoundsMode(false); setActiveView('input'); }}
+L64982:                                 onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+L71456:                    setIsWordSoundsMode(true);
+L71470:                   setIsWordSoundsMode(true);
+
+=== lastPreloadedFirstWord ===
+L3222:     const lastPreloadedFirstWord = React.useRef(null); // FIX: Track first word to detect new word sets
+L3283:             if (firstWord && lastPreloadedFirstWord.current !== firstWord) {
+L3285:                 lastPreloadedFirstWord.current = firstWord;

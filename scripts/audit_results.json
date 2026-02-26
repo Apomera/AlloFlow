@@ -1,0 +1,102 @@
+[
+  {
+    "line": 39167,
+    "name": "handleCreateChallenge",
+    "has_source_guard": false
+  },
+  {
+    "line": 41285,
+    "name": "handleCreateUnit",
+    "has_source_guard": false
+  },
+  {
+    "line": 41611,
+    "name": "handleGenerateMath",
+    "has_source_guard": false
+  },
+  {
+    "line": 41772,
+    "name": "handleGenerateSimilar",
+    "has_source_guard": false
+  },
+  {
+    "line": 44077,
+    "name": "handleGenerateBingo",
+    "has_source_guard": false
+  },
+  {
+    "line": 44803,
+    "name": "handleGenerateSource",
+    "has_source_guard": false
+  },
+  {
+    "line": 47659,
+    "name": "handleCreateGroup",
+    "has_source_guard": false
+  },
+  {
+    "line": 49211,
+    "name": "handleGenerateLessonPlan",
+    "has_source_guard": true
+  },
+  {
+    "line": 49286,
+    "name": "handleGenerateExtensionGuide",
+    "has_source_guard": false
+  },
+  {
+    "line": 49318,
+    "name": "handleGenerateProgression",
+    "has_source_guard": false
+  },
+  {
+    "line": 49478,
+    "name": "handleGenerateLessonIdeas",
+    "has_source_guard": false
+  },
+  {
+    "line": 51848,
+    "name": "handleGenerateGuide",
+    "has_source_guard": false
+  },
+  {
+    "line": 53045,
+    "name": "handleGeneratePersonas",
+    "has_source_guard": true
+  },
+  {
+    "line": 53997,
+    "name": "handleGenerateReflectionPrompt",
+    "has_source_guard": false
+  },
+  {
+    "line": 55415,
+    "name": "handleGenerate",
+    "has_source_guard": false
+  },
+  {
+    "line": 57414,
+    "name": "handleGenerateFullPack",
+    "has_source_guard": false
+  },
+  {
+    "line": 57787,
+    "name": "handleGenerateOutcome",
+    "has_source_guard": false
+  },
+  {
+    "line": 58970,
+    "name": "handleGenerateTermImage",
+    "has_source_guard": false
+  },
+  {
+    "line": 59000,
+    "name": "handleGenerateConceptItem",
+    "has_source_guard": false
+  },
+  {
+    "line": 59674,
+    "name": "handleGenerateRubric",
+    "has_source_guard": false
+  }
+]

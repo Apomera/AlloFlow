@@ -1,0 +1,59 @@
+=== LESSON PLAN DEEP DIVE RESEARCH ===
+
+--- STATE & MODES ---
+
+--- TEMPLATE TYPES ---
+[5e] Line 36963: innerContent = `<div style="max-width: 800px; margin: 0 auto;"><div style="background: #fef2f2; border-left: 5px solid #ef
+[UDL] Line 7415: ai_guide_welcome: "Hi! I'm your AI Guide. I can help with UDL strategies, navigate the app for you, or auto-setup your lesson settings.
+[Direct] Line 10175: lesson_edit_instruction: "Edit the 'Direct Instruction' section.",
+
+--- DURATION OPTIONS ---
+[duration] Line 8621: lesson_plan_desc: "Configure your lesson parameters including duration, grade level, content areas, and learning objectives. These s
+[minutes] Line 28256: 'lesson_plan_duration': "Set the target class duration for the lesson plan (e.g., 45 minutes, full block).",
+
+--- STANDARDS ALIGNMENT ---
+[standards] Line 7546: standards_selection_label: "Select Standards to apply",
+[CCSS] Line 53747: <option value="Common Core ELA">{t('standards.frameworks.ccss_ela')}</option>
+[NGSS] Line 10091: chat_framework_select: "Select the educational standard framework (e.g., Common Core, NGSS).",
+[alignment] Line 10092: chat_grade_select: "Select the target grade level for standards alignment.",
+[objectives] Line 8621: lesson_plan_desc: "Configure your lesson parameters including duration, grade level, content areas, and learning objectives. These s
+
+--- EXPORT OPTIONS ---
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 27778: id: 'tour-tool-lesson-plan',
+Line 27779: text: `Generate a complete, structured Lesson Plan that ties everything together. It provides a roadmap for instruction, including specific scripts for 'I Do, We Do, You Do' teaching phases.
+Line 27780: 
+Line 27781: 
+Line 27782: ### Plan Components
+Line 27783: • **Learning Objectives**: SMART goals derived from the content.
+Line 27784: • **Materials List**: Comprehensive checklist of required resources.
+Line 27785: • **Direct Instruction**: Scripted 'I Do' section.
+Line 27786: • **Guided Practice**: Collaborative 'We Do' activities.
+Line 27787: • **Independent Practice**: 'You Do' assignments.
+Line 27788: • **Differentiation**: Specific accommodations for IEP/504 students.
+Line 27789: 
+Line 27790: ### Pro Tip
+Line 27791: • The 'Differentiation' section generates specific IEP accommodations that you can copy directly into official paperwork.
+Line 27792: 
+Line 27793: ### UDL Connection
+Line 27794: • **Engagement**: Heighten salience of goals and objectives (Guideline 8.1) by clearly structuring the learning path.`,
+Line 27795: 
+Line 27796: title: t('tour.lesson_title'),
+Line 27797: },
+Line 27798: {
+Line 27799: id: 'tour-tool-fullpack',
+Line 27800: text: `The universal 'Easy Button' for instant, high-quality content generation. Perfect for teachers, parents, and self-guided learners, this tool bundles every available resource into a unified package tailored to your specific needs.
+Line 27801: 
+Line 27802: ### Smart Automation
+Line 27803: • **Auto-Configuration**: Intelligently selects the optimal settings for every tool based on the initial text analysis.
+Line 27804: • **Context-Aware**: Ensures quizzes, scaffolds, and games are perfectly aligned to the text complexity and themes.
+Line 27805: 
+Line 27806: ### Bundle Contents
+Line 27807: • **Core Resources**: Structured Guide, Quiz, Glossary, and Scaffolds.
+Line 27808: • **Efficiency**: Reduces preparation time by 80-90%.
+
+--- UI PANEL OPTIONS ---
+Line 56198: <div id="tour-tool-lesson-plan" data-help-key="tool_lesson_plan" className={`rounded-3xl border-2 transition-all bg-white overf
+Line 56202: data-help-key="tool_lesson_plan"
+Line 56221: data-help-key="lesson_plan_custom_additions"

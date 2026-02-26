@@ -1,0 +1,10 @@
+Found 1141 definitions
+  Arrow functions: 910
+  Callbacks: 66
+  Components: 53
+  Functions: 13
+  Constants: 99
+
+Dead code: 15, Low use: 438
+
+Dead COMPONENTS: 0

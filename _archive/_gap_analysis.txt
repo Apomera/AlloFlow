@@ -1,0 +1,42 @@
+﻿============================================================
+COMPREHENSIVE INSTRUCTION AUDIO GAP ANALYSIS
+============================================================
+
+1. ACTIVITY INSTRUCTION COVERAGE:
+  [OK] counting: map_key=inst_counting, in_bank=True
+  [MISSING] isolation: map_key=(not mapped), in_bank=False (not in INST_KEY_MAP, uses dynamic ISOLATION_AUDIO)
+  [OK] blending: map_key=inst_blending, in_bank=True
+  [OK] segmentation: map_key=inst_segmentation, in_bank=True
+  [OK] rhyming: map_key=inst_rhyming, in_bank=True
+  [OK] orthography: map_key=inst_orthography, in_bank=True
+  [PARTIAL] mapping: map_key=(not mapped), in_bank=True (not in INST_KEY_MAP, bare key 'mapping' exists in bank)
+  [OK] spelling_bee: map_key=inst_spelling_bee, in_bank=True
+  [OK] word_scramble: map_key=inst_word_scramble, in_bank=True
+  [OK] missing_letter: map_key=inst_missing_letter, in_bank=True
+  [OK] sound_sort: map_key=inst_word_families, in_bank=True (shares word_families audio)
+  [OK] letter_tracing: map_key=inst_letter_tracing, in_bank=True (uses chained audio segments)
+  [OK] word_families: map_key=inst_word_families, in_bank=True
+
+2. CODE-REFERENCED KEYS:
+  [OK] INSTRUCTION_AUDIO['trace_letter']: in bank
+  [OK] INSTRUCTION_AUDIO['for']: in bank
+  [MISSING] INSTRUCTION_AUDIO['sound_match_start']: NOT in bank
+  [OK] INSTRUCTION_AUDIO['sound_match_end']: in bank
+  [OK] INSTRUCTION_AUDIO['inst_rhyming']: in bank
+  [OK] INSTRUCTION_AUDIO['fb_try_again_listen']: in bank
+  [OK] INSTRUCTION_AUDIO['fb_almost']: in bank
+  [OK] INSTRUCTION_AUDIO['fb_amazing']: in bank
+  [OK] INSTRUCTION_AUDIO['fb_great_job']: in bank
+  [OK] INSTRUCTION_AUDIO['now_try_lowercase']: in bank
+
+3. BANK KEYS NOT LOADED:
+  blending: in bank but NOT loaded into INSTRUCTION_AUDIO
+  counting: in bank but NOT loaded into INSTRUCTION_AUDIO
+  mapping: in bank but NOT loaded into INSTRUCTION_AUDIO
+  rhyming: in bank but NOT loaded into INSTRUCTION_AUDIO
+  segmentation: in bank but NOT loaded into INSTRUCTION_AUDIO
+  tap_letters: in bank but NOT loaded into INSTRUCTION_AUDIO
+  unscramble: in bank but NOT loaded into INSTRUCTION_AUDIO
+  which_word_did_you_hear: in bank but NOT loaded into INSTRUCTION_AUDIO
+  word_families: in bank but NOT loaded into INSTRUCTION_AUDIO
+  word_families_house: in bank but NOT loaded into INSTRUCTION_AUDIO

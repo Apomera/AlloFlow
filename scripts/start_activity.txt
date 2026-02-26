@@ -1,0 +1,2 @@
+L8058: const startActivity = React.useCallback((activityId, forceWord = null, excludeWord = null, recursionDepth = 0) => {
+L12034: onClick={() => startActivity(activity.id)}

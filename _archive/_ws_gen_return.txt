@@ -1,0 +1,30 @@
+return () => clearTimeout(timer);
+            }
+        }, [preloadedWords.length, isProcessing, onShowReview]);
+        const countSyllables = React.useCallback((word) => {
+            if (!word) return 1;
+            const w = word.toLowerCase().trim();
+            if (w.length <= 3) return 1;
+            const cleaned = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '')
+                             .replace(/^y/, '');
+            const vowelGroups = cleaned.match(/[aeiouy]+/g);
+            return vowelGroups ? vowelGroups.length : 1;
+        }, []);
+        const previewList = React.useMemo(() => {
+            let list = [];
+            if (includeGlossary && Array.isArray(glossaryTerms)) {
+                const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
+                list = [...list, ...glossaryWords];
+            }
+            if (includeFamily && selectedFamily && WORD_FAMILY_PRESETS[selectedFamily]) {
+                const familyWords = WORD_FAMILY_PRESETS[selectedFamily].filter(w => {
+                    const count = countSyllables(w);
+                    return count >= syllableRange.min && count <= syllableRange.max;
+                });
+                list = [...list, ...familyWords];
+            }
+            if (includeCustom && customText) {
+                const customWords = customText.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+                list = [...list, ...customWords];
+            }
+            if (includeSightW

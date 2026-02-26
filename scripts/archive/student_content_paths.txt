@@ -1,0 +1,7 @@
+L19866:   const studentGroupId = sessionData.roster?.[user?.uid]?.groupId;
+L19867:   const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
+L19868:   const groupLanguage = studentGroup?.language; // e.g., "Spanish" or null
+L19869:   const showTranslated = groupLanguage && groupLanguage !== 'English';
+L20041:                 {currentQuestion && showTranslated && currentQuestion.question_en && (
+L20093:                                     {showTranslated && currentQuestion?.options_en?.[idx] && (
+L20174:                                  {showTranslated && currentQuestion.factCheck_en && (

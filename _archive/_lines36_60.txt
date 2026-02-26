@@ -1,0 +1,25 @@
+﻿L36: // #region --- CONFIGURATION & SETUP ---
+L37: // Environment-aware: works in both Canvas (auto-injected globals) and Firebase CRA (process.env)
+L38: const firebaseConfig = typeof __firebase_config !== 'undefined'
+L39:   ? JSON.parse(__firebase_config)
+L40:   : {
+L41:       apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
+L42:       authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
+L43:       projectId: process.env.REACT_APP_PROJECT_ID || '',
+L44:       storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
+L45:       messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
+L46:       appId: process.env.REACT_APP_APP_ID || '',
+L47:       measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
+L48:     };
+L49: const firebaseApp = initializeApp(firebaseConfig);
+L50: const auth = getAuth(firebaseApp);
+L51: const db = getFirestore(firebaseApp);
+L52: const appId = typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id');
+L53: // Canvas auto-injects API key via proxy (empty string works). Firebase CRA uses env var.
+L54: const apiKey = typeof __firebase_config !== 'undefined'
+L55:   ? ""
+L56:   : (process.env.REACT_APP_GEMINI_API_KEY || '');
+L57: // Debug logging gate ù set to true during development
+L58: const DEBUG_LOG = false;
+L59: const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
+L60: // === PHASE 1 TIER 3: Extracted constant style objects ===

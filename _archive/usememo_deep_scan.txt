@@ -1,0 +1,31 @@
+Total useMemo in component: 10
+
+L29748 (indent=2): const isCanvas = React.useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L29811 (indent=2): const adventureImageDB = React.useMemo(() => ({
+  ✅ Top-level (no enclosing conditionals)
+
+L34756 (indent=2): const latestLessonPlan = React.useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L35443 (indent=2): const filteredGlossaryData = useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L36445 (indent=2): const latestGlossary = React.useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L36460 (indent=2): const isClozeComplete = React.useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L36465 (indent=2): const displayLanguages = React.useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L42649 (indent=2): const isScaffoldComplete = React.useMemo(() => {
+  ✅ Top-level (no enclosing conditionals)
+
+L54068 (indent=2): const botAccessory = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards]);
+  ✅ Top-level (no enclosing conditionals)
+
+L54070 (indent=2): const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingA
+  ✅ Top-level (no enclosing conditionals)

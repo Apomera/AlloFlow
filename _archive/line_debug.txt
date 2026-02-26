@@ -1,0 +1,8 @@
+LINE 916: const WordSoundsModal = ({
+LINE 2179: const fetchWordData = React.useCallback(async (word, retryCount = 0) => {
+LINE 2290: const applyWordDataToState = (data) => {
+LINE 2314: const orthoOptions = [data.word, ...orthoDistractors].sort(() => Math.random() - 0.5);
+LINE 2442: // const fetchWordData = ... (replaced by fetchWordData)
+LINE 5307: common: {
+LINE 8204: intro_greeting: "Click me to adjust my voice settings. I'll chime in with helpful tips as you go!",
+LINE 26517: const [generatedContent, setGeneratedContent] = useState(null);

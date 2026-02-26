@@ -1,0 +1,71 @@
+﻿
+AlloFlowANTI.txt:52464
+:  const handleQuickAd
+dGlossary = async 
+(rawWord) => {
+AlloFlowANTI.txt:61506
+:                     
+                      
+         await handleQ
+uickAddGlossary(addedT
+erm);
+AlloFlowANTI.txt:62328
+:                     
+                      
+         handleQuickAd
+dGlossary(selectionMen
+u.text);
+AlloFlowANTI.txt:62712
+:                     
+                      
+               
+onClick={(e) => { 
+e.stopPropagation(); h
+andleQuickAddGlossary(
+cleanWord); }}
+AlloFlowANTI.txt:62717
+:                     
+                      
+                      
+ handleQuickAddGlossar
+y(cleanWord);
+AlloFlowANTI.txt:62933
+:                     
+                      
+                      
+                   
+onClick={(e) => { 
+e.stopPropagation(); h
+andleQuickAddGlossary(
+displayPart); }}
+AlloFlowANTI.txt:70716
+:                     
+           try { 
+await handleQuickAddGl
+ossary(word); setBridg
+eTermsSaved(prev => 
+[...prev, word]); 
+addToast(`Saved 
+"${word}" to 
+glossary`, 
+'success'); }
+AlloFlowANTI.txt:70735
+:                     
+         try { await h
+andleQuickAddGlossary(
+word); setBridgeTermsS
+aved(prev => 
+[...prev, word]); 
+addToast(`Saved 
+"${word}" to 
+glossary`, 
+'success'); }
+AlloFlowANTI.txt:70759
+:                     
+   try { await handleQ
+uickAddGlossary(word);
+ setBridgeTermsSaved(p
+rev => [...prev, 
+word]); }
+
+

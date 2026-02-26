@@ -1,0 +1,43 @@
+=== PHONEME_AUDIO_BANK BRACKET ASSIGNMENTS ===
+  L1107: key='aw' -> PHONEME_AUDIO_BANK['aw'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1108: key='dh' -> PHONEME_AUDIO_BANK['dh'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1109: key='ee' -> PHONEME_AUDIO_BANK['ee'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1110: key='g' -> PHONEME_AUDIO_BANK['g'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKH
+  L1111: key='k' -> PHONEME_AUDIO_BANK['k'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKH
+  L1112: key='oo_long' -> PHONEME_AUDIO_BANK['oo_long'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2
+  L1113: key='oo_short' -> PHONEME_AUDIO_BANK['oo_short'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd
+  L1114: key='or' -> PHONEME_AUDIO_BANK['or'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1115: key='p' -> PHONEME_AUDIO_BANK['p'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKH
+  L1116: key='th' -> PHONEME_AUDIO_BANK['th'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1117: key='ue' -> PHONEME_AUDIO_BANK['ue'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1118: key='zh' -> PHONEME_AUDIO_BANK['zh'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUK
+  L1119: key='ch' -> if (!PHONEME_AUDIO_BANK['ch']) PHONEME_AUDIO_BANK['ch'] = PHONEME_AUDIO_BANK['sh'];
+  L1122: key='orr' -> if (PHONEME_AUDIO_BANK['or']) PHONEME_AUDIO_BANK['orr'] = PHONEME_AUDIO_BANK['or'];
+  L1123: key='ahrr' -> if (PHONEME_AUDIO_BANK['ar']) PHONEME_AUDIO_BANK['ahrr'] = PHONEME_AUDIO_BANK['ar'];
+  L1124: key='err' -> if (PHONEME_AUDIO_BANK['er']) PHONEME_AUDIO_BANK['err'] = PHONEME_AUDIO_BANK['er'];
+  L1130: key='orr' -> if (PHONEME_AUDIO_BANK['or'] && !PHONEME_AUDIO_BANK['orr']) PHONEME_AUDIO_BANK['orr'] = PH
+  L1131: key='ahrr' -> if (PHONEME_AUDIO_BANK['ar'] && !PHONEME_AUDIO_BANK['ahrr']) PHONEME_AUDIO_BANK['ahrr'] = 
+  L1132: key='err' -> if (PHONEME_AUDIO_BANK['er'] && !PHONEME_AUDIO_BANK['err']) PHONEME_AUDIO_BANK['err'] = PH
+
+Total unique keys: 16
+Duplicates: {'orr': [1122, 1130], 'ahrr': [1123, 1131], 'err': [1124, 1132]}
+
+=== useEffect WITHOUT DEPENDENCY ARRAYS ===
+  L5978: React.useEffect(() => {
+  L6509: React.useEffect(() => {
+  L6649: React.useEffect(() => {
+  L7017: React.useEffect(() => {
+  L7066: React.useEffect(() => {
+  L7082: React.useEffect(() => {
+  L8184: React.useEffect(() => {
+
+=== PHONEME_STORAGE_KEY DEFINITIONS ===
+  L841: const PHONEME_STORAGE_KEY = 'allo_phoneme_bank_v1';
+  L856: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L858: localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L872: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L886: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L890: localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L6151: const PHONEME_STORAGE_KEY = 'allo_phoneme_bank_v1';
+  L6152: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L6153: if (bank[targetWord]) { delete bank[targetWord]; localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank)); }

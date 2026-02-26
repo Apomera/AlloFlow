@@ -1,0 +1,15 @@
+=== Tier 3: Constant Style Extraction ===
+Input: 7,617,598 bytes, 73,805 lines
+First component at L34
+  STYLE_POINTER_EVENTS_NONE: 3 replacements
+  STYLE_IMAGE_PIXELATED: 4 replacements
+  STYLE_TEXT_SHADOW_WHITE: 2 replacements
+  STYLE_ANIMATION_DELAY_HALF: 2 replacements
+
+Total replacements: 11
+Constants defined: 4
+
+Output: 7,617,839 bytes, 73,811 lines
+Braces: 23688 open, 23696 close, diff=-8
+
+=== DONE ===

@@ -1,0 +1,70 @@
+
+--- 'save current' (5 hits) ---
+  L15785: save_tooltip: "Save current configuration as new profile",
+  L32736: 'header_actions': "Content management actions. Includes: Save (disk icon, save current project), History (clock icon, access saved sessions)
+  L33030: 'ui_lang_export_btn': "Save current interface translations as a JSON file. Exported file contains: all UI strings in current language, key i
+  L33085: 'history_load_project': "Reload a complete project from your saved history. Restoring includes: all source content, every generated resource
+  L36708: // Save current settings
+
+--- 'import profile' (3 hits) ---
+  L15770: import_tooltip: "Import Profiles JSON",
+  L15780: import_error: "Failed to import profiles.",
+  L33017: 'profiles_select_dropdown': "Quick-select from saved profiles. Dropdown shows: all saved profiles by name, key settings preview, and last-us
+
+--- 'export profile' (2 hits) ---
+  L15771: export_tooltip: "Export Profiles JSON",
+  L33020: 'profiles_export_button': "Download all saved profiles as a single JSON file. Export includes: all saved profiles, all settings within each 
+
+--- 'select group' (1 hits) ---
+  L15774: select_default: "-- Select Group / Profile --",
+
+--- 'profile --' (1 hits) ---
+  L15774: select_default: "-- Select Group / Profile --",
+
+--- 'loadProfile' (2 hits) ---
+  L36607: const handleLoadProfile = (profileId) => {
+  L60512: onChange={(e) => handleLoadProfile(e.target.value)}
+
+--- 'saveProfile' (5 hits) ---
+  L35787: const saveProfiles = async () => {
+  L35795: const timeoutId = setTimeout(saveProfiles, 1000);
+  L36583: const handleSaveProfile = () => {
+  L60558: onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
+  L60560: <button onClick={handleSaveProfile} className="text-xs bg-indigo-600 text-white px-2 rounded hover:bg-indigo-500">{t('common.save')}</button
+
+--- 'groups.title' (1 hits) ---
+  L27106: <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{t('groups.title')}</h4>
+
+--- 'groups.manage' (2 hits) ---
+  L55062: <span className="block">{t('groups.manage_button')}</span>
+  L55063: <span className="block text-[10px] font-normal opacity-80">{t('groups.manage_button_desc')}</span>
+
+--- 'groups.modal' (3 hits) ---
+  L55246: <div className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative transform scale-100 animate-in zoom-in-95 duration-200 flex flex-
+  L55254: <h2 className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
+  L55255: <p className="text-sm text-slate-500">{t('groups.modal_subtitle')}</p>
+
+--- 'handleSaveProfile' (3 hits) ---
+  L36583: const handleSaveProfile = () => {
+  L60558: onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
+  L60560: <button onClick={handleSaveProfile} className="text-xs bg-indigo-600 text-white px-2 rounded hover:bg-indigo-500">{t('common.save')}</button
+
+--- 'handleLoadProfile' (2 hits) ---
+  L36607: const handleLoadProfile = (profileId) => {
+  L60512: onChange={(e) => handleLoadProfile(e.target.value)}
+
+--- 'handleImportProfile' (2 hits) ---
+  L36845: const handleImportProfiles = (e) => {
+  L60500: onChange={handleImportProfiles}
+
+--- 'handleExportProfile' (2 hits) ---
+  L36803: const handleExportProfiles = () => {
+  L60505: <button onClick={handleExportProfiles} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('profiles.export_tooltip')}
+
+--- 'gradeLevel' (135 hits) ---
+  L1404: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloa
+  L1552: const prompt = `Generate a list of 15 phonics-rich words related to the topic: "${aiTopic}". Target Grade Level: ${gradeLevel}.${syllableCon
+  L1572: Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || 'Early Readers (K-2)'}.
+  L1760: <p className="text-indigo-100 font-medium opacity-90">{t('word_sounds.subtitle', 'Design your phonics lesson')} • {gradeLevel || 'K-2'}</p>
+  L18254: const level = latest.data?.gradeLevel;
+  ... and 130 more

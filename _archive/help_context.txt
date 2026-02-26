@@ -1,0 +1,75 @@
+﻿L32566:                  warnLog(`[Help Mode] Missing string for key: ${key}`);
+L32567:                  // Do nothing - prevent bubbling to "Source Material",
+L32568:              }
+L32569:         }
+L32570:         return; // Stop processing
+L32571:       }
+L32572:       // 2. TIER 2: DISABLED - No longer falling back to tour text
+L32573:       // Help Mode only shows HELP_STRINGS content for elements with data-help-key
+L32574:       // Elements without explicit help keys don't show any tooltip
+L32575:     };
+L32576:     document.addEventListener('click', handleHelpClick, true); // Capture phase - block first, allow ignored
+L32577:     return () => document.removeEventListener('click', handleHelpClick, true);
+L32578:   }, [isHelpMode, tourSteps]);
+L32579:   // Apply/remove interactive class to help elements when Help Mode toggles
+L32580:   // VISUALS: Apply global Help Mode styles via CSS injection
+L32581:   // This robustly covers all dynamically loaded content (expanded panels) without manual listeners
+L32582:   useEffect(() => {
+L32583:     if (isHelpMode) {
+L32584:       document.body.classList.add('help-mode-active');
+L32585:       // Inject dynamic styles for hover glow and cursor
+L32586:       const style = document.createElement('style');
+L32587:       style.id = 'help-mode-styles';
+L32588:         const isContrast = theme === 'contrast';
+L32589:         const isDark = theme === 'dark';
+L32590:         // High Contrast: Black BG, Yellow Text, Yellow Border
+L32591:         const popoverBg = isContrast ? '#000000' : (isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)');
+L32592:         const popoverText = isContrast ? '#FFFF00' : (isDark ? '#ffffff' : '#1e293b');
+L32593:         const popoverBorder = isContrast ? '4px solid #FFFF00' : (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px soli
+L32594:         style.innerHTML = `
+L32595:         .help-mode-active {
+L32596:             cursor: help !important;
+L32597:         }
+L32598:         /* FIX: Header Interactivity */
+L32599:         .help-mode-active #tour-header-utils button {
+L32600:             pointer-events: auto !important;
+L32601:             cursor: pointer !important;
+L32602:             z-index: 200 !important; /* Ensure on top */
+L32603:         }
+L32604:         /* FIX: Header Settings Interactivity (voice, text, etc) */
+L32605:         .help-mode-active #tour-header-settings button,
+L32606:         .help-mode-active #tour-header-settings select,
+L32607:         .help-mode-active #tour-header-settings [data-help-key] {
+L32608:             pointer-events: auto !important;
+L32609:             cursor: pointer !important;
+L32610:             z-index: 200 !important;
+L32611:         }
+L32612:         /* FIX: Header Tools Interactivity (student/teacher view, dashboard) */
+L32613:         .help-mode-active #tour-header-tools button,
+L32614:         .help-mode-active #tour-header-tools [data-help-key] {
+L32615:             pointer-events: auto !important;
+L32616:             cursor: pointer !important;
+L32617:             z-index: 200 !important;
+L32618:         }
+L32619:         /* FIX: Header Actions (translate, export, session buttons) */
+L32620:         .help-mode-active #tour-header-actions button,
+L32621:         .help-mode-active #tour-header-actions a,
+L32622:         .help-mode-active #tour-header-actions [data-help-key] {
+L32623:             pointer-events: auto !important;
+L32624:             cursor: pointer !important;
+L32625:             z-index: 200 !important;
+L32626:         }
+L32627:         /* FIX: Cover ALL header buttons (translate, export, session, etc.) */
+L32628:         .help-mode-active header button,
+L32629:         .help-mode-active header [data-help-key],
+L32630:         .help-mode-active [class*="tour-header"] button,
+L32631:         .help-mode-active [class*="tour-header"] [data-help-key] {
+L32632:             pointer-events: auto !important;
+L32633:             cursor: pointer !important;
+L32634:         }
+L32635:         /* FIX: Ensure AlloBot stays visible and interactive in Help Mode */
+L32636:         .help-mode-active [data-help-key="bot_avatar"] {
+L32637:             z-index: 10999 !important; /* Above help mode backdrop (z-10998) */
+L32638:             pointer-events: auto !important;
+L32639:         }
+L32640:         /* FIX: AlloBot buttons also need interactivity */

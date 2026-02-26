@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoneme Audio Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #4c1d95;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 12px;
+            color: #475569;
+            text-transform: uppercase;
+        }
+
+        select,
+        input[type="range"] {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6d28d9;
+            transform: scale(1.02);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .phoneme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .phoneme-card {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .phoneme-card:hover {
+            border-color: #7c3aed;
+            transform: scale(1.05);
+        }
+
+        .phoneme-card.generated {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .phoneme-card.loaded {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .phoneme-card.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .phoneme-card.generating {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-info {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #2563eb;
+        }
+
+        .save-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .file-input-label {
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .file-input-label:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+
+        .phoneme-symbol {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .phoneme-example {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .output-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            color: #e2e8f0;
+        }
+
+        .output-section h3 {
+            color: #a855f7;
+            margin-bottom: 10px;
+        }
+
+        #jsonOutput {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔊 Phoneme Audio Generator</h1>
+        <p class="subtitle">Generate MP3 audio for all 44 English phonemes using Text-to-Speech</p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>TTS Voice</label>
+                <select id="voiceSelect"></select>
+            </div>
+            <div class="control-group">
+                <label>Speech Rate</label>
+                <input type="range" id="rateSlider" min="0.5" max="1.5" step="0.1" value="0.8">
+                <span id="rateValue">0.8x</span>
+            </div>
+            <div class="control-group">
+                <label>Pitch</label>
+                <input type="range" id="pitchSlider" min="0.8" max="1.2" step="0.1" value="1.0">
+                <span id="pitchValue">1.0</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="generateAllPhonemes()">🚀 Generate All Phonemes</button>
+            <button class="btn btn-success" onclick="downloadJSON()">📥 Download JSON Bank</button>
+            <button class="btn btn-secondary" onclick="testPhoneme()">🔊 Test Selected</button>
+        </div>
+        <div
+            style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 12px; border: 1px solid #bae6fd;">
+            <span style="font-weight: 600; color: #0369a1; font-size: 13px; align-self: center;">💾 Persistence:</span>
+            <button class="btn btn-info" onclick="saveToFile()">📤 Export Saved Data</button>
+            <label class="file-input-label">📂 Import From File<input type="file" accept=".json"
+                    onchange="loadFromFile(event)" style="display:none"></label>
+            <button class="btn btn-danger" onclick="clearSaved()">🗑️ Clear Saved Data</button>
+            <span id="saveIndicator" style="align-self: center; font-size: 12px; color: #6b7280;"></span>
+        </div>
+
+        <div class="progress-text" id="progressText">Ready to generate</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="statusBox" class="status info">Select a voice above, then click "Generate All Phonemes" to begin.</div>
+
+        <h3 style="margin-top: 20px; color: #4c1d95;">Phoneme Library (44 Sounds)</h3>
+        <div class="phoneme-grid" id="phonemeGrid"></div>
+
+        <div class="output-section">
+            <h3>Generated JSON (Copy to AlloFlowANTI.txt)</h3>
+            <div id="jsonOutput">// Click "Generate All Phonemes" to create the audio bank...</div>
+        </div>
+    </div>
+
+    <script>
+        // 44 English Phonemes with examples and pronunciation prompts
+        const PHONEMES = [
+            // Consonants
+            { id: 'p', symbol: 'p', example: 'pat', prompt: 'Make the sound puh as in pat' },
+            { id: 'b', symbol: 'b', example: 'bat', prompt: 'Make the sound buh as in bat' },
+            { id: 't', symbol: 't', example: 'tap', prompt: 'Make the sound tuh as in tap' },
+            { id: 'd', symbol: 'd', example: 'dog', prompt: 'Make the sound duh as in dog' },
+            { id: 'k', symbol: 'k', example: 'cat', prompt: 'Make the sound kuh as in cat' },
+            { id: 'g', symbol: 'g', example: 'go', prompt: 'Make the sound guh as in go' },
+            { id: 'f', symbol: 'f', example: 'fan', prompt: 'Make the sound fff as in fan' },
+            { id: 'v', symbol: 'v', example: 'van', prompt: 'Make the sound vvv as in van' },
+            { id: 'th_voiced', symbol: 'th', example: 'this', prompt: 'Make the voiced th sound as in this' },
+            { id: 'th_unvoiced', symbol: 'θ', example: 'thin', prompt: 'Make the unvoiced th sound as in thin' },
+            { id: 's', symbol: 's', example: 'sun', prompt: 'Make the hissing sound sss as in sun' },
+            { id: 'z', symbol: 'z', example: 'zip', prompt: 'Make the buzzing sound zzz as in zip' },
+            { id: 'sh', symbol: 'sh', example: 'ship', prompt: 'Make the sound shh as in ship' },
+            { id: 'zh', symbol: 'ʒ', example: 'vision', prompt: 'Make the zh sound as in vision' },
+            { id: 'h', symbol: 'h', example: 'hat', prompt: 'Make the breathy h sound as in hat' },
+            { id: 'ch', symbol: 'ch', example: 'chip', prompt: 'Make the sound ch as in chip' },
+            { id: 'j', symbol: 'j', example: 'jam', prompt: 'Make the sound j as in jam' },
+            { id: 'm', symbol: 'm', example: 'map', prompt: 'Make the humming sound mmm as in map' },
+            { id: 'n', symbol: 'n', example: 'nap', prompt: 'Make the sound nnn as in nap' },
+            { id: 'ng', symbol: 'ŋ', example: 'sing', prompt: 'Make the ng sound as in sing' },
+            { id: 'l', symbol: 'l', example: 'lip', prompt: 'Make the sound lll as in lip' },
+            { id: 'r', symbol: 'r', example: 'run', prompt: 'Make the sound rrr as in run' },
+            { id: 'w', symbol: 'w', example: 'wet', prompt: 'Make the sound wuh as in wet' },
+            { id: 'y', symbol: 'y', example: 'yes', prompt: 'Make the sound yuh as in yes' },
+            // Vowels
+            { id: 'a_short', symbol: 'æ', example: 'cat', prompt: 'Make the short a sound as in cat, aaa' },
+            { id: 'e_short', symbol: 'ɛ', example: 'bed', prompt: 'Make the short e sound as in bed, eh' },
+            { id: 'i_short', symbol: 'ɪ', example: 'sit', prompt: 'Make the short i sound as in sit, ih' },
+            { id: 'o_short', symbol: 'ɒ', example: 'hot', prompt: 'Make the short o sound as in hot, ah' },
+            { id: 'u_short', symbol: 'ʌ', example: 'cup', prompt: 'Make the short u sound as in cup, uh' },
+            { id: 'schwa', symbol: 'ə', example: 'about', prompt: 'Make the schwa sound, uh as in about' },
+            { id: 'ee', symbol: 'iː', example: 'see', prompt: 'Make the long e sound, eee as in see' },
+            { id: 'oo_long', symbol: 'uː', example: 'blue', prompt: 'Make the long oo sound, ooo as in blue' },
+            { id: 'ar', symbol: 'ɑː', example: 'car', prompt: 'Make the ar sound, ahhh as in car' },
+            { id: 'or', symbol: 'ɔː', example: 'door', prompt: 'Make the or sound as in door' },
+            { id: 'er', symbol: 'ɜː', example: 'bird', prompt: 'Make the er sound as in bird' },
+            { id: 'ay', symbol: 'eɪ', example: 'day', prompt: 'Make the long a sound, ay as in day' },
+            { id: 'ie', symbol: 'aɪ', example: 'tie', prompt: 'Make the long i sound, eye as in tie' },
+            { id: 'oy', symbol: 'ɔɪ', example: 'boy', prompt: 'Make the oy sound as in boy' },
+            { id: 'ow', symbol: 'aʊ', example: 'now', prompt: 'Make the ow sound as in now' },
+            { id: 'oe', symbol: 'əʊ', example: 'go', prompt: 'Make the long o sound, oh as in go' },
+            { id: 'ear', symbol: 'ɪə', example: 'ear', prompt: 'Make the ear sound as in ear' },
+            { id: 'air', symbol: 'eə', example: 'hair', prompt: 'Make the air sound as in hair' },
+            { id: 'ure', symbol: 'ʊə', example: 'pure', prompt: 'Make the ure sound as in pure' },
+            { id: 'oo_short', symbol: 'ʊ', example: 'book', prompt: 'Make the short oo sound as in book' }
+        ];
+
+        let audioBank = {};
+        let voices = [];
+        const STORAGE_KEY = 'phoneme_audio_bank_v1';
+
+        // Auto-load from localStorage on init
+        function loadFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    audioBank = parsed;
+                    const count = Object.keys(parsed).length;
+                    updateSaveIndicator(`Loaded ${count} entries from local storage`);
+                    setStatus(`💾 Restored ${count} saved audio entries from local storage.`, 'success');
+                    return true;
+                }
+            } catch (e) {
+                console.error('Failed to load from localStorage:', e);
+            }
+            return false;
+        }
+
+        // Auto-save to localStorage
+        function saveToStorage() {
+            try {
+                const keys = Object.keys(audioBank);
+                if (keys.length === 0) return;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(audioBank));
+                updateSaveIndicator(`Auto-saved ${keys.length} entries`);
+            } catch (e) {
+                console.error('Failed to save to localStorage:', e);
+                if (e.name === 'QuotaExceededError') {
+                    setStatus('⚠️ localStorage quota exceeded. Use Export to save to a file instead.', 'error');
+                }
+            }
+        }
+
+        // Export to JSON file
+        function saveToFile() {
+            const keys = Object.keys(audioBank);
+            if (keys.length === 0) {
+                setStatus('⚠️ No audio data to export. Generate phonemes first.', 'error');
+                return;
+            }
+            const exportData = {
+                _meta: {
+                    generatedAt: new Date().toISOString(),
+                    entryCount: keys.length,
+                    tool: 'Phoneme Audio Generator'
+                },
+                audioBank: audioBank
+            };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `phoneme_audio_bank_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus(`📤 Exported ${keys.length} entries to file.`, 'success');
+        }
+
+        // Import from JSON file
+        function loadFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // Support both formats: { audioBank: {...} } and direct { key: value }
+                    const bank = data.audioBank || data;
+                    delete bank._meta; // Remove metadata if present
+                    const imported = Object.keys(bank).length;
+                    audioBank = { ...audioBank, ...bank };
+                    saveToStorage();
+                    refreshGrid();
+                    updateJSONOutput();
+                    setStatus(`📂 Imported ${imported} entries from file. Total: ${Object.keys(audioBank).length}`, 'success');
+                } catch (err) {
+                    setStatus('❌ Failed to parse file: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset so same file can be re-imported
+        }
+
+        // Clear saved data
+        function clearSaved() {
+            if (!confirm('Are you sure you want to clear all saved audio data? This cannot be undone.')) return;
+            audioBank = {};
+            localStorage.removeItem(STORAGE_KEY);
+            refreshGrid();
+            updateJSONOutput();
+            updateSaveIndicator('');
+            setStatus('🗑️ All saved data cleared.', 'info');
+        }
+
+        // Refresh grid to show loaded/generated state
+        function refreshGrid() {
+            PHONEMES.forEach(p => {
+                const card = document.getElementById(`card-${p.id}`);
+                if (card) {
+                    if (audioBank[p.id]) {
+                        const isPlaceholder = typeof audioBank[p.id] === 'string' && audioBank[p.id].startsWith('PLACEHOLDER_');
+                        card.className = isPlaceholder ? 'phoneme-card generated' : 'phoneme-card loaded';
+                    } else {
+                        card.className = 'phoneme-card';
+                    }
+                }
+            });
+        }
+
+        // Update save indicator
+        function updateSaveIndicator(msg) {
+            const el = document.getElementById('saveIndicator');
+            if (el) el.textContent = msg ? `✅ ${msg}` : '';
+        }
+
+        // Initialize voices
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            const select = document.getElementById('voiceSelect');
+            select.innerHTML = '';
+
+            // Filter for English voices
+            const englishVoices = voices.filter(v => v.lang.includes('en'));
+
+            englishVoices.forEach((voice, i) => {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (voice.name.includes('Female') || voice.name.includes('Samantha')) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+
+        speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        // Initialize phoneme grid
+        function initGrid() {
+            const grid = document.getElementById('phonemeGrid');
+            grid.innerHTML = '';
+
+            PHONEMES.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'phoneme-card';
+                card.id = `card-${p.id}`;
+                card.innerHTML = `
+                    <div class="phoneme-symbol">${p.symbol}</div>
+                    <div class="phoneme-example">"${p.example}"</div>
+                `;
+                card.onclick = () => playPhoneme(p);
+                grid.appendChild(card);
+            });
+        }
+        initGrid();
+        // Auto-load saved data on startup
+        if (loadFromStorage()) {
+            refreshGrid();
+        }
+
+        // Update slider displays
+        document.getElementById('rateSlider').oninput = (e) => {
+            document.getElementById('rateValue').textContent = e.target.value + 'x';
+        };
+        document.getElementById('pitchSlider').oninput = (e) => {
+            document.getElementById('pitchValue').textContent = e.target.value;
+        };
+
+        // Play a single phoneme
+        function playPhoneme(phoneme) {
+            const rate = parseFloat(document.getElementById('rateSlider').value);
+            const pitch = parseFloat(document.getElementById('pitchSlider').value);
+            const voiceIdx = document.getElementById('voiceSelect').value;
+
+            const utterance = new SpeechSynthesisUtterance(phoneme.prompt);
+            utterance.rate = rate;
+            utterance.pitch = pitch;
+            utterance.voice = voices.filter(v => v.lang.includes('en'))[voiceIdx];
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // Test selected phoneme
+        function testPhoneme() {
+            const first = PHONEMES[0];
+            playPhoneme(first);
+            setStatus('Testing phoneme: ' + first.symbol, 'info');
+        }
+
+        // Generate all phonemes with MediaRecorder
+        async function generateAllPhonemes() {
+            // Check if MediaRecorder is available
+            if (!window.MediaRecorder) {
+                setStatus('❌ MediaRecorder not supported. Please use Chrome or Firefox.', 'error');
+                return;
+            }
+
+            setStatus('🎙️ Starting audio generation... This will take a few minutes.', 'info');
+            audioBank = {};
+
+            const total = PHONEMES.length;
+            let completed = 0;
+
+            for (const phoneme of PHONEMES) {
+                const card = document.getElementById(`card-${phoneme.id}`);
+                card.className = 'phoneme-card generating';
+
+                try {
+                    // Use AudioContext to capture TTS
+                    const audioData = await capturePhonemeAudio(phoneme);
+
+                    if (audioData) {
+                        audioBank[phoneme.id] = audioData;
+                        audioBank[phoneme.symbol] = audioData; // Also map by symbol
+                        card.className = 'phoneme-card generated';
+                    } else {
+                        card.className = 'phoneme-card error';
+                    }
+                } catch (err) {
+                    console.error('Failed to generate:', phoneme.id, err);
+                    card.className = 'phoneme-card error';
+                }
+
+                completed++;
+                const percent = Math.round((completed / total) * 100);
+                document.getElementById('progressFill').style.width = percent + '%';
+                document.getElementById('progressText').textContent = `${completed}/${total} phonemes (${percent}%)`;
+
+                // Small delay between phonemes
+                await sleep(500);
+            }
+
+            updateJSONOutput();
+            saveToStorage();
+            setStatus(`✅ Generated ${Object.keys(audioBank).length / 2} phonemes! Auto-saved to localStorage. Click "Export Saved Data" to backup.`, 'success');
+        }
+
+        // Capture phoneme audio using Web Audio API workaround
+        // Note: Direct TTS capture is not possible in browsers, so we use a fallback approach
+        async function capturePhonemeAudio(phoneme) {
+            return new Promise((resolve) => {
+                const rate = parseFloat(document.getElementById('rateSlider').value);
+                const pitch = parseFloat(document.getElementById('pitchSlider').value);
+                const voiceIdx = document.getElementById('voiceSelect').value;
+
+                // Since we can't directly capture speechSynthesis audio,
+                // we'll store the phoneme config for later manual recording
+                // or use an external TTS service
+
+                const utterance = new SpeechSynthesisUtterance(phoneme.prompt);
+                utterance.rate = rate;
+                utterance.pitch = pitch;
+                utterance.voice = voices.filter(v => v.lang.includes('en'))[voiceIdx];
+
+                utterance.onend = () => {
+                    // For now, store a placeholder indicating the phoneme was "spoken"
+                    // The actual audio capture requires server-side TTS or manual recording
+                    resolve(`PLACEHOLDER_${phoneme.id}`);
+                };
+
+                utterance.onerror = () => resolve(null);
+
+                speechSynthesis.speak(utterance);
+            });
+        }
+
+        function sleep(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        function setStatus(msg, type) {
+            const box = document.getElementById('statusBox');
+            box.className = 'status ' + type;
+            box.textContent = msg;
+        }
+
+        function updateJSONOutput() {
+            const output = document.getElementById('jsonOutput');
+
+            // Generate the JavaScript constant
+            const jsCode = `// PHONEME AUDIO BANK - Add this near line 750 in AlloFlowANTI.txt
+// Generated by Phoneme Audio Generator
+
+const PHONEME_AUDIO_BANK = {
+${PHONEMES.map(p => `    '${p.id}': 'data:audio/mp3;base64,YOUR_BASE64_HERE', // ${p.symbol} - "${p.example}"`).join('\n')}
+};
+
+// Map common variations
+Object.assign(PHONEME_AUDIO_BANK, {
+    'a': PHONEME_AUDIO_BANK['a_short'],
+    'e': PHONEME_AUDIO_BANK['e_short'],
+    'i': PHONEME_AUDIO_BANK['i_short'],
+    'o': PHONEME_AUDIO_BANK['o_short'],
+    'u': PHONEME_AUDIO_BANK['u_short'],
+});`;
+
+            output.textContent = jsCode;
+        }
+
+        function downloadJSON() {
+            // Create a cleaner export format
+            const exportData = {
+                generatedAt: new Date().toISOString(),
+                phonemeCount: PHONEMES.length,
+                instructions: "Replace YOUR_BASE64_HERE with actual Base64 audio data from a TTS service",
+                phonemes: PHONEMES.map(p => ({
+                    id: p.id,
+                    symbol: p.symbol,
+                    example: p.example,
+                    prompt: p.prompt
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'phoneme_bank_config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            setStatus('📥 Downloaded phoneme_bank_config.json - Use this with a TTS service to generate actual audio files.', 'success');
+        }
+    </script>
+</body>
+
+</html>

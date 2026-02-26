@@ -1,0 +1,55 @@
+: mathMode);
+      }
+      setActiveView('math');
+      setShowStemLab(false);
+    },
+    disabled: !mathInput.trim(),
+    className: "w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 disabled:opacity-40 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16
+  }), " ", stemLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Problems'), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 pt-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-slate-400 font-bold uppercase"
+  }, "Tools:"), [{
+    id: 'volume',
+    icon: '📦',
+    label: 'Volume Explorer'
+  }, {
+    id: 'numberline',
+    icon: '📏',
+    label: 'Number Line'
+  }, {
+    id: 'areamodel',
+    icon: '🟧',
+    label: 'Area Model'
+  }, {
+    id: 'fractions',
+    icon: '🍕',
+    label: 'Fractions'
+  }].map(tool => /*#__PURE__*/React.createElement("button", {
+    key: tool.id,
+    onClick: () => {
+      setStemLabTab('explore');
+      setStemLabTool(tool.id);
+    },
+    className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
+  }, tool.icon, " ", tool.label)))), stemLabTab === 'create' && showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAssessmentBuilder(false),
+    className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+  }, /*#__PURE__*/React.createElement(ArrowLeft, {
+    size: 18,
+    className: "text-slate-500"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-bold text-slate-800"
+  }, "\uD83D\uDCCB Assessment Builder"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-400"
+  }, "Compose blocks of different problem types into a custom assessment")))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, assessmentBlocks.map((block, idx) => /*#__PUR

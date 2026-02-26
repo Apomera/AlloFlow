@@ -1,0 +1,12 @@
+✅ Generated Base64 from or.webm (Length: 22315)
+Start: data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84E...
+
+Scanning AlloFlowANTI.txt...
+⚠️ Declaration found at Line 1055: const PHONEME_AUDIO_BANK = {
+   👉 'or' key found at Line 1057 (Length: 22324)
+      Value start:  "data:audio/webm;base64,GkXfo59ChoEBQveBAULy...
+
+Summary:
+- Bank Declarations: 1
+- 'or' Keys found: 1
+✅ Match found at Line 1057: The content matches the new webm file.

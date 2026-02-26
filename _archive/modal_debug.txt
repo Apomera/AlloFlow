@@ -1,0 +1,3 @@
+CACHE LINE 989: const audioCache = React.useRef(new Map()); // Cache for TTS blobs: { text: stringUrl }
+HANDLE LINE 1020: const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+USAGE LINE 55551: <WordSoundsModal

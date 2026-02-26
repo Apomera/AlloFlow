@@ -1,0 +1,120 @@
+=== HIGH RISK (API/audio calls): 37 ===
+  L307: const chunkTranscript = await transcribeChunk(base64, 'audio/wav');
+  L426: const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+  L3009: try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
+  L3068: try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
+  L6906: await handleAudio(upperLet);
+  L6911: await handleAudio(INSTRUCTION_AUDIO['for']);
+  L6916: await handleAudio(currentWordSoundsWord);
+  L6960: await handleAudio(INSTRUCTION_AUDIO['sound_match_start']); // "Find all words that start with..."
+  L6962: await handleAudio(targetSound); // "... /b/"
+  L6968: await handleAudio(INSTRUCTION_AUDIO['sound_match_end']); // "Find all words that end with..."
+  L6970: await handleAudio(targetSound); // "... /ar/"
+  L7055: await handleAudio(currentWordSoundsWord); // Play the word ONLY
+  L36370: const result = await callGemini(prompt, true);
+  L39958: const result = await callGemini(prompt);
+  L43746: const hint = await callGemini(prompt);
+  L44796: const result = await callGemini(prompt, true);
+  L45414: const result = await callGemini(prompt, true);
+  L45699: const result = await callGemini(prompt, true);
+  L47347: const result = await callGemini(prompt, false, true);
+  L48128: const resultRaw = await callGemini(prompt, true);
+  L48687: const result = await callGemini(prompt, true);
+  L49705: const result = await callGemini(prompt, true);
+  L50015: let targetResult = await callGemini(chunkTargetPrompt);
+  L50027: let transResult = await callGemini(chunkTransPrompt);
+  L50087: content = await callGemini(prompt);
+  L50242: const result = await callGemini(prompt, true);
+  L50295: const result = await callGemini(promptGenPrompt, true);
+  L50393: const result = await callGemini(prompt, true);
+  L50523: const result = await callGemini(prompt, true, false);
+  L50704: const result = await callGemini(prompt, true);
+  L50912: const result = await callGemini(prompt, true);
+  L50978: const result = await callGemini(prompt, true);
+  L51060: const result = await callGemini(prompt, true);
+  L51119: const result = await callGemini(prompt, true);
+  L51269: const result = await callGemini(prompt, true);
+  L53464: const gateResultRaw = await callGemini(gatePrompt, true);
+  L53768: const result = await callGemini(prompt, jsonMode);
+
+=== MEDIUM RISK (Promise chains, data ops): 58 ===
+  L420: const arrayBuffer = await this.readFileAsArrayBuffer(videoFile);
+  L442: const audioFile = await this.extractAudioFromVideo(file, onProgress);
+  L1712: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught error:', e?.mess
+  L5747: const results = await Promise.all(prefetchPromises);
+  L16805: const response = await fetchWithExponentialBackoff(url, {
+  L16810: const data = await response.json();
+  L21388: await Promise.all(writePromises);
+  L21424: await Promise.all(fetchPromises);
+  L26551: await updateDoc(sessionRef, updatePayload);
+  L27324: const results = await Promise.all(promises);
+  L29920: const db = await this.getDB();
+  L29935: const db = await this.getDB();
+  L29949: const db = await this.getDB();
+  L29963: const db = await this.getDB();
+  L33602: if (typeof callTTS === 'function') { const url = await callTTS(term, selectedVoice, 1, 1).catch(e => { warnLog('Pre-warm
+  L34125: await handleAutoLayout(newNodes, newEdges);
+  L38565: const data = await response.json();
+  L38579: return await optimizeImage(rawUrl, width, qual);
+  L40815: const bytes = await fetchTTSBytes(currentChunk.trim(), targetVoice);
+  L40824: const bytes = await fetchTTSBytes(currentChunk.trim(), targetVoice);
+  L40828: const bytes = await fetchTTSBytes(segment.text, targetVoice);
+  L43987: let imageUrl = await callImagen(prompt, targetWidth, targetQual);
+  L45165: archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+  L45490: archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+  L46707: const bridgeMsg = await generateDynamicBridge('Source Analysis', 'Glossary', context);
+  L46733: const resultItem = await handleGenerate('glossary');
+  L46741: const bridgeMsg = await generateDynamicBridge('Glossary', 'Leveled Text', context);
+  L46757: const resultItem = await handleGenerate('glossary');
+  L46765: const bridgeMsg = await generateDynamicBridge('Glossary', 'Leveled Text', context);
+  L46790: const resultItem = await handleGenerate('simplified');
+  L46794: const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
+  L46805: await handleGenerate('simplified');
+  L46809: const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
+  L46825: await handleGenerate('simplified');
+  L46829: const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
+  L46851: await handleGenerate('outline');
+  L46855: const bridgeMsg = await generateDynamicBridge('Visual Organizer', 'Visual Support', context);
+  L46877: await handleGenerate('image');
+  L46881: const bridgeMsg = await generateDynamicBridge('Visual Support', 'FAQ List', context);
+  L46896: await handleGenerate('faq');
+  L46915: await handleGenerate('sentence-frames');
+  L46931: await handleGenerate('timeline');
+  L46947: await handleGenerate('concept-sort');
+  L46963: await handleGenerate('brainstorm');
+  L46989: await handleGenerate('quiz');
+  L46994: const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Standard Audit', context);
+  L46999: const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Lesson Plan', context);
+  L47026: await handleGenerate('alignment-report');
+  L47042: await handleGenerateLessonPlan();
+  L47067: await handleStartAdventure();
+  L47163: await generateStandardChatResponse(textToSend);
+  L47167: await generateStandardChatResponse(textToSend);
+  L50094: content = await repairGeneratedText(content, 'too_short', targetWords, repairContext, effectiveLanguage);
+  L51554: const resultItem = await handleGenerate(type, null, !isLast, batchSourceText, stepConfig, false);
+  L61593: await handleQuickAddGlossary(addedTerm);
+  L61602: const replacement = await fetchReplacementSuggestion(allTerms, addedTerm, srcText);
+  L63386: await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" });
+  L63404: await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic });
+
+=== LOW RISK (setTimeout delays): 15 ===
+  L6510: await new Promise(r => setTimeout(r, 500));
+  L6908: await new Promise(r => setTimeout(r, 200));
+  L6913: await new Promise(r => setTimeout(r, 200));
+  L6961: await new Promise(r => setTimeout(r, 300));
+  L6969: await new Promise(r => setTimeout(r, 300));
+  L7053: await new Promise(r => setTimeout(r, 400)); // Small gap
+  L7060: await new Promise(r => setTimeout(r, 500)); // Small gap before options
+  L10499: await new Promise(resolve => setTimeout(resolve, 10));
+  L33603: await new Promise(r => setTimeout(r, 100));
+  L39449: if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
+  L40818: await new Promise(r => setTimeout(r, 100));
+  L40830: await new Promise(r => setTimeout(r, 100));
+  L49774: await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
+  L50057: if (!isLast) await new Promise(r => setTimeout(r, 800));
+  L51579: if (!isLast) await new Promise(r => setTimeout(r, 800));
+
+TOTAL: 110
+  High: 37
+  Medium: 58
+  Low: 15

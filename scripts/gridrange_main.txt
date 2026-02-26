@@ -1,0 +1,1 @@
+﻿L25017:   const [gridRange] = useState({min:-10, max:10});

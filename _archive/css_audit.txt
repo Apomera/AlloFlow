@@ -1,0 +1,27 @@
+=== CSS DEAD CLASS AUDIT ===
+
+Total CSS classes defined: 165
+Used in JSX/JS: 151
+Unused (dead): 14
+Estimated dead CSS lines: 45
+
+=== UNUSED CSS CLASSES (14) ===
+
+  .help-mode-interactive (L18582): .help-mode-interactive {
+  .sr-only-focusable (L18744): .sr-only-focusable:focus {
+  .math-sqrt (L41631): .math-sqrt > span:first-child {
+  .theme-contrast (L53827): .theme-contrast .bg-yellow-200,
+  .print-container (L54285): .print-container { padding: 0; max-width: 100%; margin: 0; }
+  .print-section (L54286): .print-section { margin-bottom: 2rem; page-break-inside: avoid; border-bottom: 1px solid #eee; paddi
+  .theme-dark (L54299): .theme-dark {
+  .bg-slate-400 (L54319): .theme-dark .bg-slate-400 { background-color: #64748b !important; }
+  .sort-card (L54373): .theme-dark .sort-card { background-color: #1e293b !important; border-color: #475569 !important; }
+  .theme-modern (L54409): .theme-modern {
+  .woff (L54415): src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-regular.woff') format(
+  .font-dyslexic (L54425): .font-dyslexic, .font-dyslexic * {
+  .font-heading (L54429): .theme-modern h1, .theme-modern h2, .theme-modern h3, .theme-modern h4, .theme-modern h5, .theme-mod
+  .font-display (L54429): .theme-modern h1, .theme-modern h2, .theme-modern h3, .theme-modern h4, .theme-modern h5, .theme-mod
+
+=== USED CSS CLASSES (151) ===
+
+  151 classes are actively referenced in JSX/JS code

@@ -1,0 +1,18 @@
+﻿1. Added RIME_FAMILIES constant
+2. Added word_families entry to ALL_ACTIVITIES
+3. Added word_families render case
+4a. Added word_families to instruction key map
+4b. Added word_families instruction branch
+5a. Added scaffolding config (imageVisibility)
+5b. Added scaffolding config (second block)
+5c. Added image visibility config
+6. Added handleOptionUpdate case for word_families
+7a. Added word_families to lessonPlan state
+7b. Added word_families to lessonPlanOrder
+7c. Added word_families to lesson plan defs
+8a. Added Word Families localization keys
+8b. Added Word Families completion keys
+8c. Added word_families to instruction audio exclusion
+
+Total Part B changes: 16
+Saved (4721503 chars)

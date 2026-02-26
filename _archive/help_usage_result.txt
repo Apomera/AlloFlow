@@ -1,0 +1,12 @@
+﻿Static help_mode t() references: 4
+  help_mode.activate
+  help_mode.deactivate
+
+Dynamic help_mode t() references: 0
+
+HELP_STRINGS[key] references: 1
+  HELP_STRINGS[key]
+
+data-help-key attributes: 616 total, 562 unique
+
+Help resolution patterns: 3

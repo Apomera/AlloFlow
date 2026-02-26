@@ -1,0 +1,18 @@
+﻿{
+  "status": "success",
+  "result": {
+    "fileName": "firebase-js-config.json",
+    "fileContents": "{\n  \"projectId\": \"prismflow-911fe\",\n  \"appId\": \"1:252114883460:web:9b200707dee54c18f1c3d1\",\n  \"storageBucket\": \"prismflow-911fe.firebasestorage.app\",\n  \"apiKey\": \"AIzaSyDlw2GRJPM_IjuK5vn-xXDEBbS2-WuH04E\",\n  \"authDomain\": \"prismflow-911fe.firebaseapp.com\",\n  \"messagingSenderId\": \"252114883460\",\n  \"measurementId\": \"G-1JVQ9C47R0\",\n  \"projectNumber\": \"252114883460\",\n  \"version\": \"2\"\n}",
+    "sdkConfig": {
+      "projectId": "prismflow-911fe",
+      "appId": "1:252114883460:web:9b200707dee54c18f1c3d1",
+      "storageBucket": "prismflow-911fe.firebasestorage.app",
+      "apiKey": "AIzaSyDlw2GRJPM_IjuK5vn-xXDEBbS2-WuH04E",
+      "authDomain": "prismflow-911fe.firebaseapp.com",
+      "messagingSenderId": "252114883460",
+      "measurementId": "G-1JVQ9C47R0",
+      "projectNumber": "252114883460",
+      "version": "2"
+    }
+  }
+}

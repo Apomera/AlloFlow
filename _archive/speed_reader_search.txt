@@ -1,0 +1,19 @@
+
+=== "SpeedReader" found at 11 lines ===
+  Line 28724: const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+  Line 28873: const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLet
+  Line 28941:               active={isSpeedReaderActive}
+  Line 28942:               onClick={onToggleSpeedReader}
+  Line 30990:   const handleCloseSpeedReader = useCallback(() => setIsSpeedReaderActive(false), []);
+  Line 31644:   const [isSpeedReaderActive, setIsSpeedReaderActive] = useState(false);
+  Line 62232:                                 isSpeedReaderActive={isSpeedReaderActive}
+  Line 62233:                                 onToggleSpeedReader={() => setIsSpeedReaderActive(!isSpeedReaderActive)}
+  Line 62236:                             <SpeedReaderOverlay
+  Line 62237:                                 isOpen={isSpeedReaderActive}
+  Line 62238:                                 onClose={handleCloseSpeedReader}
+
+=== Lines with "chunk" near reading context ===
+  Line 38566:                   if ((currentChunk.length + sentence.length) > maxLength && currentChunk.length > 0) {
+  Line 38570:                   currentChunk += sentence + " ";
+
+=== sentencePlayback or sentence highlight ===

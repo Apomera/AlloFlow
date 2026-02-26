@@ -1,0 +1,31 @@
+﻿Categories: ['phonemes', 'instructions', 'letters', 'isolation', 'misc']
+
+Feedback keys in audio_bank.json: 12
+  fb_amazing: 31331 chars
+  fb_correct: 22315 chars
+  fb_excellent: 28755 chars
+  fb_great_job: 31331 chars
+  fb_keep_going: 28755 chars
+  fb_listen_again: 35195 chars
+  fb_nice: 24891 chars
+  fb_on_fire: 39059 chars
+  fb_perfect: 24891 chars
+  fb_try_again: 23603 chars
+  fb_way_to_go: 26663 chars
+  fb_you_got_it: 22315 chars
+
+Keys NEEDED by feedback system:
+  fb_on_fire: YES
+  fb_excellent: YES
+  fb_wow: MISSING
+  fb_great_job: YES
+  fb_nice: YES
+  fb_keep_going: YES
+  fb_way_to_go: YES
+  fb_perfect: YES
+  fb_super: MISSING
+  fb_terrific: MISSING
+  fb_correct: YES
+  fb_you_got_it: YES
+
+MISSING KEYS: ['fb_wow', 'fb_super', 'fb_terrific']

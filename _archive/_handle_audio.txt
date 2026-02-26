@@ -1,0 +1,32 @@
+﻿=== Default/initial activity ===
+L30591: // [PHASE 4 MIGRATED] const [wsActivitySequence, setWsActivitySequence] = useState([]);
+L31030: // [PHASE 4 MIGRATED] const [wordSoundsActivity, setWordSoundsActivity] = useState('counting'); // 'counting' | 'isolation' | 'blending' | 'segmentation' | 'rhyme'
+L60931: initialActivitySequence={wsActivitySequence}
+
+=== handleAudio function definition ===
+L3490:     const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+L3491:         if (!input) { warnLog("handleAudio called with null input"); return Promise.resolve(); }
+L3492:         // Access text properly if input is a word object
+L3493:         const textToPlay = (typeof input === 'object' && input.word) ? input.word : input;
+L3494:         // FIX: Check for Data URI (Base64) - Bypass normalization
+L3495:         if (typeof textToPlay === 'string' && textToPlay.startsWith('data:audio')) {
+L3496:              // debugLog("ΓÜí Playing pre-recorded Data URI");
+L3497:              const audio = new Audio(textToPlay);
+L3498:              if (playImmediately) {
+L3499:                   // CRITICAL FIX: Wait for audio to finish before resolving
+L3500:                   return new Promise((resolve) => {
+L3501:                       audio.onended = () => resolve();
+L3502:                       audio.onerror = () => resolve(); // Resolve on error too
+L3503:                       setTimeout(resolve, 5000); // Fail-safe timeout
+L3504:                       audio.play().catch(e => {
+L3505:                           warnLog("Data URI playback failed", e);
+L3506:                           resolve();
+L3507:                       });
+L3508:                   });
+L3509:              }
+L3510:              return Promise.resolve();
+L3511:         }
+L3512:         const text = (typeof textToPlay === 'string' ? textToPlay.trim() : String(textToPlay).trim()).toLowerCase();
+L3513:         // INJECTED: Check internal bank for oe/or
+L3514:         if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[text]) {
+---

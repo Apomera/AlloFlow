@@ -1,0 +1,13 @@
+﻿Loaded 4660283 chars
+
+=== FIX 1: Wire fb_try_again_listen into 1st retry ===
+  Wired fb_try_again_listen into 1st retry
+
+=== FIX 2: Wire fb_almost into 2nd retry ===
+  Wired fb_almost into 2nd retry
+
+=== FIX 3: Map inst_* instruction audio to activities ===
+  Added INST_KEY_MAP for all activity instruction audio keys
+
+=== Writing 3 changes ===
+Saved AlloFlowANTI.txt (4662692 chars, was 4660283)

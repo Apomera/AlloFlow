@@ -1,0 +1,138 @@
+=== QUIZ MODE DEEP DIVE ===
+
+--- QUIZ STATE VARIABLES ---
+[quiz] Line 26220: const [isEditingQuiz, setIsEditingQuiz] = useState(false);
+[quiz] Line 26542: const [isFlashcardQuizMode, setIsFlashcardQuizMode] = useState(false);
+[quiz] Line 26545: const [quizSelectedOption, setQuizSelectedOption] = useState(null);
+[quiz] Line 30861: const [showQuizAnswers, setShowQuizAnswers] = useState(false);
+[quiz] Line 30862: const [quizMcqCount, setQuizMcqCount] = useState(10);
+[quiz] Line 30863: const [quizReflectionCount, setQuizReflectionCount] = useState(3);
+[quiz] Line 30864: const [quizCustomInstructions, setQuizCustomInstructions] = useState('');
+[quiz] Line 30865: const [passAnalysisToQuiz, setPassAnalysisToQuiz] = useState(false);
+[escapeRoom] Line 25742: const [escapeRoomCompletions, setEscapeRoomCompletions] = useState(() => {
+[escapeRoom] Line 26306: const [escapeRoomState, setEscapeRoomState] = useState({
+[presentation] Line 26302: const [isPresentationMode, setIsPresentationMode] = useState(false);
+[presentation] Line 26303: const [presentationState, setPresentationState] = useState({});
+
+--- GAME MODES ---
+[showdown] Line 21792: <option value="team-showdown">🏆 {t('quiz.modes.team_showdown')}</option>
+[showdown] Line 27806: 'quiz_student_mode_header': "Shows the current quiz mode (e.g., Boss Battle, Class Showdown).",
+[team] Line 14639: const { mode, currentQuestionIndex, phase, teams, bossStats, responses } = sessionData.quizState;
+[team] Line 14675: [`quizState.teams.${user.uid}`]: assignedColor
+[team] Line 14736: {t('quiz.team_label', { color: teamColor })}
+... and 12 more matches for 'team'
+[live] Line 912: 'u': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAC5AEU2bdLlNu4tTq4QVSalmU6y
+[live] Line 8256: launch_live_btn: "Launch Live Quiz",
+[live] Line 8257: launch_live_tooltip: "Start Live Quiz for Students",
+... and 15 more matches for 'live'
+[presentation] Line 8246: presentation_board: "Interactive Quiz Board",
+[presentation] Line 9649: quiz_presentation: "Use 'Presentation Mode' to project this quiz for the whole class.",
+[presentation] Line 9673: quiz_generated: "Quiz ready! Use Presentation Mode for the class, or try the Auto-Grader for open responses.",
+... and 7 more matches for 'presentation'
+[review] Line 10841: quiz_desc: "Generates formative assessments with Multiple Choice and Reflection questions. Includes an interactive '
+[review] Line 38931: 6. Guided Practice: An interactive group activity script. **Explicitly reference** the "Sequence Builder", "Conc
+[review] Line 59984: disabled={isReviewGame || (isTeacherMode && sessionData?.quizState?.isActive)}
+... and 3 more matches for 'review'
+[practice] Line 38931: 6. Guided Practice: An interactive group activity script. **Explicitly reference** the "Sequence Builder", "Conc
+[practice] Line 39055: 5. "guidedPractice": "Practice Exercises" - Specific things to try or solve using the generated tools (e.g. "Use
+[practice] Line 57485: {isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode')}
+
+--- GAMIFICATION/SCORING ---
+[score] Line 6103: // Quiz scores
+[points] Line 14946: ? (teamColor ? t('quiz.status.result_score', { points: 100 }) : t('quiz.status.r
+[xp] Line 912: 'u': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAC5AEU2bdLlNu4tTq4QVSalmU6y
+[leaderboard] Line 22118: <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{t('quiz.t
+
+--- ESCAPE ROOM FEATURES ---
+[escape] Line 6097: escapeCompletion: 0,
+[escape] Line 6117: // Escape Room
+... and 591 more for 'escape'
+[room] Line 944: 'j': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAC5AEU2bdLlNu4tTq4QVSalmU6y
+[room] Line 949: PHONEME_AUDIO_BANK['aw'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAD1YEU2bd
+... and 488 more for 'room'
+[puzzle] Line 6121: stats.escapeCompletion = Math.round((er.puzzlesSolved / er.totalPuzzles) * 100);
+[puzzle] Line 7876: escaped_desc: "You solved all the puzzles and escaped the room!",
+... and 92 more for 'puzzle'
+[hint] Line 20821: <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.hints_
+[hint] Line 20823: <span className="text-white text-xs font-bold">{escapeState.hintsRemaining || 0}</span>
+... and 39 more for 'hint'
+[clue] Line 27235: • **Escape Room**: Immersive puzzle-based assessment with themed rooms, hints, and clue discovery.
+[clue] Line 27739: 'escape_room_hint_button': "Stuck? Spend a hint token to get a clue. Use wisely!",
+... and 5 more for 'clue'
+[locked] Line 45126: const shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
+[locked] Line 60933: {escapeRoomState.finalDoorUnlocked && escapeRoomState.finalDoorPuzzle && !escapeRoomStat
+[unlock] Line 27742: 'escape_room_cipher_submit': "Submit your decrypted answer to unlock this lock.",
+[unlock] Line 45126: const shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
+... and 2 more for 'unlock'
+[key] Line 944: 'j': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAC5AEU2bdLlNu4tTq4QVSalmU6y
+[key] Line 20593: const allTeams = Object.keys(escapeState.teamProgress || {});
+... and 29 more for 'key'
+[riddle] Line 60669: <p className="text-purple-300 text-sm font-bold
+[theme] Line 20793: <span className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</span>
+[theme] Line 21358: <h3 className="font-bold text-purple-900">{escapeState.room?.theme || t('escape_room.title')}</h3>
+... and 7 more for 'theme'
+
+--- QUESTION TYPES ---
+[multiple choice] Line 7893: puzzle_mcq: "Multiple Choice",
+[fill in] Line 7898: puzzle_fillin: "Fill in the Blank",
+[matching] Line 1120: "definition": "Simple definition matching grade level",
+[short answer] Line 8412: sidebar_quiz_desc: "Generate quick formative assessments to check for understanding. Create multiple choice, sho
+[reflection] Line 6837: placeholder_reflection_trans: "Reflection Translation...",
+
+--- LIVE/MULTIPLAYER FEATURES ---
+[live] Line 912: 'u': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAC5AEU2bdLlNu4tTq4QVSalmU6y
+[multiplayer] Line 8007: // Multiplayer / Live Session
+[session] Line 697: 'word_sounds.session_progress': 'Session Progress',
+[join] Line 9294: join_tooltip: "Join a Class Session",
+[code] Line 9284: code: "Session Code",
+[host] Line 9301: joining: "Joining Session {code} on host {host}...",
+[player] Line 8007: // Multiplayer / Live Session
+
+--- AUTO-GRADER FEATURES ---
+[autograd] Line 9650: quiz_autograder: "I can grade open-ended reflection answers with the Auto-Grader!",
+[auto-grad] Line 9650: quiz_autograder: "I can grade open-ended reflection answers with the Auto-Grader!",
+[grade] Line 7077: reflection_grade_error: "Error grading reflection. Saved without grade.",
+[feedback] Line 25675: const [reflectionFeedback, setReflectionFeedback] = useState(null); // {score, feedback, xpEarned, subjectName}
+
+--- QUIZ UI LABELS/TRANSLATIONS ---
+Line 912: 'u': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAC5AEU2bdLlNu4tTq4QVSalmU6yBbk27i1OrhBZUrmtTrIG
+Line 7694: quiz_complete: "Quiz Complete! Final Score: {score}",
+Line 7698: tooltip_toggle_quiz: "Toggle Self-Assessment Quiz Mode",
+Line 8100: avg_quiz_score: "Avg Quiz Score",
+Line 8256: launch_live_btn: "Launch Live Quiz",
+Line 8257: launch_live_tooltip: "Start Live Quiz for Students",
+Line 8258: live_activated: "Live Quiz Activated!",
+Line 9175: quiz_reflection: "Reflection",
+Line 9393: avg_score: "Avg. Quiz Score",
+Line 9457: header_quiz_avg: "Quiz Avg Score",
+Line 9649: quiz_presentation: "Use 'Presentation Mode' to project this quiz for the whole class.",
+Line 9650: quiz_autograder: "I can grade open-ended reflection answers with the Auto-Grader!",
+Line 9673: quiz_generated: "Quiz ready! Use Presentation Mode for the class, or try the Auto-Grader for open responses.",
+Line 9710: quiz_view: "Here's your generated quiz. Use Presentation Mode to project it, or enable Auto-Grading.",
+Line 9970: dashboard_stat_quiz: "Average quiz score across all loaded students.",
+Line 10420: presented: "Here is your Lesson Blueprint. You can modify it by typing below (e.g., 'Add a quiz', 'Change grade to 5th') or click Gene
+Line 10656: desc: "Create quizzes. Launch 'Live Quiz' mode for real-time class results.",
+Line 10705: desc: "Host synchronized classes, run Democracy Mode voting, and manage live quizzes.",
+Line 10841: quiz_desc: "Generates formative assessments with Multiple Choice and Reflection questions. Includes an interactive 'Review Game' mode.",
+Line 14736: {t('quiz.team_label', { color: teamColor })}
+Line 14946: ? (teamColor ? t('quiz.status.result_score', { points: 100 }) : t('quiz.status.result_score_generic'
+Line 21727: const updates = { "quizState.mode": newMode };
+Line 22546: const quizAvg = quizCount > 0 ? Math.round(totalQuizScore / quizCount) + "%" : "N/A";
+Line 27693: 'quiz_reflection_count': "Number of open-ended reflection questions to include.",
+Line 27805: 'quiz_student_overlay': "This is the student view for live quizzes. Answer questions to earn points and defeat the boss!",
+Line 27806: 'quiz_student_mode_header': "Shows the current quiz mode (e.g., Boss Battle, Class Showdown).",
+Line 27863: 'header_session_start': "Creates a session code students can join. You'll see live student activity, can push content to all devices, an
+Line 37760: quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, bossStats: { maxHP:
+Line 46461: metaInfo = `${gradeLevel} - Quiz (${effectiveQuizCount}MC/${quizReflectionCount}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''
+Line 48823: addToast(t('flashcards.quiz_complete', { score: finalScore }), "success");
+Line 55942: {!standardsInput ? "⚠️ Requires Target Standard above" : (isIndependentMode ? "Verify your mastery against stand
+Line 57480: className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg b
+Line 57482: aria-label={isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"}
+Line 57485: {isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode')}
+Line 57539: className={`p-1.5 rounded border ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 te
+Line 59989: {isPresentationMode ? t('common.close') : t('quiz.presentation')}
+Line 60053: ? (isIndependentMode ? t('quiz.hide_answers_student') : t('quiz.hide_key'))
+Line 60054: : (isIndependentMode ? t('quiz.check_answers') : t('quiz.show_key'))
+Line 61210: <div key={optIdx} className={`p-2 rounded-lg border text-sm relative group/option ${(showQuizAns
+Line 61219: className={`w-full bg-transparent border border-transparent hover:border
+Line 61234: <p className={`px-1 py-0.5 ${(showQuizAnswers && isTeacherMode) && opt === q

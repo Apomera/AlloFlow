@@ -1,0 +1,33 @@
+thMode === 'Freeform Builder' || mathMode === 'Word Problems from Source' ? 'Problem Set Generator' : mathMode);
+      }
+      setActiveView('math');
+      setShowStemLab(false);
+    },
+    disabled: !mathInput.trim(),
+    className: "w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 disabled:opacity-40 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16
+  }), " ", stemLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Problems'), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 pt-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-slate-400 font-bold uppercase"
+  }, "Tools:"), [{
+    id: 'volume',
+    icon: '📦',
+    label: 'Volume Explorer'
+  }, {
+    id: 'numberline',
+    icon: '📏',
+    label: 'Number Line'
+  }, {
+    id: 'areamodel',
+    icon: '🟧',
+    label: 'Area Model'
+  }, {
+    id: 'fractions',
+    icon: '🍕',
+    label: 'Fractions'
+  }].map(tool => /*#__PURE__*/React.createElement("button", {
+    key: tool.id,
+    onClick: () => {
+      setSte

@@ -1,0 +1,24 @@
+
+
+  useEffect(() => {
+
+    if (!screenerSession || screenerSession.status !== 'interstitial') return;
+
+    const timer = setTimeout(() => {
+
+      const nextActivity = screenerSession.subtests[screenerSession.currentIndex];
+
+      setScreenerSession(prev => ({ ...prev, status: 'running' }));
+
+      launchBenchmarkProbe(screenerSession.grade, nextActivity, screenerSession.form);
+
+    }, 2000);
+
+    return () => clearTimeout(timer);
+
+  }, [screenerSession?.status, screenerSession?.currentIndex]);
+  React.useEffect(() => {
+    if (fluencyStatus !== 'complete' || !fluencyResult) return;
+    if (!screenerSession || screenerSession.status !== 'running') return;
+  
+

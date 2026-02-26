@@ -1,0 +1,95 @@
+
+--- case 'counting' (1 matches) ---
+  L9506: case 'counting': {
+
+--- counting_prompt (1 matches) ---
+  L702: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+
+--- PhonologyView (2 matches) ---
+  L3782: const PhonologyView = React.useCallback(({
+  L8433: <PhonologyView
+
+--- isolationState (24 matches) ---
+  L3382: const [isolationState, setIsolationState] = React.useState(null); // Stable state for Isolation activity
+  L3399: // - Playback state: isPlayingAudio, blendingProgress, isolationState
+  L6383: if (isolationState) setIsolationState(null); // Clear when leaving
+  L6391: if (isNewWord && isolationState && isolationState.correctSound && isolationState.isoOptions?.length > 0) {
+  L6392: debugLog("✅ Using pre-generated isolation options:", isolationState.isoOptions);
+  L6441: // If NOT a new word, do nothing - keep existing isolationState
+  L6442: }, [wordSoundsActivity, wordSoundsPhonemes, handleAudio, currentWordSoundsWord]); // Removed isolationState to prevent loop
+  L6469: if (wordSoundsActivity === 'isolation' && isolationState?.isoOptions?.length > 0) {
+  L6473: for (let i = 0; i < (isolationState?.isoOptions?.length || 0); i++) {
+  L6475: await handleAudio(isolationState.isoOptions[i]);
+  L6716: if (isolationState && isolationState.word === currentWordSoundsWord) return;
+  L6750: }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, isolationState]);
+  L6798: } else if (wordSoundsActivity === 'isolation' && isolationState) {
+  L6801: const posKey = ordinals[isolationState.currentPosition] || 'fallback';
+  L6808: const posStr = ordinalNames[isolationState.currentPosition] || "target";
+  L6982: if (isolationState?.isoOptions?.length > 0) {
+  L6984: for (let i = 0; i < (isolationState?.isoOptions?.length || 0); i++) {
+  L6987: await handleAudio(isolationState.isoOptions[i]);
+  L7010: }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.currentPosition, rhymeOptions, blend
+  L7789: const newOptions = [...(isolationState?.isoOptions || [])];
+
+--- generateIsolationOptions (0 matches) ---
+
+--- generateDistractors (0 matches) ---
+
+--- isoOptions (16 matches) ---
+  L6391: if (isNewWord && isolationState && isolationState.correctSound && isolationState.isoOptions?.length > 0) {
+  L6392: debugLog("✅ Using pre-generated isolation options:", isolationState.isoOptions);
+  L6425: const isoOptions = fisherYatesShuffle([...new Set([effectiveCorrect, ...isoDistractors.slice(0, 5)])]);
+  L6430: isoOptions
+  L6433: isoOptions.forEach(phoneme => {
+  L6469: if (wordSoundsActivity === 'isolation' && isolationState?.isoOptions?.length > 0) {
+  L6473: for (let i = 0; i < (isolationState?.isoOptions?.length || 0); i++) {
+  L6475: await handleAudio(isolationState.isoOptions[i]);
+  L6747: isoOptions: options
+  L6982: if (isolationState?.isoOptions?.length > 0) {
+  L6984: for (let i = 0; i < (isolationState?.isoOptions?.length || 0); i++) {
+  L6987: await handleAudio(isolationState.isoOptions[i]);
+  L7789: const newOptions = [...(isolationState?.isoOptions || [])];
+  L7791: setIsolationState(prev => ({ ...prev, isoOptions: newOptions }));
+  L8408: const { word: isoWord, currentPosition, correctSound, isoOptions } = isolationState || {};
+  L8439: options: isoOptions,
+
+--- ErrorBoundary (36 matches) ---
+  L21012: class ErrorBoundary extends React.Component {
+  L21022: console.error("ErrorBoundary caught an error:", error, errorInfo);
+  L51623: <ErrorBoundary fallbackMessage="Venn Game encountered an error.">
+  L51636: </ErrorBoundary>
+  L55305: <ErrorBoundary fallbackMessage="Live Quiz encountered an error. waiting for sync...">
+  L55313: </ErrorBoundary>
+  L55317: <ErrorBoundary fallbackMessage="Escape Room encountered an error. Waiting for sync...">
+  L55326: </ErrorBoundary>
+  L55329: <ErrorBoundary fallbackMessage="Interview Interface encountered an error. Please close and reopen.">
+  L56168: </ErrorBoundary>,
+  L59741: <ErrorBoundary fallbackMessage="The content viewer encountered an error. It might be due to complex data formatting. Try regenerat
+  L60771: <ErrorBoundary fallbackMessage="Memory Game encountered an error.">
+  L60778: </ErrorBoundary>
+  L60781: <ErrorBoundary fallbackMessage="Crossword Puzzle encountered an error.">
+  L60789: </ErrorBoundary>
+  L60792: <ErrorBoundary fallbackMessage="Matching Game encountered an error.">
+  L60800: </ErrorBoundary>
+  L60803: <ErrorBoundary fallbackMessage="Bingo Generator encountered an error.">
+  L60816: </ErrorBoundary>
+  L60819: <ErrorBoundary fallbackMessage="Bingo Game encountered an error.">
+
+--- glossaryView (0 matches) ---
+
+--- setCurrentView (0 matches) ---
+
+--- handleRestart (0 matches) ---
+
+--- onRestart (0 matches) ---
+
+--- blending_prompt (1 matches) ---
+  L717: 'word_sounds.blending_prompt': 'Blend these sounds together!',
+
+--- blending_instruction (2 matches) ---
+  L8653: <p className="text-sm text-slate-500">{ts('word_sounds.blending_instruction') || `Listen to the sounds, then ${useMicInput ? "say 
+  L11631: blending_instruction: "Blend these sounds together",
+
+--- Blend these sounds (2 matches) ---
+  L717: 'word_sounds.blending_prompt': 'Blend these sounds together!',
+  L11631: blending_instruction: "Blend these sounds together",

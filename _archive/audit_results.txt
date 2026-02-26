@@ -1,0 +1,32 @@
+File: 4,561,217 bytes, 72,074 lines
+
+[MISS] Nano: adventureConsistentCharacters var
+[MISS] Nano: isReviewingCharacters var
+[MISS] Nano: handleRefineCharacter func
+[MISS] Nano: Cast of Characters UI
+[MISS] Nano: characters in JSON export
+[MISS] Nano: characters in JSON import
+[MISS] Nano: character descriptors in img gen
+[OK]   WS: word-sounds in header ternary (line 60752)
+[OK]   WS: word-sounds-generator in header (line 68396)
+[OK]   WS: word-sounds in getDefaultTitle (line 43156)
+[OK]   WS: clean remount in handleRestoreView (line 43025)
+[OK]   Audio: currentActiveAudio ref (line 4620)
+[OK]   JSON: wordSoundsState export (line 42801)
+[OK]   JSON: adventureSnapshot export (line 42767)
+
+TOTAL: 7 present, 7 missing
+
+NEED TO RE-IMPLEMENT:
+  - Nano: adventureConsistentCharacters var
+  - Nano: isReviewingCharacters var
+  - Nano: handleRefineCharacter func
+  - Nano: Cast of Characters UI
+  - Nano: characters in JSON export
+  - Nano: characters in JSON import
+  - Nano: character descriptors in img gen
+
+BAD PATTERN CHECK:
+  CLEAN: else const storedAppearance not found
+  CLEAN: ({hasSavedAdventure not found
+  CLEAN: adventureState.history) : null} not found

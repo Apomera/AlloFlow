@@ -1,0 +1,5 @@
+L17147:   // Use dropdowns like StudentEntryModal
+L25192: const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
+L30340:   const [showStudentEntry, setShowStudentEntry] = useState(false);
+L69303:       <StudentEntryModal
+L69304:         isOpen={showStudentEntry && hasSelectedRole && !isTeacherMode}

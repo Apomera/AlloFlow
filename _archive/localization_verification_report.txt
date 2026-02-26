@@ -1,0 +1,51 @@
+======================================================================
+   COMPREHENSIVE LOCALIZATION VERIFICATION REPORT
+   Generated: February 20, 2026
+======================================================================
+
+Total t()/ts() calls: 4599
+Unique keys used: 3416
+
+--- BROKEN t() CALLS (22) ---
+  L10444: t('common.11_or_more_sounds')
+  L28398: t('languages_list.Spanish')
+  L28399: t('languages_list.French')
+  L28400: t('languages_list.German')
+  L28401: t('languages_list.Portuguese')
+  L28402: t('languages_list.Mandarin')
+  L28403: t('languages_list.Arabic')
+  L28404: t('languages_list.Vietnamese')
+  L28405: t('languages_list.Russian')
+  L28406: t('languages_list.Japanese')
+  L56570: t('standards.grades.1')
+  L56571: t('standards.grades.2')
+  L56572: t('standards.grades.3')
+  L56573: t('standards.grades.4')
+  L56574: t('standards.grades.5')
+  L56575: t('standards.grades.6')
+  L56576: t('standards.grades.7')
+  L56577: t('standards.grades.8')
+  L56578: t('standards.grades.9')
+  L56579: t('standards.grades.10')
+  L56580: t('standards.grades.11')
+  L56581: t('standards.grades.12')
+
+--- REMAINING HARDCODED STRINGS ---
+  [PASS] aria-label="X": 0 remaining
+  [PASS] title="X": 0 remaining
+  [PASS] placeholder="X": 0 remaining
+  [PASS] addToast("X"): 3 remaining
+  [PASS] <h1-h3>X</h>: 0 remaining
+
+--- LOCALIZED COUNTS ---
+  aria-label={t()}: 910
+  title={t()}: 292
+  placeholder={t()}: 138
+  addToast(t()): 381
+
+--- OVERALL ---
+  Total t() calls:  4531
+  Total ts() calls: 115
+  Unique keys:      3416
+  Broken calls:     22
+  Valid keys:       3394

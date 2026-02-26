@@ -1,0 +1,77 @@
+=== data:audio or audioUrl or base64 in setHistory items ===
+L21301: const optimizeImage = (base64Str, maxWidth = 800, quality = 0.9) => {
+L21303:         if (!base64Str || typeof base64Str !== 'string') {
+L21304:             resolve(base64Str);
+L21308:         img.src = base64Str;
+L21329:                 resolve(base64Str);
+L21334:              resolve(base64Str);
+L21466:           const base64data = reader.result.split(',')[1];
+L21468:             base64: base64data,
+L30106:     async storeImage(turnNumber, base64Image) {
+L30112:           tx.objectStore('images').put({ turn: turnNumber, image: base64Image, timestamp: Date.now() });
+L31033:   // [PHASE 4 MIGRATED] const [wordSoundsAudioLibrary, setWordSoundsAudioLibrary] = useState({}); // { text: base64String }
+L31183:   const archiveAdventureImage = async (base64Image) => {
+L31186:       if (!base64Image || !user) return null;
+L31191:               data: base64Image,
+L37730:               const audioData = await stopFluencyRecording();
+L37733:               if (audioData) {
+L37754:                       audioData.base64,
+L37755:                       audioData.mimeType,
+L37776:                               audioRecording: audioData.base64,
+L37777:                               mimeType: audioData.mimeType || 'audio/webm',
+L38474:   const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9) => {
+L38480:           { inlineData: { mimeType: "image/png", data: base64Image } }
+L38494:       const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
+L38501:   const callGeminiVision = async (prompt, base64Data, mimeType) => {
+L38507:           { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } }
+L38557:         const decodeBase64 = (base64) => {
+L38558:              const binaryString = window.atob(base64);
+L38591:                 return { bytes, base64: audioContent };
+L38646:                           return { bytes: decodeBase64(retryBase64), base64: retryBase64 };
+L38656:                   return { bytes, base64: audioContent };
+L38665:           const base64Audio = part?.inlineData?.data;
+L38666:           if (!base64Audio) {
+L38670:           console.log("[TTS] ✅ Gemini TTS succeeded! Audio data size:", base64Audio.length, "chars");
+L38672:           const bytes = decodeBase64(base64Audio);
+L38673:           return { bytes, base64: base64Audio };
+L38770:       const base64 = data.predictions?.[0]?.bytesBase64Encoded;
+L38771:       if (!base64) {
+L38772:         console.error("[Imagen] No base64 in response. Keys:", Object.keys(data), JSON.stringify(data).substring(0, 200));
+L38775:       console.log("[Imagen] ✅ Image generated successfully!", base64.length, "chars");
+L38780:       const rawUrl = `data:image/png;base64,${base64}`;
+L39233:                 const base64String = reader.result.split(',')[1];
+L39261:                 const text = await callGeminiVision(prompt, base64String, mimeType);
+L40234:           const audioUrl = await callTTS(word, selectedVoice);
+L40235:           if (audioUrl) {
+L40236:               const audio = new Audio(audioUrl);
+L40243:               audioUrl: audioUrl,
+L40290:       if (phonicsData?.audioUrl) {
+L40291:           URL.revokeObjectURL(phonicsData.audioUrl);
+L40449:           let audioUrl;
+L40462:               if (audioUrl) {
+L40463:                   releaseBlob(audioUrl);
+L40495:               audioUrl = audio.src;
+L40503:                       audioUrl = await Promise.race([audioBufferRef.current[bufferKey], timeoutPromise]);
+L40517:                       audioUrl = await Promise.race([promise, timeoutPromise]);
+L40524:               audio = new Audio(audioUrl);
+L40609:               releaseBlob(audioUrl);
+L40873:             const audioUrl = await callTTS(effectiveText, selectedVoice);
+L40874:             addBlobUrl(audioUrl);
+L40875:             const audio = new Audio(audioUrl);
+L40885:                 URL.revokeObjectURL(audioUrl);
+L40886:                 activeBlobUrlsRef.current.delete(audioUrl);
+L41066:         const audioUrl = URL.createObjectURL(blob);
+L41068:         link.href = audioUrl;
+L41073:         setTimeout(() => URL.revokeObjectURL(audioUrl), 1000);
+L41651:                         <audio controls src="data:${mimeType};base64,${audioRecording}" style="width: 100%;"></audio>
+L45322:                let audioUrl = null;
+L45329:                        audioUrl = await callTTS(optText, voiceId);
+L45338:                    audio: audioUrl // Base64 or Blob URL
+L53075:                   const audioUrl = await callTTS(sequence[idx], selectedVoice);
+L53076:                   addBlobUrl(audioUrl);
+L53078:                   const audio = new Audio(audioUrl);
+L61787:                                 audioCache={glossaryAudioCache}
+L62763:                                                 if (phonicsData.audioUrl) {
+L62764:                                                     const audio = new Audio(phonicsData.audioUrl);
+L69695:                     async (base64, mimeType) => {
+L69703:                         return await callGeminiVision(prompt, base64, mimeType);

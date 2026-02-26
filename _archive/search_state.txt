@@ -1,0 +1,15 @@
+--- Match for 'showStudentWelcome' at line 23386 ---
+23385:   const [hasSelectedRole, setHasSelectedRole] = useState(false);
+23386:   const [showStudentWelcome, setShowStudentWelcome] = useState(false); 
+23387:   const [showStudentEntry, setShowStudentEntry] = useState(false); 
+
+--- Match for 'showStudentWelcome' at line 62586 ---
+62585:       <StudentWelcomeModal 
+62586:         isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
+62587:         onClose={() => setShowStudentWelcome(false)}
+
+--- Match for 'setShowStudentWelcome' at line 62587 ---
+62586:         isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
+62587:         onClose={() => setShowStudentWelcome(false)}
+62588:         onUpload={() => projectFileInputRef.current?.click()}
+

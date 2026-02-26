@@ -1,0 +1,2 @@
+﻿L14523:     error_end_session: "Failed to end session.",
+L54671:                                         addToast(t('session.error_end_session') || "Failed to end session.", "error");

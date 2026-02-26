@@ -1,0 +1,49 @@
+=== .some() + toLowerCase patterns ===
+
+Line 5380:
+    5375:                     const distractors = generated.slice(0, 3);
+    5376:                     safeOptions = [correctWord, ...distractors];
+    5377:                 }
+    5378:                 
+    5379:                 // Case-insensitive check: Ensure correct answer is in options
+>>> 5380:                 if (!safeOptions.some(opt => opt && opt.toLowerCase() === correctWord.toLowerCase())) {
+    5381:                     console.log("⚠️ Added missing correct option to Sight & Spell:", correctWord);
+    5382:                     if (safeOptions.length > 0) {
+    5383:                         // FIX: Replace first item instead of random to prevent re-shuffling
+    5384:                         safeOptions[0] = correctWord;
+    5385:                     } else {
+    5386:                         safeOptions = [correctWord];
+    5387:                     }
+    5388:                 }
+    5389: 
+
+
+=== Review Panel logic ===
+
+Line 4427:
+    4417:                 fetchWordData(targetWord);
+    4418:             }
+    4419:         }
+    4420:     }, [getAdaptiveRandomWord, fetchWordData, setWordSoundsActivity, setCurrentWordSoundsWord, setWordSoundsFeedback, wordPool, preloadedWords]);
+    4421:     
+    4422:     // RETRY START UP ON DATA LOAD (Fix for race condition)
+    4423:     // Moved AFTER startActivity definition to avoid "Cannot access before initialization" error.
+    4424:     React.useEffect(() => {
+    4425:         // FIX: Don't auto-start if Review Panel is showing
+    4426:         if (showReviewPanel) {
+>>> 4427:             console.log("📋 Review Panel is active - skipping auto-start");
+    4428:             return;
+    4429:         }
+    4430:         
+    4431:         // Auto-start when: pool ready + no active word + not already loading
+    4432:         if (wordPool && wordPool.length > 0 && !currentWordSoundsWord && !isLoadingPhonemes) {
+    4433:             console.log("WordSounds: Data loaded! Starting activity.");
+    4434:             
+    4435:             // Show Review Panel first if preloaded data exists
+    4436:             if (preloadedWords.length > 0) {
+    4437:                 console.log("📋 Showing Pre-Activity Review Panel");
+    4438:                 setShowReviewPanel(true);
+    4439:                 return; // Don't auto-start, wait for review
+    4440:             }
+    4441:             
+

@@ -1,0 +1,37 @@
+abled:cursor-not-allowed transition-all"
+                >
+                    <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
+                </button>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    {t('common.resource_counter', { current: currentResourceIndex + 1, total: filteredHistory.length })}
+                </div>
+                <button
+                    onClick={() => handleNavigateResource('next')}
+                    disabled={!hasNextResource || isSyncMode}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-indigo-600 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                    {t('common.next')} <ArrowDown className="-rotate-90" size={16}/>
+                </button>
+            </div>
+          )}
+        </div>
+      {activeView === 'word-sounds-generator' && (
+          <WordSoundsGenerator
+              glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
+              t={t}
+              gradeLevel={gradeLevel || 'K-2'}
+              onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+                   const resourceId = `ws-${Date.now()}`;
+                   const wordSoundsResource = {
+                       id: resourceId,
+                       type: 'word-sounds',
+                       title: `Word Sounds (${words.length} words)`,
+                       data: words,
+                       timestamp: Date.now(),
+                       lessonPlanSequence: sequence || [],
+                       lessonPlanConfig: lessonPlanConfig || null,
+                       configSummary: configSummary || 'Quick Practice Mode',
+                   };
+                   setGeneratedContent(wordSoundsResource);
+                   setHistory(prev => [wordSoundsResource, ...prev]);
+       

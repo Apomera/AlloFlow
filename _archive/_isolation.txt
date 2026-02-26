@@ -1,0 +1,59 @@
+ {
+                const { word: isoWord, currentPosition, correctSound, isoOptions } = isolationState || {};
+                if (!isolationState || (isoWord && isoWord.toLowerCase() !== currentWordSoundsWord?.toLowerCase())) {
+                     if (currentWordSoundsWord && isoWord && isoWord.toLowerCase() !== currentWordSoundsWord?.toLowerCase()) {
+                         debugLog("⚠️ Isolation state mismatch:", isoWord, "vs", currentWordSoundsWord, "- will auto-sync");
+                     }
+                     return <div className="p-8 text-center animate-pulse text-violet-400">Loading sounds...</div>;
+                }
+                if (useMicInput) {
+                    return (
+                        <div className="flex flex-col items-center">
+                            {renderVoiceInputOverlay("Say the sound (e.g. 'Buh')")}
+                            {/* Mic Toggle Back */}
+                             <div className="mt-6">
+                                 <button
+                                     aria-label="Voice input"
+                                     onClick={handleMicInput}
+                                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-rose-100 text-rose-700 font-bold hover:bg-rose-200 transition-colors"
+                                 >
+                                     <Mic size={20} /> Switch to Clicking
+                                 </button>
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <div className="flex flex-col gap-4">
+                        <PhonologyView
+                            key={currentWordSoundsWord}
+                            activity={wordSoundsActivity}
+                            data={{
+                                word: currentWordSoundsWord,
+                                position: currentPosition,
+                                options: isoOptions,
+                                correctSound: correctSound,
+                                image: isolationState?.image || currentWordImage || wordSoundsPhonemes?.image
+                            }}
+                            showLetterHints={showLetterHints}
+                            onPlayAudio={handleAudio}
+                            onCheckAnswer={(ans) => checkAnswer(ans, correctSound)}
+                            isEditing={isEditing}
+                            onUpdateOption={handleOptionUpdate}
+                            highlightedIndex={highlightedIsoIndex}
+                        />
+                        {/* Mic Toggle */}
+                        <div className="mx-auto">
+                             <button
+                                 aria-label="Voice input"
+                                 onClick={handleMicInput}
+                                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                             >
+                                 <Mic size={20} /> Use Microphone
+                             </button>
+                        </div>
+                    </div>
+                );
+            }
+            case 'segmentation':
+            

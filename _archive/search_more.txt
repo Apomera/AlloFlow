@@ -1,0 +1,3 @@
+LINE 1760: <Volume2 size={16}/> {ts('word_sounds.listen_word') || 'Listen to Word'}
+LINE 1760: <Volume2 size={16}/> {ts('word_sounds.listen_word') || 'Listen to Word'}
+LINE 2500: const prefetchNextWords = React.useCallback(async () => {

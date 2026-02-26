@@ -1,0 +1,19 @@
+﻿L3257: wordSoundsTtsSpeed = 1.0,
+L3384: const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0); // Local speed state
+L3754: await speakWord(text, wordSoundsLanguage || 'en-US', ttsSpeed);
+L3757: }, [callTTS, selectedVoice, speakWord, wordSoundsLanguage, ttsSpeed, isPlayingAudio, wordSoundsAudioLibrary]);
+L3780: }, [wordSoundsPhonemes, handleAudio]);
+L5208: }, [wordSoundsLanguage, callGemini, handleAudio]);
+L5736: }, [isPreloading, preloadedWords.length, wordPool, callGemini, handleAudio, wordSoundsLanguage]);
+L6469: }, [wordSoundsActivity, wordSoundsPhonemes, handleAudio, currentWordSoundsWord]); // Removed isolationState to prevent loop
+L6527: }, [currentWordSoundsWord, isLoadingPhonemes, handleAudio, wordSoundsActivity, rhymeOptions, playBlending]);
+L6797: if (wordSoundsActivity === 'orthography') return; // Spelling Bee speaks word automatically
+L8319: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+L8331: onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+L8363: handleAudio(INSTRUCTION_AUDIO[wordSoundsActivity]);
+L8365: handleAudio(ts(`word_sounds.${wordSoundsActivity}_prompt`));
+L29566: wordSoundsTtsSpeed: 1.0,
+L30553: const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, wordSoundsSessionProgress, wordSoundsTtsSpee
+L30561: const setWordSoundsTtsSpeed = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsTtsSpeed', value: v });
+L30645: // [PHASE 4 MIGRATED] const [wordSoundsTtsSpeed, setWordSoundsTtsSpeed] = useState(1.0);
+L60960: wordSoundsTtsSpeed={wordSoundsTtsSpeed}

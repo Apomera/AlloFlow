@@ -1,0 +1,244 @@
+3926:             case 'blending': {
+3927:                 // SHARED UI FOR SEGMENTATION AND BLENDING w/ Drag & Drop and A11y
+3928:                 
+3929:                 // Handlers moved to top level to avoid conditional hook execution error
+3930: 
+3931: 
+3932:                 return (
+3933:                     <div className="space-y-6">
+3934:                         {renderPrompt()}
+3935:                         
+3936:                         {/* Elkonin Boxes (Drop Targets) - Segmentation only */}
+3937:                         {wordSoundsActivity === 'segmentation' && (<>
+3938:                         <div className="flex justify-center gap-3 flex-wrap min-h-[100px] p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 transition-colors"
+3939:                              onDragOver={handleDragOver}
+3940:                         >
+3941:                             {elkoninBoxes.map((chip, i) => {
+3942:                                 const isError = segmentationErrors.includes(i);
+3943:                                 return (
+3944:                                     <div
+3945:                                         key={i}
+3946:                                         onDragOver={handleDragOver}
+3947:                                         onDrop={(e) => handleSegDrop(e, 'box', i)}
+3948:                                         className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold transition-all relative ${
+3949:                                             isError 
+3950:                                                 ? 'bg-red-50 border-2 border-red-400'
+3951:                                                 : chip 
+3952:                                                     ? 'scale-100 shadow-md ring-2 ring-violet-200' 
+3953:                                                     : 'bg-white border-2 border-slate-200 text-slate-300'
+3954:                                         }`}
+3955:                                         style={{ 
+3956:                                             backgroundColor: chip ? chip.color : undefined,
+3957:                                             border: chip ? `2px solid ${chip.color.replace('92%', '60%')}` : undefined 
+3958:                                         }}
+3959:                                     >
+3960:                                         {chip ? (
+3961:                                             <div 
+3962:                                                 draggable
+3963:                                                 onDragStart={(e) => handleDragStart(e, chip, 'box', i)}
+3964:                                                 tabIndex={0}
+3965:                                                 onKeyDown={(e) => handleKeyDown(e, chip, () => handleMoveKey(chip, 'box', i))}
+3966:                                                 onClick={() => handleAudio(chip.phoneme)} 
+3967:                                                 className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
+3968:                                                 aria-label={`Phoneme ${chip.phoneme}. Press Space to hear, Enter to remove.`}
+3969:                                             >
+3970:                                                 {showLetterHints ? chip.phoneme : <Volume2 size={24} className="opacity-50" />}
+3971:                                             </div>
+3972:                                         ) : (
+3973:                                             <span className="text-sm opacity-50">Drop</span>
+3974:                                         )}
+3975:                                     </div>
+3976:                                 );
+3977:                             })}
+3978:                         </div>
+3979:                         {/* Test Sequence Button */}
+3980:                          <div className="flex justify-center mt-2 mb-4">
+3981:                             <button
+3982:                                 onClick={playSegmentationSequence}
+3983:                                 disabled={isPlayingAudio}
+3984:                                 className="flex items-center gap-2 px-5 py-2 rounded-full bg-violet-100 text-violet-700 font-bold text-sm hover:bg-violet-200 transition-colors shadow-sm"
+3985:                             >
+3986:                                 {isPlayingAudio ? <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" /> : <Play size={16} />} 
+3987:                                 Test Sequence
+3988:                             </button>
+3989:                         </div>
+3990:                         </>)}
+3991:                         
+3992:                         {/* Sound Chips (Draggable Pool) - Segmentation only */}
+3993:                         {wordSoundsActivity === 'segmentation' && (<>
+3994:                         <div 
+3995:                             className="flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors"
+3996:                             onDragOver={handleDragOver}
+3997:                             onDrop={(e) => handleSegDrop(e, 'pool')}
+3998:                         >
+3999:                             {soundChips.filter(c => !c.used).map((chip, idx) => (
+4000:                                 isEditing ? (
+4001:                                     <div key={chip.id} className="relative">
+4002:                                          <input
+4003:                                              className="w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center text-center outline-none focus:ring-2 focus:ring-violet-400"
+4004:                                              style={{ 
+4005:                                                  backgroundColor: chip.color,
+4006:                                                  borderColor: chip.color.replace('92%', '70%'),
+4007:                                                  color: '#475569'
+4008:                                              }}
+4009:                                              value={chip.phoneme}
+4010:                                              onChange={(e) => handleOptionUpdate(idx, e.target.value)}
+4011:                                              onKeyDown={(e) => e.stopPropagation()}
+4012:                                          />
+4013:                                     </div>
+4014:                                 ) : (
+4015:                                 <button
+4016:                                     key={chip.id}
+4017:                                     draggable
+4018:                                     onDragStart={(e) => handleDragStart(e, chip, 'pool')}
+4019:                                     onClick={() => handleAudio(chip.phoneme)} 
+4020:                                     onKeyDown={(e) => handleKeyDown(e, chip, () => handleMoveKey(chip, 'pool'))}
+4021:                                     tabIndex={0}
+4022:                                     aria-label={showLetterHints ? `Phoneme ${chip.phoneme}` : "Mystery Sound"}
+4023:                                     title="Drag to box or Click to listen"
+4024:                                     className="w-16 h-16 rounded-full border-b-4 font-bold text-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all cursor-grab active:cursor-grabbing"
+4025:                                     style={{ 
+4026:                                         backgroundColor: chip.color,
+4027:                                         borderColor: chip.color.replace('92%', '70%'),
+4028:                                         color: '#475569'
+4029:                                     }}
+4030:                                 >
+4031:                                     {showLetterHints ? chip.phoneme : <Volume2 size={20} />}
+4032:                                 </button>
+4033:                                 )
+4034:                             ))}
+4035:                         </div>
+4036:                         </>)}
+4037:                         
+4038:                         {/* Actions - Different for Blending vs Segmentation */}
+4039:                         {wordSoundsActivity === 'segmentation' && (<>
+4040:                         <div className="flex justify-center gap-3 mt-6">
+4041:                              <button 
+4042:                                  onClick={() => {
+4043:                                      if (elkoninBoxes.some(b => b === null)) return;
+4044:                                      
+4045:                                      const expected = wordSoundsPhonemes?.phonemes || [];
+4046:                                      const errors = [];
+4047:                                      let isPerfect = true;
+4048:                                      
+4049:                                      elkoninBoxes.forEach((box, idx) => {
+4050:                                          if (!box || !expected[idx] || box.phoneme.toLowerCase() !== expected[idx].toLowerCase()) {
+4051:                                              errors.push(idx);
+4052:                                              isPerfect = false;
+4053:                                          }
+4054:                                      });
+4055: 
+4056:                                      if (!isPerfect) {
+4057:                                          setSegmentationErrors(errors);
+4058:                                          checkAnswer('wrong', 'right');
+4059:                                      } else {
+4060:                                          const userPhonemes = elkoninBoxes.map(b => b.phoneme).join('').toLowerCase();
+4061:                                          const expectedPhonemes = expected.join('').toLowerCase();
+4062:                                          checkAnswer(userPhonemes, expectedPhonemes);
+4063:                                      }
+4064:                                  }}
+4065:                                  disabled={elkoninBoxes.some(b => b === null)}
+4066:                                  className={`px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${
+4067:                                      elkoninBoxes.some(b => b === null)
+4068:                                          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+4069:                                          : 'bg-violet-600 text-white hover:bg-violet-700 hover:scale-105'
+4070:                                  }`}
+4071:                              >
+4072:                                  {t('common.check')}
+4073:                              </button>
+4074:                         </div>
+4075:                         </>)}
+4076:                         
+4077:                         {/* Blending: Listen then Choose Word UI */}
+4078:                         {wordSoundsActivity === 'blending' && (
+4079:                             <div className="space-y-4 mt-6">
+4080:                                 {/* EDIT MODE: Phoneme Editing for Blending */}
+4081:                                 {isEditing && wordSoundsPhonemes?.phonemes && (
+4082:                                     <div className="p-4 border-2 border-dashed border-violet-300 rounded-xl bg-violet-50 mb-6 relative animate-in zoom-in-95">
+4083:                                         <div className="absolute -top-3 left-4 bg-violet-100 text-violet-700 px-2 text-xs font-bold uppercase tracking-wider rounded border border-violet-200">
+4084:                                             Edit Sounds
+4085:                                         </div>
+4086:                                         <div className="flex flex-wrap gap-2 justify-center mt-2">
+4087:                                             {wordSoundsPhonemes.phonemes.map((p, idx) => (
+4088:                                                 <input
+4089:                                                     key={`blend-ph-${idx}`}
+4090:                                                     value={p}
+4091:                                                     onChange={(e) => handleOptionUpdate(idx, e.target.value)} // Updates phonemes directly via existing handler
+4092:                                                     className="w-14 h-14 rounded-lg border-2 border-violet-200 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-violet-500 text-slate-700 shadow-sm"
+4093:                                                     title={`Sound ${idx + 1}`}
+4094:                                                 />
+4095:                                             ))}
+4096:                                         </div>
+4097:                                     </div>
+4098:                                 )}
+4099: 
+4100:                                 {/* Play Sounds Button REMOVED (User Request: "Remove speaker button that reveals whole word") */}
+4101:                                 {/* The user can still click the microphone or select the word to check answer. */}
+4102:                                 <div className="text-center">
+4103:                                     <p className="text-sm text-slate-500 mt-2 mb-4">Listen to the sounds, then {useMicInput ? "say the word!" : "pick the word!"}</p>
+4104:                                 </div>
+4105:                                 
+4106:                                 {useMicInput ? (
+4107:                                     <div className="flex flex-col items-center gap-4 animate-in fade-in">
+4108:                                         <button
+4109:                                             onClick={handleMicInput}
+4110:                                             className={`w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all ${
+4111:                                                 isListening 
+4112:                                                     ? 'bg-rose-500 text-white scale-110 ring-4 ring-rose-200 animate-pulse' 
+4113:                                                     : 'bg-white text-slate-400 border-4 border-slate-100 hover:border-violet-200 hover:text-violet-500'
+4114:                                             }`}
+4115:                                         >
+4116:                                             <Mic size={40} />
+4117:                                         </button>
+4118:                                         <p className="font-bold text-slate-600 min-h-[1.5em]">
+4119:                                             {isListening ? "Listening..." : (userAnswer || "Tap to Speak")}
+4120:                                         </p>
+4121:                                     </div>
+4122:                                 ) : (
+4123:                                     /* Word Choice Buttons */
+4124:                                     blendingOptions.length > 0 && (
+4125:                                         <div className="flex flex-col gap-4">
+4126:                                             <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+4127:                                                 {blendingOptions.map((word, idx) => (
+4128:                                                     isEditing ? (
+4129:                                                         <input
+4130:                                                             key={`blend-edit-${idx}`}
+4131:                                                             value={word}
+4132:                                                             onChange={(e) => {
+4133:                                                                  const newOpts = [...blendingOptions];
+4134:                                                                  newOpts[idx] = e.target.value;
+4135:                                                                  setBlendingOptions(newOpts);
+4136:                                                             }}
+4137:                                                             className="px-6 py-4 bg-white border-2 border-amber-200 rounded-xl font-bold text-lg shadow-md focus:ring-2 focus:ring-amber-400 outline-none"
+4138:                                                             onKeyDown={(e) => e.stopPropagation()}
+4139:                                                         />
+4140:                                                     ) : (
+4141:                                                     <button
+4142:                                                         key={`blend-option-${idx}`}
+4143:                                                         onClick={() => {
+4144:                                                             const isCorrect = word?.toLowerCase() === currentWordSoundsWord?.toLowerCase();
+4145:                                                             checkAnswer(isCorrect ? 'correct' : 'incorrect', 'correct');
+4146:                                                         }}
+4147:                                                         className="px-6 py-4 bg-white border-2 border-slate-200 rounded-xl font-bold text-lg shadow-md hover:border-violet-400 hover:scale-105 hover:shadow-lg transition-all capitalize"
+4148:                                                     >
+4149:                                                         {word}
+4150:                                                     </button>
+4151:                                                     )
+4152:                                                 ))}
+4153:                                             </div>
+4154:                                             <button 
+4155:                                                 onClick={handleMicInput} 
+4156:                                                 className="mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors"
+4157:                                             >
+4158:                                                 <Mic size={20} /> Use Microphone
+4159:                                             </button>
+4160:                                         </div>
+4161:                                     )
+4162:                                 )}
+4163:                             </div>
+4164:                         )}
+4165:                     </div>
+4166:                 );
+4167:             }
+4168:                 
+4169:             case 'orthography': {

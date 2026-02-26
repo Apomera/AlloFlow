@@ -1,0 +1,61 @@
+﻿=== Step 1: Loading audio bank ===
+  Existing instruction keys: 29
+
+=== Step 2: Converting audio files ===
+  ADDED: fb_almost (39902 bytes)
+  ADDED: fb_try_again_listen (43766 bytes)
+  ADDED: inst_orthography (58256 bytes)
+  ADDED: inst_spelling_bee (41834 bytes)
+  ADDED: inst_word_scramble (48596 bytes)
+  ADDED: inst_missing_letter (35072 bytes)
+  ADDED: inst_counting (38936 bytes)
+  ADDED: inst_blending (34106 bytes)
+  ADDED: inst_segmentation (41834 bytes)
+  ADDED: inst_rhyming (37004 bytes)
+  ADDED: inst_letter_tracing (27344 bytes)
+  ADDED: inst_for (12854 bytes)
+  ADDED: inst_which_word (32174 bytes)
+  ADDED: inst_find_start_sound (56324 bytes)
+  ADDED: inst_find_end_sound (53426 bytes)
+  ADDED: inst_tap_letters (40868 bytes)
+  ADDED: inst_word_families (49952 bytes)
+  ADDED: inst_sound_scramble (51494 bytes)
+  ADDED: letter_a (15752 bytes)
+  ADDED: letter_b (13820 bytes)
+  ADDED: letter_c (17684 bytes)
+  ADDED: letter_d (14786 bytes)
+  ADDED: letter_e (17684 bytes)
+  ADDED: letter_f (18650 bytes)
+  ADDED: letter_g (17684 bytes)
+  ADDED: letter_h (16718 bytes)
+  ADDED: letter_i (13820 bytes)
+  ADDED: letter_j (15752 bytes)
+  ADDED: letter_k (16718 bytes)
+  ADDED: letter_l (17684 bytes)
+  ADDED: letter_m (15752 bytes)
+  ADDED: letter_n (15752 bytes)
+  ADDED: letter_o (13820 bytes)
+  ADDED: letter_p (15752 bytes)
+  ADDED: letter_q (15752 bytes)
+  ADDED: letter_r (17684 bytes)
+  ADDED: letter_s (16717 bytes)
+  ADDED: letter_t (22514 bytes)
+  ADDED: letter_u (17684 bytes)
+  ADDED: letter_v (22514 bytes)
+  ADDED: letter_w (21548 bytes)
+  ADDED: letter_x (19616 bytes)
+  ADDED: letter_y (19616 bytes)
+  ADDED: letter_z (16718 bytes)
+
+=== Step 3: Saving audio bank (44 new keys) ===
+  Total instruction keys: 73
+
+=== Step 4: Adding loader entries to code ===
+  Found last loader at L1320
+  Added 44 new loader entries after L1320
+  Saved AlloFlowANTI.txt
+
+=== Summary ===
+  New keys added: 44
+  Skipped (not found): 0
+  Total instruction audio: 73

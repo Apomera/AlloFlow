@@ -1,0 +1,69 @@
+=== ITEM 3: Timer Leak Scan ===
+
+Found 6 medium/high-risk timers:
+
+  L6658 [HIGH] useEffect timer sets state without cleanup
+    const timer = setTimeout(async () => {
+    cleanup=False useEffect=True setsState=True mountGuard=True
+
+  L27113 [HIGH] useEffect timer sets state without cleanup
+    setTimeout(() => setTeamEscapeToast(null), 4000);
+    cleanup=False useEffect=True setsState=True mountGuard=False
+
+  L27123 [HIGH] useEffect timer sets state without cleanup
+    setTimeout(() => setShowConfetti(false), 5000);
+    cleanup=False useEffect=True setsState=True mountGuard=False
+
+  L34522 [HIGH] useEffect timer sets state without cleanup
+    setTimeout(() => {
+    cleanup=False useEffect=True setsState=True mountGuard=False
+
+  L38006 [HIGH] useEffect timer sets state without cleanup
+    setTimeout(() => {
+    cleanup=False useEffect=True setsState=True mountGuard=False
+
+  L46634 [HIGH] useEffect timer sets state without cleanup
+    setTimeout(() => {
+    cleanup=False useEffect=True setsState=True mountGuard=False
+
+
+=== ITEM 4: Missing Key Props Scan ===
+
+Found 36 JSX .map() calls potentially missing key=:
+
+  L4442: setChips(prev => prev.map(c => ({...c, isPlaced: false})));
+  L24533: {items.filter(i => i.currentContainer === bucket.id).map(item => renderCard(item))}
+  L28742: const points = logs.map(l => {
+  L28924: ${analytics.misconceptions.map((m, i) => `
+  L36660: .map(node => renderFlowShape(node, connectingSourceId === node.id))
+  L39181: const [targetText, englishText] = str.split(delimiter).map(s => s.trim());
+  L43523: ${item.data.map(gItem => `
+  L43530: ${hasAnyTranslations ? `<td style="text-align: ${align}">${Object.entries(gItem.translations || {}).map(([k, v]) => `<st
+  L43546: const renderList = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) =>
+  L43609: ${branches.map(b => {
+  L43616: ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; f
+  L43623: innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div><div style=
+  L43625: innerContent = `<div style="max-width: 800px; margin: 0 auto;"><div style="background: #fef2f2; border-left: 5px solid #
+  L43630: innerContent = `<div style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; ma
+  L43632: innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;"><div style="background: #4f46e5; colo
+  L43655: ? item.data.reflections.map(r => {
+  L43677: ${item.data.questions.map((q, i) => `
+  L43684: ${q.options.map((opt, optIdx) => `
+  L43738: ${item.data.map((faq, i) => `
+  L43756: ${item.data.map(idea => `
+  L43772: contentHtml = `<ul>${items.map((i, idx) => {
+  L43825: ${problems.map((p, i) => `
+  L43840: ${p.steps.map(s => `
+  L43875: ${items.map((t, i) => `
+  L43900: ${categories.map(cat => {
+  L43909: ${catItems.map(ci => `<li style="margin-bottom: 5px;">${ci.content}</li>`).join('')}
+  L43928: const heatmapHtml = wordData.map(w => {
+  L44041: extensionsHtml = extensions.map(ext => `
+  L44081: ${materialsNeeded.map(m => `<li>${renderBilingualField(m)}</li>`).join('')}
+  L44100: ${objectives.map(o => `<li>${renderBilingualField(o)}</li>`).join('')}
+  L44149: ${reports.map(report => `
+  L57225: const taggedChunks = await Promise.all(chunks.map(async (chunk) => {
+  L67792: setGameTeams(gameTeams.map(t => ({...t, score: 0})));
+  L67805: onChange={(e) => setGameTeams(prev => prev.map(t => t.id === team.id ? { ...t, name: e.target.value } : t))}
+  L68710: {q.options.map((opt, optIdx) => {
+  L71284: const text = generatedContent.data.problems.map((p, i) => `${i+1}. ${p.question}\nAnswer: ${p.answer}`).join('\n\n');

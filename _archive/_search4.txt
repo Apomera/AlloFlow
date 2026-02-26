@@ -1,0 +1,76 @@
+
+--- <ErrorBoundary (17 matches) ---
+  L51623: <ErrorBoundary fallbackMessage="Venn Game encountered an error.">
+  L55305: <ErrorBoundary fallbackMessage="Live Quiz encountered an error. waiting for sync...">
+  L55317: <ErrorBoundary fallbackMessage="Escape Room encountered an error. Waiting for sync...">
+  L55329: <ErrorBoundary fallbackMessage="Interview Interface encountered an error. Please close and reopen.">
+  L59741: <ErrorBoundary fallbackMessage="The content viewer encountered an error. It might be due to complex data formatting. Try regenerat
+  L60771: <ErrorBoundary fallbackMessage="Memory Game encountered an error.">
+  L60781: <ErrorBoundary fallbackMessage="Crossword Puzzle encountered an error.">
+  L60792: <ErrorBoundary fallbackMessage="Matching Game encountered an error.">
+  L60803: <ErrorBoundary fallbackMessage="Bingo Generator encountered an error.">
+  L60819: <ErrorBoundary fallbackMessage="Bingo Game encountered an error.">
+  L60829: <ErrorBoundary fallbackMessage="Word Scramble Game encountered an error.">
+  L60839: <ErrorBoundary fallbackMessage="Word Sounds encountered an error.">
+  L64719: <ErrorBoundary
+  L66327: <ErrorBoundary fallbackMessage="Sequence Game encountered an error.">
+  L66399: <ErrorBoundary fallbackMessage="Concept Sort Game encountered an error.">
+  L66969: <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
+  L67603: <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
+
+--- WordSoundsModal (4 matches) ---
+  L3218: const WordSoundsModal = ({
+  L4685: warnLog("⚠️ WordSoundsModal: glossaryTerms is empty or undefined");
+  L4688: debugLog("✅ WordSoundsModal: availableLanguages", result);
+  L60840: <WordSoundsModal
+
+--- blendingOptions (13 matches) ---
+  L3380: const [blendingOptions, setBlendingOptions] = React.useState([]); // Word options for Blend Sounds activity
+  L5236: if (lastWordForBlending.current === targetToCheck && blendingOptions.length > 0) {
+  L5281: // NOTE: blendingOptions removed from deps to prevent circular update (this effect sets it)
+  L6939: if (blendingOptions && blendingOptions.length > 0) {
+  L6943: await Promise.allSettled(blendingOptions.map(w => callTTS(w)));
+  L6946: for (let i = 0; i < blendingOptions.length; i++) {
+  L6949: await handleAudio(blendingOptions[i]);
+  L7010: }, [wordSoundsActivity, currentWordSoundsWord, playInstructions, isMinimized, isolationState?.currentPosition, rhymeOptions, blend
+  L8673: blendingOptions.length > 0 && (
+  L8678: for (let i = 0; i < blendingOptions.length; i++) {
+  L8680: await handleAudio(blendingOptions[i]);
+  L8696: {(blendingOptions || []).map((word, idx) => (
+  L8702: const newOpts = [...blendingOptions];
+
+--- setBlendingOptions (8 matches) ---
+  L3380: const [blendingOptions, setBlendingOptions] = React.useState([]); // Word options for Blend Sounds activity
+  L5039: if (wordSoundsActivity === 'blending' && data.blendingDistractors && setBlendingOptions) {
+  L5051: setBlendingOptions(opts);
+  L5232: setBlendingOptions && setBlendingOptions([]);
+  L5276: setBlendingOptions && setBlendingOptions(fisherYatesShuffle(uniqueFinalOptions));
+  L7463: setBlendingOptions(options);
+  L7517: setBlendingOptions(options);
+  L8704: setBlendingOptions(newOpts);
+
+--- preload (191 matches) ---
+  L1441: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tPr
+  L1507: // FIX: If words are already preloaded on mount (returning from "Back to Setup"),
+  L1509: const hasAutoNavigated = React.useRef(preloadedWords.length > 0);
+  L1512: if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
+  L1513: debugLog("📋 Words preloaded! Auto-navigating to Review Panel...");
+  L1521: }, [preloadedWords.length, isProcessing, onShowReview]);
+  L1808: {preloadedWords && preloadedWords.length > 0 && (
+  L1815: <span className="font-bold text-emerald-800">{preloadedWords.length} words ready</span>
+  L1817: {preloadedWords.slice(0, 5).map(w => w.targetWord || w.word || w).join(', ')}
+  L1818: {preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`}
+  L2290: // Allows editing preloaded word data before starting activity
+  L2293: preloadedWords,
+  L2320: // SILENCED: debugLog("🔍 preloadedWords count:", preloadedWords?.length);
+  L2332: // PERF: Early return if no preloaded words
+  L2334: if (!preloadedWords || preloadedWords.length === 0) return;
+  L2339: // I will rely on the fact that preloadedWords might be updated with ttsReady,
+  L2345: ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length, // Proxy
+  L2346: total: preloadedWords.length
+  L2352: }, [preloadedWords]);
+  L2572: const word = preloadedWords[wordIdx];
+
+--- prefetchBlending (0 matches) ---
+
+--- preloadBlending (0 matches) ---

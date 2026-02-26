@@ -1,0 +1,41 @@
+L68031:           <WordSoundsGenerator
+L68032:               glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
+L68033:               t={t}
+L68034:               gradeLevel={gradeLevel || 'K-2'}
+L68035:               onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+L68036:                    const resourceId = `ws-${Date.now()}`;
+L68037:                    const wordSoundsResource = {
+L68038:                        id: resourceId,
+L68039:                        type: 'word-sounds',
+L68040:                        title: `Word Sounds (${words.length} words)`,
+L68041:                        data: words,
+L68042:                        timestamp: Date.now(),
+L68043:                        lessonPlanSequence: sequence || [],
+L68044:                        lessonPlanConfig: lessonPlanConfig || null,
+L68045:                        configSummary: configSummary || 'Quick Practice Mode',
+L68046:                    };
+L68047:                    setGeneratedContent(wordSoundsResource);
+L68048:                    setHistory(prev => [wordSoundsResource, ...prev]);
+L68049:                    prevWsPreloadedWordsLengthRef.current = 0;
+L68050:                    setWsPreloadedWords(words);
+L68051:                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
+L68052:                    setWordSoundsActivity('word-sounds');
+L68053:                    setWordSoundsAutoReview(true);
+L68054:                    setIsWordSoundsMode(true);
+L68055:                    setActiveView('output');
+L68056:                }}
+L68057:               onClose={handleCloseDashboard}
+L68058:               callGemini={callGemini}
+L68059:               callImagen={callImagen}
+L68060:               callTTS={callTTS}
+L68061:               preloadedWords={wsPreloadedWords || []}
+L68062:               onShowReview={() => {
+L68063:                   setIsWordSoundsMode(false);
+L68064:                   setTimeout(() => {
+L68065:                       setWordSoundsActivity('word-sounds');
+L68066:                       setWordSoundsAutoReview(true);
+L68067:                       setIsWordSoundsMode(true);
+L68068:                       setActiveView('output');
+L68069:                   }, 0);
+L68070:               }}
+L68071:           />

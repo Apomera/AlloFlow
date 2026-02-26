@@ -1,0 +1,12 @@
+1. Localization keys already exist
+2. WARNING: 'Check Spelling' button not found
+3. WARNING: mic toggle text not found
+4. WARNING: session encouragement messages not found
+5. WARNING: 'Words Practiced' not found
+6. WARNING: 'XP Earned' not found
+7. WARNING: 'Next Activity' not found
+8. WARNING: Hint buttons section not found
+
+Total changes: 0
+Saved (4686817 chars, was 4617096)
+

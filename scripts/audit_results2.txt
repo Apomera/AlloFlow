@@ -1,0 +1,161 @@
+﻿============================================================
+WORD SOUNDS ACTIVITY IDs (from wordSoundsActivity comparisons)
+============================================================
+Activity IDs (11): ['blending', 'counting', 'isolation', 'letter_tracing', 'mapping', 'orthography', 'rhyming', 'segmentation', 'sound_sort', 'spelling_bee', 'word_families']
+setWordSoundsActivity IDs (2): ['counting', 'orthography']
+
+--- Activity definitions ---
+
+============================================================
+HELP SYSTEM KEYS
+============================================================
+Help keys found: 0
+
+HELP_STRINGS def L14597: let HELP_STRINGS = {};
+
+HELP_STRINGS def L14631: if (hsCached) { HELP_STRINGS = JSON.parse(hsCached); }
+
+HELP_STRINGS def L14636: HELP_STRINGS = JSON.parse(hsText);
+
+HELP_STRINGS def L14639: HELP_STRINGS = new Function("return " + hsText)();
+
+HELP_STRINGS def L14641: console.warn("HELP_STRINGS: new Function blocked (CSP), trying manual parse...", evalErr.message);
+
+HELP_STRINGS def L14643: try { HELP_STRINGS = JSON.parse(hsCleaned); } catch { console.error("HELP_STRINGS: All parse methods failed"); }
+
+HELP_STRINGS def L14648: console.log("[AlloFlow] HELP_STRINGS loaded:", Object.keys(HELP_STRINGS).length, "keys");
+
+HELP_STRINGS def L14652: console.warn("HELP_STRINGS fetch failed, using cache or defaults:", e.message);
+
+HELP_STRINGS def L32154: const helpText = localizedHelp || HELP_STRINGS[key];
+
+============================================================
+ALL setShow* FUNCTIONS (modals/panels)
+============================================================
+setShow functions (58):
+  setShowAdventureConfirmation
+  setShowAutoSurveyPrompt
+  setShowBatchConfig
+  setShowCBMModal
+  setShowClassAnalytics
+  setShowClearConfirm
+  setShowCloudWarning
+  setShowComparison
+  setShowConfetti
+  setShowDiagnostics
+  setShowDice
+  setShowEndConfirm
+  setShowErrors
+  setShowExportMenu
+  setShowFlashcardImages
+  setShowFluencyConfetti
+  setShowGlobalLevelUp
+  setShowGroupModal
+  setShowHealthCheckPanel
+  setShowHelpOnboarding
+  setShowHintsModal
+  setShowImageForCurrentWord
+  setShowImmersiveInventory
+  setShowInfoModal
+  setShowLargeFileModal
+  setShowLedger
+  setShowLetterHints
+  setShowLiveSyncInput
+  setShowLocalStats
+  setShowMathAnswers
+  setShowNewGameSetup
+  setShowPersonaHints
+  setShowPhonemeBank
+  setShowProbeResults
+  setShowQuizAnswers
+  setShowRTISettings
+  setShowResearchSetup
+  setShowReviewPanel
+  setShowSaveModal
+  setShowSessionComplete
+  setShowSessionModal
+  setShowSocraticChat
+  setShowSourceGen
+  setShowStorybookExportModal
+  setShowStudentEntry
+  setShowStudentWelcome
+  setShowStudyTimerModal
+  setShowSubmitModal
+  setShowSurveyModal
+  setShowTextSettings
+  setShowTimerConfetti
+  setShowUDLGuide
+  setShowUrlInput
+  setShowVoiceSettings
+  setShowWizard
+  setShowWordSearchAnswers
+  setShowWordText
+  setShowXPModal
+
+============================================================
+TOOL SELECTION OPTIONS
+============================================================
+
+============================================================
+EXPORT/DOWNLOAD FEATURES
+============================================================
+  copyToClipboard: 8 refs
+  downloadAllAsZip: 1 refs
+  downloadAnchorNode: 6 refs
+  downloadHtmlBlob: 3 refs
+  downloadWithLabels: 3 refs
+  download_all_panels_as_png_images: 1 refs
+  download_annotated_diagram_as_png: 1 refs
+  download_audio: 7 refs
+  download_submission: 1 refs
+  download_tooltip: 2 refs
+  downloaded: 6 refs
+  downloading: 12 refs
+  downloadingContentId: 11 refs
+  exportData: 2 refs
+  exportDate: 1 refs
+  exportFluencyCSV: 2 refs
+  exportLanguagePack: 6 refs
+  exportResearchCSV: 2 refs
+  exportScreeningCSV: 2 refs
+  exportVersion: 1 refs
+  export_: 80 refs
+  export_all_panels_as_png_images: 1 refs
+  export_as_slides: 1 refs
+  export_btn: 1 refs
+  export_complete: 1 refs
+  export_copy_button: 2 refs
+  export_csv: 8 refs
+  export_csv_btn: 2 refs
+  export_csv_for_rti: 1 refs
+  export_csv_tooltip: 2 refs
+  export_description: 1 refs
+  export_failed: 1 refs
+  export_fallback: 1 refs
+  export_file: 1 refs
+  export_fluency_csv: 1 refs
+  export_for_grading: 1 refs
+  export_html: 1 refs
+  export_ims: 1 refs
+  export_label: 1 refs
+  export_language: 4 refs
+  export_menu: 9 refs
+  export_options: 1 refs
+  export_panel_as_png: 1 refs
+  export_pdf_btn: 2 refs
+  export_pdf_button: 2 refs
+  export_print: 1 refs
+  export_qti: 2 refs
+  export_qti_btn: 1 refs
+  export_report: 1 refs
+  export_rti_progress_report_as_csv: 1 refs
+  export_slides: 1 refs
+  export_standard: 4 refs
+  export_status: 22 refs
+  export_storybook_images: 1 refs
+  export_storybook_text: 1 refs
+  export_success: 1 refs
+  export_tooltip: 1 refs
+  export_worksheet: 1 refs
+  exported: 3 refs
+  exporting: 1 refs

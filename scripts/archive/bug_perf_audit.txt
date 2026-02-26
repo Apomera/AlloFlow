@@ -1,0 +1,889 @@
+======================================================================
+  ALLOFLOW BUG HUNTING & PERFORMANCE AUDIT
+======================================================================
+  File: AlloFlowANTI.txt
+  Lines: 69256
+
+
+======================================================================
+  1. UNUSED STATE ANALYSIS
+======================================================================
+
+Total useState declarations: 598
+
+  State values NEVER READ (write-only state):
+    L17580: [pulseScale, setPulseScale] — 'pulseScale' is never used
+    L23450: [awardedPoints, setAwardedPoints] — 'awardedPoints' is never used
+    L29681: [blueprintSelection, setBlueprintSelection] — 'blueprintSelection' is never used
+    L29682: [isReviewingBlueprint, setIsReviewingBlueprint] — 'isReviewingBlueprint' is never used
+    L29891: [studyDuration, setStudyDuration] — 'studyDuration' is never used
+    L31283: [dyslexicFont, setDyslexicFont] — 'dyslexicFont' is never used
+    L31284: [fontTheme, setFontTheme] — 'fontTheme' is never used
+    L31302: [isDefining, setIsDefining] — 'isDefining' is never used
+    L31474: [pendingFactionResources, setPendingFactionResources] — 'pendingFactionResources' is never used
+    L35379: [sourceStandards, setSourceStandards] — 'sourceStandards' is never used
+
+  State setters NEVER CALLED (read-only state = should be const/ref):
+    L31283: [dyslexicFont, setDyslexicFont] — 'setDyslexicFont' is never called
+    L31284: [fontTheme, setFontTheme] — 'setFontTheme' is never called
+    L31474: [pendingFactionResources, setPendingFactionResources] — 'setPendingFactionResources' is never called
+
+======================================================================
+  2. TIMER / INTERVAL LEAK ANALYSIS
+======================================================================
+
+  setInterval() calls: 15
+    L2350: const interval = setInterval(checkAudio, 1000);
+    L17362: const timer = setInterval(() => {
+    L17481: const interval = setInterval(() => {
+    L17583: const pulseInterval = setInterval(() => {
+    L17748: const interval = setInterval(() => {
+    L17760: const timer = setInterval(() => {
+    L18289: fallbackTimer = setInterval(checkFallbackInactivity, 10000);
+    L20562: const crackleInterval = setInterval(() => {
+    L20618: const birdInterval = setInterval(() => {
+    L26090: const timer = setInterval(async () => {
+    L28800: interval = setInterval(() => {
+    L29900: interval = setInterval(() => {
+    L35914: saveReminderIntervalRef.current = setInterval(() => {
+    L37528: const interval = setInterval(() => {
+    L49353: interval = setInterval(() => {
+
+  Checking for interval leaks in useEffects...
+    No interval leaks detected ✓
+
+======================================================================
+  3. Z-INDEX COLLISION MAP
+======================================================================
+
+  High z-index values (≥50) with multiple users:
+
+  z-10999 (4 uses):
+    L32810: z-index: 10999 !important; /* Above help mode backdrop (z-10998) */
+    L54948: className="absolute -bottom-14 right-0 bg-indigo-600 text-white text-xs font-bol
+    L67599: <div className="fixed pointer-events-none animate-pulse z-[10999]"
+    L68429: className={`fixed right-3 top-1/2 -translate-y-1/2 z-[10999] w-9 h-9 rounded-ful
+
+  z-10001 (7 uses):
+    L25389: <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+    L26058: <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-ce
+    L54672: <div className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[
+    L54776: <div className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[1
+    L59781: className="fixed top-0 left-0 right-0 bg-black/70 pointer-events-none z-[10001] 
+    ... and 2 more
+
+  z-10000 (6 uses):
+    L18783: className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-gra
+    L25722: <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-ce
+    L54671: <div role="button" tabIndex={0} className="fixed inset-0 z-[10000]" onClick={han
+    L54775: <div role="button" tabIndex={0} className="fixed inset-0 z-[10000]" onClick={han
+    L67622: <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflo
+    ... and 1 more
+
+  z-9999 (9 uses):
+    L25564: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-sla
+    L25575: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-
+    L25598: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emer
+    L25620: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purp
+    L26224: <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-cen
+    ... and 4 more
+
+  z-1000 (3 uses):
+    L19896: <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in sl
+    L20360: <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex ite
+    L69201: <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none b
+
+  z-300 (15 uses):
+    L467: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-cen
+    L17181: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex item
+    L25040: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-aut
+    L25161: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-cen
+    L25247: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-cen
+    ... and 10 more
+
+  z-210 (3 uses):
+    L61706: className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] tr
+    L61710: className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210]
+    L61714: className="fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-ev
+
+  z-200 (19 uses):
+    L2640: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-ce
+    L9805: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-ce
+    L19718: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/
+    L23250: <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-
+    L24875: className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center 
+    ... and 14 more
+
+  z-150 (3 uses):
+    L24917: className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center 
+    L53933: <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-cent
+    L59768: className="absolute top-4 right-4 z-[150] bg-slate-800/80 hover:bg-slate-800 tex
+
+  z-100 (24 uses):
+    L1746: <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl b
+    L9945: <div className="fixed bottom-4 right-4 z-[100] w-80 bg-white rounded-xl shadow-2
+    L10633: <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-cent
+    L21937: <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? '
+    L22255: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden 
+    ... and 19 more
+
+  z-90 (7 uses):
+    L55093: <div role="button" tabIndex={0} className="fixed inset-0 z-[90]" onClick={handle
+    L55171: {showExportMenu && <div role="button" tabIndex={0} className="fixed inset-0 z-[9
+    L59696: <div role="button" tabIndex={0} className="fixed inset-0 z-[90]" onClick={handle
+    L62035: {definitionData && <div role="button" tabIndex={0} className="fixed inset-0 z-[9
+    L62095: {phonicsData && <div role="button" tabIndex={0} className="fixed inset-0 z-[90]"
+    ... and 2 more
+
+  z-60 (5 uses):
+    L1786: <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-9
+    L28933: <div className="sticky top-0 z-[60] p-4 bg-white/95 backdrop-blur-sm border-b bo
+    L54634: className={`relative z-[60] flex items-center gap-2 px-3 py-2 rounded-2xl backdr
+    L54654: <div id="tour-header-settings" className={`relative z-[60] flex items-center gap
+    L56700: className={`absolute inset-0 pointer-events-none z-[60] transition-colors durati
+
+  z-50 (3 uses):
+    L11036: z-index: 50 !important;
+    L11061: z-index: 50 !important;
+    L32859: z-index: 50;
+
+======================================================================
+  4. CONSOLE.LOG STATEMENTS
+======================================================================
+
+  Total console.log statements: 5
+  (First 20 shown)
+    L42: console.log("Initializing Audio Bank from " + _AUDIO_BANK_URL);
+    L47: console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BANK));
+    L62: console.log("[AudioBank] Caches invalidated - audio data now available.");
+    L88: const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
+    L33476: console.log('PATCH-VER-02'); executeGlossaryWarmup().catch(e => warnLog('Glossary warmup error (supp
+
+======================================================================
+  5. EMPTY CATCH BLOCKS
+======================================================================
+
+  Empty catch blocks: 14
+  (First 15 shown)
+    L5407: await Promise.all(distractorSets.map(d => handleAudio(d, false).catch(() => {})));
+    L5410: await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+    L5558: await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+    L6474: handleAudio(phoneme, false).catch(() => {}); // Silent retry
+    L7128: tryAgainAudio.play().catch(() => {});
+    L7159: almostAudio.play().catch(() => {});
+    L7417: audio.play().catch(() => {});
+    L30044: try { localStorage.setItem('allo_help_onboarded', 'true'); } catch {}
+    L30048: } catch {}
+    L30050: const dismissHelpOnboarding = () => { setShowHelpOnboarding(false); try { localStorage.setItem('allo
+    L35870: try { localStorage.setItem('allo_bot_intro_seen', 'true'); } catch {}
+    L38365: globalTtsQueue = queuedTask.catch(() => {});
+    L38465: imagenQueueRef.current = queuedRequest.catch(() => {});
+    L45659: updateDoc(sessionRef, { "democracy.votes": {} }).catch(e => warnLog("Vote reset failed", e));
+
+======================================================================
+  6. DUPLICATE FUNCTION DECLARATIONS
+======================================================================
+
+  Functions declared multiple times: 656
+    accuracy: lines 4746, 9798, 21400
+    action: lines 18265, 39617
+    activity: lines 2126, 43438, 45935
+    adjMembers: lines 9762, 16322, 36846, 50063
+    adjacentRimes: lines 9756, 16316, 36840, 50057
+    adjectives: lines 17101, 25134
+    adventureItem: lines 27063, 27244, 43154
+    aiRimeData: lines 9699, 16259, 36783, 50000
+    align: lines 40744, 40857
+    allItems: lines 23141, 55304
+    allTeams: lines 25442, 26128
+    alphabet: lines 4062, 8463
+    analysis: lines 37451, 53129
+    analysisItem: lines 43145, 44522, 45053, 45380, 50223
+    analysisItems: lines 48565, 48571
+    animal: lines 17122, 25139
+    animals: lines 17102, 25135
+    arrayBuffer: lines 260, 420
+    assetId: lines 21286, 21320
+    assetManifest: lines 43381, 51062
+    assetRef: lines 21288, 21321
+    assignedColor: lines 19841, 25484
+    audio: lines 3506, 3525, 3561, 7414, 7454
+    audioBuffer: lines 267, 426
+    audioContent: lines 38260, 38324
+    audioCtx: lines 262, 422
+    audioCtxRef: lines 3308, 7912
+    audioUrl: lines 17941, 39893, 40531, 40724, 52494
+    backoffMs: lines 6078, 49599
+    bank: lines 888, 903, 916, 5926
+    bankKey: lines 3622, 35457
+    base: lines 18363, 30998
+    base64: lines 305, 397, 38430
+    base64data: lines 886, 21380
+    baseXP: lines 7224, 49011, 63528
+    batch: lines 30936, 49631
+    bilingualInstruction: lines 39233, 49932, 53153, 53566
+    blob: lines 883, 10550, 16776, 21376, 27271
+    bonusXP: lines 49227, 63529
+    branchId: lines 33502, 33727, 33922, 33966
+    branches: lines 33668, 42359, 51578, 51681
+    bridgeMsg: lines 46357, 46370, 46539, 46577, 46611
+    buffer: lines 8005, 17783, 20546, 24754, 37054
+    bufferSize: lines 8004, 17782, 20545, 24753
+    bufferedTargetWord: lines 7498, 7517
+    bulletMarker: lines 67569, 67744, 67805
+    bulletText: lines 67570, 67745, 67806
+    bytes: lines 38233, 38261, 38325, 38337, 40682
+    calculateStudentStats: lines 10445, 42614
+    canvas: lines 8064, 8160, 8203, 21254
+    canvasRect: lines 22118, 22169
+    canvasRef: lines 7903, 22092
+    card1: lines 21820, 21861
+    card2: lines 21827, 21862
+    cardContent: lines 21857, 38540
+    cards: lines 38555, 45962
+    catItems: lines 41258, 42425
+    categories: lines 18185, 41251, 42407, 53761
+    cell: lines 23511, 23523, 23579
+    cells: lines 36886, 40785
+    centerX: lines 17595, 33849, 33909, 34022, 35888
+    centerY: lines 17596, 34023
+    chanceRoll: lines 45097, 45407
+    changed: lines 33055, 33078
+    changes: lines 38075, 38109, 46264
+    char: lines 17364, 21012, 21039, 23557, 23629
+    charA: lines 47593, 47770, 48129, 48240
+    charB: lines 47594, 47771, 48130, 48241
+    charHash: lines 40501, 40507
+    charIndex: lines 47855, 56186
+    charNames: lines 40061, 40206
+    characterDesc: lines 47272, 47455
+    chars: lines 17359, 21214
+    chatLog: lines 48110, 48345, 48401
+    checkAnswer: lines 7102, 23926
+    checkAnswers: lines 22229, 22891
+    chunk: lines 10398, 16858, 20843, 20864, 20950
+    chunkCount: lines 272, 39290
+    chunkIndices: lines 21086, 38976
+    chunks: lines 16377, 16855, 20886, 20938, 38741
+    clean: lines 35258, 35265, 38581, 44411, 60071
+    cleanData: lines 30064, 30106
+    cleanLine: lines 67542, 67697, 67772
+    cleanText: lines 16218, 29081, 40598, 45961, 56222
+    cleanWord: lines 23484, 62559, 62585
+    cleaned: lines 1529, 16157, 28785, 37692, 37724
+    cleanedFix: lines 35327, 60201
+    clientX: lines 8205, 18312, 18321, 18338, 22167
+    clientY: lines 8206, 18313, 18322, 18339, 22168
+    code: lines 42008, 42054
+    colorClass: lines 22673, 55342, 62319
+    colorMap: lines 10602, 42181, 55308
+    colorOptions: lines 28771, 43832
+    colors: lines 5009, 10584, 18401, 25379, 25675
+    combinedContext: lines 40060, 40205
+    commonPhonemes: lines 4911, 6215
+    commonWords: lines 5176, 6295
+    concepts: lines 38017, 43157
+    config: lines 46390, 46426, 46478, 48556, 59707
+    container: lines 27165, 52884, 69239
+    content: lines 27823, 36884, 36959, 36972, 36983
+    context: lines 38506, 43380, 46354, 46368, 46536
+    contextStr: lines 37980, 38039
+    contextToFix: lines 35318, 60188
+    controller: lines 16525, 16535, 16556
+    correct: lines 6769, 8936, 9093, 9219
+    correctCount: lines 4745, 8933, 21396, 22231
+    correctRhyme: lines 6287, 7524, 7607
+    count: lines 1544, 9612, 26262, 27070, 46850
+    current: lines 3443, 9067, 21679, 23550, 27896
+    currentBase64: lines 47271, 47454
+    currentData: lines 30433, 37758, 53583, 53619
+    currentFullText: lines 39746, 39913
+    currentGlobalIdx: lines 56217, 62838, 62924, 62964, 64568
+    currentIdx: lines 7261, 7326, 10091
+    currentIndex: lines 6618, 52876
+    currentInventoryNames: lines 45061, 45385
+    currentItem: lines 24629, 34691, 37944, 45737, 52396
+    currentOrder: lines 63734, 63808
+    currentRapport: lines 29393, 47946
+    currentRimeIdx: lines 9754, 16314, 36838, 50055
+    currentText: lines 53151, 53195, 53564
+    currentWord: lines 6282, 6398, 28831
+    currentWordCoords: lines 38619, 38635
+    data: lines 1649, 8006, 10404, 16738, 17784
+    dataLength: lines 356, 37053
+    dataStr: lines 16775, 36058, 37802
+    date: lines 27129, 27243, 45833
+    dateStr: lines 42654, 54187
+    decodeSuperscript: lines 20794, 20830
+    defs: lines 22101, 42868
+    delay: lines 16491, 17729, 18257, 28799, 35039
+    delimiter: lines 37018, 37041, 49861
+    delta: lines 48000, 48032, 48084
+    desc: lines 1160, 1214, 1395, 47597, 54287
+    description: lines 41727, 47337, 47699, 54183
+    dialectInstruction: lines 39155, 39787, 49443
+    diff: lines 35537, 62435
+    difficultyMultiplier: lines 26401, 49014
+    digraphs: lines 2368, 2386, 4603, 5513, 5634
+    direction: lines 38609, 41539, 53565, 53584, 53602
+    disabledEls: lines 11178, 30374, 32910
+    displayName: lines 46293, 47024
+    dist: lines 8118, 18340, 22177, 22208
+    distance: lines 7985, 17600
+    distractors: lines 4912, 5300, 6275, 6321, 6384
+    docSnap: lines 16837, 34750
+    dokContext: lines 48144, 48253
+    draggedItem: lines 22533, 29136, 51624
+    duration: lines 18001, 40296
+    earnedPoints: lines 22233, 22903
+    editPrompt: lines 38511, 43867, 47273, 47456, 49608
+    effCustomInstructions: lines 39152, 49380
+    effectiveAppId: lines 19844, 19862, 25487, 25519, 25544
+    effectiveCount: lines 6248, 50790
+    effectiveDiff: lines 6563, 7227
+    effectiveDifficulty: lines 4762, 5008
+    effectiveGrade: lines 49374, 53038
+    effectiveLanguage: lines 39153, 49442
+    effectiveRoll: lines 45099, 45409
+    effectiveText: lines 35466, 40383
+    element: lines 20483, 46290
+    endIdx: lines 62719, 62893
+    ending: lines 9724, 16284, 36808, 50025
+    entry: lines 4705, 30813
+    errMsg: lines 39648, 51280
+    error: lines 16476, 38419
+    errorKeywords: lines 35305, 60175
+    escapeRoomPrompt: lines 48720, 48912
+    escapeState: lines 25421, 26083
+    escaped: lines 25676, 26193
+    escapedTeams: lines 25458, 26131
+    estimateFirstPhoneme: lines 2364, 9405
+    estimateLastPhoneme: lines 2377, 9421
+    existingIdx: lines 44109, 44135
+    existingImage: lines 26504, 47697
+    extra: lines 36563, 36571
+    failureHistory: lines 44256, 45612
+    fallback: lines 6610, 6672, 7619, 7649
+    fallbackPhonemes: lines 1688, 5116, 5687
+    fetchAudio: lines 5397, 5543
+    file: lines 36099, 38845, 42824
+    fileInputRef: lines 16971, 35397
+    fileType: lines 38849, 68751
+    filename: lines 41869, 42655, 42709
+    files: lines 10389, 27191
+    filter: lines 8013, 24761
+    filtered: lines 5329, 22144, 22215, 22402, 52874
+    finalData: lines 30221, 48428, 48444
+    finalOptions: lines 5284, 34725
+    finalPrompt: lines 1655, 47079, 50184
+    first: lines 6742, 22511
+    firstLetter: lines 6357, 9543
+    firstWord: lines 3474, 6174, 9918, 23546
+    fixPrompt: lines 35319, 51478, 60189
+    fixedSegment: lines 35324, 60200
+    flags: lines 636, 10489
+    focusableElements: lines 17292, 17312
+    formatText: lines 67545, 67700, 67775
+    formatTime: lines 25431, 26142, 31012
+    formattedChatLog: lines 48285, 48322
+    fullData: lines 48290, 48323
+    fullText: lines 45118, 45505
+    fullTrans: lines 46040, 52456, 52464, 60749, 60757
+    gain: lines 7085, 8017, 17374, 20414, 24479
+    generated: lines 6274, 8862
+    generatedAppearance: lines 43818, 43836
+    getFullName: lines 17139, 25149
+    glossaryItem: lines 29430, 43148
+    glossed: lines 36699, 37341
+    groupId: lines 26675, 41940
+    guide: lines 43452, 45947
+    handleAddStandard: lines 27776, 36121
+    handleAssignStudent: lines 26534, 41953
+    handleChange: lines 16973, 21733
+    handleChipClick: lines 4068, 4458, 7741
+    handleClick: lines 62586, 62791, 62816, 62938
+    handleCreateGroup: lines 26528, 41937
+    handleDeleteGroup: lines 26537, 41974
+    handleDragEnd: lines 2624, 22539, 29142, 45685, 54074
+    handleDragLeave: lines 21730, 23202, 54046
+    handleDragOver: lines 2595, 4086, 8482, 21724, 22529
+    handleDragStart: lines 2591, 4080, 8478, 22525, 22824
+    handleDrop: lines 2600, 4090, 21711, 22832, 23205
+    handleExportCSV: lines 10525, 27232
+    handleFindStandards: lines 27745, 53036
+    handleFixGrammarErrors: lines 35284, 60164
+    handleKeyDown: lines 17290, 18047, 21883, 22557, 23608
+    handleKeyboardMove: lines 22853, 23168
+    handleMouseDown: lines 18308, 22155
+    handleMouseMove: lines 17592, 18319, 35702, 36350
+    handleMouseUp: lines 18334, 36357
+    handleRemoveStandard: lines 27791, 36136
+    handleSetGroupLanguage: lines 26536, 41993
+    handleSetGroupResource: lines 26535, 41963
+    handleSkip: lines 24647, 27734
+    handleSubmit: lines 4098, 17174, 20348
+    handleWordClick: lines 4242, 23915, 39833
+    handler: lines 166, 30388
+    hasBlend: lines 4722, 9484
+    hasCitationMarkers: lines 39320, 39635
+    hasClose: lines 40043, 40200
+    hasInput: lines 8991, 43732, 46994
+    hasOpen: lines 40042, 40199
+    hashA: lines 5157, 5185
+    hashB: lines 5158, 5186
+    headerClass: lines 62617, 62843, 62969
+    headerLevel: lines 39114, 62615, 62841, 62967
+    headerMatch: lines 36956, 37153, 37223, 39108
+    headerText: lines 39113, 67560, 67728, 67795
+    headers: lines 10527, 27234, 36881
+    height: lines 8068, 8164, 25289, 26846, 26976
+    highlightClass: lines 29071, 61189
+    hint: lines 7144, 43613
+    hintPenalty: lines 49016, 63530
+    hintText: lines 49299, 49311
+    history: lines 4982, 26899, 27094, 48169
+    historyRef: lines 34749, 34805, 34814
+    historySource: lines 50593, 51060
+    historyStr: lines 47492, 47515, 47556, 47746, 47945
+    historyText: lines 43912, 45816, 46213, 48131, 48142
+    host: lines 1008, 29711
+    href: lines 1009, 29712
+    htmlContent: lines 19698, 42509
+    hydrated: lines 21315, 30958, 34881
+    icon: lines 54182, 54286
+    imageUrl: lines 47719, 51042
+    imgPrompt: lines 49594, 51041, 52619, 52682, 52815
+    includeOrthographic: lines 1474, 3293
+    indexed: lines 22483, 22623
+    indices: lines 1567, 35238, 35263, 48843, 48934
+    initialHistory: lines 47614, 47701
+    initialSelection: lines 46435, 46488
+    initialStage: lines 43733, 46995
+    input: lines 554, 2019, 2031, 8925, 38112
+    instruction: lines 3890, 45735
+    intensity: lines 17602, 53560
+    interval: lines 2350, 17481, 17748, 37528
+    is401: lines 6086, 49617
+    isActive: lines 56220, 62613, 62839, 62965, 64570
+    isBold: lines 36684, 37312
+    isBullet: lines 67567, 67742, 67803
+    isCitation: lines 36643, 37296, 37326, 40755
+    isCoopMode: lines 25437, 26119
+    isCorrect: lines 4103, 7107, 7683, 8819, 8992
+    isCorrectAnswer: lines 46139, 60854
+    isDecision: lines 33728, 40982
+    isDimmed: lines 62729, 62899
+    isDisabled: lines 20004, 63625
+    isDragging: lines 22675, 54184
+    isError: lines 8578, 23773
+    isFlowChart: lines 34001, 34552
+    isFound: lines 4406, 61211
+    isHeader: lines 37154, 56221, 62614, 62769, 62788
+    isItalic: lines 36685, 37313
+    isLast: lines 49418, 49863, 51421
+    isLastTurn: lines 45059, 45377
+    isLowerGrade: lines 50997, 52812
+    isMarked: lines 24495, 24538
+    isMatched: lines 22007, 25969, 26000
+    isNo: lines 46587, 46650
+    isPanelMode: lines 40492, 47314, 47644
+    isPaused: lines 25438, 26120
+    isPerfect: lines 22232, 49225
+    isQuota: lines 37603, 47041, 47092
+    isReadingThisOption: lines 65888, 66086
+    isReadingThisParagraph: lines 62725, 62895
+    isRefusal: lines 37618, 40128
+    isRtl: lines 16940, 40743, 40856, 41538
+    isSelected: lines 2249, 20002, 23767, 25970, 26001
+    isSolved: lines 25697, 63624
+    isTable: lines 40433, 40579, 61729, 65880, 66082
+    isUser: lines 55741, 56180
+    item: lines 23172, 24049, 36428, 36493, 37951
+    itemId: lines 33515, 33742, 33879, 33935, 33979
+    itemIndex: lines 23170, 44950
+    itemName: lines 23173, 44070
+    items: lines 24600, 35065, 41228, 42408, 42626
+    itemsToAdd: lines 44068, 44324, 44677
+    joinTeam: lines 19842, 25485
+    jsonMatch: lines 5505, 37695
+    jsonOptionsExample: lines 44551, 45094, 45406
+    keyConcepts: lines 44523, 45054, 45381
+    keyTerms: lines 44521, 45052, 45379
+    keys: lines 5409, 5547, 16376, 16405, 16907
+    label: lines 20649, 20952, 21090, 36594, 36619
+    labels: lines 5010, 10619
+    lang: lines 38139, 46591, 49458
+    langs: lines 4686, 23454, 36447, 54104
+    lastIndex: lines 35881, 47104, 48171
+    lastItem: lines 1702, 38013, 42970, 46572
+    lastMsg: lines 35882, 47105
+    latest: lines 10476, 10869, 10915, 18062
+    latestAnalysis: lines 36150, 37762, 43471, 44438, 44773
+    lengthChange: lines 35332, 60206
+    lessonDNA: lines 49378, 51309
+    letter: lines 4092, 20003
+    level: lines 18126, 18152, 26905, 27245, 27528
+    levelColors: lines 10919, 67926
+    lightweightResources: lines 42012, 42103
+    limit: lines 1566, 17903
+    lines: lines 36753, 37209, 39098, 40625, 40745
+    link: lines 10552, 11000, 16778, 27273, 29858
+    lower: lines 3594, 8684, 17895, 44074, 51410
+    lowerResponse: lines 46586, 46649, 46927
+    lowerText: lines 637, 16545
+    lowerWord: lines 5301, 6310
+    mData: lines 8099, 8166
+    mainTextParagraphs: lines 40578, 65879, 66081
+    manifestId: lines 41723, 41857
+    marker: lines 20958, 21087, 50474, 50502
+    mask: lines 8065, 8161
+    match: lines 639, 3705, 36617, 36760, 37294
+    matches: lines 9473, 42634
+    maxAttempts: lines 22497, 47341
+    maxGroundingRetries: lines 39266, 39505
+    maxTime: lines 26980, 63519
+    maxTurns: lines 45058, 45376
+    mechanicsInstruction: lines 45100, 45410
+    merged: lines 5269, 5718, 34756
+    minTurns: lines 44176, 58858
+    mins: lines 242, 69075
+    minutes: lines 21402, 63521
+    modalRef: lines 3393, 27031
+    mode: lines 6908, 9437, 50882
+    moveItem: lines 22542, 45689, 63738
+    mp3buf: lines 37087, 37092
+    msgFlags: lines 10495, 10510
+    name: lines 18197, 27242, 37652, 40094, 40227
+    names: lines 44325, 44700
+    newBadges: lines 4981, 47863, 48041
+    newBoxes: lines 7748, 7759
+    newBranches: lines 51511, 51523, 51540
+    newChars: lines 47449, 47466, 47476, 47484
+    newClues: lines 23576, 49004
+    newData: lines 34254, 43453, 45752, 45948, 46122
+    newDir: lines 23562, 23600, 23671
+    newDist: lines 2983, 3022, 3041, 3079
+    newEdges: lines 33907, 33955
+    newHistory: lines 30493, 35847, 45691, 52700
+    newId: lines 34192, 43056, 49844
+    newImageBase64: lines 45751, 45781
+    newImageUrl: lines 47281, 47463
+    newIndex: lines 2631, 52878
+    newItem: lines 22875, 29160, 36274, 37955, 37965
+    newItems: lines 22532, 22543, 27757, 29135, 29146
+    newKey: lines 4227, 23612
+    newLevel: lines 36960, 36973
+    newList: lines 2633, 5998, 6103, 6116, 6156
+    newMessages: lines 47846, 48173
+    newMode: lines 26494, 42086, 55674, 56109
+    newNodes: lines 33873, 33906, 33954
+    newOptions: lines 7837, 7842, 7874, 44879, 44894
+    newOpts: lines 8805, 46140
+    newOrder: lines 2139, 25910, 25923, 63741, 63761
+    newPhonemes: lines 2574, 2580, 6884, 7846, 7883
+    newRapport: lines 48033, 48085
+    newScore: lines 23932, 24636, 52412
+    newSelection: lines 46519, 48606
+    newSet: lines 21867, 36504, 38668
+    newSlots: lines 4464, 4482
+    newState: lines 171, 24100, 30412, 43674, 43684
+    newStats: lines 43961, 53183
+    newStreak: lines 7182, 25523
+    newTermItem: lines 52615, 52679
+    newTime: lines 26091, 49355
+    newVal: lines 7395, 21735, 39294, 67047
+    newWelcomeText: lines 30491, 35845
+    newWords: lines 5873, 35523
+    newX: lines 33570, 68396
+    newY: lines 33571, 68397
+    next: lines 1572, 10093, 23614, 24845, 27038
+    nextActivity: lines 6630, 7263, 7329
+    nextIdx: lines 7483, 9870, 24085, 24617, 26458
+    nextIndex: lines 6620, 33232
+    nextRound: lines 23944, 24615
+    nodes: lines 20768, 20773
+    noise: lines 8010, 17788, 20549, 24759
+    normalize: lines 553, 21710, 23130, 34206
+    normalizePhoneme: lines 2550, 8682
+    normalizeSteps: lines 36254, 50943
+    normalizedAnswer: lines 25511, 49145, 49202
+    normalizedUser: lines 25510, 49144, 49201, 49217
+    numMatch: lines 36992, 46468, 46848
+    options: lines 6347, 6783, 7507, 7527, 7547
+    optionsInstruction: lines 45079, 45398
+    opts: lines 3989, 5060
+    ordinals: lines 3096, 3881, 3889, 6842, 8385
+    originalGlobalIndex: lines 50473, 50501
+    originalLevel: lines 36958, 36971
+    originalText: lines 35299, 39730, 60170
+    otherItems: lines 48567, 48573
+    outlinePrompt: lines 39207, 39348
+    outlineResult: lines 39217, 39392
+    outputLang: lines 39786, 39848, 39969
+    pLower: lines 4917, 6220
+    pPhoneme: lines 9469, 9478
+    pageTitle: lines 38704, 41548
+    paragraphs: lines 20942, 38743, 40440, 42218, 56209
+    parsed: lines 17129, 27197, 30217, 30463, 30541
+    particles: lines 17538, 25380
+    parts: lines 17106, 17158, 19576, 19585, 36489
+    partsArray: lines 62546, 62756
+    pastelColors: lines 6235, 22451, 22783
+    payload: lines 16614, 21490, 34777, 37543, 38167
+    percent: lines 25674, 26191, 26263, 62317, 65887
+    percentage: lines 16872, 21677, 26260, 26445, 49730
+    phonemeData: lines 5933, 7488
+    phonemes: lines 2586, 5220, 6418, 6760, 8739
+    phonemesRaw: lines 3092, 6758
+    placedWords: lines 23504, 38594
+    planItems: lines 48566, 48572, 51376
+    playPromise: lines 40016, 40289, 40546, 52503
+    points: lines 7983, 26982, 53768
+    pool: lines 4646, 7442, 7505, 9465
+    posKey: lines 6843, 8386
+    prevArray: lines 5836, 5846, 5871, 5889, 5953
+    prevIdx: lines 24094, 26469
+    prevText: lines 40059, 40204
+    printWindow: lines 42515, 45920
+    problemToSolve: lines 36149, 50881
+    problems: lines 18191, 41169, 51579
+    processed: lines 1604, 48837
+    processedPuzzles: lines 48836, 48928
+    progress: lines 21676, 25672, 26189
+    progressPercent: lines 463, 31008
+    promise: lines 21322, 40170, 44692
+    prompt: lines 1589, 1608, 5423, 5986, 16611
+    puzzle: lines 25502, 25696, 48998, 49087, 49120
+    puzzles: lines 25443, 26129
+    qCount: lines 18086, 26498
+    qText: lines 18092, 26930, 26937
+    question: lines 26255, 53691
+    questions: lines 18085, 18167, 26915, 27100, 27250
+    queue: lines 4790, 4876, 24039
+    quizItems: lines 26911, 42672
+    quizzes: lines 27096, 27248
+    rControlled: lines 2381, 9426
+    randomizeName: lines 17119, 25136
+    rawAdd: lines 44067, 44323, 44676, 44705
+    rawBase64: lines 6137, 26330, 26353, 38478, 38510
+    rawChunks: lines 27843, 38778
+    rawData: lines 42829, 62701
+    rawText: lines 36142, 39525, 42223, 49399
+    rawUrl: lines 38185, 38439
+    reader: lines 230, 394, 884, 16788, 21377
+    realGrammarErrors: lines 35256, 60162
+    recentHistory: lines 4743, 7207, 45114, 45501
+    recentText: lines 45115, 45502
+    recognition: lines 7704, 25016
+    recognitionRef: lines 3405, 31324
+    rect: lines 8204, 17398, 17594, 22117, 22207
+    refinedUrl: lines 38487, 43875
+    refinementPrompt: lines 6142, 45746, 45776
+    regionText: lines 30184, 53039
+    rendered: lines 19575, 19584
+    renderedSubParts: lines 36694, 37319
+    repairPrompt: lines 5263, 16746, 34052, 37580, 37787
+    repairResult: lines 34056, 50136, 50434
+    request: lines 29781, 29817, 29831
+    reset: lines 4490, 22248, 22622, 22923
+    resourceContext: lines 43634, 46214
+    resourceId: lines 36595, 36622, 41724, 67452
+    resourcesToUpload: lines 42011, 42055, 42102
+    resp: lines 27104, 27255, 42681, 53401
+    response: lines 44, 882, 16464, 16733, 21508
+    responseId: lines 41760, 41801
+    responseText: lines 46253, 46265, 47998
+    responses: lines 26900, 27095, 42624, 53396
+    result: lines 1590, 1648, 4697, 5618, 10917
+    resultItem: lines 46550, 46603, 46627, 46660, 48635
+    resultRaw: lines 38064, 47814, 47996
+    results: lines 5710, 27222, 27753, 27885
+    retryData: lines 5600, 38312
+    retryResponse: lines 5597, 38307
+    retryWord: lines 6596, 7637
+    reverseMap: lines 20790, 20826, 39292
+    rimeDifficulty: lines 9740, 16300, 36824, 50041
+    rimeDistractorLimit: lines 9742, 16302, 36826, 50043
+    rimeKeys: lines 9753, 16313, 36837, 50054
+    rimeMemberLimit: lines 9741, 16301, 36825, 50042
+    rimeWordLen: lines 9739, 16299, 36823, 50040
+    rollModifier: lines 45098, 45408
+    rootId: lines 33492, 33910, 33956
+    rows: lines 10538, 19574, 19583, 27241, 36882
+    safeState: lines 44801, 45359
+    safeTitle: lines 50485, 50491
+    sample: lines 381, 37641
+    saved: lines 17573, 30538, 30567, 30587, 30597
+    savedHistory: lines 35063, 35663
+    savedVal: lines 41138, 41151
+    score: lines 26844, 26944, 27262, 34216, 37397
+    scrambleWord: lines 8437, 19529
+    script: lines 10352, 16933, 29726, 36386, 36399
+    sections: lines 18173, 40482
+    seed: lines 5155, 5183, 8440, 8458, 8465
+    selectedDistractors: lines 9516, 9767, 16327, 36851, 50068
+    selectedMembers: lines 9750, 16310, 36834, 50051
+    selection: lines 39713, 52926
+    sentences: lines 35309, 35571, 37382, 38746, 40678
+    sentencesInPara: lines 62717, 62891
+    sessionId: lines 40454, 52444
+    sessionRef: lines 19845, 19863, 25488, 25520, 25545
+    shared: lines 40921, 51799
+    shouldFocus: lines 62726, 62896
+    shuffled: lines 92, 5156, 5184, 22517, 23898
+    shuffledCommon: lines 4914, 6216
+    sideBySideData: lines 61731, 62703
+    size: lines 25340, 38592
+    slide: lines 42225, 42259, 42293, 42310, 42343
+    snapshot: lines 30934, 42907
+    snippet: lines 43533, 43743, 47005, 47067
+    socialStoryInstruction: lines 44545, 45075
+    solved: lines 25673, 26190
+    sourceSentences: lines 40436, 61733
+    sourceText: lines 37045, 37763, 44439, 44774, 45055
+    speakerName: lines 39616, 40659, 48192
+    speed: lines 17361, 52517
+    splitIdx: lines 23473, 34698, 46042, 52476, 60943
+    standardsContext: lines 48143, 48252
+    start: lines 22314, 35749, 52923
+    startIdx: lines 62718, 62892
+    stateNames: lines 44336, 44341
+    stats: lines 3434, 10410, 10446, 17142, 17156
+    step: lines 7082, 32946, 33181
+    storedAppearance: lines 43809, 43825
+    streakBonus: lines 7226, 8939
+    strokeWidth: lines 25341, 33763
+    studentResps: lines 27253, 42679
+    students: lines 10582, 44452
+    style: lines 11006, 30369, 32759, 32918, 32931
+    styleInstruction: lines 49593, 52618
+    styles: lines 19882, 23007
+    subParts: lines 36693, 37318
+    suggestions: lines 47500, 47564
+    summary: lines 45831, 48427
+    syllables: lines 37112, 37196
+    target: lines 4102, 5050, 7639, 8924, 21451
+    targetAppId: lines 35000, 42125, 44855, 45336, 45657
+    targetIdx: lines 16139, 40193
+    targetIndex: lines 48181, 54058
+    targetItem: lines 36601, 36628, 52880
+    targetKey: lines 46292, 47022
+    targetLang: lines 44532, 45067, 45391
+    targetQual: lines 43853, 45716, 50187
+    targetSentences: lines 40437, 61734
+    targetWidth: lines 43852, 45715, 50186
+    targetWord: lines 5391, 5904, 5980, 6033, 6265
+    teamColor: lines 19817, 26437
+    teamColors: lines 25448, 26121
+    teamOptions: lines 19840, 25483
+    tempMeta: lines 39566, 39581
+    temporarilyEnabled: lines 32921, 32934
+    term: lines 35455, 60750, 60758
+    termNames: lines 18114, 37716
+    terms: lines 18112, 24434, 38557, 43178
+    text: lines 3521, 5775, 6531, 10403, 10494
+    textBlock: lines 62544, 62582
+    textEn: lines 41027, 64408
+    textSentenceCount: lines 65881, 66083
+    textToCheck: lines 52969, 53108
+    textToSend: lines 46318, 47054, 47928
+    timeoutId: lines 16526, 16536, 16557, 34848, 35176
+    timeoutPromise: lines 2761, 17939, 39544, 40145, 40163
+    timer: lines 1517, 4451, 5812, 6190, 6492
+    tips: lines 18079, 18232
+    title: lines 16241, 20866, 20890, 36561, 36569
+    toIdx: lines 2141, 63739
+    today: lines 4965, 30697
+    tokens: lines 16219, 37267
+    toneInstruction: lines 44539, 51104
+    toolId: lines 32688, 33052, 33075, 46287
+    topic: lines 26325, 30281, 38012, 43635, 47135
+    total: lines 21903, 22904, 44196
+    totalDuration: lines 268, 20754
+    totalLength: lines 7982, 40700
+    totalPuzzles: lines 26130, 49046, 63524
+    totalXP: lines 7229, 48284, 63531
+    trans: lines 23470, 29444, 34707, 38573, 52399
+    transString: lines 36478, 67402
+    transcript: lines 7722, 35733, 47115
+    translated: lines 861, 41329
+    trigraphs: lines 4604, 5514, 5633
+    trimmed: lines 3641, 20957, 37379, 39107, 50530
+    turnsSinceLastDrop: lines 45060, 45378
+    type: lines 212, 18080, 33729, 37254, 40916
+    uniqueOptions: lines 27852, 38787
+    unsubscribe: lines 34866, 35046
+    updated: lines 4935, 4957, 4967, 5837, 5847
+    updatedContent: lines 34257, 38661, 43457, 45718, 45754
+    updatedHistory: lines 44357, 47884
+    updatedItem: lines 49920, 51566, 52552, 52711, 53237
+    updates: lines 26496, 41977, 47829
+    urlObj: lines 36664, 40767
+    usedPhonemes: lines 4910, 6213
+    userGroupId: lines 34899, 34953
+    userMsg: lines 46320, 47057
+    userTeam: lines 25439, 49042
+    utterance: lines 17977, 31121, 52516
+    victoryHistory: lines 44232, 45591
+    view: lines 358, 37055
+    vowelGroups: lines 1531, 37394
+    vowels: lines 5664, 6328, 9066
+    wClean: lines 9467, 9476
+    wavBlob: lines 303, 428
+    wavBuffer: lines 357, 38379, 40715, 40720
+    wfRng: lines 9746, 16306, 36830, 50047
+    wfSeed: lines 9745, 16305, 36829, 50046
+    wfShuffle: lines 9747, 16307, 36831, 50048
+    width: lines 8067, 8163, 21742, 21890, 25290
+    word: lines 2020, 2032, 2573, 2579, 2585
+    wordCount: lines 18129, 23883
+    wordSeed: lines 6446, 6907, 9436
+    words: lines 1591, 4649, 23466, 23893, 37384
+    writeString: lines 360, 37056
+    xpAwarded: lines 34134, 34221
+
+======================================================================
+  7. LARGE INLINE STYLE OBJECTS (>3 properties)
+======================================================================
+
+  Large inline styles (≥4 CSS properties): 4
+  (First 15 shown)
+    L67616 (7 props): style={  position: 'absolute', top: 0, left: 0, right: 0, height: tourRect.top, backgrou... }
+    L67617 (7 props): style={  position: 'absolute', top: tourRect.top, left: 0, width: tourRect.left, height:... }
+    L67618 (7 props): style={  position: 'absolute', top: tourRect.top, right: 0, left: tourRect.right, height... }
+    L67619 (7 props): style={  position: 'absolute', top: tourRect.bottom, left: 0, right: 0, bottom: 0, backg... }
+
+======================================================================
+  8. UNPROTECTED AWAITS (no try-catch nearby)
+======================================================================
+
+  Awaits without try-catch or .catch(): 219
+  (First 15 shown)
+    L305: const base64 = await this.blobToBase64(wavBlob);
+    L307: const chunkTranscript = await transcribeChunk(base64, 'audio/wav');
+    L420: const arrayBuffer = await this.readFileAsArrayBuffer(videoFile);
+    L426: const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+    L442: const audioFile = await this.extractAudioFromVideo(file, onProgress);
+    L1648: const result = await callGemini(prompt, true);
+    L1710: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Cau
+    L2800: await onPlayAudio(phoneme);
+    L2801: await new Promise(r => setTimeout(r, 900));
+    L2996: try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
+    L3053: try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
+    L3574: await playInstance(audio);
+    L3583: await playInstance(audioInstances.current.get(text));
+    L3992: await onPlayAudio(opts[i], true);
+    L3993: await new Promise(r => setTimeout(r, 600));
+
+======================================================================
+  SUMMARY
+======================================================================
+  Write-only state vars:      10
+  Read-only state vars:       3
+  Interval leak candidates:   0
+  Z-index collisions (>2):    13
+  Console.log statements:     5
+  Empty catch blocks:         14
+  Duplicate functions:        656
+  Large inline styles:        4
+  Unprotected awaits:         219

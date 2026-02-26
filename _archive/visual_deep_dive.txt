@@ -1,0 +1,71 @@
+=== VISUAL PANEL DEEP DIVE RESEARCH ===
+
+--- STATE & MODES ---
+[visualStyle] Line 31219: const [visualStyle, setVisualStyle] = useState('Default');
+[setVisual] Line 31217: const [visualCustomInstructions, setVisualCustomInstructions] = useState('');
+
+--- IMAGE STYLES ---
+[illustration] Line 10001: tool_visual: "Generate AI illustrations and diagrams for your lesson.",
+[cartoon] Line 7850: image_style_hint: "e.g. 'watercolor', 'cartoon', 'minimalist icons'",
+[sketch] Line 27902: 'glossary_image_style': "Define the art style for AI-generated term images (e.g., 'pixel art', 'cartoon', 'sketch').",
+[watercolor] Line 7850: image_style_hint: "e.g. 'watercolor', 'cartoon', 'minimalist icons'",
+[comic] Line 8719: comic: "Comic Book Style",
+[diagram] Line 7134: visual_diagram: "Visual Diagram"
+[photo] Line 43560: - 1840s-1900: "Vintage Daguerreotype, sepia tone, early photography style, vignette, scratches"
+
+--- GENERATION FEATURES ---
+[imagePrompt] Line 1121: "imagePrompt": "Icon of ${rawWord}, white background"
+[callGeminiImage] Line 4153: // Use existing callGeminiImage function if available
+
+--- COMIC/STORYBOARD ---
+[comic] Line 55046: <option value="Comic Book Style">{t('visuals.styles.comic')}</option>
+[panel] Line 9129: bot_intro: "I've configured the next lesson topic: \"**{topic}**\".\n\nI've pre-filled the source generation settings based on the curri
+[sequence] Line 8588: timeline_desc: "Visualize the sequence of events or steps.",
+[strip] Line 35449: // Programmatically strip any AI-generated Sources/References sections
+[scene] Line 27748: • **Storybook Export**: Export illustrated adventures as HTML with AI-generated scene art.
+[illustrated] Line 27748: • **Storybook Export**: Export illustrated adventures as HTML with AI-generated scene art.
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 27444: id: 'tour-tool-visual',
+Line 27445: text: `Enhance comprehension with AI-generated imagery. This tool automatically creates a visual representation of key concepts to support Dual Coding strategies.
+Line 27446: 
+Line 27447: ### Resource Features
+Line 27448: • **Auto-Generation**: Creates a relevant image based on your text analysis.
+Line 27449: • **Regenerate**: Request a new variation if the first image isn't perfect.
+Line 27450: • **Downloadable**: Save the image for use in slides or handouts.
+Line 27451: 
+Line 27452: ### UDL Connection
+Line 27453: • **Representation**: Clarify syntax and structure (Guideline 2) by providing visual alternatives to text.`,
+Line 27454: 
+Line 27455: title: t('tour.visual_title'),
+Line 27456: },
+Line 27457: {
+Line 27458: id: 'tour-tool-faq',
+Line 27459: text: `Anticipate student confusion before it happens. Automatically generates a predictive FAQ based on the text's complexity, proactively addressing common misconceptions.
+Line 27460: 
+Line 27461: ### Panel Options
+Line 27462: • **Question Count**: Choose 3, 5, 8, or 10 Q&A pairs to generate.
+Line 27463: • **Custom Instructions**: Guide generation with specific focus areas (e.g., "focus on vocabulary" or "target common errors").
+Line 27464: 
+Line 27465: ### Key Features
+Line 27466: • **Auto-Generation**: Instantly creates Questions & Answers based on text analysis.
+Line 27467: • **Audio Support**: Text-to-Speech for both questions and answers; click any Q or A to hear it aloud.
+Line 27468: • **Bilingual Support**: View and hear translations if a target language is selected.
+Line 27469: • **Click-to-Hear Mode**: Interactive listening station for independent study.
+
+--- UI PANEL OPTIONS ---
+Line 54993: <div id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+Line 54997: data-help-key="tool_visual"
+Line 55007: <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3" data-help-key="tour-visual-settings">
+Line 55010: <input data-help-key="visuals_worksheet_mode" type="checkbox" checked={fillInTheBlank} onChange={(e) => setFillI
+Line 55014: <input data-help-key="visuals_creative_mode" type="checkbox" checked={creativeMode} onChange={(e) => setCrea
+Line 55018: <input data-help-key="visuals_no_text" type="checkbox" checked={noText} onChange={(e) => setNoText(e.target.
+Line 55023: data-help-key="visuals_low_quality"
+Line 55036: data-help-key="visuals_art_style"
+Line 55053: <textarea data-help-key="visuals_custom_instructions" value={visualCustomInstructions} onChange={(e) => setVisualCus
+Line 63545: data-help-key="visuals_regenerate"
+Line 63554: <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-6" data-help-key="visu
+Line 63559: <div className="w-full max-w-2xl bg-yellow-50 rounded-xl border border-yellow-100 p-4 shadow-sm mb-6" data-help-key=
+Line 63596: <button onClick={handleDownloadImage} data-help-key="visuals_download" className="flex-1 flex items-center justi
+Line 63597: <button onClick={handleDeleteImage} data-help-key="visuals_delete" className="flex-none flex items-center justif
+Line 66214: data-help-key="settings_perm_visuals"

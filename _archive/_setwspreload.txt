@@ -1,0 +1,33 @@
+LINE 3175: setWsPreloadedWords,
+LINE 3281: const setPreloadedWords = setWsPreloadedWords || (() => {
+LINE 3282: console.warn("setWsPreloadedWords is not defined - updates won't persist");
+LINE 5876: if (setWsPreloadedWords) {
+LINE 5877: setWsPreloadedWords(prev => prev.map(w =>
+LINE 5889: if (setWsPreloadedWords) {
+LINE 5890: setWsPreloadedWords(prev => prev.map(pw => {
+LINE 5901: }, [preloadedWords, handleAudio, setWsPreloadedWords]);
+LINE 5937: if (setWsPreloadedWords) {
+LINE 5938: setWsPreloadedWords(newOrder);
+LINE 5939: console.log("✅ Reordered words via setWsPreloadedWords");
+LINE 5944: }, [setWsPreloadedWords]);
+LINE 5949: if (setWsPreloadedWords) {
+LINE 5950: setWsPreloadedWords(prev => {
+LINE 5956: console.log("✅ Updated word at index", index, "via setWsPreloadedWords");
+LINE 5982: console.log("🗑️ DELETE: Attempting to remove word at index:", idx, "setWsPreloadedWords defined:", !!setWsPreloadedWords);
+LINE 6002: const usedLifted = performDelete(setWsPreloadedWords, 'setWsPreloadedWords');
+LINE 6014: }, [setWsPreloadedWords]);
+LINE 6078: if (setWsPreloadedWords) {
+LINE 6079: setWsPreloadedWords(prev => {
+LINE 6102: }, [preloadedWords, fetchWordData, setWsPreloadedWords, handleAudio]);
+LINE 6131: setWsPreloadedWords(prev => {
+LINE 6148: }, [preloadedWords, callGemini, setWsPreloadedWords, handleAudio]); // Removed showError dependency if not stable, but it's likely stable
+LINE 6194: const setter = setWsPreloadedWords || setPreloadedWords;
+LINE 6203: }, [preloadedWords, fetchWordData, setWsPreloadedWords, setPreloadedWords, addToast]);
+LINE 32344: const [wsPreloadedWords, setWsPreloadedWords] = useState([]);
+LINE 38174: setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+LINE 45619: setWsPreloadedWords(wordsWithFreshTtsFlags);
+LINE 45624: setWsPreloadedWords(item.data);
+LINE 45680: setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+LINE 57483: setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+LINE 65272: setWsPreloadedWords={setWsPreloadedWords}
+LINE 71890: setWsPreloadedWords(words);

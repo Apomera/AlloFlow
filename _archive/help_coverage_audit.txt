@@ -1,0 +1,123 @@
+=== HELP MODE COVERAGE AUDIT ===
+
+--- HEADER BUTTONS (lines 51500-52000) ---
+
+Line 51508 ✓: <button
+Line 51509 ✓: onClick={toggleTheme}
+Line 51523 ✓: <button
+Line 51524 ✓: onClick={toggleOverlay}
+Line 51535 ❌ MISSING: <button
+Line 51536 ❌ MISSING: onClick={() => {
+Line 51555 ✓: <button
+Line 51556 ✓: onClick={() => setActiveView('dashboard')}
+Line 51565 ✓: <button
+Line 51566 ✓: onClick={() => handleRestoreView(latestLessonPlan)}
+Line 51580 ✓: <button
+Line 51581 ✓: onClick={() => setShowHintsModal(true)}
+Line 51593 ✓: <button
+Line 51594 ✓: onClick={() => setIsBotVisible(!isBotVisible)}
+Line 51605 ❌ MISSING: <button
+Line 51607 ❌ MISSING: onClick={() => setIsHelpMode(!isHelpMode)}
+Line 51615 ✓: <button
+Line 51616 ✓: onClick={handleCloudToggleClick}
+Line 51627 ✓: <button
+Line 51628 ✓: onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
+Line 51637 ✓: <button
+Line 51638 ✓: onClick={() => setShowInfoModal(true)}
+Line 51673 ❌ MISSING: <button
+Line 51674 ✓: onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
+Line 51689 ✓: <button
+Line 51691 ✓: onClick={() => {
+Line 51707 ❌ MISSING: <button
+Line 51708 ✓: onClick={() => setIsJoinPopoverOpen(!isJoinPopoverOpen)}
+Line 51742 ❌ MISSING: <button
+Line 51743 ❌ MISSING: onClick={() => joinClassSession(joinCodeInput)}
+Line 51755 ❌ MISSING: <div className="fixed inset-0 z-[90]" onClick={() => setIsJoinPopoverOpen(false)}></div>
+Line 51764 ❌ MISSING: <button
+Line 51765 ❌ MISSING: onClick={() => setIsTranslateModalOpen(true)}
+Line 51773 ❌ MISSING: <button
+Line 51774 ✓: onClick={() => setShowExportMenu(!showExportMenu)}
+Line 51789 ❌ MISSING: <button
+Line 51790 ✓: onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
+Line 51798 ❌ MISSING: <button
+Line 51799 ✓: onClick={() => { handleExport('print'); setShowExportMenu(false); }}
+Line 51806 ❌ MISSING: <button
+Line 51807 ✓: onClick={() => { handleExport('worksheet'); setShowExportMenu(false); }}
+Line 51814 ❌ MISSING: <button
+Line 51815 ✓: onClick={() => { handleExport('html'); setShowExportMenu(false); }}
+Line 51822 ❌ MISSING: <button
+Line 51823 ❌ MISSING: onClick={() => { handleExportSlides(); setShowExportMenu(false); }}
+Line 51833 ❌ MISSING: <button
+Line 51834 ✓: onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
+Line 51844 ❌ MISSING: {showExportMenu && <div className="fixed inset-0 z-[90]" onClick={() => setShowExportMenu(false)}></
+Line 51850 ❌ MISSING: <button
+Line 51851 ❌ MISSING: onClick={() => setShowSubmitModal(true)}
+Line 51869 ❌ MISSING: <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-cen
+Line 51870 ❌ MISSING: <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h
+Line 51875 ❌ MISSING: <button onClick={() => setShowInfoModal(false)} className="p-2 rounded-full hover:bg-indigo-600 focu
+Line 51880 ❌ MISSING: <button
+Line 51881 ❌ MISSING: onClick={() => setInfoModalTab('about')}
+Line 51886 ❌ MISSING: <button
+Line 51887 ❌ MISSING: onClick={() => setInfoModalTab('features')}
+Line 51941 ❌ MISSING: <button
+Line 51942 ❌ MISSING: onClick={() => {
+
+
+--- RESOURCE PACK / HISTORY BUTTONS ---
+
+Line 52570 ❌ MISSING: <button onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen(false); setPersonaR
+
+
+--- HELP MODE COLOR STYLING ---
+
+
+
+--- EXISTING HEADER HELP KEYS ---
+
+Line 51299: xp_modal_trigger
+Line 51324: header_settings_text
+Line 51340: header_settings_text_reset
+Line 51347: header_settings_text_font
+Line 51360: header_settings_text_bionic
+Line 51381: header_settings_text_size
+Line 51403: header_settings_text_line_height
+Line 51416: header_settings_text_spacing
+Line 51428: header_settings_voice
+Line 51450: header_settings_voice_select
+Line 51469: header_settings_voice_speed
+Line 51482: header_settings_voice_volume
+Line 51501: header_settings_anim
+Line 51510: header_settings_theme
+Line 51525: header_settings_overlay
+Line 51557: header_dashboard
+Line 51567: header_jump_lesson
+Line 51582: hints_recall
+Line 51595: header_bot_toggle
+Line 51617: header_cloud_sync
+Line 51629: header_tour_start
+Line 51639: header_about
+Line 51650: header_support
+Line 51666: header_language
+Line 51676: header_session_start
+Line 51690: header_session_status
+Line 51710: header_session_join
+Line 51768: header_translate
+Line 51776: header_export
+Line 51792: export_qti
+Line 51801: export_print
+Line 51809: export_worksheet
+Line 51817: export_html
+Line 51826: export_slides
+Line 51836: export_ims
+Line 51854: header_submit
+Line 52111: hints_generate_extension
+Line 52134: xp_modal_summary
+Line 52232: export_storybook_images
+Line 52245: export_storybook_text
+Line 52342: persona_auto_read
+Line 52349: persona_auto_send
+Line 52366: persona_show_hints
+Line 52384: persona_response_mode
+Line 52405: persona_topic_spark
+Line 52421: persona_save_chat
+Line 52431: persona_conclude

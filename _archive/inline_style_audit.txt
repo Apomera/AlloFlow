@@ -1,0 +1,19 @@
+=== INLINE STYLE DEDUP AUDIT (56 total inline styles) ===
+
+=== EXACT DUPLICATES (1) ===
+(Identical style objects used 2+ times — extract to CSS class or constant)
+
+  [3x] minHeight: '200px'
+       at: L10739, L10744, L65622
+
+
+=== MOST COMMON PROPERTIES (0) ===
+(Individual CSS props appearing 5+ times in inline styles)
+
+
+=== SUMMARY ===
+  Total inline styles: 56
+  Unique styles: 53
+  Duplicate patterns: 1
+  Total duplicate instances: 3
+  Potential savings: 2 object allocations per render

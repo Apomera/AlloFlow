@@ -1,0 +1,10 @@
+﻿L17373 [ 4]: '"Indonesian": "Indonesian",'
+L17374 [ 4]: '"Turkish": "Turkish",'
+L17375 [ 2]: '},'
+L17376 [-1]: ''
+L17377 [ 4]: '},'
+L17378 [ 4]: "move_up: 'Move Up',"
+L17379 [ 4]: "move_down: 'Move Down',"
+L17380 [ 0]: '};'
+L17381 [ 0]: '// #endregion'
+L17382 [ 0]: '// #region --- HELPERS & UTILITIES ---'

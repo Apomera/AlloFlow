@@ -1,0 +1,490 @@
+{
+  "phoneme_audio_bank": {
+    "start": 0,
+    "end": 0,
+    "keys": []
+  },
+  "instruction_audio": {
+    "start": 0,
+    "end": 0,
+    "keys": []
+  },
+  "handleAudio_calls": [
+    {
+      "line": 4907,
+      "arg": "phoneme",
+      "context": "await handleAudio(phoneme);"
+    },
+    {
+      "line": 6516,
+      "arg": "targetWord, false",
+      "context": "await handleAudio(targetWord, false);"
+    },
+    {
+      "line": 6523,
+      "arg": "d, false",
+      "context": "await Promise.all(distractorSets.map(d => handleAudio(d, false).catch(() => {})));"
+    },
+    {
+      "line": 6526,
+      "arg": "k, false",
+      "context": "await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));"
+    },
+    {
+      "line": 6655,
+      "arg": "targetWord, false",
+      "context": "await handleAudio(targetWord, false);"
+    },
+    {
+      "line": 6666,
+      "arg": "k, false",
+      "context": "await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));"
+    },
+    {
+      "line": 6840,
+      "arg": "text, false",
+      "context": "await handleAudio(text, false).catch(e => warnLog(\"Audio prefetch failed:\", e));"
+    },
+    {
+      "line": 6990,
+      "arg": "targetWord, true",
+      "context": "await handleAudio(targetWord, true);"
+    },
+    {
+      "line": 7023,
+      "arg": "newOption, false",
+      "context": "handleAudio(newOption, false);"
+    },
+    {
+      "line": 7415,
+      "arg": "phoneme, false",
+      "context": "handleAudio(phoneme, false).catch(async (err) => {"
+    },
+    {
+      "line": 7418,
+      "arg": "phoneme, false",
+      "context": "handleAudio(phoneme, false).catch(() => {});"
+    },
+    {
+      "line": 7459,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7464,
+      "arg": "isolationState.isoOptions[i]",
+      "context": "await handleAudio(isolationState.isoOptions[i]);"
+    },
+    {
+      "line": 7473,
+      "arg": "typeof o === 'string' ? o : o.text, false",
+      "context": "await Promise.all(rhymeOptionsRef.current.map(o => handleAudio(typeof o === 'string' ? o : o.text, false).catch(() => {}"
+    },
+    {
+      "line": 7479,
+      "arg": "text",
+      "context": "await handleAudio(text);"
+    },
+    {
+      "line": 7728,
+      "arg": "INSTRUCTION_AUDIO['trace_letter']",
+      "context": "await handleAudio(INSTRUCTION_AUDIO['trace_letter']);"
+    },
+    {
+      "line": 7732,
+      "arg": "LETTER_NAME_AUDIO[lowLet]",
+      "context": "await handleAudio(LETTER_NAME_AUDIO[lowLet]);"
+    },
+    {
+      "line": 7734,
+      "arg": "upperLet",
+      "context": "await handleAudio(upperLet);"
+    },
+    {
+      "line": 7738,
+      "arg": "INSTRUCTION_AUDIO['for']",
+      "context": "await handleAudio(INSTRUCTION_AUDIO['for']);"
+    },
+    {
+      "line": 7742,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7780,
+      "arg": "INSTRUCTION_AUDIO['sound_match_start']",
+      "context": "await handleAudio(INSTRUCTION_AUDIO['sound_match_start']);"
+    },
+    {
+      "line": 7782,
+      "arg": "targetSound",
+      "context": "await handleAudio(targetSound);"
+    },
+    {
+      "line": 7788,
+      "arg": "INSTRUCTION_AUDIO['sound_match_end']",
+      "context": "await handleAudio(INSTRUCTION_AUDIO['sound_match_end']);"
+    },
+    {
+      "line": 7790,
+      "arg": "targetSound",
+      "context": "await handleAudio(targetSound);"
+    },
+    {
+      "line": 7803,
+      "arg": "`Find all words in the ${targetRime} family`",
+      "context": "await handleAudio(`Find all words in the ${targetRime} family`);"
+    },
+    {
+      "line": 7807,
+      "arg": "INSTRUCTION_AUDIO['inst_rhyming']",
+      "context": "await handleAudio(INSTRUCTION_AUDIO['inst_rhyming']);"
+    },
+    {
+      "line": 7811,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7813,
+      "arg": "\"Which word rhymes with\"",
+      "context": "await handleAudio(\"Which word rhymes with\");"
+    },
+    {
+      "line": 7817,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7824,
+      "arg": "instructionAudioSrc",
+      "context": "await handleAudio(instructionAudioSrc);"
+    },
+    {
+      "line": 7826,
+      "arg": "instructionText",
+      "context": "await handleAudio(instructionText);"
+    },
+    {
+      "line": 7846,
+      "arg": "typeof o === 'string' ? o : o.text, false",
+      "context": "await Promise.all(effectiveBlendingOptions.map(o => handleAudio(typeof o === 'string' ? o : o.text, false).catch(() => {"
+    },
+    {
+      "line": 7852,
+      "arg": "effectiveBlendingOptions[i]",
+      "context": "await handleAudio(effectiveBlendingOptions[i]);"
+    },
+    {
+      "line": 7862,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7867,
+      "arg": "typeof o === 'string' ? o : o.text, false",
+      "context": "await Promise.all(rhymeOptionsRef.current.map(o => handleAudio(typeof o === 'string' ? o : o.text, false).catch(() => {}"
+    },
+    {
+      "line": 7872,
+      "arg": "rhymeOptionsRef.current[i]",
+      "context": "await handleAudio(rhymeOptionsRef.current[i]);"
+    },
+    {
+      "line": 7881,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7885,
+      "arg": "o, false",
+      "context": "await Promise.all(isolationState.isoOptions.map(o => handleAudio(o, false).catch(() => {})));"
+    },
+    {
+      "line": 7890,
+      "arg": "isolationState.isoOptions[i]",
+      "context": "await handleAudio(isolationState.isoOptions[i]);"
+    },
+    {
+      "line": 7900,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7905,
+      "arg": "currentWordSoundsWord",
+      "context": "await handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 7975,
+      "arg": "currentWordSoundsWord",
+      "context": "setTimeout(() => handleAudio(currentWordSoundsWord), 300);"
+    },
+    {
+      "line": 7980,
+      "arg": "currentWordSoundsWord",
+      "context": "if (isMountedRef.current && currentWordSoundsWord) handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 8002,
+      "arg": "expectedAnswer",
+      "context": "setTimeout(() => handleAudio(expectedAnswer), 300);"
+    },
+    {
+      "line": 8007,
+      "arg": "expectedAnswer",
+      "context": "if (isMountedRef.current) handleAudio(expectedAnswer);"
+    },
+    {
+      "line": 8277,
+      "arg": "expectedAnswer",
+      "context": "if (isMountedRef.current) handleAudio(expectedAnswer);"
+    },
+    {
+      "line": 8611,
+      "arg": "chip.phoneme",
+      "context": "handleAudio(chip.phoneme);"
+    },
+    {
+      "line": 8637,
+      "arg": "item.phoneme",
+      "context": "handleAudio(item.phoneme);"
+    },
+    {
+      "line": 8663,
+      "arg": "item.phoneme",
+      "context": "handleAudio(item.phoneme);"
+    },
+    {
+      "line": 9153,
+      "arg": "currentWordSoundsWord",
+      "context": "onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}"
+    },
+    {
+      "line": 9165,
+      "arg": "currentWordSoundsWord",
+      "context": "onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}"
+    },
+    {
+      "line": 9201,
+      "arg": "ISOLATION_AUDIO[posKey]",
+      "context": "if (ISOLATION_AUDIO[posKey]) { handleAudio(ISOLATION_AUDIO[posKey]); }"
+    },
+    {
+      "line": 9202,
+      "arg": "ts('word_sounds.isolation_prompt'",
+      "context": "else { handleAudio(ts('word_sounds.isolation_prompt')); }"
+    },
+    {
+      "line": 9204,
+      "arg": "INSTRUCTION_AUDIO[rptKey] || INSTRUCTION_AUDIO[wordSoundsActivity]",
+      "context": "handleAudio(INSTRUCTION_AUDIO[rptKey] || INSTRUCTION_AUDIO[wordSoundsActivity]);"
+    },
+    {
+      "line": 9206,
+      "arg": "ts(`word_sounds.${wordSoundsActivity}_prompt`",
+      "context": "handleAudio(ts(`word_sounds.${wordSoundsActivity}_prompt`));"
+    },
+    {
+      "line": 9222,
+      "arg": "box.phoneme",
+      "context": "await handleAudio(box.phoneme);"
+    },
+    {
+      "line": 9239,
+      "arg": "currentWordSoundsWord",
+      "context": "sbTimer = setTimeout(() => handleAudio(currentWordSoundsWord), 300);"
+    },
+    {
+      "line": 9409,
+      "arg": "chip.phoneme",
+      "context": "onClick={() => handleAudio(chip.phoneme)}"
+    },
+    {
+      "line": 9461,
+      "arg": "chip.phoneme",
+      "context": "onClick={() => handleAudio(chip.phoneme)}"
+    },
+    {
+      "line": 9550,
+      "arg": "phonemes[i]",
+      "context": "await handleAudio(phonemes[i]);"
+    },
+    {
+      "line": 9593,
+      "arg": "blendingOptions[i]",
+      "context": "await handleAudio(blendingOptions[i]);"
+    },
+    {
+      "line": 9644,
+      "arg": "word",
+      "context": "handleAudio(word);"
+    },
+    {
+      "line": 9755,
+      "arg": "currentWordSoundsWord",
+      "context": "handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 9777,
+      "arg": "currentWordSoundsWord",
+      "context": "onClick={() => handleAudio(currentWordSoundsWord)}"
+    },
+    {
+      "line": 9785,
+      "arg": "currentWordSoundsWord, null, 0.5",
+      "context": "onClick={() => handleAudio(currentWordSoundsWord, null, 0.5)}"
+    },
+    {
+      "line": 9921,
+      "arg": "currentWordSoundsWord",
+      "context": "onClick={() => handleAudio(currentWordSoundsWord)}"
+    },
+    {
+      "line": 10037,
+      "arg": "currentWordSoundsWord",
+      "context": "handleAudio(currentWordSoundsWord);"
+    },
+    {
+      "line": 10053,
+      "arg": "currentWordSoundsWord",
+      "context": "onClick={() => handleAudio(currentWordSoundsWord)}"
+    },
+    {
+      "line": 10305,
+      "arg": "INSTRUCTION_AUDIO['fb_great_job']",
+      "context": "handleAudio(INSTRUCTION_AUDIO['fb_great_job']);"
+    },
+    {
+      "line": 10310,
+      "arg": "INSTRUCTION_AUDIO['now_try_lowercase']",
+      "context": "handleAudio(INSTRUCTION_AUDIO['now_try_lowercase']);"
+    },
+    {
+      "line": 10316,
+      "arg": "INSTRUCTION_AUDIO['fb_amazing']",
+      "context": "handleAudio(INSTRUCTION_AUDIO['fb_amazing']);"
+    },
+    {
+      "line": 10502,
+      "arg": "w",
+      "context": "onPlayAudio={(w) => handleAudio(w)}"
+    }
+  ],
+  "tts_generation_sites": [
+    {
+      "line": 2823,
+      "context": "try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught error:', e?.mess"
+    },
+    {
+      "line": 4857,
+      "context": "const url = await callTTS(text, selectedVoice);"
+    },
+    {
+      "line": 4880,
+      "context": "const ttsPromise = callTTS(text, selectedVoice);"
+    },
+    {
+      "line": 5023,
+      "context": "const url = await callTTS(instruction, selectedVoice);"
+    },
+    {
+      "line": 16246,
+      "context": "const audioPromise = onGenerateAudio(ttsText, selectedVoice, voiceSpeed, 1);"
+    },
+    {
+      "line": 32499,
+      "context": "if (typeof callTTS === 'function') { const url = await callTTS(term, selectedVoice, 1, 1).catch(e => { warnLog('Pre-warm"
+    },
+    {
+      "line": 34661,
+      "context": "const url = await callTTS(effectiveText, selectedVoice).catch(e => { warnLog('TTS Rejection handled:', e.message); retur"
+    },
+    {
+      "line": 37648,
+      "context": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;"
+    },
+    {
+      "line": 39451,
+      "context": "const audioUrl = await callTTS(word, selectedVoice);"
+    },
+    {
+      "line": 39722,
+      "context": "const promise = callTTS(textToSpeak, currentVoice).then(url => {"
+    },
+    {
+      "line": 39795,
+      "context": "audioBufferRef.current[nextBufferKey] = callTTS(textToPreload, targetVoice)"
+    },
+    {
+      "line": 39936,
+      "context": "callTTS(part, selectedVoice).then(url => {"
+    },
+    {
+      "line": 40054,
+      "context": "const audioUrl = await callTTS(effectiveText, selectedVoice);"
+    },
+    {
+      "line": 44518,
+      "context": "audioUrl = await callTTS(optText, voiceId);"
+    },
+    {
+      "line": 47770,
+      "context": "await callTTS(textWithName, selectedVoice);"
+    },
+    {
+      "line": 47776,
+      "context": "callTTS(nextMsg.msg.text, selectedVoice).catch(e => warnLog(\"Persona TTS lookahead failed:\", e?.message || e));"
+    },
+    {
+      "line": 52260,
+      "context": "const audioUrl = await callTTS(sequence[idx], selectedVoice);"
+    }
+  ],
+  "word_pools": [
+    {
+      "line": 5888,
+      "context": "const wordPool = React.useMemo(() => {"
+    },
+    {
+      "line": 5940,
+      "context": "const randomIndex = Math.floor(Math.random() * wordPool.length);"
+    },
+    {
+      "line": 5941,
+      "context": "const entry = wordPool[randomIndex];"
+    },
+    {
+      "line": 6024,
+      "context": "const easyPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficult"
+    },
+    {
+      "line": 6025,
+      "context": "const mediumPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficu"
+    },
+    {
+      "line": 6026,
+      "context": "const hardPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficult"
+    },
+    {
+      "line": 6028,
+      "context": "const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.map(pw => ({"
+    },
+    {
+      "line": 6276,
+      "context": "const poolEntry = wordPool.find(p => p.word === word.toLowerCase() && p.phonemes && p.phonemes.length > 0);"
+    },
+    {
+      "line": 6491,
+      "context": "const difficultyPool = fisherYatesShuffle(wordPool);"
+    },
+    {
+      "line": 7520,
+      "context": "const hasAnyWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);"
+    },
+    {
+      "line": 7633,
+      "context": "const hasWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);"
+    }
+  ]
+}

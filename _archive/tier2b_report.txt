@@ -1,0 +1,128 @@
+=== Tier 2b: Toggle Handler Extraction ===
+Input: 7,612,668 bytes, 73,749 lines
+Existing identifiers: 3781
+
+Toggle patterns found: 55 unique (62 total)
+  [2x] onClick={() => setIsEditing(!isEditing)}
+  [2x] onClick={() => setIsFullscreen(!isFullscreen)}
+  [2x] onClick={() => setIsMapLocked(!isMapLocked)}
+  [2x] onClick={() => setFocusMode(!focusMode)}
+  [2x] onClick={() => setPersonaAutoSend(!personaAutoSend)}
+  [2x] onClick={() => setShowPersonaHints(!showPersonaHints)}
+  [2x] onClick={() => setShowFlashcardImages(!showFlashcardImages)}
+  [1x] onClick={() => setIncludeGlossary(!includeGlossary)}
+  [1x] onClick={() => setIncludeFamily(!includeFamily)}
+  [1x] onClick={() => setIncludeCustom(!includeCustom)}
+  [1x] onClick={() => setIncludeSightWords(!includeSightWords)}
+  [1x] onClick={() => setIncludeAI(!includeAI)}
+  [1x] onClick={() => setIncludeLessonPlan(!includeLessonPlan)}
+  [1x] onClick={() => setShowLetterHints(!showLetterHints)}
+  [1x] onClick={() => setPlayInstructions(!playInstructions)}
+  [1x] onClick={() => setIsHistoryVisible(!isHistoryVisible)}
+  [1x] onClick={() => setShowLocalStats(!showLocalStats)}
+  [1x] onClick={() => setDisableAnimations(!disableAnimations)}
+  [1x] onClick={() => setIsBotVisible(!isBotVisible)}
+  [1x] onClick={() => setIsHelpMode(!isHelpMode)}
+  [1x] onClick={() => setIsJoinPopoverOpen(!isJoinPopoverOpen)}
+  [1x] onClick={() => setShowExportMenu(!showExportMenu)}
+  [1x] onClick={() => setAutoSendVoice(!autoSendVoice)}
+  [1x] onClick={() => setIsShowMeMode(!isShowMeMode)}
+  [1x] onClick={() => setIsUDLGuideExpanded(!isUDLGuideExpanded)}
+  [1x] onClick={() => setShowUDLGuide(!showUDLGuide)}
+  [1x] onClick={() => setIsHistoryMaximized(!isHistoryMaximized)}
+  [1x] onClick={() => setIsStickerMode(!isStickerMode)}
+  [1x] onClick={() => setIsEditingAnalysis(!isEditingAnalysis)}
+  [1x] onClick={() => setIsEditingGlossary(!isEditingGlossary)}
+  [1x] onClick={() => setIsFlashcardFlipped(!isFlashcardFlipped)}
+  [1x] onClick={() => setShowWordSearchAnswers(!showWordSearchAnswers)}
+  [1x] onClick={() => setShowHealthCheckPanel(!showHealthCheckPanel)}
+  [1x] onClick={() => setIsTeacherToolbarExpanded(!isTeacherToolbarExpanded)}
+  [1x] onClick={() => setIsEditingLeveledText(!isEditingLeveledText)}
+  [1x] onClick={() => setIsEditingOutline(!isEditingOutline)}
+  [1x] onClick={() => setIsPresentationMode(!isPresentationMode)}
+  [1x] onClick={() => setIsReviewGame(!isReviewGame)}
+  [1x] onClick={() => setIsEditingQuiz(!isEditingQuiz)}
+  [1x] onClick={() => setShowQuizAnswers(!showQuizAnswers)}
+  [1x] onClick={() => setIsEditingFaq(!isEditingFaq)}
+  [1x] onClick={() => setIsEditingScaffolds(!isEditingScaffolds)}
+  [1x] onClick={() => setRubricZoom(!rubricZoom)}
+  [1x] onClick={() => setIsEditingBrainstorm(!isEditingBrainstorm)}
+  [1x] onClick={() => setImmersiveHideUI(!immersiveHideUI)}
+  [1x] onClick={() => setImmersiveShowChoices(!immersiveShowChoices)}
+  [1x] onClick={() => setIsEditingTimeline(!isEditingTimeline)}
+  [1x] onClick={() => setShowMathAnswers(!showMathAnswers)}
+  [1x] onClick={() => setIsEditingLessonPlan(!isEditingLessonPlan)}
+  [1x] onClick={() => setSocraticAutoRead(!socraticAutoRead)}
+  [1x] onClick={() => setSocraticAutoSend(!socraticAutoSend)}
+  [1x] onClick={() => setIsSocraticExpanded(!isSocraticExpanded)}
+  [1x] onClick={() => setShowSocraticChat(!showSocraticChat)}
+  [1x] onClick={() => setReadingRuler(!readingRuler)}
+  [1x] onClick={() => setIsFabExpanded(!isFabExpanded)}
+
+=== Callbacks to create: 55 ===
+  handleToggleIncludeGlossary = useCallback(() => setIncludeGlossary(prev => !prev), [])  [1x] (toggles includeGlossary)
+  handleToggleIncludeFamily = useCallback(() => setIncludeFamily(prev => !prev), [])  [1x] (toggles includeFamily)
+  handleToggleIncludeCustom = useCallback(() => setIncludeCustom(prev => !prev), [])  [1x] (toggles includeCustom)
+  handleToggleIncludeSightWords = useCallback(() => setIncludeSightWords(prev => !prev), [])  [1x] (toggles includeSightWords)
+  handleToggleIncludeAI = useCallback(() => setIncludeAI(prev => !prev), [])  [1x] (toggles includeAI)
+  handleToggleIncludeLessonPlan = useCallback(() => setIncludeLessonPlan(prev => !prev), [])  [1x] (toggles includeLessonPlan)
+  handleToggleIsEditing = useCallback(() => setIsEditing(prev => !prev), [])  [2x] (toggles isEditing)
+  handleToggleShowLetterHints = useCallback(() => setShowLetterHints(prev => !prev), [])  [1x] (toggles showLetterHints)
+  handleTogglePlayInstructions = useCallback(() => setPlayInstructions(prev => !prev), [])  [1x] (toggles playInstructions)
+  handleToggleIsFullscreen = useCallback(() => setIsFullscreen(prev => !prev), [])  [2x] (toggles isFullscreen)
+  handleToggleIsHistoryVisible = useCallback(() => setIsHistoryVisible(prev => !prev), [])  [1x] (toggles isHistoryVisible)
+  handleToggleShowLocalStats = useCallback(() => setShowLocalStats(prev => !prev), [])  [1x] (toggles showLocalStats)
+  handleToggleIsMapLocked = useCallback(() => setIsMapLocked(prev => !prev), [])  [2x] (toggles isMapLocked)
+  handleToggleFocusMode = useCallback(() => setFocusMode(prev => !prev), [])  [2x] (toggles focusMode)
+  handleToggleDisableAnimations = useCallback(() => setDisableAnimations(prev => !prev), [])  [1x] (toggles disableAnimations)
+  handleToggleIsBotVisible = useCallback(() => setIsBotVisible(prev => !prev), [])  [1x] (toggles isBotVisible)
+  handleToggleIsHelpMode = useCallback(() => setIsHelpMode(prev => !prev), [])  [1x] (toggles isHelpMode)
+  handleToggleIsJoinPopoverOpen = useCallback(() => setIsJoinPopoverOpen(prev => !prev), [])  [1x] (toggles isJoinPopoverOpen)
+  handleToggleShowExportMenu = useCallback(() => setShowExportMenu(prev => !prev), [])  [1x] (toggles showExportMenu)
+  handleTogglePersonaAutoSend = useCallback(() => setPersonaAutoSend(prev => !prev), [])  [2x] (toggles personaAutoSend)
+  handleToggleShowPersonaHints = useCallback(() => setShowPersonaHints(prev => !prev), [])  [2x] (toggles showPersonaHints)
+  handleToggleAutoSendVoice = useCallback(() => setAutoSendVoice(prev => !prev), [])  [1x] (toggles autoSendVoice)
+  handleToggleIsShowMeMode = useCallback(() => setIsShowMeMode(prev => !prev), [])  [1x] (toggles isShowMeMode)
+  handleToggleIsUDLGuideExpanded = useCallback(() => setIsUDLGuideExpanded(prev => !prev), [])  [1x] (toggles isUDLGuideExpanded)
+  handleToggleShowUDLGuide = useCallback(() => setShowUDLGuide(prev => !prev), [])  [1x] (toggles showUDLGuide)
+  handleToggleIsHistoryMaximized = useCallback(() => setIsHistoryMaximized(prev => !prev), [])  [1x] (toggles isHistoryMaximized)
+  handleToggleIsStickerMode = useCallback(() => setIsStickerMode(prev => !prev), [])  [1x] (toggles isStickerMode)
+  handleToggleIsEditingAnalysis = useCallback(() => setIsEditingAnalysis(prev => !prev), [])  [1x] (toggles isEditingAnalysis)
+  handleToggleIsEditingGlossary = useCallback(() => setIsEditingGlossary(prev => !prev), [])  [1x] (toggles isEditingGlossary)
+  handleToggleShowFlashcardImages = useCallback(() => setShowFlashcardImages(prev => !prev), [])  [2x] (toggles showFlashcardImages)
+  handleToggleIsFlashcardFlipped = useCallback(() => setIsFlashcardFlipped(prev => !prev), [])  [1x] (toggles isFlashcardFlipped)
+  handleToggleShowWordSearchAnswers = useCallback(() => setShowWordSearchAnswers(prev => !prev), [])  [1x] (toggles showWordSearchAnswers)
+  handleToggleShowHealthCheckPanel = useCallback(() => setShowHealthCheckPanel(prev => !prev), [])  [1x] (toggles showHealthCheckPanel)
+  handleToggleIsTeacherToolbarExpanded = useCallback(() => setIsTeacherToolbarExpanded(prev => !prev), [])  [1x] (toggles isTeacherToolbarExpanded)
+  handleToggleIsEditingLeveledText = useCallback(() => setIsEditingLeveledText(prev => !prev), [])  [1x] (toggles isEditingLeveledText)
+  handleToggleIsEditingOutline = useCallback(() => setIsEditingOutline(prev => !prev), [])  [1x] (toggles isEditingOutline)
+  handleToggleIsPresentationMode = useCallback(() => setIsPresentationMode(prev => !prev), [])  [1x] (toggles isPresentationMode)
+  handleToggleIsReviewGame = useCallback(() => setIsReviewGame(prev => !prev), [])  [1x] (toggles isReviewGame)
+  handleToggleIsEditingQuiz = useCallback(() => setIsEditingQuiz(prev => !prev), [])  [1x] (toggles isEditingQuiz)
+  handleToggleShowQuizAnswers = useCallback(() => setShowQuizAnswers(prev => !prev), [])  [1x] (toggles showQuizAnswers)
+  handleToggleIsEditingFaq = useCallback(() => setIsEditingFaq(prev => !prev), [])  [1x] (toggles isEditingFaq)
+  handleToggleIsEditingScaffolds = useCallback(() => setIsEditingScaffolds(prev => !prev), [])  [1x] (toggles isEditingScaffolds)
+  handleToggleRubricZoom = useCallback(() => setRubricZoom(prev => !prev), [])  [1x] (toggles rubricZoom)
+  handleToggleIsEditingBrainstorm = useCallback(() => setIsEditingBrainstorm(prev => !prev), [])  [1x] (toggles isEditingBrainstorm)
+  handleToggleImmersiveHideUI = useCallback(() => setImmersiveHideUI(prev => !prev), [])  [1x] (toggles immersiveHideUI)
+  handleToggleImmersiveShowChoices = useCallback(() => setImmersiveShowChoices(prev => !prev), [])  [1x] (toggles immersiveShowChoices)
+  handleToggleIsEditingTimeline = useCallback(() => setIsEditingTimeline(prev => !prev), [])  [1x] (toggles isEditingTimeline)
+  handleToggleShowMathAnswers = useCallback(() => setShowMathAnswers(prev => !prev), [])  [1x] (toggles showMathAnswers)
+  handleToggleIsEditingLessonPlan = useCallback(() => setIsEditingLessonPlan(prev => !prev), [])  [1x] (toggles isEditingLessonPlan)
+  handleToggleSocraticAutoRead = useCallback(() => setSocraticAutoRead(prev => !prev), [])  [1x] (toggles socraticAutoRead)
+  handleToggleSocraticAutoSend = useCallback(() => setSocraticAutoSend(prev => !prev), [])  [1x] (toggles socraticAutoSend)
+  handleToggleIsSocraticExpanded = useCallback(() => setIsSocraticExpanded(prev => !prev), [])  [1x] (toggles isSocraticExpanded)
+  handleToggleShowSocraticChat = useCallback(() => setShowSocraticChat(prev => !prev), [])  [1x] (toggles showSocraticChat)
+  handleToggleReadingRuler = useCallback(() => setReadingRuler(prev => !prev), [])  [1x] (toggles readingRuler)
+  handleToggleIsFabExpanded = useCallback(() => setIsFabExpanded(prev => !prev), [])  [1x] (toggles isFabExpanded)
+
+Validation: 0 name conflicts - SAFE TO APPLY
+
+Applied 62 onClick replacements
+Added 55 useCallback declarations
+
+Output: 7,617,434 bytes, 73,805 lines
+Braces: 23695 open, 23703 close, diff=-8
+Total useCallback: 193
+
+=== DONE ===

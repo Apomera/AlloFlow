@@ -1,0 +1,62 @@
+
+======================================================================
+BUTTONS WITH DATA-HELP-KEY
+======================================================================
+
+Start Live Session (header_session_start):
+  Line 14409: header_session_start: "Start a live session for students to join.",
+
+Translate (header_translate):
+  Line 14415: header_translate: "Instantly translate all generated lesson resources into another language with no 
+
+Export (header_export):
+  Line 14414: header_export: "Download your lesson resources as PDF, Slides, Canvas Quiz, or HTML.",
+
+Teacher Dashboard (header_dashboard):
+  Line 14401: header_dashboard: "Access comprehensive analytics and student performance data. Dashboard shows: cla
+
+View Student (header_view_student):
+  Line 14399: header_view_student: "Switch to Student View to see what students see.",
+
+View Teacher (header_view_teacher):
+  Line 14400: header_view_teacher: "Switch to Teacher View to access analytics and settings.",
+
+Next Level Modal (xp_modal):
+  Line 14457: xp_modal_summary: "View your current level, XP progress, and recent activity history.",
+
+Level Up (level_up):
+  Line 11623: level_up: "Level Up! You are now Level {level}!",
+
+======================================================================
+TOUR-HEADER-UTILS BUTTONS ANALYSIS
+======================================================================
+tour-header-utils starts at line 56674
+  Line 56940 [MISSING KEY]: {showExportMenu && <div className="fixed inset-0 z-[90]" onClick={() => setShowE
+  Line 70724 [MISSING KEY]: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex item
+  Line 70726 [MISSING KEY]: <button onClick={() => setIsTranslateModalOpen(false)} className="absolute top-4
+
+======================================================================
+ALLOBOT SPOTLIGHT/OVAL RENDERING
+======================================================================
+Line 18299: tabIndex={0} data-help-key="bot_avatar"
+Line 31963: bot_avatar: "Meet AlloBot, your AI teaching assistant! Click to wake AlloBot and start a conversation—ask questions abou
+Line 32832: .help-mode-active [data-help-key="bot_avatar"] {
+Line 32838: .help-mode-active [data-help-key="bot_avatar"] button {
+
+======================================================================
+SPOTLIGHT BACKDROP (OVAL) RENDERING
+======================================================================
+Line 33133: if (false && isSpotlightMode && !runTour) { // DISABLED: Handled by dedicated Backdrop
+Line 58288: <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-
+Line 69730: width: tourRect.width + 12,
+Line 69731: height: tourRect.height + 12,
+Line 69744: <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: tourRect.top, background: 'rgba(0,0,0,0.75)', bac
+Line 69745: <div style={{ position: 'absolute', top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, backgroun
+Line 69746: <div style={{ position: 'absolute', top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, backgrou
+Line 69747: <div style={{ position: 'absolute', top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', 
+Line 69758: (tourRect.left + tourRect.width/2) - (botSpotlightPos.x - 53),
+Line 69759: (tourRect.top + tourRect.height/2) - (botSpotlightPos.y + 10)
+Line 69788: width={tourRect.width + 20}
+Line 69789: height={tourRect.height + 20}
+Line 69803: width: tourRect.width + 8,
+Line 69804: height: tourRect.height + 8,

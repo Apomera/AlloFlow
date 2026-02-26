@@ -1,0 +1,200 @@
+        }
+    }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel, initialShowReviewPanel]);
+    React.useEffect(() => {
+        if (wordSoundsActivity && (!sessionQueueRef.current[wordSoundsActivity] || sessionQueueRef.current[wordSoundsActivity].length === 0)) {
+            debugLog("🚀 Initializing Session Queue for", wordSoundsActivity);
+            generateSessionQueue(wordSoundsActivity, wordSoundsDifficulty || 'medium');
+            if (!currentWordSoundsWord) {
+                 const first = getAdaptiveRandomWord();
+                 if (first) {
+                     const w = first.singleWord || first.word || first;
+                     setCurrentWordSoundsWord(w);
+                 }
+            }
+        }
+    }, [wordSoundsActivity, wordPool, preloadedWords.length, generateSessionQueue]);
+    React.useEffect(() => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+        if (audioInstances.current) {
+            audioInstances.current.forEach((audio) => {
+                try { audio.pause(); } catch(e) { warnLog('Caught error:', e?.message || e); }
+            });
+        }
+        setIsPlayingAudio(false);
+    }, [currentWordSoundsWord, wordSoundsActivity]);
+    React.useEffect(() => {
+        if (!playInstructions || isMinimized || !currentWordSoundsWord) return;
+        if (showReviewPanel) return;
+        if (wordSoundsActivity === 'orthography') return;
+        let cancelled = false;
+        const runInstructionSequence = async () => {
+            try {
+                await new Promise(r => setTimeout(r, 800));
+                if (cancelled) return;
+                let instructionAudioSrc = null;
+                let instructionText = null;
+                const INST_KEY_MAP = {
+                    orthography: 'inst_orthography',
+                    spelling_bee: 'inst_spelling_bee',
+                    word_scramble: 'inst_word_scramble',
+                    missing_letter: 'inst_missing_letter',
+                    counting: 'inst_counting',
+                    blending: 'inst_blending',
+                    segmentation: 'inst_segmentation',
+                    rhyming: 'inst_rhyming',
+                    letter_tracing: 'inst_letter_tracing',
+                    sound_sort: 'inst_word_families',
+                    word_families: 'inst_word_families',
+                    mapping: 'mapping',
+                };
+                const instKey = INST_KEY_MAP[wordSoundsActivity] || wordSoundsActivity;
+                if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSoundsActivity !== 'rhyming' && wordSoundsActivity !== 'letter_tracing' && wordSoundsActivity !== 'sound_sort' && wordSoundsActivity !== 'word_families') {
+                    instructionAudioSrc = INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity];
+                } else if (wordSoundsActivity === 'isolation' && isolationState) {
+                    const posRaw = isolationState.currentPosition;
+                    // Attempt to map string positions to the loaded pre-generated audio array
+                    const posKeyMap = { 'first': '1st', 'middle': 'middle', 'last': 'last' };
+                    // If posRaw is an integer, use ordinals array, else use map
+                    const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
+                    const posKey = typeof posRaw === 'number' ? ordinals[posRaw] : (posKeyMap[posRaw] || posRaw);
+                    
+                    if (typeof ISOLATION_AUDIO !== 'undefined' && ISOLATION_AUDIO[posKey]) {
+                        instructionAudioSrc = ISOLATION_AUDIO[posKey];
+                    } else {
+                        // Fallback to TTS generation if audio is missing
+                        const ordinalNames = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"];
+                        const posStr = typeof posRaw === 'number' ? ordinalNames[posRaw] : posRaw;
+                        instructionText = `What is the ${posStr || "target"} sound in ${currentWordSoundsWord}?`;
+                    }
+                } else if (wordSoundsActivity === 'letter_tracing') {
+                    const lowLet = currentWordSoundsWord.charAt(0).toLowerCase();
+                    const upperLet = currentWordSoundsWord.charAt(0).toUpperCase();
+                    if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['trace_letter']) {
+                        await handleAudio(INSTRUCTION_AUDIO['trace_letter']);
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowLet]) {
+                            await handleAudio(LETTER_NAME_AUDIO[lowLet]);
+                        } else {
+                            await handleAudio(upperLet);
+                        }
+                        await new Promise(r => setTimeout(r, 200));
+                        if (INSTRUCTION_AUDIO['for']) {
+                            await handleAudio(INSTRUCTION_AUDIO['for']);
+                            if (cancelled) return;
+                            await new Promise(r => setTimeout(r, 200));
+                        }
+                        await handleAudio(currentWordSoundsWord);
+                    } else if (typeof LETTER_NAME_AUDIO !== 'undefined' && LETTER_NAME_AUDIO[lowLet]) {
+                        instructionAudioSrc = LETTER_NAME_AUDIO[lowLet];
+                    } else {
+                        instructionText = `Trace the letter ${upperLet} for ${currentWordSoundsWord}`;
+                    }
+                } else if (wordSoundsActivity === 'word_families') {
+                 const newPhonemes = { ...wordSoundsPhonemes };
+                 if (!newPhonemes.familyMembers) newPhonemes.familyMembers = [];
+                 if (!newPhonemes.rhymeDistractors) newPhonemes.rhymeDistractors = [];
+                 if (type === 'member') {
+                     while (newPhonemes.familyMembers.length <= index) newPhonemes.familyMembers.push('');
+                     newPhonemes.familyMembers[index] = newValue;
+                 } else if (type === 'distractor') {
+                     while (newPhonemes.rhymeDistractors.length <= index) newPhonemes.rhymeDistractors.push('');
+                     newPhonemes.rhymeDistractors[index] = newValue;
+                 } else if (type === 'remove_member') {
+                     newPhonemes.familyMembers.splice(index, 1);
+                 } else if (type === 'remove_distractor') {
+                     newPhonemes.rhymeDistractors.splice(index, 1);
+                 } else if (type === 'add_member') {
+                     newPhonemes.familyMembers.push('');
+                 } else if (type === 'add_distractor') {
+                     newPhonemes.rhymeDistractors.push('');
+                 }
+                 setWordSoundsPhonemes(newPhonemes);
+            } else if (wordSoundsActivity === 'sound_sort') {
+                    const targetWord = (currentWordSoundsWord || '').toLowerCase();
+                    const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                    const mode = (wordSeed % 2 === 0) ? 'first' : 'last';
+                    let targetSound = '';
+                    if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes) {
+                        targetSound = mode === 'first' ? wordSoundsPhonemes.phonemes[0] : wordSoundsPhonemes.phonemes[wordSoundsPhonemes.phonemes.length - 1];
+                    } else {
+                        targetSound = mode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord);
+                    }
+                    if (mode === 'first') {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['sound_match_start']) {
+                            await handleAudio(INSTRUCTION_AUDIO['sound_match_start']);
+                            await new Promise(r => setTimeout(r, 300));
+                            await handleAudio(targetSound);
+                        } else {
+                            instructionText = `Find words that start with the ${targetSound} sound`;
+                        }
+                    } else {
+                        if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['sound_match_end']) {
+                            await handleAudio(INSTRUCTION_AUDIO['sound_match_end']);
+                            await new Promise(r => setTimeout(r, 300));
+                            await handleAudio(targetSound);
+                        } else {
+                            instructionText = `Find words that end with the ${targetSound} sound`;
+                        }
+                    }
+                } else if (wordSoundsActivity === 'word_families') {
+                    const targetWord = currentWordSoundsWord?.toLowerCase() || '';
+                    let targetRime = '';
+                    for (const rime of Object.keys(typeof RIME_FAMILIES !== 'undefined' ? RIME_FAMILIES : {})) {
+                        if (targetWord.endsWith(rime) && targetWord.length > rime.length) { targetRime = rime; break; }
+                    }
+                    if (!targetRime) targetRime = targetWord.slice(-2);
+                    try {
+                        await handleAudio(`Find all words in the ${targetRime} family`);
+                    } catch(e) { warnLog('Word families instruction audio failed:', e); }
+                } else if (wordSoundsActivity === 'rhyming') {
+                    if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['inst_rhyming']) {
+                        await handleAudio(INSTRUCTION_AUDIO['inst_rhyming']);
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (cancelled) return;
+                        await handleAudio(currentWordSoundsWord);
+                    } else {
+                        await handleAudio("Which word rhymes with");
+                        if (cancelled) return;
+                        await new Promise(r => setTimeout(r, 200));
+                        if (cancelled) return;
+                        await handleAudio(currentWordSoundsWord);
+                    }
+                } else {
+                    instructionText = ts(`word_sounds.${wordSoundsActivity}_prompt`);
+                }
+                if (cancelled) return;
+                if (instructionAudioSrc) {
+                    await handleAudio(instructionAudioSrc);
+                } else if (instructionText && !isPlayingAudio) {
+                    await handleAudio(instructionText);
+                }
+                if (cancelled) return;
+                if (wordSoundsActivity === 'blending' && wordSoundsPhonemes?.phonemes) {
+                    await new Promise(r => setTimeout(r, 400));
+                    if (cancelled) return;
+                    await playBlending();
+                    let effectiveBlendingOptions = blendingOptionsRef.current;
+                    if (!effectiveBlendingOptions || effectiveBlendingOptions.length === 0) {
+                        for (let waitAttempt = 0; waitAttempt < 15; waitAttempt++) {
+                            await new Promise(r => setTimeout(r, 200));
+                            if (cancelled) return;
+                            if (blendingOptionsRef.current && blendingOptionsRef.current.length > 0) {
+                                effectiveBlendingOptions = blendingOptionsRef.current;
+                                break;
+                            }
+                        }
+                    }
+                    if (effectiveBlendingOptions && effectiveBlendingOptions.length > 0) {
+
+                        await Promise.all(effectiveBlendingOptions.map(o => handleAudio(typeof o === 'string' ? o : o.text, false).catch(() => {})));
+
+                        await new Promise(r => setTimeout(r, 600));
+                        for (let i = 0; i < effectiveBlendingOptions.length; i++) {
+                            if (cancelled) break;
+                            setHighlightedBlendIndex(i);
+                            await handleAudio(effectiveBlendingOptions[i]);
+                            if (cancelled) return;

@@ -1,0 +1,142 @@
+[
+  {
+    "line": 31411,
+    "var": "wordBankPosition",
+    "setter": "setWordBankPosition",
+    "init": "null",
+    "full": "  const [wordBankPosition, setWordBankPosition] = useState(null);"
+  },
+  {
+    "line": 31632,
+    "var": "showStudyTimerModal",
+    "setter": "setShowStudyTimerModal",
+    "init": "false",
+    "full": "  const [showStudyTimerModal, setShowStudyTimerModal] = useState(false);"
+  },
+  {
+    "line": 31857,
+    "var": "showStudentWelcome",
+    "setter": "setShowStudentWelcome",
+    "init": "false",
+    "full": "  const [showStudentWelcome, setShowStudentWelcome] = useState(false);"
+  },
+  {
+    "line": 31871,
+    "var": "showStudentEntry",
+    "setter": "setShowStudentEntry",
+    "init": "false",
+    "full": "  const [showStudentEntry, setShowStudentEntry] = useState(false);"
+  },
+  {
+    "line": 31872,
+    "var": "showSubmitModal",
+    "setter": "setShowSubmitModal",
+    "init": "false",
+    "full": "  const [showSubmitModal, setShowSubmitModal] = useState(false);"
+  },
+  {
+    "line": 32222,
+    "var": "showSocraticChat",
+    "setter": "setShowSocraticChat",
+    "init": "false",
+    "full": "  const [showSocraticChat, setShowSocraticChat] = useState(false);"
+  },
+  {
+    "line": 32375,
+    "var": "wsPreloadedWords",
+    "setter": "setWsPreloadedWords",
+    "init": "[]",
+    "full": "  const [wsPreloadedWords, setWsPreloadedWords] = useState([]);"
+  },
+  {
+    "line": 32379,
+    "var": "wsActivitySequence",
+    "setter": "setWsActivitySequence",
+    "init": "[]",
+    "full": "  const [wsActivitySequence, setWsActivitySequence] = useState([]);"
+  },
+  {
+    "line": 32384,
+    "var": "wordSoundsStreak",
+    "setter": "setWordSoundsStreak",
+    "init": "0",
+    "full": "  const [wordSoundsStreak, setWordSoundsStreak] = useState(0);"
+  },
+  {
+    "line": 32386,
+    "var": "wordSoundsSessionProgress",
+    "setter": "setWordSoundsSessionProgress",
+    "init": "0",
+    "full": "  const [wordSoundsSessionProgress, setWordSoundsSessionProgress] = useState(0);"
+  },
+  {
+    "line": 32436,
+    "var": "wordSoundsTtsSpeed",
+    "setter": "setWordSoundsTtsSpeed",
+    "init": "1.0",
+    "full": "  const [wordSoundsTtsSpeed, setWordSoundsTtsSpeed] = useState(1.0);"
+  },
+  {
+    "line": 32839,
+    "var": "isWordSoundsMode",
+    "setter": "setIsWordSoundsMode",
+    "init": "false",
+    "full": "  const [isWordSoundsMode, setIsWordSoundsMode] = useState(false);"
+  },
+  {
+    "line": 32841,
+    "var": "wordSoundsScore",
+    "setter": "setWordSoundsScore",
+    "init": "{ correct: 0, total: 0, streak: 0 }",
+    "full": "  const [wordSoundsScore, setWordSoundsScore] = useState({ correct: 0, total: 0, streak: 0 });"
+  },
+  {
+    "line": 32842,
+    "var": "currentWordSoundsWord",
+    "setter": "setCurrentWordSoundsWord",
+    "init": "null",
+    "full": "  const [currentWordSoundsWord, setCurrentWordSoundsWord] = useState(null);"
+  },
+  {
+    "line": 32843,
+    "var": "wordSoundsPhonemes",
+    "setter": "setWordSoundsPhonemes",
+    "init": "null",
+    "full": "  const [wordSoundsPhonemes, setWordSoundsPhonemes] = useState(null);"
+  },
+  {
+    "line": 32844,
+    "var": "wordSoundsLanguage",
+    "setter": "setWordSoundsLanguage",
+    "init": "'en'",
+    "full": "  const [wordSoundsLanguage, setWordSoundsLanguage] = useState('en');"
+  },
+  {
+    "line": 33109,
+    "var": "wordSearchLang",
+    "setter": "setWordSearchLang",
+    "init": "'English'",
+    "full": "  const [wordSearchLang, setWordSearchLang] = useState('English');"
+  },
+  {
+    "line": 33252,
+    "var": "showStorybookExportModal",
+    "setter": "setShowStorybookExportModal",
+    "init": "false",
+    "full": "  const [showStorybookExportModal, setShowStorybookExportModal] = useState(false);"
+  },
+  {
+    "line": 33289,
+    "var": "showSaveModal",
+    "setter": "setShowSaveModal",
+    "init": "false",
+    "full": "  const [showSaveModal, setShowSaveModal] = useState(false);"
+  },
+  {
+    "line": 33300,
+    "var": "showSessionModal",
+    "setter": "setShowSessionModal",
+    "init": "false",
+    "full": "  const [showSessionModal, setShowSessionModal] = useState(false);"
+  }
+]

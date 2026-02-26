@@ -1,0 +1,18 @@
+Found localStorage keys:
+- allo_adventure_cloud
+- allo_bot_intro_seen
+- allo_bot_pos
+- allo_cloud_sync
+- allo_completed_activities
+- allo_escape_completions
+- allo_flashcard_engagement
+- allo_fluency_assessments
+- allo_game_completions
+- allo_phoneme_mastery
+- allo_time_on_task
+- allo_voice_preference
+- allo_wizard_completed
+- allo_word_sounds_badges
+- allo_word_sounds_confusion
+- allo_word_sounds_daily
+- allo_word_sounds_history

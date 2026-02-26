@@ -1,0 +1,65 @@
+
+--- currentActivity (0 matches) ---
+
+--- activityType (0 matches) ---
+
+--- ACTIVITIES (12 matches) ---
+  L1004: const PHONOLOGICAL_ACTIVITIES = ['counting', 'isolation', 'segmentation', 'blending', 'rhyme'];
+  L1005: const ORTHOGRAPHIC_ACTIVITIES = ['mapping']; // 'spelling_bee' will be added later
+  L4540: const ALL_ACTIVITIES = [
+  L4557: const ACTIVITIES = React.useMemo(() => {
+  L4559: return ALL_ACTIVITIES; // All activities when toggle is ON
+  L4561: return ALL_ACTIVITIES.filter(a => a.tier === 'phonological'); // Only phonological when OFF
+  L6541: if (recursionDepth > ACTIVITIES.length + 1) {
+  L6577: const currentIndex = ACTIVITIES.findIndex(a => a.id === activityId);
+  L6581: if (nextIndex >= ACTIVITIES.length) {
+  L6589: const nextActivity = ACTIVITIES[nextIndex];
+  L10170: {ACTIVITIES.map(activity => (
+  L14926: // === GAMES & ACTIVITIES HELP STRINGS (PHASE 3) ===
+
+--- counting (29 matches) ---
+  L684: 'word_sounds.activity_counting': 'Count Sounds',
+  L696: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+  L702: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+  L810: 'word_sounds.counting_drop': 'Drop your answer here',
+  L1004: const PHONOLOGICAL_ACTIVITIES = ['counting', 'isolation', 'segmentation', 'blending', 'rhyme'];
+  L1062: counting: getAudio('instructions', 'counting'),
+  L1121: _LOAD_INSTRUCTION_AUDIO_RAW('inst_counting', getAudio('instructions', 'inst_counting'));
+  L1448: 'counting':       'afterCompletion',  // High rigor - no visual hints
+  L1483: counting: { enabled: false, count: 5 },
+  L1491: 'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble'
+  L1522: // Helper for syllable counting
+  L2119: counting: { id: 'counting', label: 'Sound Counting', icon: Calculator },
+  L3321: 'counting':       'afterCompletion',
+  L3337: 'counting':       'hidden',       // Count phonemes by ear - text reveals letter count
+  L4541: { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc'), t
+  L4983: { id: 'counting_pro', condition: history.filter(h => h.activity === 'counting' && h.correct).length >= 20, name: 'Counti
+  L5500: // Fallback logic with digraph detection for better phoneme counting
+  L6786: counting: 'inst_counting',
+  L6995: if (wordSoundsActivity === 'counting' && currentWordSoundsWord) {
+  L7267: const PHONO_ORDER = ['counting', 'isolation', 'blending', 'segmentation', 'rhyming', 'word_families', 'sound_sort'];
+
+--- blending (90 matches) ---
+  L686: 'word_sounds.activity_blending': 'Blend Sounds',
+  L698: 'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+  L717: 'word_sounds.blending_prompt': 'Blend these sounds together!',
+  L1004: const PHONOLOGICAL_ACTIVITIES = ['counting', 'isolation', 'segmentation', 'blending', 'rhyme'];
+  L1063: blending: getAudio('instructions', 'blending'),
+  L1122: _LOAD_INSTRUCTION_AUDIO_RAW('inst_blending', getAudio('instructions', 'inst_blending'));
+  L1450: 'blending':       'afterCompletion',  // Auditory-first, reveal as reward
+  L1478: blending: { enabled: false, count: 5 },
+  L1490: 'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
+  L1637: "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
+  L1676: blendingDistractors: data.blendingDistractors || [],
+  L1706: (lastItem.blendingDistractors || []).forEach(w => w && ttsTasks.add(w));
+  L2114: blending: { id: 'blending', label: 'Blending', icon: GripHorizontal },
+  L3035: {(word.blendingDistractors || []).map((d, i) => (
+  L3040: const newDist = [...word.blendingDistractors];
+  L3042: onUpdateWord(idx, { ...word, blendingDistractors: newDist });
+  L3064: await onRegenerateOption(idx, 'blendingDistractors', i, d);
+  L3078: const newDist = [...(word.blendingDistractors || []), ''];
+  L3079: onUpdateWord(idx, { ...word, blendingDistractors: newDist });
+  L3323: 'blending':       'afterCompletion',
+
+--- segmenting (1 matches) ---
+  L31955: 'glossary_word_sounds': "Launch Word Sounds Studio directly with these glossary terms. Students practice explicit phonic

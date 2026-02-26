@@ -1,0 +1,29 @@
+ct.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAssessmentBuilder(false),
+    className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+  }, /*#__PURE__*/React.createElement(ArrowLeft, {
+    size: 18,
+    className: "text-slate-500"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-bold text-slate-800"
+  }, "\uD83D\uDCCB Assessment Builder"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-400"
+  }, "Compose blocks of different problem types into a custom assessment")))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, assessmentBlocks.map((block, idx) => /*#__PURE__*/React.createElement("div", {
+    key: block.id,
+    className: "bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-300 p-3 flex items-start gap-3 transition-all group",
+    draggable: true,
+    onDragStart: e => e.dataTransfer.setData('blockIdx', idx.toString()),
+    onDragOver: e => e.preventDefault(),
+    onDrop: e => {
+      const fromIdx = parseInt(e.dataTransfer.getData('blockIdx'));
+      const newBlocks = [...assessmentBlocks];
+      const [moved] = newBlocks.splice(fromIdx, 1);
+      newBlocks.splice(idx, 0, moved);
+      setAssessmentBlocks(newBlocks);
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-slate-300 cursor-grab active:cursor-grabbing pt-1 group-

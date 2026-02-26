@@ -1,0 +1,112 @@
+Total: 37
+
+L1498 (indent=8) ❌ INVALID (REGULAR_FUNC): const previewList = React.useMemo(() => {
+  Enclosing: L1437: const includeOrthographic = orthoSessionGoal > 0; // DERIVED from orthoSessionGoal slider
+
+L4178 (indent=4) ❌ INVALID (unknown): const WordFamiliesView = React.useMemo(() => ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, showLetterHints }) =>
+  Enclosing: UNKNOWN
+
+L4533 (indent=4) ❌ INVALID (unknown): const ACTIVITIES = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L4598 (indent=4) ❌ INVALID (unknown): const wordPool = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L4639 (indent=4) ❌ INVALID (unknown): const availableLanguages = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L4708 (indent=4) ❌ INVALID (unknown): const categorizedPool = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L4762 (indent=4) ❌ INVALID (unknown): const easyPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) 
+  Enclosing: UNKNOWN
+
+L4763 (indent=4) ❌ INVALID (unknown): const mediumPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word
+  Enclosing: UNKNOWN
+
+L4764 (indent=4) ❌ INVALID (unknown): const hardPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) 
+  Enclosing: UNKNOWN
+
+L7933 (indent=8) ✅ VALID: const samplePathPoints = React.useMemo(() => {
+  Enclosing: L7862: const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
+
+L8411 (indent=4) ❌ INVALID (unknown): const scrambledLetters = React.useMemo(() =>
+  Enclosing: UNKNOWN
+
+L8417 (indent=4) ❌ INVALID (unknown): const hiddenIndex = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L8423 (indent=4) ❌ INVALID (unknown): const letterOptions = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L10359 (indent=4) ✅ VALID: const sortedAndFiltered = React.useMemo(() => {
+  Enclosing: L10325: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+L10552 (indent=4) ✅ VALID: const classSummary = React.useMemo(() => {
+  Enclosing: L10325: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+L17535 (indent=2) ✅ VALID: const particles = React.useMemo(() => Array.from({ length: 24 }).map((_, i) => ({
+  Enclosing: L17527: const BotConfettiBurst = ({ onComplete }) => {
+
+L22985 (indent=2) ✅ VALID: const deckItems = useMemo(() => items.filter(i => i.currentContainer === 'deck'), [items]);
+  Enclosing: L22772: const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGam
+
+L23251 (indent=2) ✅ VALID: const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
+  Enclosing: L23113: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+L23252 (indent=2) ✅ VALID: const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
+  Enclosing: L23113: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+L23253 (indent=2) ✅ VALID: const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
+  Enclosing: L23113: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+L23254 (indent=2) ✅ VALID: const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  Enclosing: L23113: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+L23459 (indent=2) ✅ VALID: const availableLangs = React.useMemo(() => {
+  Enclosing: L23447: const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+
+L24607 (indent=4) ❌ INVALID (IIFE): const items = useMemo(() => data.filter(item => item.term && item.term.length > 2), [data, term]);
+  Enclosing: L24605: useEffect(() => {
+
+L26146 (indent=2) ✅ VALID: const escapedTeams = useMemo(() => allTeams.filter(t => escapeState.teamProgress?.[t]?.isEscaped), [allTeams, escapeState, isEscap
+  Enclosing: L26097: const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }
+
+L26565 (indent=4) ✅ VALID: const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g]) => g !== null), [groups]);
+  Enclosing: L26270: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appI
+
+L27112 (indent=2) ✅ VALID: const analytics = useMemo(() => calculateAnalyticsMetrics(dashboardData), [dashboardData]);
+  Enclosing: L27056: const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+L27114 (indent=2) ✅ VALID: const misconceptionChartData = useMemo(() => analytics.misconceptions.map((m, idx) => ({
+  Enclosing: L27056: const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+L27118 (indent=2) ✅ VALID: const selectedStudent = useMemo(() => dashboardData.find(s => s.id === selectedStudentId), [dashboardData, selectedStudentId]);
+  Enclosing: L27056: const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+L27308 (indent=2) ✅ VALID: const quizHistory = useMemo(() => selectedStudent?.history?.filter(h => h.type === 'quiz') || [], [selectedStudent?.history]);
+  Enclosing: L27056: const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+L29762 (indent=2) ✅ VALID: const isCanvas = React.useMemo(() => {
+  Enclosing: L29699: const AlloFlowContent = () => {
+
+L29825 (indent=2) ✅ VALID: const adventureImageDB = React.useMemo(() => ({
+  Enclosing: L29699: const AlloFlowContent = () => {
+
+L34770 (indent=2) ❌ INVALID (unknown): const latestLessonPlan = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L35457 (indent=2) ❌ INVALID (unknown): const filteredGlossaryData = useMemo(() => {
+  Enclosing: UNKNOWN
+
+L36459 (indent=2) ❌ INVALID (unknown): const latestGlossary = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L36474 (indent=2) ❌ INVALID (unknown): const isClozeComplete = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L36479 (indent=2) ❌ INVALID (unknown): const displayLanguages = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+L42663 (indent=2) ❌ INVALID (unknown): const isScaffoldComplete = React.useMemo(() => {
+  Enclosing: UNKNOWN

@@ -1,0 +1,164 @@
+=== ALL <select elements (line + 2 lines context) ===
+L53055: <select aria-label="Selection"
+L53056: value={outlineTranslationMode}
+L55399: <select aria-label="Selection"
+L55400: value={group.resourceId || ""}
+L55436: <select aria-label="Selection"
+L55437: value={student.groupId || ""}
+L55799: <select aria-label="Selection"
+L55800: value={selectedFont}
+L55902: <select aria-label="Selection"
+L55903: value={selectedVoice}
+L57750: <select
+L57751: data-help-key="chat_framework_select"
+L57765: <select aria-label="Selection"
+L57766: data-help-key="chat_grade_select"
+L58100: <select
+L58101: value={sourceTone}
+L58115: <select
+L58116: value={sourceLevel}
+L58459: <select aria-label="Selection"
+L58460: value={glossaryDefinitionLevel}
+L58580: <select aria-label="Selection"
+L58581: data-help-key="simplified_grade_level"
+L58605: <select aria-label="Selection"
+L58606: data-help-key="simplified_differentiation"
+L58619: <select aria-label="Selection"
+L58620: data-help-key="simplified_format"
+L58637: <select aria-label="Selection"
+L58638: data-help-key="simplified_length"
+L58653: <select aria-label="Selection"
+L58654: data-help-key="simplified_language"
+L58669: <select aria-label="Selection"
+L58670: data-help-key="simplified_dok"
+L58936: <select aria-label="Selection"
+L58937: data-help-key="outline_structure"
+L59015: <select aria-label="Selection"
+L59016: data-help-key="visuals_art_style"
+L59064: <select aria-label="Selection"
+L59065: data-help-key="faq_count"
+L59117: <select aria-label="Selection"
+L59118: data-help-key="scaffolds_type"
+L59196: <select aria-label="Selection"
+L59197: data-help-key="brainstorm_simulation_type"
+L59472: <select aria-label="Selection"
+L59473: data-help-key="math_subject"
+L59497: <select aria-label="Selection"
+L59498: data-help-key="math_mode"
+L59643: <select aria-label="Selection"
+L59644: data-help-key="adventure_setup_input_mode" value={adventureInputMode}
+L59660: <select aria-label="Selection"
+L59661: data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
+L59679: <select aria-label="Selection"
+L59680: data-help-key="adventure_setup_language" value={adventureLanguageMode}
+L60138: <select aria-label="Selection"
+L60139: data-help-key="quiz_dok"
+L60242: <select aria-label="Selection"
+L60243: data-help-key="fullpack_resource_count"
+L60510: <select
+L60511: value={selectedProfileId}
+L60692: <select
+L60693: value={activeUnitId}
+L61688: <select aria-label="Selection"
+L61689: data-help-key="glossary_puzzle_lang"
+L61860: <select aria-label="Selection"
+L61861: value={standardDeckLang}
+L61872: <select aria-label="Selection"
+L61873: value={flashcardLang}
+L62712: <select aria-label="Selection"
+L62713: value={item.tier || ''}
+L66586: <select aria-label="Selection"
+L66587: data-help-key="adventure_setup_input_mode" value={adventureInputMode}
+L66602: <select aria-label="Selection"
+L66603: data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
+L66619: <select aria-label="Selection"
+L66620: data-help-key="adventure_setup_language" value={adventureLanguageMode}
+L69208: <select aria-label="Selection"
+L69209: value={fluencyTimeLimit}
+L69265: <select aria-label="Grade" value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-s
+L69266: {Object.keys(FLUENCY_BENCHMARKS).map(g => (<option key={g} value={g}>{t('fluency.grade_select')} {g}</option>))}
+L69268: <select aria-label="Season" value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="text-xs font-bold border borde
+L69269: <option value="fall">{t('fluency.season_fall')}</option>
+
+=== 'profile' in JSX (>50000) ===
+L56490: <strong>{t('tips.pro_tip_label')}</strong> Use the <span className="font-bold"><Users size={12} className="inline"/> {t('profiles.title')}</span> feature to sav
+L60491: <div id="ui-student-profiles" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-200 overflow-hidden shrink-0">
+L60494: <Users size={16} /> {t('profiles.title')}
+L60499: ref={profileInputRef}
+L60500: onChange={handleImportProfiles}
+L60504: <button onClick={() => profileInputRef.current.click()} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('profiles.import_tooltip')} ar
+L60505: <button onClick={handleExportProfiles} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('profiles.export_tooltip')} aria-label={t('prof
+L60511: value={selectedProfileId}
+L60512: onChange={(e) => handleLoadProfile(e.target.value)}
+L60514: aria-label={t('profiles.select_label')}
+L60515: data-help-key="profiles_select_dropdown"
+L60517: <option value="">{t('profiles.select_default')}</option>
+L60518: {profiles.map(p => (
+L60523: onClick={handleSetIsProfileModalOpenToTrue}
+L60525: title={t('profiles.save_tooltip')}
+L60526: aria-label={t('profiles.save_tooltip')}
+L60527: data-help-key="profiles_save_button"
+L60532: {selectedProfileId && (
+L60535: {t('profiles.active_profile')}: <span className="font-bold text-indigo-700">{profiles.find(p => p.id === selectedProfileId)?.name}</span>
+L60538: onClick={(e) => handleDeleteProfile(e, selectedProfileId)}
+L60540: title={t('profiles.delete_tooltip')}
+L60541: aria-label={t('profiles.delete_tooltip')}
+L60547: {isProfileModalOpen && (
+L60549: <label className="block text-[10px] font-bold text-indigo-900 mb-1">{t('profiles.new_profile_label')}</label>
+L60551: <input aria-label="profiles.new_profile_placeholder"
+L60553: value={newProfileName}
+L60554: onChange={(e) => setNewProfileName(e.target.value)}
+L60555: placeholder={t('profiles.new_profile_placeholder')}
+L60558: onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
+L60560: <button onClick={handleSaveProfile} className="text-xs bg-indigo-600 text-white px-2 rounded hover:bg-indigo-500">{t('common.save')}</button>
+L60561: <button onClick={handleSetIsProfileModalOpenToFalse} className="text-xs text-slate-500 hover:text-slate-700 px-1">{t('common.cancel')}</button>
+L60563: <p className="text-[9px] text-indigo-600 mt-1 italic">{t('profiles.save_helper')}</p>
+L64514: onSetGroupProfile={handleSetGroupProfile}
+
+=== save + current (anywhere) ===
+L12838: confirm_regenerate: "This will regenerate the current content in the new language. Unsaved changes to the current text may be lost. Continue?",
+L15289: persona_back_btn: "Return to the persona selection screen to choose a different character. Your current conversation progress is automatically saved, and you ca
+L15784: save_helper: "Saves current Grade, Language, Interests, DOK & Standards.",
+L15785: save_tooltip: "Save current configuration as new profile",
+L32532: venn_back_btn: "Exit the Venn diagram activity and return to the Concept Sort configuration panel. Use when: finished with the activity, want to change settings
+L32578: 'word_sounds_review_back': "Navigate back to the Word Sounds configuration panel. Use to: change activity type (Break It Down, Rhyme Time, Letter Tracing), modi
+L32603: 'bingo_exit_caller_btn': "Leave the live Bingo calling interface. Exiting: pauses the current game (resumable), preserves your position in the call list, and re
+L32634: 'dashboard_close_btn': "Exit the dashboard panel and return to main workspace. Dashboard data persists—reopening shows same information. Changes made in dashboa
+L32692: 'alignment_standard_select': "Select which standards framework to align your content with. Options include: Common Core State Standards (ELA and Math, used by m
+L32711: 'simplified_download_audio': "Save the text-to-speech audio as a downloadable file. Audio uses your current voice settings (voice, speed, volume). File format i
+L32736: 'header_actions': "Content management actions. Includes: Save (disk icon, save current project), History (clock icon, access saved sessions), Share (share icon,
+L32791: 'escape_room_timer': "Countdown timer for the Escape Room experience. Time pressure creates urgency and excitement while building time management skills. Visibl
+L32897: 'header_submit': "Student submission button for completed assignments. When clicked: your current work is packaged and sent to the teacher dashboard, timestamp 
+L32900: 'header_theme_toggle': "Toggle application color scheme. Light mode: bright backgrounds, dark text, suitable for well-lit environments. Dark mode: dark backgrou
+L32942: 'adventure_cancel_new': "Abandon new adventure setup and go back to your active adventure. Click when: you started a new adventure accidentally, want to continu
+L32944: 'adventure_confirm_new': "Finalize creating a new adventure. Current adventure progress is automatically saved before switching. Click to confirm you want to st
+L33017: 'profiles_select_dropdown': "Quick-select from saved profiles. Dropdown shows: all saved profiles by name, key settings preview, and last-used indicator. Select
+L33018: 'profiles_save_button': "Create a named profile from current settings. Profile captures: reading level, voice selection, speech rate, theme, color overlay, font
+L33028: 'ui_lang_regenerate_btn': "Generate fresh translations for the current language. Use when: translations seem incorrect, updates added new untranslated strings, 
+L33030: 'ui_lang_export_btn': "Save current interface translations as a JSON file. Exported file contains: all UI strings in current language, key identifiers for editi
+L33039: 'welcome_load_btn': "Continue where you left off. Restores your complete last session: source content, all generated resources (glossary, quiz, lesson plan, etc
+L33048: 'entry_load_exist': "Resume your previous session with all data intact. Loading restores: XP earned, activity progress, saved responses, settings preferences, a
+L33081: 'math_generate_similar': "Generate additional problems matching the current difficulty and type. Use for: extra practice for struggling students, assessment que
+L33085: 'history_load_project': "Reload a complete project from your saved history. Restoring includes: all source content, every generated resource (glossary, quiz, le
+L33123: syntax_close: "Exit the Syntax Scramble game. Closing saves your current progress. You can resume from where you left off. Partially completed puzzles remain in
+L33131: 'ws_gen_close': "Exit the Word Sounds Studio completely. Closing saves: current word list, session progress, and all settings. You can reopen and resume from th
+L33146: ws_modal_close: "Exit the Word Sounds Studio. Closing saves: current word list, session progress, and settings. You can resume from the Words Sounds button. Par
+L33168: crossword_close_btn: "Exit the crossword activity. Closing saves: current progress, filled letters, and completion status. Resume from Crossword tool to continu
+L33182: history_save_unit_btn: "Save changes to the current unit name and organization.",
+L34133: if (!hasAutoLayoutRunRef.current && !savedNodes) {
+L36520: saveReminderIntervalRef.current = setInterval(() => {
+L36532: alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+L36539: if (saveReminderIntervalRef.current) {
+L36540: clearInterval(saveReminderIntervalRef.current);
+L36708: // Save current settings
+
+=== import + json (non-module, >40000) ===
+
+=== Config/Preset state patterns ===
+L25471: const [showBatchConfig, setShowBatchConfig] = useState(false);
+L31629: const [profiles, setProfiles] = useState([]);
+L31630: const [selectedProfileId, setSelectedProfileId] = useState('');
+L31631: // [PHASE 4 MIGRATED] const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+L31632: const [newProfileName, setNewProfileName] = useState('');
+L36014: const [isAutoConfigEnabled, setIsAutoConfigEnabled] = useState(true);
+L31633: const profileInputRef = useRef(null);

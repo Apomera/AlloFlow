@@ -1,0 +1,26 @@
+﻿L18430: UI_STRINGS CLOSES at depth 0
+  Next chars: ', []);\n  useEffect('
+
+Final depth: 0
+
+Top-level sections found (72):
+  L14290: export_status (depth 1)
+  L14310: output (depth 1)
+  L14347: persona (depth 1)
+  L14454: session (depth 1)
+  L14523: student (depth 1)
+  L14533: dashboard (depth 1)
+  L14642: tools (depth 1)
+  L14650: actions (depth 1)
+  L14656: modals (depth 1)
+  L14729: immersive (depth 1)
+  L14762: timer (depth 1)
+  L14772: roles (depth 1)
+  L14787: entry (depth 1)
+  L14793: codenames (depth 1)
+  L14810: welcome (depth 1)
+  L14816: tips (depth 1)
+  L14846: bot_events (depth 1)
+  L14875: help_mode (depth 1)
+  L16100: groups (depth 1)
+  L16136: adventure (depth 1)

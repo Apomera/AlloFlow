@@ -1,0 +1,153 @@
+=== setRhymeOptions contexts ===
+--- Position 1179461 ---
+  const internalAudioCache = React.useRef(new Map());
+    const audioInstances = React.useRef(new Map());
+    const audioCache = providedAudioCache || internalAudioCache;
+    const ttsQueue = React.useRef(Promise.resolve()); // Serialize TTS requests to prevent rate limiting
+    const [attempts, setAttempts] = React.useState(0); // Track wrong attempts for "Second Chance"
+    const [rhymeOptions, setRhymeOptions] = React.useState([]);
+    const [blendingProgress, setBlendingProgress] = React.useState(0);
+    const [blendingOptions, setBlendingOptions] = React.useState([]); // Word options for Blend Sounds activity
+    const [orthographyOptions, setOrthographyOptions] = React.useState([]); // Options for Sight & Spell activity
+        const [isolationState, setIsolationState] = React.useState(null); // St
+
+--- Position 1280412 ---
+stractors.sort(() => Math.random() - 0.5).slice(0, 3);
+                };
+                const distractors = wordSoundsPhonemes.rhymeDistractors?.length >= 3
+                    ? wordSoundsPhonemes.rhymeDistractors.slice(0, 3)
+                    : generateNearRhymes(currentWordSoundsWord || 'cat');
+                
+                const options = [correctRhyme, ...distractors];
+                setRhymeOptions(options.sort(() => Math.random() - 0.5));
+            } else {
+                // Fallback: generate fake rhymes if AI didn't provide one
+                const word = currentWordSoundsWord || '';
+                const ending = word.slice(-2);
+                const fakeRhymes = ['b' + ending, 'm' + ending, 's' + ending, 'orange'];
+                setRhymeOptions(fakeRhymes.sort(() => Math.random()
+
+--- Position 1280776 ---
+e, ...distractors];
+                setRhymeOptions(options.sort(() => Math.random() - 0.5));
+            } else {
+                // Fallback: generate fake rhymes if AI didn't provide one
+                const word = currentWordSoundsWord || '';
+                const ending = word.slice(-2);
+                const fakeRhymes = ['b' + ending, 'm' + ending, 's' + ending, 'orange'];
+                setRhymeOptions(fakeRhymes.sort(() => Math.random() - 0.5));
+            }
+        }
+    }, [wordSoundsPhonemes, wordSoundsActivity, currentWordSoundsWord, generateSoundChips]);
+    
+    
+
+
+    
+    // STABILIZATION & PRE-FETCH FOR ISOLATION
+    // This effect only runs as FALLBACK if options weren't pre-generated in fetchWordData
+    React.useEffect(() => {
+        if (wordSoundsActivity !== 'isolation' || !wor
+
+
+=== 10000ms timeout contexts ===
+--- Position 1675431 ---
+calling onGenerateAudio with 3s timeout...");
+                  // PERF: Timeout Cloud TTS after 3s to ensure fallback works
+                  const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Cloud TTS Timeout")), 10000));
+                  const audioPromise = onGenerateAudio(ttsText, selectedVoice, voiceSpeed, 1);
+                  const audioUrl = await Promise.race([audioPromise, timeoutPromise]);
+                
+                  console.log("🎤 onGenerateAudi
+
+--- Position 1689182 ---
+peak(tip, false); // Audio = true (Wake up!)
+             }
+             lastActivityTime = Date.now(); // Reset to avoid spamming every tick
+        }
+    };
+    // Check inactivity every 10s
+    fallbackTimer = setInterval(checkFallbackInactivity, 10000); 
+
+    const resetInactivity = () => {
+        lastActivityTime = Date.now();
+    };
+
+    window.addEventListener('mousemove', resetInactivity);
+    window.addEventListener('keydown', resetInactivity);
+    window.addEventListener('click', resetInac
+
+--- Position 1712355 ---
+
+            white-space: normal;
+        }
+    `}</style>
+    <div 
+      ref={containerRef}
+      tabIndex={0}
+      aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
+      onKeyDown={handleKeyDown}
+      className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
+      style={{ 
+        bottom: `${position.y}px`, 
+       
+
+--- Position 2068935 ---
+ {isSolved && <CheckCircle className="text-green-400" size={20} />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      
+      {/* Puzzle Modal */}
+      {currentPuzzle && (
+        <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-start mb-4">
+  
+
+--- Position 3376626 ---
+                  { "id": "i1", "content": "Card Text", "categoryId": "c1" },
+                    { "id": "i2", "content": "Card Text", "categoryId": "c2" }
+                ]
+            }
+            
+            Text: "${textToProcess.substring(0, 10000)}"
+         `;
+
+         const result = await callGemini(prompt, true);
+         
+         try {
+             content = JSON.parse(cleanJson(result));
+             if (!content.categories) content.categories = [];
+             if (!content.items) co
+
+--- Position 4678793 ---
+ttom, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
+            </div>
+            {isSpotlightMode && botSpotlightPos && (
+                <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }}>
+                    <defs>
+                        <radialGradient 
+                            id="beamGradient" 
+                            gradientUnits="userSpaceOnUse"
+                            cx={botSpotl
+
+--- Position 4727369 ---
+({ x: socraticLivePos.current.x, y: socraticLivePos.current.y });
+                setIsSocraticDragging(false);
+            }}
+        />
+      )}
+
+
+      {!isZenMode && !showUDLGuide && (
+      <div className="fixed bottom-24 md:bottom-8 right-6 z-[10000] flex flex-col items-end gap-4 no-print">
+          {/* Prominent Word Sounds Button - Moved out of menu for visibility */}
+
+          {isFabExpanded && (
+              <div 
+                data-help-toggle="true"
+                className="flex fl
+

@@ -1,0 +1,16 @@
+Total: 15
+L29748: const isCanvas = React.useMemo(() => {
+L29811: const adventureImageDB = React.useMemo(() => ({
+L34756: const latestLessonPlan = React.useMemo(() => {
+L35443: const filteredGlossaryData = useMemo(() => {
+L36445: const latestGlossary = React.useMemo(() => {
+L36460: const isClozeComplete = React.useMemo(() => {
+L36465: const displayLanguages = React.useMemo(() => {
+L40525: const charHash = useMemo(() => speakingChar.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0), [speakingChar, char
+L42642: const isScaffoldComplete = React.useMemo(() => {
+L52034: const vennTitles = useMemo(() => ({ setA: { text: setA.title, trans: setA.title_en }, setB: { text: setB.title, trans: setB.title_
+L52197: const causes = useMemo(() => branches.filter(b => b.title.toLowerCase().includes('cause')), [branches, cause, title]);
+L54059: const botAccessory = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards]);
+L54061: const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingAudio, phon
+L54364: const activeSessionGroups = useMemo(() => Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null), [sessionData?.
+L60417: const realGrammarErrors = useMemo(() => rawGrammarNotes.filter(g => !isInvalidGrammarNote(g)), [rawGrammarNotes, isInvalidGrammarN

@@ -1,0 +1,17 @@
+=== OrthographyView ===
+DEF L5446: const OrthographyView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+L5446: const OrthographyView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+L5501: if (isEditing) {
+
+=== IsolationView ===
+
+=== Isolation edit mode rendering ===
+L5144: isEditing,
+L5205: {!isEditing && (
+L5283: isEditing ? (
+
+=== Blending edit mode ===
+L10103: isEditing={isEditing}
+L10192: isEditing ? (
+
+=== Isolation option inputs ===

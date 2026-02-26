@@ -1,0 +1,289 @@
+=== UNGUARDED AWAIT CLASSIFICATION (465 total) ===
+
+=== ALREADY GUARDED (220) ===
+(Inside a try block at higher scope — safe)
+
+  L44: const response = await fetch(_AUDIO_BANK_URL);
+  L46: _AUDIO_BANK = await response.json();
+  L261: const arrayBuffer = await this.readFileAsArrayBuffer(file);
+  L268: const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+  L306: const base64 = await this.blobToBase64(wavBlob);
+  ... and 215 more
+
+=== AUDIO CHAINS (41) ===
+(Intentional sequential audio — wrapping would break playback flow)
+
+  L427: const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+  L443: const audioFile = await this.extractAudioFromVideo(file, onProgress);
+  L2739: await onPlayAudio(phoneme);
+  L3497: await audio.play();
+  L3523: await playInstance(audio);
+  L3532: await playInstance(audioInstances.current.get(text));
+  L3712: await speakWord(text, wordSoundsLanguage || 'en-US', ttsSpeed);
+  L3763: await onPlayAudio(data.word);
+  L3770: await onPlayAudio(data.options[i]);
+  L5367: await fetchAudio();
+  L5516: await fetchAudio();
+  L5730: await handleAudio(text, false).catch(e => warnLog("Audio prefetch failed:", e));
+  L6458: await handleAudio(currentWordSoundsWord);
+  L6466: await handleAudio(isolationState.isoOptions[i]);
+  L6479: await Promise.allSettled(rhymeOptionsRef.current.map(w => callTTS(w)));
+  L6486: await handleAudio(text);
+  L6876: await handleAudio(INSTRUCTION_AUDIO['sound_match_start']); // "Find all words that start with..."
+  L6878: await handleAudio(targetSound); // "... /b/"
+  L6884: await handleAudio(INSTRUCTION_AUDIO['sound_match_end']); // "Find all words that end with..."
+  L6886: await handleAudio(targetSound); // "... /ar/"
+  L6906: await handleAudio(INSTRUCTION_AUDIO['inst_rhyming']);
+  L6910: await handleAudio(currentWordSoundsWord); // Chain target word after instruction
+  L6913: await handleAudio("Which word rhymes with");
+  L6917: await handleAudio(currentWordSoundsWord);
+  L6925: await handleAudio(instructionAudioSrc);
+  L6927: await handleAudio(instructionText);
+  L6959: await handleAudio(effectiveBlendingOptions[i]);
+  L6971: await handleAudio(currentWordSoundsWord); // Play the word ONLY
+  L6984: await handleAudio(rhymeOptionsRef.current[i]);
+  L6994: await handleAudio(currentWordSoundsWord);
+  L7001: await handleAudio(isolationState.isoOptions[i]);
+  L7012: await handleAudio(currentWordSoundsWord);
+  L7018: await handleAudio(currentWordSoundsWord);
+  L21345: const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  L33486: if (typeof callTTS === 'function') { const url = await callTTS(term, selectedVoice, 1, 1).catch(e =>
+  L38405: const { bytes: pcmBytes } = await fetchTTSBytes(text, voiceName, speed);
+  L39915: const audioUrl = await callTTS(word, selectedVoice);
+  L39919: await audio.play();
+  L40295: nextPreloadedAudio = await nextAudioElementPromise;
+  L44923: audioUrl = await callTTS(optText, voiceId);
+  L48165: await callTTS(textWithName, selectedVoice);
+
+=== DELAYS (42) ===
+(Intentional timing — setTimeout/Promise delays)
+
+  L2740: await new Promise(r => setTimeout(r, 900));
+  L3498: await new Promise(resolve => {
+  L3512: await new Promise((resolve) => {
+  L3772: await new Promise(r => setTimeout(r, 750));
+  L5449: if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt)); // Backoff
+  L6426: await new Promise(r => setTimeout(r, 500));
+  L6462: await new Promise(r => setTimeout(r, 600));
+  L6467: await new Promise(r => setTimeout(r, 450));
+  L6475: await new Promise(r => setTimeout(r, 600));
+  L6488: await new Promise(r => setTimeout(r, 400));
+  L6877: await new Promise(r => setTimeout(r, 300));
+  L6885: await new Promise(r => setTimeout(r, 300));
+  L6908: await new Promise(r => setTimeout(r, 200));
+  L6915: await new Promise(r => setTimeout(r, 200));
+  L6933: await new Promise(r => setTimeout(r, 400)); // Small gap
+  L6941: await new Promise(r => setTimeout(r, 200));
+  L6955: await new Promise(r => setTimeout(r, 600)); // Gap after phonemes
+  L6961: await new Promise(r => setTimeout(r, 500)); // Gap between options
+  L6969: await new Promise(r => setTimeout(r, 400)); // Small gap
+  L6976: await new Promise(r => setTimeout(r, 500)); // Small gap before options
+  L6986: await new Promise(r => setTimeout(r, 600)); // Gap between options
+  L6992: await new Promise(r => setTimeout(r, 400));
+  L6997: await new Promise(r => setTimeout(r, 600)); // Gap after word
+  L7003: await new Promise(r => setTimeout(r, 450));
+  L7010: await new Promise(r => setTimeout(r, 400)); // Small gap after instruction
+  L7016: await new Promise(r => setTimeout(r, 400)); // Small gap after instruction
+  L10416: await new Promise(resolve => setTimeout(resolve, 10));
+  L16480: await new Promise(resolve => setTimeout(resolve, delay));
+  L33487: await new Promise(r => setTimeout(r, 100));
+  L37985: await new Promise(r => setTimeout(r, 500));
+  L38419: await new Promise(r => setTimeout(r, delay));
+  L38478: await new Promise(r => setTimeout(r, delay));
+  L39088: if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 800));
+  L39335: if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
+  L42061: await new Promise(r => setTimeout(r, 1000));
+  L47407: await new Promise(r => setTimeout(r, delay));
+  L48176: await new Promise(resolve => {
+  L48567: if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
+  L49392: await new Promise(r => setTimeout(r, 500));
+  L49858: if (!isLast) await new Promise(r => setTimeout(r, 800));
+  L51396: if (!isLast) await new Promise(r => setTimeout(r, 800));
+  L51443: if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
+
+=== NETWORK/API CALLS (63) — NEEDS FIXING ===
+(Genuine crash risk — unhandled rejection on network failure)
+
+  L5945: const newOptionRaw = await callGemini(prompt, "You are a precise literacy generator. Output only the
+  L6099: newImageBase64 = await callGeminiImageEdit(refinementPrompt, rawBase64);
+  L26473: await updateDoc(sessionRef, {
+  L26500: await updateDoc(sessionRef, {
+  L34064: const result = await callGemini(prompt, true);
+  L34072: const repairResult = await callGemini(repairPrompt, true);
+  L34129: const result = await callGemini(prompt, true);
+  L34824: await setDoc(historyRef, {
+  L34833: await setDoc(historyRef, {
+  L35051: await signInWithCustomToken(auth, __initial_auth_token);
+  L35053: await signInAnonymously(auth);
+  L36325: const newProblem = await callGemini(prompt);
+  L37611: return await callGemini(repairPrompt, true, false, 0.1);
+  L37710: const result = await callGemini(prompt, true, false, null);
+  L38028: const response = await callGemini(prompt, true);
+  L38080: return await callGemini(prompt);
+  L38306: const response = await fetch(url, {
+  L38499: let imageUrl = await callImagen(prompt, 400, 0.9);
+  L38532: let imageUrl = await callImagen(prompt);
+  L38853: const content = await fetchAndCleanUrl(targetUrl, callGemini, addToast);
+  L38944: const text = await callGeminiVision(prompt, base64String, mimeType);
+  L39049: const result = await callGemini(verificationPrompt, false, true);
+  L39880: const result = await callGemini(prompt);
+  L39905: const result = await callGemini(prompt, true);
+  L42105: await updateDoc(sessionRef, { mode: newMode });
+  L42149: const sessionSnap = await getDoc(sessionRef);
+  L43468: const guide = await callGemini(prompt);
+  L43511: const result = await callGemini(prompt, true);
+  L43664: const result = await callGemini(prompt);
+  L43946: const result = await callGemini(prompt);
+  L44877: await updateDoc(sessionRef, { 'democracy.isActive': newState });
+  L45356: await updateDoc(sessionRef, {
+  L45736: const imageBase64 = await callImagen(generatedContent.data.prompt, targetWidth, targetQual);
+  L45770: const newImageBase64 = await callGeminiImageEdit(refinementPrompt, rawBase64);
+  L45800: const newImageBase64 = await callGeminiImageEdit(refinementPrompt, currentImageBase64);
+  L45850: const summary = await callGemini(prompt);
+  L45966: const guide = await callGemini(prompt);
+  L46273: const responseText = await callGemini(fullPrompt);
+  L47104: const result = await callGemini(finalPrompt);
+  L47297: const newImageUrl = await callGeminiImageEdit(editPrompt, currentBase64, 400, 0.85);
+  L47479: const newImageUrl = await callGeminiImageEdit(editPrompt, currentBase64, 400, 0.85);
+  L47515: const result = await callGemini(prompt, true);
+  L47811: const resultRaw = await callGemini(prompt, true);
+  L48126: const result = await callGemini(prompt);
+  L48245: const result = await callGemini(prompt, true);
+  L48350: const summary = await callGemini(prompt);
+  L48401: const result = await callGemini(prompt, true);
+  L48871: await updateDoc(sessionRef, {
+  L51441: const partResult = await callGemini(fixPrompt);
+  L52563: const result = await callGemini(prompt, true);
+  L52569: let imageUrl = await callImagen(imgPrompt);
+  L52627: const result = await callGemini(prompt, true);
+  L52711: let imageUrl = await callImagen(prompt);
+  L52717: imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+  L52752: const result = await callGemini(prompt, true);
+  L52765: imageUrl = await callImagen(imgPrompt);
+  L52936: const result1 = await callGemini(prompt1, true);
+  L53016: const result = await callGemini(prompt, false, true);
+  L53077: const result = await callGemini(prompt, true);
+  L53115: const newText = await callGemini(prompt);
+  L53162: const result = await callGemini(prompt);
+  L53251: return await callGemini(prompt);
+  L53489: const result = await callGemini(prompt, true);
+
+=== FILE OPERATIONS (0) — NEEDS FIXING ===
+(Can throw on corrupt data or permission errors)
+
+
+=== STATE/DOM OPS (1) ===
+(Low risk — unlikely to throw)
+
+  L42516: await navigator.clipboard.writeText(textContent);
+
+=== OTHER (98) ===
+
+  L421: const arrayBuffer = await this.readFileAsArrayBuffer(videoFile);
+  L2952: await onRegenerateOption(idx, 'rhymeDistractors', i, d);
+  L3011: await onRegenerateOption(idx, 'blendingDistractors', i, d);
+  L5663: const results = await Promise.all(prefetchPromises);
+  L5990: const freshData = await fetchWordData(targetWord, 0, true); // Force fresh fetch
+  L6454: await playBlending();
+  L6935: await playBlending(); // Play phoneme sequence ONLY
+  L16531: text = await response.text();
+  L16722: const response = await fetchWithExponentialBackoff(url, {
+  L16727: const data = await response.json();
+  L16732: const text = await callApi(prompt);
+  L16742: const repairedText = await callApi(repairPrompt);
+  L21299: await Promise.all(writePromises);
+  L21335: await Promise.all(fetchPromises);
+  L26546: await onCreateGroup(newGroupName.trim());
+  L27240: const results = await Promise.all(promises);
+  L27845: const content = await fetchAndCleanUrl(url, onCallGemini, addToast);
+  L27862: const result = await onCallGemini(prompt, false, true);
+  L27900: await handleWizardUrlFetch(option.url);
+  L27907: const results = await onLookupStandards(localData.grade, learningGoal, region);
+  L29839: const db = await this.getDB();
+  L29854: const db = await this.getDB();
+  L29868: const db = await this.getDB();
+  L29882: const db = await this.getDB();
+  L29892: const images = await this.getAllImages();
+  L30966: const hydrated = await Promise.all(historyItems.map(async (item) => {
+  L34009: await handleAutoLayout(newNodes, newEdges);
+  L34144: const result = await evaluateMapWithAI(conceptMapNodes, conceptMapEdges, challengeTarget);
+  L34901: const hydrated = await hydrateSessionAssets(activeSessionAppId, data.resources);
+  L35083: const savedHistory = await storageDB.get('allo_offline_history');
+  L35101: const savedProfiles = await storageDB.get('allo_offline_profiles');
+  L35109: const savedUnits = await storageDB.get('allo_offline_units');
+  L35175: await storageDB.set('allo_offline_history', fullPayload);
+  L35183: await storageDB.set('allo_offline_history', strippedPayload);
+  L35204: await storageDB.set('allo_offline_profiles', { items: profiles });
+  L35217: await storageDB.set('allo_offline_units', { items: units });
+  L36328: await handleGenerateMath(cleanProblem);
+  L37584: const response = await fetchWithExponentialBackoff(url, {
+  L37589: const data = await response.json();
+  L37821: return await resilientJsonParse(fixedString, attempt + 1);
+  L38450: const data = await response.json();
+  L38464: return await optimizeImage(rawUrl, width, qual);
+  L38469: return await executeRequest();
+  L38842: await handleUrlFetch(option.url);
+  L44812: const parsed = await storageDB.get('allo_adventure_save');
+  L45049: archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+  L45375: archivedImageId = await archiveAdventureImage(adventureState.sceneImage);
+  L45827: const fullStory = await rehydrateHistoryWithImages(adventureState.history, adventureState.imageCache
+  L46349: const intentResult = await detectWorkflowIntent(textToSend, guidedFlowState.currentStage, udlMessage
+  L46374: await handleGenerateSource();
+  L46378: const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
+  L46497: const config = await autoConfigureSettings(
+  L46534: const updatedConfig = await modifyBlueprintWithAI(activeBlueprint, textToSend);
+  L46551: await handleGenerateSource({ topic: textToSend });
+  L46555: const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
+  L46566: const resultItem = await handleGenerate('analysis');
+  L46593: const bridgeMsg = await generateDynamicBridge('Source Analysis', 'Glossary', context);
+  L46619: const resultItem = await handleGenerate('glossary');
+  L46627: const bridgeMsg = await generateDynamicBridge('Glossary', 'Leveled Text', context);
+  L46643: const resultItem = await handleGenerate('glossary');
+  L46651: const bridgeMsg = await generateDynamicBridge('Glossary', 'Leveled Text', context);
+  L46676: const resultItem = await handleGenerate('simplified');
+  L46680: const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
+  L46691: await handleGenerate('simplified');
+  L46695: const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
+  L46711: await handleGenerate('simplified');
+  L46715: const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
+  L46737: await handleGenerate('outline');
+  L46741: const bridgeMsg = await generateDynamicBridge('Visual Organizer', 'Visual Support', context);
+  L46763: await handleGenerate('image');
+  L46767: const bridgeMsg = await generateDynamicBridge('Visual Support', 'FAQ List', context);
+  L46782: await handleGenerate('faq');
+  L46801: await handleGenerate('sentence-frames');
+  L46817: await handleGenerate('timeline');
+  L46833: await handleGenerate('concept-sort');
+  L46849: await handleGenerate('brainstorm');
+  L46875: await handleGenerate('quiz');
+  L46880: const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Standard Audit', context);
+  L46885: const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Lesson Plan', context);
+  L46912: await handleGenerate('alignment-report');
+  L46928: await handleGenerateLessonPlan();
+  L46953: await handleStartAdventure();
+  L47049: await generateStandardChatResponse(textToSend);
+  L47053: await generateStandardChatResponse(textToSend);
+  L47594: let url = await generateCharacterPortrait(desc, style);
+  L47598: url = await generateCharacterPortrait(simpleDesc, style);
+  L47715: const imageUrl = await generateCharacterPortrait(description, style);
+  L48557: const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText
+  L49375: await handleGenerate(type, 'English', keepLoading, textToProcess);
+  L49379: await handleGenerate(type, 'English', keepLoading, textToProcess);
+  L49391: await handleGenerate(type, lang, batchKeepLoading, textToProcess);
+  L49896: content = await repairGeneratedText(content, 'too_short', targetWords, repairContext, effectiveLangu
+  L51293: batchConfig = await autoConfigureSettings(
+  L51371: const resultItem = await handleGenerate(type, null, !isLast, batchSourceText, stepConfig, false);
+  L51448: await handleGenerate('analysis', null, false, finalCorrectedText);
+  L53229: const taggedChunks = await Promise.all(chunks.map(async (chunk) => {
+  L61411: await handleQuickAddGlossary(addedTerm);
+  L61420: const replacement = await fetchReplacementSuggestion(allTerms, addedTerm, srcText);
+
+=== SUMMARY ===
+  Total unguarded: 465
+  Already guarded (higher scope): 220
+  Audio chains (intentional): 41
+  Delays (intentional): 42
+  Network/API (NEEDS FIX): 63
+  File ops (NEEDS FIX): 0
+  State/DOM (low risk): 1
+  Other: 98

@@ -1,0 +1,18 @@
+L6037:     const handleGenerateWordImage = React.useCallback(async (index, word) => {
+L36418:   const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+L36564:   const handleGenerateSimilar = async () => {
+L38865:   const handleGenerateBingo = () => {
+L39455:   const handleGenerateSource = async (overrides = {}, switchView = true) => {
+L43684:   const handleGenerateLessonPlan = async (switchView = true) => {
+L43756:   const handleGenerateExtensionGuide = async (index) => {
+L43788:   const handleGenerateProgression = async () => {
+L43948:   const handleGenerateLessonIdeas = async () => {
+L46261:   const handleGenerateGuide = async (index) => {
+L47454:   const handleGeneratePersonas = useCallback(async () => {
+L48399:   const handleGenerateReflectionPrompt = async () => {
+L49803:   const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchVi
+L51763:   const handleGenerateFullPack = async (chatContextOverride = null) => {
+L52044:   const handleGenerateOutcome = async () => {
+L53227:   const handleGenerateTermImage = async (index, term) => {
+L53257:   const handleGenerateConceptItem = useCallback(async (term, categories) => {
+L53933:   const handleGenerateRubric = async () => {

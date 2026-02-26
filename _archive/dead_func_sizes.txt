@@ -1,0 +1,20 @@
+﻿  LoadAudioButton (L64-L89): 26 lines
+  speakPhoneme (L986-L999): 14 lines
+  getStudentUid (L1067-L1075): 9 lines
+  useAutoSync (L1077-L1104): 28 lines
+  isSafeWord (L1515-L1524): 10 lines
+  getAudioForIPA (L2573-L2576): 4 lines
+  renderSettingsControls (L7922-L7928): 7 lines
+  getLangName (L18208-L18210): 3 lines
+  LargeFileImportModal (L18318-L18491): 174 lines
+  useDebounce (L22731-L22740): 10 lines
+  selectGrade (L29129-L29132): 4 lines
+  selectLength (L29289-L29291): 3 lines
+  MarkdownRenderer (L30832-L30882): 51 lines
+  getModeDescription (L32685-L32691): 7 lines
+  getDifficultyDescription (L32692-L32699): 8 lines
+  handleWordSoundsStartGame (L37494-L37513): 20 lines
+  renderPersonaTextWithClickableWords (L49265-L49289): 25 lines
+  LanguageSelector (L55230-L55232): 3 lines
+
+Total dead function lines: 406

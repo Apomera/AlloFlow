@@ -1,0 +1,6 @@
+LINE 35232: console.log('🔊 Pre-warming audio for glossary:', termsToWarm.length, 'terms');
+LINE 37389: // --- GLOSSARY AUDIO WARM-UP (PRELOADER) ---
+LINE 37394: const warmUpGlossaryAudio = async () => {
+LINE 37402: console.log("🔥 Warming up Glossary Audio Cache...");
+LINE 37443: const timeoutId = setTimeout(warmUpGlossaryAudio, 2000);
+LINE 39799: // and audio pre-warming (10+ simultaneous calls). 12s gives bulk ops time to complete.

@@ -1,0 +1,116 @@
+{
+    "mode": "student",
+    "studentNickname": "Noah Kim",
+    "responses": {
+        "quiz-1": {
+            "score": 88
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "resource",
+            "id": "res-1"
+        },
+        {
+            "type": "resource",
+            "id": "res-2"
+        }
+    ],
+    "adventureSnapshot": {
+        "xp": 800,
+        "level": 8,
+        "energy": 65,
+        "turnCount": 25,
+        "gold": 150,
+        "timestamp": "2026-02-14T15:00:00Z"
+    },
+    "escapeRoomStats": {
+        "xpEarned": 350,
+        "timeTaken": 300,
+        "puzzlesSolved": 5,
+        "totalPuzzles": 5,
+        "wrongAttempts": 0,
+        "hintsUsed": 1,
+        "difficulty": "hard"
+    },
+    "wordSoundsState": {
+        "history": [
+            {
+                "word": "cat",
+                "correct": true
+            },
+            {
+                "word": "dog",
+                "correct": true
+            },
+            {
+                "word": "fish",
+                "correct": true
+            }
+        ],
+        "sessionScore": {
+            "correct": 3,
+            "total": 3,
+            "streak": 3
+        },
+        "dailyProgress": {
+            "2026-02-14": {
+                "wordsCompleted": 3
+            }
+        }
+    },
+    "gameCompletions": {
+        "memory": [
+            {
+                "score": 95,
+                "timestamp": "2026-02-12T10:00:00Z"
+            }
+        ],
+        "syntaxScramble": [
+            {
+                "score": 100,
+                "timestamp": "2026-02-14T10:00:00Z"
+            }
+        ],
+        "bingo": [
+            {
+                "score": 85,
+                "timestamp": "2026-02-14T11:00:00Z"
+            }
+        ]
+    },
+    "socraticChatHistory": {
+        "messages": [
+            {
+                "role": "user",
+                "text": "Why do planets orbit the sun?"
+            },
+            {
+                "role": "assistant",
+                "text": "Great question about gravity!"
+            },
+            {
+                "role": "user",
+                "text": "Is gravity the same everywhere?"
+            },
+            {
+                "role": "assistant",
+                "text": "No, it depends on mass and distance."
+            }
+        ],
+        "messageCount": 4,
+        "savedAt": "2026-02-14T15:30:00Z"
+    },
+    "globalPoints": 1800,
+    "timeOnTask": {
+        "totalSessionMinutes": 120
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

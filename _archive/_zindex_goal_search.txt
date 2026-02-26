@@ -1,0 +1,34 @@
+=== wordSoundsSessionGoal references ===
+  L1301: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30); // Items per session (default 30)
+  L1723: <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
+  L1727: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+  L3106: wordSoundsSessionGoal = 10,
+  L7936: if (wordSoundsScore.correct >= wordSoundsSessionGoal) {
+  L32370: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(30); // Items per session
+  L65070: wordSoundsSessionGoal={wordSoundsSessionGoal}
+
+=== sessionGoal state declarations ===
+
+=== 'all resources' / 'All Resources' ===
+  L11827: • **HTML Export**: Self-contained offline HTML file with all resources, styles, and interactivity included.
+  L11844: • **Session List**: View a chronological list of all resources generated in this session.
+  L12354: filter_all: "All Resources",
+  L14959: history_clear_button: "Clear all resources from your history.",
+  L16977: desc: "Synthesize all resources into a standard-aligned lesson plan or study guide.",
+  L33911: 'history_clear_button': "Delete ALL resources from your history. This is permanent and irreversible. All generated content, saved activities, and cached resources are removed. Use 
+  L34180: 'group_resource_library': "Collection of all generated materials available for assignment. Shows: quizzes, glossaries, adventures, activities, and all generated content from this s
+  L34446: 'fullpack_generate': "One-click comprehensive resource generation. Creates: Adapted text (multiple reading levels), Quiz (MCQ and reflection), Glossary (visual vocabulary with audi
+
+=== 'select group' / 'select profile' ===
+  L16894: select_default: "-- Select Group / Profile --",
+
+=== z-index values > 1000 ===
+  L11040: z=9999 | z-index: 9999 !important;
+  L34694: z=10999 | z-index: 10999 !important; /* Above help mode backdrop (z-10998) */
+  L71890: z=9999 | style={{ pointerEvents: "all", zIndex: 9999 }}
+
+  Total high z-index entries (>=1000): 3
+
+=== Word Sounds Modal z-index ===
+
+=== resource history / ResourceHistory ===

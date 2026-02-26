@@ -1,0 +1,956 @@
+<html><body>
+<div><h2>SVG 0 (Length: 2923)</h2>
+<svg className="drawing-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"
+                 onMouseDown={(e) => handleDrawStart(e, panelIdx)}
+                 onMouseMove={handleDrawMove}
+                 onMouseUp={handleDrawEnd}
+                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 3, pointerEvents: drawingMode ? 'auto' : 'none' }}
+            >
+                {panelDrawings.map((d, idx) => {
+                    if (d.type === 'freehand' && d.points.length > 1) {
+                        const pathData = d.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                        return <path key={idx} d={pathData} fill="none" stroke={d.color} strokeWidth="0.5" strokeLinecap="round" />;
+                    }
+                    if (d.type === 'highlight' && d.points.length > 1) {
+                        const pathData = d.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                        return <path key={idx} d={pathData} fill="none" stroke={d.color} strokeWidth="3" strokeLinecap="round" opacity="0.35" />;
+                    }
+                    if (d.type === 'arrow' && d.start && d.end) {
+                        const angle = Math.atan2(d.end.y - d.start.y, d.end.x - d.start.x);
+                        const headLen = 2;
+                        return <g key={idx}>
+                            <line x1={d.start.x} y1={d.start.y} x2={d.end.x} y2={d.end.y} stroke={d.color} strokeWidth="0.4" />
+                            <polygon points={`${d.end.x},${d.end.y} ${d.end.x - headLen * Math.cos(angle - 0.4)},${d.end.y - headLen * Math.sin(angle - 0.4)} ${d.end.x - headLen * Math.cos(angle + 0.4)},${d.end.y - headLen * Math.sin(angle + 0.4)}`} fill={d.color} />
+                        </g>;
+                    }
+                    if (d.type === 'circle' && d.start && d.end) {
+                        const cx = (d.start.x + d.end.x) / 2;
+                        const cy = (d.start.y + d.end.y) / 2;
+                        const rx = Math.abs(d.end.x - d.start.x) / 2;
+                        const ry = Math.abs(d.end.y - d.start.y) / 2;
+                        return <ellipse key={idx} cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={d.color} strokeWidth="0.4" />;
+                    }
+                    return null;
+                })}
+                {/* Current drawing being made */}
+                {currentPath && currentPath.panelIdx === panelIdx && currentPath.points.length > 1 && (
+                    <path d={currentPath.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')}
+                          fill="none" stroke={currentPath.color} strokeWidth={currentPath.type === 'highlight' ? '3' : '0.5'}
+                          strokeLinecap="round" opacity={currentPath.type === 'highlight' ? 0.35 : 1} />
+                )}
+            </svg>
+</div><hr>
+<div><h2>SVG 1 (Length: 1672)</h2>
+<svg className="visual-leader-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
+                {allPoints.map((pt, idx) => {
+                    const tx = pt.anchorX !== null && pt.anchorX !== undefined ? pt.anchorX : 50;
+                    const ty = pt.anchorY !== null && pt.anchorY !== undefined ? pt.anchorY : 50;
+                    const dist = Math.sqrt((pt.x - tx) ** 2 + (pt.y - ty) ** 2);
+                    if (dist < 5) return null;
+                    return (
+                        <g key={idx} className="leader-line-group">
+                            <line x1={pt.x} y1={pt.y} x2={tx} y2={ty}
+                                  stroke="#6366f1" strokeWidth="0.5" strokeDasharray="2 1.5" opacity={0.6} />
+                            <circle className="anchor-dot" cx={tx} cy={ty} r="1.8"
+                                    fill="#6366f1" stroke="white" strokeWidth="0.4" opacity="0"
+                                    style={{ cursor: 'grab', pointerEvents: 'all', transition: 'opacity 0.2s, r 0.15s' }}
+                                    onMouseDown={(e) => handleAnchorMouseDown(panelIdx, pt.key, pt.type, e)}
+                                    onMouseEnter={(e) => { e.target.setAttribute('opacity', '0.9'); e.target.setAttribute('r', '2.2'); }}
+                                    onMouseLeave={(e) => { e.target.setAttribute('opacity', '0'); e.target.setAttribute('r', '1.8'); }}
+                            />
+                        </g>
+                    );
+                })}
+            </svg>
+</div><hr>
+<div><h2>SVG 2 (Length: 1041)</h2>
+<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"
+                 style={{ position: 'absolute', top: 0, left: 0,
+                          width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
+                {labels.map((label, idx) => {
+                    const tx = label.anchorX !== undefined ? label.anchorX : 50;
+                    const ty = label.anchorY !== undefined ? label.anchorY : 50;
+                    const dist = Math.sqrt((label.x - tx) ** 2 + (label.y - ty) ** 2);
+                    if (dist < 5) return null;
+                    return (
+                        <g key={idx}>
+                            <line x1={label.x} y1={label.y} x2={tx} y2={ty}
+                                  stroke="#8b5cf6" strokeWidth="0.4"
+                                  strokeDasharray="1.5 1" opacity={0.5} />
+                            <circle cx={tx} cy={ty} r="1" fill="#8b5cf6" opacity={0.6} />
+                        </g>
+                    );
+                })}
+            </svg>
+</div><hr>
+<div><h2>SVG 3 (Length: 1778)</h2>
+<svg width="48" height="48" viewBox="0 0 48 48" className={`drop-shadow-lg transition-transform duration-500 ${isCelebrating ? "animate-bounce scale-110" : ""}`}>
+                              {/* Head */}
+                              <circle cx="24" cy="24" r="16" fill="#FBBF24" stroke="#F59E0B" strokeWidth="2"/>
+                              {/* Sunglasses */}
+                              <rect x="10" y="19" width="12" height="8" rx="2" fill="#1F2937"/>
+                              <rect x="26" y="19" width="12" height="8" rx="2" fill="#1F2937"/>
+                              <rect x="22" y="21" width="4" height="3" fill="#1F2937"/>
+                              {/* Sunglasses shine */}
+                              <rect x="11" y="20" width="4" height="2" rx="1" fill="#4B5563" opacity="0.5"/>
+                              <rect x="27" y="20" width="4" height="2" rx="1" fill="#4B5563" opacity="0.5"/>
+                              {/* Cool smirk */}
+                              <path d="M18 32 Q24 35 30 32" stroke="#B45309" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                              {/* Headphones band */}
+                              <path d="M6 24 Q6 8 24 8 Q42 8 42 24" stroke="#1F2937" strokeWidth="4" fill="none" strokeLinecap="round"/>
+                              {/* Headphone ear cups */}
+                              <ellipse cx="6" cy="26" rx="5" ry="7" fill="#374151"/>
+                              <ellipse cx="42" cy="26" rx="5" ry="7" fill="#374151"/>
+                              {/* Headphone cushions */}
+                              <ellipse cx="6" cy="26" rx="3" ry="5" fill="#4B5563"/>
+                              <ellipse cx="42" cy="26" rx="3" ry="5" fill="#4B5563"/>
+                            </svg>
+</div><hr>
+<div><h2>SVG 4 (Length: 972)</h2>
+<svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+                                                {aimlineCoords && (
+                                                    <line x1={aimlineCoords.x1} y1={aimlineCoords.y1} x2={aimlineCoords.x2} y2={aimlineCoords.y2}
+                                                        stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
+                                                )}
+                                                <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                                {data.map((v, i) => (
+                                                    <circle key={i} cx={(i / (data.length - 1)) * w} cy={h - ((v - min) / range) * (h - 4) - 2} r="2.5" fill={color} />
+                                                ))}
+                                            </svg>
+</div><hr>
+<div><h2>SVG 5 (Length: 34935)</h2>
+<svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="select-none overflow-visible">
+                {activeView === 'image' && !isFlightActive && !isDragging && (
+                   <g transform="translate(110, 30) scale(0.85) rotate(8)" className="animate-in fade-in zoom-in-95 duration-500" opacity="0.95">
+                      {/* Easel Legs */}
+                      <rect x="8" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
+                      <rect x="38" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
+                      <rect x="22" y="8" width="4" height="52" rx="2" fill="#78350F" transform="rotate(-4 24 35)" />
+                      {/* Canvas Frame */}
+                      <rect x="3" y="12" width="45" height="32" rx="3" fill="#1F2937" />
+                      {/* Canvas */}
+                      <rect x="6" y="15" width="39" height="26" rx="2" fill="#FEFCE8" stroke="#E5E7EB" strokeWidth="1" />
+                      {/* Paint Splashes on Canvas */}
+                      <circle cx="16" cy="24" r="4" fill="#60A5FA" opacity="0.7" />
+                      <circle cx="28" cy="22" r="3" fill="#F472B6" opacity="0.6" />
+                      <circle cx="36" cy="32" r="3" fill="#34D399" opacity="0.6" />
+                      <ellipse cx="22" cy="33" rx="5" ry="3" fill="#FCD34D" opacity="0.5" />
+                      {/* Easel Shelf */}
+                      <rect x="0" y="42" width="50" height="4" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
+                   </g>
+                )}
+                {!isFlightActive && !isDragging && (
+                    <ellipse
+                        cx="50"
+                        cy="90"
+                        rx="18"
+                        ry="4"
+                        fill="#000"
+                        className={isSleeping ? "opacity-20" : "animate-shadow-pulse"}
+                    />
+                )}
+                    <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
+                    <circle cx="50" cy="46" r="6" fill="#06B6D4" stroke={colors.jetpackStroke} strokeWidth="2" />
+                    <circle cx="50" cy="46" r="3" fill="#67E8F9" className="animate-pulse" />
+                    <path d="M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
+                    <path d="M10 46 H30 M10 60 H30" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
+                    <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
+                    <path d="M70 46 H90 M70 60 H90" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
+                    {(isFlying || localIsFlying) && (
+                        <g className="animate-jetpack-flame">
+                             <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
+                             <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
+                             <path d="M74 78 Q80 100 86 78 Z" fill="#F59E0B" />
+                             <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
+                        </g>
+                    )}
+                {(isFlying || localIsFlying) && (
+                    <g transform="translate(-10, 0)" className="animate-fade-in" style={{ opacity: 0.6 }}>
+                       <rect x="-20" y="20" width="30" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.4s', animationDelay: '0s' }} />
+                       <rect x="-10" y="50" width="40" height="1" rx="0.5" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.6s', animationDelay: '0.2s' }} />
+                       <rect x="-15" y="80" width="25" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.5s', animationDelay: '0.1s' }} />
+                    </g>
+                )}
+                {effectiveMood === 'thinking' && !isSleeping && (
+                    <g className="animate-pulse" style={{ animationDuration: '2s' }}>
+                        <path
+                            d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
+                            fill="url(#hologram-beam)"
+                            style={{ mixBlendMode: 'screen', pointerEvents: 'none' }}
+                            opacity="0.6"
+                        >
+                            <animate attributeName="opacity" values="0.4; 0.7; 0.4" dur="2s" repeatCount="indefinite" />
+                        </path>
+                        <path d="M 25 -45 L 75 -45" stroke="#22D3EE" strokeWidth="1" strokeOpacity="0.8">
+                             <animate attributeName="d" values="M 46 5 L 54 5; M 20 -50 L 80 -50; M 46 5 L 54 5" dur="2s" repeatCount="indefinite" />
+                             <animate attributeName="stroke-opacity" values="0; 1; 0" dur="2s" repeatCount="indefinite" />
+                        </path>
+                        <g transform="translate(50, -25)" opacity="0.9">
+                             <animateTransform
+                                attributeName="transform"
+                                type="translate"
+                                values="50, -25; 50, -32; 50, -25"
+                                dur="3s"
+                                repeatCount="indefinite"
+                             />
+                             <g className="animate-hologram-3d">
+                                {renderHologramContent()}
+                             </g>
+                        </g>
+                    </g>
+                )}
+                {isSleeping && (
+                    <g className="animate-zzz" style={{ transformOrigin: 'top right' }}>
+                        <text x="65" y="10" fontSize="14" fill="#93C5FD" fontWeight="bold" style={{ opacity: 0.8 }}>z</text>
+                        <text x="75" y="-5" fontSize="18" fill="#60A5FA" fontWeight="bold" style={STYLE_ANIMATION_DELAY_HALF}>Z</text>
+                    </g>
+                )}
+                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping ? "" : "animate-pulse"} />
+                <g
+                    className={
+                        isSleeping ? "" :
+                        (isMoving ? "transition-transform duration-100 ease-out" :
+                        (wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway"))
+                    }
+                    style={{
+                        transformOrigin: '50px 15px',
+                        transform: isMoving ? `rotate(${antennaRotation}deg)` : undefined,
+                        '--start-deg': `${wobbleState.deg}deg`
+                    }}
+                >
+                    <path d="M50 15V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
+                    {antennaAction === 'signal' && !isSleeping && effectiveMood !== 'thinking' && (
+                        <g>
+                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" />
+                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={STYLE_ANIMATION_DELAY_HALF} />
+                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={{ animationDelay: '1.0s' }} />
+                        </g>
+                    )}
+                    <circle
+                        cx="50" cy="5" r="5"
+                        fill={isSleeping ? "#64748B" : "#FACC15"}
+                        className={
+                            effectiveMood === 'thinking' && !isSleeping ? "animate-ping" :
+                            (isTalking ? "animate-pulse" :
+                            (isSleeping ? "" :
+                            (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
+                        }
+                    />
+                </g>
+                {effectiveMood === 'thinking' && !isSleeping && (
+                    <g className="animate-pulse" style={{ animationDuration: '1.5s' }}>
+                        <path
+                            d="M 35 40 L 15 5 L 85 5 L 65 40 Z"
+                            fill="url(#hologram-gradient)"
+                            opacity="0.6"
+                        />
+                        <path d="M 15 10 L 85 10" stroke="#22D3EE" strokeWidth="1" opacity="0.4">
+                             <animate attributeName="d" values="M 15 10 L 85 10; M 35 35 L 65 35; M 15 10 L 85 10" dur="2s" repeatCount="indefinite" />
+                             <animate attributeName="opacity" values="0.4; 0.1; 0.4" dur="2s" repeatCount="indefinite" />
+                        </path>
+                    </g>
+                )}
+                <circle cx="50" cy="55" r="35" fill={`url(#bodyGradient-${effectiveMood})`} />
+                <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
+                {activeView === 'faq' && !isSleeping && (
+                     <g className="animate-bounce" style={{ animationDuration: '2.5s' }}>
+                          <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
+                     </g>
+                )}
+                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                    <rect
+                        x="20"
+                        y="30"
+                        width="60"
+                        height="36"
+                        rx="14"
+                        fill={isTalking ? '#312E81' : colors.screenBg}
+                        className="transition-colors duration-200"
+                    />
+                    <path
+                        d="M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36"
+                        fill="none"
+                        stroke="url(#visorReflect)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        opacity="0.9"
+                    />
+                    <rect
+                        x="20"
+                        y="30"
+                        width="60"
+                        height="36"
+                        rx="14"
+                        fill="none"
+                        stroke={isTalking ? "#6366F1" : "rgba(255,255,255,0.15)"}
+                        strokeWidth="2"
+                    />
+                </g>
+                <g
+                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
+                    style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
+                >
+                    <circle cx="10" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
+                    {activeView === 'image' && !isSleeping && (
+                        <g transform="translate(10, 65) rotate(15)">
+                            <path
+                                d="M -9 0 Q -5 -12 8 -12 Q 18 -10 20 2 Q 22 12 12 16 Q 0 16 -4 10 Q -12 8 -9 0 Z"
+                                fill="#D4A373"
+                                stroke="#A16207"
+                                strokeWidth="1"
+                            />
+                            <circle cx="14" cy="2" r="2" fill="#1E1B4B" />
+                            <circle cx="0" cy="-6" r="2" fill="#EF4444" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                            <circle cx="6" cy="-8" r="2" fill="#3B82F6" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                            <circle cx="8" cy="8" r="2" fill="#10B981" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                            <circle cx="-2" cy="6" r="2" fill="#F59E0B" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                        </g>
+                    )}
+                    {heldItem === 'flashlight' && (
+                        <g transform="translate(10, 65) rotate(45)">
+                            <path
+                                d="M -4 -10 L 4 -10 L 6 5 L 8 8 L -8 8 L -6 5 Z"
+                                fill="#94A3B8"
+                                stroke="#475569"
+                                strokeWidth="1"
+                            />
+                            <rect x="-2" y="-6" width="4" height="3" rx="1" fill="#334155" />
+                            <path
+                                d="M -8 8 L 8 8 L 6 10 L -6 10 Z"
+                                fill="#FEF08A"
+                                stroke="#475569"
+                                strokeWidth="0.5"
+                            />
+                            <ellipse cx="0" cy="9" rx="6" ry="2" fill="#FACC15" fillOpacity="0.8" className="animate-pulse" />
+                        </g>
+                    )}
+                </g>
+                <g
+                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
+                    style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
+                >
+                    <circle cx="90" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
+                </g>
+                {heldItem && !isSleeping && !isDragging && (
+                    <g
+                        id="held-item"
+                        className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform duration-100 ease-out" : ""}`}
+                        style={{
+                            transformOrigin: '90px 65px',
+                            transform: isMoving ? `rotate(${propRotation}deg)` : undefined
+                        }}
+                    >
+                        {heldItem === 'pointer' && (
+                            <g className="animate-tap-pointer">
+                                <line x1="90" y1="65" x2="115" y2="25" stroke="#D4A373" strokeWidth="3" strokeLinecap="round" />
+                                <circle cx="115" cy="25" r="4" fill="#EF4444" stroke="#991B1B" strokeWidth="0.5" />
+                            </g>
+                        )}
+                        {heldItem === 'pencil' && activeView !== 'quiz' && (
+                             <g transform="translate(90, 65) rotate(45)">
+                                  <path d="M -3 -15 L 3 -15 L 3 10 L -3 10 Z" fill="#FBBF24" stroke="#D97706" strokeWidth="1" />
+                                  <path d="M -3 -15 L 3 -15 L 0 -22 Z" fill="#FCD34D" />
+                                  <path d="M -1 -19 L 1 -19 L 0 -22 Z" fill="#1F2937" />
+                                  <rect x="-3" y="10" width="6" height="4" rx="1" fill="#EF4444" stroke="#991B1B" strokeWidth="0.5" />
+                                  <rect x="-3" y="8" width="6" height="2" fill="#9CA3AF" />
+                             </g>
+                        )}
+                        {heldItem === 'calculator' && (
+                             <g transform="translate(88, 45) rotate(-10)">
+                                <rect x="0" y="0" width="18" height="24" rx="2" fill="#1F2937" stroke="#374151" strokeWidth="1" />
+                                <rect x="2" y="3" width="14" height="6" fill="#D1FAE5" />
+                                <g fill="#6B7280">
+                                    <circle cx="4.5" cy="14" r="1.5" />
+                                    <circle cx="9" cy="14" r="1.5" />
+                                    <circle cx="13.5" cy="14" r="1.5" />
+                                    <circle cx="4.5" cy="18" r="1.5" />
+                                    <circle cx="9" cy="18" r="1.5" />
+                                    <circle cx="13.5" cy="18" r="1.5" fill="#EF4444" />
+                                </g>
+                             </g>
+                        )}
+                        {heldItem === 'map' && (
+                             <g transform="translate(85, 43) rotate(5)">
+                                <path d="M0 2 C 5 0, 15 0, 22 2 L 22 26 C 15 24, 5 24, 0 26 Z" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                                <path d="M2 2 C 6 1, 16 1, 20 2" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
+                                <path d="M2 26 C 6 25, 16 25, 20 26" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
+                                <path d="M12 9 L18 15 M18 9 L12 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M4 20 Q 8 14 12 15" stroke="#92400E" strokeWidth="1.5" strokeDasharray="2 1" fill="none" />
+                             </g>
+                        )}
+                        {heldItem === 'clipboard' && (
+                             <g transform="translate(88, 50) rotate(-5)">
+                                <rect x="0" y="0" width="18" height="22" fill="#9CA3AF" rx="1" />
+                                <rect x="2" y="2" width="14" height="18" fill="white" />
+                                <line x1="4" y1="5" x2="14" y2="5" stroke="#CBD5E1" strokeWidth="1" />
+                                <line x1="4" y1="9" x2="14" y2="9" stroke="#CBD5E1" strokeWidth="1" />
+                                <line x1="4" y1="13" x2="14" y2="13" stroke="#CBD5E1" strokeWidth="1" />
+                             </g>
+                        )}
+                        {heldItem === 'hourglass' && (
+                             <g transform="translate(90, 45)">
+                                <path d="M0 0 L14 0 L7 10 L0 0 Z" fill="#93C5FD" stroke="#3B82F6" strokeWidth="1" opacity="0.6"/>
+                                <path d="M0 20 L14 20 L7 10 L0 20 Z" fill="#93C5FD" stroke="#3B82F6" strokeWidth="1" opacity="0.6"/>
+                                <rect x="0" y="0" width="14" height="2" fill="#1F2937" />
+                                <rect x="0" y="18" width="14" height="2" fill="#1F2937" />
+                                <circle cx="7" cy="15" r="1.5" fill="#FCD34D" />
+                             </g>
+                        )}
+                        {heldItem === 'magnifying-glass' && (
+                            <g>
+                                <path d="M90 65 L102 53" stroke="#374151" strokeWidth="4" strokeLinecap="round" />
+                                <circle cx="106" cy="49" r="14" stroke="#94A3B8" strokeWidth="3" fill="rgba(255, 255, 255, 0.1)" />
+                                <circle cx="106" cy="49" r="12" fill="rgba(147, 197, 253, 0.3)" />
+                                <path d="M100 45 Q 104 41 110 45" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+                            </g>
+                        )}
+                        {heldItem === 'book' && (
+                             <g transform="translate(90, 45) rotate(-10)">
+                                <rect x="0" y="0" width="24" height="32" rx="2" fill="#4B5563" stroke="#1F2937" strokeWidth="1"/>
+                                <rect x="3" y="2" width="20" height="28" rx="1" fill="#F8FAFC" />
+                                <line x1="7" y1="8" x2="19" y2="8" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                                <line x1="7" y1="14" x2="19" y2="14" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                                <line x1="7" y1="20" x2="19" y2="20" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                                <line x1="7" y1="26" x2="15" y2="26" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                             </g>
+                        )}
+                        {heldItem === 'globe' && (
+                            <g transform="translate(88, 45)">
+                                <path d="M10 22 L10 26 M5 26 L15 26" stroke="#4B5563" strokeWidth="2" />
+                                <circle cx="10" cy="12" r="10" fill="#3B82F6" />
+                                <path d="M3 10 Q 7 5 12 8 T 18 12" stroke="#10B981" strokeWidth="3" fill="none" strokeLinecap="round" />
+                                <path d="M5 16 Q 10 18 15 14" stroke="#10B981" strokeWidth="2" fill="none" strokeLinecap="round" />
+                                <circle cx="10" cy="12" r="10" stroke="#1D4ED8" strokeWidth="1" fill="none" opacity="0.3" />
+                                <ellipse cx="10" cy="12" rx="4" ry="10" stroke="#1D4ED8" strokeWidth="1" fill="none" opacity="0.3" />
+                                <line x1="0" y1="12" x2="20" y2="12" stroke="#1D4ED8" strokeWidth="1" opacity="0.3" />
+                            </g>
+                        )}
+                        {heldItem === 'wand' && (
+                            <g transform="translate(82, 44) rotate(10)">
+                                <rect x="8" y="8" width="4" height="24" fill="#1F2937" rx="1" />
+                                <path d="M10 0 L12 6 L18 6 L13 10 L15 16 L10 12 L5 16 L7 10 L2 6 L8 6 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1" />
+                                <circle cx="4" cy="4" r="1" fill="#FCD34D" className="animate-pulse" />
+                                <circle cx="16" cy="2" r="1" fill="#FCD34D" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            </g>
+                        )}
+                        {(heldItem === 'paintbrush' || activeView === 'image') && (
+                            <g transform="translate(92, 63) rotate(45)">
+                                <rect x="0" y="0" width="4" height="26" rx="1" fill="#D4A373" stroke="#A16207" strokeWidth="0.5" />
+                                <rect x="-0.5" y="-8" width="5" height="8" fill="#94A3B8" stroke="#475569" strokeWidth="0.5" />
+                                <path d="M0 -8 L-1 -16 Q 2 -20 5 -16 L 4 -8 Z" fill="#FCD34D" stroke="#D97706" strokeWidth="0.5" />
+                                <circle cx="2" cy="-18" r="2.5" fill="#3B82F6" className="animate-pulse" />
+                            </g>
+                        )}
+                    </g>
+                )}
+                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                    {isSleeping ? (
+                        <g className="transition-all duration-500">
+                            <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                            <path d="M56 49 Q61 53 66 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                        </g>
+                    ) : (
+                        <g>
+                            <ellipse
+                                cx="38" cy="48"
+                                rx={eyeRx} ry={eyeRy * blinkScale}
+                                fill={colors.eye}
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                            <ellipse
+                                cx="62" cy="48"
+                                rx={eyeRx} ry={eyeRy * blinkScale}
+                                fill={colors.eye}
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                            <ellipse
+                                cx="40" cy={48 - (2 * blinkScale)}
+                                rx="2.5" ry={2.5 * blinkScale}
+                                fill="white" opacity="0.8"
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                            <ellipse
+                                cx="64" cy={48 - (2 * blinkScale)}
+                                rx="2.5" ry={2.5 * blinkScale}
+                                fill="white" opacity="0.8"
+                                className="transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            />
+                        </g>
+                    )}
+                    <path
+                        d={getMouthPath()}
+                        stroke={colors.mouth}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="mouth-transition"
+                    />
+                    {!isSleeping && effectiveMood !== 'idle' && (
+                        <g className="transition-all duration-300">
+                            {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'sad' && <path d="M33 39 Q38 41 43 43" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'thinking' && <path d="M33 42 Q38 42 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'happy' && <path d="M57 42 Q62 39 67 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'sad' && <path d="M57 43 Q62 41 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                            {effectiveMood === 'thinking' && <path d="M57 39 Q62 37 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        </g>
+                    )}
+                </g>
+                {effectiveAccessory && (
+                    <g id="accessories">
+                         {effectiveAccessory === 'grad-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M32 30 Q50 36 68 30 V 22 H 32 V 30 Z" fill="#1F2937" />
+                                <path d="M15 22 L50 8 L85 22 L50 36 Z" fill="#111827" stroke="#374151" strokeWidth="2" />
+                                <path d="M50 22 L82 22 L82 42" stroke="#F59E0B" strokeWidth="2" fill="none" className="drop-shadow-sm"/>
+                                <circle cx="82" cy="42" r="2.5" fill="#F59E0B" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'explorer-hat' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                {/* Brim */}
+                                <ellipse cx="50" cy="22" rx="38" ry="10" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
+                                {/* Crown */}
+                                <path d="M32 22 L35 4 Q50 0 65 4 L68 22 Z" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
+                                {/* Band */}
+                                <path d="M32 19 Q50 23 68 19" stroke="#3E2723" strokeWidth="4" fill="none" transform="rotate(-5 50 22)" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'magnifying-glass' && (
+                            <g className="animate-in fade-in slide-in-from-bottom-2 duration-500 origin-bottom-right">
+                                <path d="M72 78 L84 58" stroke="#374151" strokeWidth="4" strokeLinecap="round" />
+                                <circle cx="84" cy="58" r="14" stroke="#94A3B8" strokeWidth="3" fill="rgba(255, 255, 255, 0.1)" />
+                                <circle cx="84" cy="58" r="12" fill="rgba(147, 197, 253, 0.3)" />
+                                <path d="M78 54 Q 82 50 88 54" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'artist' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path
+                                    d="M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27"
+                                    fill="#374151"
+                                    stroke="#1F2937"
+                                    strokeWidth="1.5"
+                                    transform="rotate(-10 50 20)"
+                                />
+                                <path
+                                    d="M 58 4 L 62 0"
+                                    stroke="#374151"
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                    transform="rotate(-10 50 20)"
+                                />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'hard-hat' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                {/* Hard hat dome */}
+                                <path d="M25 26 Q25 6 50 4 Q75 6 75 26 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" />
+                                {/* Brim */}
+                                <path d="M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z" fill="#D97706" stroke="#B45309" strokeWidth="1" />
+                                {/* Ridge line */}
+                                <path d="M38 8 Q50 5 62 8" stroke="#FCD34D" strokeWidth="2" fill="none" opacity="0.6" />
+                                {/* Headlamp */}
+                                <circle cx="50" cy="18" r="5" fill="#374151" stroke="#1F2937" strokeWidth="1" />
+                                <circle cx="50" cy="18" r="3" fill="#FEF3C7" opacity="0.9" />
+                                {/* Lamp glow */}
+                                <circle cx="50" cy="18" r="7" fill="#FEF3C7" opacity="0.15" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sleep-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                {/* Cap body - drooping nightcap */}
+                                <path d="M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52" fill="#6366F1" stroke="#4F46E5" strokeWidth="1.5" />
+                                {/* Stripes */}
+                                <path d="M35 18 Q50 12 65 18" stroke="#818CF8" strokeWidth="2.5" fill="none" opacity="0.5" />
+                                <path d="M40 12 Q52 7 64 14" stroke="#818CF8" strokeWidth="2" fill="none" opacity="0.4" />
+                                {/* Pompom at tip */}
+                                <circle cx="74" cy="52" r="6" fill="#C4B5FD" stroke="#A78BFA" strokeWidth="1" />
+                                <circle cx="72" cy="50" r="2" fill="white" opacity="0.4" />
+                                {/* Brim fold */}
+                                <path d="M28 24 Q50 28 72 22" stroke="#4338CA" strokeWidth="2.5" fill="none" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'lab-goggles' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                                {/* Strap */}
+                                <path d="M20 42 Q15 36 18 30 Q22 24 30 26" stroke="#64748B" strokeWidth="2" fill="none" />
+                                <path d="M80 42 Q85 36 82 30 Q78 24 70 26" stroke="#64748B" strokeWidth="2" fill="none" />
+                                <path d="M30 26 Q50 22 70 26" stroke="#94A3B8" strokeWidth="3" fill="none" />
+                                {/* Left lens */}
+                                <ellipse cx="38" cy="38" rx="12" ry="10" fill="rgba(147, 197, 253, 0.25)" stroke="#475569" strokeWidth="2" />
+                                <ellipse cx="36" cy="36" rx="4" ry="3" fill="white" opacity="0.3" transform="rotate(-15 36 36)" />
+                                {/* Right lens */}
+                                <ellipse cx="62" cy="38" rx="12" ry="10" fill="rgba(167, 243, 208, 0.25)" stroke="#475569" strokeWidth="2" />
+                                <ellipse cx="60" cy="36" rx="4" ry="3" fill="white" opacity="0.3" transform="rotate(-15 60 36)" />
+                                {/* Bridge */}
+                                <path d="M50 38 Q50 33 50 38" stroke="#475569" strokeWidth="2.5" />
+                                <rect x="47" y="34" width="6" height="4" rx="1" fill="#475569" />
+                            </g>
+                        )}
+                    </g>
+                )}
+                <defs>
+                  <radialGradient id={`bodyGradient-${effectiveMood}`} cx="35%" cy="35%" r="65%" fx="30%" fy="30%">
+                    <stop offset="0%" stopColor={colors.gradFrom} />
+                    <stop offset="100%" stopColor={colors.gradTo} />
+                  </radialGradient>
+                  <radialGradient id="rimLightGradient" cx="70%" cy="70%" r="70%">
+                    <stop offset="82%" stopColor="#fff" stopOpacity="0" />
+                    <stop offset="100%" stopColor="#fff" stopOpacity="0.4" />
+                  </radialGradient>
+                  <linearGradient id="hologram-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22D3EE" stopOpacity="0" />
+                    <stop offset="20%" stopColor="#22D3EE" stopOpacity="0.1" />
+                    <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.6" />
+                  </linearGradient>
+                  <linearGradient id="visorReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="white" stopOpacity="0" />
+                  </linearGradient>
+                  <linearGradient id="hologram-beam" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#06B6D4" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+</div><hr>
+<div><h2>SVG 6 (Length: 1531)</h2>
+<svg className="absolute inset-0 w-full h-full pointer-events-none z-10 print:hidden">
+                        {connections.map((conn, i) => {
+                            const start = getDotPos(termRefs.current[conn.termId]);
+                            const end = getDotPos(defRefs.current[conn.defId]);
+                            let color = "#6366f1";
+                            if (isChecked) {
+                                color = conn.termId === conn.defId ? "#22c55e" : "#ef4444";
+                            }
+                            return (
+                                <line
+                                    key={i}
+                                    x1={start.x} y1={start.y}
+                                    x2={end.x} y2={end.y}
+                                    stroke={color}
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                />
+                            );
+                        })}
+                        {(tempLine) && (
+                            <line
+                                x1={tempLine.start.x} y1={tempLine.start.y}
+                                x2={tempLine.end.x} y2={tempLine.end.y}
+                                stroke="#6366f1"
+                                strokeWidth="3"
+                                strokeDasharray="5,5"
+                                strokeLinecap="round"
+                            />
+                        )}
+                    </svg>
+</div><hr>
+<div><h2>SVG 7 (Length: 1466)</h2>
+<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto max-h-[160px]" preserveAspectRatio="xMidYMid meet">
+        {data.map((d, i) => {
+          const barHeight = (d.value / maxValue) * chartHeight;
+          const x = gap + i * (barWidth + gap);
+          const y = height - margin - barHeight;
+          return (
+            <g key={i} className="group">
+              <rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                rx="4"
+                className={`fill-${color}-500 group-hover:fill-${color}-600 transition-all duration-300`}
+              />
+              <text
+                x={x + barWidth / 2}
+                y={y - 5}
+                textAnchor="middle"
+                className="fill-slate-500 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {d.value}
+              </text>
+              <text
+                x={x + barWidth / 2}
+                y={height - 5}
+                textAnchor="middle"
+                className="fill-slate-400 text-[9px] uppercase tracking-wider font-medium"
+              >
+                {d.label.length > 5 ? d.label.substring(0, 4) + '.' : d.label}
+              </text>
+            </g>
+          );
+        })}
+        <line x1="0" y1={height - margin} x2={width} y2={height - margin} stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+</div><hr>
+<div><h2>SVG 8 (Length: 648)</h2>
+<svg viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90 w-full h-full">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className="stroke-slate-100 fill-none"
+            strokeWidth={strokeWidth}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className={`stroke-${color}-500 fill-none transition-all duration-1000 ease-out`}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+          />
+        </svg>
+</div><hr>
+<div><h2>SVG 9 (Length: 2053)</h2>
+<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[500px] overflow-visible">
+                    <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#e2e8f0" strokeWidth="2" />
+                    <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#e2e8f0" strokeWidth="2" />
+                    <polyline
+                        points={points}
+                        fill="none"
+                        stroke="#6366f1"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="drop-shadow-sm"
+                    />
+                    {logs.map((l, i) => {
+                         const x = padding + ((new Date(l.timestamp).getTime() - minTime) / timeSpan) * (width - (padding * 2));
+                         const y = height - padding - ((l.xp / maxXP) * (height - (padding * 2)));
+                         return (
+                             <g key={i} className="group cursor-pointer">
+                                 <circle cx={x} cy={y} r="5" className="fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" />
+                                 <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                     <div className="bg-slate-800 text-white text-[10px] px-3 py-2 rounded-lg text-center shadow-xl">
+                                         <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
+                                         <div className="text-yellow-300 font-mono">{l.xp} XP</div>
+                                     </div>
+                                 </foreignObject>
+                             </g>
+                         )
+                    })}
+                </svg>
+</div><hr>
+<div><h2>SVG 10 (Length: 9025)</h2>
+<svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                      {isVenn ? (
+                          <g>
+                              <defs>
+                                  <linearGradient id="vennGradientA" x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" stopColor="rgba(244, 63, 94, 0.15)" />
+                                      <stop offset="100%" stopColor="rgba(244, 63, 94, 0.05)" />
+                                  </linearGradient>
+                                  <linearGradient id="vennGradientB" x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" stopColor="rgba(59, 130, 246, 0.15)" />
+                                      <stop offset="100%" stopColor="rgba(59, 130, 246, 0.05)" />
+                                  </linearGradient>
+                                  <radialGradient id="vennGradientShared" cx="50%" cy="50%" r="50%">
+                                      <stop offset="0%" stopColor="rgba(168, 85, 247, 0.2)" />
+                                      <stop offset="100%" stopColor="rgba(168, 85, 247, 0)" />
+                                  </radialGradient>
+                                  <filter id="vennShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                      <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(0,0,0,0.08)"/>
+                                  </filter>
+                              </defs>
+                              <circle
+                                  cx={VENN_ZONES.A.x}
+                                  cy={VENN_ZONES.A.y}
+                                  r={VENN_ZONES.A.r}
+                                  fill="url(#vennGradientA)"
+                                  stroke="#fda4af"
+                                  strokeWidth="3"
+                                  filter="url(#vennShadow)"
+                              />
+                              <text x="170" y="100" textAnchor="middle" fill="#be123c" fontSize="18" fontWeight="900" opacity="0.9" style={STYLE_TEXT_SHADOW_WHITE}>
+                                  {generatedContent?.data.branches?.[0]?.title || "Set A"}
+                              </text>
+                              <circle
+                                  cx={VENN_ZONES.B.x}
+                                  cy={VENN_ZONES.B.y}
+                                  r={VENN_ZONES.B.r}
+                                  fill="url(#vennGradientB)"
+                                  stroke="#93c5fd"
+                                  strokeWidth="3"
+                                  filter="url(#vennShadow)"
+                              />
+                              <text x="630" y="100" textAnchor="middle" fill="#1d4ed8" fontSize="18" fontWeight="900" opacity="0.9" style={STYLE_TEXT_SHADOW_WHITE}>
+                                  {generatedContent?.data.branches?.[1]?.title || "Set B"}
+                              </text>
+                              <circle cx="400" cy="250" r="100" fill="url(#vennGradientShared)" />
+                              <text x="400" y="250" textAnchor="middle" fill="#6b21a8" fontSize="14" fontWeight="bold" opacity="0.8" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+                                  {generatedContent?.data.branches?.[2]?.title || "Shared"}
+                              </text>
+                              <line x1="0" y1="500" x2="100%" y2="500" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="6,6" />
+                              <text x="40" y="525" fill="#94a3b8" fontSize="12" fontWeight="bold" letterSpacing="1">{t('concept_map.venn.item_bank')}</text>
+                          </g>
+                      ) : (
+                          (challengeFeedback ? (challengeFeedback.checkedEdges || []) : (conceptMapEdges || [])).map(edge => {
+                              const fromNode = conceptMapNodes.find(n => n.id === edge.fromId);
+                              const toNode = conceptMapNodes.find(n => n.id === edge.toId);
+                              if (!fromNode || !toNode) return null;
+                              let strokeColor = "#94a3b8";
+                              let strokeWidth = "2";
+                              if (edge.status === 'correct') {
+                                  strokeColor = "#22c55e";
+                                  strokeWidth = "4";
+                              } else if (edge.status === 'incorrect') {
+                                  strokeColor = "#ef4444";
+                                  strokeWidth = "3";
+                              }
+                              const isFlowChart = fromNode.type && fromNode.type.startsWith('flow-');
+                              const pathD = isFlowChart ? getElbowPath(fromNode, toNode) : null;
+                              return (
+                                  <g
+                                    key={edge.id}
+                                    className={!isMapLocked ? "pointer-events-auto cursor-pointer hover:opacity-70 group" : ""}
+                                    onClick={() => !isMapLocked && handleDeleteEdge(edge.id)}
+                                  >
+                                      <title>{t('concept_map.tooltips.delete_edge')}</title>
+                                      {isFlowChart ? (
+                                          <>
+                                            <path d={pathD} stroke="transparent" strokeWidth="20" fill="none" />
+                                            <path
+                                                d={pathD}
+                                                stroke={strokeColor}
+                                                strokeWidth={strokeWidth}
+                                                fill="none"
+                                                strokeOpacity={edge.status ? "1" : "0.6"}
+                                                strokeDasharray={edge.status === 'incorrect' || edge.style === 'dashed' ? "5,5" : "none"}
+                                                markerEnd="url(#arrowhead)"
+                                            />
+                                          </>
+                                      ) : (
+                                          <>
+                                            <line
+                                                x1={fromNode.x} y1={fromNode.y}
+                                                x2={toNode.x} y2={toNode.y}
+                                                stroke="transparent"
+                                                strokeWidth="20"
+                                            />
+                                            <line
+                                                x1={fromNode.x} y1={fromNode.y}
+                                                x2={toNode.x} y2={toNode.y}
+                                                stroke={strokeColor}
+                                                strokeWidth={strokeWidth}
+                                                strokeOpacity={edge.status ? "1" : "0.6"}
+                                                strokeDasharray={edge.status === 'incorrect' ? "5,5" : "none"}
+                                            />
+                                          </>
+                                      )}
+                                      {!isChallengeActive && !isMapLocked && (
+                                          <g className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                              <circle cx={(fromNode.x + toNode.x)/2} cy={(fromNode.y + toNode.y)/2} r="8" fill="#ef4444" />
+                                              <text x={(fromNode.x + toNode.x)/2} y={(fromNode.y + toNode.y)/2} dy="3" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">×</text>
+                                          </g>
+                                      )}
+                                  </g>
+                              );
+                          })
+                      )}
+                      <defs>
+                          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                          </marker>
+                      </defs>
+                      {!isVenn && (conceptMapNodes || [])
+                        .filter(node => node.type && node.type.startsWith('flow-'))
+                        .map(node => <React.Fragment key={node.id}>{renderFlowShape(node, connectingSourceId === node.id)}</React.Fragment>)
+                      }
+                      {!isVenn && connectingSourceId && (
+                          <rect x="0" y="0" width="100%" height="100%" fill="rgba(99, 102, 241, 0.05)" className="pointer-events-none animate-pulse" />
+                      )}
+                  </svg>
+</div><hr>
+<div><h2>SVG 11 (Length: 198)</h2>
+<svg className="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xmlSpace="preserve"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+</div><hr>
+<div><h2>SVG 12 (Length: 2079)</h2>
+<svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-pink-400 group-hover:text-pink-500 transition-colors">
+                                            <style>
+                                                {`
+                                                @keyframes rise {
+                                                    0% { transform: translateY(0); opacity: 0; }
+                                                    10% { opacity: 0.8; }
+                                                    50% { opacity: 0.8; }
+                                                    100% { transform: translateY(-5px); opacity: 0; }
+                                                }
+                                                .steam-1 { animation: rise 1.5s infinite linear; transform-origin: center; }
+                                                .steam-2 { animation: rise 1.5s infinite linear 0.5s; transform-origin: center; }
+                                                .steam-3 { animation: rise 1.5s infinite linear 0.25s; transform-origin: center; }
+                                                `}
+                                            </style>
+                                            <path fillRule="evenodd" clipRule="evenodd" d="M3 5H11V10C11 11.6569 9.65685 13 8 13H6C4.34315 13 3 11.6569 3 10V5ZM12 6H13C13.5523 6 14 6.44772 14 7V9C14 9.55228 13.5523 10 13 10H12V6ZM2 4H12V5H13C14.6569 5 16 6.34315 16 8V9C16 10.6569 14.6569 12 13 12H11.8284C11.4117 13.7329 9.86961 15 8 15H6C4.13039 15 2.58827 13.7329 2.17157 12H2V4Z" fill="currentColor"/>
+                                            <rect className="steam-1" x="5" y="2" width="1" height="2" fill="currentColor" rx="0.5"/>
+                                            <rect className="steam-2" x="7.5" y="3" width="1" height="2" fill="currentColor" rx="0.5"/>
+                                            <rect className="steam-3" x="10" y="2" width="1" height="2" fill="currentColor" rx="0.5"/>
+                                        </svg>
+</div><hr>
+<div><h2>SVG 13 (Length: 624)</h2>
+<svg className="absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95"
+                          style={{
+                              top: '24px',
+                              [tourRect.left > window.innerWidth / 2 ? 'right' : 'left']: '-24px',
+                              transform: tourRect.left > window.innerWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)',
+                          }}
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                     >
+                          <path d="M12 21l-12-18h24z" />
+                     </svg>
+</div><hr>
+<div><h2>SVG 14 (Length: 2400)</h2>
+<svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }}>
+                    <defs>
+                        <radialGradient
+                            id="beamGradient"
+                            gradientUnits="userSpaceOnUse"
+                            cx={botSpotlightPos.x - 53}
+                            cy={botSpotlightPos.y + 20}
+                            r={Math.hypot(
+                                (tourRect.left + tourRect.width/2) - (botSpotlightPos.x - 53),
+                                (tourRect.top + tourRect.height/2) - (botSpotlightPos.y + 10)
+                            ) * 1.1}
+                        >
+                            <stop offset="0%" stopColor="rgba(250, 204, 21, 0.7)" />
+                            <stop offset="60%" stopColor="rgba(250, 204, 21, 0.1)" />
+                            <stop offset="100%" stopColor="rgba(250, 204, 21, 0)" />
+                        </radialGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <path
+                        d={`
+                            M ${botSpotlightPos.x - 53} ${botSpotlightPos.y + 20}
+                            L ${tourRect.left} ${tourRect.top}
+                            L ${tourRect.left} ${tourRect.bottom}
+                            Z
+                        `}
+                        fill="url(#beamGradient)"
+                        style={{ mixBlendMode: 'screen', filter: 'url(#glow)' }}
+                        className="animate-in fade-in duration-500"
+                    />
+                    <rect
+                        x={tourRect.left - 10}
+                        y={tourRect.top - 10}
+                        width={tourRect.width + 20}
+                        height={tourRect.height + 20}
+                        rx="12"
+                        fill="none"
+                        stroke="rgba(250, 204, 21, 0.4)"
+                        strokeWidth="3"
+                        className="animate-pulse"
+                    />
+                </svg>
+</div><hr>
+</body></html>

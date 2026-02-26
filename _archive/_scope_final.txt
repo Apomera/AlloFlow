@@ -1,0 +1,10 @@
+=== Component Boundaries ===
+  WordSoundsGenerator starts at L1266
+  WordSoundsModal starts at L3057
+  AlloFlowContent starts at L31383
+
+=== References before any component (top-level) ===
+
+=== References between WordSoundsGenerator end and WordSoundsModal start ===
+
+=== References after AlloFlowContent (L73000+) ===

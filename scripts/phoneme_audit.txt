@@ -1,0 +1,30 @@
+=== PHONEME_ALIASES or phoneme mapping ===
+L3866: // Helper: Normalize phoneme from old format (string) or new format (object)
+L3867: const normalizePhoneme = (p, defaultGrapheme = null) => {
+L4968: const bankKey = (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[normalizedKey])
+L5009: // COMPREHENSIVE phoneme normalization map
+L5051: const match = phonemeMatches[lower] || phonemeMatches[normalizedKey];
+L5980: // Map phonemes that are detected but need normalization to bank keys
+L5981: const PHONEME_NORMALIZE = {
+L6026: // Normalize phonemes to ensure they exist in audio bank
+L6027: return result.map(p => PHONEME_NORMALIZE[p] || p);
+L6970: phonemes = phonemes.map(p => normalizePhoneme(p));
+L10124: // Phoneme normalization for comparison (handles macron vs digraph variations)
+L10125: const normalizePhoneme = (p) => {
+L10131: if (!box || !expected[idx] || normalizePhoneme(box.phoneme) !== normalizePhoneme(expected[idx])) {
+
+=== 'oi' / 'oy' phoneme references ===
+L1385: 'oy': getAudio('phonemes', 'oy'),
+L3825: 'oy': { label: 'OY Sound',    ipa: 'ɔɪ', examples: 'boy, coin, toy',       tip: 'Starts with "aw" and glides to "ee"', confusesWith: [] },
+
+=== PHONEME_AUDIO_BANK oi/oy entries ===
+
+=== Gemini phonemes processing ===
+L6026: // Normalize phonemes to ensure they exist in audio bank
+L6965: // If 0 phonemes, retry Gemini up to 3 times before falling back
+L6970: phonemes = phonemes.map(p => normalizePhoneme(p));
+
+=== handleOptionUpdate definition ===
+L9271: const handleOptionUpdate = (index, newValue, type) => {
+
+=== expectedAnswer usage in WS activities ===

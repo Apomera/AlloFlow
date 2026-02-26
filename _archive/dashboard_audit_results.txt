@@ -1,0 +1,58 @@
+=== DASHBOARD/HEADER FEATURE ANALYSIS ===
+
+
+Teacher Mode: 186 matches
+  isTeacherMode && !isCompareMode && !isZenMode && generatedConte
+  isTeacherMode && !studentProjectSettings.adventurePermissions?.
+  isTeacherMode && sessionData?.quizState?.isActive)}
+  isTeacherMode && selectedLanguages.length > 0 && (
+  isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !is
+
+Session Code: 119 matches
+  SessionCode && activeView === 'adventure' && adventureState.c
+  SessionCode={activeSessionCode}
+  SessionCode || !appId) return;
+  SessionCode);
+  SessionCode} as ${isTeacherMode ? 'Teacher' : 'Student'}...`)
+
+Present Mode: 68 matches
+  presentation
+  Presentation
+
+
+=== HEADER BUTTONS ===
+  data-help-key="header_session_status"
+  data-help-key="header_session_join"
+  data-help-key="header_dashboard"
+  data-help-key="header_settings_text_font"
+  data-help-key="header_settings_text_size"
+  data-help-key="header_export"
+  data-help-key="header_session_start"
+  data-help-key="header_settings_text_line_height"
+  data-help-key="header_translate"
+  data-help-key="header_settings_text"
+  data-help-key="header_settings_anim"
+  data-help-key="header_settings_voice_speed"
+  data-help-key="header_submit"
+  data-help-key="header_settings_text_reset"
+  data-help-key="header_bot_toggle"
+  data-help-key="header_jump_lesson"
+  data-help-key="header_settings_text_spacing"
+  data-help-key="header_settings_voice"
+  data-help-key="header_support"
+  data-help-key="header_settings_overlay"
+  data-help-key="header_cloud_sync"
+  data-help-key="header_about"
+  data-help-key="header_language"
+  data-help-key="header_settings_theme"
+  data-help-key="header_tour_start"
+  data-help-key="header_settings_voice_select"
+  data-help-key="header_settings_voice_volume"
+  data-help-key="header_settings_text_bionic"
+
+
+=== HEADER ELEMENT IDs ===
+  id="tour-header-actions"
+  id="tour-header-settings"
+  id="tour-header-utils"
+  id="tour-header-tools"

@@ -1,0 +1,190 @@
+=== BLOCK 1: Initial Review Panel Logic (L3265-3295) ===
+L3265:                 return [...prev, { word, activityId }];
+L3266:             });
+L3267:         }
+L3268:     }, []);
+L3269: 
+L3270:     // SYNC: Ensure Review Panel opens when initialShowReviewPanel prop changes to true
+L3271:     // This handles when prop is set true before mount AND when it changes after mount
+L3272:     React.useEffect(() => {
+L3273:         if (initialShowReviewPanel && !showReviewPanel && !hasStartedFromReview.current && preloadedWords.length > 0) {
+L3274:             console.log("📋 initialShowReviewPanel is true - showing Review Panel");
+L3275:             setShowReviewPanel(true);
+L3276:         }
+L3277:     }, [initialShowReviewPanel, preloadedWords.length]);
+L3278: 
+L3279:     // FIX: Reset hasStartedFromReview when NEW preloaded words are loaded
+L3280:     React.useEffect(() => {
+L3281:         if (preloadedWords.length > 0) {
+L3282:             const firstWord = preloadedWords[0]?.word || preloadedWords[0]?.term || preloadedWords[0]?.targetWord;
+L3283:             if (firstWord && lastPreloadedFirstWord.current !== firstWord) {
+L3284:                 hasStartedFromReview.current = false;
+L3285:                 lastPreloadedFirstWord.current = firstWord;
+L3286:                 console.log("🔄 Reset hasStartedFromReview for new word set:", firstWord);
+L3287:             }
+L3288:         }
+L3289:     }, [preloadedWords]);
+L3290:     const [regeneratingIndex, setRegeneratingIndex] = React.useState(null);
+L3291:     const [generatingImageIndex, setGeneratingImageIndex] = React.useState(null); // Track which word is generating image // Track which word is regenerating
+L3292: 
+L3293:     // Derived mode: Sequential reads words in glossary order without shuffling
+L3294:     const isSequentialMode = wordSoundsDifficulty === 'sequential';
+L3295:     const [errorMessage, setErrorMessage] = React.useState(null); // User-facing error display
+
+=== BLOCK 2: Audio Readiness Trigger (L6170-6200) ===
+L6170:     React.useEffect(() => {
+L6171:         // Show Review Panel when words are READY (have TTS audio cached)
+L6172:         // FIX: Wait until words have ttsReady=true (not just phonemes - ensures audio works immediately)
+L6173:         // FIX: Only show if user hasn't already started from review this session
+L6174:         // PERF: Consider useMemo for filtering if perf issues
+L6175:         const readyWords = preloadedWords.filter(w => w.ttsReady === true);
+L6176:         const phonemeWords = preloadedWords.filter(w => w.phonemes && (Array.isArray(w.phonemes) ? w.phonemes.length > 0 : true));
+L6177:         // Show panel when at least half the words have TTS ready, or all phonemes are loaded with at least 1 TTS
+L6178:         const hasReadyWords = readyWords.length >= Math.ceil(preloadedWords.length / 2) ||
+L6179:             (phonemeWords.length === preloadedWords.length && readyWords.length >= 1);
+L6180: 
+L6181:         if (preloadedWords.length > 0 && hasReadyWords && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6182:             // SILENCED: console.log("📋 Preloaded words ready! Showing Review Panel. Ready words:", readyWords.length);
+L6183:             setShowReviewPanel(true);
+L6184:         }
+L6185:     }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+L6186: 
+L6187:     // FIX: Show review panel immediately when words are loaded (don't wait for TTS/phonemes)
+L6188:     React.useEffect(() => {
+L6189:         if (preloadedWords.length > 0 && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6190:             // Show panel after short delay (allows UI to settle)
+L6191:             const timer = setTimeout(() => {
+L6192:                 if (!showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+L6193:                     console.log("📋 Words loaded - showing Review Panel immediately");
+L6194:                     setShowReviewPanel(true);
+L6195:                 }
+L6196:             }, 500); // 500ms delay is enough for UI to render
+L6197:             return () => clearTimeout(timer);
+L6198:         }
+L6199:     }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+L6200: 
+L6201:     // Handler to reorder preloaded words list
+L6202:     const handleReorderPreloadedWords = React.useCallback((newOrder) => {
+L6203:         if (setWsPreloadedWords) {
+L6204:             setWsPreloadedWords(newOrder);
+L6205:             console.log("✅ Reordered words via setWsPreloadedWords");
+
+=== BLOCK 3: firstWordReady Trigger (L6580-6600) ===
+L6580: 
+L6581:     // EAGER-START: Show Review Panel when first word is ready (instead of auto-starting activity)
+L6582:     React.useEffect(() => {
+L6583:         if (firstWordReady && preloadedWords.length > 0 && !currentWordSoundsWord && !isLoadingPhonemes) {
+L6584:             const firstWord = preloadedWords[0];
+L6585:             if (firstWord && firstWord.phonemes) {
+L6586:                 // FIX: Show Review Panel instead of auto-starting activity
+L6587:                 // FIX: Only show if user hasn't already started from review this session
+L6588:                 if (!showReviewPanel && !hasStartedFromReview.current) {
+L6589:                     // SILENCED: console.log("🎯 Words ready! Showing Review Panel first");
+L6590:                     setShowReviewPanel(true);
+L6591:                 }
+L6592:                 // Activity will start when user clicks "Start Activity" in Review Panel
+L6593:             }
+L6594:         }
+L6595:     }, [firstWordReady, preloadedWords, currentWordSoundsWord, isLoadingPhonemes, showReviewPanel]);
+L6596: 
+L6597:     // Trigger prefetch when current word is loaded and stable
+L6598:     React.useEffect(() => {
+L6599:         if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+L6600:             // Short delay to let render settle
+
+=== BLOCK 4: Word Pool Change Auto-Trigger (L7085-7120) ===
+L7085:     // RETRY START UP ON DATA LOAD (Fix for race condition)
+L7086:     // Moved AFTER startActivity definition to avoid "Cannot access before initialization" error.
+L7087:     React.useEffect(() => {
+L7088:         // FIX: Don't auto-start if Review Panel is showing
+L7089:         if (showReviewPanel) {
+L7090:             // Silenced: console.log("📋 Review Panel is active - skipping auto-start");
+L7091:             return;
+L7092:         }
+L7093: 
+L7094:         // Auto-start when: (pool OR preloaded) ready + no active word + not already loading
+L7095:         // FIX: Allow activity to start with EITHER wordPool OR preloadedWords (standalone mode)
+L7096:         const hasWords = (wordPool && wordPool.length > 0) || (preloadedWords && preloadedWords.length > 0);
+L7097:         if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
+L7098:             // SILENCED: console.log("WordSounds: Data loaded! Starting activity.");
+L7099: 
+L7100:             // Show Review Panel first if preloaded data exists
+L7101:             // FIX: Only show if user hasn't already started from review this session
+L7102:             if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+L7103:                 // SILENCED: console.log("📋 Showing Pre-Activity Review Panel");
+L7104:                 setShowReviewPanel(true);
+L7105:                 return; // Don't auto-start, wait for review
+L7106:             }
+L7107: 
+L7108:             // Start preloading - Review Panel will appear when words are ready
+L7109:             // SILENCED: console.log("Starting word preloading...");
+L7110:             setTimeout(() => {
+L7111:                 prefetchNextWords();
+L7112:                 // FIX: Also call preloadInitialBatch if not already running
+L7113:                 if (typeof preloadInitialBatch === 'function') {
+L7114:                     preloadInitialBatch();
+L7115:                 }
+L7116:             }, 100);
+L7117:         }
+L7118:     }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+L7119: 
+L7120:     // LESSON PLAN AUTO-START: When sequence is provided and modal is ready, start first activity
+L7121:     React.useEffect(() => {
+L7122:         // Only trigger when:
+L7123:         // 1. We have a lesson plan sequence
+L7124:         // 2. Activity is still on landing page ('word-sounds')
+L7125:         // 3. Words are preloaded and ready
+
+=== BLOCK 5: Start Activity Handler (L9975-10015) ===
+L9975: 
+L9976:     // PRE-ACTIVITY REVIEW PANEL: Show for teachers/parents before activity starts
+L9977:     if (showReviewPanel) {
+L9978:         return (
+L9979:             <WordSoundsReviewPanel
+L9980:                 preloadedWords={preloadedWords}
+L9981:                 onUpdateWord={handleUpdatePreloadedWord}
+L9982:                 onReorderWords={handleReorderPreloadedWords}
+L9983:                 onRegenerateWord={handleRegenerateWord}
+L9984:                 onRegenerateOption={handleRegenerateOption}
+L9985:                 onRegenerateAll={handleRegenerateAll}
+L9986:                 onGenerateImage={handleGenerateWordImage}
+L9987:                 onRefineImage={handleRefineWordImage}
+L9988:                 activitySequence={activitySequence}
+L9989:                 setActivitySequence={setActivitySequence}
+L9990:                 isStudentLocked={isStudentLocked}
+L9991:                 setIsStudentLocked={setIsStudentLocked}
+L9992:                 generatingImageIndex={generatingImageIndex}
+L9993:                 regeneratingIndex={regeneratingIndex} isLoading={isLoadingPhonemes}
+L9994:                 onStartActivity={() => {
+L9995:                     hasStartedFromReview.current = true; // FIX: Remember user already started
+L9996:                     setWordSoundsHistory([]); // FIX: Clear history to prevent premature completion
+L9997:                     setShowReviewPanel(false);
+L9998:                     // Start with current word from preloaded list (preserves position)
+L9999:                     const firstWord = preloadedWords[currentWordIndex % Math.max(1, preloadedWords.length)];
+L10000:                     if (firstWord) {
+L10001:                         setCurrentWordSoundsWord(firstWord.targetWord || firstWord.word);
+L10002:                         setWordSoundsPhonemes(firstWord);
+L10003:                         setIsLoadingPhonemes(false);
+L10004:                     }
+L10005:                 }}
+L10006:                 onClose={onClose}
+L10007:                 onBackToSetup={() => {
+L10008:                     // Navigate back to Word Sounds Generator/Setup
+L10009:                     setShowReviewPanel(false);
+L10010:                     if (onBackToSetup) {
+L10011:                         onBackToSetup(); // Use parent's navigation handler
+L10012:                     } else {
+L10013:                         onClose(); // Fallback to close
+L10014:                     }
+L10015:                 }}
+L10016:                 onPlayAudio={handleAudio}
+L10017:                 onDeleteWord={handleDeleteWord}
+L10018:                 t={t}
+L10019:                 imageVisibilityMode={imageVisibilityMode}
+L10020:                 setImageVisibilityMode={setImageVisibilityMode}
+
+=== BLOCK 6: firstWordReady references ===
+L3207:     // - Loading state: isPreloading, preloadProgress, firstWordReady
+L3218:     const [firstWordReady, setFirstWordReady] = React.useState(false); // Eager-start: true when first word is loaded
+L6583:         if (firstWordReady && preloadedWords.length > 0 && !currentWordSoundsWord && !isLoadingPhonemes) {
+L6595:     }, [firstWordReady, preloadedWords, currentWordSoundsWord, isLoadingPhonemes, showReviewPanel]);

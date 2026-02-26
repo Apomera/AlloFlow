@@ -1,0 +1,46 @@
+endingUp, BarChart2,
+      BookOpen, Gamepad2, Heart, History, Shuffle, Send, Share2,
+    });
+  }, []);
+
+  // Load external modules from GitHub CDN via script tags
+  React.useEffect(() => {
+    const loadModule = (name, url) => {
+      console.log('[CDN] Attempting to load ' + name + ' from: ' + url);
+      const prevOnError = window.onerror;
+      window.onerror = function(msg, src, line, col, err) {
+        console.error('[CDN-ERROR] ' + name + ': ' + msg);
+        console.error('[CDN-ERROR] Source: ' + src + ' Line: ' + line + ' Col: ' + col);
+        if (err && err.stack) console.error('[CDN-STACK] ' + err.stack);
+        window.onerror = prevOnError;
+        return false;
+      };
+      const s = document.createElement('script');
+      s.src = url;
+      s.crossOrigin = "anonymous";
+      s.onload = () => {
+        const found = window.AlloModules && window.AlloModules[name];
+        console.log('[CDN] ' + name + ' script executed. Registration: ' + (found ? 'SUCCESS' : 'FAILED'));
+        if (!found) {
+          console.error('[CDN] ' + name + ' loaded but NOT registered on window.AlloModules!');
+          console.error('[CDN] window.AlloModules keys:', Object.keys(window.AlloModules || {}));
+        }
+        window.onerror = prevOnError;
+      };
+      s.onerror = (e) => {
+        console.error('[CDN-FAIL] ' + name + ' network/CORS error:', e);
+        window.onerror = prevOnError;
+      };
+      document.head.appendChild(s);
+    };
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b7cad97b5a257ca011f81bd2c42ef3445eede6a9/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b7cad97b5a257ca011f81bd2c42ef3445eede6a9/word_sounds_module.js');
+  }, []);
+
+  const [stemLabTool, setStemLabTool] = useState(null);
+  const [assessmentBlocks, setAssessmentBlocks] = useState([]);
+  const [toolSnapshots, setToolSnapshots] = useState([]);
+  const [showAssessmentBuilder, setShowAssessmentBuilder] = useState(false);
+  const [stemLabCreateMode, setStemLabCreateMode] = useState('topic');
+  const [numberLineRange, setNumberLineRange] = useState({ min: 0, max: 20 });
+  const [numberLineMarkers, setNumberL

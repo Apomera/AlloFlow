@@ -1,0 +1,276 @@
+﻿UI_STRINGS defined keys: 5272
+Real t()/ts() keys (filtered): 2902
+Real orphan keys (WILL SHOW RAW STRINGS): 55
+
+[adventure] (19 keys):
+  L67020: t('adventure.back_to_resume')
+        title={t('adventure.back_to_resume')}
+  L22404: t('adventure.climax_archetypes.default.label')
+        const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.de
+  L22405: t('adventure.climax_archetypes.default.left')
+        const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes
+  L22406: t('adventure.climax_archetypes.default.right')
+        const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetyp
+  L52879: t('adventure.fallback_opening')
+        if (!content.text) content.text = t('adventure.fallback_opening');
+  L46615: t('adventure.generating_options_audio')
+        addToast(t('adventure.generating_options_audio'), "info");
+  L67578: t('adventure.interrupted_desc')
+        {t('adventure.interrupted_desc')}
+  L67576: t('adventure.interrupted_title')
+        <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3>
+  L66998: t('adventure.paused_desc')
+        {t('adventure.paused_desc')}
+  L66996: t('adventure.paused_title')
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_title')}</h2>
+  L45921: t('adventure.results.header')
+        feedbackText += `\n\n${t('adventure.results.header')}\n`;
+  L45931: t('adventure.results.perf_score')
+        feedbackText += t('adventure.results.perf_score', { total: total });
+  L45925: t('adventure.results.roll_calc')
+        feedbackText += t('adventure.results.roll_calc', {
+  L67584: t('adventure.retry_action')
+        <RefreshCw size={18} /> {t('adventure.retry_action')}
+  L46085: t('adventure.save_reminder')
+        addToast(t('adventure.save_reminder') || "≡ƒÆ╛ Consider saving your adventure progress!", "info");
+  L67030: t('adventure.setup_subtitle')
+        <p className="text-indigo-200 text-sm font-medium">{t('adventure.setup_subtitle')}</p>
+  L67011: t('adventure.start_overwrite')
+        <RefreshCw size={12}/> {t('adventure.start_overwrite')}
+  L67414: t('adventure.system_simulation')
+        <span>≡ƒÅ¢∩╕Å</span> {t('adventure.system_simulation')}
+  L67493: t('adventure.system_state')
+        <span>≡ƒôè</span> {t('adventure.system_state')}
+
+[chat_guide] (36 keys):
+  L48144: t('chat_guide.blueprint.analyzing')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.analyzing') }]);
+  L48061: t('chat_guide.blueprint.auto_fill_stop')
+        sendBotMsg(t('chat_guide.blueprint.auto_fill_stop'));
+  L48249: t('chat_guide.blueprint.change_fail')
+        sendBotMsg(t('chat_guide.blueprint.change_fail'));
+  L48687: t('chat_guide.blueprint.complete')
+        sendBotMsg(t('chat_guide.blueprint.complete'));
+  L48173: t('chat_guide.blueprint.error')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.error') }]);
+  L48167: t('chat_guide.blueprint.presented')
+        text: t('chat_guide.blueprint.presented')
+  L48691: t('chat_guide.blueprint.reset')
+        sendBotMsg(t('chat_guide.blueprint.reset'));
+  L48247: t('chat_guide.blueprint.updated')
+        sendBotMsg(t('chat_guide.blueprint.updated'));
+  L48417: t('chat_guide.flow.adapting_text')
+        sendBotMsg(t('chat_guide.flow.adapting_text', { grade: gradeLevel }));
+  L48318: t('chat_guide.flow.added_lang')
+        sendBotMsg(t('chat_guide.flow.added_lang', { lang }));
+  L48465: t('chat_guide.flow.creating_worksheet')
+        sendBotMsg(t('chat_guide.flow.creating_worksheet'));
+  L48349: t('chat_guide.flow.generating_glossary')
+        sendBotMsg(t('chat_guide.flow.generating_glossary'));
+  L48396: t('chat_guide.flow.generating_text')
+        sendBotMsg(t('chat_guide.flow.generating_text', { grade: gradeLevel }));
+  L48468: t('chat_guide.flow.generating_visual')
+        sendBotMsg(t('chat_guide.flow.generating_visual'));
+  L45467: t('chat_guide.flow.initial_prompt_context')
+        msg = t('chat_guide.flow.initial_prompt_context', {
+  L48381: t('chat_guide.flow.integrating_interest')
+        sendBotMsg(t('chat_guide.flow.integrating_interest', { interest: potentialInterest }));
+  L48412: t('chat_guide.flow.interest_check')
+        sendBotMsg(t('chat_guide.flow.interest_check'));
+  L45472: t('chat_guide.flow.keyword_pack')
+        keyword_pack: t('chat_guide.flow.keyword_pack')
+  L45471: t('chat_guide.flow.keyword_step')
+        keyword_step: t('chat_guide.flow.keyword_step'),
+  L48344: t('chat_guide.flow.no_langs_warning')
+        sendBotMsg(t('chat_guide.flow.no_langs_warning'));
+  L48284: t('chat_guide.flow.offer_analysis')
+        sendBotMsg(t('chat_guide.flow.offer_analysis'));
+  L48367: t('chat_guide.flow.offer_glossary')
+        sendBotMsg(t('chat_guide.flow.offer_glossary'));
+  L48431: t('chat_guide.flow.offer_text')
+        sendBotMsg(t('chat_guide.flow.offer_text', { grade: gradeLevel }));
+  L48483: t('chat_guide.flow.offer_visual')
+        sendBotMsg(t('chat_guide.flow.offer_visual'));
+  L45470: t('chat_guide.flow.option_pack')
+        option_pack: t('chat_guide.flow.option_pack'),
+  L45469: t('chat_guide.flow.option_step')
+        option_step: t('chat_guide.flow.option_step'),
+  L48272: t('chat_guide.flow.running_analysis')
+        sendBotMsg(t('chat_guide.flow.running_analysis'));
+  L48280: t('chat_guide.flow.skipping_analysis')
+        sendBotMsg(t('chat_guide.flow.skipping_analysis'));
+  L48427: t('chat_guide.flow.skipping_text')
+        sendBotMsg(t('chat_guide.flow.skipping_text'));
+  L48479: t('chat_guide.flow.skipping_visual')
+        sendBotMsg(t('chat_guide.flow.skipping_visual'));
+  L48267: t('chat_guide.flow.source_prompt')
+        sendBotMsg(t('chat_guide.flow.source_prompt'));
+  L45475: t('chat_guide.flow.start_scratch')
+        msg = t('chat_guide.flow.start_scratch');
+  L48197: t('chat_guide.pack.comprehensive')
+        const countDisplay = targetCount === 'All' ? t('chat_guide.pack.comprehensive') : targetCount;
+  L48139: t('chat_guide.pack.count_selection')
+        sendBotMsg(t('chat_guide.pack.count_selection'));
+  L48198: t('chat_guide.pack.designing')
+        sendBotMsg(t('chat_guide.pack.designing', { count: countDisplay }));
+  L48225: t('chat_guide.pack.error')
+        sendBotMsg(t('chat_guide.pack.error'));
+
+Unused UI_STRINGS keys (defined but never used): 2425
+
+By category:
+  help_mode: 1184 unused
+  adventure: 257 unused
+  results: 229 unused
+  quiz: 122 unused
+  escape_room: 66 unused
+  toasts: 55 unused
+  games: 43 unused
+  chat_guide: 35 unused
+  modals: 23 unused
+  class_analytics: 22 unused
+  lesson_headers: 21 unused
+  output: 19 unused
+  persona: 17 unused
+  bot_events: 16 unused
+  export: 16 unused
+  settings: 16 unused
+  tips: 14 unused
+  large_file: 13 unused
+  lesson_plan: 13 unused
+  wizard: 11 unused
+  common: 10 unused
+  concept_map: 10 unused
+  sidebar: 10 unused
+  bridge: 9 unused
+  filenames: 8 unused
+  fluency: 8 unused
+  storybook: 8 unused
+  session: 7 unused
+  glossary: 5 unused
+  immersive: 5 unused
+  math: 5 unused
+  tools: 5 unused
+  groups: 4 unused
+  outline: 4 unused
+  simplified: 4 unused
+  status: 4 unused
+  alignment: 3 unused
+  blueprint: 3 unused
+  dashboard: 3 unused
+  errors: 3 unused
+  scaffolds: 3 unused
+  word_sounds: 3 unused
+  flashcards: 2 unused
+  header: 2 unused
+  student: 2 unused
+  timeline: 2 unused
+  visuals: 2 unused
+  activity_label: 1 unused
+  analysis: 1 unused
+  analysis_source_label: 1 unused
+  answer_label: 1 unused
+  back_to_resume: 1 unused
+  bundle_downloaded: 1 unused
+  cancel: 1 unused
+  categories_label: 1 unused
+  category: 1 unused
+  color: 1 unused
+  date_label: 1 unused
+  def_col: 1 unused
+  def_label: 1 unused
+  default_lesson_title: 1 unused
+  desc: 1 unused
+  district_resource: 1 unused
+  download_complete: 1 unused
+  english_trans_label: 1 unused
+  entry: 1 unused
+  export_menu: 1 unused
+  fallback_opening: 1 unused
+  features_list: 1 unused
+  footer_generated: 1 unused
+  generated_date_label: 1 unused
+  generating_bundle: 1 unused
+  generating_options_audio: 1 unused
+  generating_pdf: 1 unused
+  html_page_title: 1 unused
+  icon: 1 unused
+  ims_resource_pack: 1 unused
+  incomplete_sort: 1 unused
+  input: 1 unused
+  interrupted_desc: 1 unused
+  interrupted_title: 1 unused
+  interview_figure_label: 1 unused
+  items_label: 1 unused
+  keep_separate_note: 1 unused
+  key_concepts_label: 1 unused
+  label: 1 unused
+  language_selector: 1 unused
+  left: 1 unused
+  main_label: 1 unused
+  meta: 1 unused
+  move_down: 1 unused
+  move_up: 1 unused
+  name_label: 1 unused
+  no_active_scene: 1 unused
+  no_events: 1 unused
+  no_ideas: 1 unused
+  no_personas: 1 unused
+  no_questions: 1 unused
+  no_student_content: 1 unused
+  no_teacher_content: 1 unused
+  no_terms: 1 unused
+  paused_desc: 1 unused
+  paused_title: 1 unused
+  ppt_correct_note: 1 unused
+  ppt_generated: 1 unused
+  ppt_grade_level: 1 unused
+  problem_label: 1 unused
+  process: 1 unused
+  qti_default_desc: 1 unused
+  qti_default_title: 1 unused
+  readme_contents: 1 unused
+  readme_generated: 1 unused
+  readme_html_desc: 1 unused
+  readme_json_desc: 1 unused
+  readme_title: 1 unused
+  readme_topic: 1 unused
+  retry_action: 1 unused
+  review_game: 1 unused
+  right: 1 unused
+  save_reminder: 1 unused
+  scenario_label: 1 unused
+  score_label: 1 unused
+  setup_subtitle: 1 unused
+  slides_master_footer: 1 unused
+  slides_question_title: 1 unused
+  slides_subject: 1 unused
+  slides_title_default: 1 unused
+  source_ref_title: 1 unused
+  standards: 1 unused
+  start_overwrite: 1 unused
+  structure_label: 1 unused
+  student_copy: 1 unused
+  support_dev: 1 unused
+  system_simulation: 1 unused
+  system_state: 1 unused
+  teacher_copy_divider: 1 unused
+  teacher_copy_intro: 1 unused
+  teacher_key_title: 1 unused
+  term_col: 1 unused
+  term_label: 1 unused
+  text_tools: 1 unused
+  title: 1 unused
+  topic: 1 unused
+  trans_col: 1 unused
+  udl_strategy_advice: 1 unused
+  unknown_level: 1 unused
+
+======================================================================
+SUMMARY
+======================================================================
+Defined:     5272
+Used:        2902
+ORPHANS:     55 ΓåÉ BROKEN, will show raw key text!
+Unused:      2425 ΓåÉ dead but harmless
+Match rate:  2847/2902 (98%)

@@ -1,0 +1,134 @@
+=== TIMELINE PANEL DEEP DIVE ===
+
+--- TIMELINE STATE VARIABLES ---
+[timeline] Line 25565: const [timelineRevisionInput, setTimelineRevisionInput] = useState('');
+[timeline] Line 25566: const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
+[timeline] Line 26229: const [isEditingTimeline, setIsEditingTimeline] = useState(false);
+[timeline] Line 26230: const [isTimelineGame, setIsTimelineGame] = useState(false);
+[timeline] Line 31017: const [timelineTopic, setTimelineTopic] = useState('');
+[timeline] Line 31018: const [timelineItemCount, setTimelineItemCount] = useState('');
+[timeline] Line 31019: const [draggedTimelineIndex, setDraggedTimelineIndex] = useState(null);
+[history] Line 19113: const [isHistoryVisible, setIsHistoryVisible] = useState(true);
+[history] Line 25713: const [pointHistory, setPointHistory] = useState([]);
+[history] Line 25775: const [wordSoundsHistory, setWordSoundsHistory] = useState(() => {
+[history] Line 25791: const [wordSoundsAccuracyHistory, setWordSoundsAccuracyHistory] = useState([]); // Last 10 answers for adaptive difficulty
+[history] Line 28739: const [hintHistory, setHintHistory] = useState([]);
+[history] Line 30181: const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
+[history] Line 30182: const [history, setHistory] = useState([]);
+[history] Line 30183: const [isHistoryPulsing, setIsHistoryPulsing] = useState(false);
+[history] Line 30920: const [isHistoryMaximized, setIsHistoryMaximized] = useState(false);
+[date] Line 25429: const [pendingAdventureUpdate, setPendingAdventureUpdate] = useState(null);
+[date] Line 26171: const [lastJsonFileSave, setLastJsonFileSave] = useState(Date.now());
+[date] Line 43696: const [updatedA, updatedB] = await Promise.all([
+[era] Line 1004: const [imageTheme, setImageTheme] = React.useState(''); // Art style/theme for generated images
+[era] Line 1005: const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 }); // Min/Max syllables
+[era] Line 1010: const [isAiGenerating, setIsAiGenerating] = React.useState(false);
+[era] Line 1014: const [generatedCount, setGeneratedCount] = React.useState(0);
+[era] Line 1854: const [userAnswer, setUserAnswer] = React.useState('');
+[era] Line 1902: const [regeneratingIndex, setRegeneratingIndex] = React.useState(null); // Track which word is regenerating
+[era] Line 25558: const [mathSubject, setMathSubject] = useState('General Math');
+[era] Line 25559: const [mathMode, setMathMode] = useState('Problem Set Generator');
+[era] Line 25674: const [isGeneratingReflectionPrompt, setIsGeneratingReflectionPrompt] = useState(false);
+[era] Line 25680: const [wordSoundsCustomTerms, setWordSoundsCustomTerms] = React.useState([]); // Custom Word List for Dedicated Generator
+[era] Line 26227: const [isInteractiveMap, setIsInteractiveMap] = useState(false);
+[era] Line 26480: const [interactionMode, setInteractionMode] = useState('read');
+[era] Line 26490: const [isImmersiveReaderActive, setIsImmersiveReaderActive] = useState(false);
+[era] Line 26534: const [isInteractiveFlashcards, setIsInteractiveFlashcards] = useState(false);
+[era] Line 26546: const [isGeneratingRubric, setIsGeneratingRubric] = useState(false);
+[era] Line 26610: const [isSpeedReaderActive, setIsSpeedReaderActive] = useState(false);
+[era] Line 26642: const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
+[era] Line 26664: const [isGeneratingTermImage, setIsGeneratingTermImage] = useState({});
+[era] Line 26708: const [isGeneratingProgression, setIsGeneratingProgression] = useState(false);
+[era] Line 28736: const [generationStep, setGenerationStep] = useState('Processing...');
+[era] Line 28741: const [isGeneratingExtension, setIsGeneratingExtension] = useState(false);
+[era] Line 28742: const [isGeneratingExtensionGuide, setIsGeneratingExtensionGuide] = useState({});
+[era] Line 28747: const [generatedContent, setGeneratedContent] = useState(null);
+[era] Line 28801: const [isInteractiveVenn, setIsInteractiveVenn] = useState(false);
+[era] Line 30887: const [isGeneratingSource, setIsGeneratingSource] = useState(false);
+[era] Line 31014: const [isGeneratingGuide, setIsGeneratingGuide] = useState({});
+[era] Line 31022: const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+
+--- TIMELINE VIEW/DISPLAY MODES ---
+[card] Line 38978: - **AVOID** phrases like "cut out strips," "glue to paper," "hand out copies," or "shuffle physical cards" wh
+[visual] Line 8357: timeline_desc: "Visualize the sequence of events or steps.",
+
+--- INTERACTIVE FEATURES ---
+[drag] Line 8646: ready_desc: "Drag and drop the events into the correct order to reveal the timeline.",
+[drop] Line 8646: ready_desc: "Drag and drop the events into the correct order to reveal the timeline.",
+[sort] Line 10847: timeline_desc: "Organizes information logically. Creates a visual progression of events, steps, sizes, or importance
+[reorder] Line 9655: timeline_drag: "Drag and drop events to reorder the sequence.",
+[quiz] Line 10423: change_fail: "I couldn't make that change. Try saying 'Add Quiz' or 'Remove Timeline'.",
+[game] Line 9916: // Timeline Game Help
+[interactive] Line 10847: timeline_desc: "Organizes information logically. Creates a visual progression of events, steps, sizes, or importance
+[click] Line 17651: <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={
+
+--- EVENT/CARD FEATURES ---
+[event] Line 8357: timeline_desc: "Visualize the sequence of events or steps.",
+[card] Line 38978: - **AVOID** phrases like "cut out strips," "glue to paper," "hand out copies," or "shuffle physical cards" wh
+[marker] Line 63461: <div className="absolute left-[-7px] top-0 font-black text-indigo-300 text-[10px] uppercase
+[image] Line 26752: const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'outline', 'image', 'faq', 'sentence-fra
+
+--- EXPORT/PRINT FEATURES ---
+[export] Line 16062: "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'source', 'anal
+[print] Line 24452: { value: 'timeline', label: t('blueprint.tools.timeline') },
+[image] Line 26752: const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'outline', 'image', 'faq', 'sentence-fra
+
+--- CUSTOMIZATION OPTIONS ---
+[color] Line 17651: <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={
+[font] Line 55042: <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ListOrdered size={16}/> {t(
+[size] Line 10847: timeline_desc: "Organizes information logically. Creates a visual progression of events, steps, sizes, or importance
+[custom] Line 47034: const effectiveTopic = effCustomInstructions || timelineTopic || sourceTopic || "General Sequence";
+
+--- TIMELINE UI LABELS/TRANSLATIONS ---
+Line 8357: timeline_desc: "Visualize the sequence of events or steps.",
+Line 8646: ready_desc: "Drag and drop the events into the correct order to reveal the timeline.",
+Line 9655: timeline_drag: "Drag and drop events to reorder the sequence.",
+Line 9917: timeline_draggable_item: "Drag this event to reorder it in the correct sequence.",
+Line 9918: timeline_move_up: "Move this event earlier in the timeline.",
+Line 9919: timeline_move_down: "Move this event later in the timeline.",
+Line 9920: timeline_reset_btn: "Shuffle the events to start over.",
+Line 9921: timeline_check_btn: "Check if the events are in the correct chronological order.",
+Line 10423: change_fail: "I couldn't make that change. Try saying 'Add Quiz' or 'Remove Timeline'.",
+Line 10635: desc: "Drag-and-drop timeline activity for chronological events or process steps.",
+Line 10847: timeline_desc: "Organizes information logically. Creates a visual progression of events, steps, sizes, or importance. Includes an intera
+Line 16062: "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'source', 'analysis', 'outline', 'v
+Line 17545: setAnnouncement(t('timeline.game.moved_up', { item: itemToMove.event, pos: index, total: items.length }));
+Line 17550: setAnnouncement(t('timeline.game.moved_down', { item: itemToMove.event, pos: index + 2, total: items.length }));
+Line 17560: setAnnouncement(t('timeline.game.dropped', { item: items[index].event }));
+Line 17564: setAnnouncement(t('timeline.game.lifted', { item: items[index].event }));
+Line 17651: <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.clo
+Line 17688: aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLif
+Line 17753: {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16}/> {t('timeline.game.complete')}</sp
+Line 27616: 'tool_timeline': "Create interactive timeline sequencing activities.",
+Line 27671: 'timeline_count_detailed': "Choose 5-8 events for a concise overview, or 10-15 for a comprehensive timeline.",
+Line 27672: 'timeline_generate_button': "Create an interactive, draggable timeline with key events and dates.",
+Line 27848: 'timeline_count': "Number of chronological events to include.",
+Line 28062: 'timeline_draggable_item': "Drag events to reorder chronologically. Drop zones glow when you can release.",
+Line 28063: 'timeline_move_up': "Nudge this event earlier. Use when drag-and-drop is difficult.",
+Line 28064: 'timeline_move_down': "Nudge this event later in the sequence.",
+Line 28065: 'timeline_reset_btn': "Scramble events back to random order for a fresh attempt.",
+Line 28066: 'timeline_check_btn': "Submit your timeline. Correct events lock with ✓; incorrect ones shake for repositioning.",
+Line 44682: ${allowDuplicates ? '**HIGH VOLUME STRATEGY**: Since the target count is high, include complementary variations. Example: Genera
+Line 47004: "evidence": "Cites specific artifacts (e.g. 'The Concept Sort requires distinguishing...', 'The Timeline builds
+Line 50845: brainstorm: '💡', persona: '🎭', timeline: '📅', 'concept-sort': '🗂️',
+Line 55035: ${activeView === 'timeline' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shado
+Line 63425: <Gamepad2 size={14}/> {isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')}
+Line 63430: className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow
+Line 63433: {isEditingTimeline ? t('timeline.done_editing') : t('timeline.edit_sequence')}
+
+--- GAMIFICATION/STUDY MODES ---
+[quiz] Line 10423: change_fail: "I couldn't make that change. Try saying 'Add Quiz' or 'Remove Timeline'.",
+[quiz] Line 16062: "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'source', 'anal
+... and 5 more for 'quiz'
+[test] Line 38901: const timelineItem = findLatest('timeline');
+[test] Line 47094: - "Timeline: Earliest (1492) → Latest (1776)"
+[practice] Line 11093: case 'timeline': usage = "(Sequence Activity / Guided Practice)"; break;
+[practice] Line 38946: context += `\n--- CONTEXT: SEQUENCE BUILDER ACTIVITY ---\n${timelineItem.data.length} Events available for se
+... and 1 more for 'practice'
+[order] Line 8646: ready_desc: "Drag and drop the events into the correct order to reveal the timeline.",
+[order] Line 9655: timeline_drag: "Drag and drop events to reorder the sequence.",
+... and 15 more for 'order'
+[arrange] Line 17661: <ArrowDown size={14} /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} />
+[sequence] Line 7195: tool_timeline: "Sequence Builder",
+[sequence] Line 8357: timeline_desc: "Visualize the sequence of events or steps.",
+... and 18 more for 'sequence'

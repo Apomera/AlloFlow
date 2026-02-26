@@ -1,0 +1,97 @@
+=== SEARCHING FOR FOCUS READER / SPEED READER ===
+
+
+--- Pattern: focus ---
+Line 422: className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-
+Line 1209: className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 outline-none"
+Line 1279: className="mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 outline-none"
+Line 1308: className="mt-3 w-full h-24 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-none"
+Line 1670: className="px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 outline-none"
+Total: 641 matches
+
+--- Pattern: rsvp ---
+Line 959: PHONEME_AUDIO_BANK['ue'] = 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAExwEU2bdLlNu4tTq4QVSalmU6yBbk27i1OrhBZ
+Line 24251: title="Focus Reader (RSVP)"
+Total: 2 matches
+
+--- Pattern: speed.*read ---
+Line 9720: header_settings_voice: "Choose a voice and adjust speed/pitch for reading aloud.",
+Line 9752: header_settings_voice_speed: "Adjust the reading speed.",
+Line 24041: const SpeedReaderOverlay = ({ text, onClose, isOpen }) => {
+Line 24175: const ImmersiveToolbar = ({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing 
+Line 24249: active={isSpeedReaderActive}
+Total: 13 matches
+
+--- Pattern: word.*display ---
+Line 2789: displayWord: word, // Preserve casing for display
+Line 2844: singleWord: entry.displayWord || entry.word,
+Line 3025: singleWord: entry.displayWord || entry.word,
+Line 3679: const word = entry.word?.toLowerCase() || entry.displayWord?.toLowerCase();
+Line 3693: const targetWord = wordEntry.displayWord || wordEntry.word;
+Total: 16 matches
+
+--- Pattern: current.*word ---
+Line 1790: currentWordSoundsWord,
+Line 1791: setCurrentWordSoundsWord,
+Line 2418: const currentOptionsKey = wordBank.filter(w => w.isFamily).map(w => w.text).join(',');
+Line 2601: lastWordRef.current = data.word;
+Line 3198: const [currentWordImage, setCurrentWordImage] = React.useState(null);
+Total: 143 matches
+
+--- Pattern: highlighting ---
+Line 7604: select_all_highlight: "Select/Deselect All for Leveled Text Highlighting",
+Line 7605: select_highlight: "Include this term in Leveled Text Highlighting",
+Line 9865: tool_read_mode: "Read Mode: Listen to the text read aloud with highlighting.",
+Line 24260: {/* Grammar Highlighting */}
+Line 24320: // Check if grammar highlighting is enabled for this POS
+Total: 7 matches
+
+--- Pattern: karaoke ---
+Total: 0 matches
+
+--- Pattern: readMode ---
+Total: 0 matches
+
+--- Pattern: isReading ---
+Line 59447: const isReadingThisParagraph = isPlaying && playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx;
+Line 59450: ? isReadingThisParagraph
+Line 59631: const isReadingThisParagraph = isPlaying && playbackState.currentIdx >= startIdx && playbackState.currentIdx < endIdx;
+Line 59633: ? isReadingThisParagraph
+Line 62737: const isReadingThisOption = isPlaying &&
+Total: 10 matches
+
+--- Pattern: playback ---
+Line 1933: audio.playbackRate = ttsSpeed;
+Line 1940: console.warn("Playback failed", e);
+Line 1969: // 1. Check Active Object Cache (Fastest - Instant Playback)
+Line 7847: speed: "Playback Speed",
+Line 12850: audio.playbackRate = voiceSpeed; // Apply voice speed to audio playback
+Total: 112 matches
+
+
+=== SEARCHING FOR [object] RELATED PATTERNS ===
+
+--- Pattern: \[object ---
+Found 0 matches
+
+--- Pattern: \.toString\( ---
+Found 46 matches
+  const isCorrect = answer?.toString().toLowerCase().trim() === expectedAnswer?.toStrin
+  id: `student-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  const safeText = (text || "").toString();
+
+--- Pattern: String\( ---
+Found 155 matches
+  writeString(0, 'RIFF');
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+
+--- Pattern: JSON\.stringify ---
+Found 65 matches
+  localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  const optionsKey = JSON.stringify(data.options);
+  dataChanged = !wordBank.length || optionsKey !== JSON.stringify(wordBank.filter(w => w.isFamily).map
+
+
+=== CHECKING SIMPLIFIED TEXT VIEW ===
+Line 30584: const [leveledTextLength, setLeveledTextLength] = useState('Same as Source');

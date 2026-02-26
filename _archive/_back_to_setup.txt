@@ -1,0 +1,31 @@
+=== 'Back to Setup' / 'back to setup' ===
+  L2189: onBackToSetup, // Navigate back to Word Sounds Generator/Setup
+  L3035: onClick={onBackToSetup || onClose}
+  L3039: Back to Setup
+  L3129: onBackToSetup, // Navigate back to Word Sounds Generator
+  L10057: onBackToSetup={() => {
+  L10060: if (onBackToSetup) {
+  L10061: onBackToSetup(); // Use parent's navigation handler
+  L65035: onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+
+=== onClose in WordSoundsModal area (L3057-3200) ===
+  L3060: onClose,
+
+=== WordSoundsModal render site (onClose/onBackToSetup props) ===
+  L65022: onClose={() => setIsWordScrambleGame(false)}
+  L65034: onClose={() => { setIsWordSoundsMode(false); setActiveView('input'); }}
+  L65035: onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+
+=== isWordSoundsMode references ===
+  L32825: const [isWordSoundsMode, setIsWordSoundsMode] = useState(false);
+  L32878: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+  L32883: }, [activeView, isWordSoundsMode]);
+  L38194: // Set isWordSoundsMode to true so WordSoundsModal renders
+  L65028: {isWordSoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (
+
+=== activeView / word-sounds-generator ===
+  L36: 'ui-tool-wordsounds': 'word-sounds-generator',
+  L32878: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+  L38202: setActiveView('word-sounds-generator');
+  L65035: onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+  L71482: {activeView === 'word-sounds-generator' && (

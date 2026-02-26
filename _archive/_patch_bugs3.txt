@@ -1,0 +1,15 @@
+﻿Loaded 4739592 chars (normalized)
+
+=== FIX 2: Word Scramble letter depletion ===
+  Γ£ô usedScrambleIndices state already exists
+  WARNING: scrambled tile block not found
+  WARNING: Clear button not found
+  WARNING: scramble correct handler not found
+  WARNING: scramble wrong context not found
+
+=== FIX 3: Word Families wrong answer scoring ===
+  WARNING: WordFamiliesView wrong click block not found
+  WARNING: Parent callback not found
+
+=== Writing 0 changes ===
+Saved AlloFlowANTI.txt (4890724 chars)

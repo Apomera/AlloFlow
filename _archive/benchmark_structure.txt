@@ -1,0 +1,33 @@
+=== BENCHMARK_PROBE_BANKS Structure ===
+const BENCHMARK_PROBE_BANKS = {
+'K': {
+A: {
+blending: [...],
+B: {
+blending: [...],
+C: {
+blending: [...],
+'1': {
+A: {
+blending: [...],
+B: {
+blending: [...],
+C: {
+blending: [...],
+'2': {
+A: {
+blending: [...],
+rhyming: [...],
+B: {
+blending: [...],
+rhyming: [...],
+C: {
+blending: [...],
+rhyming: [...],
+'3-5': {
+A: {
+rhyming: [...],
+B: {
+rhyming: [...],
+C: {
+rhyming: [...],

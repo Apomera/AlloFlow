@@ -1,0 +1,116 @@
+{
+    "mode": "student",
+    "studentNickname": "Emma Wilson",
+    "responses": {
+        "quiz-1": {
+            "score": 45
+        },
+        "quiz-2": {
+            "score": 38
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-2",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "resource",
+            "id": "res-1"
+        },
+        {
+            "type": "resource",
+            "id": "res-2"
+        },
+        {
+            "type": "resource",
+            "id": "res-3"
+        }
+    ],
+    "fluencyAssessments": [
+        {
+            "wcpm": 35,
+            "timestamp": "2026-02-10T09:00:00Z"
+        },
+        {
+            "wcpm": 38,
+            "timestamp": "2026-02-14T09:00:00Z"
+        }
+    ],
+    "wordSoundsState": {
+        "history": [
+            {
+                "word": "cat",
+                "correct": true
+            },
+            {
+                "word": "dog",
+                "correct": false
+            },
+            {
+                "word": "fish",
+                "correct": false
+            },
+            {
+                "word": "bird",
+                "correct": false
+            },
+            {
+                "word": "tree",
+                "correct": false
+            },
+            {
+                "word": "house",
+                "correct": false
+            }
+        ],
+        "sessionScore": {
+            "correct": 1,
+            "total": 6,
+            "streak": 1
+        },
+        "dailyProgress": {
+            "2026-02-14": {
+                "wordsCompleted": 6
+            }
+        }
+    },
+    "labelChallengeResults": [
+        {
+            "score": 15,
+            "timestamp": "2026-02-14T14:00:00Z"
+        }
+    ],
+    "personaState": {
+        "accumulatedXP": 30,
+        "chatHistory": [
+            {
+                "role": "user",
+                "content": "I feel so sad today and I don't want to come to school anymore"
+            },
+            {
+                "role": "assistant",
+                "content": "I hear you. Can you tell me more?"
+            },
+            {
+                "role": "user",
+                "content": "Nobody likes me and I want to hurt myself"
+            }
+        ]
+    },
+    "globalPoints": 110,
+    "timeOnTask": {
+        "totalSessionMinutes": 25
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

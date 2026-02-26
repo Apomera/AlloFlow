@@ -1,0 +1,15 @@
+LINE 36850: setGeneratedContent({ type: 'adventure', id: 'adventure-sync', data: {} });
+LINE 36857: setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+LINE 36879: setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+LINE 38338: setGeneratedContent({ type: 'math', data: normalizedContent, id: newItem.id });
+LINE 40038: setGeneratedContent({ type: newItem.type, data: newItem.data, id: newItem.id });
+LINE 45582: setGeneratedContent({ type: lastItem.type, data: lastItem.data, id: lastItem.id });
+LINE 45603: setGeneratedContent({ type: item.type, data: item.data, id: item.id });
+LINE 46060: setGeneratedContent({ type: 'lesson-plan', data: content, id: newItem.id });
+LINE 46444: setGeneratedContent({ type: 'udl-advice', data: hint.text, id: newItem.id });
+LINE 50242: setGeneratedContent({ type: 'persona', data: parsedOptions, id: newItem.id });
+LINE 51617: setGeneratedContent({ type: 'udl-advice', data: chatLog, id: newItem.id });
+LINE 51648: setGeneratedContent({ type: 'udl-advice', data: finalData, id: newItem.id });
+LINE 51664: setGeneratedContent({ type: 'udl-advice', data: finalData, id: newItem.id });
+LINE 54711: setGeneratedContent({ type, data: content, id: newItem.id, config: newItem.config });
+LINE 56557: setGeneratedContent({ type: targetItem.type, data: targetItem.data, id: targetItem.id });

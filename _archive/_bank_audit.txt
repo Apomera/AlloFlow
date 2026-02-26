@@ -1,0 +1,22 @@
+﻿python :   File 
+"<string>", line 13
+At line:1 char:1
++ python -c "
++ ~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (  File    
+ "<string>", line    
+ 13:String) [],     
+RemoteException
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+    print(f'  {k}: 
+{" HAS AUDIO\
+                    ^
+SyntaxError: 
+unterminated string 
+literal (detected at 
+line 13)

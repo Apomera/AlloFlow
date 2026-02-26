@@ -1,0 +1,250 @@
+============================================================
+1. callTTS FUNCTION DEFINITION
+============================================================
+L1702:                      // PREFETCH TTS: Generate audio for all options now
+L1703:                      const lastItem = processed[processed.length - 1];
+L1704:                      if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed) {
+L1705:                          const ttsTasks = new Set();
+L1706:                          if (lastItem.rhymeWord) ttsTasks.add(lastItem.rhymeWord);
+L1707:                          (lastItem.rhymeDistractors || []).forEach(w => w && ttsTasks.add(w));
+L1708:                          (lastItem.blendingDistractors || []).forEach(w => w && ttsTasks.add(w));
+L1709:                          (lastItem.familyMembers || []).forEach(w => w && ttsTasks.add(w));
+L1710:                          // Execute prefetch
+L1711:                          try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught error:', e?.message || e); }
+L1712:                      }
+L1713:                      setGeneratedCount(prev => prev + 1);
+L1714:              }
+L1715:              // Construct Lesson Plan Sequence (respects user-defined order)
+L1716:              let sequence = [];
+L1717:              const enabledActivities = [];
+L1718:              if (includeLessonPlan) {
+L1719:                  lessonPlanOrder.forEach(actId => {
+L1720:                      const cfg = lessonPlan[actId];
+L1721:                      if (cfg && cfg.enabled) {
+L1722:                          enabledActivities.push({ id: actId, count: cfg.count, enabled: true });
+L1723:                          for (let k = 0; k < cfg.count; k++) sequence.push(actId);
+L1724:                      }
+L1725:                  });
+L1726:              }
+L1727:              // Build lessonPlanConfig for RTI data tracking
+L1728:              const lessonPlanConfig = includeLessonPlan ? {
+L1729:                  masteryMode: 'consecutive', // Mastery: min items + 3 consecutive correct
+L1730:                  masteryThreshold: 3,
+L1731:                  activities: enabledActivities,
+L1732:                  order: lessonPlanOrder.filter(id => lessonPlan[id]?.enabled),
+L1733:                  totalItems: sequence.length,
+...
+
+============================================================
+2. TTS ERROR HANDLING / QUOTA
+============================================================
+L193: TARGET_SAMPLE_RATE: 16000, // 16kHz is optimal for speech recognition
+L261: // Decode audio to get duration and sample rate
+L269: const sampleRate = audioBuffer.sampleRate;
+L876: // Use localStorage to cache generated phoneme audio permanently to reduce API usage.
+L960: // PHONEME AUDIO BANK - High quality pre-generated phoneme audio
+L1175: // Generated from audio_input3 folder
+L1409: // --- INTEGRATED PHONEME AUDIO (UPDATED) ---
+L1702: // PREFETCH TTS: Generate audio for all options now
+L2241: ? `Building Audio: "${previewList[Array.from(selectedIndices)[generatedCount]] || '...'}"`
+L3378: const ttsQueue = React.useRef(Promise.resolve()); // Serialize TTS requests to prevent rate limiting
+L3490: const ttsFailureCount = React.useRef(0); // Track consecutive TTS failures for quota handling
+L3542: audio.playbackRate = ttsSpeed;
+L5108: // NOTE: Gemini phoneme analysis disabled. All phoneme data is generated during pre-load phase.
+L5109: // When DISABLE_GEMINI_PHONEMES is true, generate local fallback data
+L6946: // TTS fallback - play generic instruction first, then chain target word as separate audio
+L6984: // PRE-CACHE TTS: Generate audio for ALL options simultaneously
+L9432: // AI-FIRST: Use Gemini-generated soundSortMatches if available
+L9682: // AI-FIRST: Use Gemini-generated rimeFamilyMembers if available
+L11217: • **Visual Terms**: AI-generated images for each word with TTS pronunciation.
+L11619: • **Speed Control**: Adjust speech rate from 0.5× to 2× speed.
+L11977: speech_generation_failed: "Failed to generate speech. Please try again.",
+L12327: placeholder: "Paste curriculum text here, upload a PDF/Image/Text/Audio file (max 20MB), or use 'Generate Source Text'...",
+L14023: generated_desc: "Prompt generated for Gemini Canvas.",
+L15123: persona_panel: "The AI Persona chat panel - engage in authentic conversations with historical figures, scientists, literary characters, or custom personas. Uses advanced AI to simulate period-accurate
+L15128: persona_custom_instructions: "Add specific requirements for how the persona should behave during conversations. Examples: focus on a specific time period, emphasize certain beliefs or values, maintain
+L15842: desc: "Generate prompts to build custom interactive apps in Gemini Canvas.",
+L16213: // AI-FIRST: Use Gemini-generated rimeFamilyMembers if available
+L16567: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiKey}`;
+L17524: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled
+L17884: hasOnGenerate: !!onGenerateAudio,
+L17888: if (onGenerateAudio) {
+L17891: debugLog("🎤 calling onGenerateAudio...");
+L17892: debugLog("🎤 calling onGenerateAudio with 3s timeout...");
+L17895: const audioPromise = onGenerateAudio(ttsText, selectedVoice, voiceSpeed, 1);
+L17897: debugLog("🎤 onGenerateAudio returned:", audioUrl ? "URL Present" : "NULL/Empty");
+L17908: audio.playbackRate = voiceSpeed; // Apply voice speed to audio playback
+L17928: // Fallback Strategy: Native Browser TTS
+L17959: }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio]);
+L21434: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiKey}`;
+L23967: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRef }) => {
+L24007: if (onGenerateAudio) {
+L24008: const url = await onGenerateAudio(textToRead, selectedVoice);
+L30658: // [PHASE 4 MIGRATED] const [wordSoundsAudioLibrary, setWordSoundsAudioLibrary] = useState({}); // { text: base64String }
+L30659: // [PHASE 4 MIGRATED] const [wordSoundsTtsSpeed, setWordSoundsTtsSpeed] = useState(1.0);
+L31112: // Separate primitive state for escape room timer (matches study timer pattern for Gemini Canvas compatibility)
+L31723: 'word_sounds_loading_minimized': "Word Sounds generation is processing in the background, allowing you to continue working. A small indicator shows generation is active. Click to expand the full loadi
+L31872: 'word_sounds_loading_minimized': "Word Sounds generation is processing in the background, allowing you to continue working. A small indicator shows generation is active. Click to expand the full loadi
+L31878: 'tool_glossary': "Create a comprehensive visual vocabulary resource from your source content. AI identifies: key academic vocabulary, context-specific terms, and words likely unfamiliar to target grad
+L31879: 'tool_wordsounds': "Open the Word Sounds Studio for structured phonics and phonemic awareness instruction. Generate customized word lists based on: phoneme families (CVC, CVCE, blends, digraphs), syll
+L31881: 'wordsounds_open_btn': "Launch the complete Word Sounds Studio after generating your word list. The Studio provides: interactive phonics activities (Break It Down, Rhyme Time, Letter Tracing), progres
+L31927: bot_mute_btn: "Toggle AlloBot voice output on or off. When muted: AlloBot still displays text responses but does not speak aloud. Visual indicator shows mute status (red line through speaker). Use for
+L31928: bot_mic_btn: "Activate speech-to-text input for talking to AlloBot. Click to start speaking—your words appear as text in the chat. Requires microphone permission. Benefits: hands-free interaction, fas
+L31935: 'word_sounds_review_regen_word': "Generate a replacement word from the same phoneme family or category. Use when: a word is too easy or too hard for your students, the AI-generated word is problematic
+L32031: 'concept_sort_input': "Define what content should be sorted. Enter topics like: Types of rocks, Parts of speech, Fractions and decimals, or Renewable vs. non-renewable. AI generates sortable items bas
+L32042: 'timeline_generate_button': "Generate a visual timeline from your source content. AI extracts: key events, dates/periods, cause-effect relationships, and descriptive details. Output includes: interact
+L32051: 'glossary_speak_term': "Click to hear this vocabulary term pronounced by the AI voice. Uses your selected voice and speed settings from Voice Settings. For language learners: provides accurate pronunc
+L32053: 'glossary_word_sounds': "Launch Word Sounds Studio directly with these glossary terms. Students practice explicit phonics skills: hearing individual phonemes, counting sounds, blending sounds into wor
+L32056: 'simplified_define_mode': "Activate Define Mode to turn any word into an interactive vocabulary lookup. Click any word to see: dictionary definition, example sentence in context, audio pronunciation, 
+L32057: 'simplified_phonics_mode': "Activate Phonics Mode for word-level decoding support. Click any word to see: syllable breakdown (el-e-phant), IPA phonetic transcription (/ˈɛləfənt/), audio pronunciation 
+L32058: 'simplified_add_term': "Quick-add vocabulary from your reading directly to glossary. Select any word in the simplified text, then click this button. The term is added to your glossary with: AI-generat
+L32063: 'simplified_download_audio': "Save the text-to-speech audio as a downloadable file. Audio uses your current voice settings (voice, speed, volume). File format is MP3 for universal compatibility. Use d
+L32074: 'concept_sort_panel': "Create categorization activities where students sort items into groups. Builds conceptual understanding by requiring students to identify attributes and relationships. Features:
+L32130: 'glossary_language_input': "Specify languages for vocabulary translation. Enter languages: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog, or any language. You can add multiple languages separ
+L32150: 'escape_room_hint_button': "Request assistance when stuck on a puzzle. Teams have limited hint tokens (typically 2-3). Using a hint: consumes one token, reveals a helpful clue (not the answer), and ma
+L32370: 'profiles_save_button': "Create a named profile from current settings. Profile captures: reading level, voice selection, speech rate, theme, color overlay, font size, and all accessibility preferences
+L32379: 'ui_language_select': "Set the display language for all UI elements. Dropdown shows: pre-translated languages (immediate), recently generated languages (if any), and option to generate new translation
+L32403: 'large_file_transcribe_btn': "Convert spoken audio into text using AI speech recognition. Upload: lecture recordings, video lessons, podcasts, interviews, or student presentations. AI creates: timesta
+L32446: 'immersive_syllables': "Visual syllable segmentation for decoding support. When enabled: words display with syllable breaks (hy-phen-at-ed), helping readers attack multisyllabic words. Benefits: build
+L32456: 'tool_define_mode': "Enable instant vocabulary lookup on any word. When active: click any word to see a popup with: definition at accessible reading level, phonetic pronunciation, example sentences, a
+L32457: 'tool_phonics_mode': "Enable phonetic analysis on any word click. When active: click any word to see: phonetic spelling (IPA or simplified), syllable breakdown (el-e-phant), stress indicators, and aud
+L32462: 'fullpack_generate': "One-click comprehensive resource generation. Creates: Adapted text (multiple reading levels), Quiz (MCQ and reflection), Glossary (visual vocabulary with audio), Lesson plan (str
+L32486: ws_gen_count_slider: "Set the total number of words in your phonics lesson. Range: 5 words (quick practice, ~5 minutes) to 30 words (comprehensive session, ~25 minutes). Consider: attention span (youn
+L32491: ws_gen_src_glossary: "Pull vocabulary from your active glossary into phonics practice. Glossary words provide: curriculum-aligned vocabulary, familiar context for students, and reinforcement of lesson
+L35544: audioRef.current.playbackRate = playbackRate;
+L36696: // AI-FIRST: Use Gemini-generated rimeFamilyMembers if available
+L37456: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiKey}`;
+L38068: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey}`;
+L38095: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey}`;
+L38123: const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
+L38154: // STRATEGY: Short text (< 2 chars) -> Try Cloud TTS first
+L39769: audio.playbackRate = voiceSpeed; // Use global voice speed
+L40030: audio.playbackRate = playbackRateRef.current;
+L40059: audio.playbackRate = playbackRateRef.current;
+L40283: audio.playbackRate = 0.85; // Apply speed setting
+L40409: audio.playbackRate = 0.85;
+L44785: // If audio generated, save as object. If not, still save as object for consistency.
+L49862: // AI-FIRST: Use Gemini-generated rimeFamilyMembers if available
+L52361: audio.playbackRate = playbackRateRef.current;
+L57912: onClick={() => handleGenerate('gemini-bridge')}
+L60920: onGenerateAudio={callTTS}
+L61857: <button onClick={() => handleDownloadAudio(generatedContent.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')} disabled={downloadingContentId === 'dl-simplified-main'} className="flex items-ce
+L61915: audio.playbackRate = 0.5;
+L67036: {activeView === 'gemini-bridge' && generatedContent && (
+L69019: onGenerateAudio={callTTS}
+
+============================================================
+3. 'SOMETHING WENT WRONG' MESSAGES
+============================================================
+L11857: generic_error: "Sorry, something went wrong. Please try again.",
+L11972: default_desc: "Something went wrong in this section. It might be due to complex data formatting or a temporary glitch.",
+L14406: error_boundary_fallback: "Something went wrong. Please try again.",
+
+============================================================
+4. ALLOBOT CHAT HANDLER / SEND MESSAGE
+============================================================
+L46190: const handleSendUDLMessage = async (manualText = null) => {
+L56486: onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
+L56519: onKeyDown={(e) => e.key === 'Enter' && handleSendUDLMessage()}
+L56525: onClick={() => handleSendUDLMessage()}
+
+============================================================
+5. ALLOBOT TTS / SPEECH USAGE
+============================================================
+L10427: alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+L10429: alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+L17883: debugLog("AlloBot Speak Debug:", {
+L17946: debugLog("AlloBot: Falling back to native speech. Reason: cloudSuccess=", cloudSuccess, "window.speechSynthesis=", !!window.speechSynthesis);
+L24132: alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
+L29866: alloBotRef.current.speak(t('timer.time_up_msg') || "Time is up! Great focus.");
+L35813: alloBotRef.current.speak(lastMsg.text);
+L35840: alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+L37675: alloBotRef.current.speak(followUp, 'teaching');
+L39528: alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L40229: if (alloBotRef.current && alloBotRef.current.stopSpeaking) {
+L40230: alloBotRef.current.stopSpeaking();
+L42385: alloBotRef.current.speak(mode === 'worksheet' ? "Generating a worksheet? I'll make sure it's formatted perfectly for your students!" : "Preparing your document for print. You can select valid pages in
+L42430: alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+L43242: alloBotRef.current.speak(feedback);
+L43492: if (shouldSpeak && alloBotRef.current) {
+L43494: alloBotRef.current.speak(hint);
+L44644: alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+L46888: alloBotRef.current.speak(genMsg);
+L46964: // Socratic Auto-Read: Speak AI responses when enabled
+L46971: alloBotRef.current.speak(lastMsg.text);
+L47558: alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
+L49336: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L50320: // [MOVED TO ALLOBOT HOOK TO PREVENT DOUBLE-SPEAK]
+L50323: //      alloBotRef.current.speak(feedback);
+L50451: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinking');
+L51009: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L51084: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L51151: alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);
+L52889: alloBotRef.current.speak("I've verified the text complexity using a dual-check process. Review the rubric to see exactly how it aligns!", 'happy');
+L52963: alloBotRef.current.speak(contextMsg);
+L53407: alloBotRef.current.speak(speakText);
+
+============================================================
+6. BROWSER speechSynthesis USAGE
+============================================================
+L3887: if (window.speechSynthesis) {
+L3888: window.speechSynthesis.cancel();
+L3889: const utter = new SpeechSynthesisUtterance(instruction);
+L3891: window.speechSynthesis.speak(utter);
+L6785: if (typeof window !== 'undefined' && window.speechSynthesis) {
+L6786: window.speechSynthesis.cancel();
+L8025: if (typeof window !== 'undefined' && window.speechSynthesis) {
+L8026: window.speechSynthesis.cancel();
+L17929: if (!cloudSuccess && window.speechSynthesis && !isGlobalMuted()) {
+L17931: window.speechSynthesis.cancel(); // Clears queue for immediate playback
+L17932: const utterance = new SpeechSynthesisUtterance(cleanText);
+L17941: // const voices = window.speechSynthesis.getVoices();
+L17944: window.speechSynthesis.speak(utterance);
+L17946: debugLog("AlloBot: Falling back to native speech. Reason: cloudSuccess=", cloudSuccess, "window.speechSynthesis=", !!window.speechSynthesis);
+L31054: if (!('speechSynthesis' in window) || isGlobalMuted()) {
+L31060: window.speechSynthesis.cancel();
+L31061: const utterance = new SpeechSynthesisUtterance(text);
+L31073: window.speechSynthesis.speak(utterance);
+L31090: if (window.speechSynthesis) window.speechSynthesis.cancel();
+L40232: window.speechSynthesis.cancel();
+L52376: if (window.speechSynthesis && playbackSessionRef.current === sessionId) {
+L52378: window.speechSynthesis.cancel();
+L52379: const utterance = new SpeechSynthesisUtterance(sequence[idx]);
+L52393: window.speechSynthesis.speak(utterance);
+L64346: onClick={(e) => { e.stopPropagation(); audioRef.current?.pause(); playbackSessionRef.current = null; window.speechSynthesis.cancel(); setIsPlaying(false); setPlayingContentId(null); }}
+
+============================================================
+7. TTS FALLBACK / BROWSER TTS PATTERNS
+============================================================
+L929: // Maps phonemes to pronounceable text for browser TTS fallback.
+L1190: 'fallback': null // For positions > 10, use TTS
+L1704: if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed) {
+L3713: // Non-English: try Gemini TTS as fallback
+L4071: // Fallback if no specific audio (shouldn't happen with our injection)
+L6838: // TTS Fallback
+L6946: // TTS fallback - play generic instruction first, then chain target word as separate audio
+L7122: // TTS fallback: just replay the word
+L17893: // PERF: Timeout Cloud TTS after 3s to ensure fallback works
+L17914: // Fallback to native if audio load fails? Maybe too complex for now.
+L17925: warnLog("Cloud TTS specific error, trying fallback:", e);
+L17928: // Fallback Strategy: Native Browser TTS
+L18231: // 2. FALLBACK/STUCK LOOP (5 mins) - Audio, Infrequent
+L20717: warnLog("Audio generation failed, attempting fallback.", err);
+L38186: // FALLBACK 1: Try with more context for short text (no systemInstruction - not supported by TTS)
+L38211: // FALLBACK 2: Try Google Cloud TTS
+L38217: warnLog("Cloud TTS fallback also failed:", fallbackErr.message);
+L38219: warnLog("All TTS fallbacks exhausted for:", text.substring(0, 30));
+L38230: warnLog("Gemini TTS Refused (safety/phoneme). Switching to fallback.");
+L52375: warnLog("Card Audio Error (Gemini), attempting fallback...", err);
+L52388: warnLog("Browser TTS Fallback also failed", e);
+L52396: warnLog("Browser TTS Logic Error", fallbackErr);
+
+============================================================
+8. ALLOBOT ERROR CATCH BLOCKS
+============================================================
+L37668: if (hc && hc.summary && !hc.error && alloBotRef?.current) {
+L39528: alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L46958: warnLog("Socratic Error:", error);
+L49336: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L51009: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+L51084: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');

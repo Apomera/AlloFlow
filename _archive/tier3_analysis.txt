@@ -1,0 +1,21 @@
+=== Tier 3: Inline Style Analysis ===
+Total inline style={...} patterns: 59
+Unique patterns: 52
+Inside AlloFlowContent: 27
+
+Patterns appearing 2+ times (all): 4
+Patterns appearing 2+ times (in AlloFlowContent): 2
+
+=== Top candidates (by frequency, in AlloFlowContent) ===
+  [3x] style={{ pointerEvents: 'none' }}
+  [2x] style={{ textShadow: '0 2px 4px rgba(255,255,255,1)' }}
+
+=== Categorization ===
+Constant style objects: 0 (0 occurrences)
+Dynamic style objects: 2 (5 occurrences)
+
+--- Constant (safe to extract as module-level constants) ---
+
+--- Dynamic (need useMemo with deps) ---
+  [3x] style={{ pointerEvents: 'none' }}
+  [2x] style={{ textShadow: '0 2px 4px rgba(255,255,255,1)' }}

@@ -1,0 +1,13 @@
+L4471:     const [highlightedRhymeIndex, setHighlightedRhymeIndex] = React.useState(null);
+L4472:     const [highlightedIsoIndex, setHighlightedIsoIndex] = React.useState(null);
+L4473:     const [highlightedBlendIndex, setHighlightedBlendIndex] = React.useState(null);
+L7404:                                  setHighlightedIsoIndex(i);
+L7408:                             setHighlightedIsoIndex(null);
+L7417:                              setHighlightedRhymeIndex(i);
+L7423:                          setHighlightedRhymeIndex(null);
+L7798:                             setHighlightedBlendIndex(i);
+L7803:                         setHighlightedBlendIndex(null);
+L7818:                         setHighlightedRhymeIndex(i);
+L7823:                     setHighlightedRhymeIndex(null);
+L7836:                              setHighlightedIsoIndex(i);
+L7841:                          setHighlightedIsoIndex(null);

@@ -1,0 +1,66 @@
+﻿UI_STRINGS: L11216 to L17530
+Extracted 4934 defined keys
+Stack at end: []
+
+=== Checking 55 reported orphan keys ===
+Found by robust parser: 19
+Really missing: 36
+
+--- Parser FALSE POSITIVES (exist, just missed by old parser) ---
+  OK: adventure.back_to_resume
+  OK: adventure.climax_archetypes.default.label
+  OK: adventure.climax_archetypes.default.left
+  OK: adventure.climax_archetypes.default.right
+  OK: adventure.fallback_opening
+  OK: adventure.generating_options_audio
+  OK: adventure.interrupted_desc
+  OK: adventure.interrupted_title
+  OK: adventure.paused_desc
+  OK: adventure.paused_title
+  OK: adventure.results.header
+  OK: adventure.results.perf_score
+  OK: adventure.results.roll_calc
+  OK: adventure.retry_action
+  OK: adventure.save_reminder
+  OK: adventure.setup_subtitle
+  OK: adventure.start_overwrite
+  OK: adventure.system_simulation
+  OK: adventure.system_state
+
+--- TRULY MISSING (need to add) ---
+  MISSING: chat_guide.blueprint.analyzing
+  MISSING: chat_guide.blueprint.auto_fill_stop
+  MISSING: chat_guide.blueprint.change_fail
+  MISSING: chat_guide.blueprint.complete
+  MISSING: chat_guide.blueprint.error
+  MISSING: chat_guide.blueprint.presented
+  MISSING: chat_guide.blueprint.reset
+  MISSING: chat_guide.blueprint.updated
+  MISSING: chat_guide.flow.adapting_text
+  MISSING: chat_guide.flow.added_lang
+  MISSING: chat_guide.flow.creating_worksheet
+  MISSING: chat_guide.flow.generating_glossary
+  MISSING: chat_guide.flow.generating_text
+  MISSING: chat_guide.flow.generating_visual
+  MISSING: chat_guide.flow.initial_prompt_context
+  MISSING: chat_guide.flow.integrating_interest
+  MISSING: chat_guide.flow.interest_check
+  MISSING: chat_guide.flow.keyword_pack
+  MISSING: chat_guide.flow.keyword_step
+  MISSING: chat_guide.flow.no_langs_warning
+  MISSING: chat_guide.flow.offer_analysis
+  MISSING: chat_guide.flow.offer_glossary
+  MISSING: chat_guide.flow.offer_text
+  MISSING: chat_guide.flow.offer_visual
+  MISSING: chat_guide.flow.option_pack
+  MISSING: chat_guide.flow.option_step
+  MISSING: chat_guide.flow.running_analysis
+  MISSING: chat_guide.flow.skipping_analysis
+  MISSING: chat_guide.flow.skipping_text
+  MISSING: chat_guide.flow.skipping_visual
+  MISSING: chat_guide.flow.source_prompt
+  MISSING: chat_guide.flow.start_scratch
+  MISSING: chat_guide.pack.comprehensive
+  MISSING: chat_guide.pack.count_selection
+  MISSING: chat_guide.pack.designing
+  MISSING: chat_guide.pack.error

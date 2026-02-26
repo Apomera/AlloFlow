@@ -1,0 +1,12 @@
+Total lines: 67535
+
+=== Word Sounds Module IIFE ===
+L56048: const WS = window.AlloModules && window.AlloModules.WordSoundsModal;
+
+=== WordSoundsModal definitions ===
+
+=== Context around WordFamiliesView refs ===
+
+--- Walking back from L8728 ---
+  Possible function start L8707: const wfShuffle = (arr) => [...arr].sort(() => wfRng() - 0.5);
+  ** Component definition L8707: const wfShuffle = (arr) => [...arr].sort(() => wfRng() - 0.5);

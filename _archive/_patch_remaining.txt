@@ -1,0 +1,13 @@
+1a. WARNING: Missing Letter wrong handler not found
+1b. WARNING: 'Hear the word' not found
+1c. WARNING: 'Check Answer' in missing letter not found
+1d. WARNING: Missing Letter mic toggle not found
+2. WARNING: Blending removed-button comment not found
+3. WARNING: Rhyming distractor filter not found
+4. WARNING: anchor for new keys not found
+5. WARNING: 'Test Sequence' not found
+6. WARNING: 'Edit Sounds' not found
+
+Total changes: 0
+Saved (4689126 chars)
+

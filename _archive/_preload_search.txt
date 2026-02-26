@@ -1,0 +1,60 @@
+LINE 1306: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview }) => {
+LINE 1376: // FIX: If words are already preloaded on mount (returning from "Back to Setup"),
+LINE 1378: const hasAutoNavigated = React.useRef(preloadedWords.length > 0);
+LINE 1382: if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
+LINE 1383: console.log("📋 Words preloaded! Auto-navigating to Review Panel...");
+LINE 1391: }, [preloadedWords.length, isProcessing, onShowReview]);
+LINE 1716: {/* Pre-loaded Words Banner */}
+LINE 1717: {preloadedWords && preloadedWords.length > 0 && (
+LINE 1724: <span className="font-bold text-emerald-800">{preloadedWords.length} words ready</span>
+LINE 1726: {preloadedWords.slice(0, 5).map(w => w.targetWord || w.word || w).join(', ')}
+LINE 1727: {preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`}
+LINE 2223: // Allows editing preloaded word data before starting activity
+LINE 2226: preloadedWords,
+LINE 2253: // SILENCED: console.log("🔍 preloadedWords count:", preloadedWords?.length);
+LINE 2267: // PERF: Early return if no preloaded words
+LINE 2269: if (!preloadedWords || preloadedWords.length === 0) return;
+LINE 2275: // I will rely on the fact that preloadedWords might be updated with ttsReady,
+LINE 2282: ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length, // Proxy
+LINE 2283: total: preloadedWords.length
+LINE 2290: }, [preloadedWords]);
+LINE 2445: const word = preloadedWords[wordIdx];
+LINE 2452: const word = preloadedWords[wordIdx];
+LINE 2459: const word = preloadedWords[wordIdx];
+LINE 2486: const word = preloadedWords[wordIdx];
+LINE 2514: if (newIndex < 0 || newIndex >= preloadedWords.length) return;
+LINE 2516: const newList = [...preloadedWords];
+LINE 2539: <span>Review and edit words • {preloadedWords.length} words ready</span>
+LINE 2546: {preloadedWords.length === 0 ? (
+LINE 2549: {isLoading ? <p className="animate-pulse">Generating new words... this may take a moment</p> : <p>No words preloaded yet. Start the activity to generate words.</p>}
+LINE 2552: (preloadedWords || []).map((word, idx) => (
+LINE 2606: disabled={idx === preloadedWords.length - 1}
+LINE 2607: className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-60
+LINE 3173: // Lifted state for preloaded words persistence
+LINE 3174: wsPreloadedWords = [],
+LINE 3175: setWsPreloadedWords,
+LINE 3236: // Latency Optimization: Pre-load next word & Audio Cache
+LINE 3276: // - Loading state: isPreloading, preloadProgress, firstWordReady
+LINE 3280: const preloadedWords = wsPreloadedWords || [];
+LINE 3281: const setPreloadedWords = setWsPreloadedWords || (() => {
+LINE 3282: console.warn("setWsPreloadedWords is not defined - updates won't persist");
+LINE 3284: const [currentWordIndex, setCurrentWordIndex] = React.useState(0); // Index of current word in preloadedWords (persists words across activities)
+LINE 3288: const preloadedWordCache = React.useRef(new Map()); // Key: word, Value: preload data (persists across activity opens)
+LINE 3291: const lastPreloadedFirstWord = React.useRef(null); // FIX: Track first word to detect new word sets
+LINE 3342: if (initialShowReviewPanel && !showReviewPanel && !hasStartedFromReview.current && preloadedWords.length > 0) {
+LINE 3346: }, [initialShowReviewPanel, preloadedWords.length]);
+LINE 3348: // FIX: Reset hasStartedFromReview when NEW preloaded words are loaded
+LINE 3350: if (preloadedWords.length > 0) {
+LINE 3351: const firstWord = preloadedWords[0]?.word || preloadedWords[0]?.term || preloadedWords[0]?.targetWord;
+LINE 3352: if (firstWord && lastPreloadedFirstWord.current !== firstWord) {
+LINE 3354: lastPreloadedFirstWord.current = firstWord;
+LINE 3358: }, [preloadedWords]);
+LINE 4791: // FIX: Try preloadedWords as backup if wordPool is empty
+LINE 4792: const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.map(pw => ({
+LINE 4811: console.warn("⚠️ generateSessionQueue: No words available in pool or preloaded!");
+LINE 4821: // This ensures preloadedWords are correctly filtered when wordPool is empty
+LINE 5064: // FIX: Immediate Blend Sounds Initialization (Pre-load Handover)
+LINE 5141: // All data should be acquired during pre-load (WordSoundsGenerator), not in-game
+LINE 5406: }, [preloadedWords, isPrefetching, currentWordSoundsWord, wordSoundsActivity, fetchWordData, getDifficultyFilteredPool]);
+LINE 5408: // BULK PRELOAD: Fetch 15 words with phoneme data and TTS on modal open
+LINE 5409: // EAGER-START: Load first word immediately, start activity, preload rest in background

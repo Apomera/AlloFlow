@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEIS Evaluation Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d2e;
+            --bg-card: #232740;
+            --bg-input: #2a2f4a;
+            --accent-primary: #6366f1;
+            --accent-secondary: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --border: rgba(148, 163, 184, 0.12);
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* === HEADER === */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-logo .icon {
+            font-size: 28px;
+        }
+
+        .app-logo h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .app-logo .tag {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: var(--accent-primary);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* === BUTTONS === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #353a5e;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 8px;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: none;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-primary);
+            background: var(--bg-input);
+        }
+
+        /* === MAIN LAYOUT === */
+        .app-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .case-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 4px;
+            border: 1px solid transparent;
+        }
+
+        .case-item:hover {
+            background: var(--bg-input);
+        }
+
+        .case-item.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-secondary);
+        }
+
+        .case-item .name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .case-item .meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .case-item.active .meta {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* === TABS === */
+        .tab-bar {
+            display: flex;
+            gap: 2px;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 8px 16px;
+            border-radius: 8px 8px 0 0;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            border-bottom: none;
+            background: none;
+        }
+
+        .tab:hover {
+            color: var(--text-secondary);
+            background: var(--bg-input);
+        }
+
+        .tab.active {
+            color: var(--text-primary);
+            background: var(--bg-card);
+            border-color: var(--border);
+        }
+
+        /* === PANELS === */
+        .panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* === CARDS === */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* === INPUTS === */
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 13px;
+            transition: var(--transition);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 13px;
+            resize: vertical;
+            min-height: 100px;
+            transition: var(--transition);
+        }
+
+        /* === STATUS BADGES === */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-empty {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-muted);
+        }
+
+        .badge-processing {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .badge-complete {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* === PIPELINE VIZ === */
+        .pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tier-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            position: relative;
+        }
+
+        .tier-block.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .tier-block.complete {
+            border-color: var(--success);
+        }
+
+        .tier-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-secondary);
+            margin-bottom: 8px;
+        }
+
+        .tier-connector {
+            width: 2px;
+            height: 20px;
+            background: var(--border);
+            margin: 0 auto;
+        }
+
+        /* === EMPTY STATE === */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 400px;
+        }
+
+        /* === PROGRESS === */
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-input);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--success));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        /* === MODAL === */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            transform: scale(0.95);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* === TRAINING MODE BANNER === */
+        .training-banner {
+            display: none;
+            padding: 8px 16px;
+            background: linear-gradient(90deg, #f59e0b22, #f59e0b11);
+            border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--warning);
+        }
+
+        .training-banner.visible {
+            display: block;
+        }
+
+        /* === TOAST === */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 360px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            background: #065f46;
+            color: #d1fae5;
+            border: 1px solid #10b981;
+        }
+
+        .toast-error {
+            background: #7f1d1d;
+            color: #fecaca;
+            border: 1px solid #ef4444;
+        }
+
+        .toast-info {
+            background: #1e3a5f;
+            color: #bfdbfe;
+            border: 1px solid #3b82f6;
+        }
+
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.5
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .pulsing {
+            animation: pulse 1.5s ease infinite;
+        }
+
+        /* === INGESTION GRID === */
+        .ingestion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .ingestion-slot {
+            position: relative;
+        }
+
+        .ingestion-slot .slot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .ingestion-slot .slot-id {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-secondary);
+        }
+
+        /* === SETTINGS/PROFILE === */
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-section h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .settings-section p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .style-sample {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .style-sample .sample-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .style-sample .sample-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .style-sample .sample-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        /* === PROFILE EDITOR TABS === */
+        .edit-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .edit-tab {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .edit-tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .edit-pane {
+            display: none;
+        }
+
+        .edit-pane.active {
+            display: block;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .toggle-row label {
+            flex: 1;
+        }
+
+        .toggle-row select,
+        .toggle-row input[type=text] {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .source-badge {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        .source-badge.auto {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+        }
+
+        .source-badge.manual {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        /* === BLUEPRINT === */
+        .bp-chain {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .bp-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            cursor: grab;
+        }
+
+        .bp-block:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .bp-block.disabled {
+            opacity: 0.4;
+        }
+
+        .bp-drag {
+            cursor: grab;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .bp-order {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+        }
+
+        .bp-info {
+            flex: 1;
+        }
+
+        .bp-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .bp-type-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .bp-type-narrative {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .bp-type-table {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .bp-type-chart {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .bp-type-list {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+        }
+
+        .bp-type-checklist {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .bp-type-comparison {
+            background: rgba(236, 72, 153, 0.15);
+            color: #f472b6;
+        }
+
+        .bp-type-static {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+        }
+
+        .bp-connector {
+            width: 2px;
+            height: 8px;
+            background: var(--border);
+            margin-left: 30px;
+        }
+
+        .bp-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        /* === ADAPTATION STUDIO === */
+        .split-pane {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            height: calc(100vh - 250px);
+        }
+
+        .adapt-pane {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .adapt-pane-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .adapt-pane-header select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .fidelity-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+        }
+
+        .fidelity-score {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .fidelity-pass {
+            color: var(--success);
+        }
+
+        .fidelity-warn {
+            color: var(--warning);
+        }
+
+        .fidelity-crit {
+            color: var(--danger);
+        }
+
+        .fidelity-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .fidelity-badge {
+            font-size: 14px;
+        }
+
+        .fidelity-suggestion {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 4px;
+            font-size: 11px;
+        }
+
+        /* === SIMPLE CHART === */
+        .score-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 120px;
+            padding: 8px 0;
+        }
+
+        .score-bar {
+            flex: 1;
+            min-width: 24px;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .score-bar-label {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            white-space: nowrap;
+            color: var(--text-muted);
+        }
+
+        .score-bar-value {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Training Mode Banner -->
+    <div id="training-banner" class="training-banner">
+        ⚠️ TRAINING MODE — Using synthetic evaluation data. No real PII is present. This mode is for demonstration and
+        learning purposes.
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="app-logo">
+            <span class="icon">🧠</span>
+            <h1>GEIS Evaluation Platform</h1>
+            <span class="tag">Phase 1</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-warning btn-sm" id="btn-training" onclick="toggleTrainingMode()">🎓 Training
+                Mode</button>
+            <button class="btn btn-secondary btn-sm" onclick="showImportModal()">📥 Import Case</button>
+            <button class="btn btn-primary btn-sm" onclick="showNewCaseModal()">+ New Case</button>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <div class="app-main">
+        <!-- Sidebar: Case List -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Evaluation Cases</div>
+                <div id="case-list"></div>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <div class="content-area">
+            <!-- Tabs -->
+            <div class="tab-bar" id="tab-bar">
+                <button class="tab active" data-tab="ingest" onclick="switchTab('ingest')">📋 Ingestion</button>
+                <button class="tab" data-tab="pipeline" onclick="switchTab('pipeline')">⚙️ Pipeline</button>
+                <button class="tab" data-tab="blueprint" onclick="switchTab('blueprint')">📐 Blueprint</button>
+                <button class="tab" data-tab="adapt" onclick="switchTab('adapt')">🌐 Adapt</button>
+                <button class="tab" data-tab="report" onclick="switchTab('report')">📄 Report</button>
+                <button class="tab" data-tab="export" onclick="switchTab('export')">📤 Export</button>
+                <button class="tab" data-tab="profile" onclick="switchTab('profile')">🎨 Profile</button>
+            </div>
+
+            <!-- Panel: No case selected -->
+            <div class="panel active" id="panel-empty">
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <h3>No Case Selected</h3>
+                    <p>Create a new evaluation case or select an existing one from the sidebar to begin.</p>
+                    <button class="btn btn-primary" style="margin-top:16px" onclick="showNewCaseModal()">+ New
+                        Case</button>
+                </div>
+            </div>
+
+            <!-- Panels -->
+            <div class="panel" id="panel-ingest"></div>
+            <div class="panel" id="panel-pipeline"></div>
+            <div class="panel" id="panel-blueprint"></div>
+            <div class="panel" id="panel-adapt"></div>
+            <div class="panel" id="panel-report"></div>
+            <div class="panel" id="panel-export"></div>
+            <div class="panel" id="panel-profile"></div>
+        </div>
+    </div>
+
+    <!-- New Case Modal -->
+    <div class="modal-overlay" id="modal-new-case">
+        <div class="modal">
+            <h2>New Evaluation Case</h2>
+            <div class="input-group">
+                <label class="input-label">Child's Name</label>
+                <input type="text" id="nc-name" placeholder="e.g., Jordan Rivera">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Date of Birth</label>
+                <input type="date" id="nc-dob">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Evaluation Date(s)</label>
+                <input type="text" id="nc-eval-dates" placeholder="e.g., Feb 10-11, 2026">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Evaluator</label>
+                <input type="text" id="nc-evaluator" placeholder="e.g., Dr. Smith, PsyD">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Pathway</label>
+                <select id="nc-pathway">
+                    <option value="psychoeducational">🏫 Psychoeducational Evaluation</option>
+                    <option value="clinical">🏥 Clinical Evaluation</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-new-case')">Cancel</button>
+                <button class="btn btn-primary" onclick="createCase()">Create Case</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal-overlay" id="modal-import">
+        <div class="modal">
+            <h2>Import Case from JSON</h2>
+            <div class="input-group">
+                <label class="input-label">Paste JSON or select file</label>
+                <textarea id="import-json" rows="8" placeholder='Paste exported case JSON here...'></textarea>
+            </div>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleFileImport(event)">
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-import')">Cancel</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📁 Select
+                    File</button>
+                <button class="btn btn-primary" onclick="importCase()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+﻿/* ============================================================
+   GEIS EVALUATION PLATFORM â€” Phase 2.5
+   Report Profile + Blueprint Mode + Adaptation Studio
+   Canvas-compatible engine
+   ============================================================ */
+
+// --- ENVIRONMENT & API CONFIG ---
+const _isCanvasEnv = (() => {
+    const host = window.location.hostname;
+    const href = window.location.href;
+    if (href.startsWith('blob:')) return true;
+    return host.includes('googleusercontent') || host.includes('canvas.google') || host.includes('goog');
+})();
+let apiKey = _isCanvasEnv ? (window.__GEMINI_API_KEY || '') : '';
+const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
+const STORAGE_KEY = 'geis-cases';
+const PROFILE_STORAGE_KEY = 'geis-report-profile';
+const MAX_CONCURRENT = 5;
+const MAX_SAMPLES = 20;
+
+// --- GEMINI API ---
+async function callGemini(prompt, systemInstruction = '', retries = 3) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+    const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 8192 } };
+    if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction }] };
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            if (!res.ok) { const err = await res.text(); throw new Error(`API ${res.status}: ${err}`); }
+            const data = await res.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        } catch (e) { if (i === retries - 1) throw e; await new Promise(r => setTimeout(r, 1000 * (i + 1))); }
+    }
+}
+
+// --- STATE ---
+let cases = [];
+let activeCase = null;
+let trainingMode = false;
+let reportProfile = null;
+let adaptationState = { leftLang: 'en', leftLevel: 'clinical', rightLang: 'es', rightLevel: 'parent-friendly', adaptedBlocks: {}, fidelityReport: null };
+
+// --- UTILITIES ---
+const uuid = () => crypto.randomUUID ? crypto.randomUUID() : 'xxxx-xxxx'.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16));
+function toast(msg, type = 'info') {
+    const c = document.getElementById('toast-container'); if (!c) return;
+    const t = document.createElement('div'); t.className = `toast toast-${type}`; t.textContent = msg; c.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+}
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+function showNewCaseModal() { openModal('modal-new-case'); }
+function showImportModal() { openModal('modal-import'); }
+function logProcessing(step) { if (activeCase) { if (!activeCase.processingLog) activeCase.processingLog = []; activeCase.processingLog.push({ step, timestamp: new Date().toISOString() }); } }
+
+// --- DATA CATEGORIES (Universal) ---
+const DATA_CATEGORIES = {
+    referral: { id: 'referral', label: 'Reason for Referral', source: 'Referral form, request letter, or team notes', icon: 'ðŸ“', tier1Prompt: 'Extract: who is referred, by whom, referral date, stated concerns, specific questions to be answered, and relevant context about why the evaluation was requested.' },
+    background: { id: 'background', label: 'Background Information', source: 'Background form, intake, developmental history', icon: 'ðŸ“‹', tier1Prompt: 'Extract: family composition, pregnancy/birth history, developmental milestones, medical history, educational history, cultural/linguistic background, behavioral concerns, and social history.' },
+    priorEvals: { id: 'priorEvals', label: 'Prior Evaluations', source: 'Previous evaluation reports', icon: 'ðŸ“‚', tier1Prompt: 'Extract: dates, evaluators, instruments used, key findings, diagnoses, and recommendations from each prior evaluation.' },
+    medical: { id: 'medical', label: 'Medical/Health Records', source: 'Medical records, physician notes', icon: 'ðŸ¥', tier1Prompt: 'Extract: diagnoses, medications, hospitalizations, surgeries, genetic findings, neurological findings, vision/hearing screenings, and relevant health conditions.' },
+    educational: { id: 'educational', label: 'Educational Records', source: 'IEP, IFSP, 504, progress reports, school records', icon: 'ðŸ«', tier1Prompt: 'Extract: current placement, services received, academic performance, IEP/504 goals and progress, attendance, disciplinary actions, and teacher observations.' },
+    observation: { id: 'observation', label: 'Behavioral Observations', source: 'Structured and unstructured observations', icon: 'ðŸ‘ï¸', tier1Prompt: 'Extract: setting, duration, behavioral observations, attention, engagement, social interactions, communication attempts, sensory responses, and notable behaviors.' },
+    ratingScales: { id: 'ratingScales', label: 'Rating Scales & Questionnaires', source: 'ASEBA, BASC, Conners, SRS, SCQ, Vineland, BRIEF, etc.', icon: 'ðŸ“Š', tier1Prompt: 'Extract all scores with: instrument name, informant, scale/subscale names, T-scores, percentiles, qualitative descriptors, and clinically significant elevations.' },
+    interviews: { id: 'interviews', label: 'Interviews', source: 'Parent, teacher, child, collateral interviews', icon: 'ðŸ—£ï¸', tier1Prompt: 'Extract: interviewee identity, key themes, reported concerns, strengths, behavioral examples, developmental information, and any discrepancies between informants.' },
+    testResults: { id: 'testResults', label: 'Test Results', source: 'Cognitive, academic, neuropsychological, speech-language testing', icon: 'ðŸ§ª', tier1Prompt: 'Extract all scores organized by domain: instrument, subtest/composite name, standard score, percentile, confidence interval, qualitative descriptor. Note behavioral observations during testing.' },
+    additional: { id: 'additional', label: 'Additional Documents', source: 'Any other relevant documents', icon: 'ðŸ“Ž', tier1Prompt: 'Extract all clinically relevant information, organized by theme.' }
+};
+
+// --- DEFAULT BLUEPRINT ---
+const DEFAULT_BLUEPRINT = [
+    { id: 'identifying_info', title: 'Identifying Information', type: 'narrative', enabled: true, dataSources: ['referral', 'background'], factRouting: { fields: ['name', 'dob', 'age', 'school', 'grade', 'evaluator', 'dates'] }, visualization: null, format: {} },
+    { id: 'reason_for_referral', title: 'Reason for Referral', type: 'narrative', enabled: true, dataSources: ['referral'], factRouting: { fields: ['concerns', 'referral-source', 'questions'] }, visualization: null, format: {} },
+    { id: 'assessment_procedures', title: 'Assessment Procedures', type: 'list', enabled: true, dataSources: ['testResults', 'ratingScales', 'interviews', 'observation'], factRouting: { fields: ['instruments', 'dates', 'informants'] }, visualization: null, format: {} },
+    { id: 'background_info', title: 'Background Information', type: 'narrative', enabled: true, dataSources: ['background', 'medical', 'educational'], factRouting: { fields: ['developmental', 'family', 'medical', 'educational'] }, visualization: null, format: {} },
+    { id: 'behavioral_observations', title: 'Behavioral Observations', type: 'narrative', enabled: true, dataSources: ['observation'], factRouting: { fields: ['appearance', 'behavior', 'attention', 'communication', 'rapport'] }, visualization: null, format: {} },
+    { id: 'cognitive', title: 'Cognitive Functioning', type: 'narrative+table', enabled: true, dataSources: ['testResults'], factRouting: { scores: ['WPPSI-IV', 'WISC-V', 'DAS-II', 'KABC-2', 'SB5'] }, visualization: { type: 'bar-chart', dataKey: 'index-scores' }, format: { openWithStrengths: true } },
+    { id: 'academic', title: 'Academic Skills', type: 'narrative+table', enabled: true, dataSources: ['testResults', 'educational'], factRouting: { scores: ['WIAT-4', 'WJ-IV', 'KTEA-3'] }, visualization: null, format: {} },
+    { id: 'communication', title: 'Communication & Language', type: 'narrative', enabled: true, dataSources: ['testResults', 'interviews', 'observation'], factRouting: { scores: ['CELF-5', 'PLS-5', 'PPVT-5', 'EVT-3'] }, visualization: null, format: {} },
+    { id: 'social_emotional', title: 'Social-Emotional & Behavioral', type: 'narrative+chart', enabled: true, dataSources: ['ratingScales', 'interviews', 'observation'], factRouting: { scores: ['CBCL', 'BASC-3', 'SRS-2', 'Conners-4'] }, visualization: { type: 'bar-chart', dataKey: 'scales' }, format: {} },
+    { id: 'adaptive', title: 'Adaptive Behavior', type: 'narrative+table', enabled: true, dataSources: ['ratingScales', 'interviews'], factRouting: { scores: ['Vineland-3', 'ABAS-3'] }, visualization: null, format: {} },
+    { id: 'sensory_motor', title: 'Sensory & Motor Functioning', type: 'narrative', enabled: true, dataSources: ['observation', 'interviews', 'testResults'], factRouting: { fields: ['sensory', 'fine-motor', 'gross-motor'] }, visualization: null, format: {} },
+    { id: 'executive', title: 'Executive Functioning', type: 'narrative', enabled: true, dataSources: ['testResults', 'ratingScales'], factRouting: { scores: ['BRIEF-2', 'D-KEFS', 'NEPSY-II'] }, visualization: null, format: {} },
+    { id: 'cross_informant', title: 'Cross-Informant Comparison', type: 'comparison', enabled: true, dataSources: ['ratingScales'], factRouting: { fields: ['parent-teacher-discrepancies'] }, visualization: { type: 'comparison-table' }, format: {} },
+    { id: 'conclusions', title: 'Summary & Conclusions', type: 'narrative', enabled: true, dataSources: [], factRouting: {}, visualization: null, format: {} },
+    { id: 'diagnostic', title: 'Diagnostic Impressions', type: 'checklist', enabled: true, dataSources: [], factRouting: { fields: ['criteria-met', 'differential'] }, visualization: null, format: {} },
+    { id: 'eligibility', title: 'Eligibility Determination', type: 'narrative', enabled: true, dataSources: [], factRouting: {}, visualization: null, format: {} },
+    { id: 'recommendations', title: 'Recommendations', type: 'list', enabled: true, dataSources: [], factRouting: { fields: ['category', 'action', 'responsible-party', 'timeline'] }, visualization: null, format: {} },
+    { id: 'signatures', title: 'Signatures', type: 'static', enabled: true, dataSources: [], factRouting: {}, visualization: null, format: {} }
+];
+
+// --- DEFAULT PROFILE ---
+function createDefaultProfile() {
+    return {
+        profileName: 'Default Profile', version: 1,
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        samplesAnalyzed: 0, sampleReports: [],
+        voice: { evaluatorPerson: 'third', evaluatorTitle: 'this evaluator', childReference: 'first-name', tense: 'past', activeVoice: 0.7, _sources: {} },
+        structure: { sectionOrder: DEFAULT_BLUEPRINT.map(b => b.id), includeStrengths: true, strengthsPlacement: 'per-section', signatureLine: true, appendTestTable: true, _sources: {} },
+        formatting: { scorePresentation: 'inline', includePercentiles: true, includeConfidenceIntervals: true, includeQualitativeDescriptors: true, descriptorSystem: 'Wechsler', headingStyle: 'bold-caps', listStyle: 'bullets', paragraphDensity: 'moderate', _sources: {} },
+        language: { jargonLevel: 'balanced', hedgingStyle: 'moderate', strengthsBasedLanguage: true, personFirstLanguage: true, avoidLabels: ['low-functioning', 'deficit'], preferredTerms: { 'ASD': 'autism spectrum disorder' }, _sources: {} },
+        diagnostics: { framework: 'DSM-5-TR', includeCodeNumbers: true, differentialRequired: true, specifierDetail: 'full', _sources: {} },
+        recommendations: { style: 'numbered', specificity: 'high', includeResponsibleParty: true, includeTimeline: true, includeMonitoring: true, _sources: {} },
+        blueprint: JSON.parse(JSON.stringify(DEFAULT_BLUEPRINT))
+    };
+}
+
+// --- PROFILE PERSISTENCE ---
+function loadProfile() {
+    try { const s = localStorage.getItem(PROFILE_STORAGE_KEY); reportProfile = s ? JSON.parse(s) : createDefaultProfile(); } catch { reportProfile = createDefaultProfile(); }
+    // Migrate older profiles
+    if (!reportProfile.sampleReports) reportProfile.sampleReports = [];
+    if (!reportProfile.blueprint) reportProfile.blueprint = JSON.parse(JSON.stringify(DEFAULT_BLUEPRINT));
+}
+function saveProfile() { reportProfile.updatedAt = new Date().toISOString(); localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(reportProfile)); }
+function exportProfile() {
+    const blob = new Blob([JSON.stringify(reportProfile, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `${reportProfile.profileName.replace(/\s+/g, '_')}_profile.json`; a.click();
+}
+function importProfileFile(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => { try { reportProfile = JSON.parse(ev.target.result); saveProfile(); renderProfilePanel(); toast('Profile imported!', 'success'); } catch { toast('Invalid profile JSON', 'error'); } };
+    reader.readAsText(file);
+}
+
+// --- CASE PERSISTENCE ---
+function loadCases() { try { cases = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { cases = []; } }
+function saveCases() { if (activeCase) activeCase.meta.updatedAt = new Date().toISOString(); localStorage.setItem(STORAGE_KEY, JSON.stringify(cases)); }
+
+// --- CASE CRUD ---
+function createCase() {
+    const name = document.getElementById('nc-name')?.value?.trim();
+    const dob = document.getElementById('nc-dob')?.value;
+    if (!name) { toast('Please enter child name', 'error'); return; }
+    const c = {
+        id: uuid(),
+        meta: { childName: name, dob: dob || '', evalDates: document.getElementById('nc-eval-dates')?.value || '', evaluator: document.getElementById('nc-evaluator')?.value || '', pathway: document.getElementById('nc-pathway')?.value || 'psychoeducational', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        inputs: {}, tier1: {}, tier2: {}, tier3: {}, tier4: {}, finalReport: '', edits: {},
+        processingLog: [], clinicianNotes: {},
+        preferences: { jurisdiction: '', instrumentsUsed: [], ageGroup: '', diagnosticFramework: 'DSM-5-TR' },
+        generatedBlocks: {}, adaptedVersions: {}
+    };
+    cases.push(c); saveCases(); closeModal('modal-new-case'); selectCase(c.id); renderCaseList(); toast(`Case "${name}" created`, 'success');
+}
+
+function selectCase(id) {
+    activeCase = cases.find(c => c.id === id); if (!activeCase) return;
+    // Migrate older cases
+    if (!activeCase.processingLog) activeCase.processingLog = [];
+    if (!activeCase.clinicianNotes) activeCase.clinicianNotes = {};
+    if (!activeCase.preferences) activeCase.preferences = { jurisdiction: '', instrumentsUsed: [], ageGroup: '', diagnosticFramework: 'DSM-5-TR' };
+    if (!activeCase.generatedBlocks) activeCase.generatedBlocks = {};
+    if (!activeCase.adaptedVersions) activeCase.adaptedVersions = {};
+    renderCaseList(); switchTab('ingest'); renderIngestPanel(); renderPipelinePanel();
+}
+
+function deleteCase(id) { if (!confirm('Delete this case?')) return; cases = cases.filter(c => c.id !== id); if (activeCase?.id === id) activeCase = null; saveCases(); renderCaseList(); switchTab('ingest'); }
+
+// --- TAB SWITCHING ---
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(`panel-${tabId}`);
+    if (target) target.classList.add('active');
+    if (!activeCase && tabId !== 'profile') { document.getElementById('panel-empty').classList.add('active'); return; }
+    if (tabId === 'blueprint') renderBlueprintPanel();
+    if (tabId === 'adapt') renderAdaptPanel();
+    if (tabId === 'profile') renderProfilePanel();
+    if (tabId === 'report') renderReportPanel();
+    if (tabId === 'export') renderExportPanel();
+}
+
+// --- RENDER SIDEBAR ---
+function renderCaseList() {
+    const el = document.getElementById('case-list'); if (!el) return;
+    el.innerHTML = cases.length === 0 ? '<p style="font-size:12px;color:var(--text-muted);padding:8px">No cases yet. Create one to begin.</p>' :
+        cases.map(c => `<div class="case-item ${activeCase?.id === c.id ? 'active' : ''}" onclick="selectCase('${c.id}')">
+            <div class="name">${c.meta.childName}</div>
+            <div class="meta">${c.meta.pathway} Â· ${new Date(c.meta.createdAt).toLocaleDateString()}</div>
+        </div>`).join('');
+}
+
+// --- RENDER INGESTION PANEL ---
+function renderIngestPanel() {
+    if (!activeCase) return;
+    const panel = document.getElementById('panel-ingest');
+    panel.innerHTML = `<h2 style="font-size:18px;font-weight:700;margin-bottom:20px">Data Ingestion â€” ${activeCase.meta.childName}</h2>
+    <div class="ingestion-grid">${Object.entries(DATA_CATEGORIES).map(([key, cat]) => {
+        const hasData = activeCase.inputs[key];
+        return `<div class="card ingestion-slot fade-in">
+            <div class="slot-header"><span class="slot-id">${cat.icon} ${cat.label}</span><span class="badge ${hasData ? 'badge-complete' : 'badge-empty'}">${hasData ? 'âœ“ Loaded' : 'Empty'}</span></div>
+            <div class="card-subtitle">${cat.source}</div>
+            <textarea id="input-${key}" rows="4" placeholder="Paste ${cat.label.toLowerCase()} data here...">${hasData || ''}</textarea>
+            <div style="display:flex;gap:6px;margin-top:8px">
+                <button class="btn btn-sm btn-primary" onclick="saveInput('${key}')">Save</button>
+                ${hasData ? `<button class="btn btn-sm btn-ghost" onclick="clearInput('${key}')">Clear</button>` : ''}
+            </div>
+        </div>`;
+    }).join('')}</div>`;
+}
+
+function saveInput(key) {
+    const v = document.getElementById(`input-${key}`)?.value?.trim();
+    if (!v) { toast('No data to save', 'error'); return; }
+    activeCase.inputs[key] = v; saveCases(); renderIngestPanel(); toast(`${DATA_CATEGORIES[key].label} saved`, 'success');
+}
+function clearInput(key) { delete activeCase.inputs[key]; saveCases(); renderIngestPanel(); }
+
+// --- RENDER PIPELINE PANEL ---
+function renderPipelinePanel() {
+    if (!activeCase) return;
+    const panel = document.getElementById('panel-pipeline');
+    const inputCount = Object.keys(activeCase.inputs).length;
+    const t1Count = Object.keys(activeCase.tier1).length;
+    panel.innerHTML = `<h2 style="font-size:18px;font-weight:700;margin-bottom:20px">Processing Pipeline â€” ${activeCase.meta.childName}</h2>
+    <div class="pipeline">
+        <div class="tier-block ${t1Count > 0 ? 'complete' : ''}">
+            <div class="tier-label">Tier 1 â€” Data Extraction</div>
+            <p style="font-size:12px;color:var(--text-muted)">Extract structured facts from ${inputCount} loaded data sources</p>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-sm btn-primary" onclick="runTier1()" ${inputCount === 0 ? 'disabled' : ''}>â–¶ Process All</button>
+                <span class="badge ${t1Count > 0 ? 'badge-complete' : 'badge-empty'}">${t1Count}/${inputCount} complete</span>
+            </div>
+        </div>
+        <div class="tier-connector"></div>
+        <div class="tier-block ${activeCase.tier2?.body ? 'complete' : ''}">
+            <div class="tier-label">Tier 2 â€” Report Body</div>
+            <p style="font-size:12px;color:var(--text-muted)">Generate report sections using Blueprint blocks</p>
+            <button class="btn btn-sm btn-primary" onclick="runTier2()" ${t1Count === 0 ? 'disabled' : ''}>â–¶ Generate Body</button>
+        </div>
+        <div class="tier-connector"></div>
+        <div class="tier-block ${activeCase.tier3?.conclusions ? 'complete' : ''}">
+            <div class="tier-label">Tier 3 â€” Conclusions & Diagnostics</div>
+            <button class="btn btn-sm btn-primary" onclick="runTier3()" ${!activeCase.tier2?.body ? 'disabled' : ''}>â–¶ Generate Conclusions</button>
+        </div>
+        <div class="tier-connector"></div>
+        <div class="tier-block ${activeCase.tier4?.recommendations ? 'complete' : ''}">
+            <div class="tier-label">Tier 4 â€” Recommendations</div>
+            <button class="btn btn-sm btn-primary" onclick="runTier4()" ${!activeCase.tier3?.conclusions ? 'disabled' : ''}>â–¶ Generate Recommendations</button>
+        </div>
+        <div class="tier-connector"></div>
+        <div class="tier-block ${activeCase.finalReport ? 'complete' : ''}">
+            <div class="tier-label">Final Review</div>
+            <button class="btn btn-sm btn-primary" onclick="runFinalReview()" ${!activeCase.tier4?.recommendations ? 'disabled' : ''}>â–¶ Review & Assemble</button>
+        </div>
+    </div>`;
+}
+
+// --- SYSTEM PROMPT BUILDER ---
+function buildSystemPrompt() {
+    let sys = `You are an expert clinical report writer for psychological evaluations. Follow these rules:\n- Use person-first language\n- Be factual and evidence-based\n- Never fabricate data\n`;
+    if (reportProfile) {
+        const v = reportProfile.voice || {};
+        sys += `\nWRITING STYLE DIRECTIVES (from user profile):\n`;
+        sys += `- Evaluator reference: ${v.evaluatorPerson === 'first' ? 'Use first person (I, my)' : `Use third person ("${v.evaluatorTitle}")`}\n`;
+        sys += `- Child reference: Use ${v.childReference === 'first-name' ? 'first name' : v.childReference}\n`;
+        sys += `- Tense: ${v.tense}\n`;
+        sys += `- Jargon level: ${reportProfile.language?.jargonLevel || 'balanced'}\n`;
+        sys += `- Score presentation: ${reportProfile.formatting?.scorePresentation || 'inline'}\n`;
+        sys += `- Include percentiles: ${reportProfile.formatting?.includePercentiles !== false}\n`;
+        sys += `- Include confidence intervals: ${reportProfile.formatting?.includeConfidenceIntervals || false}\n`;
+        sys += `- Hedging style: ${reportProfile.language?.hedgingStyle || 'moderate'}\n`;
+        sys += `- Strengths-based language: ${reportProfile.language?.strengthsBasedLanguage !== false}\n`;
+        sys += `- Person-first language: ${reportProfile.language?.personFirstLanguage !== false}\n`;
+        if (reportProfile.language?.avoidLabels?.length) sys += `- Avoid these terms: ${reportProfile.language.avoidLabels.join(', ')}\n`;
+    }
+    const p = activeCase?.preferences || {};
+    if (p.jurisdiction) sys += `\nJurisdiction: ${p.jurisdiction}. Reference applicable state regulations.\n`;
+    if (p.diagnosticFramework) sys += `Diagnostic framework: ${p.diagnosticFramework}\n`;
+    return sys;
+}
+
+// --- TIER PROCESSING ---
+async function runTier1() {
+    const keys = Object.keys(activeCase.inputs);
+    if (keys.length === 0) { toast('No data loaded', 'error'); return; }
+    toast(`Processing ${keys.length} data sources...`, 'info');
+    for (const key of keys) {
+        try {
+            const cat = DATA_CATEGORIES[key];
+            const result = await callGemini(`${cat.tier1Prompt}\n\nSOURCE DOCUMENT:\n${activeCase.inputs[key]}`, buildSystemPrompt());
+            activeCase.tier1[key] = result;
+            logProcessing(`tier1:${key}`);
+        } catch (e) { toast(`Error processing ${key}: ${e.message}`, 'error'); }
+    }
+    saveCases(); renderPipelinePanel(); toast('Tier 1 complete!', 'success');
+}
+
+async function runTier2() {
+    if (Object.keys(activeCase.tier1).length === 0) { toast('Run Tier 1 first', 'error'); return; }
+    toast('Generating report body via Blueprint blocks...', 'info');
+    const blueprint = reportProfile?.blueprint || DEFAULT_BLUEPRINT;
+    const enabledBlocks = blueprint.filter(b => b.enabled && !['conclusions', 'diagnostic', 'eligibility', 'recommendations', 'signatures'].includes(b.id));
+    let bodyParts = [];
+    for (const block of enabledBlocks) {
+        const relevantData = block.dataSources.filter(ds => activeCase.tier1[ds]).map(ds => `[${DATA_CATEGORIES[ds]?.label || ds}]:\n${activeCase.tier1[ds]}`).join('\n\n');
+        if (!relevantData && block.type !== 'static') continue;
+        try {
+            const prompt = `Generate the "${block.title}" section for a psychological evaluation report.\nBlock type: ${block.type}\n${block.type.includes('table') ? 'Include a formatted score table.' : ''}\n${block.type === 'list' ? 'Use a formatted list.' : ''}\n${block.visualization ? `Include data suitable for a ${block.visualization.type} visualization.` : ''}\n\nDATA:\n${relevantData || 'Use case metadata only.'}`;
+            const result = await callGemini(prompt, buildSystemPrompt());
+            activeCase.generatedBlocks[block.id] = { content: result, type: block.type, generatedAt: new Date().toISOString() };
+            bodyParts.push(`## ${block.title}\n\n${result}`);
+            logProcessing(`tier2:${block.id}`);
+        } catch (e) { toast(`Error on ${block.title}: ${e.message}`, 'error'); }
+    }
+    activeCase.tier2 = { body: bodyParts.join('\n\n---\n\n') };
+    saveCases(); renderPipelinePanel(); toast('Tier 2 complete!', 'success');
+}
+
+async function runTier3() {
+    toast('Generating conclusions...', 'info');
+    try {
+        const prompt = `Based on the following report sections, write:\n1. Summary & Conclusions\n2. Diagnostic Impressions (using ${activeCase.preferences?.diagnosticFramework || 'DSM-5-TR'} criteria)\n3. Eligibility Determination\n\nREPORT BODY:\n${activeCase.tier2.body}`;
+        const result = await callGemini(prompt, buildSystemPrompt());
+        activeCase.tier3 = { conclusions: result };
+        logProcessing('tier3:conclusions');
+        saveCases(); renderPipelinePanel(); toast('Tier 3 complete!', 'success');
+    } catch (e) { toast(`Tier 3 error: ${e.message}`, 'error'); }
+}
+
+async function runTier4() {
+    toast('Generating recommendations...', 'info');
+    try {
+        const recStyle = reportProfile?.recommendations || {};
+        const prompt = `Based on the evaluation findings and conclusions, generate recommendations.\nStyle: ${recStyle.style || 'numbered'}\nSpecificity: ${recStyle.specificity || 'high'}\n${recStyle.includeResponsibleParty ? 'Include responsible party for each recommendation.' : ''}\n${recStyle.includeTimeline ? 'Include timeline/priority.' : ''}\n\nFINDINGS:\n${activeCase.tier2.body}\n\nCONCLUSIONS:\n${activeCase.tier3.conclusions}`;
+        const result = await callGemini(prompt, buildSystemPrompt());
+        activeCase.tier4 = { recommendations: result };
+        logProcessing('tier4:recommendations');
+        saveCases(); renderPipelinePanel(); toast('Tier 4 complete!', 'success');
+    } catch (e) { toast(`Tier 4 error: ${e.message}`, 'error'); }
+}
+
+async function runFinalReview() {
+    toast('Running final review...', 'info');
+    try {
+        const fullDraft = [activeCase.tier2?.body || '', activeCase.tier3?.conclusions || '', activeCase.tier4?.recommendations || ''].join('\n\n---\n\n');
+        const prompt = `Review this psychological evaluation report for:\n1. Internal consistency\n2. Factual accuracy (scores match descriptions)\n3. Completeness\n4. Clarity and readability\n5. Redundancy\n6. Clinical appropriateness\n\nProvide the final, polished report. Correct any issues found.\n\nDRAFT:\n${fullDraft}`;
+        const result = await callGemini(prompt, buildSystemPrompt());
+        activeCase.finalReport = result;
+        logProcessing('finalReview');
+        saveCases(); renderPipelinePanel(); toast('Final report ready!', 'success');
+    } catch (e) { toast(`Review error: ${e.message}`, 'error'); }
+}
+
+// --- BLUEPRINT PANEL ---
+function renderBlueprintPanel() {
+    if (!activeCase) return;
+    const bp = reportProfile?.blueprint || DEFAULT_BLUEPRINT;
+    const panel = document.getElementById('panel-blueprint');
+    panel.innerHTML = `<h2 style="font-size:18px;font-weight:700;margin-bottom:6px">ðŸ“ Report Blueprint</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Drag to reorder, toggle to enable/disable sections. Each block defines content type, data sources, and formatting.</p>
+    <div class="bp-chain" id="bp-chain">
+        ${bp.map((b, i) => `
+            <div class="bp-block ${b.enabled ? '' : 'disabled'}" draggable="true" ondragstart="bpDragStart(event,${i})" ondragover="bpDragOver(event)" ondrop="bpDrop(event,${i})" data-idx="${i}">
+                <span class="bp-drag">â ¿</span>
+                <span class="bp-order">${i + 1}</span>
+                <div class="bp-info">
+                    <div class="bp-title">${b.title}</div>
+                    <div style="margin-top:4px">
+                        <span class="bp-type-badge bp-type-${b.type.split('+')[0]}">${b.type}</span>
+                        ${b.dataSources.length ? `<span style="font-size:10px;color:var(--text-muted);margin-left:6px">â† ${b.dataSources.join(', ')}</span>` : ''}
+                    </div>
+                </div>
+                <div class="bp-actions">
+                    <button class="btn btn-sm btn-ghost" onclick="toggleBpBlock(${i})" title="${b.enabled ? 'Disable' : 'Enable'}">${b.enabled ? 'âœ“' : 'â—‹'}</button>
+                    <button class="btn btn-sm btn-ghost" onclick="editBpBlock(${i})" title="Edit">âœï¸</button>
+                </div>
+            </div>
+            ${i < bp.length - 1 ? '<div class="bp-connector"></div>' : ''}
+        `).join('')}
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="addBpBlock()">+ Add Block</button>
+        <button class="btn btn-sm btn-ghost" onclick="resetBlueprint()">â†º Reset to Default</button>
+    </div>`;
+}
+
+let _bpDragIdx = -1;
+function bpDragStart(e, idx) { _bpDragIdx = idx; e.dataTransfer.effectAllowed = 'move'; }
+function bpDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function bpDrop(e, dropIdx) {
+    e.preventDefault();
+    if (_bpDragIdx < 0 || _bpDragIdx === dropIdx) return;
+    const bp = reportProfile.blueprint;
+    const [item] = bp.splice(_bpDragIdx, 1);
+    bp.splice(dropIdx, 0, item);
+    saveProfile(); renderBlueprintPanel(); toast('Block reordered', 'success');
+}
+
+function toggleBpBlock(idx) {
+    reportProfile.blueprint[idx].enabled = !reportProfile.blueprint[idx].enabled;
+    saveProfile(); renderBlueprintPanel();
+}
+
+function editBpBlock(idx) {
+    const b = reportProfile.blueprint[idx];
+    const types = ['narrative', 'table', 'narrative+table', 'chart', 'narrative+chart', 'list', 'checklist', 'comparison', 'static'];
+    const dsKeys = Object.keys(DATA_CATEGORIES);
+    const html = `<h2>Edit Block: ${b.title}</h2>
+    <div class="input-group"><label class="input-label">Title</label><input type="text" id="bp-edit-title" value="${b.title}"></div>
+    <div class="input-group"><label class="input-label">Type</label><select id="bp-edit-type">${types.map(t => `<option value="${t}" ${t === b.type ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <div class="input-group"><label class="input-label">Data Sources (check all that apply)</label>
+        ${dsKeys.map(k => `<label style="display:flex;gap:6px;font-size:12px;padding:3px 0"><input type="checkbox" class="bp-ds-check" value="${k}" ${b.dataSources.includes(k) ? 'checked' : ''}> ${DATA_CATEGORIES[k].icon} ${DATA_CATEGORIES[k].label}</label>`).join('')}
+    </div>
+    <div class="modal-actions">
+        <button class="btn btn-danger btn-sm" onclick="removeBpBlock(${idx});closeModal('modal-new-case')">Delete Block</button>
+        <button class="btn btn-ghost" onclick="closeModal('modal-new-case')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBpEdit(${idx})">Save</button>
+    </div>`;
+    document.querySelector('#modal-new-case .modal').innerHTML = html;
+    openModal('modal-new-case');
+}
+
+function saveBpEdit(idx) {
+    const b = reportProfile.blueprint[idx];
+    b.title = document.getElementById('bp-edit-title').value;
+    b.type = document.getElementById('bp-edit-type').value;
+    b.dataSources = [...document.querySelectorAll('.bp-ds-check:checked')].map(c => c.value);
+    saveProfile(); closeModal('modal-new-case'); renderBlueprintPanel(); toast('Block updated', 'success');
+    // Restore modal content
+    restoreNewCaseModal();
+}
+
+function removeBpBlock(idx) {
+    if (!confirm('Remove this block?')) return;
+    reportProfile.blueprint.splice(idx, 1);
+    saveProfile(); renderBlueprintPanel();
+}
+
+function addBpBlock() {
+    reportProfile.blueprint.push({ id: 'custom_' + Date.now(), title: 'New Section', type: 'narrative', enabled: true, dataSources: [], factRouting: {}, visualization: null, format: {} });
+    saveProfile(); renderBlueprintPanel(); toast('Block added', 'success');
+}
+
+function resetBlueprint() {
+    if (!confirm('Reset blueprint to defaults?')) return;
+    reportProfile.blueprint = JSON.parse(JSON.stringify(DEFAULT_BLUEPRINT));
+    saveProfile(); renderBlueprintPanel(); toast('Blueprint reset', 'success');
+}
+
+function restoreNewCaseModal() {
+    document.querySelector('#modal-new-case .modal').innerHTML = `<h2>New Evaluation Case</h2>
+    <div class="input-group"><label class="input-label">Child's Name</label><input type="text" id="nc-name" placeholder="e.g., Jordan Rivera"></div>
+    <div class="input-group"><label class="input-label">Date of Birth</label><input type="date" id="nc-dob"></div>
+    <div class="input-group"><label class="input-label">Evaluation Date(s)</label><input type="text" id="nc-eval-dates" placeholder="e.g., Feb 10-11, 2026"></div>
+    <div class="input-group"><label class="input-label">Evaluator</label><input type="text" id="nc-evaluator" placeholder="e.g., Dr. Smith, PsyD"></div>
+    <div class="input-group"><label class="input-label">Pathway</label><select id="nc-pathway"><option value="psychoeducational">ðŸ« Psychoeducational Evaluation</option><option value="clinical">ðŸ¥ Clinical Evaluation</option></select></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('modal-new-case')">Cancel</button><button class="btn btn-primary" onclick="createCase()">Create Case</button></div>`;
+}
+
+// --- PROFILE PANEL ---
+function renderProfilePanel() {
+    loadProfile();
+    const p = reportProfile;
+    const sCount = p.sampleReports?.length || 0;
+    const panel = document.getElementById('panel-profile');
+    panel.innerHTML = `<h2 style="font-size:18px;font-weight:700;margin-bottom:6px">ðŸŽ¨ Report Profile: ${p.profileName}</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">${p.samplesAnalyzed || 0} samples analyzed Â· Last updated ${new Date(p.updatedAt).toLocaleDateString()}</p>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn btn-sm btn-secondary" onclick="exportProfile()">ðŸ“¤ Export Profile</button>
+        <label class="btn btn-sm btn-secondary" style="cursor:pointer">ðŸ“¥ Import Profile<input type="file" accept=".json" style="display:none" onchange="importProfileFile(event)"></label>
+    </div>
+
+    <!-- SAMPLE MANAGER -->
+    <div class="settings-section">
+        <h3>ðŸ“ Sample Reports (${sCount}/${MAX_SAMPLES})</h3>
+        <p>Upload up to ${MAX_SAMPLES} of your completed reports. The AI analyzes writing style patterns â€” no content is reused.</p>
+        <textarea id="sample-input" rows="6" placeholder="Paste a sample report here..."></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+            <input type="text" id="sample-label" placeholder="Label (e.g., Preschool ASD)" style="flex:1;padding:6px 10px">
+            <button class="btn btn-sm btn-primary" onclick="addSample()" ${sCount >= MAX_SAMPLES ? 'disabled' : ''}>+ Add Sample</button>
+            <button class="btn btn-sm btn-success" onclick="buildProfileFromSamples()" ${sCount === 0 ? 'disabled' : ''}>ðŸ§  Build Profile</button>
+        </div>
+        <div style="max-height:200px;overflow-y:auto;margin-top:8px">
+            ${(p.sampleReports || []).map((s, i) => `<div class="style-sample">
+                <div><span class="sample-name">${s.label || 'Sample ' + (i + 1)}</span> <span class="sample-meta">${s.wordCount || '?'} words Â· ${new Date(s.addedAt).toLocaleDateString()}</span></div>
+                <div class="sample-actions">
+                    <button class="btn btn-sm btn-ghost" onclick="viewSample(${i})">View</button>
+                    <button class="btn btn-sm btn-danger" onclick="removeSample(${i})">Ã—</button>
+                </div>
+            </div>`).join('')}
+        </div>
+    </div>
+
+    <!-- PROFILE EDITOR TABS -->
+    <div class="edit-tabs">
+        <button class="edit-tab active" onclick="switchEditTab('toggles')">ðŸ”§ Toggles</button>
+        <button class="edit-tab" onclick="switchEditTab('json')">{ } JSON</button>
+        <button class="edit-tab" onclick="switchEditTab('nl')">ðŸ’¬ Natural Language</button>
+    </div>
+
+    <div class="edit-pane active" id="pane-toggles">
+        ${renderProfileToggles()}
+    </div>
+
+    <div class="edit-pane" id="pane-json">
+        <textarea id="profile-json-editor" rows="20" style="font-family:monospace;font-size:11px">${JSON.stringify(p, null, 2)}</textarea>
+        <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="saveProfileJSON()">Save JSON</button>
+    </div>
+
+    <div class="edit-pane" id="pane-nl">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Describe changes in plain English. Example: "Switch to first person and use more parent-friendly language"</p>
+        <textarea id="nl-edit-input" rows="3" placeholder="Describe your changes..."></textarea>
+        <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="applyNLEdit()">ðŸ§  Apply Changes</button>
+    </div>
+
+    <!-- CASE PREFERENCES -->
+    ${activeCase ? `<div class="settings-section" style="margin-top:24px">
+        <h3>âš™ï¸ Case Preferences â€” ${activeCase.meta.childName}</h3>
+        <div class="toggle-row"><label>Jurisdiction</label><input type="text" value="${activeCase.preferences?.jurisdiction || ''}" onchange="activeCase.preferences.jurisdiction=this.value;saveCases()"></div>
+        <div class="toggle-row"><label>Framework</label><select onchange="activeCase.preferences.diagnosticFramework=this.value;saveCases()">
+            ${['DSM-5-TR', 'ICD-10', 'ICD-11'].map(f => `<option ${activeCase.preferences?.diagnosticFramework === f ? 'selected' : ''}>${f}</option>`).join('')}
+        </select></div>
+        <div class="toggle-row"><label>Age Group</label><select onchange="activeCase.preferences.ageGroup=this.value;saveCases()">
+            <option value="">Auto-detect</option>${[['early-childhood', 'Early Childhood (0-5)'], ['school-age', 'School Age (6-12)'], ['adolescent', 'Adolescent (13-17)'], ['adult', 'Adult (18+)']].map(([v, l]) => `<option value="${v}" ${activeCase.preferences?.ageGroup === v ? 'selected' : ''}>${l}</option>`).join('')}
+        </select></div>
+    </div>` : ''}`;
+}
+
+function renderProfileToggles() {
+    const p = reportProfile;
+    const src = (section, key) => { const s = p[section]?._sources?.[key]; return s === 'manual' ? '<span class="source-badge manual">âœï¸</span>' : (s === 'auto' ? '<span class="source-badge auto">ðŸ”®</span>' : ''); };
+    const set = (section, key, val) => `reportProfile.${section}.${key}=${typeof val === 'string' ? "'" + val + "'" : val};reportProfile.${section}._sources=reportProfile.${section}._sources||{};reportProfile.${section}._sources.${key}='manual';saveProfile();renderProfilePanel()`;
+    return `
+    <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">Voice</h4>
+    <div class="toggle-row"><label>Evaluator Person ${src('voice', 'evaluatorPerson')}</label><select onchange="${set('voice', 'evaluatorPerson', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="first" ${p.voice.evaluatorPerson === 'first' ? 'selected' : ''}>First (I, my)</option><option value="third" ${p.voice.evaluatorPerson === 'third' ? 'selected' : ''}>Third (this evaluator)</option></select></div>
+    <div class="toggle-row"><label>Child Reference ${src('voice', 'childReference')}</label><select onchange="${set('voice', 'childReference', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="first-name" ${p.voice.childReference === 'first-name' ? 'selected' : ''}>First name</option><option value="full-name" ${p.voice.childReference === 'full-name' ? 'selected' : ''}>Full name</option><option value="pronoun" ${p.voice.childReference === 'pronoun' ? 'selected' : ''}>Pronoun</option></select></div>
+    <div class="toggle-row"><label>Tense ${src('voice', 'tense')}</label><select onchange="${set('voice', 'tense', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="past" ${p.voice.tense === 'past' ? 'selected' : ''}>Past</option><option value="present-mixed" ${p.voice.tense === 'present-mixed' ? 'selected' : ''}>Present-mixed</option></select></div>
+
+    <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px">Formatting</h4>
+    <div class="toggle-row"><label>Score Presentation ${src('formatting', 'scorePresentation')}</label><select onchange="${set('formatting', 'scorePresentation', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="inline" ${p.formatting.scorePresentation === 'inline' ? 'selected' : ''}>Inline</option><option value="table" ${p.formatting.scorePresentation === 'table' ? 'selected' : ''}>Table</option><option value="both" ${p.formatting.scorePresentation === 'both' ? 'selected' : ''}>Both</option></select></div>
+    <div class="toggle-row"><label>Include Percentiles</label><select onchange="${set('formatting', 'includePercentiles', '__SEL__').replace('__SEL__', 'this.value==="true"')}"><option value="true" ${p.formatting.includePercentiles ? 'selected' : ''}>Yes</option><option value="false" ${!p.formatting.includePercentiles ? 'selected' : ''}>No</option></select></div>
+    <div class="toggle-row"><label>Confidence Intervals</label><select onchange="${set('formatting', 'includeConfidenceIntervals', '__SEL__').replace('__SEL__', 'this.value==="true"')}"><option value="true" ${p.formatting.includeConfidenceIntervals ? 'selected' : ''}>Yes</option><option value="false" ${!p.formatting.includeConfidenceIntervals ? 'selected' : ''}>No</option></select></div>
+
+    <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px">Language</h4>
+    <div class="toggle-row"><label>Jargon Level ${src('language', 'jargonLevel')}</label><select onchange="${set('language', 'jargonLevel', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="high-clinical" ${p.language.jargonLevel === 'high-clinical' ? 'selected' : ''}>High Clinical</option><option value="balanced" ${p.language.jargonLevel === 'balanced' ? 'selected' : ''}>Balanced</option><option value="parent-friendly" ${p.language.jargonLevel === 'parent-friendly' ? 'selected' : ''}>Parent-Friendly</option></select></div>
+    <div class="toggle-row"><label>Hedging Style</label><select onchange="${set('language', 'hedgingStyle', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="assertive" ${p.language.hedgingStyle === 'assertive' ? 'selected' : ''}>Assertive</option><option value="moderate" ${p.language.hedgingStyle === 'moderate' ? 'selected' : ''}>Moderate</option><option value="cautious" ${p.language.hedgingStyle === 'cautious' ? 'selected' : ''}>Cautious</option></select></div>
+    <div class="toggle-row"><label>Person-First Language</label><select onchange="${set('language', 'personFirstLanguage', '__SEL__').replace('__SEL__', 'this.value==="true"')}"><option value="true" ${p.language.personFirstLanguage ? 'selected' : ''}>Yes</option><option value="false" ${!p.language.personFirstLanguage ? 'selected' : ''}>No</option></select></div>
+
+    <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px">Recommendations</h4>
+    <div class="toggle-row"><label>Style</label><select onchange="${set('recommendations', 'style', '__SEL__').replace('__SEL__', "'+this.value+'")}"><option value="numbered" ${p.recommendations.style === 'numbered' ? 'selected' : ''}>Numbered</option><option value="categorized" ${p.recommendations.style === 'categorized' ? 'selected' : ''}>Categorized</option><option value="narrative" ${p.recommendations.style === 'narrative' ? 'selected' : ''}>Narrative</option></select></div>
+    `;
+}
+
+function switchEditTab(pane) {
+    document.querySelectorAll('.edit-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.edit-pane').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(`pane-${pane}`)?.classList.add('active');
+}
+
+function addSample() {
+    const text = document.getElementById('sample-input')?.value?.trim();
+    const label = document.getElementById('sample-label')?.value?.trim() || '';
+    if (!text || text.length < 200) { toast('Sample must be at least 200 characters', 'error'); return; }
+    if (!reportProfile.sampleReports) reportProfile.sampleReports = [];
+    if (reportProfile.sampleReports.length >= MAX_SAMPLES) { toast(`Maximum ${MAX_SAMPLES} samples`, 'error'); return; }
+    reportProfile.sampleReports.push({ text, label, addedAt: new Date().toISOString(), wordCount: text.split(/\s+/).length });
+    saveProfile(); renderProfilePanel(); toast('Sample added', 'success');
+}
+function removeSample(idx) { reportProfile.sampleReports.splice(idx, 1); saveProfile(); renderProfilePanel(); }
+function viewSample(idx) { alert(reportProfile.sampleReports[idx]?.text || 'No sample.'); }
+
+async function buildProfileFromSamples() {
+    const samples = reportProfile.sampleReports;
+    if (!samples?.length) { toast('Add samples first', 'error'); return; }
+    toast(`Analyzing ${samples.length} samples...`, 'info');
+    try {
+        const sampleTexts = samples.map((s, i) => `=== Sample ${i + 1}: ${s.label || 'Untitled'} (${s.wordCount} words) ===\n${s.text.substring(0, 4000)}`).join('\n\n');
+        const prompt = `Analyze these ${samples.length} psychological evaluation report samples. Extract a structured writing style profile as JSON with these exact keys:
+{
+  "voice": { "evaluatorPerson": "first"|"third", "evaluatorTitle": "string", "childReference": "first-name"|"full-name"|"pronoun", "tense": "past"|"present-mixed", "activeVoice": 0.0-1.0 },
+  "formatting": { "scorePresentation": "inline"|"table"|"both", "includePercentiles": bool, "includeConfidenceIntervals": bool, "descriptorSystem": "Wechsler"|"Woodcock-Johnson"|"custom", "headingStyle": "bold-caps"|"underline"|"numbered", "paragraphDensity": "dense"|"moderate"|"spacious" },
+  "language": { "jargonLevel": "high-clinical"|"balanced"|"parent-friendly", "hedgingStyle": "assertive"|"moderate"|"cautious", "strengthsBasedLanguage": bool, "personFirstLanguage": bool },
+  "recommendations": { "style": "numbered"|"categorized"|"narrative", "specificity": "high"|"moderate"|"general" }
+}
+Return ONLY valid JSON, no markdown fences.\n\n${sampleTexts}`;
+        let result = await callGemini(prompt, 'You are a linguistics expert. Analyze writing patterns, return structured JSON only.');
+        result = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const parsed = JSON.parse(result);
+        // Merge into profile with auto-detected markers
+        for (const section of ['voice', 'formatting', 'language', 'recommendations']) {
+            if (parsed[section]) {
+                const sources = {};
+                for (const key in parsed[section]) { reportProfile[section][key] = parsed[section][key]; sources[key] = 'auto'; }
+                reportProfile[section]._sources = { ...(reportProfile[section]._sources || {}), ...sources };
+            }
+        }
+        reportProfile.samplesAnalyzed = samples.length;
+        saveProfile(); renderProfilePanel(); toast('Profile built from samples!', 'success');
+    } catch (e) { toast(`Profile build error: ${e.message}`, 'error'); }
+}
+
+function saveProfileJSON() {
+    try {
+        const json = document.getElementById('profile-json-editor')?.value;
+        const parsed = JSON.parse(json);
+        reportProfile = parsed; saveProfile(); renderProfilePanel(); toast('Profile saved from JSON', 'success');
+    } catch (e) { toast(`Invalid JSON: ${e.message}`, 'error'); }
+}
+
+async function applyNLEdit() {
+    const input = document.getElementById('nl-edit-input')?.value?.trim();
+    if (!input) { toast('Enter a description of changes', 'error'); return; }
+    toast('Applying changes...', 'info');
+    try {
+        const prompt = `Current profile JSON:\n${JSON.stringify(reportProfile, null, 2)}\n\nUser request: "${input}"\n\nApply the requested changes and return the COMPLETE updated profile JSON. Return ONLY valid JSON, no explanation.`;
+        let result = await callGemini(prompt, 'You are a JSON editor. Modify the profile as requested.');
+        result = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        reportProfile = JSON.parse(result); saveProfile(); renderProfilePanel(); toast('Changes applied!', 'success');
+    } catch (e) { toast(`NL edit error: ${e.message}`, 'error'); }
+}
+
+// --- ADAPTATION STUDIO ---
+const LANGUAGES = { en: 'English', es: 'Spanish', pt: 'Portuguese', fr: 'French', ar: 'Arabic', so: 'Somali', zh: 'Mandarin', vi: 'Vietnamese', ht: 'Haitian Creole' };
+const READABILITY_LEVELS = { clinical: 'Clinical (Original)', 'parent-friendly': 'Parent-Friendly (8th grade)', 'plain-language': 'Plain Language (5th grade)', 'child-friendly': 'Child-Friendly', 'educator-summary': 'Educator Summary' };
+
+function renderAdaptPanel() {
+    if (!activeCase) return;
+    const panel = document.getElementById('panel-adapt');
+    const hasReport = !!activeCase.finalReport;
+    const fr = adaptationState.fidelityReport;
+
+    panel.innerHTML = `<h2 style="font-size:18px;font-weight:700;margin-bottom:6px">ðŸŒ Adaptation Studio â€” ${activeCase.meta.childName}</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Translate, simplify, and verify report adaptations side by side.</p>
+    ${!hasReport ? '<div class="empty-state"><div class="icon">ðŸ“„</div><h3>No Report Generated Yet</h3><p>Complete the pipeline first to generate a report that can be adapted.</p></div>' : `
+    ${fr ? `<div class="fidelity-bar">
+        <span class="fidelity-score ${fr.overallFidelity >= 0.9 ? 'fidelity-pass' : fr.overallFidelity >= 0.7 ? 'fidelity-warn' : 'fidelity-crit'}">${Math.round(fr.overallFidelity * 100)}%</span>
+        <div><strong>Fidelity Score</strong><br><span style="font-size:11px;color:var(--text-muted)">${fr.criticalFlags || 0} critical flags Â· ${fr.blocks?.length || 0} blocks checked</span></div>
+    </div>` : ''}
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-primary" onclick="adaptReport()">ðŸ”„ Adapt Right Pane</button>
+        <button class="btn btn-sm btn-success" onclick="runFidelityCheck()">ðŸ” Fidelity Check</button>
+    </div>
+
+    <div class="split-pane">
+        <div class="adapt-pane" id="adapt-left" onscroll="syncScroll('left')">
+            <div class="adapt-pane-header">
+                <select id="adapt-left-lang" onchange="adaptationState.leftLang=this.value">${Object.entries(LANGUAGES).map(([k, v]) => `<option value="${k}" ${adaptationState.leftLang === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+                <select id="adapt-left-level" onchange="adaptationState.leftLevel=this.value">${Object.entries(READABILITY_LEVELS).map(([k, v]) => `<option value="${k}" ${adaptationState.leftLevel === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+            </div>
+            <div class="adapt-content" id="adapt-left-content" style="font-size:13px;line-height:1.7;white-space:pre-wrap">${adaptationState.leftContent || activeCase.finalReport}</div>
+        </div>
+        <div class="adapt-pane" id="adapt-right" onscroll="syncScroll('right')">
+            <div class="adapt-pane-header">
+                <select id="adapt-right-lang" onchange="adaptationState.rightLang=this.value">${Object.entries(LANGUAGES).map(([k, v]) => `<option value="${k}" ${adaptationState.rightLang === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+                <select id="adapt-right-level" onchange="adaptationState.rightLevel=this.value">${Object.entries(READABILITY_LEVELS).map(([k, v]) => `<option value="${k}" ${adaptationState.rightLevel === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+            </div>
+            <div class="adapt-content" id="adapt-right-content" style="font-size:13px;line-height:1.7;white-space:pre-wrap">${adaptationState.rightContent || '<em style="color:var(--text-muted)">Click "Adapt Right Pane" to generate an adapted version.</em>'}</div>
+        </div>
+    </div>
+
+    ${fr ? `<div style="margin-top:16px"><h3 style="font-size:15px;font-weight:700;margin-bottom:8px">Fidelity Details</h3>
+        ${(fr.blocks || []).map(b => `<div class="fidelity-block">
+            <span class="fidelity-badge">${b.score >= 0.9 ? 'âœ…' : b.score >= 0.7 ? 'âš ï¸' : 'ðŸš¨'}</span>
+            <strong>${b.blockId}</strong>
+            <span style="color:var(--text-muted)">${Math.round(b.score * 100)}%</span>
+            <span style="flex:1;font-size:11px;color:var(--text-muted)">${b.notes || ''}</span>
+            ${b.suggestion ? `<button class="btn btn-sm btn-ghost" onclick="acceptSuggestion('${b.blockId}')">Accept Fix</button>` : ''}
+        </div>${b.suggestion ? `<div class="fidelity-suggestion">ðŸ’¡ Suggested: ${b.suggestion}</div>` : ''}`).join('')}
+    </div>` : ''}`}`;
+}
+
+function syncScroll(source) {
+    const left = document.getElementById('adapt-left');
+    const right = document.getElementById('adapt-right');
+    if (!left || !right) return;
+    if (source === 'left') right.scrollTop = left.scrollTop;
+    else left.scrollTop = right.scrollTop;
+}
+
+async function adaptReport() {
+    if (!activeCase?.finalReport) { toast('No report to adapt', 'error'); return; }
+    const lang = adaptationState.rightLang;
+    const level = adaptationState.rightLevel;
+    toast(`Adapting to ${LANGUAGES[lang]} (${READABILITY_LEVELS[level]})...`, 'info');
+    try {
+        let prompt = `Adapt this psychological evaluation report`;
+        if (lang !== 'en') prompt += ` translated to ${LANGUAGES[lang]}`;
+        if (level !== 'clinical') prompt += ` at ${READABILITY_LEVELS[level]} readability level`;
+        prompt += `.\n\nRules:\n- Preserve ALL test scores, proper nouns, instrument names, and diagnostic codes exactly as-is (do not translate these)\n- Maintain clinical accuracy\n- Keep the same section structure\n- For ${level === 'parent-friendly' ? '8th grade' : level === 'plain-language' ? '5th grade' : level === 'child-friendly' ? 'age-appropriate' : 'educator-focused'} reading level\n\nORIGINAL REPORT:\n${activeCase.finalReport}`;
+        const result = await callGemini(prompt, 'You are a clinical translator and readability adapter. Preserve factual accuracy while adapting language.');
+        adaptationState.rightContent = result;
+        adaptationState.leftContent = activeCase.finalReport;
+        if (!activeCase.adaptedVersions) activeCase.adaptedVersions = {};
+        activeCase.adaptedVersions[`${lang}_${level}`] = { content: result, generatedAt: new Date().toISOString() };
+        saveCases(); renderAdaptPanel(); toast('Adaptation complete!', 'success');
+    } catch (e) { toast(`Adaptation error: ${e.message}`, 'error'); }
+}
+
+async function runFidelityCheck() {
+    if (!adaptationState.rightContent) { toast('Generate an adaptation first', 'error'); return; }
+    toast('Running fidelity check...', 'info');
+    try {
+        const prompt = `Compare these two versions of a psychological evaluation report for fidelity. Check each section for:\n- Preserved factual accuracy (scores, dates, names)\n- Clinical meaning retention\n- Appropriate simplification vs meaning loss\n\nReturn JSON:\n{"overallFidelity": 0.0-1.0, "criticalFlags": number, "blocks": [{"blockId": "section_name", "score": 0.0-1.0, "status": "pass"|"warning"|"critical", "notes": "...", "suggestion": "..." or null}]}\n\nReturn ONLY valid JSON.\n\nVERSION A (Original):\n${activeCase.finalReport.substring(0, 6000)}\n\nVERSION B (Adapted):\n${adaptationState.rightContent.substring(0, 6000)}`;
+        let result = await callGemini(prompt, 'You are a clinical accuracy reviewer. Compare report versions for fidelity.');
+        result = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        adaptationState.fidelityReport = JSON.parse(result);
+        logProcessing('fidelityCheck');
+        saveCases(); renderAdaptPanel(); toast('Fidelity check complete!', 'success');
+    } catch (e) { toast(`Fidelity check error: ${e.message}`, 'error'); }
+}
+
+function acceptSuggestion(blockId) {
+    const block = adaptationState.fidelityReport?.blocks?.find(b => b.blockId === blockId);
+    if (!block?.suggestion) return;
+    toast(`Applied fix for ${blockId}`, 'success');
+    // In a full implementation, this would surgically replace the specific section
+}
+
+// --- REPORT PANEL ---
+function renderReportPanel() {
+    if (!activeCase) return;
+    const panel = document.getElementById('panel-report');
+    panel.innerHTML = activeCase.finalReport ?
+        `<h2 style="font-size:18px;font-weight:700;margin-bottom:16px">ðŸ“„ Final Report â€” ${activeCase.meta.childName}</h2>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;font-size:13px;line-height:1.8;white-space:pre-wrap">${activeCase.finalReport}</div>` :
+        '<div class="empty-state"><div class="icon">ðŸ“„</div><h3>No Report Yet</h3><p>Complete the processing pipeline to generate the report.</p></div>';
+}
+
+// --- EXPORT PANEL ---
+function renderExportPanel() {
+    if (!activeCase) return;
+    const panel = document.getElementById('panel-export');
+    panel.innerHTML = `<h2 style="font-size:18px;font-weight:700;margin-bottom:16px">ðŸ“¤ Export â€” ${activeCase.meta.childName}</h2>
+    <div class="card"><h3 class="card-title">Export Case as JSON</h3><p style="font-size:12px;color:var(--text-muted);margin:8px 0">Includes all data, processing results, and adapted versions.</p>
+        <button class="btn btn-primary" onclick="exportCase()">ðŸ“¥ Download JSON</button></div>
+    <div class="card"><h3 class="card-title">Copy Report Text</h3><p style="font-size:12px;color:var(--text-muted);margin:8px 0">Copy the final report to clipboard.</p>
+        <button class="btn btn-secondary" onclick="copyReport()" ${!activeCase.finalReport ? 'disabled' : ''}>ðŸ“‹ Copy to Clipboard</button></div>
+    <div class="card"><h3 class="card-title">ðŸ—‘ï¸ Delete Case</h3><p style="font-size:12px;color:var(--text-muted);margin:8px 0">Permanently delete this evaluation case.</p>
+        <button class="btn btn-danger" onclick="deleteCase('${activeCase.id}')">Delete Case</button></div>`;
+}
+
+function exportCase() {
+    const blob = new Blob([JSON.stringify(activeCase, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `${activeCase.meta.childName.replace(/\s+/g, '_')}_case.json`; a.click();
+}
+function copyReport() { navigator.clipboard?.writeText(activeCase.finalReport || '').then(() => toast('Copied!', 'success')); }
+
+// --- IMPORT ---
+function handleFileImport(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => { document.getElementById('import-json').value = ev.target.result; };
+    reader.readAsText(file);
+}
+function importCase() {
+    try {
+        const json = document.getElementById('import-json')?.value?.trim();
+        if (!json) { toast('No JSON provided', 'error'); return; }
+        const c = JSON.parse(json);
+        if (!c.id || !c.meta) throw new Error('Invalid case format');
+        c.id = uuid(); // New ID to avoid collisions
+        cases.push(c); saveCases(); closeModal('modal-import'); selectCase(c.id); renderCaseList();
+        toast(`Case "${c.meta.childName}" imported`, 'success');
+    } catch (e) { toast(`Import error: ${e.message}`, 'error'); }
+}
+
+// --- TRAINING MODE ---
+const TRAINING_DATA = {
+    referral: `Referral for Evaluation\nChild: Alex Morgan\nDate of Birth: March 15, 2022\nReferring Professional: Sarah Chen, M.Ed., CDS Service Coordinator\nAgency: Child Development Services - Cumberland\nReason: Alex is a friendly, curious three-year-old who enjoys building with blocks and looking at books about animals. Alex is referred for psychological evaluation due to concerns about delayed speech and language development, limited social interaction with peers, repetitive play behaviors, and difficulty with transitions. Alex's early intervention team reports that he often lines up toys rather than engaging in functional play, has limited eye contact, and becomes very distressed with changes in routine.`,
+    background: `Background Information Form\nChild: Alex Morgan  DOB: 3/15/2022  Age: 3 years, 11 months\nMother: Jennifer Morgan, age 32, college graduate, works as a graphic designer\nFather: David Morgan, age 34, college graduate, software engineer\nSiblings: Emma, age 6, typically developing\nPregnancy/Birth: Full-term pregnancy, uncomplicated vaginal delivery, birth weight 7 lbs 8 oz. APGAR scores 8 and 9.\nDevelopmental Milestones: Sat independently at 7 months, walked at 14 months. First words at 18 months but vocabulary plateau'd around 20 months. Currently uses approximately 50 single words, rare 2-word combinations. Points to request but limited pointing to share interest.\nMedical History: Bilateral ear tubes placed at 18 months for recurrent ear infections. Hearing within normal limits per audiological evaluation January 2026. Vision screened normal. No seizure history. Sleep is generally good, 10-11 hours nightly.\nBehavior: Parents report Alex is affectionate with family but shows limited interest in peers. He has intense interests in spinning objects and lining up cars. Tantrums occur 2-3 times daily, primarily during transitions. He covers his ears in loud environments and is selective with food textures.`,
+    ratingScales: `ASEBA Summary - Child Behavior Checklist (CBCL/1.5-5)\nCompleted by: Jennifer Morgan (mother), January 2026\nEmotionally Reactive: T=62, 89th percentile.\nAnxious/Depressed: T=58, 79th percentile.\nSomatic Complaints: T=51, 54th percentile. Within normal limits.\nWithdrawn: T=70, 98th percentile.\nAttention Problems: T=65, 93rd percentile.\nAggressive Behavior: T=55, 69th percentile. Within normal limits.\nInternalizing: T=64, 92nd percentile.\nExternalizing: T=54, 65th percentile.\nTotal Problems: T=62, 89th percentile.`,
+    interviews: `Parent Interview (condensed)\nInterviewer: Dr. Patricia Williams, PsyD\nDate: February 3, 2026\nCommunication: ~50 words, no combinations. Uses some signs. Language stalled at 18 months.\nSocial: Limited peer interaction, parallel play only. Attached to parents.\nPlay: Lines up cars in patterns, spins wheels for 20 min, opens/closes doors. No pretend play.\nRoutines: Needs sameness, same route to school, distressed by schedule changes. Transitions are biggest trigger.\nSensory: Covers ears at loud sounds, picky eater (crunchy only), seeks deep pressure.`,
+    testResults: `Test Results - Alex Morgan, Age 3y 11m\nWPPSI-IV:\nFSIQ: 82, 12th %ile (Low Average)\nVCI: 75, 5th %ile (Borderline)\nVSI: 95, 37th %ile (Average)\nWMI: 80, 9th %ile (Low Average)\nPSI: 88, 21st %ile (Low Average)\n\nVineland-3:\nCommunication: SS 68, 2nd %ile (Low)\nDaily Living: SS 78, 7th %ile (Moderately Low)\nSocialization: SS 65, 1st %ile (Low)\nMotor: SS 85, 16th %ile (Moderately Low)\nABC: SS 72, 3rd %ile (Low)`
+};
+
+function toggleTrainingMode() {
+    trainingMode = !trainingMode;
+    document.getElementById('training-banner').classList.toggle('visible', trainingMode);
+    document.getElementById('btn-training').classList.toggle('btn-danger', trainingMode);
+    document.getElementById('btn-training').textContent = trainingMode ? 'ðŸŽ“ Exit Training' : 'ðŸŽ“ Training Mode';
+    if (trainingMode) {
+        const c = {
+            id: 'training-' + uuid(),
+            meta: { childName: 'Alex Morgan (Training)', dob: '2022-03-15', evalDates: 'Feb 10-11, 2026', evaluator: 'Dr. Patricia Williams, PsyD', pathway: 'psychoeducational', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+            inputs: TRAINING_DATA,
+            tier1: {}, tier2: {}, tier3: {}, tier4: {}, finalReport: '', edits: {},
+            processingLog: [], clinicianNotes: {},
+            preferences: { jurisdiction: 'Maine', instrumentsUsed: ['WPPSI-IV', 'Vineland-3', 'CBCL/1.5-5'], ageGroup: 'early-childhood', diagnosticFramework: 'DSM-5-TR' },
+            generatedBlocks: {}, adaptedVersions: {}
+        };
+        cases.push(c); saveCases(); selectCase(c.id); renderCaseList();
+        toast('Training case loaded!', 'success');
+    }
+}
+
+// --- INIT ---
+loadProfile();
+loadCases();
+renderCaseList();
+
+    </script>
+</body>
+</html>

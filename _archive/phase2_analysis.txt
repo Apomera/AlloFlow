@@ -1,0 +1,49 @@
+=== AUDIO BANK LAZY PROXY STATUS ===
+  PHONEME_AUDIO_BANK: ✅ Lazy Proxy (Proxy pattern found)
+  INSTRUCTION_AUDIO: ✅ Lazy Proxy (Proxy pattern found)
+  ISOLATION_AUDIO: ✅ Lazy Proxy (Proxy pattern found)
+  LETTER_AUDIO: ❓ Not found
+  LETTER_NAME_AUDIO: ❌ EAGER LOAD (direct const at L1043)
+
+=== TIMER LEAK ANALYSIS ===
+  setTimeout calls: 214
+  clearTimeout calls: 48
+  setInterval calls: 15
+  clearInterval calls: 18
+  Potential timer leaks: ~166 setTimeout, ~-3 setInterval
+
+  Sample timer locations (first 10 without clear):
+    L1392: const timer = setTimeout(() => {
+    L2653: setTimeout(() => reject(new Error('Audio timeout')), 5000)
+    L2692: await new Promise(r => setTimeout(r, 900));
+    L3379: setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+    L3398: setTimeout(resolve, 5000); // Fail-safe timeout
+    L3419: setTimeout(resolve, 5000); // Fail-safe timeout
+    L3443: setTimeout(resolve, 3000); // Fail-safe
+    L3463: setTimeout(resolve, 1000);
+    L3675: await new Promise(r => setTimeout(r, 900));
+    L3725: await new Promise(r => setTimeout(r, 750));
+  Total setTimeout without matching clear on same line: 214
+
+=== MISSING KEY PROPS ===
+  .map() calls with key=: 257
+  .map() calls WITHOUT key=: 401
+  Samples without key:
+    L1417: const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
+    L1432: const customWords = customText.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+    L1469: setSelectedIndices(new Set(previewList.map((_, i) => i)));
+    L1480: const words = result.replace(/[^a-zA-Z,\s-]/g, '').split(',').map(w => w.trim()).filter(w => w);
+    L1612: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { console.warn('Caught error:', e?
+    L1645: enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
+    L2045: {lessonPlanOrder.map(actId => {
+    L2980: })().map((phoneme, soundIdx) => {
+
+=== GEMINI MODEL REFERENCES ===
+  gemini-2.5-flash-image-preview: 1 references at lines 40417
+  gemini-2.5-flash-preview: 1 references at lines 40448
+  gemini-2.5-flash-preview-09-2025: 3 references at lines 17618, 22893, 39757
+  gemini-2.5-flash-preview-tts: 1 references at lines 40509
+  gemini-bridge: 13 references at lines 17331, 18600, 18942, 40011, 40177, 43907, 45900, 51884 ...
+
+=== ALLOFLOWCONTENT STATE COUNT ===
+  useState hooks in AlloFlowContent: 350

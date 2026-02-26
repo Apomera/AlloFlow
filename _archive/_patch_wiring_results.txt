@@ -1,0 +1,8 @@
+﻿[OK] Added _LOAD_INSTRUCTION_AUDIO_RAW for sound_match_start and mapping
+[OK] Added mapping to INST_KEY_MAP
+[WARN] Exact ortho block not found, trying partial match...
+  Found 'Testing your spelling now!' - the emoji encoding may differ
+  fb_spelling_transition found at line ~7335: message: ts('word_sounds.fb_spelling_transition') || "You're a pro! Testing your spelling now! ≡ƒæü∩╕Å",
+  fb_spelling_transition found at line ~11733: fb_spelling_transition: "You're a pro! Testing your spelling now! ≡ƒæü∩╕Å",
+
+Total changes applied: 2

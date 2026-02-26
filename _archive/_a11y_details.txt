@@ -1,0 +1,184 @@
+============================================================
+CLICKABLE DIVS WITHOUT KEYBOARD ACCESS
+============================================================
+
+  L30421: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200" onClick={(e) => e.
+        <div className="flex items-center gap-3 mb-4">
+        <div className="bg-red-100 p-3 rounded-full"><Trash2 size={24} className="text-red-600"/></div>
+        <h3 className="text-lg font-bold text-slate-800">{t('dashboard.clear_all')}</h3>
+
+  L60694: <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]" onClick={e 
+        
+        
+        <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
+
+  L69602: <div className="bg-slate-800 w-full max-w-2xl rounded-2xl border-4 border-purple-500 shadow-2xl p-6 relative" onClick={e
+        {(() => {
+        const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === escapeRoomState.selectedObject.id);
+        if (!puzzle) return <p className="text-slate-500">{t('escape_room.no_puzzle')}</p>;
+
+  L70990: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transform transi
+        <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-sl
+        
+        <div className="flex flex-col items-center text-center mb-4">
+
+  L72218: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transform transi
+        <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-500 hover:text-slate
+        
+        <div className="flex flex-col items-center text-center">
+
+  L74301: <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-hidden max-w-md w
+        <button
+        onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
+        className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-col
+
+  L74715: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transi
+        <button
+        onClick={handleSetShowSaveModalToFalse}
+        className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 f
+
+  L74759: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transform transi
+        <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-500
+        
+        <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+
+  L74802: <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border-4 border-amber-300 overflow-hidden transform tran
+        <div className="p-6 text-center">
+        <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 shadow-
+        <Cloud size={32} />
+
+  L74918: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100" onClick={e => e
+        <button onClick={handleSetIsProjectSettingsOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-50
+        
+        <div className="flex items-center gap-2 mb-6 text-indigo-900">
+
+  L75249: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-4 border-indigo-100 text-center" onClick={e =
+        <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 borde
+        <AlertCircle size={32} />
+        </div>
+
+============================================================
+OUTLINE-NONE WITHOUT FOCUS REPLACEMENT
+============================================================
+  L2226: className="flex-1 p-2 rounded-lg border border-violet-200 text-sm outline-none"
+  L4371: className={`w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none transition-all shadow-sm placeholder
+  L10666: className="bg-violet-800 border border-violet-600 rounded-full pl-8 pr-8 py-1 text-white text-xs cursor-pointer hover:bg-violet-70
+  L10700: className="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transitio
+  L18881: className="bg-transparent text-xs font-bold text-slate-600 outline-none cursor-pointer py-1 pr-1 w-24 truncate"
+  L18940: className="text-[10px] bg-transparent outline-none w-20 px-1 text-slate-600 placeholder:text-slate-500"
+  L24171: text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all outline-none rounded-t
+  L27288: className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 outline-none transition-all uppercase tracking-widest $
+  L57171: className="w-full bg-transparent outline-none text-orange-900 font-bold resize-none h-full"
+  L57454: className="text-xs text-slate-500 w-full bg-transparent outline-none border-b border-dashed border-slate-200"
+  L57483: className="w-full bg-white rounded px-2 py-0.5 text-xs text-slate-500 italic outline-none border border-slate-100"
+  L69262: className="bg-transparent text-center font-bold text-white outline-none w-full mb-1"
+
+============================================================
+STYLE TAG / CSS INJECTION POINTS
+============================================================
+  L11592: @media (max-width: 768px) {
+  L11667: @media (max-width: 480px) {
+  L11687: @media (max-width: 768px) {
+  L11703: @media (max-width: 768px) {
+  L11719: @media (max-width: 768px) and (orientation: landscape) {
+  L11733: @media (max-width: 768px) {
+  L11741: @media print {
+  L20678: <style>{`
+  L20679: @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+  L20680: @keyframes allo-talk { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } }
+  L20681: @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180d
+  L20682: @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-20deg); } 75% { transform: rotate(
+  L20683: @keyframes allo-puff { 0% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.5); opacity:
+  L20684: @keyframes jetpack-flame { 0%, 100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.7; transform: scaleY(0.85); }
+  L20685: @keyframes history-pulse {
+  L20695: @keyframes bot-fly-tilt {
+  L20701: @keyframes bot-land {
+  L20709: @keyframes jetpack-smoke {
+  L20716: @keyframes wind-streak {
+  L20723: @keyframes tap-pointer {
+  L20727: @keyframes help-glow-pulse {
+  L20753: @keyframes float-reaction {
+  L20759: @keyframes bot-confetti {
+  L20765: @keyframes dust-left {
+  L20769: @keyframes dust-right {
+  L20773: @keyframes dust-puff {
+  L20782: @keyframes antenna-sway {
+  L20789: @keyframes antenna-tri-bounce {
+  L20802: @keyframes signal-wave {
+  L20810: @keyframes antenna-spring {
+  L20827: @keyframes bot-breathe {
+  L20835: @keyframes shadow-pulse {
+  L20842: @keyframes zzz-float {
+  L20862: @keyframes float-hands {
+  L20869: @keyframes gesture-left {
+  L20873: @keyframes gesture-right {
+  L20881: @keyframes voice-wave {
+  L20892: @keyframes hologram-spin {
+  L20903: @keyframes ken-burns {
+  L26951: <style>{`
+  L26952: @media print {
+  L28006: <style>{`
+  L28007: @keyframes confetti-fall {
+  L42409: <style>
+  L45596: <style>
+  L45699: @media print {
+  L45924: <style>
+  L50206: <style>
+  L50221: @media print {
+  L50482: <style>
+  L50484: @media print {
+  L59310: <style>{`
+  L59317: <style>{`
+  L59803: <style>{`
+  L59804: @media print {
+  L59814: @keyframes indeterminate-slide {
+  L60013: @keyframes stamp {
+  L60019: @keyframes shake {
+  L60029: @keyframes pop {
+  L60045: @keyframes float-slow {
+  L60785: <style>
+  L60787: @keyframes rise {
+  L70791: <style>{rubricZoom ? `
+
+  animate-* classes: 660
+  transition-* classes: 1153
+
+  @keyframes definitions: 38
+    allo-float
+    allo-talk
+    allo-backflip
+    allo-wave
+    allo-puff
+    jetpack-flame
+    history-pulse
+    bot-fly-tilt
+    bot-land
+    jetpack-smoke
+    wind-streak
+    tap-pointer
+    help-glow-pulse
+    float-reaction
+    bot-confetti
+    dust-left
+    dust-right
+    dust-puff
+    antenna-sway
+    antenna-tri-bounce
+    signal-wave
+    antenna-spring
+    bot-breathe
+    shadow-pulse
+    zzz-float
+    float-hands
+    gesture-left
+    gesture-right
+    voice-wave
+    hologram-spin
+    ken-burns
+    confetti-fall
+    indeterminate-slide
+    stamp
+    shake
+    pop
+    float-slow
+    rise

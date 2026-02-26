@@ -1,0 +1,61 @@
+=== STEM LAB / MATH PANEL ANALYSIS ===
+
+
+Math State: 7 matches
+  const [mathMode, setMathMode]
+  const [mathQuantity, setMathQuantity]
+  const [isMathGraphEnabled, setIsMathGraphEnabled]
+  const [mathSubject, setMathSubject]
+  const [showMathAnswers, setShowMathAnswers]
+
+STEM Subjects: 7 matches
+  mathSubject
+  MathSubject
+
+LaTeX: 44 matches
+  Latex
+  lateX
+  LaTeX
+  latex
+  LATEX
+
+Math Generate: 3 matches
+  handleGenerateMath
+
+
+=== MATH PANEL HELP KEYS ===
+  data-help-key="math_subject"
+  data-help-key="math_mode"
+  data-help-key="math_generate_similar"
+  data-help-key="math_quantity"
+  data-help-key="math_problem"
+  data-help-key="math_input"
+  data-help-key="math_toggle_answers"
+  data-help-key="math_student_work"
+  data-help-key="math_context"
+  data-help-key="math_graph"
+  data-help-key="math_panel"
+  data-help-key="math_generate_button"
+
+
+=== MATH TRANSLATION KEYS ===
+  math_difficulty
+  math_title
+  math_student_work
+  math_quantity
+  math_desc
+  math_mode
+  math_answer
+  math_input
+  math_solved
+  math_generate_button
+  math_generate_similar
+  math_toggle_answers
+  math_panel
+  math_context
+  math_show_work
+  math_real_world
+  math_subject
+  math_steps
+  math_problem
+  math_graph

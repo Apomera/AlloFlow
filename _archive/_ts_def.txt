@@ -1,0 +1,48 @@
+﻿L861: const getWordSoundsString = (t, key, params = {}) => {
+L862:     const translated = t(key, params);
+L863:     // If translation returns the key itself, use our fallback
+L864:     if (translated === key || !translated) {
+L865:         let fallback = WORD_SOUNDS_STRINGS[key] || key;
+L866:         // Simple parameter substitution
+L867:         Object.entries(params).forEach(([k, v]) => {
+L868:             fallback = fallback.replace(`{{${k}}}`, v);
+L869:         });
+L870:         return typeof fallback === 'string' ? fallback : String(fallback);
+L871:     }
+L872:     // Strict string casting to prevent React render errors
+L873:     return typeof translated === 'string' ? translated : String(translated);
+L874: };
+L875: // --- PERSISTENT PHONEME STORAGE (PHONEME BANK) ---
+---
+L1444:         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
+L1445:         // Image Visibility Mode (session-level setting)
+L1446:         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+L1447:         // SMART IMAGE VISIBILITY - Activity-specific optimal image behavior
+L1448:         const SMART_IMAGE_VISIBILITY = {
+L1449:             'counting':       'afterCompletion',  // High rigor - no visual hints
+L1450:             'isolation':      'progressive',       // Reveal after 1st attempt
+L1451:             'blending':       'afterCompletion',  // Auditory-first, reveal as reward
+L1452:             'segmentation':   'alwaysOn',          // Word is known, image supports VAKT
+L1453:             'rhyming':        'alwaysOn',     // Pictures help connect rhyme patterns to meaning       // Standard scaffolding
+L1454:             'letter_tracing': 'alwaysOn',          // VAKT requires visual context
+L1455:             'mapping':        'alwaysOn',          // Orthographic activity
+L1456:             'orthography':    'afterCompletion',  // Spelling recognition
+L1457:             'sound_sort':     'progressive',       // Phoneme categorization
+L1458:             'word_families':  'progressive',       // Rime-based scaffolding
+---
+L4539:     const ts = React.useCallback((key, params = {}) => getWordSoundsString(t, key, params), [t]);
+L4540:     // Activity types - filtered by orthographic toggle for pre-reader safety
+L4541:     const ALL_ACTIVITIES = [
+L4542:         { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '≡ƒöó', description: ts('word_sounds.counting_desc'), tier: 'phonological' },
+L4543:         { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '≡ƒÄ»', description: ts('word_sounds.isolation_desc'), tier: 'phonological' },
+L4544:         { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '≡ƒöù', description: ts('word_sounds.blending_desc'), tier: 'phonological' },
+L4545:         { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '≡ƒôª', description: ts('word_sounds.segmentation_desc'), tier: 'phonological' },
+L4546:         { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '≡ƒÄ╡', description: ts('word_sounds.rhyming_desc'), tier: 'phonological' },
+L4547:         // Orthographic activities - require letter knowledge (tier 2)
+L4548:         { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '≡ƒæü∩╕Å', description: ts('word_sounds.orthography_desc') || 'Match sounds to spell
+L4549:         { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '≡ƒÄ╣', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters', tier: 
+L4550:         { id: 'spelling_bee', label: ts('word_sounds.activity_spelling_bee') || 'Spelling Bee', icon: '≡ƒÉ¥', description: ts('word_sounds.spelling_bee_desc') || 'Spell the word you h
+L4551:         { id: 'word_scramble', label: ts('word_sounds.activity_word_scramble') || 'Word Scramble', icon: '≡ƒöÇ', description: ts('word_sounds.word_scramble_desc') || 'Unscramble the l
+L4552:         { id: 'missing_letter', label: ts('word_sounds.activity_missing_letter') || 'Missing Letter', icon: 'Γ¥ô', description: ts('word_sounds.missing_letter_desc') || 'Fill in the 
+L4553:         { id: 'sound_sort', label: ts('word_sounds.activity_sound_sort') || 'Sound Sort', icon: '≡ƒöè', description: ts('word_sounds.sound_sort_desc') || 'Sort words by shared sounds'
+---

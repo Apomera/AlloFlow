@@ -1,0 +1,60 @@
+﻿≡ƒôä AlloFlowANTI.txt: 68,977 lines, 4.34 MB
+============================================================
+
+≡ƒöì Check 1: Brace Balance...
+≡ƒöì Check 2: UI_STRINGS Structure...
+≡ƒöì Check 3: Duplicate Object Keys...
+≡ƒöì Check 4: String Literals...
+≡ƒöì Check 5: Help Coverage...
+≡ƒöì Check 6: Dead Functions...
+≡ƒöì Check 7: Imports...
+≡ƒöì Check 8: Commented-out Code...
+≡ƒöì Check 9: File Metrics...
+≡ƒöì Check 10: Bracket Balance...
+≡ƒöì Check 11: Localization Key Resolution...
+≡ƒöì Check 12: Component References...
+
+============================================================
+≡ƒôè VALIDATION SUMMARY
+============================================================
+  Γ£à UI_STRINGS: L11087-L15996 (4910 lines) ΓÇö balanced
+  Γ£à HELP_STRINGS: 626 keys checked
+  Γ£à No duplicate object keys found
+  Γ£à String literal check complete
+  Γ£à Help coverage: 562/562 ΓÇö full coverage
+  Γ£à Essential imports present
+  Γ£à No large commented-out code blocks
+  Γ£à Total: 68,977 lines, 4.34 MB
+  Γ£à UI_STRINGS: 4,910 lines (241 KB)
+  Γ£à Component references: 221 used, 8 unmatched (likely icon imports)
+  ΓÜá∩╕Å  Brace depth went negative at L20920 ΓÇö likely JSX/template edge case
+  ΓÜá∩╕Å  Potential dead code: 58 functions with only 1 reference (definition)
+  ΓÜá∩╕Å    clankGain
+  ΓÜá∩╕Å    currentId
+  ΓÜá∩╕Å    easyPool
+  ΓÜá∩╕Å    fluencyRecognitionRef
+  ΓÜá∩╕Å    generateInterviewSummary
+  ΓÜá∩╕Å    generatePersonaSuggestions
+  ΓÜá∩╕Å    getRandomWord
+  ΓÜá∩╕Å    handlePersonaWordClick
+  ΓÜá∩╕Å    handleSetActiveTabToInsights
+  ΓÜá∩╕Å    handleSetActiveTabToStudents
+  ΓÜá∩╕Å    ... and 48 more
+  ΓÜá∩╕Å  Parentheses imbalance: -19 (may be JSX/template false positives)
+  ΓÜá∩╕Å  Square brackets imbalance: -24 (may be JSX/template false positives)
+  ΓÜá∩╕Å  Unresolved t() keys: 38/2622 static keys have no UI_STRINGS match
+  ΓÜá∩╕Å    t('bingo.close_generator')
+  ΓÜá∩╕Å    t('bingo.exit_caller_aria')
+  ΓÜá∩╕Å    t('bingo.launch_caller_aria')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.analyzing')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.auto_fill_stop')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.change_fail')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.complete')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.error')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.presented')
+  ΓÜá∩╕Å    t('chat_guide.blueprint.reset')
+  ΓÜá∩╕Å    ... and 28 more
+
+  Results: 10 passed, 27 warnings, 0 errors
+
+  ΓÜí DEPLOY OK ΓÇö but review warnings above

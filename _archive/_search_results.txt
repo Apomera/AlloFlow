@@ -1,0 +1,88 @@
+
+--- sound_counting (0 matches) ---
+
+--- soundCounting (0 matches) ---
+
+--- blend_sounds (0 matches) ---
+
+--- blendSounds (0 matches) ---
+
+--- find_sounds (0 matches) ---
+
+--- findSounds (0 matches) ---
+
+--- renderActivityContent (2 matches) ---
+  L8373: const renderActivityContent = () => {
+  L10209: {renderActivityContent()}
+
+--- Blend these sounds (2 matches) ---
+  L717: 'word_sounds.blending_prompt': 'Blend these sounds together!',
+  L11631: blending_instruction: "Blend these sounds together",
+
+--- ErrorBoundary (36 matches) ---
+  L21012: class ErrorBoundary extends React.Component {
+  L21022: console.error("ErrorBoundary caught an error:", error, errorInfo);
+  L51623: <ErrorBoundary fallbackMessage="Venn Game encountered an error.">
+  L51636: </ErrorBoundary>
+  L55305: <ErrorBoundary fallbackMessage="Live Quiz encountered an error. waiting for sync...">
+  L55313: </ErrorBoundary>
+  L55317: <ErrorBoundary fallbackMessage="Escape Room encountered an error. Waiting for sync...">
+  L55326: </ErrorBoundary>
+  L55329: <ErrorBoundary fallbackMessage="Interview Interface encountered an error. Please close and reopen.">
+  L56168: </ErrorBoundary>,
+  L59741: <ErrorBoundary fallbackMessage="The content viewer encountered an error. It might be due to complex data formatting. Try
+  L60771: <ErrorBoundary fallbackMessage="Memory Game encountered an error.">
+  L60778: </ErrorBoundary>
+  L60781: <ErrorBoundary fallbackMessage="Crossword Puzzle encountered an error.">
+  L60789: </ErrorBoundary>
+
+--- Listen (132 matches) ---
+  L57: window.addEventListener('audio_bank_loaded', () => {
+  L167: window.addEventListener('alloflow-mute-changed', handler);
+  L168: return () => window.removeEventListener('alloflow-mute-changed', handler);
+  L698: 'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+  L708: 'common.listen': 'Listen',
+  L779: 'word_sounds.spelling_bee_prompt': 'Listen to the word and spell it!',
+  L787: 'word_sounds.spelling_bee_subtitle': 'Listen and spell the word',
+  L795: 'word_sounds.spelling_bee_try_again': 'Try again! Listen carefully 🔊',
+  L808: 'word_sounds.missing_letter_incorrect': 'Not quite! Listen again 🔊',
+  L817: 'word_sounds.listening': 'Listening...',
+  L3395: const [isListening, setIsListening] = React.useState(false);
+  L3941: title="Listen"
+  L4035: title={ts('common.listen') || "Listen"}
+  L4532: <Volume2 size={16}/> {ts('word_sounds.listen_word') || 'Listen to Word'}
+  L7061: message: ts('word_sounds.fb_try_again') || "Try again! Listen closely... 👂",
+
+--- speaker (61 matches) ---
+  L31829: bot_mute_btn: "Toggle AlloBot voice output on or off. When muted: AlloBot still displays text responses but does not spe
+  L31899: 'source_upload_btn': "Import content from files on your device. Supported formats: PDF (text extracted automatically, im
+  L32305: 'large_file_transcribe_btn': "Convert spoken audio into text using AI speech recognition. Upload: lecture recordings, vi
+  L32317: 'faq_item': "Individual question-and-answer pair. Click the question to expand and see the answer. When expanded: answer
+  L32375: 'word_sounds_play': "Replay the audio prompt. Click to hear the word, phoneme, or instruction repeated. Unlimited replay
+  L39193: { "speaker": "learner", "action": "(optional action/emotion)", "line": "What the character says" },
+  L39194: { "speaker": "guide", "action": "(smiling)", "line": "Response here" },
+  L39195: { "speaker": "learner", "line": "Follow-up question without action" }
+  L39381: const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
+  L39383: formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
+  L39809: const speakerTagMatch = text.match(/^(\*\*|__)?([A-Za-z0-9\s]+)(\*\*|__)?:\s*["“]/);
+  L39811: if (speakerTagMatch) {
+  L39812: const detectedName = speakerTagMatch[2].trim();
+  L39823: let speakerVoice = null;
+  L39829: speakerVoice = voiceMap[name];
+
+--- distractor (142 matches) ---
+  L2301: onRegenerateOption, // NEW: Regenerate specific distractor
+  L2975: data-help-key="word_sounds_review_distractor_input" placeholder="Correct rhyme"
+  L2987: data-help-key="word_sounds_review_distractor_input" placeholder="Distractor"
+  L2998: data-help-key="word_sounds_review_play_distractor" title="Play TTS"
+  L3055: data-help-key="word_sounds_review_play_distractor" title="Play TTS"
+  L4215: if (data.options && data.distractors) {
+  L4217: const newKey = JSON.stringify([...data.options].sort()) + '|' + JSON.stringify([...data.distractors].sort());
+  L4220: // Combine correct family members and distractors
+  L4223: ...(data.distractors || []).map(w => ({ text: w, isFamily: false }))
+  L4231: }, [data.options, data.distractors]); // Ref-based guard inside handles stability
+  L4261: <p className="text-sm text-slate-500">Modify the family members and distractors below.</p>
+  L4299: {(data.distractors || []).map((word, i) => (
+  L4303: onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value, 'distractor')}
+  L4310: <button onClick={() => onUpdateOption && onUpdateOption(i, null, 'remove_distractor')}
+  L4316: <button onClick={() => onUpdateOption && onUpdateOption(-1, '', 'add_distractor')}

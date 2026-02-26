@@ -1,0 +1,5 @@
+﻿=== Tool expand/open with speak/audio ===
+
+=== Tool panel heading with speech ===
+
+=== AlloBot tool expand greetings ===

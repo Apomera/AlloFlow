@@ -1,0 +1,51 @@
+=== Tour Steps using t() for text ===
+Found 23 tour steps with localized descriptions
+  text: t('tour.source_desc')
+  text: t('tour.analysis_desc')
+  text: t('tour.glossary_desc')
+  text: t('tour.simplified_desc')
+  text: t('tour.wordsounds_desc')
+  text: t('tour.outline_desc')
+  text: t('tour.visual_desc')
+  text: t('tour.faq_desc')
+  text: t('tour.scaffolds_desc')
+  text: t('tour.quiz_desc')
+  text: t('tour.brainstorm_desc')
+  text: t('tour.persona_desc')
+  text: t('tour.timeline_desc')
+  text: t('tour.concept_desc')
+  text: t('tour.math_desc')
+  text: t('tour.adventure_desc')
+  text: t('tour.alignment_desc')
+  text: t('tour.lesson_desc')
+  text: t('tour.fullpack_desc')
+  text: t('tour.utils_desc')
+  text: t('tour.dashboard_desc')
+  text: t('tour.actions_desc')
+  text: t('tour.history_desc')
+
+=== Tour desc keys in UI_STRINGS ===
+Found 23 tour description keys in UI_STRINGS
+  'tour.wordsounds_desc':
+  'tour.source_desc':
+  'tour.analysis_desc':
+  'tour.glossary_desc':
+  'tour.simplified_desc':
+  'tour.outline_desc':
+  'tour.visual_desc':
+  'tour.faq_desc':
+  'tour.scaffolds_desc':
+  'tour.quiz_desc':
+  'tour.brainstorm_desc':
+  'tour.persona_desc':
+  'tour.timeline_desc':
+  'tour.concept_desc':
+  'tour.math_desc':
+  'tour.adventure_desc':
+  'tour.alignment_desc':
+  'tour.lesson_desc':
+  'tour.fullpack_desc':
+  'tour.utils_desc':
+  'tour.dashboard_desc':
+  'tour.actions_desc':
+  'tour.history_desc':

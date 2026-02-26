@@ -1,0 +1,34 @@
+Old commit 2f4da35 had 27 files
+Current main has 6 files
+Missing files: 22
+
+  LICENSE (34,523 bytes)
+  README.md (5,561 bytes)
+  allobot.png (25,204 bytes)
+  allobot.svg (4,944 bytes)
+  audio_bank.json (16,576,032 bytes)
+  calculator.html (29,658 bytes)
+  examples/civil_war.json (610,028 bytes)
+  examples/photosynthesis.json (711,539 bytes)
+  examples/readme.md (1 bytes)
+  features.html (55,582 bytes)
+  help_strings.js (1,130,781 bytes)
+  index.html (61,756 bytes)
+  library.html (17,955 bytes)
+  profile-image.jpg (502,595 bytes)
+  rainbow-book.jpg (16,336 bytes)
+  shared.css (15,107 bytes)
+  src/App.jsx (2,669,965 bytes)
+  ui_strings.js (288,198 bytes)
+  word_audio_bank_part1.json (12,706,223 bytes)
+  word_audio_bank_part2.json (18,586,414 bytes)
+  word_audio_bank_part3.json (21,925,383 bytes)
+  word_audio_bank_part4.json (9,468,200 bytes)
+
+Current files:
+  psychometric_literacy_probes.json
+  psychometric_math_probes.json
+  psychometric_probes.json
+  scripts/stem_lab_module_clean.js
+  stem_lab_module.js
+  word_sounds_module.js

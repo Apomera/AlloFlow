@@ -1,0 +1,135 @@
+{
+    "mode": "student",
+    "studentNickname": "Jake Rivera",
+    "responses": {
+        "quiz-1": {
+            "score": 65
+        },
+        "quiz-2": {
+            "score": 70
+        },
+        "quiz-3": {
+            "score": 55
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-2",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-3",
+            "data": {
+                "questions": []
+            }
+        }
+    ],
+    "fluencyAssessments": [
+        {
+            "wcpm": 42,
+            "timestamp": "2026-02-10T09:00:00Z"
+        },
+        {
+            "wcpm": 45,
+            "timestamp": "2026-02-12T09:00:00Z"
+        },
+        {
+            "wcpm": 48,
+            "timestamp": "2026-02-14T09:00:00Z"
+        }
+    ],
+    "wordSoundsState": {
+        "history": [
+            {
+                "word": "cat",
+                "correct": true
+            },
+            {
+                "word": "dog",
+                "correct": false
+            },
+            {
+                "word": "fish",
+                "correct": true
+            },
+            {
+                "word": "bird",
+                "correct": false
+            },
+            {
+                "word": "tree",
+                "correct": true
+            },
+            {
+                "word": "house",
+                "correct": false
+            },
+            {
+                "word": "moon",
+                "correct": true
+            },
+            {
+                "word": "star",
+                "correct": false
+            },
+            {
+                "word": "sun",
+                "correct": true
+            },
+            {
+                "word": "rain",
+                "correct": false
+            }
+        ],
+        "sessionScore": {
+            "correct": 5,
+            "total": 10,
+            "streak": 2
+        },
+        "dailyProgress": {
+            "2026-02-10": {
+                "wordsCompleted": 4
+            },
+            "2026-02-12": {
+                "wordsCompleted": 3
+            },
+            "2026-02-14": {
+                "wordsCompleted": 3
+            }
+        }
+    },
+    "gameCompletions": {
+        "memory": [
+            {
+                "score": 60,
+                "timestamp": "2026-02-12T10:00:00Z"
+            }
+        ]
+    },
+    "labelChallengeResults": [
+        {
+            "score": 40,
+            "timestamp": "2026-02-10T14:00:00Z"
+        },
+        {
+            "score": 45,
+            "timestamp": "2026-02-14T14:00:00Z"
+        }
+    ],
+    "globalPoints": 320,
+    "timeOnTask": {
+        "totalSessionMinutes": 55
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

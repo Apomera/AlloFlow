@@ -1,0 +1,439 @@
+﻿UI_STRINGS defined keys: 4959
+Real t()/ts() keys (filtered): 2902
+Real orphan keys (WILL SHOW RAW STRINGS): 122
+
+[about] (1 keys):
+  L56679: t('about.features_list')
+        const featuresList = t('about.features_list', { returnObjects: true });
+
+[adventure] (20 keys):
+  L66656: t('adventure.back_to_resume')
+        title={t('adventure.back_to_resume')}
+  L22040: t('adventure.climax_archetypes.default.label')
+        const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.de
+  L22041: t('adventure.climax_archetypes.default.left')
+        const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes
+  L22042: t('adventure.climax_archetypes.default.right')
+        const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetyp
+  L52515: t('adventure.fallback_opening')
+        if (!content.text) content.text = t('adventure.fallback_opening');
+  L46251: t('adventure.generating_options_audio')
+        addToast(t('adventure.generating_options_audio'), "info");
+  L67214: t('adventure.interrupted_desc')
+        {t('adventure.interrupted_desc')}
+  L67212: t('adventure.interrupted_title')
+        <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3>
+  L66634: t('adventure.paused_desc')
+        {t('adventure.paused_desc')}
+  L66632: t('adventure.paused_title')
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_title')}</h2>
+  L45557: t('adventure.results.header')
+        feedbackText += `\n\n${t('adventure.results.header')}\n`;
+  L45567: t('adventure.results.perf_score')
+        feedbackText += t('adventure.results.perf_score', { total: total });
+  L45561: t('adventure.results.roll_calc')
+        feedbackText += t('adventure.results.roll_calc', {
+  L67220: t('adventure.retry_action')
+        <RefreshCw size={18} /> {t('adventure.retry_action')}
+  L45721: t('adventure.save_reminder')
+        addToast(t('adventure.save_reminder') || "≡ƒÆ╛ Consider saving your adventure progress!", "info");
+  L66666: t('adventure.setup_subtitle')
+        <p className="text-indigo-200 text-sm font-medium">{t('adventure.setup_subtitle')}</p>
+  L66647: t('adventure.start_overwrite')
+        <RefreshCw size={12}/> {t('adventure.start_overwrite')}
+  L67050: t('adventure.system_simulation')
+        <span>≡ƒÅ¢∩╕Å</span> {t('adventure.system_simulation')}
+  L67129: t('adventure.system_state')
+        <span>≡ƒôè</span> {t('adventure.system_state')}
+  L67053: t('adventure.tooltips.stability')
+        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border borde
+
+[bingo] (4 keys):
+  L25540: t('bingo.close_generator')
+        data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
+  L25611: t('bingo.exit_caller_aria')
+        data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
+  L25601: t('bingo.launch_caller_aria')
+        data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
+  L25624: t('bingo.pause_duration')
+        title={t('bingo.pause_duration', { seconds: callDelay })}
+
+[cancel] (1 keys):
+  L27637: t('cancel')
+        {t('cancel')}
+
+[chat_guide] (7 keys):
+  L49815: t('chat_guide.advice_saved')
+        addToast(t('chat_guide.advice_saved'), "success");
+  L49831: t('chat_guide.advice_saved_raw')
+        addToast(t('chat_guide.advice_saved_raw'), "success");
+  L47657: t('chat_guide.highlight_confirm')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.highlight_confirm') }]);
+  L49789: t('chat_guide.history_saved_toast')
+        addToast(t('chat_guide.history_saved_toast'), "success");
+  L37239: t('chat_guide.independent_welcome')
+        text: t('chat_guide.independent_welcome'),
+  L57898: t('chat_guide.save_actionable_btn')
+        {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
+  L57898: t('chat_guide.save_actionable_loading')
+        {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
+
+[codenames] (2 keys):
+  L18506: t('codenames.adjectives')
+        const adjectives = t('codenames.adjectives') || [];
+  L18507: t('codenames.animals')
+        const animals = t('codenames.animals') || [];
+
+[common] (4 keys):
+  L57275: t('common.continue')
+        <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
+  L55664: t('common.delete')
+        <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:text-red-600 p-1.5 roun
+  L10207: t('common.language')
+        title={ts('common.language') || "Language"}
+  L7738: t('common.mic_error')
+        addToast(ts('common.mic_error') || "Microphone error", "error");
+
+[escape_room] (1 keys):
+  L50447: t('escape_room.xp_earned_streak')
+        ? t('escape_room.xp_earned_streak', { xp: puzzleXP, multiplier: streakMultiplier })
+
+[export] (70 keys):
+  L52090: t('export.activity_label')
+        return d.map(b => `${t('export.activity_label')} ${b.title} - ${b.description}`).join('\n');
+  L52097: t('export.analysis_source_label')
+        return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('export.unknown_level')}. 
+  L52087: t('export.answer_label')
+        return probs.map(p => `${t('export.problem_label')} ${p.question || p.problem}. ${t('export.answer_l
+  L43914: t('export.bundle_downloaded')
+        addToast(t('export.bundle_downloaded'), "success");
+  L52084: t('export.categories_label')
+        return `${t('export.categories_label')} ${d.categories.map(c => c.label).join(', ')}. ${t('export.it
+  L42916: t('export.date_label')
+        <span class="label">${t('export.date_label')}:</span>
+  L43635: t('export.def_col')
+        { text: t('export.def_col'), options: { bold: true, fill: "F1F5F9", color: darkText } },
+  L52072: t('export.def_label')
+        return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def_label')} ${gItem.de
+  L42901: t('export.default_lesson_title')
+        const lessonTopic = topic || t('export.default_lesson_title');
+  L44014: t('export.filenames.assignment')
+        const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.json`;
+  L47473: t('export.filenames.flashcards')
+        link.download = `${t('export.filenames.flashcards')}-${mode}-${Date.now()}.html`;
+  L43933: t('export.filenames.html_pack')
+        link.download = `${t('export.filenames.html_pack')}.html`;
+  L37427: t('export.filenames.profiles')
+        downloadAnchorNode.setAttribute("download", `${t('export.filenames.profiles')}.json`);
+  L44174: t('export.filenames.project_student')
+        let filenamePrefix = t('export.filenames.project_student');
+  L44168: t('export.filenames.project_teacher')
+        setSaveFileName(`${t('export.filenames.project_teacher')}-${new Date().toISOString().split('T')[0]}`
+  L43798: t('export.filenames.slides_prefix')
+        pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.pptx` });
+  L43909: t('export.filenames.zip_pack')
+        link.download = `${t('export.filenames.zip_pack')}-${new Date().toISOString().split('T')[0]}.zip`;
+  L42905: t('export.generated_date_label')
+        const dateLabel = t('export.generated_date_label');
+  L42907: t('export.html_page_title')
+        const pageTitle = t('export.html_page_title');
+  L43218: t('export.ims_resource_pack')
+        const defaultTitle = t('export.ims_resource_pack');
+  L52083: t('export.incomplete_sort')
+        if (!d.categories || !d.items) return t('export.incomplete_sort');
+  L52095: t('export.interview_figure_label')
+        return d.map(p => `${t('export.interview_figure_label')} ${p.name} (${p.role})`).join('\n');
+  L52084: t('export.items_label')
+        return `${t('export.categories_label')} ${d.categories.map(c => c.label).join(', ')}. ${t('export.it
+  L52097: t('export.key_concepts_label')
+        return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('export.unknown_level')}. 
+  L52078: t('export.main_label')
+        return `${t('export.main_label')} ${d.main}. ${t('export.structure_label')} ${d.branches?.map(b => `
+  L42912: t('export.name_label')
+        <span class="label">${t('export.name_label')}:</span>
+  L52092: t('export.no_active_scene')
+        return `${t('export.scenario_label')} ${d.currentScene?.text || t('export.no_active_scene')}`;
+  L52080: t('export.no_events')
+        if (!Array.isArray(d)) return t('export.no_events');
+  L52089: t('export.no_ideas')
+        if (!Array.isArray(d)) return t('export.no_ideas');
+  L52094: t('export.no_personas')
+        if (!Array.isArray(d)) return t('export.no_personas');
+  L52068: t('export.no_questions')
+        if (!d.questions) return t('export.no_questions');
+  L42903: t('export.no_student_content')
+        const noStudentMsg = t('export.no_student_content');
+  L42904: t('export.no_teacher_content')
+        const noTeacherMsg = t('export.no_teacher_content');
+  L52071: t('export.no_terms')
+        if (!Array.isArray(d)) return t('export.no_terms');
+  L43699: t('export.ppt_correct_note')
+        slide.addNotes(`${t('export.ppt_correct_note')}: ${q.correctAnswer}\n\n${q.factCheck || ''}`);
+  L43566: t('export.ppt_generated')
+        titleSlide.addText(`${t('export.ppt_grade_level')}: ${gradeLevel} | ${t('export.ppt_generated')}: ${
+  L43566: t('export.ppt_grade_level')
+        titleSlide.addText(`${t('export.ppt_grade_level')}: ${gradeLevel} | ${t('export.ppt_generated')}: ${
+  L52087: t('export.problem_label')
+        return probs.map(p => `${t('export.problem_label')} ${p.question || p.problem}. ${t('export.answer_l
+  L43086: t('export.qti_default_desc')
+        const description = escapeXml(sourceTopic || t('export.qti_default_desc'));
+  L43085: t('export.qti_default_title')
+        const title = escapeXml(generatedContent.title || t('export.qti_default_title'));
+  L43900: t('export.readme_contents')
+        ${t('export.readme_contents')}
+  L43898: t('export.readme_generated')
+        ${t('export.readme_generated', { date: new Date().toLocaleString() })}
+  L43901: t('export.readme_html_desc')
+        ${t('export.readme_html_desc')}
+  L43902: t('export.readme_json_desc')
+        ${t('export.readme_json_desc')}`;
+  L43897: t('export.readme_title')
+        const readmeContent = `${t('export.readme_title')}
+  L43899: t('export.readme_topic')
+        ${t('export.readme_topic', { topic: sourceTopic || t('common.untitled') })}
+  L52092: t('export.scenario_label')
+        return `${t('export.scenario_label')} ${d.currentScene?.text || t('export.no_active_scene')}`;
+  L43552: t('export.slides_master_footer')
+        { text: { text: t('export.slides_master_footer'), options: { x: 0.5, y: 5.3, w: 4, h: 0.3, fontSize:
+  L43670: t('export.slides_question_title')
+        slide.addText(t('export.slides_question_title', { number: i + 1 }), {
+  L43557: t('export.slides_subject')
+        pptx.subject = t('export.slides_subject');
+  L43556: t('export.slides_title_default')
+        pptx.title = sourceTopic || t('export.slides_title_default');
+  L47201: t('export.storybook.chapter_separator')
+        const strSeparator = t('export.storybook.chapter_separator');
+  L47196: t('export.storybook.epilogue_badge')
+        const strEpilogue = t('export.storybook.epilogue_badge');
+  L47197: t('export.storybook.log_header')
+        const strLogHeader = t('export.storybook.log_header');
+  L47195: t('export.storybook.meta_info')
+        const strMeta = t('export.storybook.meta_info', { date, level: adventureState.level });
+  L47193: t('export.storybook.page_title')
+        const strPageTitle = t('export.storybook.page_title', { title });
+  L47198: t('export.storybook.print_button')
+        const strPrint = t('export.storybook.print_button');
+  L47194: t('export.storybook.subtitle')
+        const strSubtitle = t('export.storybook.subtitle');
+  L47200: t('export.storybook.user_label')
+        const strUser = t('export.storybook.user_label');
+  L52078: t('export.structure_label')
+        return `${t('export.main_label')} ${d.main}. ${t('export.structure_label')} ${d.branches?.map(b => `
+  L42900: t('export.student_copy')
+        const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
+  L43052: t('export.support_dev')
+        ${t('output.generated_via')} ΓÇó **<a href="https**://Ko-fi.com/aaronpomeranz207" target="_blank" styl
+  L43025: t('export.teacher_copy_divider')
+        .page-break:after { content: "${t('export.teacher_copy_divider')}"; }
+  L42902: t('export.teacher_copy_intro')
+        const teacherIntro = t('export.teacher_copy_intro');
+  L43047: t('export.teacher_key_title')
+        <h1>${t('export.teacher_key_title')}</h1>
+  L43634: t('export.term_col')
+        { text: t('export.term_col'), options: { bold: true, fill: "F1F5F9", color: darkText } },
+  L52072: t('export.term_label')
+        return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def_label')} ${gItem.de
+  L42906: t('export.topic')
+        const topicLabel = t('export.topic');
+  L43636: t('export.trans_col')
+        { text: t('export.trans_col'), options: { bold: true, fill: "F1F5F9", color: darkText } }
+  L52097: t('export.unknown_level')
+        return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('export.unknown_level')}. 
+
+[language_selector] (4 keys):
+  L18060: t('language_selector.status_checking')
+        setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }));
+  L18080: t('language_selector.status_generating')
+        setStatusMessage(t('language_selector.status_generating', { lang: targetLanguage }));
+  L18094: t('language_selector.status_retrying_chunk')
+        setStatusMessage(t('language_selector.status_retrying_chunk', { chunk: i + 1, attempt: chunkAttempt 
+  L18087: t('language_selector.status_translating_part')
+        setStatusMessage(t('language_selector.status_translating_part', { current: i + 1, total: chunks.leng
+
+[mastery] (1 keys):
+  L21727: t('mastery.continue')
+        {t('mastery.continue')}
+
+[move_down] (1 keys):
+  L24134: t('move_down')
+        <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 tex
+
+[move_up] (1 keys):
+  L24133: t('move_up')
+        <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-500 hover
+
+[persona] (1 keys):
+  L57511: t('persona.topic_spark_tooltip')
+        title={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
+
+[quick_start] (1 keys):
+  L40151: t('quick_start.found_resources')
+        addToast(t('quick_start.found_resources', {count: uniqueOptions.length}), "success");
+
+[toasts] (1 keys):
+  L57951: t('toasts.applied_standard')
+        addToast(t('toasts.applied_standard', {code: std.code}), "success");
+
+[tour] (1 keys):
+  L47656: t('tour.spotlight_message')
+        setSpotlightMessage(t('tour.spotlight_message', { name: displayName }));
+
+[visuals] (1 keys):
+  L59224: t('visuals.styles.default')
+        <option value="Default">{t('visuals.styles.default')}</option>
+
+Unused UI_STRINGS keys (defined but never used): 2179
+
+By category:
+  help_mode: 1184 unused
+  adventure: 258 unused
+  quiz: 122 unused
+  escape_room: 66 unused
+  toasts: 55 unused
+  games: 43 unused
+  class_analytics: 23 unused
+  modals: 23 unused
+  lesson_headers: 21 unused
+  output: 19 unused
+  persona: 17 unused
+  bot_events: 16 unused
+  settings: 16 unused
+  chat_guide: 14 unused
+  tips: 14 unused
+  about: 13 unused
+  large_file: 13 unused
+  lesson_plan: 13 unused
+  wizard: 11 unused
+  common: 10 unused
+  concept_map: 10 unused
+  sidebar: 10 unused
+  bridge: 9 unused
+  filenames: 8 unused
+  fluency: 8 unused
+  session: 8 unused
+  storybook: 8 unused
+  status: 6 unused
+  glossary: 5 unused
+  immersive: 5 unused
+  math: 5 unused
+  tools: 5 unused
+  groups: 4 unused
+  outline: 4 unused
+  simplified: 4 unused
+  word_sounds: 4 unused
+  alignment: 3 unused
+  blueprint: 3 unused
+  dashboard: 3 unused
+  errors: 3 unused
+  header: 3 unused
+  results: 3 unused
+  scaffolds: 3 unused
+  flashcards: 2 unused
+  student: 2 unused
+  timeline: 2 unused
+  visuals: 2 unused
+  activity_label: 1 unused
+  analysis: 1 unused
+  analysis_source_label: 1 unused
+  answer_label: 1 unused
+  back_to_resume: 1 unused
+  bundle_downloaded: 1 unused
+  categories_label: 1 unused
+  category: 1 unused
+  color: 1 unused
+  date_label: 1 unused
+  def_col: 1 unused
+  def_label: 1 unused
+  default_lesson_title: 1 unused
+  desc: 1 unused
+  district_resource: 1 unused
+  download_complete: 1 unused
+  english_trans_label: 1 unused
+  entry: 1 unused
+  export_menu: 1 unused
+  fallback_opening: 1 unused
+  footer_generated: 1 unused
+  generated_date_label: 1 unused
+  generating_bundle: 1 unused
+  generating_options_audio: 1 unused
+  generating_pdf: 1 unused
+  html_page_title: 1 unused
+  icon: 1 unused
+  ims_resource_pack: 1 unused
+  incomplete_sort: 1 unused
+  input: 1 unused
+  interrupted_desc: 1 unused
+  interrupted_title: 1 unused
+  interview_figure_label: 1 unused
+  items_label: 1 unused
+  keep_separate_note: 1 unused
+  key_concepts_label: 1 unused
+  language_selector: 1 unused
+  main_label: 1 unused
+  meta: 1 unused
+  name_label: 1 unused
+  no_active_scene: 1 unused
+  no_events: 1 unused
+  no_ideas: 1 unused
+  no_personas: 1 unused
+  no_questions: 1 unused
+  no_student_content: 1 unused
+  no_teacher_content: 1 unused
+  no_terms: 1 unused
+  paused_desc: 1 unused
+  paused_title: 1 unused
+  ppt_correct_note: 1 unused
+  ppt_generated: 1 unused
+  ppt_grade_level: 1 unused
+  problem_label: 1 unused
+  process: 1 unused
+  qti_default_desc: 1 unused
+  qti_default_title: 1 unused
+  readme_contents: 1 unused
+  readme_generated: 1 unused
+  readme_html_desc: 1 unused
+  readme_json_desc: 1 unused
+  readme_title: 1 unused
+  readme_topic: 1 unused
+  retry_action: 1 unused
+  review_game: 1 unused
+  save_reminder: 1 unused
+  scenario_label: 1 unused
+  score_label: 1 unused
+  setup_subtitle: 1 unused
+  slides_master_footer: 1 unused
+  slides_question_title: 1 unused
+  slides_subject: 1 unused
+  slides_title_default: 1 unused
+  source_ref_title: 1 unused
+  standards: 1 unused
+  start_overwrite: 1 unused
+  status_checking: 1 unused
+  status_generating: 1 unused
+  status_retrying_chunk: 1 unused
+  status_translating_part: 1 unused
+  structure_label: 1 unused
+  student_copy: 1 unused
+  support_dev: 1 unused
+  system_simulation: 1 unused
+  system_state: 1 unused
+  teacher_copy_divider: 1 unused
+  teacher_copy_intro: 1 unused
+  teacher_key_title: 1 unused
+  term_col: 1 unused
+  term_label: 1 unused
+  text_tools: 1 unused
+  title: 1 unused
+  topic: 1 unused
+  trans_col: 1 unused
+  udl_strategy_advice: 1 unused
+  unknown_level: 1 unused
+
+======================================================================
+SUMMARY
+======================================================================
+Defined:     4959
+Used:        2902
+ORPHANS:     122 ΓåÉ BROKEN, will show raw key text!
+Unused:      2179 ΓåÉ dead but harmless
+Match rate:  2780/2902 (95%)

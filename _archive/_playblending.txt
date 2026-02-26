@@ -1,0 +1,6 @@
+L4799:     const playBlending = React.useCallback(async () => {
+L7398:                         await playBlending();
+L7429:     }, [currentWordSoundsWord, isLoadingPhonemes, wordSoundsActivity, rhymeOptions, playBlending]);
+L7779:                     await playBlending();
+L9101:                         onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}
+L9113:                     onClick={() => wordSoundsActivity === 'blending' ? playBlending() : handleAudio(currentWordSoundsWord)}

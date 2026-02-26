@@ -1,0 +1,742 @@
+=== DEEP TOUR FEATURE VERIFICATION ===
+Total tour steps found: 23
+
+
+================================================================================
+STEP 1: tour-input-panel
+================================================================================
+
+DESCRIPTION:
+Begin your lesson creation journey here. This Input Panel is the foundation for all generated resources. It serves as the central hub where you define the content, context, and parameters.
+
+### Input Options
+• **Text Paste**: Paste content directly from any article, story, or lesson plan.
+• **File Upload**: Upload PDFs, images, text files, audio (MP3/WAV), or video for automatic extraction.
+• **URL Fetch**: Paste any article URL to automatically extract and import its content.
+• **AI Resource Se...
+
+CLAIMED FEATURES (11):
+  - Text Paste
+  - File Upload
+  - URL Fetch
+  - AI Resource Search
+  - Generate Source Text
+  - Tone Selection
+  - Standards Alignment
+  - Fact Verification
+  - Custom Instructions
+  - Auto-Detection
+  - Chunked Processing
+
+VERIFICATION:
+  [✗ NOT FOUND] Text Paste
+  [✓ FOUND] File Upload (matched: fileUpload)
+  [✓ FOUND] URL Fetch (matched: urlFetch)
+  [✗ NOT FOUND] AI Resource Search
+  [✗ NOT FOUND] Generate Source Text
+  [✗ NOT FOUND] Tone Selection
+  [✗ NOT FOUND] Standards Alignment
+  [✗ NOT FOUND] Fact Verification
+  [✓ FOUND] Custom Instructions (matched: customInstructions)
+  [✓ FOUND] Auto-Detection (matched: auto-detection)
+  [✗ NOT FOUND] Chunked Processing
+
+
+================================================================================
+STEP 2: tour-tool-analysis
+================================================================================
+
+DESCRIPTION:
+Review the AI's deep understanding of your content. This analysis ensures accuracy before generating student materials by breaking down the text into its atomic pedagogical components.
+
+### Panel Options
+• **Check Accuracy**: Enable web grounding to verify factual claims and identify potential inaccuracies in your source text.
+
+### Analysis Components
+• **Executive Summary**: A concise overview of the input text's main ideas and purpose.
+• **Key Themes**: Identifies core concepts and 'Big Ideas'...
+
+CLAIMED FEATURES (5):
+  - Check Accuracy
+  - Executive Summary
+  - Key Themes
+  - Vocabulary Extraction
+  - Engagement
+
+VERIFICATION:
+  [✓ FOUND] Check Accuracy (matched: checkAccuracy)
+  [✗ NOT FOUND] Executive Summary
+  [✗ NOT FOUND] Key Themes
+  [✗ NOT FOUND] Vocabulary Extraction
+  [✓ FOUND] Engagement (matched: engagement)
+
+
+================================================================================
+STEP 3: ui-tool-glossary
+================================================================================
+
+DESCRIPTION:
+Generate a comprehensive Visual Glossary to support vocabulary acquisition. This tool is essential for pre-teaching and front-loading concepts.
+
+### Panel Options
+• **Tier 2/Tier 3 Counts**: Specify how many academic vs domain-specific terms to extract.
+• **Definition Level**: Adjust complexity from Kindergarten to College level.
+• **Bilingual Support**: Add up to 4 target languages for multilingual glossaries.
+• **Custom Instructions**: Provide specific guidance for term selection or definition...
+
+CLAIMED FEATURES (9):
+  - Tier 2/Tier 3 Counts
+  - Definition Level
+  - Bilingual Support
+  - Custom Instructions
+  - Visual Terms
+  - Flashcards
+  - Games
+  - Audio Support
+  - Representation
+
+VERIFICATION:
+  [✗ NOT FOUND] Tier 2/Tier 3 Counts
+  [✓ FOUND] Definition Level (matched: definitionLevel)
+  [✗ NOT FOUND] Bilingual Support
+  [✓ FOUND] Custom Instructions (matched: customInstructions)
+  [✗ NOT FOUND] Visual Terms
+  [✓ FOUND] Flashcards (matched: flashcards)
+  [✓ FOUND] Games (matched: games)
+  [✗ NOT FOUND] Audio Support
+  [✓ FOUND] Representation (matched: representation)
+
+
+================================================================================
+STEP 4: ui-tool-simplified
+================================================================================
+
+DESCRIPTION:
+Differentiate your text for diverse learners. This tool rewrites content to specific proficiency levels and provides a rich Immersive Reader with literacy supports.
+
+### Panel Options
+• **Grade Goal**: Scale complexity from Kindergarten to College level.
+• **Mode Selection**: Standard Rewrite, Explain & Expand, or Summarize.
+• **Language**: Translate the leveled text into a target language.
+
+### Immersive Reader Features
+• **Focus Reader (RSVP)**: Speed-read one word at a time for concentration....
+
+CLAIMED FEATURES (10):
+  - Grade Goal
+  - Mode Selection
+  - Language
+  - Focus Reader (RSVP)
+  - Karaoke Mode
+  - Bionic Reading
+  - Grammar Highlighting
+  - Cloze Activity
+  - Zen Mode
+  - Representation
+
+VERIFICATION:
+  [✗ NOT FOUND] Grade Goal
+  [✓ FOUND] Mode Selection (matched: mode_selection)
+  [✓ FOUND] Language (matched: language)
+  [✗ NOT FOUND] Focus Reader (RSVP)
+  [✗ NOT FOUND] Karaoke Mode
+  [✗ NOT FOUND] Bionic Reading
+  [✗ NOT FOUND] Grammar Highlighting
+  [✗ NOT FOUND] Cloze Activity
+  [✓ FOUND] Zen Mode (matched: zenMode)
+  [✓ FOUND] Representation (matched: representation)
+
+
+================================================================================
+STEP 5: tour-tool-wordsounds
+================================================================================
+
+DESCRIPTION:
+Build foundational literacy skills with the Word Sounds Studio. Focuses on phonemic awareness and phonics.
+
+### Panel Options
+• **Grade Level**: Set the target age group (K-2, 3-5) to adjust word difficulty.
+• **Activity Mode**: Select from 'Phonics' (Letters+Sounds) or 'Sound Only' (Auditory).
+• **Source**: Use current Glossary terms or generate new words by phoneme.
+
+### Resource Features
+• **Phonemic Activities**: Interactive Counting, Isolating, and Blending tasks.
+• **Segmentation**: Break ...
+
+CLAIMED FEATURES (7):
+  - Grade Level
+  - Activity Mode
+  - Source
+  - Phonemic Activities
+  - Segmentation
+  - Visual Mapping
+  - Audio-First
+
+VERIFICATION:
+  [✓ FOUND] Grade Level (matched: gradeLevel)
+  [✗ NOT FOUND] Activity Mode
+  [✓ FOUND] Source (matched: source)
+  [✗ NOT FOUND] Phonemic Activities
+  [✓ FOUND] Segmentation (matched: segmentation)
+  [✗ NOT FOUND] Visual Mapping
+  [✓ FOUND] Audio-First (matched: audio-first)
+
+
+================================================================================
+STEP 6: tour-tool-outline
+================================================================================
+
+DESCRIPTION:
+Create visual representations of your content's structure. Choose from multiple graphic organizer formats tailored to different thinking styles.
+
+### Organizer Types
+• **Venn Diagram**: Compare and contrast two or more concepts interactively.
+• **Flow Chart**: Visualize sequential processes, timelines, or decision trees.
+• **Structured Outline**: Hierarchical list showing main ideas and supporting details.
+
+### Interactive Features
+• **Drag-and-Drop**: Students sort items into correct Venn secti...
+
+CLAIMED FEATURES (6):
+  - Venn Diagram
+  - Flow Chart
+  - Structured Outline
+  - Drag-and-Drop
+  - Interactive Mode
+  - Edit Mode
+
+VERIFICATION:
+  [✓ FOUND] Venn Diagram (matched: vennDiagram)
+  [✓ FOUND] Flow Chart (matched: flowChart)
+  [✗ NOT FOUND] Structured Outline
+  [✓ FOUND] Drag-and-Drop (matched: drag-and-drop)
+  [✓ FOUND] Interactive Mode (matched: interactive_mode)
+  [✗ NOT FOUND] Edit Mode
+
+
+================================================================================
+STEP 7: tour-tool-visual
+================================================================================
+
+DESCRIPTION:
+Enhance comprehension with AI-generated imagery. This tool automatically creates a visual representation of key concepts to support Dual Coding strategies.
+
+### Resource Features
+• **Auto-Generation**: Creates a relevant image based on your text analysis.
+• **Regenerate**: Request a new variation if the first image isn't perfect.
+• **Downloadable**: Save the image for use in slides or handouts.
+
+### UDL Connection
+• **Representation**: Clarify syntax and structure (Guideline 2) by providing visu...
+
+CLAIMED FEATURES (4):
+  - Auto-Generation
+  - Regenerate
+  - Downloadable
+  - Representation
+
+VERIFICATION:
+  [✓ FOUND] Auto-Generation (matched: auto-generation)
+  [✓ FOUND] Regenerate (matched: regenerate)
+  [✓ FOUND] Downloadable (matched: downloadable)
+  [✓ FOUND] Representation (matched: representation)
+
+
+================================================================================
+STEP 8: tour-tool-faq
+================================================================================
+
+DESCRIPTION:
+Anticipate student confusion before it happens. This tool automatically generates a predictive FAQ based on the text's complexity, proactively addressing common misconceptions.
+
+### Key Features
+• **Auto-Generation**: Instantly creates Questions & Answers based on the text analysis.
+• **Audio Support**: Text-to-Speech for both questions and answers to support auditory learners.
+• **Bilingual Support**: Option to view and hear translations if a target language is selected.
+• **Interactive Mode**:...
+
+CLAIMED FEATURES (5):
+  - Auto-Generation
+  - Audio Support
+  - Bilingual Support
+  - Interactive Mode
+  - Representation
+
+VERIFICATION:
+  [✓ FOUND] Auto-Generation (matched: auto-generation)
+  [✗ NOT FOUND] Audio Support
+  [✗ NOT FOUND] Bilingual Support
+  [✓ FOUND] Interactive Mode (matched: interactive_mode)
+  [✓ FOUND] Representation (matched: representation)
+
+
+================================================================================
+STEP 9: tour-tool-scaffolds
+================================================================================
+
+DESCRIPTION:
+Support student output with structured writing aids. By providing graduated levels of support, you enable students to express their understanding regardless of their writing proficiency.
+
+### Scaffold Types
+• **Sentence Frames**: List-based sentence starters to help students begin their thoughts.
+• **Paragraph Frames**: Cloze-style paragraphs for structuring complete arguments or summaries.
+• **Checklists & Rubrics**: Auto-generated success criteria for self-monitoring.
+
+### Advanced Features
+• ...
+
+CLAIMED FEATURES (6):
+  - Sentence Frames
+  - Paragraph Frames
+  - Checklists & Rubrics
+  - AI Auto-Grader
+  - Live Feedback
+  - Action & Expression
+
+VERIFICATION:
+  [✗ NOT FOUND] Sentence Frames
+  [✗ NOT FOUND] Paragraph Frames
+  [✗ NOT FOUND] Checklists & Rubrics
+  [✗ NOT FOUND] AI Auto-Grader
+  [✗ NOT FOUND] Live Feedback
+  [✗ NOT FOUND] Action & Expression
+
+
+================================================================================
+STEP 10: ui-tool-quiz
+================================================================================
+
+DESCRIPTION:
+Assess understanding with diverse, gamified assessment modes. Perfect for engagement and formative checks.
+
+### Game Modes
+• **Live Quiz**: Launch a synchronized session with real-time leaderboards.
+• **Team Showdown**: Collaborative team-based competition.
+• **Escape Room**: Immersive puzzle-based assessment with themed rooms, hints, and clue discovery.
+• **Review Mode**: Self-paced review with immediate feedback.
+
+### Resource Features
+• **Presentation Mode**: Project questions for whole-class...
+
+CLAIMED FEATURES (8):
+  - Live Quiz
+  - Team Showdown
+  - Escape Room
+  - Review Mode
+  - Presentation Mode
+  - Difficulty Settings
+  - Multiple Puzzle Types
+  - Engagement
+
+VERIFICATION:
+  [✓ FOUND] Live Quiz (matched: liveQuiz)
+  [✓ FOUND] Team Showdown (matched: team_showdown)
+  [✓ FOUND] Escape Room (matched: escapeRoom)
+  [✗ NOT FOUND] Review Mode
+  [✓ FOUND] Presentation Mode (matched: presentationMode)
+  [✗ NOT FOUND] Difficulty Settings
+  [✗ NOT FOUND] Multiple Puzzle Types
+  [✓ FOUND] Engagement (matched: engagement)
+
+
+================================================================================
+STEP 11: tour-tool-brainstorm
+================================================================================
+
+DESCRIPTION:
+Spark engagement with reliable, creative application ideas. This tool connects your lesson topic to real-world scenarios and project-based learning opportunities.
+
+### Ideation Categories
+• **Project-Based Learning**: Long-term project ideas and driving questions.
+• **Real-World Connections**: How this topic applies to careers and daily life.
+• **Discussion Hooks**: Provocative questions to start the class.
+
+### Pro Tip
+• Use references to local context to increase relevance.
+
+### UDL Connection...
+
+CLAIMED FEATURES (4):
+  - Project-Based Learning
+  - Real-World Connections
+  - Discussion Hooks
+  - Engagement
+
+VERIFICATION:
+  [✗ NOT FOUND] Project-Based Learning
+  [✗ NOT FOUND] Real-World Connections
+  [✗ NOT FOUND] Discussion Hooks
+  [✓ FOUND] Engagement (matched: engagement)
+
+
+================================================================================
+STEP 12: tour-tool-persona
+================================================================================
+
+DESCRIPTION:
+Bring history and literature to life by simulating a conversation with a relevant character. This immersive experience builds empathy and deepens contextual understanding through direct interaction.
+
+
+### Simulation Settings
+• **Character Selection**: Choose from historical figures, fictional characters, or experts.
+• **Context Definition**: Define the specific era or scene for the simulation.
+
+### Interaction Features
+• **Hot Seat**: Students ask questions and get in-character responses.
+• **Vo...
+
+CLAIMED FEATURES (6):
+  - Character Selection
+  - Context Definition
+  - Hot Seat
+  - Voice Mode
+  - Debate Mode
+  - Engagement
+
+VERIFICATION:
+  [✗ NOT FOUND] Character Selection
+  [✗ NOT FOUND] Context Definition
+  [✗ NOT FOUND] Hot Seat
+  [✓ FOUND] Voice Mode (matched: voice_mode)
+  [✗ NOT FOUND] Debate Mode
+  [✓ FOUND] Engagement (matched: engagement)
+
+
+================================================================================
+STEP 13: tour-tool-timeline
+================================================================================
+
+DESCRIPTION:
+Visualize sequence and cause-and-effect relationships. This tool extracts key events and dates, presenting them in a linear format that supports students with processing speed or memory challenges.
+
+
+### Visualization Features
+• **Auto-Extraction**: Identifies dates and events automatically from the text.
+• **Chronological Flow**: Arrange events in strict time order.
+• **Process Steps**: Can also be used to visualize scientific processes or recipes.
+• **Interactive**: Click events to see detaile...
+
+CLAIMED FEATURES (5):
+  - Auto-Extraction
+  - Chronological Flow
+  - Process Steps
+  - Interactive
+  - Representation
+
+VERIFICATION:
+  [✓ FOUND] Auto-Extraction (matched: auto-extraction)
+  [✗ NOT FOUND] Chronological Flow
+  [✗ NOT FOUND] Process Steps
+  [✓ FOUND] Interactive (matched: interactive)
+  [✓ FOUND] Representation (matched: representation)
+
+
+================================================================================
+STEP 14: tour-tool-concept-sort
+================================================================================
+
+DESCRIPTION:
+Reinforce categorization skills and conceptual relationships. Students drag-and-drop terms into defined categories, actively processing the connections between ideas.
+
+
+### Activity Options
+• **Category Setup**: Define the bins/groups (e.g., "Mammals vs Reptiles").
+• **Item Count**: Set how many items to generate for sorting.
+
+### Gameplay
+• **Drag-and-Drop**: Interactive sorting interface for digital use.
+• **Instant Feedback**: Immediate validation of correct/incorrect sorts.
+• **Printable**: ...
+
+CLAIMED FEATURES (6):
+  - Category Setup
+  - Item Count
+  - Drag-and-Drop
+  - Instant Feedback
+  - Printable
+  - Action & Expression
+
+VERIFICATION:
+  [✗ NOT FOUND] Category Setup
+  [✓ FOUND] Item Count (matched: itemCount)
+  [✓ FOUND] Drag-and-Drop (matched: drag-and-drop)
+  [✗ NOT FOUND] Instant Feedback
+  [✓ FOUND] Printable (matched: printable)
+  [✗ NOT FOUND] Action & Expression
+
+
+================================================================================
+STEP 15: tour-tool-math
+================================================================================
+
+DESCRIPTION:
+Integrate numeracy into any subject. This tool generates word problems that use the characters and themes from your source text, showing learners how math applies in this specific context.
+
+### Problem Settings
+• **Math Domains**: Covers core standards across various difficulty levels.
+• **Difficulty**: Adjust complexity to match learner needs.
+
+### Output Features
+• **Contextualized Problems**: Word problems use the characters/themes from your source text.
+• **Worked Solutions**: Step-by-step e...
+
+CLAIMED FEATURES (5):
+  - Math Domains
+  - Difficulty
+  - Contextualized Problems
+  - Worked Solutions
+  - Visual Aids
+
+VERIFICATION:
+  [✗ NOT FOUND] Math Domains
+  [✓ FOUND] Difficulty (matched: difficulty)
+  [✗ NOT FOUND] Contextualized Problems
+  [✗ NOT FOUND] Worked Solutions
+  [✗ NOT FOUND] Visual Aids
+
+
+================================================================================
+STEP 16: tour-tool-adventure
+================================================================================
+
+DESCRIPTION:
+Create immersive learning experiences with multiple simulation modes. From personal narratives to large-scale system simulations.
+
+### Simulation Modes
+• **Adventure Mode**: Classic choose-your-own-adventure branching narratives.
+• **Social Story Mode**: Generate supportive scenarios for SEL and behavior guidance.
+• **System Simulation**: Manage factions, resources, and macro-level decisions.
+
+### Interactive Features
+• **Branching Narrative**: Choices affect story outcomes with AI-generated con...
+
+CLAIMED FEATURES (7):
+  - Adventure Mode
+  - Social Story Mode
+  - System Simulation
+  - Branching Narrative
+  - Faction Resources
+  - Storybook Art
+  - Engagement
+
+VERIFICATION:
+  [✓ FOUND] Adventure Mode (matched: adventureMode)
+  [✓ FOUND] Social Story Mode (matched: socialStoryMode)
+  [✓ FOUND] System Simulation (matched: system_simulation)
+  [✗ NOT FOUND] Branching Narrative
+  [✓ FOUND] Faction Resources (matched: factionResources)
+  [✗ NOT FOUND] Storybook Art
+  [✓ FOUND] Engagement (matched: engagement)
+
+
+================================================================================
+STEP 17: tour-tool-alignment
+================================================================================
+
+DESCRIPTION:
+Ensure your lesson hits the mark. This report automatically cross-references your generated resources against Common Core Standards and UDL Guidelines, identifying strengths and gaps.
+
+
+### Alignment Checks
+• **CAST UDL Guidelines**: Checks for Engagement, Representation, and Action/Expression.
+• **Standards Verification**: Cross-reference with Common Core, NGSS, or State Standards.
+• **Gap Analysis**: Identifies missing elements or weak points in your lesson plan.
+• **Suggestions**: Actionable ...
+
+CLAIMED FEATURES (5):
+  - CAST UDL Guidelines
+  - Standards Verification
+  - Gap Analysis
+  - Suggestions
+  - Action & Expression
+
+VERIFICATION:
+  [✗ NOT FOUND] CAST UDL Guidelines
+  [✗ NOT FOUND] Standards Verification
+  [✗ NOT FOUND] Gap Analysis
+  [✓ FOUND] Suggestions (matched: suggestions)
+  [✗ NOT FOUND] Action & Expression
+
+
+================================================================================
+STEP 18: tour-tool-lesson-plan
+================================================================================
+
+DESCRIPTION:
+Generate a complete, structured Lesson Plan that ties everything together. It provides a roadmap for instruction, including specific scripts for 'I Do, We Do, You Do' teaching phases.
+
+
+### Plan Components
+• **Learning Objectives**: SMART goals derived from the content.
+• **Materials List**: Comprehensive checklist of required resources.
+• **Direct Instruction**: Scripted 'I Do' section.
+• **Guided Practice**: Collaborative 'We Do' activities.
+• **Independent Practice**: 'You Do' assignments.
+• ...
+
+CLAIMED FEATURES (7):
+  - Learning Objectives
+  - Materials List
+  - Direct Instruction
+  - Guided Practice
+  - Independent Practice
+  - Differentiation
+  - Engagement
+
+VERIFICATION:
+  [✗ NOT FOUND] Learning Objectives
+  [✗ NOT FOUND] Materials List
+  [✓ FOUND] Direct Instruction (matched: directInstruction)
+  [✓ FOUND] Guided Practice (matched: guidedPractice)
+  [✓ FOUND] Independent Practice (matched: independentPractice)
+  [✓ FOUND] Differentiation (matched: differentiation)
+  [✓ FOUND] Engagement (matched: engagement)
+
+
+================================================================================
+STEP 19: tour-tool-fullpack
+================================================================================
+
+DESCRIPTION:
+The universal 'Easy Button' for instant, high-quality content generation. Perfect for teachers, parents, and self-guided learners, this tool bundles every available resource into a unified package tailored to your specific needs.
+
+### Smart Automation
+• **Auto-Configuration**: Intelligently selects the optimal settings for every tool based on the initial text analysis.
+• **Context-Aware**: Ensures quizzes, scaffolds, and games are perfectly aligned to the text complexity and themes.
+
+### Bundle ...
+
+CLAIMED FEATURES (5):
+  - Auto-Configuration
+  - Context-Aware
+  - Core Resources
+  - Efficiency
+  - Export
+
+VERIFICATION:
+  [✓ FOUND] Auto-Configuration (matched: auto-configuration)
+  [✓ FOUND] Context-Aware (matched: context-aware)
+  [✗ NOT FOUND] Core Resources
+  [✓ FOUND] Efficiency (matched: efficiency)
+  [✓ FOUND] Export (matched: export)
+
+
+================================================================================
+STEP 20: tour-header-utils
+================================================================================
+
+DESCRIPTION:
+Customize your experience and manage your account settings.
+
+### Menu Items
+• **Profile & Settings**: Configure your grade level, subject area, and default language preferences.
+• **Documentation**: Access comprehensive user guides, video tutorials, and pedagogical support.
+
+### System Features
+• **Dark Mode**: Toggle the interface theme for low-light environments.
+• **Voice Settings**: Adjust the speed and gender of the Text-to-Speech voices.
+
+### Pro Tip
+• Configure your 'Profile Context' to h...
+
+CLAIMED FEATURES (4):
+  - Profile & Settings
+  - Documentation
+  - Dark Mode
+  - Voice Settings
+
+VERIFICATION:
+  [✗ NOT FOUND] Profile & Settings
+  [✓ FOUND] Documentation (matched: documentation)
+  [✗ NOT FOUND] Dark Mode
+  [✓ FOUND] Voice Settings (matched: voiceSettings)
+
+
+================================================================================
+STEP 21: tour-header-tools
+================================================================================
+
+DESCRIPTION:
+The Navigational Dashboard. Quick access to every tool in the platform.
+
+### Dashboard Features
+• **Tool Icons**: One-click navigation to any generation tool (Quiz, Glossary, etc.).
+• **Status Indicators**: Colored dots indicate which tools currently have active content.
+• **Keyboard Shortcuts**: Use numbered hotkeys to jump between tools rapidly.
+
+### Pro Tip
+• Tools are organized logically from 'Input' to 'Output'. Follow the flow left-to-right for a natural lesson building process....
+
+CLAIMED FEATURES (3):
+  - Tool Icons
+  - Status Indicators
+  - Keyboard Shortcuts
+
+VERIFICATION:
+  [✗ NOT FOUND] Tool Icons
+  [✗ NOT FOUND] Status Indicators
+  [✗ NOT FOUND] Keyboard Shortcuts
+
+
+================================================================================
+STEP 22: tour-header-actions
+================================================================================
+
+DESCRIPTION:
+Export and Share your work. Make your digital resources physical.
+
+### Export Options
+• **Print View**: Optimized layout removing UI elements for direct printing.
+• **Worksheet Export**: Generate a structured worksheet document for students.
+• **HTML Export**: Download a self-contained HTML file for offline viewing.
+• **Slides Export (PPTX)**: Create a PowerPoint presentation from your content.
+• **QTI Export**: Export quizzes as standard QTI files for LMS import (Canvas, Blackboard).
+• **IMS Ex...
+
+CLAIMED FEATURES (6):
+  - Print View
+  - Worksheet Export
+  - HTML Export
+  - Slides Export (PPTX)
+  - QTI Export
+  - IMS Export
+
+VERIFICATION:
+  [✗ NOT FOUND] Print View
+  [✗ NOT FOUND] Worksheet Export
+  [✗ NOT FOUND] HTML Export
+  [✗ NOT FOUND] Slides Export (PPTX)
+  [✗ NOT FOUND] QTI Export
+  [✗ NOT FOUND] IMS Export
+
+
+================================================================================
+STEP 23: tour-history-panel
+================================================================================
+
+DESCRIPTION:
+Your Session History. Never lose a great generation.
+
+### History Controls
+• **Session List**: View a chronological list of all resources generated in this session.
+• **Restore**: Instantly reload any previous item back into the main view.
+• **Version Control**: Compare different iterations of the same resource.
+
+### Analysis Features
+• **Metadata**: See the exact parameters (grade level, difficulty) used for each generation.
+• **Save/Load**: Use the 'Save Session' button to download your work a...
+
+CLAIMED FEATURES (5):
+  - Session List
+  - Restore
+  - Version Control
+  - Metadata
+  - Save/Load
+
+VERIFICATION:
+  [✗ NOT FOUND] Session List
+  [✓ FOUND] Restore (matched: restore)
+  [✗ NOT FOUND] Version Control
+  [✓ FOUND] Metadata (matched: metadata)
+  [✓ FOUND] Save/Load (matched: save/load)
+

@@ -1,0 +1,155 @@
+=== 'Review' text near buttons ===
+  L1266: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview }) 
+  L1340: // AUTO-NAVIGATION: Automatically open Review Panel when words are ready
+  L1342: if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
+  L1343: console.log("📋 Words preloaded! Auto-navigating to Review Panel...");
+  L1351: }, [preloadedWords.length, isProcessing, onShowReview]);
+  L1696: Review Words
+  L2185: const WordSoundsReviewPanel = ({
+  L2212: // SILENCED: console.log("🔍 WordSoundsReviewPanel MOUNTED - onDeleteWord defined:", !!onDeleteWord, typeof onDeleteWord);
+  L2499: <span>Review and edit words • {preloadedWords.length} words ready</span>
+  L3296: if (initialShowReviewPanel && !showReviewPanel && !hasStartedFromReview.current && preloadedWords.length > 0) {
+  L3300: }, [initialShowReviewPanel, preloadedWords.length]);
+  L3302: // FIX: Reset hasStartedFromReview when NEW preloaded words are loaded
+  L3309: console.log("🔄 Reset hasStartedFromReview for new word set:", firstWord);
+  L5616: const PRELOAD_COUNT = 10; // Load more words for Review Panel
+  L6192: // NEW: Watch for preloaded words and show Review Panel when ready
+  L6194: // Show Review Panel when words are READY (have TTS audio cached)
+  L6204: if (preloadedWords.length > 0 && hasReadyWords && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+  L6205: // SILENCED: console.log("📋 Preloaded words ready! Showing Review Panel. Ready words:", readyWords.length);
+  L6208: }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+  L6212: if (preloadedWords.length > 0 && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+  L6215: if (!showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+  L6216: console.log("📋 Words loaded - showing Review Panel immediately");
+  L6222: }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+  L6235: // Handler for editing preloaded word data in Review Panel
+  L6617: // EAGER-START: Show Review Panel when first word is ready (instead of auto-starting activity)
+  L6625: // SILENCED: console.log("🎯 Words ready! Showing Review Panel first");
+  L6631: }, [firstWordReady, preloadedWords, currentWordSoundsWord, isLoadingPhonemes, showReviewPanel]);
+  L7154: if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+  L7160: // Start preloading - Review Panel will appear when words are ready
+  L7170: }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+  L7194: }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel]);
+  L10050: <WordSoundsReviewPanel
+  L10284: {/* Review/Edit Words Button - Shows Review Panel (More prominent for teachers) */}
+  L10289: title="Review and edit word list"
+  L10291: ✏️ Review Words
+  L11922: review_words: "Review Words"
+  L15173: ws_gen_review_btn: "Review and finalize the generated word list before starting.",
+  L16091: word_sounds_review_back_title: "Review Back",
+  L16092: word_sounds_review_delete_word_title: "Review Delete Word",
+  L16093: word_sounds_review_distractor_input_title: "Review Distractor Input",
+  L16094: word_sounds_review_image_gen_title: "Review Image Gen",
+  L16095: word_sounds_review_move_word_title: "Review Move Word",
+  L16096: word_sounds_review_phoneme_bank_title: "Review Phoneme Bank",
+  L16097: word_sounds_review_play_distractor_title: "Review Play Distractor",
+  L16098: word_sounds_review_play_phonemes_title: "Review Play Phonemes",
+  L16099: word_sounds_review_play_word_title: "Review Play Word",
+  L16100: word_sounds_review_regen_word_title: "Review Regen Word",
+  L16101: word_sounds_review_start_title: "Review Start",
+  L16392: ws_gen_review_btn: "Review and finalize the generated word list before starting.",
+  L31411: const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false); // Review Fix
+  L33754: 'glossary_crossword': "Create a professional crossword puzzle from your vocabulary. Features: automatic clue generation from definitions, optimized word placeme
+  L33839: // Word Sounds Review Panel
+  L34124: 'visuals_no_text': "Request text-free image generation. When enabled: AI avoids including words, labels, or text in generated images. Benefits: cleaner visuals,
+  L34237: 'lesson_plan_generate_button': "Create a complete lesson plan from your specifications. Generation takes 20-30 seconds. Output includes: opening/hook activity, 
+  L34357: 'role_teacher': "Complete platform access for educators. Teacher role includes: all content generation tools, full configuration options, student progress dashb
+  L34496: 'ws_gen_review_btn': "Open a summary view of all words in the current phonics lesson. Review panel shows: complete word list, phonetic transcriptions, syllable 
+  L35245: setWordSoundsAutoReview(true); // Ensure review panel opens
+  L38150: }, [isZenMode, definitionData, phonicsData, isMemoryGame, isCrosswordGame, isMatchingGame, isTimelineGame, isConceptSortGame, isSyntaxGame, isReviewGame]);
+  L38199: setWordSoundsAutoReview(true); // Show Pre-Activity Review
+  L45419: setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+  L45424: setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+  L65059: initialShowReviewPanel={wordSoundsAutoReview}
+  L71529: setWordSoundsAutoReview(true);
+  L71540: // Review panel auto-shows via useEffect in WordSoundsModal when:
+  L71541: // preloadedWords.length > 0 && !hasStartedFromReview.current
+  L71543: setWordSoundsAutoReview(true); // Force Review Mode
+
+=== setShowReviewPanel with context ===
+  L3241: const [firstWordReady, setFirstWordReady] = React.useState(false); // Eager-start: true when first word is loaded
+  L3242: const preloadedWordCache = React.useRef(new Map()); // Key: word, Value: preload data (persists across activity opens)
+  L3243: const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false); // Pre-Activity Review Panel visibility
+  L3244: const hasStartedFromReview = React.useRef(false); // FIX: Track if user already started from review to prevent loop
+  L3245: const lastPreloadedFirstWord = React.useRef(null); // FIX: Track first word to detect new word sets
+  ---
+  L3296: if (initialShowReviewPanel && !showReviewPanel && !hasStartedFromReview.current && preloadedWords.length > 0) {
+  L3297: console.log("📋 initialShowReviewPanel is true - showing Review Panel");
+  L3298: setShowReviewPanel(true);
+  L3299: }
+  L3300: }, [initialShowReviewPanel, preloadedWords.length]);
+  ---
+  L6204: if (preloadedWords.length > 0 && hasReadyWords && !showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+  L6205: // SILENCED: console.log("📋 Preloaded words ready! Showing Review Panel. Ready words:", readyWords.length);
+  L6206: setShowReviewPanel(true);
+  L6207: }
+  L6208: }, [preloadedWords, showReviewPanel, currentWordSoundsWord]);
+  ---
+  L6215: if (!showReviewPanel && !currentWordSoundsWord && !hasStartedFromReview.current) {
+  L6216: console.log("📋 Words loaded - showing Review Panel immediately");
+  L6217: setShowReviewPanel(true);
+  L6218: }
+  L6219: }, 500); // 500ms delay is enough for UI to render
+  ---
+  L6624: if (!showReviewPanel && !hasStartedFromReview.current) {
+  L6625: // SILENCED: console.log("🎯 Words ready! Showing Review Panel first");
+  L6626: setShowReviewPanel(true);
+  L6627: }
+  L6628: // Activity will start when user clicks "Start Activity" in Review Panel
+  ---
+  L7154: if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+  L7155: // SILENCED: console.log("📋 Showing Pre-Activity Review Panel");
+  L7156: setShowReviewPanel(true);
+  L7157: return; // Don't auto-start, wait for review
+  L7158: }
+  ---
+  L10066: hasStartedFromReview.current = true; // FIX: Remember user already started
+  L10067: setWordSoundsHistory([]); // FIX: Clear history to prevent premature completion
+  L10068: setShowReviewPanel(false);
+  L10069: // Start with current word from preloaded list (preserves position)
+  L10070: const firstWord = preloadedWords[currentWordIndex % Math.max(1, preloadedWords.length)];
+  ---
+  L10078: onBackToSetup={() => {
+  L10079: // Navigate back to Word Sounds Generator/Setup
+  L10080: setShowReviewPanel(false);
+  L10081: if (onBackToSetup) {
+  L10082: onBackToSetup(); // Use parent's navigation handler
+  ---
+  L10285: {preloadedWords.length > 0 && (
+  L10286: <button
+  L10287: onClick={() => setShowReviewPanel(true)}
+  L10288: className="flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors shadow-md"
+  L10289: title="Review and edit word list"
+  ---
+
+=== word-sounds-generator activeView ===
+  L36: 'ui-tool-wordsounds': 'word-sounds-generator',
+  L32899: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+  L38223: setActiveView('word-sounds-generator');
+  L65056: onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+  L71503: {activeView === 'word-sounds-generator' && (
+
+=== onClose in L10095-10350 ===
+  L10113: onClick={onClose}
+  L10211: onClick={onClose}
+
+=== Close buttons in toolbar L10260-10330 ===
+  L10284: {/* Review/Edit Words Button - Shows Review Panel (More prominent for teachers) */}
+  L10286: <button
+  L10287: onClick={() => setShowReviewPanel(true)}
+  L10292: </button>
+  L10295: <button
+  L10296: onClick={() => setIsEditing(!isEditing)}
+  L10305: </button>
+  L10307: <button
+  L10308: onClick={() => {
+  L10320: </button>
+  L10322: <button
+  L10323: onClick={() => setShowLetterHints(!showLetterHints)}
+
+=== Parent-level review button (AlloFlowContent L60000-73000) ===
+  L65059: initialShowReviewPanel={wordSoundsAutoReview}
+  L71529: setWordSoundsAutoReview(true);
+  L71540: // Review panel auto-shows via useEffect in WordSoundsModal when:
+  L71541: // preloadedWords.length > 0 && !hasStartedFromReview.current
+  L71543: setWordSoundsAutoReview(true); // Force Review Mode

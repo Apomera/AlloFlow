@@ -1,0 +1,178 @@
+=== Z-INDEX 9999 at L11040 (±5 lines) ===
+  L11035: 
+  L11036:     /* Mobile Responsive Fixes */
+  L11037:     @media (max-width: 768px) {
+  L11038:       /* Ensure dropdown menus and select elements appear above other content on mobile */
+  L11039:       select, [role="listbox"], [role="menu"], [role="combobox"] {
+  L11040:         z-index: 9999 !important;
+  L11041:         position: relative;
+  L11042:       }
+  L11043: 
+  L11044:       /* Fix dropdown parent containers to allow overflow on mobile */
+  L11045:       .overflow-hidden:has(select),
+  L11046:       .overflow-hidden:has([role="listbox"]),
+
+=== Z-INDEX 10999 at L34694 (±5 lines) ===
+  L34689:             cursor: pointer !important;
+  L34690:         }
+  L34691: 
+  L34692:         /* FIX: Ensure AlloBot stays visible and interactive in Help Mode */
+  L34693:         .help-mode-active [data-help-key="bot_avatar"] {
+  L34694:             z-index: 10999 !important; /* Above help mode backdrop (z-10998) */
+  L34695:             pointer-events: auto !important;
+  L34696:         }
+  L34697: 
+  L34698:         /* FIX: AlloBot buttons also need interactivity */
+  L34699:         .help-mode-active [data-help-key="bot_avatar"] button {
+  L34700:             pointer-events: auto !important;
+
+=== Z-INDEX 9999 at L71890 (±5 lines) ===
+  L71885: 
+  L71886:                 <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-100">
+  L71887:                     {spotlightMessage ? (
+  L71888:                         <button
+  L71889:                             data-help-ignore="true"
+  L71890:                             style={{ pointerEvents: "all", zIndex: 9999 }}
+  L71891:                             onClick={(e) => {
+  L71892:                                 e.stopPropagation(); // Prevent bubbling just in case
+  L71893:                                 setRunTour(false);
+  L71894:                                 setIsSpotlightMode(false);
+  L71895:                                 setSpotlightMessage('');
+  L71896:                             }}
+
+=== 'fixed inset-0' or modal overlay patterns ===
+  L455: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+  L1650: <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+  L2482: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+  L9953: <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in zoom-in duration-300">
+  L10134: className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in"
+  L10722: <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in">
+  L18338: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+  L18545: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+  L21041: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
+  L21231: <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`} data-help-key="quiz_student_overlay">
+  L21716: <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-help-key="teacher_gate_modal">
+  L23402: <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none' : 'rounded-xl border-2 border-
+  L23732: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden animate-in fade-in duration-300">
+  L24140: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300">
+  L24508: <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
+  L24789: <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key="venn_game_container">
+  L25291: <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-300" data-help-key="crossword_game_container">
+  L25532: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+  L25726: <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+  L26130: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-300">
+  L26265: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+  L26500: className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center"
+  L26543: className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+  L26668: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
+  L26804: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+  L26895: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+  L27043: <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+  L27233: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center">
+  L27245: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center">
+  L27270: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+  L27294: <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+  L27408: <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
+  L27756: <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+  L27941: <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+  L29071: className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
+  L29451: <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setShowClearConfirm(false)}>
+  L29731: className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+  L30662: <div className="fixed inset-0 z-[300] bg-white text-slate-900 flex flex-col animate-in fade-in duration-200">
+  L57537: <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowSessionModal(false)}>
+  L57753: <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowGroupModal(false)} data-help-key="grou
+  L58347: <div className="fixed inset-0 z-[10000]" onClick={() => setShowTextSettings(false)}></div>
+  L58451: <div className="fixed inset-0 z-[10000]" onClick={() => setShowVoiceSettings(false)}></div>
+  L58766: <div className="fixed inset-0 z-[90]" onClick={() => setIsJoinPopoverOpen(false)}></div>
+  L58855: {showExportMenu && <div className="fixed inset-0 z-[90]" onClick={() => setShowExportMenu(false)}></div>}
+  L58879: <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowInfoModal(false)}
+  L59067: <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowHintsModal(false)
+  L59133: <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowXPModal(false)} r
+  L59213: className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200"
+  L59304: className="fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+  L60482: <div className="fixed inset-0 z-0 pointer-events-none">
+  L63579: <div className="fixed inset-0 z-[90]" onClick={() => setMovingItemId(null)}></div>
+  L64516: <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 overflow-auto">
+  L65453: className="fixed inset-0 z-[200] bg-[#fdfbf7] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans"
+  L65574: <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
+  L65847: {definitionData && <div className="fixed inset-0 z-[90]" onClick={closeDefinition}></div>}
+  L65911: {phonicsData && <div className="fixed inset-0 z-[90]" onClick={closePhonics}></div>}
+  L66016: {selectionMenu && <div className="fixed inset-0 z-[90] bg-transparent" onMouseDown={(e) => {
+  L66067: {revisionData && <div className="fixed inset-0 z-[90] bg-black/5" onClick={closeRevision}></div>}
+  L67565: <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setEscapeRoomState(prev => ({ ...prev, selectedObject: null }))}>
+  L68022: className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+  L68953: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setShowLedger(false)}>
+  L70181: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setSelectedInventoryItem(nul
+  L71535: data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
+  L71662: <div className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
+  L71937: <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+  L72144: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-500" onClick={() => setShowGlobalLevelUp(false)}>
+  L72189: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setEscapeRoomState(prev => ({ ..
+  L72395: className="fixed inset-0 z-[109] cursor-grabbing"
+  L72603: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowSaveModal(false)}
+  L72647: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsTranslateModalOpen(
+  L72690: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowCloudWarning(fals
+  L72806: <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setIsProjectSettingsOpen
+  L73010: className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+  L73137: <div className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowAdventureConfirma
+
+=== All inline zIndex values ===
+  L2592: zIndex=100 | style={{ pointerEvents: 'auto', cursor: 'pointer', position: 'relative', zIndex: 100 }}
+  L71890: zIndex=9999 | style={{ pointerEvents: "all", zIndex: 9999 }}
+
+=== filter_all / 'All Resources' dropdown ===
+  L12354: filter_all: "All Resources",
+  L12752: filter_all: "All",
+  L15209: glossary_filter_all: "Show all glossary terms regardless of vocabulary tier.",
+  L15707: glossary_filter_all_title: "Filter All",
+  L17792: glossary_filter_all: "Show all glossary terms regardless of vocabulary tier.",
+  L33448: 'glossary_filter_all': 'glossary',
+  L33742: 'glossary_filter_all': "Show all terms in the glossary.",
+  L63374: <option value="all">{t('history.filter_all')}</option>
+  L64486: data-help-key="glossary_filter_all"
+  L64490: {t('glossary.filter_all')}
+
+=== select_default / group dropdown ===
+  L16894: select_default: "-- Select Group / Profile --",
+  L63184: <option value="">{t('profiles.select_default')}</option>
+
+=== L3106 wordSoundsSessionGoal context ===
+  L3099:     setWordSoundsTtsSpeed,
+  L3100:     // Orthographic Settings (controls spelling activities visibility)
+  L3101:     includeOrthographic = false,
+  L3102:     setIncludeOrthographic,
+  L3103:     // Gamification Props
+  L3104:     wordSoundsStreak = 0,
+  L3105:     setWordSoundsStreak,
+  L3106:     wordSoundsSessionGoal = 10,
+  L3107:     setWordSoundsSessionGoal,
+  L3108:     wordSoundsSessionProgress = 0,
+  L3109:     setWordSoundsSessionProgress,
+  L3110:     wordSoundsBadges = [],
+  L3111:     setWordSoundsBadges,
+  L3112:     wordSoundsLevel = 1,
+  L3113:     setWordSoundsLevel,
+  L3114:     // Mastery & Analytics Props
+  L3115:     phonemeMastery = {},
+
+=== L65070 wordSoundsSessionGoal prop ===
+  L65061:                                 wordSoundsDifficulty={wordSoundsDifficulty}
+  L65062:                                 setWordSoundsDifficulty={setWordSoundsDifficulty}
+  L65063:                                 wordSoundsAccuracyHistory={wordSoundsAccuracyHistory}
+  L65064:                                 setWordSoundsAccuracyHistory={setWordSoundsAccuracyHistory}
+  L65065:                                 wordSoundsTtsSpeed={wordSoundsTtsSpeed}
+  L65066:                                 setWordSoundsTtsSpeed={setWordSoundsTtsSpeed}
+  L65067:                                 // Gamification Props
+  L65068:                                 wordSoundsStreak={wordSoundsStreak}
+  L65069:                                 setWordSoundsStreak={setWordSoundsStreak}
+  L65070:                                 wordSoundsSessionGoal={wordSoundsSessionGoal}
+  L65071:                                 setWordSoundsSessionGoal={setWordSoundsSessionGoal}
+  L65072:                                 wordSoundsSessionProgress={wordSoundsSessionProgress}
+  L65073:                                 setWordSoundsSessionProgress={setWordSoundsSessionProgress}
+  L65074:                                 wordSoundsBadges={wordSoundsBadges}
+  L65075:                                 setWordSoundsBadges={setWordSoundsBadges}
+  L65076:                                 // Mastery & Analytics Props
+  L65077:                                 phonemeMastery={phonemeMastery}
+  L65078:                                 setPhonemeMastery={setPhonemeMastery}
+  L65079:                                 wordSoundsDailyProgress={wordSoundsDailyProgress}
+  L65080:                                 setWordSoundsDailyProgress={setWordSoundsDailyProgress}

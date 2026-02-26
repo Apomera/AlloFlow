@@ -1,0 +1,55 @@
+﻿Loaded 4664026 chars (normalized)
+
+=== FIX 2: Word Scramble letter depletion ===
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python patch_activi
+ty_bugs2.py 2>&1 | 
+Out-File -FilePath 
+'_patch_bugs ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Traceba   
+ ck (most recent     
+call last)::Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  File "C:\Users\cabb
+a\OneDrive\Desktop\UD
+L-Tool-Updated\patch_
+activity_bugs2.py", 
+line 23, in <module>
+    print("  \u2713 
+usedScrambleIndices 
+state already 
+exists")
+    ~~~~~^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+  File "C:\Python314\
+Lib\encodings\cp1252.
+py", line 19, in 
+encode
+    return codecs.cha
+rmap_encode(input,sel
+f.errors,encoding_tab
+le)[0]
+           ~~~~~~~~~~
+~~~~~~~~~~~^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+character '\u2713' 
+in position 2: 
+character maps to 
+<undefined>

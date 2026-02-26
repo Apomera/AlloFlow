@@ -1,0 +1,6 @@
+activeView: L30500: const [activeView, setActiveView] = useState('input');
+isWSMode: L31078: // [PHASE 4 MIGRATED] const [isWordSoundsMode, setIsWordSoundsMode] = useState(false);
+FS_STATE: L31464: // [PHASE 4 MIGRATED] const [showAdventureConfirmation, setShowAdventureConfirmation] = useState(false);
+
+=== Fullscreen modal views ===
+L61634: className="fixed inset-0 z-[200] bg-[#fdfbf7] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans"

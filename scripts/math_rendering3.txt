@@ -1,0 +1,102 @@
+L62909:                                         aria-label={t('common.copy')}
+L62910:                                         onClick={() => {
+L62911:                                             const text = generatedContent?.data.problems.map((p, i) => `${i+1}. ${p.question}\nAnswer: ${p.answer}`).join('\n\n');
+L62912:                                             copyToClipboard(text);
+L62913:                                         }}
+L62914:                                         className="text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors"
+L62915:                                         title={t('math.display.copy_all')}
+L62916:                                     >
+L62917:                                         <Copy size={14}/>
+L62918:                                     </button>
+L62919:                                 </div>
+L62920:                             </div>
+L62921:                             <div className="text-2xl md:text-3xl font-bold text-indigo-900 font-serif leading-tight">
+L62922:                                 {generatedContent?.data.title}
+L62923:                             </div>
+L62924:                         </div>
+L62925:                         {generatedContent?.data.graphData && (
+L62926:                             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+L62927:                                 <h4 className="text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+L62928:                                     <ImageIcon size={14}/> {t('math.display.visual_header')}
+L62929:                                 </h4>
+L62930:                                 <div
+L62931:                                     className="w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-hidden svg-container"
+L62932:                                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(generatedContent?.data.graphData) }}
+L62933:                                     data-help-key="math_graph"
+L62934:                                 />
+L62935:                             </div>
+L62936:                         )}
+L62937:                         {(generatedContent?.data.problems || [{
+L62938:                             question: generatedContent?.data.problem,
+L62939:                             answer: generatedContent?.data.answer,
+L62940:                             steps: generatedContent?.data.steps,
+L62941:                             realWorld: generatedContent?.data.realWorld
+L62942:                         }]).map((problem, pIdx) => (
+L62943:                             <div key={pIdx} className="space-y-4 border-b border-slate-100 pb-8 last:border-0" data-help-key="math_problem">
+L62944:                                 <div className={`bg-white p-4 rounded-xl border shadow-sm flex gap-4 items-start ${isMathEditing(pIdx) ? 'border-amber-300 ring-2 ring-amber-100' : 'border-indigo-100'}`}>
+L62945:                                     <div className="bg-indigo-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5 shadow-sm">
+L62946:                                         {pIdx + 1}
+L62947:                                     </div>
+L62948:                                     <div className="flex-grow">
+L62949:                                         {isMathEditing(pIdx) ? (
+L62950:                                             <textarea
+L62951:                                                 className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none resize-y bg-amber-50/50 font-serif text-lg leading-relaxed text-slate-800 min-h-[60px]"
+L62952:                                                 value={problem.question || problem.problem || ''}
+L62953:                                                 onChange={(e) => handleMathProblemEdit(pIdx, 'question', e.target.value)}
+L62954:                                                 placeholder={t('common.placeholder_enter_problem_question')}
+L62955:                                             />
+L62956:                                         ) : (
+L62957:                                             <div className="text-lg font-medium text-slate-800 font-serif">
+L62958:                                                 {formatInlineText(problem.question || problem.problem, false)}
+L62959:                                             </div>
+L62960:                                         )}
+L62961:                                         {problem._verification && <span style={{ fontSize: "11px", marginLeft: "6px", opacity: 0.8 }} title={problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""}>{problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : ""}</span>}
+L62962:                                     </div>
+L62963:                                     {isTeacherMode && (
+L62964:                                         <button
+L62965:                                             aria-label={isMathEditing(pIdx) ? "Save edits" : "Edit problem"}
+L62966:                                             onClick={() => toggleMathEdit(pIdx)}
+L62967:                                             className={`shrink-0 p-1.5 rounded-lg transition-all ${isMathEditing(pIdx) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'}`}
+L62968:                                             title={isMathEditing(pIdx) ? "Done editing" : "Edit this problem"}
+L62969:                                         >
+L62970:                                             {isMathEditing(pIdx) ? <CheckCircle2 size={16} /> : <Pencil size={14} />}
+L62971:                                         </button>
+L62972:                                     )}
+L62973:                                 </div>
+L62974:                                 {isTeacherMode ? (
+L62975:                                     <>
+L62976:                                     {isIndependentMode && (
+L62977:                                         <div className="ml-4 sm:ml-12 mt-4 mb-4">
+L62978:                                             <div className="relative">
+L62979:                                                 <div className="absolute top-3 left-3 text-slate-500">
+L62980:                                                     <Pencil size={16} />
+L62981:                                                 </div>
+L62982:                                                 <textarea
+L62983:                                                     className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-500 min-h-[120px]"
+L62984:                                                     placeholder={t('math.display.placeholder_work')}
+L62985:                                                     value={studentResponses[generatedContent.id]?.[pIdx] || ''}
+L62986:                                                     onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
+L62987:                                                     data-help-key="math_student_work"
+L62988:                                                 />
+L62989:                                             </div>
+L62990:                                         </div>
+L62991:                                     )}
+L62992:                                     {showMathAnswers ? (
+L62993:                                         <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+L62994:                                             {problem.steps && problem.steps.length > 0 && (
+L62995:                                             <div className="ml-4 pl-4 border-l-2 border-slate-200 space-y-4 mt-4">
+L62996:                                                 {problem.steps.map((step, idx) => (
+L62997:                                                     <div key={idx} className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
+L62998:                                                         <div className="flex items-start gap-3">
+L62999:                                                             <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">{t('math.display.step_label')} {idx + 1}</div>
+L63000:                                                             <div className="flex-grow w-full overflow-hidden">
+L63001:                                                                 {isMathEditing(pIdx) ? (
+L63002:                                                                     <div className="space-y-2">
+L63003:                                                                         <textarea
+L63004:                                                                             className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-y bg-amber-50/50 text-sm text-slate-700 min-h-[40px]"
+L63005:                                                                             value={step.explanation || ''}
+L63006:                                                                             onChange={(e) => handleMathProblemEdit(pIdx, 'step_explanation', e.target.value, idx)}
+L63007:                                                                             placeholder={t('common.placeholder_step_explanation')}
+L63008:                                                                         />
+L63009:                                                                         <input
+L63010:                                                                             type="text"

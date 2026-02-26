@@ -1,0 +1,13 @@
+LINE 17323: const getAssetManifest = (historyItems) => {
+LINE 17324: const assets = historyItems.filter(h =>
+LINE 31723: const sanitizeHistoryForCloud = (historyItems) => {
+LINE 31724: return historyItems.map(item => {
+LINE 32662: const rehydrateHistoryWithImages = async (historyItems, localCache = []) => {
+LINE 32663: if (!user && localCache.length === 0) return historyItems;
+LINE 32664: const hydrated = await Promise.all(historyItems.map(async (item) => {
+LINE 44018: const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}) => {
+LINE 44019: if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
+LINE 44020: const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses)).join('');
+LINE 44021: const teacherContent = historyItems.map(item => generateResourceHTML(item, true, responses)).join('');
+LINE 45181: const sanitizeSubmissionData = (historyItems) => {
+LINE 45182: return historyItems.map(item => {

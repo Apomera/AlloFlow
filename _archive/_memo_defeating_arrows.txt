@@ -1,0 +1,102 @@
+
+============================================================
+<LargeFileTranscriptionModal> (1 usage(s) with inline arrows)
+============================================================
+  L74837: <LargeFileTranscriptionModal
+    Inline arrow props: onClose
+
+============================================================
+<WordSoundsGenerator> (1 usage(s) with inline arrows)
+============================================================
+  L73518: <WordSoundsGenerator
+    Inline arrow props: onStartGame
+
+============================================================
+<RhymeView> (1 usage(s) with inline arrows)
+============================================================
+  L9953: <RhymeView
+    Inline arrow props: onCheckAnswer
+
+============================================================
+<OrthographyView> (1 usage(s) with inline arrows)
+============================================================
+  L9485: <OrthographyView
+    Inline arrow props: onCheckAnswer
+
+============================================================
+<SoundMappingView> (1 usage(s) with inline arrows)
+============================================================
+  L9506: <SoundMappingView
+    Inline arrow props: onCheckAnswer
+
+============================================================
+<LetterTraceView> (1 usage(s) with inline arrows)
+============================================================
+  L10123: <LetterTraceView
+    Inline arrow props: onComplete
+
+============================================================
+<MissionReportCard> (1 usage(s) with inline arrows)
+============================================================
+  L61005: <MissionReportCard
+    Inline arrow props: onClose
+
+============================================================
+<DraftFeedbackInterface> (1 usage(s) with inline arrows)
+============================================================
+  L70647: <DraftFeedbackInterface
+    Inline arrow props: setDraftText
+
+============================================================
+<ClozeInput> (1 usage(s) with inline arrows)
+============================================================
+  L40053: <ClozeInput
+    Inline arrow props: onCorrect
+
+============================================================
+<RoleSelectionModal> (1 usage(s) with inline arrows)
+============================================================
+  L74693: <RoleSelectionModal
+    Inline arrow props: onGateRequired
+
+============================================================
+<StudentWelcomeModal> (1 usage(s) with inline arrows)
+============================================================
+  L74901: <StudentWelcomeModal
+    Inline arrow props: onUpload
+
+============================================================
+<ImmersiveToolbar> (1 usage(s) with inline arrows)
+============================================================
+  L67492: <ImmersiveToolbar
+    Inline arrow props: onToggleSpeedReader
+
+============================================================
+<ToggleButton> (7 usage(s) with inline arrows)
+============================================================
+  L31766: <ToggleButton
+    Inline arrow props: onClick
+  L31774: <ToggleButton
+    Inline arrow props: onClick
+  L31782: <ToggleButton
+    Inline arrow props: onClick
+  L31805: <ToggleButton
+    Inline arrow props: onClick
+  L31813: <ToggleButton
+    Inline arrow props: onClick
+  L31821: <ToggleButton
+    Inline arrow props: onClick
+  L31829: <ToggleButton
+    Inline arrow props: onClick
+
+============================================================
+<ImmersiveWord> (1 usage(s) with inline arrows)
+============================================================
+  L67589: <ImmersiveWord
+    Inline arrow props: onClick
+
+============================================================
+<InteractiveBlueprintCard> (1 usage(s) with inline arrows)
+============================================================
+  L62101: <InteractiveBlueprintCard
+    Inline arrow props: onCancel

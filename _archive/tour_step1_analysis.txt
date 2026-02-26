@@ -1,0 +1,111 @@
+Reading c:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\AlloFlowANTI.txt...
+Total lines in file: 66051
+
+================================================================================
+PART 1: LOCATING tourSteps DEFINITION
+================================================================================
+tourSteps definition starts at line: 27031
+
+================================================================================
+PART 2: FIRST TOUR STEP (tour-input-panel) ANALYSIS
+================================================================================
+tour-input-panel step found at line: 27032
+
+--- Current Tour Step 1 Definition ---
+{ 
+          id: 'tour-input-panel', 
+          text: `Begin your lesson creation journey here. This Input Panel is the foundation for all generated resources. It serves as the central hub where you define the content, context, and parameters.
+
+### Input Options
+• **Text Paste**: Paste content directly from any article, story, or lesson plan.
+• **Audio Upload**: Upload MP3/WAV files for speech-to-text processing.
+• **Media Link**: Paste a YouTube URL to automatically transcribe video content.
+
+### System Capabilities
+• **Auto-Detection**: Automatically identifies the source language.
+• **Chunking**: Handles large texts by splitting them into manageable processing blocks.
+• **Privacy**: All input is processed securely without training public models.`,
+
+          title: t('tour.source_title'), 
+      }
+
+================================================================================
+PART 3: INPUT PANEL UI COMPONENT ANALYSIS
+================================================================================
+
+input-panel element: 0 occurrences
+
+tour-input-panel element: 1 occurrences
+  Line 53463: ... 'create' && (           <div id="tour-input-panel" data-help-key="source_input" ...
+
+Input Panel text reference: 1 occurrences
+  Line 27034: ...n creation journey here. This Input Panel is the foundation for all gen...
+
+handleTextInput function: 0 occurrences
+
+Text Paste feature: 1 occurrences
+  Line 27037: ...eters.  ### Input Options • **Text Paste**: Paste content directly fro...
+
+Audio Upload feature: 1 occurrences
+  Line 27038: ...e, story, or lesson plan. • **Audio Upload**: Upload MP3/WAV files for s...
+
+Media Link feature: 2 occurrences
+  Line 27039: ...peech-to-text processing. • **Media Link**: Paste a YouTube URL to aut...
+  Line 27039: ...ng. • **Media Link**: Paste a YouTube URL to automatically transcribe v...
+
+Speech-to-text processing: 35 occurrences
+  Line 152: ...ile} file - The audio file to transcribe      * @param {Function} tran...
+  Line 153: ...ribe      * @param {Function} transcribeChunk - Async function to tran...
+  Line 153: ...ribeChunk - Async function to transcribe a single chunk (receives base...
+
+Auto-detection feature: 3 occurrences
+  Line 8683: ..._cards: "Unsorted Cards",     auto_detect: "Auto-detect categories",     no_items: "N...
+  Line 27042: ...  ### System Capabilities • **Auto-Detection**: Automatically identifie...
+  Line 54982: ...-500 italic">{t('concept_sort.auto_detect')}</span>}                   ...
+
+Chunking feature: 401 occurrences
+  Line 85: ...// --- LARGE FILE HANDLER FOR CHUNKED TRANSCRIPTION --- // Enable...
+  Line 86: ...dio files larger than 20MB by chunking const LargeFileHandler = {...
+  Line 89: ...d for minimal quota usage     CHUNK_DURATION_SECONDS: 600, // 10 ...
+
+================================================================================
+PART 4: DETAILED INPUT FEATURE ANALYSIS
+================================================================================
+
+Input Mode handling: 53 occurrences
+  Line 26645: ...lRef, isFluencyMode);   const [adventureInputMode, setAdventureInputMode] = useState('cho...
+  Line 26645: ... const [adventureInputMode, setAdventureInputMode] = useState('choice');    const [advent...
+
+Paste text functionality: 6 occurrences
+  Line 7229: ...    }   },   input: {     placeholder: "Paste curriculum text here, upload a PDF/Image/Text/Audio file (max 20MB), or use 'Generate Source Text'...",     upload_tooltip: "Upload PDF, ...
+  Line 8329: ...Source Material",         source_desc: "Paste your text, upload a file, or enter a URL here to ...
+
+Audio upload functionality: 1 occurrences
+  Line 27038: ...any article, story, or lesson plan. • **Audio Upload**: Upload MP3/WAV files for speech-to-text proces...
+
+Audio file format support: 199 occurrences
+  Line 86: ...RIPTION --- // Enables transcription of audio files larger than 20MB by chunking const Lar...
+  Line 118: ...'.').pop().toLowerCase();         if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].i...
+
+YouTube/media link: 1 occurrences
+  Line 27039: ...t processing. • **Media Link**: Paste a YouTube URL to automatically transcribe video c...
+
+Transcription functionality: 64 occurrences
+  Line 85: ...  // --- LARGE FILE HANDLER FOR CHUNKED TRANSCRIPTION --- // Enables transcription of audio f...
+  Line 86: ...OR CHUNKED TRANSCRIPTION --- // Enables transcription of audio files larger than 20MB by chun...
+
+Privacy references: 13 occurrences
+  Line 930: ...jd19Wn+Wcl7cUfWPYMAYva5KoN5BEBX95tcUCifoGDpRomNiiwlKfxnNSZQRpZ++9CNaGmzTUI+hd05ShWo4...
+  Line 9515: ...     title: "Enable Cloud Sync?",       privacy_warning: "Privacy Warning",       desc:...
+
+================================================================================
+PART 5: TOUR STEP 1 CLAIM VERIFICATION SUMMARY
+================================================================================
+
+Feature Verification:
+  ✓ FOUND: Text Paste (61 refs)
+  ✓ FOUND: Audio Upload (MP3/WAV) (160 refs)
+  ✓ FOUND: Media Link (YouTube URL) (1 refs)
+  ✓ FOUND: Auto-Detection of language (5 refs)
+  ✓ FOUND: Chunking (large text handling) (399 refs)
+  ✓ FOUND: Privacy (secure processing) (14 refs)

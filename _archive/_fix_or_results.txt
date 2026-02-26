@@ -1,0 +1,5 @@
+DIGRAPHS FIX: ALREADY APPLIED (r-controlled vowels present)
+
+'or' in PHONEME_AUDIO_BANK: False
+'ur' at L1188
+'air' at L1189

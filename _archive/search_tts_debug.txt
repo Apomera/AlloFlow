@@ -1,0 +1,128 @@
+--- Match for 'const WordSoundsModal' at line 820 ---
+810:     // EXCEPTION: 'skill' contains 'kill' but is safe.
+811:     if (normalized.includes('rape')) return false;
+812:     if (normalized.includes('kill') && normalized !== 'skill' && normalized !== 'skills' && normalized !== 'skilled') return false; 
+813:     return true;
+814: };
+815: 
+816: // --- WORD SOUNDS MODAL (PHONEMIC AWARENESS) ---
+817: // Interactive phonemic awareness activities for the Big 5 reading skills
+818: 
+819: 
+820: const WordSoundsModal = ({ 
+821:     glossaryTerms, 
+822:     onClose, 
+823:     wordSoundsActivity, 
+824:     setWordSoundsActivity,
+825:     wordSoundsScore, 
+826:     setWordSoundsScore,
+827:     currentWordSoundsWord, 
+828:     setCurrentWordSoundsWord,
+829:     wordSoundsPhonemes, 
+830:     setWordSoundsPhonemes,
+831:     wordSoundsLanguage, 
+832:     setWordSoundsLanguage,
+833:     wordSoundsFeedback, 
+834:     setWordSoundsFeedback,
+835:     wordSoundsHistory,
+836:     setWordSoundsHistory,
+837: 
+838:     // NEW PROPS
+839:     wordSoundsFamilies,
+
+--- Match for 'AlloBot Speak Debug' at line 11153 ---
+11143:           setInternalMood(null);
+11144:           setIsTalking(false);
+11145:           currentAudioRef.current = null;
+11146:           if (onSpeechEnd) onSpeechEnd();
+11147:       };
+11148:       let audioStarted = false;
+11149:       // Audio Logic - Skips if isSilent is true
+11150:       if (!isSilent && soundEnabledRef.current && !authFailedRef.current) {
+11151:           let cloudSuccess = false;
+11152:           // DEBUG: Trace why Cloud TTS might be skipped
+11153:           console.log("AlloBot Speak Debug:", { 
+11154:               hasOnGenerate: !!onGenerateAudio, 
+11155:               voice: selectedVoice,
+11156:               textLen: ttsText.length
+11157:           });
+11158: 
+11159:           if (onGenerateAudio) {
+11160:               try {
+11161:                   setIsTalking(true); 
+11162:                   const audioUrl = await onGenerateAudio(ttsText, selectedVoice);
+11163: 
+11164:                   // Race condition check: if another speak call started, abort
+11165:                   if (myGenId !== speechGenerationRef.current) return;
+11166: 
+11167:                   if (!soundEnabledRef.current) {
+11168:                       setIsTalking(false);
+11169:                       resetState();
+11170:                       return;
+11171:                   }
+11172:                   if (audioUrl) {
+
+--- Match for 'Falling back to native speech' at line 11213 ---
+11203:                      console.warn("Native TTS Error", e);
+11204:                      resetState();
+11205:                  };
+11206:                  // Optional: Pick a voice?
+11207:                  // const voices = window.speechSynthesis.getVoices();
+11208:                  // utterance.voice = voices.find(v => v.lang.includes('en')) || null;
+11209:                  
+11210:                  setIsTalking(true);
+11211:                  window.speechSynthesis.speak(utterance);
+11212:                  audioStarted = true;
+11213:                  console.log("AlloBot: Falling back to native speech");
+11214:              } catch (nativeErr) {
+11215:                  console.error("Native TTS failed completely", nativeErr);
+11216:                  setIsTalking(false);
+11217:              }
+11218:           } else if (!cloudSuccess) {
+11219:               setIsTalking(false);
+11220:           }
+11221:       }
+11222:       if (!audioStarted) {
+11223:           const duration = Math.min(90000, 4000 + (cleanText.length * 80)); // Increased cap to 90s and per-char allowance
+11224:           speechTimeoutRef.current = setTimeout(resetState, duration);
+11225:       }
+11226:   }, [selectedVoice, onGenerateAudio]); 
+11227: 
+11228:   const summon = useCallback(() => {
+11229:       const now = Date.now();
+11230:       if (now - lastSummonTimeRef.current < 2000) return; // Debounce 2s
+11231:       lastSummonTimeRef.current = now;
+11232: 
+
+--- Match for 'TTS Fetch Key Check' at line 31145 ---
+31135:   const fetchTTSBytes = useCallback((text, voiceName = "Puck") => {
+31136:     // WRAPPER: Queue the request to enforce serial execution using GLOBAL queue
+31137:     const queuedTask = globalTtsQueue.then(async () => {
+31138:         // ENFORCE RATE LIMIT: Wait 1s before processing this request
+31139:         await new Promise(r => setTimeout(r, 1000));
+31140: 
+31141:         // Use global apiKey or fallbacks, but DO NOT BLOCK if empty to allow proxy injection
+31142:         const effectiveKey = apiKey || window.apiKey || window.process?.env?.API_KEY || (typeof GOOGLE_API_KEY !== 'undefined' ? GOOGLE_API_KEY : "") || "";
+31143: 
+31144:         // DEBUG: Log key status (info only)
+31145:         console.log("TTS Fetch Key Check:", { hasKey: !!effectiveKey, len: effectiveKey ? effectiveKey.length : 0 });
+31146:         
+31147:         // Construct URL - allow proxy injection if key is empty
+31148:         const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent`;
+31149:         const url = effectiveKey ? `${baseUrl}?key=${effectiveKey}` : baseUrl;
+31150:         
+31151:         // Helper: Decode Base64
+31152:         const decodeBase64 = (base64) => {
+31153:              const binaryString = window.atob(base64);
+31154:              const len = binaryString.length;
+31155:              const bytes = new Uint8Array(len);
+31156:              for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
+31157:              return bytes;
+31158:         };
+31159: 
+31160:         // Helper: Google Cloud TTS (Better for phonemes)
+31161:         const fetchGoogleCloudTTS = async (inputText) => {
+31162:             const gcpUrl = effectiveKey 
+31163:                 ? `https://texttospeech.googleapis.com/v1/text:synthesize?key=${effectiveKey}`
+31164:                 : `https://texttospeech.googleapis.com/v1/text:synthesize`;
+

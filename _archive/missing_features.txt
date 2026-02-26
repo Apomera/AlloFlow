@@ -1,0 +1,66 @@
+=== MISSING TOUR FEATURES ANALYSIS ===
+
+--- FAQ PANEL FEATURES ---
+  ✗ NOT FOUND: Karaoke TTS mode
+  ✗ NOT FOUND: FAQ Sorting
+  ✗ NOT FOUND: Question count control
+  ✗ NOT FOUND: Expand/Collapse all
+
+--- PERSONA/CHARACTER FEATURES ---
+  ✓ FOUND: Panel Interview mode
+  ✓ FOUND: Reflection mode
+  ✓ FOUND: Auto-send responses
+  ✗ NOT FOUND: Live voice mode
+  ✗ NOT FOUND: Save chat feature
+  ✓ FOUND: Conclude interview
+
+--- BRAINSTORM FEATURES ---
+  ✗ NOT FOUND: Category selection
+  ✗ NOT FOUND: Export ideas
+  ✗ NOT FOUND: Regenerate option
+  ✗ NOT FOUND: Idea count control
+
+--- TIMELINE FEATURES ---
+  ✗ NOT FOUND: Interactive mode
+  ✓ FOUND: Gamified timeline
+  ✗ NOT FOUND: Export timeline
+  ✗ NOT FOUND: Edit events
+
+--- SCAFFOLDS FEATURES ---
+  ✓ FOUND: Frame type selection
+  ✓ FOUND: Discussion starters
+  ✗ NOT FOUND: Difficulty levels
+  ✗ NOT FOUND: Export scaffolds
+
+--- MATH FEATURES ---
+  ✗ NOT FOUND: Domain selection
+  ✗ NOT FOUND: Difficulty control
+  ✓ FOUND: Graph generation
+  ✗ NOT FOUND: Worked solutions
+  ✗ NOT FOUND: SVG diagrams
+
+--- ALIGNMENT FEATURES ---
+  ✓ FOUND: Depth of Knowledge
+  ✗ NOT FOUND: Bloom's Taxonomy
+  ✗ NOT FOUND: Gap analysis
+  ✗ NOT FOUND: Alignment scoring
+  ✓ FOUND: Standards database
+
+--- LESSON PLAN FEATURES ---
+  ✗ NOT FOUND: Duration setting
+  ✗ NOT FOUND: Gradual release model
+  ✗ NOT FOUND: Export lesson
+  ✗ NOT FOUND: Templates
+  ✓ FOUND: Differentiation
+
+--- DASHBOARD FEATURES ---
+  ✓ FOUND: View modes
+  ✗ NOT FOUND: Export statistics
+  ✓ FOUND: Progress tracking
+  ✓ FOUND: Analytics
+  ✗ NOT FOUND: Clear data
+
+
+=== HELP_STRINGS ANALYSIS ===
+Checking for features in help tooltips not covered in tour...
+

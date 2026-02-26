@@ -1,0 +1,78 @@
+=== Gemini prompt / Oracle references ===
+
+  Pattern: 'oracle' (6 matches)
+    L5081: console.warn("Gemini Oracle failed:", apiErr);
+    L5109: console.warn("Unified Oracle error:", e);
+    L16536: hint_name: "Oracle Whisper",
+    L20855: name: 'Oracle Whisper',
+    L32209: const [wordSoundsOracleData, setWordSoundsOracleData] = React.useState(null); // Persistence Cache for Oracle Data
+    L38134: data: generatedTerms, // The Oracle Data
+
+  Pattern: 'generateWord' (13 matches)
+    L2171: onRegenerateWord, // NEW: Function to regenerate a specific word
+    L2514: if (typeof onRegenerateWord === 'function') {
+    L2515: console.log("✅ Calling onRegenerateWord for idx:", idx);
+    L2516: onRegenerateWord(idx);
+    L2518: console.error("❌ onRegenerateWord is not a function:", typeof onRegenerateWord);
+    L6270: const handleRegenerateWord = React.useCallback(async (index) =>  {
+    L6271: console.log("🔄🔄🔄 handleRegenerateWord CALLED with index:", index);
+    L6464: const handleGenerateWordImage = React.useCallback(async (index, word) => {
+    ... and 5 more
+
+  Pattern: 'systemPrompt' (4 matches)
+    L48813: const parentSystemPrompt = "You are a helpful Family Tutor and Child Development Guide. Explain concepts simply. Focus on fun, bonding activities, and reinforcement rather than str
+    L48814: const teacherSystemPrompt = "You are a Universal Design for Learning (UDL) specialist and supportive pedagogical coach. Your goal is to partner with educators to design accessible,
+    L48815: const systemPrompt = isParentMode ? parentSystemPrompt : teacherSystemPrompt;
+    L48816: const fullPrompt = `${systemPrompt}
+
+
+=== 'phonemes' in JSON/prompt context ===
+  L1463: "phonemes": ["c", "a", "t"],
+  L2138: <span className="w-2 h-2 rounded-full bg-indigo-400" title="Phonemes"></span>
+  L5799: "phonemes": [
+  L5946: Return JSON: {"word":"${targetWord}","phonemes":["sound1","sound2"],"phonemeCount":2}
+
+
+=== Pre-activity review / Review Panel ===
+
+  Pattern: 'pre-activity' (10 matches)
+    L2160: // PRE-ACTIVITY REVIEW PANEL - Teacher/Parent only
+    L2466: <h2 className="text-2xl font-black flex items-center gap-2">📋 Pre-Activity Review
+    L3221: const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false); // Pre-Activity Review Panel visibility
+    L7104: // SILENCED: console.log("📋 Showing Pre-Activity Review Panel");
+    L7238: if (showReviewPanel) return; // GUARD: Don't play instructions during Pre-Activity Review
+    L9977: // PRE-ACTIVITY REVIEW PANEL: Show for teachers/parents before activity starts
+    L11299: • **Pre-Activity Review Panel**: Audit and correct AI-generated phonetic data before students play.
+    L38128: setWordSoundsAutoReview(true); // Show Pre-Activity Review
+    L45348: setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+    L45353: setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+
+  Pattern: 'autoReview' (8 matches)
+    L31340: const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false); // Review Fix
+    L35174: setWordSoundsAutoReview(true); // Ensure review panel opens
+    L38128: setWordSoundsAutoReview(true); // Show Pre-Activity Review
+    L45348: setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+    L45353: setWordSoundsAutoReview(true); // Show Pre-Activity Review on restore
+    L64988: initialShowReviewPanel={wordSoundsAutoReview}
+    L71458: setWordSoundsAutoReview(true);
+    L71472: setWordSoundsAutoReview(true); // Force Review Mode
+
+
+=== phoneme display in UI ===
+  L2721: {(Array.isArray(word.phonemes) ? word.phonemes : []).map((p, i) => (
+  L2749: {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
+  L2753: {phonemes.map(p => (
+  L2906: })().map((phoneme, soundIdx) => {
+  L4488: return result.map(p => PHONEME_NORMALIZE[p] || p);
+  L4796: const correctChips = phonemes.map((rawP, i) => {
+  L4809: const usedPhonemes = new Set(phonemes.map(p => (p || '').toLowerCase().trim()));
+  L4839: phonemes.forEach(phoneme => {
+  L5187: isoOptions.forEach(phoneme => {
+  L5933: phonemes = phonemes.map(p => normalizePhoneme(p));
+  L6612: const chips = phonemes.map((p, i) => ({
+  L6621: const usedPhonemes = new Set(phonemes.map(p => p.toLowerCase()));
+  L6865: isoOptions.forEach(phoneme => {
+  L8659: {[...Array(wordSoundsPhonemes?.phonemeCount || 3)].map((_, i) => (
+  L8982: const userPhonemes = elkoninBoxes.map(b => (b.phoneme || '').trim()).join('').toLowerCase();
+  L8983: const expectedPhonemes = expected.map(p => (p || '').trim()).join('').toLowerCase();
+  L9009: {(wordSoundsPhonemes?.phonemes || []).map((p, idx) => (

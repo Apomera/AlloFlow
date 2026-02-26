@@ -1,0 +1,290 @@
+[
+  {
+    "key": "alignment_generate_button",
+    "line": 35367,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 0,
+    "content_preview": "Run standards alignment analysis on your source content. AI examines: vocabulary, concepts, skills, "
+  },
+  {
+    "key": "alignment_grade_select",
+    "line": 35366,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 0,
+    "content_preview": "Choose the grade level for standards matching. Options typically span K-12 and may include grade ban"
+  },
+  {
+    "key": "alignment_standard_select",
+    "line": 35365,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 0,
+    "content_preview": "Select which standards framework to align your content with. Options include: Common Core State Stan"
+  },
+  {
+    "key": "brainstorm_simulation_detailed",
+    "line": 35337,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 7,
+    "content_preview": "Generate interactive simulations for hands-on learning. Simulation types: React Components (interact"
+  },
+  {
+    "key": "brainstorm_step_count_detailed",
+    "line": 35338,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 7,
+    "content_preview": "Control how many iterative refinement passes AI makes on your content. Each step adds depth and deta"
+  },
+  {
+    "key": "concept_sort_categories_detailed",
+    "line": 35353,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 16,
+    "content_preview": "Define or let AI determine sorting groups. Leave blank: AI analyzes your topic and creates logical c"
+  },
+  {
+    "key": "concept_sort_input",
+    "line": 35352,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 16,
+    "content_preview": "Define what content should be sorted. Enter topics like: Types of rocks, Parts of speech, Fractions "
+  },
+  {
+    "key": "concept_sort_item_count",
+    "line": 35355,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 16,
+    "content_preview": "Specify total number of items to generate. Recommended range: 8 items (quick activity, ~5 minutes), "
+  },
+  {
+    "key": "glossary_word_sounds",
+    "line": 35374,
+    "status": "REDUNDANT",
+    "redundant_with": "glossary_filter_all (66%)",
+    "sibling_count": 34,
+    "content_preview": "Launch Word Sounds Studio directly with these glossary terms. Students practice explicit phonics ski"
+  },
+  {
+    "key": "group_karaoke_toggle",
+    "line": 35303,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 0,
+    "content_preview": "Enable word-by-word highlighting during TTS playback to support reading fluency.\","
+  },
+  {
+    "key": "header_actions",
+    "line": 35409,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 28,
+    "content_preview": "Content management actions. Includes: Save (disk icon, save current project), History (clock icon, a"
+  },
+  {
+    "key": "header_tools",
+    "line": 35407,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 28,
+    "content_preview": "Access frequently-used reading support tools from the header. Includes: Reading Ruler (horizontal tr"
+  },
+  {
+    "key": "header_utils",
+    "line": 35408,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 28,
+    "content_preview": "Quick access to platform utilities. Includes: Help Mode toggle (? icon, activates contextual help), "
+  },
+  {
+    "key": "header_settings",
+    "line": 35406,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 28,
+    "content_preview": "Access the main settings panel for visual accessibility and display preferences. Settings include: F"
+  },
+  {
+    "key": "math_difficulty",
+    "line": 35347,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 12,
+    "content_preview": "Adjust problem difficulty. Levels: Elementary (basic operations, simple concepts), Middle School (pr"
+  },
+  {
+    "key": "math_problem_count",
+    "line": 35349,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 12,
+    "content_preview": "Specify quantity of problems to generate. Options range from: 3-5 (quick check, exit ticket), 10 (st"
+  },
+  {
+    "key": "math_show_work",
+    "line": 35350,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 12,
+    "content_preview": "Control visibility of solution steps. When ON: each problem shows complete worked solution, intermed"
+  },
+  {
+    "key": "persona_selection",
+    "line": 35340,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 18,
+    "content_preview": "Browse and select personas for interactive conversation. Categories include: Historical Figures (sci"
+  },
+  {
+    "key": "persona_custom_instructions_detailed",
+    "line": 35341,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 18,
+    "content_preview": "Shape your persona with detailed specifications. Custom instructions define: personality traits (pat"
+  },
+  {
+    "key": "persona_free_response_detailed",
+    "line": 35342,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 18,
+    "content_preview": "Control conversation structure. Enabled (Free Response): Persona speaks conversationally, students t"
+  },
+  {
+    "key": "persona_mode_toggle",
+    "line": 35343,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 18,
+    "content_preview": "SINGLE mode shows one persona at a time. PANEL mode allows multiple personas to interact in a group "
+  },
+  {
+    "key": "quiz_difficulty_mix",
+    "line": 35357,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 20,
+    "content_preview": "Control question difficulty distribution. Options: Mixed (default\u2014varies difficulty throughout), Eas"
+  },
+  {
+    "key": "quiz_question_types",
+    "line": 35358,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 20,
+    "content_preview": "Choose question formats for your quiz. Options: Multiple Choice (4 options, auto-graded), True/False"
+  },
+  {
+    "key": "timeline_count_detailed",
+    "line": 35362,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 8,
+    "content_preview": "Set how many events to include in your timeline. 5-8 events: concise overview, easier to sequence, g"
+  },
+  {
+    "key": "timeline_topic_detailed",
+    "line": 35361,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 8,
+    "content_preview": "Describe your timeline topic with specificity. Strong examples: American Revolution 1775-1783, Stage"
+  },
+  {
+    "key": "visuals_low_quality",
+    "line": 35498,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 10,
+    "content_preview": "Speed up image generation by reducing quality. Low quality mode: generates in 2-3 seconds (vs 8-10),"
+  },
+  {
+    "key": "word_sounds_mic",
+    "line": 35773,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 12,
+    "content_preview": "Voice input for phonics activities. Click to start recording your spoken answer. Browser will reques"
+  },
+  {
+    "key": "lesson_plan_assessment",
+    "line": 35581,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 1,
+    "content_preview": "Define how student learning will be measured. Options include: Formative (ongoing checks: exit ticke"
+  },
+  {
+    "key": "lesson_plan_differentiation",
+    "line": 35580,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 1,
+    "content_preview": "Generate specific accommodations and modifications for diverse learners. When enabled, lesson plan i"
+  },
+  {
+    "key": "lesson_plan_duration",
+    "line": 35578,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 1,
+    "content_preview": "Specify how long your lesson should take. Common options: 30 minutes (mini-lesson), 45 minutes (stan"
+  },
+  {
+    "key": "lesson_plan_generate_button",
+    "line": 35582,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 1,
+    "content_preview": "Create a complete lesson plan from your specifications. Generation takes 20-30 seconds. Output inclu"
+  },
+  {
+    "key": "lesson_plan_objectives",
+    "line": 35579,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 1,
+    "content_preview": "Set the learning targets for your lesson. Enter objectives like: Students will be able to identify c"
+  },
+  {
+    "key": "escape_room_matching_columns",
+    "line": 35541,
+    "status": "REDUNDANT",
+    "redundant_with": "escape_room_matching_container (66%)",
+    "sibling_count": 18,
+    "content_preview": "Two-column matching interface for pairing related items. Click an item on the left, then click its m"
+  },
+  {
+    "key": "escape_room_matching_submit",
+    "line": 35542,
+    "status": "REDUNDANT",
+    "redundant_with": "escape_room_matching_container (55%)",
+    "sibling_count": 18,
+    "content_preview": "Verify your matched pairs are correct. Click after connecting all items from left column to their ma"
+  },
+  {
+    "key": "escape_room_sequence_check",
+    "line": 35540,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 18,
+    "content_preview": "Check if your ordered sequence is correct. Click after arranging all items in the order you believe "
+  },
+  {
+    "key": "escape_room_sequence_list",
+    "line": 35539,
+    "status": "UNIQUE",
+    "redundant_with": null,
+    "sibling_count": 18,
+    "content_preview": "Collection of items that need to be arranged in correct sequence. Items can be: historical events (c"
+  }
+]

@@ -1,0 +1,8 @@
+﻿14882: teacher_gate_modal: "Security gate that restricts access to teacher-only features. Protected features include: settings that affect content difficulty
+17574: lowerText.includes("security check") ||
+17593: if (isBlocked) throw new Error("URL blocked by security check (CAPTCHA/403). Please paste text manually.");
+17599: finalLower.includes("security check") ||
+17604: throw new Error("URL blocked by security check. Please paste text manually.");
+20823: *** SYSTEM SECURITY PROTOCOL (HIGHEST PRIORITY) ***
+34697: 'teacher_gate_modal': "Security gate protecting teacher-only features. Appears when: students try to access settings, view answer keys, change configu
+34698: 'teacher_gate_input': "Enter your teacher password to unlock protected features. Password requirements: 4-8 characters, case-sensitive. Incorrect atte

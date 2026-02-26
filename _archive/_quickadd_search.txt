@@ -1,0 +1,8 @@
+LINE 1909: id="word-sounds-quick-add" data-help-key="ws_gen_quick_add_input"
+LINE 1928: const input = document.getElementById('word-sounds-quick-add');
+LINE 33948: 'simplified_add_term': "Quick-add vocabulary from your reading directly to glossary. Select any word in the simplified text, then click this button. The term is added to your gloss
+LINE 56188: const handleQuickAddGlossary = async (rawWord) => {
+LINE 66292: handleQuickAddGlossary(selectionMenu.text);
+LINE 66706: onClick={(e) => { e.stopPropagation(); handleQuickAddGlossary(cleanWord); }}
+LINE 66711: handleQuickAddGlossary(cleanWord);
+LINE 66930: onClick={(e) => { e.stopPropagation(); handleQuickAddGlossary(displayPart); }}

@@ -1,0 +1,125 @@
+Total lines: 73035
+
+=== FIX 1: Review Words button (onShowReview with setTimeout) ===
+  L1265:     // --- WORD SOUNDS GENERATOR PANEL ---
+  L1266:     const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview
+  L1267:         // Guard: Ensure t is always a valid function
+  L1268:         const t = tProp || ((key, fallback) => fallback || key);
+  L1269: 
+  L1270:         // Image Visibility Mode (session-level setting)
+  L1271:         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+  L1272:         // SMART IMAGE VISIBILITY - Activity-specific optimal image behavior
+  L1273:         const SMART_IMAGE_VISIBILITY = {
+  L1274:             'counting':       'afterCompletion',  // High rigor - no visual hints
+  L1275:             'isolation':      'progressive',       // Reveal after 1st attempt
+  L1276:             'blending':       'afterCompletion',  // Auditory-first, reveal as reward
+  L1277:             'segmentation':   'alwaysOn',          // Word is known, image supports VAKT
+  ---
+  L1341:         React.useEffect(() => {
+  L1342:             if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
+  L1343:                 console.log("📋 Words preloaded! Auto-navigating to Review Panel...");
+  L1344:                 hasAutoNavigated.current = true;
+  L1345:                 // Small delay to ensure UI is settled
+  L1346:                 const timer = setTimeout(() => {
+  L1347:                     onShowReview();
+  L1348:                 }, 300);
+  L1349:                 return () => clearTimeout(timer);
+  L1350:             }
+  L1351:         }, [preloadedWords.length, isProcessing, onShowReview]);
+  L1352: 
+  L1353: 
+  ---
+  L1346:                 const timer = setTimeout(() => {
+  L1347:                     onShowReview();
+  L1348:                 }, 300);
+  L1349:                 return () => clearTimeout(timer);
+  L1350:             }
+  L1351:         }, [preloadedWords.length, isProcessing, onShowReview]);
+  L1352: 
+  L1353: 
+  L1354:         // Helper for syllable counting
+  L1355:         const countSyllables = React.useCallback((word) => {
+  L1356:             if (!word) return 1;
+  L1357:             const w = word.toLowerCase().trim();
+  L1358:             if (w.length <= 3) return 1;
+  ---
+  L1350:             }
+  L1351:         }, [preloadedWords.length, isProcessing, onShowReview]);
+  L1352: 
+  L1353: 
+  L1354:         // Helper for syllable counting
+  L1355:         const countSyllables = React.useCallback((word) => {
+  L1356:             if (!word) return 1;
+  L1357:             const w = word.toLowerCase().trim();
+  L1358:             if (w.length <= 3) return 1;
+  L1359:             // Rough heuristic for English
+  L1360:             const cleaned = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '')
+  L1361:                              .replace(/^y/, '');
+  L1362:             const vowelGroups = cleaned.match(/[aeiouy]+/g);
+  ---
+  L1691:                             <button
+  L1692:                                 data-help-key="ws_gen_review_btn" onClick={onShowReview}
+  L1693:                                 className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-sm flex items-center gap-2 tra
+  L1694:                             >
+  L1695:                                 <Eye size={14} />
+  L1696:                                 Review Words
+  L1697:                             </button>
+  L1698:                         </div>
+  L1699:                     )}
+  L1700: 
+  L1701:                     <div className="flex flex-1 overflow-hidden">
+  L1702:                         {/* Sidebar: Hybrid Configuration */}
+  L1703:                         <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
+  ---
+  L71284:               preloadedWords={wsPreloadedWords || []}
+  L71285:               onShowReview={() => {
+  L71286:                   // Navigate to word sounds modal with review panel
+  L71287:                   // Force unmount-remount to reset internal refs (hasStartedFromReview)
+  L71288:                   setIsWordSoundsMode(false);
+  L71289:                   setTimeout(() => {
+  L71290:                       setWordSoundsActivity('word-sounds');
+  L71291:                       setWordSoundsAutoReview(true);
+  L71292:                       setIsWordSoundsMode(true);
+  L71293:                       setActiveView('output');
+  L71294:                   }, 0);
+  L71295:               }}
+  L71296:           />
+  ---
+
+=== FIX 2: Image concurrency (generatingImageSet) ===
+  L3315: const [generatingImageSet, setGeneratingImageSet] = React.useState(new Set()); // Track concurrent image generations (max 5)
+  L6247: if (generatingImageSet.size >= 5) { console.warn("⚠️ Max 5 concurrent image generations"); return; } // Concurrency limit
+
+=== FIX 3a: DISABLE_GEMINI_PHONEMES cleanup ===
+  L5071: // When DISABLE_GEMINI_PHONEMES is true, generate local fallback data
+  L5431: const DISABLE_GEMINI_PHONEMES_V2 = false;
+  L5434: if (DISABLE_GEMINI_PHONEMES_V2) {
+
+=== FIX 3b: DISABLE_GEMINI_PHONEMES_V2 (should be empty) ===
+  L5431: const DISABLE_GEMINI_PHONEMES_V2 = false;
+  L5434: if (DISABLE_GEMINI_PHONEMES_V2) {
+
+=== FIX 3c: prefetchNextWords (should be stub) ===
+  L5329:         const prefetchNextWords = React.useCallback(async () => {
+  L5330:             // DISABLED: Review Panel handles all preloading. Pre-fetch is legacy code.
+  L5331:             return;
+  L5332:         }
+  L5333:     }, [preloadedWords, isPrefetching, currentWordSoundsWord, wordSoundsActivity, fetchWordData, getDifficultyFilteredPool]);
+  L5334: 
+  L5335:     // BULK PRELOAD: Fetch 15 words with phoneme data and TTS on modal open
+  L5336:     // EAGER-START: Load first word immediately, start activity, preload rest in background
+  L5337:     // BULK PRELOAD: "Rolling Window" Strategy
+  L5338:     // Load first word immediately + next 2 words in background (3 total)
+  L5339:     // This ensures instant start without the massive initial delay of loading 15+ words
+  L5340:     const preloadInitialBatch = React.useCallback(async () => {
+  L5341:         if (isPreloading) return;
+  L5342:         // [FIX] STRICT ANTI-SHUFFLE: Prevent running if words already exist
+  L5343:         if (preloadedWords.length > 0) {
+
+=== AUDIO PRELOAD: Still intact? ===
+  L5906: 
+  L5907: if (wordsNeedingAudio.length === 0) return;
+  L5908: 
+  L5909: console.log(`🎧 Prefetching audio for ${wordsNeedingAudio.length} words...`);
+  L5910: 
+  L5911: // 1. Mark as requested to prevent redundant loops

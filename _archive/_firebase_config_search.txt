@@ -1,0 +1,3 @@
+﻿32: import { initializeApp } from 'firebase/app';
+37: const firebaseConfig = JSON.parse(__firebase_config);
+38: const firebaseApp = initializeApp(firebaseConfig);

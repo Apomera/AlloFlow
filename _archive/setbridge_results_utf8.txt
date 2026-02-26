@@ -1,0 +1,89 @@
+﻿
+AlloFlowANTI.txt:34092
+:                    
+setBridgeMessage({
+AlloFlowANTI.txt:34118
+:                     
+       
+setBridgeMessage({
+AlloFlowANTI.txt:59313
+:                     
+       <button 
+onClick={() => { 
+setBridgeMessage({ 
+english: 
+'Photosynthesis is 
+the process by which 
+green plants use 
+sunlight, water, and 
+carbon dioxide to 
+make their own food 
+and release oxygen.', 
+translated: 
+'Sawir-ka-buuxa waa 
+habka ay dhirta 
+cagaaran u 
+isticmaalaan iftiinka 
+qorraxda, biyaha, iyo 
+kaarboon dayaxsaydka 
+si ay u sameeyaan 
+cuntadooda isaga oo 
+sii daayaya 
+ogsiijiin.', 
+language: 'Somali', 
+languageName: '🇸🇴 
+Soomaali', imageUrl: 
+null, terms: 
+['photosynthesis', 
+'chlorophyll', 
+'carbon dioxide', 
+'oxygen'], timestamp: 
+Date.now() }); }} 
+className="w-full 
+px-3 py-1.5 
+bg-teal-50 
+text-teal-700 
+rounded-lg text-xs 
+font-bold 
+hover:bg-teal-100 
+transition-colors 
+flex items-center 
+justify-center 
+gap-1.5 border 
+border-teal-200 mt-1">
+AlloFlowANTI.txt:69914
+:                     
+             
+setBridgeMessage({
+AlloFlowANTI.txt:70051
+:                    
+setBridgeMessage({
+AlloFlowANTI.txt:70550
+:          
+onClick={(e) => { if 
+(e.target === 
+e.currentTarget) setBr
+idgeMessage(null); }}
+AlloFlowANTI.txt:70551
+:          
+onKeyDown={(e) => { 
+if (e.key === 
+'Escape') setBridgeMes
+sage(null); }}
+AlloFlowANTI.txt:70583
+:                  
+onClick={() => { setBr
+idgeMessage(null); set
+BridgeKaraokeIndex(-1)
+; setBridgeTtsPlaying(
+false); setBridgeTerms
+Saved([]); }}
+AlloFlowANTI.txt:70833
+:                  
+onClick={() => { setBr
+idgeMessage(null); set
+BridgeKaraokeIndex(-1)
+; setBridgeTtsPlaying(
+false); }}
+
+

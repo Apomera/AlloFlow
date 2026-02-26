@@ -1,0 +1,31 @@
+=== FLUENCY_BENCHMARKS ===
+const FLUENCY_BENCHMARKS = {
+  'K':  { fall: 0,   winter: 13,  spring: 28  },
+  '1':  { fall: 23,  winter: 53,  spring: 72  },
+  '2':  { fall: 51,  winter: 72,  spring: 89  },
+  '3':  { fall: 71,  winter: 92,  spring: 107 },
+  '4':  { fall: 94,  winter: 112, spring: 123 },
+  '5':  { fall: 110, winter: 127, spring: 139 },
+  '6':  { fall: 127, winter: 140, spring: 150 },
+  '7':  { fall: 128, winter: 136, spring: 150 },
+  '8':  { fall: 133, winter: 146, spring: 151 },
+};
+const calculateRunningRecordMetrics = (wordData, insertionsArr) => {
+    if (!wordData || wordData.length === 0) return {
+        substitutions: 0, omissions: 0, insertions: 0,
+        selfCorrections: 0, totalErrors: 0, errorRate: '0',
+        scRate: '0', readingLevel: 'frustrational'
+    };
+    const substitutions = wordData.filter(w => w.status === 'mispronounced').length;
+    const omissions = wordData.filter(w => w.status === 'missed').length;
+    const insertions = (insertionsArr && Array.isArray(insertionsArr)) ? insertionsArr.length : 0;
+    const selfCorrections = wordData.filter(w => w.status === 'self_corrected').length;
+    const totalErrors = substitutions + omissions + insertions;
+    const totalWords = wordData.length;
+    const errorRate = totalErrors > 0 ? (totalWords / totalErrors).toFixed(1) : '∞';
+    const scTotal = selfCorrections + totalErrors;
+    const scRate = scTotal > 0 ? (selfCorrections / scTotal * 100).toFixed(0) : '0';
+    const correctAndSC = wordData.filter(w => w.status === 'c
+
+=== ORF_SCREENING_PASSAGES ===
+Not found

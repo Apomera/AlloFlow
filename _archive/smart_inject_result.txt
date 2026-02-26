@@ -1,0 +1,18 @@
+﻿UI_STRINGS: L11216 to L17601
+Defined keys: 4968
+Still missing: 67 keys
+  bingo: 4 flat keys -> before L12609
+  blueprint: 1 flat keys -> before L16799
+  common: 1 flat keys -> before L11953
+  escape_room: 1 flat keys -> before L13154
+  export.filenames: 10 keys -> before L17439
+  export.storybook: 6 keys -> before L17429
+  language_selector: 3 flat keys -> before L12808
+  quick_start: 1 flat keys -> before L13546
+  socratic: 2 flat keys -> before L17183
+  toasts: 1 flat keys -> before L12199
+  tour: 1 flat keys -> before L11734
+  word_sounds: 36 flat keys -> before L11824
+
+Added 67 lines via 12 insertions
+Final: 70773 lines

@@ -1,0 +1,30 @@
+=== History items created with config ===
+
+=== History items created WITHOUT config (potential undefined) ===
+L34495: setHistory(prev => [...prev, newChallengeItem]);
+L36582: setHistory(prev => [...prev, newItem]);
+L37790: setHistory(prev => [...prev, fluencyRecordItem]);
+L38270: setHistory(prev => [...prev, ...newItems]);
+L43483: setHistory(prev => [...prev, newItem]);
+L43842: setHistory(prev => [...prev, newItem]);
+L44195: setHistory(prev => [...prev, newItem]);
+L45181: setHistory(prev => [...prev, newAdventureItem]);
+L47675: setHistory(prev => [...prev, newItem]);
+L48496: setHistory(prev => [...prev, newItem]);
+L48676: setHistory(prev => [...prev, newItem]);
+L48709: setHistory(prev => [...prev, newItem]);
+L48742: setHistory(prev => [...prev, newItem]);
+L48769: setHistory(prev => [...prev, newItem]);
+L48785: setHistory(prev => [...prev, newItem]);
+L50390: setHistory(prev => [...prev, tempItem]);
+L51830: setHistory(prev => [...prev, newItem]);
+L54257: setHistory(prev => [...prev, newItem]);
+L68242: setHistory(prev => [wordSoundsResource, ...prev]);
+
+=== studentInterests declaration/default ===
+L35517: const [studentInterests, setStudentInterests] = useState([]);
+
+=== standardsPromptString declaration/default ===
+L35529: const standardsPromptString = targetStandards.join('; ');
+L35530: const standardsInput = standardsPromptString || standardInputValue;
+L39487: const effStandards = (overrides && typeof overrides.standards === 'string') ? overrides.standards : standardsPromptString;

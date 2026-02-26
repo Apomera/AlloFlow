@@ -1,0 +1,394 @@
+
+================================================================================
+1. BingoCard REFERENCES
+================================================================================
+
+--- Line 38334 ---
+    38329:       } catch (e) {
+    38330:           warnLog("Pixel art gen failed", e);
+    38331:           return null;
+    38332:       }
+    38333:   }, []);
+>>> 38334:   const generateBingoCards = (glossaryData, count, size) => {
+    38335:       const totalCells = size * size;
+    38336:       const centerIndex = size % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
+    38337:       const termsNeeded = centerIndex !== -1 ? totalCells - 1 : totalCells;
+    38338:       let pool = [...glossaryData];
+    38339:       if (!pool || pool.length === 0) {
+
+--- Line 38367 ---
+    38362:       }
+    38363:       return newCards;
+    38364:   };
+    38365:   const handleGenerateBingo = () => {
+    38366:       if (!generatedContent || generatedContent.type !== 'glossary') return;
+>>> 38367:       const cards = generateBingoCards(generatedContent?.data, bingoSettings.cardCount, bingoSettings.gridSize);
+    38368:       if (cards) {
+    38369:           const terms = generatedContent?.data.map(i => i.term);
+    38370:           setBingoState({
+    38371:               cards,
+    38372:               drawPile: fisherYatesShuffle(terms),
+
+================================================================================
+2. generateBingo REFERENCES
+================================================================================
+
+--- Line 38334 ---
+    38329:       } catch (e) {
+    38330:           warnLog("Pixel art gen failed", e);
+    38331:           return null;
+    38332:       }
+    38333:   }, []);
+>>> 38334:   const generateBingoCards = (glossaryData, count, size) => {
+    38335:       const totalCells = size * size;
+    38336:       const centerIndex = size % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
+    38337:       const termsNeeded = centerIndex !== -1 ? totalCells - 1 : totalCells;
+    38338:       let pool = [...glossaryData];
+    38339:       if (!pool || pool.length === 0) {
+
+--- Line 38367 ---
+    38362:       }
+    38363:       return newCards;
+    38364:   };
+    38365:   const handleGenerateBingo = () => {
+    38366:       if (!generatedContent || generatedContent.type !== 'glossary') return;
+>>> 38367:       const cards = generateBingoCards(generatedContent?.data, bingoSettings.cardCount, bingoSettings.gridSize);
+    38368:       if (cards) {
+    38369:           const terms = generatedContent?.data.map(i => i.term);
+    38370:           setBingoState({
+    38371:               cards,
+    38372:               drawPile: fisherYatesShuffle(terms),
+
+================================================================================
+3. bingo REFERENCES (first 15)
+================================================================================
+
+--- Line 11369 ---
+    11367:             memoryGame: null, matchingGame: null, syntaxScramble: null,
+    11368:             crosswordGame: null, timelineGame: null, conceptSortGame: null,
+>>> 11369:             vennDiagram: null, bingo: null, wordScramble: null,
+    11370:             labelChallengeAvg: 0, labelChallengeAttempts: 0, labelChallengeBest: 0
+    11371:         };
+
+--- Line 11415 ---
+    11413:                 syntaxScramble: 'syntaxScramble', crossword: 'crosswordGame',
+    11414:                 timelineGame: 'timelineGame', conceptSortGame: 'conceptSortGame',
+>>> 11415:                 vennDiagram: 'vennDiagram', bingo: 'bingo', wordScramble: 'wordScramble'
+    11416:             };
+    11417:             for (const [rawType, statKey] of Object.entries(typeMap)) {
+
+--- Line 14220 ---
+    14218:                                             { key: 'conceptSortGame', label: 'Concept Sort', icon: '🗂️' },
+    14219:                                             { key: 'vennDiagram', label: 'Venn Diagram', icon: '⭕' },
+>>> 14220:                                             { key: 'bingo', label: 'Bingo', icon: '🎯' },
+    14221:                                             { key: 'wordScramble', label: 'Word Scramble', icon: '🔤' }
+    14222:                                         ].filter(g => selectedStudent.stats[g.key]).map(game => {
+
+--- Line 16797 ---
+    16795:             }
+    16796:         } else if (activeView === 'glossary') {
+>>> 16797:             tips.push(t('tips.glossary_bingo'));
+    16798:             if (!has('image')) tips.push(t('tips.glossary_visuals'));
+    16799:         } else if (activeView === 'quiz') {
+
+--- Line 22620 ---
+    22618:   );
+    22619: });
+>>> 22620: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRef }) => {
+    22621:   useEffect(() => {
+    22622:       if (onGenerate && (!bingoState.cards || bingoState.cards.length === 0)) {
+
+--- Line 22622 ---
+    22620: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRef }) => {
+    22621:   useEffect(() => {
+>>> 22622:       if (onGenerate && (!bingoState.cards || bingoState.cards.length === 0)) {
+    22623:           onGenerate();
+    22624:       }
+
+--- Line 22732 ---
+    22730:   return (
+    22731:     <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+>>> 22732:         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
+    22733:             <button
+    22734:                 onClick={onClose}
+
+--- Line 22737 ---
+    22735:                 className="absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    22736:                 autoFocus
+>>> 22737:                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
+    22738:             >
+    22739:                 <X size={24} />
+
+--- Line 22743 ---
+    22741:             <div className="text-center mb-4 no-print">
+    22742:                 <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
+>>> 22743:                     <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
+    22744:                 </h2>
+    22745:                 <p className="text-slate-500 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
+
+--- Line 22745 ---
+    22743:                     <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
+    22744:                 </h2>
+>>> 22745:                 <p className="text-slate-500 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
+    22746:             </div>
+    22747:             <div className="flex flex-wrap justify-center items-center gap-4 mb-4 no-print bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
+
+--- Line 22751 ---
+    22749:                     <>
+    22750:                         <div className="flex items-center gap-2">
+>>> 22751:                             <label className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
+    22752:                             <input
+    22753:                                 type="number"
+
+--- Line 22759 ---
+    22757:                                 onChange={(e) => setSettings({...settings, cardCount: Math.max(1, Math.min(50, parseInt(e.target.value) || 20))})}
+    22758:                                 className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 outline-none"
+>>> 22759:                                 data-help-key="bingo_card_count_input" aria-label={t('bingo.card_count')}
+    22760:                             />
+    22761:                         </div>
+
+--- Line 22768 ---
+    22766:                                 onChange={(e) => setSettings({...settings, includeImages: e.target.checked})}
+    22767:                                 className="rounded border-slate-300 text-rose-500 focus:ring-rose-200 h-4 w-4"
+>>> 22768:                                 data-help-key="bingo_images_chk" aria-label={t('bingo.include_pictures')}
+    22769:                             />
+    22770:                             <div className="flex items-center gap-1">
+
+--- Line 22771 ---
+    22769:                             />
+    22770:                             <div className="flex items-center gap-1">
+>>> 22771:                                 <ImageIcon size={14} className="text-rose-400"/> {t('bingo.include_pictures')}
+    22772:                             </div>
+    22773:                         </label>
+
+--- Line 22777 ---
+    22775:                             onClick={onGenerate}
+    22776:                             className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
+>>> 22777:                             data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
+    22778:                         >
+    22779:                             <RefreshCw size={14}/> {t('bingo.regenerate')}
+
+================================================================================
+4. BingoGame/PlayBingo REFERENCES
+================================================================================
+
+--- Line 22620 ---
+    22615:         </div>
+    22616:       </div>
+    22617:     </div>
+    22618:   );
+    22619: });
+>>> 22620: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRef }) => {
+    22621:   useEffect(() => {
+    22622:       if (onGenerate && (!bingoState.cards || bingoState.cards.length === 0)) {
+    22623:           onGenerate();
+    22624:       }
+    22625:   }, []);
+
+--- Line 23389 ---
+    23384: 
+    23385:         `}</style>
+    23386:     </div>
+    23387:   );
+    23388: });
+>>> 23389: const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete }) => {
+    23390:   const { t } = useContext(LanguageContext);
+    23391:   const [grid, setGrid] = useState([]);
+    23392:   const [marks, setMarks] = useState(new Set());
+    23393:   const [isWon, setIsWon] = useState(false);
+    23394:   useEffect(() => {
+
+--- Line 30969 ---
+    30964:       setGameCompletions(prev => ({
+    30965:           ...prev,
+    30966:           [gameType]: [...(prev[gameType] || []), entry]
+    30967:       }));
+    30968:   }, []);
+>>> 30969:   const closeBingo = useCallback(() => setIsBingoGame(false), []);
+    30970:   const closeStudentBingo = useCallback(() => setIsStudentBingoGame(false), []);
+    30971:   const closeCrossword = useCallback(() => setIsCrosswordGame(false), []);
+    30972:   const closeMemory = useCallback(() => setIsMemoryGame(false), []);
+    30973:   const closeMatching = useCallback(() => setIsMatchingGame(false), []);
+    30974:   const handleGameScoreUpdate = useCallback((points, activity) => {
+
+--- Line 30970 ---
+    30965:           ...prev,
+    30966:           [gameType]: [...(prev[gameType] || []), entry]
+    30967:       }));
+    30968:   }, []);
+    30969:   const closeBingo = useCallback(() => setIsBingoGame(false), []);
+>>> 30970:   const closeStudentBingo = useCallback(() => setIsStudentBingoGame(false), []);
+    30971:   const closeCrossword = useCallback(() => setIsCrosswordGame(false), []);
+    30972:   const closeMemory = useCallback(() => setIsMemoryGame(false), []);
+    30973:   const closeMatching = useCallback(() => setIsMatchingGame(false), []);
+    30974:   const handleGameScoreUpdate = useCallback((points, activity) => {
+    30975:     handleScoreUpdate(points, activity, generatedContent?.id);
+
+--- Line 31560 ---
+    31555:   const [showWordSearchAnswers, setShowWordSearchAnswers] = useState(false);
+    31556:   const [foundWords, setFoundWords] = useState(new Set());
+    31557:   const [isMemoryGame, setIsMemoryGame] = useState(false);
+    31558:   const [isCrosswordGame, setIsCrosswordGame] = useState(false);
+    31559:   const [isMatchingGame, setIsMatchingGame] = useState(false);
+>>> 31560:   const [isBingoGame, setIsBingoGame] = useState(false);
+    31561:   const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
+    31562:   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
+    31563:   const [confirmDialog, setConfirmDialog] = useState(null);
+    31564:   const [bingoSettings, setBingoSettings] = useState({
+    31565:       gridSize: 5,
+
+--- Line 31561 ---
+    31556:   const [foundWords, setFoundWords] = useState(new Set());
+    31557:   const [isMemoryGame, setIsMemoryGame] = useState(false);
+    31558:   const [isCrosswordGame, setIsCrosswordGame] = useState(false);
+    31559:   const [isMatchingGame, setIsMatchingGame] = useState(false);
+    31560:   const [isBingoGame, setIsBingoGame] = useState(false);
+>>> 31561:   const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
+    31562:   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
+    31563:   const [confirmDialog, setConfirmDialog] = useState(null);
+    31564:   const [bingoSettings, setBingoSettings] = useState({
+    31565:       gridSize: 5,
+    31566:       mode: 'term',
+
+--- Line 32723 ---
+    32718:   const handleSetIsZenModeToFalse = React.useCallback(() => setIsZenMode(false), []);
+    32719:   const handleSetErrorToNull = React.useCallback(() => setError(null), []);
+    32720:   const handleSetIsMemoryGameToTrue = React.useCallback(() => setIsMemoryGame(true), []);
+    32721:   const handleSetIsCrosswordGameToTrue = React.useCallback(() => setIsCrosswordGame(true), []);
+    32722:   const handleSetIsMatchingGameToTrue = React.useCallback(() => setIsMatchingGame(true), []);
+>>> 32723:   const handleSetIsBingoGameToTrue = React.useCallback(() => setIsBingoGame(true), []);
+    32724:   const handleSetIsStudentBingoGameToTrue = React.useCallback(() => setIsStudentBingoGame(true), []);
+    32725:   const handleSetIsWordScrambleGameToTrue = React.useCallback(() => setIsWordScrambleGame(true), []);
+    32726:   const handleSetGlossaryFilterToAll = React.useCallback(() => setGlossaryFilter('all'), []);
+    32727:   const handleSetGlossaryFilterToAcademic = React.useCallback(() => setGlossaryFilter('academic'), []);
+    32728:   const handleSetGlossaryFilterToDomain = React.useCallback(() => setGlossaryFilter('domain'), []);
+
+--- Line 32724 ---
+    32719:   const handleSetErrorToNull = React.useCallback(() => setError(null), []);
+    32720:   const handleSetIsMemoryGameToTrue = React.useCallback(() => setIsMemoryGame(true), []);
+    32721:   const handleSetIsCrosswordGameToTrue = React.useCallback(() => setIsCrosswordGame(true), []);
+    32722:   const handleSetIsMatchingGameToTrue = React.useCallback(() => setIsMatchingGame(true), []);
+    32723:   const handleSetIsBingoGameToTrue = React.useCallback(() => setIsBingoGame(true), []);
+>>> 32724:   const handleSetIsStudentBingoGameToTrue = React.useCallback(() => setIsStudentBingoGame(true), []);
+    32725:   const handleSetIsWordScrambleGameToTrue = React.useCallback(() => setIsWordScrambleGame(true), []);
+    32726:   const handleSetGlossaryFilterToAll = React.useCallback(() => setGlossaryFilter('all'), []);
+    32727:   const handleSetGlossaryFilterToAcademic = React.useCallback(() => setGlossaryFilter('academic'), []);
+    32728:   const handleSetGlossaryFilterToDomain = React.useCallback(() => setGlossaryFilter('domain'), []);
+    32729:   const handleSetGlossarySearchTermConst = React.useCallback(() => setGlossarySearchTerm(''), []);
+
+--- Line 35907 ---
+    35902:               if (isMatchingGame) setIsMatchingGame(false);
+    35903:               if (isTimelineGame) setIsTimelineGame(false);
+    35904:               if (isConceptSortGame) setIsConceptSortGame(false);
+    35905:               if (isSyntaxGame) setIsSyntaxGame(false);
+    35906:               if (isReviewGame) setIsReviewGame(false);
+>>> 35907:               if (isStudentBingoGame) setIsStudentBingoGame(false);
+    35908:               if (isZenMode) {
+    35909:                   setIsZenMode(false);
+    35910:               }
+    35911:           }
+    35912:       };
+
+--- Line 49549 ---
+    49544:     setError(null);
+    49545:     setGlossarySearchTerm('');
+    49546:     setGameMode(null);
+    49547:     setIsMemoryGame(false);
+    49548:     setIsMatchingGame(false);
+>>> 49549:     setIsStudentBingoGame(false);
+    49550:     setShowQuizAnswers(false);
+    49551:     setIsEditingLeveledText(false);
+    49552:     setIsEditingFaq(false);
+    49553:     setIsEditingQuiz(false);
+    49554:     setIsEditingScaffolds(false);
+
+================================================================================
+5. bingoImage/showImage REFERENCES
+================================================================================
+
+--- Line 4456 ---
+    4453:     const [userAnswer, setUserAnswer] = React.useState('');
+    4454:     const [showLetterHints, setShowLetterHints] = React.useState(false);
+    4455:     const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+>>> 4456:     const [showImageForCurrentWord, setShowImageForCurrentWord] = React.useState(false);
+    4457:         const SMART_IMAGE_VISIBILITY = {
+    4458:             'counting':       'afterCompletion',
+    4459:             'isolation':      'progressive',
+
+--- Line 9172 ---
+    9169:                 const effectiveMode = getEffectiveImageMode();
+    9170:                 const shouldShowImage = currentWordImage && (
+    9171:                     effectiveMode === 'alwaysOn' ||
+>>> 9172:                     ((effectiveMode === 'progressive' || effectiveMode === 'afterCompletion') && showImageForCurrentWord)
+    9173:                 );
+    9174:                 return shouldShowImage;
+    9175:             })() ? (
+
+================================================================================
+6. Bingo cell/grid rendering
+================================================================================
+
+--- Line 20606 ---
+    20601:           >
+    20602:             {t('memory.play_again')}
+    20603:           </button>
+    20604:         </div>
+    20605:       ) : (
+>>> 20606:         <div className={`grid gap-4 ${isFullscreen ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`} role="grid" aria-label={t('memory.board_aria')}>
+    20607:           {cards.map((card, index) => {
+    20608:             const isFlipped = flippedIndices.includes(index) || matchedPairs.has(card.pairId);
+    20609:             const isMatched = matchedPairs.has(card.pairId);
+    20610:             let ariaLabel = `${t('memory.card_prefix')} ${index + 1}`;
+    20611:             if (isMatched) {
+
+--- Line 23496 ---
+    23491:                  <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
+    23492:                      <X size={24} />
+    23493:                  </button>
+    23494:             </div>
+    23495:             <div className="p-6 overflow-y-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
+>>> 23496:                 <div className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
+    23497:                     {grid.map((row, r) => (
+    23498:                         row.map((cell, c) => {
+    23499:                             const isMarked = marks.has(`${r}-${c}`);
+    23500:                             return (
+    23501:                                 <div
+
+--- Line 25035 ---
+    25030:         })}
+    25031:       </div>
+    25032:       {/* Room Grid */}
+    25033:       <div className="max-w-4xl mx-auto p-6 mt-4">
+    25034:         <p className="text-center text-purple-300 mb-6 italic">{escapeState.room?.description}</p>
+>>> 25035:         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    25036:           {objects.map((obj, idx) => {
+    25037:             const puzzle = puzzles.find(p => p.linkedObjectId === obj.id) || puzzles[idx];
+    25038:             const isSolved = puzzle && solvedPuzzlesSet.has(puzzle.id);
+    25039:             return (
+    25040:               <button
+
+--- Line 54391 ---
+    54386:                                 <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag to reorder'}
+    54387:                             </span>
+    54388:                         </div>
+    54389:                         <div className="flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar">
+    54390:                             {sessionData.resources && sessionData.resources.length > 0 ? (
+>>> 54391:                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3" style={{ gridAutoRows: 'min-content' }}>
+    54392:                                     {sessionData.resources.map((res, index) => {
+    54393:                                         const assignedGroup = sessionData.groups && Object.entries(sessionData.groups)
+    54394:                                             .find(([_, g]) => g && g.resourceId === res.id);
+    54395:                                         const icon = typeIcons[res.type] || typeIcons.default;
+    54396:                                         const description = getResourceDescription(res);
+
+--- Line 64207 ---
+    64202:                                                 </div>
+    64203:                                             ) : (
+    64204:                                                 <p className="text-purple-400 text-sm mt-2">{t('escape_room.click_to_inspect')}</p>
+    64205:                                             )}
+    64206:                                         </div>
+>>> 64207:                                         <div className={`flex-grow grid grid-cols-3 md:grid-cols-5 gap-4 place-items-center ${!isEscapeTimerRunning ? 'opacity-50 pointer-events-none' : ''}`}>
+    64208:                                             {escapeRoomState.objects?.map((obj, idx) => {
+    64209:                                                 const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === obj.id);
+    64210:                                                 const isSolved = puzzle && escapeRoomState.solvedPuzzles.has(puzzle.id);
+    64211:                                                 const isDisabled = isSolved || !isEscapeTimerRunning;
+    64212:                                                 return (

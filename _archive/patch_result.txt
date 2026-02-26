@@ -1,0 +1,21 @@
+﻿Total lines: 69174
+[1] Added 5 word_sounds keys before L11824
+[2] FAILED: Could not find ortho slider block
+  alloBotRef at L31031: const alloBotRef = useRef(null);
+  AlloBot moveTo at L32956: alloBotRef.current.moveTo(targetX, targetY);
+  AlloBot moveTo at L33034: alloBotRef.current.moveTo(targetX, targetY);
+  AlloBot moveTo at L35857: alloBotRef.current.moveTo(centerX, topY);
+  AlloBot moveTo at L46262: alloBotRef.current.moveTo(targetX, targetY);
+  QuickStartWizard render at L68724
+    L68722: onClose={handleCloseStudentWelcome}
+    L68723: onUpload={() => projectFileInputRef.current?.click()}
+    L68724: />\n      <QuickStartWizard
+    L68725: isOpen={showWizard && hasSelectedRole && isTeacherMode}
+    L68726: onClose={() => setShowWizard(false)}
+    L68727: onComplete={handleWizardComplete}
+    L68728: onUpload={() => fileInputRef.current?.click()}
+    L68729: onLookupStandards={handleWizardStandardLookup}
+    L68730: onCallGemini={callGemini}
+    L68731: addToast={addToast}
+
+1 changes applied. New line count: 69179

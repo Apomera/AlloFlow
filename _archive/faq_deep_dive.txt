@@ -1,0 +1,43 @@
+=== FAQ DEEP DIVE RESEARCH ===
+
+--- STATE & MODES ---
+
+--- TTS & AUDIO ---
+
+--- BILINGUAL / TRANSLATION ---
+
+--- INTERACTIVE FEATURES ---
+
+--- STUDY / GAME MODES ---
+
+--- EXPORT FEATURES ---
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 27458: id: 'tour-tool-faq',
+Line 27459: text: `Anticipate student confusion before it happens. This tool automatically generates a predictive FAQ based on the text's complexity, proactively addressing common misconceptions.
+Line 27460: 
+Line 27461: ### Key Features
+Line 27462: • **Auto-Generation**: Instantly creates Questions & Answers based on the text analysis.
+Line 27463: • **Audio Support**: Text-to-Speech for both questions and answers to support auditory learners.
+Line 27464: • **Bilingual Support**: Option to view and hear translations if a target language is selected.
+Line 27465: • **Interactive Mode**: Click-to-hear functionality for independent study.
+Line 27466: 
+Line 27467: ### Pro Tip
+Line 27468: • Use the audio feature to create a listening station activity where students check their understanding.
+Line 27469: 
+Line 27470: ### UDL Connection
+Line 27471: • **Representation**: Highlights patterns and critical features (Guideline 3) by explicitly addressing common misconceptions.`,
+Line 27472: 
+Line 27473: title: t('tour.faq_title'),
+Line 27474: },
+Line 27475: {
+Line 27476: id: 'tour-tool-scaffolds',
+Line 27477: text: `Comprehensive writing support system with AI-powered grading and customizable sentence structures. Perfect for differentiated writing instruction.
+Line 27478: 
+Line 27479: ### Scaffold Types
+Line 27480: • **Sentence Starters**: List-based prompts to help students begin their thoughts.
+Line 27481: • **Paragraph Frames**: Cloze-style fill-in-the-blank paragraphs for structured argumentation.
+Line 27482: • **Discussion Prompts**: Conversation starters for collaborative discussions.
+Line 27483: • **Custom Instructions**: Tailor frames to specific rhetorical functions (e.g., 'agreeing/disagreeing', 'cause and effect').
+
+--- UI PATTERNS ---

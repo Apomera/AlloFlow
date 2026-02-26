@@ -1,0 +1,168 @@
+============================================================
+PART 1: React.memo WRAPPED COMPONENTS
+============================================================
+  L211: GlobalMuteButton = React.memo(...)
+  L547: LargeFileTranscriptionModal = React.memo(...)
+  L1546: WordSoundsGenerator = React.memo(...)
+  L4159: RhymeView = React.memo(...)
+  L4254: OrthographyView = React.memo(...)
+  L4623: SoundMappingView = React.memo(...)
+  L8448: LetterTraceView = React.memo(...)
+  L10837: StudentAnalyticsPanel = React.memo(...)
+  L19158: StudentSubmitModal = React.memo(...)
+  L19422: SpeechBubble = React.memo(...)
+  L19647: AlloBot = React.memo(...)
+  L21928: MissionReportCard = React.memo(...)
+  L22039: StudentQuizOverlay = React.memo(...)
+  L22389: DraftFeedbackInterface = React.memo(...)
+  L22597: TeacherGate = React.memo(...)
+  L22927: ClimaxProgressBar = React.memo(...)
+  L23001: AdventureAmbience = React.memo(...)
+  L23439: InfoTooltip = React.memo(...)
+  L23966: ConfettiExplosion = React.memo(...)
+  L24004: ComplexityGauge = React.memo(...)
+  L24104: ClozeInput = React.memo(...)
+  L24188: MemoryGame = React.memo(...)
+  L24512: MatchingGame = React.memo(...)
+  L24886: TimelineGame = React.memo(...)
+  L25243: ConceptSortGame = React.memo(...)
+  L25600: VennGame = React.memo(...)
+  L25944: CrosswordGame = React.memo(...)
+  L26404: SyntaxScramble = React.memo(...)
+  L26568: BingoGame = React.memo(...)
+  L26994: StudentBingoGame = React.memo(...)
+  L27163: WordScrambleGame = React.memo(...)
+  L27380: InventoryGrid = React.memo(...)
+  L27439: DiceOverlay = React.memo(...)
+  L27496: AdventureShop = React.memo(...)
+  L27586: RoleSelectionModal = React.memo(...)
+  L27726: StudentEntryModal = React.memo(...)
+  L27846: StudentWelcomeModal = React.memo(...)
+  L27899: SimpleBarChart = React.memo(...)
+  L28037: StudentEscapeRoomOverlay = React.memo(...)
+  L28751: EscapeRoomTeacherControls = React.memo(...)
+  L28938: TeacherLiveQuizControls = React.memo(...)
+  L29700: LongitudinalProgressChart = React.memo(...)
+  L29767: TeacherDashboard = React.memo(...)
+  L30448: QuickStartWizard = React.memo(...)
+  L31549: SpeedReaderOverlay = React.memo(...)
+  L31717: ImmersiveToolbar = React.memo(...)
+  L31720: ToggleButton = React.memo(...)
+  L31852: ImmersiveWord = React.memo(...)
+  L31924: InteractiveBlueprintCard = React.memo(...)
+  L32162: CharacterColumn = React.memo(...)
+  L40478: BilingualFieldRenderer = React.memo(...)
+  L40567: ImmersiveWord = React.memo(...)
+  L56792: BranchItem = React.memo(...)
+
+Total React.memo components: 53
+
+============================================================
+PART 2: INLINE ARROW FUNCTIONS IN JSX EVENT HANDLERS
+============================================================
+Total inline arrows in JSX handlers: 1056
+
+Breakdown by handler type:
+  onClick: 509
+  onChange: 325
+  onKeyDown: 86
+  onDragStart: 17
+  onClose: 14
+  onDragOver: 12
+  onDrop: 12
+  onMouseDown: 12
+  onScoreUpdate: 9
+  onGameComplete: 8
+  onMouseLeave: 6
+  onCheckAnswer: 5
+  onMouseEnter: 5
+  onPointerDown: 5
+  onComplete: 3
+  onBackToSetup: 2
+  onTouchStart: 2
+  onMouseUp: 2
+  onCancel: 2
+  onMouseMove: 2
+  onUpload: 2
+  onDragEnd: 1
+  onError: 1
+  onStartActivity: 1
+  onAnimationEnd: 1
+  onBlur: 1
+  onCorrect: 1
+  onDoubleClick: 1
+  onTouchEnd: 1
+  onExport: 1
+  onContinue: 1
+  onNewGame: 1
+  onDragEnter: 1
+  onToggleSpeedReader: 1
+  onStartGame: 1
+  onShowReview: 1
+  onGateRequired: 1
+
+============================================================
+PART 3: useMemo OPPORTUNITIES
+============================================================
+
+.filter().map() chains: 31
+  L1666: const customWords = customText.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+  L1714: const words = result.replace(/[^a-zA-Z,\s-]/g, '').split(',').map(w => w.trim()).filter(w => w);
+  L4739: chips.filter(c => !c.isPlaced).map((chip) => (
+  L5642: merged.map(d => d.trim().toLowerCase()).filter(d => d !== targetToCheck)
+  L9241: {soundChips.filter(c => !c.used).map((chip, idx) => (
+  L11099: const totalQuizScores = importedStudents.map(s => s.stats.quizAvg).filter(s => s > 0);
+  L11554: const fonts = FONT_OPTIONS.filter(f => f.googleFont).map(f => f.googleFont);
+  L20212: const questionTexts = questions.map(q => q.question || q.text || '').filter(Boolean);
+  L20220: const difficulties = [...new Set(questions.map(q => q.difficulty).filter(Boolean))];
+  L20239: const termNames = terms.map(t => t.term || t.word || '').filter(Boolean);
+  L24529: const validItems = data.filter(d => d.term && d.def).slice(0, 8).map((item, i) => ({
+  L25507: {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment key={item.id}>{rend
+  L25580: {items.filter(i => i.currentContainer === 'deck').map(item => (
+  L25844: {items.filter(i => i.currentZone === 'setA').map(item => (
+  L25870: {items.filter(i => i.currentZone === 'setB').map(item => (
+  L25897: {items.filter(i => i.currentZone === 'shared').map(item => (
+  L25918: {items.filter(i => i.currentZone === 'bank').map(item => (
+  L29338: {Object.entries(groups).filter(([_, g]) => g !== null).map(([gid, group]) => (
+  L29412: {Object.entries(groups).filter(([_, g]) => g !== null).map(([gid, grp]) => (
+  L33063: return items.filter(item => item && typeof item === 'object').map(item => {
+  ... and 11 more
+
+.reduce() calls: 24
+  L5510: const seed = wordLower.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L5539: const seed = wordLower.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L7457: const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L9027: const seed = word.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L9045: const seed = currentWordSoundsWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L9054: const seed = (currentWordSoundsWord || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L10008: const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  L10955: const totalFlags = allNewStudents.reduce((acc, s) => acc + (s.safetyFlags ? s.safetyFlags.length : 0
+  L10979: Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length) : 0;
+  L11103: Math.round(totalQuizScores.reduce((a, b) => a + b, 0) / totalQuizScores.length) : 0,
+  L11105: totalFlags: importedStudents.reduce((acc, s) => acc + s.safetyFlags.length, 0),
+  L11106: totalActivities: importedStudents.reduce((acc, s) => acc + s.stats.totalActivities, 0),
+  L11287: {importedStudents.reduce((acc, s) => acc + s.stats.totalActivities, 0)}
+  L18209: return Object.keys(obj).reduce((acc, k) => {
+  L18224: keys.reduce((acc, key, idx) => {
+  ... and 9 more
+
+Object.keys/entries/values calls: 79
+  L54: console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BANK));
+  L749: for (const [category, pattern] of Object.entries(this.patterns)) {
+  L981: Object.entries(params).forEach(([k, v]) => {
+  L1283: // Essential for "Object.keys(BANK)" or loops
+  L1364: // Essential for "Object.keys(BANK)" or loops
+  L1478: // Essential for "Object.keys(BANK)" or loops
+  L2122: {Object.keys(WORD_FAMILY_PRESETS).map(k => <option key={k} value={k}>{k} ({WORD_FAMILY_PRESETS[k].le
+  L2205: {Object.keys(SIGHT_WORD_PRESETS).map(k => (
+  L3057: {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
+  L4916: Object.keys(term.translations).forEach(l => langs.add(l));
+  L5508: for (const [ending, family] of Object.entries(rhymeFamilies)) {
+  L6716: const usedPhonemes = new Set(Object.keys(correctCounts));
+  L7345: ? Object.values(PHONEME_BANK).flat()
+  L10976: if (data.responses && Object.keys(data.responses).length > 0) {
+  L10977: const quizScores = Object.values(data.responses).map(r => r.score || 0);
+  ... and 64 more
+
+Existing useMemo: 30
+Existing useCallback: 248

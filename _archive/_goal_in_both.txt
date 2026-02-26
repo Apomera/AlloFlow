@@ -1,0 +1,13 @@
+=== AlloFlowANTI.txt (73265 lines) ===
+  L1301: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30); // Items per session (default 30)
+  L1723: <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
+  L1727: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+  L3106: wordSoundsSessionGoal = 10,
+  L7936: if (wordSoundsScore.correct >= wordSoundsSessionGoal) {
+  L32371: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(30); // Items per session
+  L65071: wordSoundsSessionGoal={wordSoundsSessionGoal}
+  Total: 7 references
+
+=== Phoneme app.txt (1136 lines) ===
+  Total: 0 references
+

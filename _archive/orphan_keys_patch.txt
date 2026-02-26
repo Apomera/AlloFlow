@@ -1,0 +1,330 @@
+// Total orphan keys to add: 151
+// Grouped by 13 top-level categories
+
+// === adventure (17 keys) ===
+    // L66595: title={t('adventure.back_to_resume')}
+    back_to_resume: "Back To Resume",
+    // L21979: const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.
+    label: "Label",
+    // L21980: const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventu
+    left: "Left",
+    // L21981: const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adven
+    right: "Right",
+    // L52454: if (!content.text) content.text = t('adventure.fallback_opening');
+    fallback_opening: "Fallback Opening",
+    // L46190: addToast(t('adventure.generating_options_audio'), "info");
+    generating_options_audio: "Generating Options Audio",
+    // L67153: {t('adventure.interrupted_desc')}
+    interrupted_desc: "Interrupted Desc",
+    // L67151: <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3
+    interrupted_title: "Interrupted Title",
+    // L66573: {t('adventure.paused_desc')}
+    paused_desc: "Paused Desc",
+    // L66571: <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_tit
+    paused_title: "Paused Title",
+    // L45496: feedbackText += `\n\n${t('adventure.results.header')}\n`;
+    header: "Header",
+    // L67159: <RefreshCw size={18} /> {t('adventure.retry_action')}
+    retry_action: "Retry Action",
+    // L45660: addToast(t('adventure.save_reminder') || "💾 Consider saving your adventure progr
+    save_reminder: "Save Reminder",
+    // L66605: <p className="text-indigo-200 text-sm font-medium">{t('adventure.setup_subtitle'
+    setup_subtitle: "Setup Subtitle",
+    // L66586: <RefreshCw size={12}/> {t('adventure.start_overwrite')}
+    start_overwrite: "Start Overwrite",
+    // L66989: <span>🏛️</span> {t('adventure.system_simulation')}
+    system_simulation: "System Simulation",
+    // L67068: <span>📊</span> {t('adventure.system_state')}
+    system_state: "System State",
+
+// === bingo (3 keys) ===
+    // L25479: data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
+    close_generator: "Close Generator",
+    // L25550: data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
+    exit_caller_aria: "Exit Caller Aria",
+    // L25540: data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria'
+    launch_caller_aria: "Launch Caller Aria",
+
+// === cancel (1 keys) ===
+    // L27576: {t('cancel')}
+    cancel: "Cancel",
+
+// === chat_guide (7 keys) ===
+    // L49754: addToast(t('chat_guide.advice_saved'), "success");
+    advice_saved: "Advice Saved",
+    // L49770: addToast(t('chat_guide.advice_saved_raw'), "success");
+    advice_saved_raw: "Advice Saved Raw",
+    // L47596: setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.highlight_
+    highlight_confirm: "Highlight Confirm",
+    // L49728: addToast(t('chat_guide.history_saved_toast'), "success");
+    history_saved_toast: "History Saved Toast",
+    // L37178: text: t('chat_guide.independent_welcome'),
+    independent_welcome: "Independent Welcome",
+    // L57837: {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_a
+    save_actionable_btn: "Save Actionable Btn",
+    // L57837: {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_a
+    save_actionable_loading: "Save Actionable Loading",
+
+// === codenames (2 keys) ===
+    // L18445: const adjectives = t('codenames.adjectives') || [];
+    adjectives: "Adjectives",
+    // L18446: const animals = t('codenames.animals') || [];
+    animals: "Animals",
+
+// === common (4 keys) ===
+    // L57214: <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
+    continue: "Continue",
+    // L55603: <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:tex
+    delete: "Delete",
+    // L10207: title={ts('common.language') || "Language"}
+    language: "Language",
+    // L7738: addToast(ts('common.mic_error') || "Microphone error", "error");
+    mic_error: "Mic Error",
+
+// === export (65 keys) ===
+    // L52029: return d.map(b => `${t('export.activity_label')} ${b.title} - ${b.description}`)
+    activity_label: "Activity Label",
+    // L52036: return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('expor
+    analysis_source_label: "Analysis Source Label",
+    // L52026: return probs.map(p => `${t('export.problem_label')} ${p.question || p.problem}. 
+    answer_label: "Answer Label",
+    // L43853: addToast(t('export.bundle_downloaded'), "success");
+    bundle_downloaded: "Bundle Downloaded",
+    // L52023: return `${t('export.categories_label')} ${d.categories.map(c => c.label).join(',
+    categories_label: "Categories Label",
+    // L42855: <span class="label">${t('export.date_label')}:</span>
+    date_label: "Date Label",
+    // L43574: { text: t('export.def_col'), options: { bold: true, fill: "F1F5F9", color: darkT
+    def_col: "Def Col",
+    // L52011: return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def
+    def_label: "Def Label",
+    // L42840: const lessonTopic = topic || t('export.default_lesson_title');
+    default_lesson_title: "Default Lesson Title",
+    // L43953: const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.jso
+    assignment: "Assignment",
+    // L47412: link.download = `${t('export.filenames.flashcards')}-${mode}-${Date.now()}.html`
+    flashcards: "Flashcards",
+    // L43872: link.download = `${t('export.filenames.html_pack')}.html`;
+    html_pack: "Html Pack",
+    // L37366: downloadAnchorNode.setAttribute("download", `${t('export.filenames.profiles')}.j
+    profiles: "Profiles",
+    // L44113: let filenamePrefix = t('export.filenames.project_student');
+    project_student: "Project Student",
+    // L44107: setSaveFileName(`${t('export.filenames.project_teacher')}-${new Date().toISOStri
+    project_teacher: "Project Teacher",
+    // L43737: pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.
+    slides_prefix: "Slides Prefix",
+    // L43848: link.download = `${t('export.filenames.zip_pack')}-${new Date().toISOString().sp
+    zip_pack: "Zip Pack",
+    // L42844: const dateLabel = t('export.generated_date_label');
+    generated_date_label: "Generated Date Label",
+    // L42846: const pageTitle = t('export.html_page_title');
+    html_page_title: "Html Page Title",
+    // L43157: const defaultTitle = t('export.ims_resource_pack');
+    ims_resource_pack: "Ims Resource Pack",
+    // L52022: if (!d.categories || !d.items) return t('export.incomplete_sort');
+    incomplete_sort: "Incomplete Sort",
+    // L52034: return d.map(p => `${t('export.interview_figure_label')} ${p.name} (${p.role})`)
+    interview_figure_label: "Interview Figure Label",
+    // L52023: return `${t('export.categories_label')} ${d.categories.map(c => c.label).join(',
+    items_label: "Items Label",
+    // L52036: return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('expor
+    key_concepts_label: "Key Concepts Label",
+    // L52017: return `${t('export.main_label')} ${d.main}. ${t('export.structure_label')} ${d.
+    main_label: "Main Label",
+    // L42851: <span class="label">${t('export.name_label')}:</span>
+    name_label: "Name Label",
+    // L52031: return `${t('export.scenario_label')} ${d.currentScene?.text || t('export.no_act
+    no_active_scene: "No Active Scene",
+    // L52019: if (!Array.isArray(d)) return t('export.no_events');
+    no_events: "No Events",
+    // L52028: if (!Array.isArray(d)) return t('export.no_ideas');
+    no_ideas: "No Ideas",
+    // L52033: if (!Array.isArray(d)) return t('export.no_personas');
+    no_personas: "No Personas",
+    // L52007: if (!d.questions) return t('export.no_questions');
+    no_questions: "No Questions",
+    // L42842: const noStudentMsg = t('export.no_student_content');
+    no_student_content: "No Student Content",
+    // L42843: const noTeacherMsg = t('export.no_teacher_content');
+    no_teacher_content: "No Teacher Content",
+    // L52010: if (!Array.isArray(d)) return t('export.no_terms');
+    no_terms: "No Terms",
+    // L43638: slide.addNotes(`${t('export.ppt_correct_note')}: ${q.correctAnswer}\n\n${q.factC
+    ppt_correct_note: "Ppt Correct Note",
+    // L43505: titleSlide.addText(`${t('export.ppt_grade_level')}: ${gradeLevel} | ${t('export.
+    ppt_generated: "Ppt Generated",
+    // L43505: titleSlide.addText(`${t('export.ppt_grade_level')}: ${gradeLevel} | ${t('export.
+    ppt_grade_level: "Ppt Grade Level",
+    // L52026: return probs.map(p => `${t('export.problem_label')} ${p.question || p.problem}. 
+    problem_label: "Problem Label",
+    // L43025: const description = escapeXml(sourceTopic || t('export.qti_default_desc'));
+    qti_default_desc: "Qti Default Desc",
+    // L43024: const title = escapeXml(generatedContent.title || t('export.qti_default_title'))
+    qti_default_title: "Qti Default Title",
+    // L43839: ${t('export.readme_contents')}
+    readme_contents: "Readme Contents",
+    // L43840: ${t('export.readme_html_desc')}
+    readme_html_desc: "Readme Html Desc",
+    // L43841: ${t('export.readme_json_desc')}`;
+    readme_json_desc: "Readme Json Desc",
+    // L43836: const readmeContent = `${t('export.readme_title')}
+    readme_title: "Readme Title",
+    // L52031: return `${t('export.scenario_label')} ${d.currentScene?.text || t('export.no_act
+    scenario_label: "Scenario Label",
+    // L43491: { text: { text: t('export.slides_master_footer'), options: { x: 0.5, y: 5.3, w: 
+    slides_master_footer: "Slides Master Footer",
+    // L43496: pptx.subject = t('export.slides_subject');
+    slides_subject: "Slides Subject",
+    // L43495: pptx.title = sourceTopic || t('export.slides_title_default');
+    slides_title_default: "Slides Title Default",
+    // L47140: const strSeparator = t('export.storybook.chapter_separator');
+    chapter_separator: "Chapter Separator",
+    // L47135: const strEpilogue = t('export.storybook.epilogue_badge');
+    epilogue_badge: "Epilogue Badge",
+    // L47136: const strLogHeader = t('export.storybook.log_header');
+    log_header: "Log Header",
+    // L47137: const strPrint = t('export.storybook.print_button');
+    print_button: "Print Button",
+    // L47133: const strSubtitle = t('export.storybook.subtitle');
+    subtitle: "Subtitle",
+    // L47139: const strUser = t('export.storybook.user_label');
+    user_label: "User Label",
+    // L52017: return `${t('export.main_label')} ${d.main}. ${t('export.structure_label')} ${d.
+    structure_label: "Structure Label",
+    // L42839: const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
+    student_copy: "Student Copy",
+    // L42991: ${t('output.generated_via')} • **<a href="https**://Ko-fi.com/aaronpomeranz207" 
+    support_dev: "Support Dev",
+    // L42964: .page-break:after { content: "${t('export.teacher_copy_divider')}"; }
+    teacher_copy_divider: "Teacher Copy Divider",
+    // L42841: const teacherIntro = t('export.teacher_copy_intro');
+    teacher_copy_intro: "Teacher Copy Intro",
+    // L42986: <h1>${t('export.teacher_key_title')}</h1>
+    teacher_key_title: "Teacher Key Title",
+    // L43573: { text: t('export.term_col'), options: { bold: true, fill: "F1F5F9", color: dark
+    term_col: "Term Col",
+    // L52011: return d.map(gItem => `${t('export.term_label')} ${gItem.term} - ${t('export.def
+    term_label: "Term Label",
+    // L42845: const topicLabel = t('export.topic');
+    topic: "Topic",
+    // L43575: { text: t('export.trans_col'), options: { bold: true, fill: "F1F5F9", color: dar
+    trans_col: "Trans Col",
+    // L52036: return `${t('export.analysis_source_label')} ${d.readingLevel?.range || t('expor
+    unknown_level: "Unknown Level",
+
+// === languages_list (9 keys) ===
+    // L29979: <option value="Arabic">{t('languages_list.Arabic')}</option>
+    Arabic: "Arabic",
+    // L29975: <option value="French">{t('languages_list.French')}</option>
+    French: "French",
+    // L29976: <option value="German">{t('languages_list.German')}</option>
+    German: "German",
+    // L29982: <option value="Japanese">{t('languages_list.Japanese')}</option>
+    Japanese: "Japanese",
+    // L29978: <option value="Mandarin">{t('languages_list.Mandarin')}</option>
+    Mandarin: "Mandarin",
+    // L29977: <option value="Portuguese">{t('languages_list.Portuguese')}</option>
+    Portuguese: "Portuguese",
+    // L29981: <option value="Russian">{t('languages_list.Russian')}</option>
+    Russian: "Russian",
+    // L29974: <option value="Spanish">{t('languages_list.Spanish')}</option>
+    Spanish: "Spanish",
+    // L29980: <option value="Vietnamese">{t('languages_list.Vietnamese')}</option>
+    Vietnamese: "Vietnamese",
+
+// === mastery (1 keys) ===
+    // L21666: {t('mastery.continue')}
+    continue: "Continue",
+
+// === move_down (1 keys) ===
+    // L24073: <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1
+    move_down: "Move Down",
+
+// === move_up (1 keys) ===
+    // L24072: <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 
+    move_up: "Move Up",
+
+// === visuals (1 keys) ===
+    // L59163: <option value="Default">{t('visuals.styles.default')}</option>
+    default: "Default",
+
+// === word_sounds (39 keys) ===
+    // L1939: <span className="font-bold text-slate-700">{t('word_sounds.activity_length', '🎯 
+    activity_length: "🎯 Items per Session",
+    // L1948: <p className="text-xs text-slate-500 mt-2">{t('word_sounds.activity_length_hint'
+    activity_length_hint: "Session completes after this many correct answers",
+    // L4658: { id: 'letter_tracing', label: ts('word_sounds.activity_letter_tracing') || 'Let
+    activity_letter_tracing: "Activity Letter Tracing",
+    // L2076: placeholder={t('word_sounds.add_word', 'Add a word...')}
+    add_word: "Add a word...",
+    // L9659: <h3 className="text-xl font-bold text-violet-700 mb-2">{ts('word_sounds.how_many
+    how_many_sounds: "How Many Sounds",
+    // L1953: <span className="font-bold text-slate-700">{t('word_sounds.image_theme', 'Image 
+    image_theme: "Image Style",
+    // L2173: <span className="font-bold text-slate-700">{t('word_sounds.include_spelling_acti
+    include_spelling_activities: "Include Spelling Activities",
+    // L4658: { id: 'letter_tracing', label: ts('word_sounds.activity_letter_tracing') || 'Let
+    letter_tracing_desc: "Letter Tracing Desc",
+    // L8516: <p className="text-slate-500 mb-4">{ts('word_sounds.loading_phonemes')}</p>
+    loading_phonemes: "Loading Phonemes",
+    // L9289: {ts('word_sounds.missing_letter_hear') || 'Hear the word'}
+    missing_letter_hear: "Missing Letter Hear",
+    // L9281: <p className="text-sm text-emerald-600">{ts('word_sounds.missing_letter_subtitle
+    missing_letter_subtitle: "Missing Letter Subtitle",
+    // L9280: <h3 className="text-lg font-bold text-emerald-700">{ts('word_sounds.missing_lett
+    missing_letter_title: "Missing Letter Title",
+    // L10194: <span className="hidden sm:inline">{showLetterHints ? ts('word_sounds.mode_phoni
+    mode_phonics: "Mode Phonics",
+    // L10194: <span className="hidden sm:inline">{showLetterHints ? ts('word_sounds.mode_phoni
+    mode_sound: "Mode Sound",
+    // L4095: {ts('word_sounds.play_all_options')}
+    play_all_options: "Play All Options",
+    // L4080: <h3 className="text-xl font-bold text-slate-600">{ts('word_sounds.rhyming_q')}</
+    rhyming_q: "Rhyming Q",
+    // L8530: <p>{ts('word_sounds.select_activity')}</p>
+    select_activity: "Select Activity",
+    // L2048: <option value="">{t('word_sounds.select_family', 'Select family...')}</option>
+    select_family: "Select family...",
+    // L10269: <span>{ts('word_sounds.session_progress')}</span>
+    session_progress: "Session Progress",
+    // L4456: {foundWords.length} / {data.options?.length || 0} {ts('word_sounds.sound_sort_fo
+    sound_sort_found: "Sound Sort Found",
+    // L2120: <span className="font-bold text-slate-700">{t('word_sounds.source_sight_words', 
+    source_sight_words: "📚 Sight Words",
+    // L9069: {ts('word_sounds.spelling_bee_check') || 'Check Spelling ✓'}
+    spelling_bee_check: "Spelling Bee Check",
+    // L9086: {ts('word_sounds.spelling_bee_first_letter')}
+    spelling_bee_first_letter: "Spelling Bee First Letter",
+    // L9004: {ts('word_sounds.spelling_bee_hear')}
+    spelling_bee_hear: "Spelling Bee Hear",
+    // L9011: {ts('word_sounds.spelling_bee_slow')}
+    spelling_bee_slow: "Spelling Bee Slow",
+    // L8990: <p className="text-sm text-amber-600">{ts('word_sounds.spelling_bee_subtitle')}<
+    spelling_bee_subtitle: "Spelling Bee Subtitle",
+    // L8989: <h3 className="text-lg font-bold text-amber-700">{ts('word_sounds.spelling_bee_t
+    spelling_bee_title: "Spelling Bee Title",
+    // L2177: : t('word_sounds.spelling_helper', 'Enable for students who know their letters')
+    spelling_helper: "Enable for students who know their letters",
+    // L4076: <span className="text-sm font-bold text-orange-600 uppercase tracking-wider">{ts
+    target_word: "Target Word",
+    // L1963: <p className="text-xs text-slate-500 mt-2">{t('word_sounds.theme_hint', 'Optiona
+    theme_hint: "Optional: Style for new word images (not glossary)",
+    // L1960: placeholder={t('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realis
+    theme_placeholder: "e.g. cartoon, pixel art, realistic...",
+    // L10355: 💡 {ts('word_sounds.tip')}
+    tip: "Tip",
+    // L2108: placeholder={t('word_sounds.type_words', 'Type words here (space or comma separa
+    type_words: "Type words here (space or comma separated)...",
+    // L4659: { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word 
+    word_families_desc: "Word Families Desc",
+    // L9226: {ts('word_sounds.word_scramble_check')}
+    word_scramble_check: "Word Scramble Check",
+    // L9214: {ts('word_sounds.word_scramble_clear')}
+    word_scramble_clear: "Word Scramble Clear",
+    // L9151: {ts('word_sounds.word_scramble_hint')}
+    word_scramble_hint: "Word Scramble Hint",
+    // L9143: <p className="text-sm text-violet-600">{ts('word_sounds.word_scramble_subtitle')
+    word_scramble_subtitle: "Word Scramble Subtitle",
+    // L9142: <h3 className="text-lg font-bold text-violet-700">{ts('word_sounds.word_scramble
+    word_scramble_title: "Word Scramble Title",

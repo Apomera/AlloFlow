@@ -1,0 +1,13 @@
+﻿L696: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+L702: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+L11687: counting_desc: "How many sounds?",
+---
+L816: 'word_sounds.tap_to_speak': 'Tap to Speak',
+L2999: data-help-key="word_sounds_review_play_distractor" title="Play TTS"
+L3056: data-help-key="word_sounds_review_play_distractor" title="Play TTS"
+L8365: handleAudio(ts(`word_sounds.${wordSoundsActivity}_prompt`));
+L8744: {isListening ? (ts('word_sounds.listening') || "Listening...") : (userAnswer || (ts('word_sounds.tap_to_speak') || "Tap to Speak"))}
+L9322: {isListening ? (ts('word_sounds.listening') || "Listening...") : (userAnswer || (ts('word_sounds.tap_to_speak') || "Tap to Speak"))}
+L10205: title={ts('word_sounds.tts_speed') || "Speed"}
+L32458: 'word_sounds_mic': "Voice input for phonics activities. Click to start recording your spoken answer. Browser will request microphone permission on first use. Sp
+L32459: 'word_sounds_play': "Replay the audio prompt. Click to hear the word, phoneme, or instruction repeated. Unlimited replays available. Audio uses current voice se

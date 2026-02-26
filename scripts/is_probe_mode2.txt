@@ -1,0 +1,10 @@
+L2584: if (isProbeMode) setImageVisibilityMode('off');
+L2585: }, [isProbeMode]);
+L2587: if (isProbeMode) setImageVisibilityMode('off');
+L2588: }, [isProbeMode]);
+L4211: onClick={() => { if (isProbeMode && wordSoundsScore.total > 0 && !window.confirm("End probe early? Progress will be lost.")) return; (onBackToSetup ||
+L4297: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latestProbeResult, setLatestProbeResult, rosterQueue, setRost
+L25869: const [isProbeMode, setIsProbeMode] = useState(false);
+L56061: initialShowReviewPanel: wordSoundsAutoReview && !isProbeMode,
+L56084: isProbeMode, probeGradeLevel,
+L67349: isProbeMode={isProbeMode}

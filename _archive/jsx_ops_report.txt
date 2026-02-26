@@ -1,0 +1,98 @@
+Found 48 expensive operations across 17 return blocks
+
+=== Return block at L26641 (342 lines, 9 ops) ===
+  L26722: {Object.entries(groups).filter(([_, g]) => g !== null).map(([gid, group]) => (
+  L26722: {Object.entries(groups).filter(([_, g]) => g !== null).map(([gid, group]) => (
+  L26766: {Object.entries(groups).filter(([_, g]) => g !== null).length === 0 && (
+  L26766: {Object.entries(groups).filter(([_, g]) => g !== null).length === 0 && (
+  L26776: {Object.entries(roster || {}).map(([uid, student]) => {
+  ... and 4 more
+
+=== Return block at L54263 (222 lines, 9 ops) ===
+  L54317: const assignedGroup = sessionData.groups && Object.entries(sessionData.groups)
+  L54409: {sessionData.groups && Object.entries(sessionData.groups).filter(([_, g]) => g !== null).map(([gid, 
+  L54409: {sessionData.groups && Object.entries(sessionData.groups).filter(([_, g]) => g !== null).map(([gid, 
+  L54434: {(!sessionData.groups || Object.values(sessionData.groups).filter(g => g !== null).length === 0) && 
+  L54434: {(!sessionData.groups || Object.values(sessionData.groups).filter(g => g !== null).length === 0) && 
+  ... and 4 more
+
+=== Return block at L23065 (125 lines, 5 ops) ===
+  L23100: {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment key={item.id}>{rend
+  L23101: {items.filter(i => i.currentContainer === bucket.id).length === 0 && (
+  L23125: <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t('concept_sort.unsorted_
+  L23173: {items.filter(i => i.currentContainer === 'deck').map(item => (
+  L23178: {items.filter(i => i.currentContainer === 'deck').length === 0 && !isWon && (
+
+=== Return block at L23330 (190 lines, 5 ops) ===
+  L23422: {items.filter(i => i.currentZone === 'setA').map(item => (
+  L23448: {items.filter(i => i.currentZone === 'setB').map(item => (
+  L23475: {items.filter(i => i.currentZone === 'shared').map(item => (
+  L23496: {items.filter(i => i.currentZone === 'bank').map(item => (
+  L23512: {items.filter(i => i.currentZone === 'bank').length === 0 && !isWon && (
+
+=== Return block at L1788 (505 lines, 3 ops) ===
+  L1991: {Object.keys(WORD_FAMILY_PRESETS).map(k => <option key={k} value={k}>{k} ({WORD_FAMILY_PRESETS[k].le
+  L1993: {selectedFamily && WORD_FAMILY_PRESETS[selectedFamily] && WORD_FAMILY_PRESETS[selectedFamily].filter
+  L2071: {Object.keys(SIGHT_WORD_PRESETS).map(k => (
+
+=== Return block at L18594 (859 lines, 2 ops) ===
+  L18901: onComplete={() => setReactions(prev => prev.filter(item => item.id !== r.id))}
+  L18907: onComplete={() => setBursts(prev => prev.filter(item => item.id !== b.id))}
+
+=== Return block at L26242 (102 lines, 2 ops) ===
+  L26289: const memberCount = Object.values(escapeState.teams || {}).filter(t => t === team).length;
+  L26289: const memberCount = Object.values(escapeState.teams || {}).filter(t => t === team).length;
+
+=== Return block at L27382 (408 lines, 2 ops) ===
+  L27480: <CheckSquare size={12} /> {t('dashboard.detail.quiz_badge', { count: selectedStudent.history.filter(
+  L27527: <span className="text-4xl font-black text-slate-800">{selectedStudent.history.filter(h => h.type ===
+
+=== Return block at L34419 (387 lines, 2 ops) ===
+  L34742: .filter(node => node.type && node.type.startsWith('flow-'))
+  L34750: .filter(node => !node.type || !node.type.startsWith('flow-'))
+
+=== Return block at L63919 (416 lines, 2 ops) ===
+  L64153: {(puzzle.leftColumn || puzzle.pairs.map(p => p.left)).filter(item =>
+  L64185: {(puzzle.rightColumn || puzzle.pairs.map(p => p.right)).filter(item =>
+
+=== Return block at L2645 (592 lines, 1 ops) ===
+  L2945: {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
+
+=== Return block at L4530 (52 lines, 1 ops) ===
+  L4565: chips.filter(c => !c.isPlaced).map((chip) => (
+
+=== Return block at L8614 (293 lines, 1 ops) ===
+  L8679: {soundChips.filter(c => !c.used).map((chip, idx) => (
+
+=== Return block at L17578 (16 lines, 1 ops) ===
+  L17590: onAnimationEnd={() => setParticles(prev => prev.filter(item => item.id !== p.id))}
+
+=== Return block at L22332 (185 lines, 1 ops) ===
+  L22480: const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== def.id);
+
+
+Extractable filter/map chains: 24
+  L26722 [object_op]: Object.entries(groups).filter(entries) in return@L26641
+  L26722 [object_op]: Object.entries(groups).filter(entries) in return@L26641
+  L26766 [object_op]: Object.entries(groups).filter(entries) in return@L26641
+  L26766 [object_op]: Object.entries(groups).filter(entries) in return@L26641
+  L26793 [object_op]: Object.entries(groups).filter(entries) in return@L26641
+  L26793 [object_op]: Object.entries(groups).filter(entries) in return@L26641
+  L54409 [object_op]: Object.entries(sessionData.groups).filter(entries) in return@L54263
+  L54409 [object_op]: Object.entries(sessionData.groups).filter(entries) in return@L54263
+  L54434 [object_op]: Object.values(sessionData.groups).filter(values) in return@L54263
+  L54434 [object_op]: Object.values(sessionData.groups).filter(values) in return@L54263
+  L54447 [object_op]: Object.entries(sessionData.roster).filter(entries) in return@L54263
+  L54459 [object_op]: Object.entries(sessionData.groups).filter(entries) in return@L54263
+  L54459 [object_op]: Object.entries(sessionData.groups).filter(entries) in return@L54263
+  L23100: items.filter(i => i.currentContainer === bucket.id) in return@L23065
+  L23173: items.filter(i => i.currentContainer === 'deck') in return@L23065
+  L23422: items.filter(i => i.currentZone === 'setA') in return@L23330
+  L23448: items.filter(i => i.currentZone === 'setB') in return@L23330
+  L23475: items.filter(i => i.currentZone === 'shared') in return@L23330
+  L23496: items.filter(i => i.currentZone === 'bank') in return@L23330
+  L1991 [object_op]: Object.keys(WORD_FAMILY_PRESETS).filter(keys) in return@L1788
+  L2071 [object_op]: Object.keys(SIGHT_WORD_PRESETS).filter(keys) in return@L1788
+  L2945 [object_op]: Object.entries(PHONEME_BANK).filter(entries) in return@L2645
+  L8679: soundChips.filter(c => !c.used) in return@L8614
+  L68272 [object_op]: Object.keys(FLUENCY_BENCHMARKS).filter(keys) in return@L68246

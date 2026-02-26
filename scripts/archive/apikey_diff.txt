@@ -1,0 +1,33 @@
+=== apiKey top-level definition ===
+CURR L83: const apiKey = typeof __firebase_config !== 'undefined'
+BAK L109: const apiKey = typeof __firebase_config !== 'undefined'
+
+=== apiKey in component props/state ===
+
+=== fetchTTSBytes useCallback def + dep array ===
+CURR L38289:   const fetchTTSBytes = useCallback((text, voiceName = "Puck", speed = 1) => {
+CURR L38454 DEP:   }, [apiKey]);
+BAK L41460:   const fetchTTSBytes = useCallback((text, voiceName = "Puck", speed = 1) => {
+BAK L41628 DEP:   }, [apiKey]);
+
+=== callTTS useCallback def + dep array ===
+CURR L38455:   const callTTS = useCallback(async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
+CURR L38493 DEP:   }, [fetchTTSBytes]);
+BAK L41630:   const callTTS = useCallback(async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
+BAK L41665 DEP:   }, [fetchTTSBytes]);
+
+=== All references to apiKey in TTS area (L38000-39000 curr, L41000-42000 bak) ===
+CURR L38238:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey}`;
+CURR L38265:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey}`;
+CURR L38291:     console.log("[fetchTTSBytes] ▶ CALLED. text:", text?.substring(0, 30), "apiKey:", apiKey ? "PRESENT(" + apiKey.length + " chars)" : "EMPTY");
+CURR L38303:         const url = `${baseUrl}?key=${apiKey}`;
+CURR L38315:                 const gcpUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+CURR L38454:   }, [apiKey]);
+CURR L38499:     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+BAK L41400:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey}`;
+BAK L41431:     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey}`;
+BAK L41472:         // Using apiKey directly (auto-injected by platform)
+BAK L41494:         const url = `${baseUrl}?key=${apiKey}`;
+BAK L41507:             const gcpUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+BAK L41628:   }, [apiKey]);
+BAK L41672:     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;

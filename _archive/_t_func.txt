@@ -1,0 +1,6 @@
+﻿L16856: if (!result) result = getVal(UI_STRINGS, keys);
+L41180: const english = UI_STRINGS.lesson_headers[modeKey][key];
+L1444: const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
+L16843: const t = useCallback((keyString, params = {}) => {
+L23175: const t = titles[key];
+L34617: const t = item.translations?.[flashcardLang];

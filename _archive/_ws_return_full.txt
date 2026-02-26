@@ -1,0 +1,31 @@
+return (
+                                    <div
+                                        key={labelIdx}
+                                        className="visual-label"
+                                        style={{...pos, display: (labelsHidden || (isStudentChallenge && !isFillBlank)) ? 'none' : 'flex', alignItems: 'center', gap: '4px', background: (isStudentChallenge && isFillBlank) ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', padding: '6px 14px', borderRadius: '8px', border: (isStudentChallenge && isFillBlank) ? '2px solid #86efac' : '2px solid rgba(99,102,241,0.5)', boxShadow: (isStudentChallenge && isFillBlank) ? '0 2px 12px rgba(22,163,74,0.2)' : '0 2px 12px rgba(99,102,241,0.2)', fontWeight: 800, fontSize: '13px', color: '#1e1b4b', cursor: (isStudentChallenge && isFillBlank) ? 'text' : 'grab', userSelect: 'none', touchAction: 'none', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif"}}
+                                        onMouseDown={(e) => { if (e.target.tagName === 'INPUT') return; if (!(isStudentChallenge && isFillBlank)) handleAiLabelMouseDown(panelIdx, labelIdx, e); }}
+                                        onDoubleClick={() => { if (!(isStudentChallenge && isFillBlank)) handleLabelClick(panelIdx, labelIdx); }}
+                                        onMouseEnter={() => setHoveredLabelKey(labelKey)}
+                                        onMouseLeave={() => setHoveredLabelKey(null)}
+                                        title={(isStudentChallenge && isFillBlank) ? "Type the correct label" : "Drag to move • Double-click to edit"}
+                                        role="note"
+                                        tabIndex={0}
+                                        aria-label={(isStudentChallenge && isFillBlank) ? `Blank label ${labelIdx + 1} — type your answer` : `Label: ${label.text || label}`}
+                                    >
+                                        {(isStudentChallenge && isFillBlank) ? (
+                                            <input
+                                                autoFocus={false}
+                                                placeholder={"Label " + (labelIdx + 1) + "..."}
+                                                value={fillBlankAnswers[panelIdx + '-' + labelIdx] || ''}
+                                                onChange={(e) => setFillBlankAnswers(prev => ({...prev, [panelIdx + '-' + labelIdx]: e.target.value}))}
+                                                onMouseDown={(e) => e.stopPropagation()}
+                                                aria-label={`Label ${labelIdx + 1} on panel ${panelIdx + 1} — type your answer`}
+                                                style={{ border: 'none', outline: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#166534', width: Math.max(80, (fillBlankAnswers[panelIdx + '-' + labelIdx] || '').length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
+                                                disabled={challengeSubmitted}
+                                            />
+                                        ) : isEditing ? (
+                                            <input
+                                                autoFocus
+                                                defaultValue={label.text}
+                                                onMouseDown={(e) => e.stopPropagation()}
+                   

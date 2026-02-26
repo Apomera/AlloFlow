@@ -1,0 +1,154 @@
+﻿=== ORPHAN FIX markers ===
+L11734:         // --- ORPHAN FIX: 1 missing tour.* keys ---
+  L11735:         spotlight_message: 'Spotlight Message',
+  L11736:   },
+  L11737:   word_sounds: {
+  L11738:     title: "Word Sounds Studio",
+  L11739:     subtitle: "Phonemic Awareness Activities",
+
+L11826:         // --- ORPHAN FIX: 39 missing word_sounds.* keys ---
+  L11827:         activity_length: '≡ƒÄ» Items per Session',
+  L11828:         activity_length_hint: 'Session completes after this many correct answers',
+  L11829:         activity_letter_tracing: 'Letter Trace',
+  L11830:         add_word: 'Add a word...',
+  L11831:         how_many_sounds: 'How Many Sounds',
+
+L11995:         // --- ORPHAN FIX: 4 missing common.* keys ---
+  L11996:         continue: 'Continue',
+  L11997:         delete: 'Delete',
+  L11998:         language: 'Language',
+  L11999:         mic_error: 'Microphone error',
+  L12000:   },
+
+L12246:         // --- ORPHAN FIX: 1 missing toasts.* keys ---
+  L12247:         applied_standard: 'Applied Standard',
+  L12248:   },
+  L12249:   large_file: {
+  L12250:     modal_title: "Import Large Audio File",
+  L12251:     modal_subtitle: "Transcribe files larger than 20MB",
+
+L12857:         // --- ORPHAN FIX: 4 missing language_selector.* keys ---
+  L12858:         status_checking: 'Status Checking',
+  L12859:         status_generating: 'Status Generating',
+  L12860:         status_retrying_chunk: 'Status Retrying Chunk',
+  L12861:         status_translating_part: 'Status Translating Part',
+  L12862:   },
+
+L12991:         // --- ORPHAN FIX: 4 missing bingo.* keys ---
+  L12992:         close_generator: 'Close Generator',
+  L12993:         exit_caller_aria: 'Exit Caller Aria',
+  L12994:         launch_caller_aria: 'Launch Caller Aria',
+  L12995:         pause_duration: 'Pause Duration',
+  L12996:   },
+
+L13213:         // --- ORPHAN FIX: 1 missing escape_room.* keys ---
+  L13214:         xp_earned_streak: 'Xp Earned Streak',
+  L13215:   },
+  L13216:   class_analytics: {
+  L13217:     title: "Class Analytics",
+  L13218:     import_files: "Import Student Files",
+
+L13694:         // --- ORPHAN FIX: 1 missing visuals.* keys ---
+  L13695:         default: 'Default', // visuals.styles.default
+  L13696:   },
+  L13697:   fullpack: {
+  L13698:     button_label: "Generate Full Resource Pack",
+  L13699:     helper_text: "Creates Analysis, Text, Glossary, Visuals, Quiz & more (Seq.)",
+
+L14468:         // --- ORPHAN FIX: 1 missing persona.* keys ---
+  L14469:         topic_spark_tooltip: 'Topic Spark Tooltip',
+  L14470:   },
+  L14471:   session: {
+  L14472:     start: "Start Live Class",
+  L14473:     join: "Join Class",
+
+L14826:         // --- ORPHAN FIX: 2 missing codenames.* keys ---
+  L14827:         adjectives: 'Adjectives',
+  L14828:         animals: 'Animals',
+  L14829:   },
+  L14830:   welcome: {
+  L14831:       load: "Load Lesson File",
+
+L16721:         // --- ORPHAN FIX: 20 missing adventure.* keys ---
+  L16722:         back_to_resume: 'Back To Resume',
+  L16723:         fallback_opening: 'Fallback Opening',
+  L16724:         generating_options_audio: 'Generating Options Audio',
+  L16725:         interrupted_desc: 'Interrupted Desc',
+  L16726:         interrupted_title: 'Interrupted Title',
+
+L16870:         // --- ORPHAN FIX: 7 missing chat_guide.* keys ---
+  L16871:         advice_saved: 'Advice Saved',
+  L16872:         advice_saved_raw: 'Advice Saved Raw',
+  L16873:         highlight_confirm: 'Highlight Confirm',
+  L16874:         history_saved_toast: 'History Saved Toast',
+  L16875:         independent_welcome: 'Independent Welcome',
+
+L17182:         // --- ORPHAN FIX: 1 missing about.* keys ---
+  L17183:         features_list: 'Features List',
+  L17184:         features_list: 'Features List',
+  L17185:   },
+  L17186:   fluency: {
+  L17187:     title: "Oral Fluency Check",
+
+L17295:         // --- ORPHAN FIX: 1 missing mastery.* keys ---
+  L17296:         continue: 'Continue',
+  L17297:   },
+  L17298:   blueprint: {
+  L17299:     header: "Lesson Blueprint",
+  L17300:     intro_1: "I've analyzed the text. It looks like a",
+
+L17404:         // --- ORPHAN FIX: 9 missing languages_list.* keys ---
+  L17405:         Arabic: 'Arabic',
+  L17406:         French: 'French',
+  L17407:         German: 'German',
+  L17408:         Japanese: 'Japanese',
+  L17409:         Mandarin: 'Mandarin',
+
+L17432:         // --- ORPHAN FIX: 1 missing quick_start.* keys ---
+  L17433:         found_resources: 'Found Resources',
+  L17434:   },
+  L17435:     move_up: {
+  L17436:         move_up: 'Move Up',
+  L17437:     },
+
+
+=== Inserted adventure.* keys ===
+L16708:     paused_title: "Adventure Paused",
+  ctx L16705:             perf_score: 'Performance Score: {total}',
+  ctx L16706:             roll_calc: 'Roll Calculation',
+  ctx L16707:     },
+L16715:     back_to_resume: "Back to Resume",
+  ctx L16712:     interrupted_desc: "The storyteller lost connection or generated an invalid response.",
+  ctx L16713:     retry_action: "Retry Action",
+  ctx L16714:     setup_subtitle: "Configure your journey",
+L16716:     fallback_opening: "Your adventure begins in an unexplored land...",
+  ctx L16713:     retry_action: "Retry Action",
+  ctx L16714:     setup_subtitle: "Configure your journey",
+  ctx L16715:     back_to_resume: "Back to Resume",
+L16722:         back_to_resume: 'Back To Resume',
+  ctx L16719:     system_simulation: "System Simulation",
+  ctx L16720:     system_state: "System State",
+  ctx L16721:         // --- ORPHAN FIX: 20 missing adventure.* keys ---
+L16723:         fallback_opening: 'Fallback Opening',
+  ctx L16720:     system_state: "System State",
+  ctx L16721:         // --- ORPHAN FIX: 20 missing adventure.* keys ---
+  ctx L16722:         back_to_resume: 'Back To Resume',
+L16728:         paused_title: 'Paused Title',
+  ctx L16725:         interrupted_desc: 'Interrupted Desc',
+  ctx L16726:         interrupted_title: 'Interrupted Title',
+  ctx L16727:         paused_desc: 'Paused Desc',
+L16749:         back_to_resume: 'Back to Resume',
+  ctx L16746:             left: 'Left',
+  ctx L16747:             right: 'Right',
+  ctx L16748:         },
+L16750:         fallback_opening: 'Your adventure begins here...',
+  ctx L16747:             right: 'Right',
+  ctx L16748:         },
+  ctx L16749:         back_to_resume: 'Back to Resume',
+L16755:         paused_title: 'Adventure Paused',
+  ctx L16752:         interrupted_desc: 'The adventure was interrupted. You can retry or start a new one.',
+  ctx L16753:         interrupted_title: 'Adventure Interrupted',
+  ctx L16754:         paused_desc: 'The adventure is paused. Resume when ready.',
+
+=== Adventure section structure ===
+Adventure section starts at L14695

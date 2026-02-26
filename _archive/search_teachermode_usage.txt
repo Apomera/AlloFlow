@@ -1,0 +1,177 @@
+23270:   const [isTeacherMode, setIsTeacherMode] = useState(true);
+23752:       if (!isTeacherMode && !studentProjectSettings.allowPersonaFreeResponse) {
+23758:   }, [isTeacherMode, studentProjectSettings.allowPersonaFreeResponse]);
+24130:       if (!isTeacherMode) setIsInteractiveVenn(false); 
+24131:   }, [isTeacherMode]);
+26214:           if (isTeacherMode) setActiveSidebarTab('history');
+26216:           if (isTeacherMode) setActiveSidebarTab('create');
+26226:   }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage]);
+26552:       if (!isTeacherMode) setIsVennPlaying(true);
+26707:             {!isChallengeActive && isTeacherMode && !isMapLocked && (
+26902:           const isWide = isFullscreen || !isTeacherMode;
+27341:                               {!isChallengeActive && isTeacherMode ? (
+27403:                                           {isTeacherMode && (
+27847:       console.log(`Session Sync: Connecting to ${activeSessionCode} as ${isTeacherMode ? 'Teacher' : 'Student'}...`);
+27861:               if (!isTeacherMode) {
+27989:   }, [activeSessionCode, isTeacherMode, user, activeSessionAppId]); 
+27991:       if (!isTeacherMode && activeSessionCode && user && globalPoints !== undefined) {
+28004:   }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
+28006:       if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
+28023:   }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId]);
+28051:     if (!isTeacherMode && activeSessionCode) {
+28054:     if (isTeacherMode && activeSessionCode && isHistoryLoaded) {
+28102:     if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) return;
+28184:   }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded]); 
+28932:               const toastKey = isTeacherMode ? 'common.save_reminder_teacher' : 'common.save_reminder_student';
+28933:               const fallbackMsg = isTeacherMode 
+28953:   }, [lastJsonFileSave, t, isTeacherMode, isBotVisible]);
+35056:       if (!activeSessionCode || !isTeacherMode || history.length === 0) return;
+35075:   }, [history, activeSessionCode, isTeacherMode, appId]);
+35969:       if (isTeacherMode && activeSessionCode) {
+36717:       if (!isTeacherMode) {
+36723:   }, [isTeacherMode]);
+38412:     if (!isTeacherMode && activeSessionCode) {
+38763:       if (isTeacherMode && activeSessionCode && sessionData?.democracy?.isActive) {
+45460:             if (isVennPlaying || (isInteractiveVenn && !isTeacherMode)) {
+45822:                                      {isTeacherMode && (
+46568:       let filtered = isTeacherMode 
+46571:       if (isTeacherMode) { 
+46619:           if (isTeacherMode && activeSessionCode) {
+47682:   const isSyncMode = !isTeacherMode && activeSessionCode && sessionData?.mode === 'sync';
+48840:                                   if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
+48844:                                       setIsTeacherMode(!isTeacherMode);
+48848:                               data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+48849:                               className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isTeacherMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-teal-500 hover:bg-teal-400 text-white shadow-lg shadow-teal-500/30'}`}
+48850:                               title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+48851:                               aria-label={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+48853:                               {isTeacherMode ? <School size={20} /> : <GraduationCap size={20} />}
+48856:                         {isTeacherMode && !isIndependentMode && (
+48882:                         {isTeacherMode && (
+48917:                         {isTeacherMode && (
+48929:                         {isTeacherMode && (
+48974:                             {isTeacherMode ? (
+49065:                         {isTeacherMode && (
+49152:                         {!isTeacherMode && (
+49568:       {!isTeacherMode && activeSessionCode && sessionData && (
+49581:       {!isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+49684:                             {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
+50086:                         {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
+50757:           {isTeacherMode && (
+50779:           {isTeacherMode && (
+50800:           {isTeacherMode && activeSidebarTab === 'create' && (
+51255:           {isTeacherMode && activeSidebarTab === 'create' && (
+52553:                                     disabled={!isTeacherMode && !studentProjectSettings.adventurePermissions?.allowLanguageSwitch}
+52795:                             {(isTeacherMode || studentProjectSettings.adventurePermissions?.allowCloudImageStorage !== false) && (
+52814:                             {adventureFreeResponseEnabled && isAdventureCloudEnabled && (isTeacherMode || studentProjectSettings.adventurePermissions?.allowCloudImageStorage) && (
+52822:                             {isTeacherMode && (
+52843:                             {isTeacherMode && (
+53172:             {!isTeacherMode && !activeSessionCode && (
+53241:             {!isTeacherMode && activeSessionCode && sessionData?.roster?.[user?.uid] && (
+53255:             {!isTeacherMode && (
+53364:             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && (
+53445:             {(!isTeacherMode || activeSidebarTab === 'history') && (
+53446:             <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
+53451:                                 <History size={16}/> {isTeacherMode ? t('sidebar.resource_pack_history') : t('sidebar.my_resources')}
+53514:                             {isTeacherMode && (
+53531:                                 title={isTeacherMode ? t('history.save_student') : t('history.save_work')}
+53532:                                 aria-label={isTeacherMode ? t('history.save_student') : t('history.save_work')}
+53535:                                 {isTeacherMode ? <Lock size={14} /> : <Save size={14} />}
+53537:                             {isTeacherMode && (
+53558:                             {(isTeacherMode || history.length > 0) && (
+53571:                     {isTeacherMode && !isIndependentMode && (
+53684:                                                     title={(isTeacherMode && !isIndependentMode) ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}
+53686:                                                     {(isTeacherMode && !isIndependentMode) 
+53697:                                                     <span>{(isTeacherMode && !isIndependentMode) ? String(item.meta || "") : sanitizeString(item.meta)}</span>
+53700:                                             {isTeacherMode && (
+53715:                             {isTeacherMode && (
+53895:                 {isTeacherMode && generatedContent && (
+54191:                                                                      {isTeacherMode && (
+54209:                                                      {isTeacherMode && (
+54357:                                                               {isTeacherMode && !isFixed && (
+54375:                                               {isTeacherMode && realGrammarErrors.some(g => !g.startsWith('✓ FIXED:')) && (
+54385:                                               {isTeacherMode && realGrammarErrors.length > 0 && realGrammarErrors.every(g => g.startsWith('✓ FIXED:')) && (
+54417:                                 {isTeacherMode && (
+54428:                              {isTeacherMode && (
+54511:                              {isTeacherMode && (
+54522:                              {isTeacherMode && selectedLanguages.length > 0 && (
+54624:                              {isTeacherMode && (
+55251:                                     {isTeacherMode && (
+55260:                                     {isTeacherMode && <button onClick={handlePrintGame} className="text-xs flex items-center gap-1 bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-bold hover:bg-teal-200 transition-colors"><Printer size={14}/> {t('glossary.print_puzzle')}</button>}
+55317:                     {isTeacherMode && (
+55406:                                             {!isEditingGlossary && isTeacherMode && item.tier && (
+55739:                                         {isTeacherMode 
+55801:                                 {isTeacherMode && (
+55840:                                 {isTeacherMode && (
+55884:                                 {isTeacherMode && (
+55944:                                 {isTeacherMode && (
+56209:                       {isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && (
+57054:                             {isTeacherMode && (
+57076:                             {isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && (
+57089:                                 className={`flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 ${!isTeacherMode ? 'hidden' : ''}`}
+57160:                             {isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && (
+57195:                                 disabled={isReviewGame || (isTeacherMode && sessionData?.quizState?.isActive)}
+57215:                                         if (isTeacherMode && activeSessionCode) {
+57221:                                         if (isTeacherMode && activeSessionCode) {
+57230:                                 title={isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title')}
+57236:                                     : (isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title'))
+57239:                             {isTeacherMode && !isIndependentMode && (
+57250:                             {!isPresentationMode && !isReviewGame && isTeacherMode && (
+57274:                     {isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+57283:                     {isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? (
+58406:                                         {isTeacherMode && (
+58421:                                             <div key={optIdx} className={`p-2 rounded-lg border text-sm relative group/option ${(showQuizAnswers && isTeacherMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : 'bg-slate-50 border-slate-100'}`}>
+58430:                                                                     className={`w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all ${(showQuizAnswers && isTeacherMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`}
+58445:                                                                 <p className={`px-1 py-0.5 ${(showQuizAnswers && isTeacherMode) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`}>{opt}</p>
+58451:                                                 {(showQuizAnswers && isTeacherMode) && opt === q.correctAnswer && <div className="absolute top-2 right-2 text-green-600"><CheckCircle2 size={14}/></div>}
+58456:                                     {q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && (
+58555:                         {isTeacherMode && (
+58684:                             {!isTeacherMode && (
+58707:                             {isTeacherMode && (
+58821:                     {(isTeacherMode || generatedContent.data.rubric) && (
+58885:                         {isTeacherMode && generatedContent.data.rubric && (
+58980:                                                 readOnly={!isTeacherMode}
+58989:                                             readOnly={!isTeacherMode}
+58999:                                                 readOnly={!isTeacherMode}
+59240:                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && (
+59377:                                                                 {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+59382:                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
+59394:                                                                 {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+59399:                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
+59412:                                                                 {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+59417:                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
+59444:                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+59449:                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59458:                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+59463:                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59472:                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+59477:                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59486:                                                             <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+59491:                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59502:                                                                 <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${enableFactionResources ? 'bg-amber-50 border-amber-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+59507:                                                                         disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59523:                                                         <div className={`bg-indigo-50 p-3 rounded-lg border border-indigo-100 ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+59531:                                                                         disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59545:                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+59556:                                                                 {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)) && <Lock size={12} className="text-slate-500"/>}
+59561:                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)}
+59562:                                                                 placeholder={(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adventurePermissions?.lockAllSettings)) 
+60369:                         {isTeacherMode && (
+60405:                         {isTeacherMode && (
+60414:                 {activeView === 'alignment-report' && isTeacherMode && generatedContent.data.reports && (
+60546:                                     <Gamepad2 size={14}/> {isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')}
+60548:                                 {isTeacherMode && (
+60561:                         {isTeacherMode && generatedContent.data && (
+60667:                                 (isTeacherMode || isIndependentMode) ? (
+60732:                                 <Filter size={14}/> {isTeacherMode && !isIndependentMode ? t('concept_sort.preview') : t('concept_sort.start')}
+60735:                         {(!isTeacherMode || isIndependentMode) ? (
+60802:                                     {isTeacherMode && (
+60857:                                 {isTeacherMode ? (
+60978:                                     {isTeacherMode && (
+62062:       {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+62217:                   {!isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+62324:                   {(isTeacherMode || studentProjectSettings.allowDictation) && (
+62356:       {activeView === 'dashboard' && isTeacherMode && (
+62386:         isOpen={showStudentEntry && hasSelectedRole && !isTeacherMode}
+62586:         isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
+62590:         isOpen={showWizard && hasSelectedRole && isTeacherMode} 
+62922:       {isTeacherMode && (

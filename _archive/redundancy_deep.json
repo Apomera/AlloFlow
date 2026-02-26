@@ -1,0 +1,326 @@
+[
+  {
+    "key": "alignment_generate_button",
+    "line": 35367,
+    "has_text": true,
+    "text": "Run standards alignment analysis on your source content. AI examines: vocabulary, concepts, skills, and themes in your c",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 0
+  },
+  {
+    "key": "alignment_grade_select",
+    "line": 35366,
+    "has_text": true,
+    "text": "Choose the grade level for standards matching. Options typically span K-12 and may include grade bands (K-2, 3-5, 6-8, 9",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 0
+  },
+  {
+    "key": "alignment_standard_select",
+    "line": 35365,
+    "has_text": true,
+    "text": "Select which standards framework to align your content with. Options include: Common Core State Standards (ELA and Math,",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 0
+  },
+  {
+    "key": "brainstorm_simulation_detailed",
+    "line": 35337,
+    "has_text": true,
+    "text": "Generate interactive simulations for hands-on learning. Simulation types: React Components (interactive UI elements stud",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 7
+  },
+  {
+    "key": "brainstorm_step_count_detailed",
+    "line": 35338,
+    "has_text": true,
+    "text": "Control how many iterative refinement passes AI makes on your content. Each step adds depth and detail. Quick brainstorm",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 7
+  },
+  {
+    "key": "concept_sort_categories_detailed",
+    "line": 35353,
+    "has_text": true,
+    "text": "Define or let AI determine sorting groups. Leave blank: AI analyzes your topic and creates logical categories (usually 2",
+    "redundant": true,
+    "redundant_with": "concept_sort_categories",
+    "wired_sibling_count": 16
+  },
+  {
+    "key": "concept_sort_input",
+    "line": 35352,
+    "has_text": true,
+    "text": "Define what content should be sorted. Enter topics like: Types of rocks, Parts of speech, Fractions and decimals, or Ren",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 16
+  },
+  {
+    "key": "concept_sort_item_count",
+    "line": 35355,
+    "has_text": true,
+    "text": "Specify total number of items to generate. Recommended range: 8 items (quick activity, ~5 minutes), 12 items (standard a",
+    "redundant": true,
+    "redundant_with": "concept_sort_items",
+    "wired_sibling_count": 16
+  },
+  {
+    "key": "glossary_word_sounds",
+    "line": 35374,
+    "has_text": true,
+    "text": "Launch Word Sounds Studio directly with these glossary terms. Students practice explicit phonics skills: hearing individ",
+    "redundant": true,
+    "redundant_with": "glossary_filter_all",
+    "wired_sibling_count": 33
+  },
+  {
+    "key": "group_karaoke_toggle",
+    "line": 35303,
+    "has_text": true,
+    "text": "Enable word-by-word highlighting during TTS playback to support reading fluency.",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 0
+  },
+  {
+    "key": "header_actions",
+    "line": 35409,
+    "has_text": true,
+    "text": "Content management actions. Includes: Save (disk icon, save current project), History (clock icon, access saved sessions",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 7
+  },
+  {
+    "key": "header_tools",
+    "line": 35407,
+    "has_text": true,
+    "text": "Access frequently-used reading support tools from the header. Includes: Reading Ruler (horizontal tracking bar), Focus S",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 7
+  },
+  {
+    "key": "header_utils",
+    "line": 35408,
+    "has_text": true,
+    "text": "Quick access to platform utilities. Includes: Help Mode toggle (? icon, activates contextual help), Settings (gear icon,",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 7
+  },
+  {
+    "key": "header_settings",
+    "line": 35406,
+    "has_text": true,
+    "text": "Access the main settings panel for visual accessibility and display preferences. Settings include: Font Size (adjustable",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 7
+  },
+  {
+    "key": "math_difficulty",
+    "line": 35347,
+    "has_text": true,
+    "text": "Adjust problem difficulty. Levels: Elementary (basic operations, simple concepts), Middle School (pre-algebra, ratios, b",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 12
+  },
+  {
+    "key": "math_problem_count",
+    "line": 35349,
+    "has_text": true,
+    "text": "Specify quantity of problems to generate. Options range from: 3-5 (quick check, exit ticket), 10 (standard practice set)",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 12
+  },
+  {
+    "key": "math_show_work",
+    "line": 35350,
+    "has_text": true,
+    "text": "Control visibility of solution steps. When ON: each problem shows complete worked solution, intermediate steps with expl",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 12
+  },
+  {
+    "key": "persona_selection",
+    "line": 35340,
+    "has_text": true,
+    "text": "Browse and select personas for interactive conversation. Categories include: Historical Figures (scientists, leaders, in",
+    "redundant": true,
+    "redundant_with": "persona_generate_button",
+    "wired_sibling_count": 17
+  },
+  {
+    "key": "persona_custom_instructions_detailed",
+    "line": 35341,
+    "has_text": true,
+    "text": "Shape your persona with detailed specifications. Custom instructions define: personality traits (patient, skeptical, ent",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 17
+  },
+  {
+    "key": "persona_free_response_detailed",
+    "line": 35342,
+    "has_text": true,
+    "text": "Control conversation structure. Enabled (Free Response): Persona speaks conversationally, students type any questions th",
+    "redundant": true,
+    "redundant_with": "persona_free_response",
+    "wired_sibling_count": 17
+  },
+  {
+    "key": "persona_mode_toggle",
+    "line": 35343,
+    "has_text": true,
+    "text": "SINGLE mode shows one persona at a time. PANEL mode allows multiple personas to interact in a group discussion.",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 17
+  },
+  {
+    "key": "quiz_difficulty_mix",
+    "line": 35357,
+    "has_text": true,
+    "text": "Control question difficulty distribution. Options: Mixed (default\u2014varies difficulty throughout), Easy Only (confidence b",
+    "redundant": true,
+    "redundant_with": "quiz_next_question_btn",
+    "wired_sibling_count": 20
+  },
+  {
+    "key": "quiz_question_types",
+    "line": 35358,
+    "has_text": true,
+    "text": "Choose question formats for your quiz. Options: Multiple Choice (4 options, auto-graded), True/False (binary, quick), Sh",
+    "redundant": true,
+    "redundant_with": "quiz_student_question",
+    "wired_sibling_count": 20
+  },
+  {
+    "key": "timeline_count_detailed",
+    "line": 35362,
+    "has_text": true,
+    "text": "Set how many events to include in your timeline. 5-8 events: concise overview, easier to sequence, good for introduction",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 8
+  },
+  {
+    "key": "timeline_topic_detailed",
+    "line": 35361,
+    "has_text": true,
+    "text": "Describe your timeline topic with specificity. Strong examples: American Revolution 1775-1783, Stages of photosynthesis,",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 8
+  },
+  {
+    "key": "visuals_low_quality",
+    "line": 35498,
+    "has_text": true,
+    "text": "Speed up image generation by reducing quality. Low quality mode: generates in 2-3 seconds (vs 8-10), uses less API resou",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 10
+  },
+  {
+    "key": "word_sounds_mic",
+    "line": 35773,
+    "has_text": true,
+    "text": "Voice input for phonics activities. Click to start recording your spoken answer. Browser will request microphone permiss",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 12
+  },
+  {
+    "key": "lesson_plan_assessment",
+    "line": 35581,
+    "has_text": true,
+    "text": "Define how student learning will be measured. Options include: Formative (ongoing checks: exit tickets, thumbs up/down, ",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 1
+  },
+  {
+    "key": "lesson_plan_differentiation",
+    "line": 35580,
+    "has_text": true,
+    "text": "Generate specific accommodations and modifications for diverse learners. When enabled, lesson plan includes: scaffolds f",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 1
+  },
+  {
+    "key": "lesson_plan_duration",
+    "line": 35578,
+    "has_text": true,
+    "text": "Specify how long your lesson should take. Common options: 30 minutes (mini-lesson), 45 minutes (standard period), 60 min",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 1
+  },
+  {
+    "key": "lesson_plan_generate_button",
+    "line": 35582,
+    "has_text": true,
+    "text": "Create a complete lesson plan from your specifications. Generation takes 20-30 seconds. Output includes: opening/hook ac",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 1
+  },
+  {
+    "key": "lesson_plan_objectives",
+    "line": 35579,
+    "has_text": true,
+    "text": "Set the learning targets for your lesson. Enter objectives like: Students will be able to identify cause-effect relation",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 1
+  },
+  {
+    "key": "escape_room_matching_columns",
+    "line": 35541,
+    "has_text": true,
+    "text": "Two-column matching interface for pairing related items. Click an item on the left, then click its match on the right to",
+    "redundant": true,
+    "redundant_with": "escape_room_matching_container",
+    "wired_sibling_count": 18
+  },
+  {
+    "key": "escape_room_matching_submit",
+    "line": 35542,
+    "has_text": true,
+    "text": "Verify your matched pairs are correct. Click after connecting all items from left column to their matches on right. Corr",
+    "redundant": true,
+    "redundant_with": "escape_room_matching_container",
+    "wired_sibling_count": 18
+  },
+  {
+    "key": "escape_room_sequence_check",
+    "line": 35540,
+    "has_text": true,
+    "text": "Check if your ordered sequence is correct. Click after arranging all items in the order you believe is correct. After su",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 18
+  },
+  {
+    "key": "escape_room_sequence_list",
+    "line": 35539,
+    "has_text": true,
+    "text": "Collection of items that need to be arranged in correct sequence. Items can be: historical events (chronological), proce",
+    "redundant": false,
+    "redundant_with": null,
+    "wired_sibling_count": 18
+  }
+]

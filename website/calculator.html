@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Savings Calculator | AlloFlow</title>
+    <meta name="description"
+        content="See how much your school could save by replacing multiple EdTech subscriptions with AlloFlow — the free, open-source AI classroom assistant.">
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .calc-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            color: #fff;
+            padding: 100px 24px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calc-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 70% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+        }
+
+        .calc-hero * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .calc-hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .calc-hero p {
+            font-size: 1.1rem;
+            color: #a5b4fc;
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Savings Counter */
+        .savings-bar {
+            position: sticky;
+            top: 56px;
+            z-index: 60;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 16px 24px;
+            transition: box-shadow 0.3s;
+        }
+
+        .savings-bar.has-savings {
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+        }
+
+        .savings-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .savings-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .savings-amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #22c55e;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .savings-amount.zero {
+            color: #64748b;
+        }
+
+        .savings-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .savings-cta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selected-count {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #a5b4fc;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 6px 14px;
+            border-radius: 999px;
+        }
+
+        /* School Size Selector */
+        .school-config {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .config-group input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--indigo);
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .config-group input:focus {
+            outline: none;
+            border-color: var(--indigo);
+        }
+
+        /* Product Cards */
+        .product-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .product-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .product-card.selected {
+            border-color: var(--indigo);
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
+        }
+
+        .product-header {
+            padding: 24px 24px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .product-check {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            margin-top: 2px;
+        }
+
+        .product-card.selected .product-check {
+            background: var(--indigo);
+            border-color: var(--indigo);
+        }
+
+        .product-check svg {
+            width: 16px;
+            height: 16px;
+            color: #fff;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s;
+        }
+
+        .product-card.selected .product-check svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .product-info h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--slate-900);
+            margin-bottom: 4px;
+        }
+
+        .product-category {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 3px 10px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 2px;
+        }
+
+        .product-price-note {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .product-body {
+            padding: 0 24px 24px;
+        }
+
+        .parity-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .parity-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .parity-title i {
+            color: var(--indigo);
+        }
+
+        .parity-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .parity-list li {
+            font-size: 0.8rem;
+            color: #475569;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .parity-list li::before {
+            content: '✓';
+            color: #22c55e;
+            font-weight: 900;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .product-card.selected .parity-section {
+            background: #eef2ff;
+        }
+
+        /* Bottom CTA */
+        .calc-footer {
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .calc-footer h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .calc-footer p {
+            font-size: 1rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto 28px;
+        }
+
+        /* Fine Print */
+        .fine-print {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px 40px;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .savings-inner {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .savings-amount {
+                font-size: 1.5rem;
+            }
+
+            .school-config {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo">
+                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="calculator.html" style="color:var(--indigo)">Savings</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                        style="width:16px;height:16px"></i> Get Code</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+    <div id="mobileNav" class="mobile-nav">
+        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
+            aria-label="Close">&times;</button>
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
+            href="calculator.html">Savings</a><a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    </div>
+
+    <!-- Hero -->
+    <header class="calc-hero">
+        <div
+            style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:999px;margin-bottom:20px">
+            <i data-lucide="calculator" style="width:14px;height:14px;color:#a5b4fc"></i>
+            <span
+                style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a5b4fc">Interactive
+                ROI Calculator</span>
+        </div>
+        <h1>How Much Could Your<br>School <span
+                style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Save</span>?
+        </h1>
+        <p>Select the tools your school currently pays for. AlloFlow replaces all of them — for free.</p>
+    </header>
+
+    <!-- Sticky Savings Bar -->
+    <div class="savings-bar" id="savingsBar">
+        <div class="savings-inner">
+            <div>
+                <div class="savings-label">Estimated Annual Savings</div>
+                <div class="savings-amount zero" id="savingsAmount">$0</div>
+                <div class="savings-subtitle" id="savingsSubtitle">Select tools below to calculate</div>
+            </div>
+            <div class="savings-cta">
+                <span class="selected-count" id="selectedCount">0 tools selected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- School Configuration -->
+    <div class="school-config">
+        <div class="config-group">
+            <label for="studentCount"><i data-lucide="users" style="width:14px;height:14px;color:#64748b"></i>
+                Students</label>
+            <input type="number" id="studentCount" value="400" min="50" max="5000" step="50">
+        </div>
+        <div class="config-group">
+            <label for="teacherCount"><i data-lucide="graduation-cap" style="width:14px;height:14px;color:#64748b"></i>
+                Teachers</label>
+            <input type="number" id="teacherCount" value="30" min="5" max="500" step="5">
+        </div>
+        <div
+            style="font-size:0.7rem;color:#94a3b8;font-weight:600;background:#f1f5f9;padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0">
+            💡 Adjust to match your school — costs recalculate automatically
+        </div>
+    </div>
+
+    <!-- Product Cards -->
+    <div class="product-grid" id="productGrid">
+        <!-- Cards are rendered by JavaScript -->
+    </div>
+
+    <!-- Fine Print -->
+    <div class="fine-print">
+        <strong>Methodology:</strong> Per-student and per-teacher costs are based on publicly available 2026 pricing
+        from vendor websites, state procurement documents, and EdTech review sites. District-negotiated rates may vary.
+        AlloFlow is a free, open-source tool (AGPL v3) — the only cost is a Google account for AI access.
+        AlloFlow is not affiliated with any of the products listed above.
+    </div>
+
+    <!-- CTA Footer -->
+    <section class="calc-footer">
+        <h2>Ready to Stop Paying?</h2>
+        <p>AlloFlow gives you all of these capabilities in a single, free, open-source platform — no subscriptions, no
+            student accounts, no PII collected.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
+                    style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
+            <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" style="width:18px;height:18px"></i>
+                See All 280+ Features</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
+            <div class="footer-links">
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="calculator.html">Savings</a>
+                <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
+                <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        document.getElementById('year').innerText = new Date().getFullYear();
+
+        const PRODUCTS = [
+            {
+                id: 'lexia',
+                name: 'Lexia Core5 / PowerUp',
+                category: 'Literacy & Phonics',
+                categoryColor: '#be185d',
+                categoryBg: '#fdf2f8',
+                perStudent: 40,
+                perTeacher: 0,
+                priceNote: 'per student/year (range: $30–$60)',
+                whatTheyDo: 'Adaptive phonics and reading program with preset lesson sequences and student progress tracking.',
+                parity: [
+                    'Word Sounds Studio — 7 phonemic awareness activities (Segmentation, Blending, Isolation, Rhyming, Spelling, Sound Mapping, Word Families)',
+                    'Benchmark Probes — grade-calibrated standardized assessment items (K through Grade 5)',
+                    'RTI / MTSS progress monitoring with tier classifications and CSV export',
+                    'Mastery-based progression with session goals and XP tracking',
+                    'Pre-recorded phoneme audio bank — no internet required for audio playback',
+                    'Teacher-customizable word lists from ANY reading passage (not locked to preset curriculum)'
+                ]
+            },
+            {
+                id: 'kahoot',
+                name: 'Kahoot! Pro (School)',
+                category: 'Interactive Engagement',
+                categoryColor: '#7e22ce',
+                categoryBg: '#faf5ff',
+                perStudent: 0,
+                perTeacher: 300,
+                priceNote: 'per teacher/year ($25/mo billed annually)',
+                whatTheyDo: 'Live quiz competitions, slides, and engagement tools for classroom participation.',
+                parity: [
+                    'Review Game — real-time competitive quiz with leaderboards, streaks, and XP',
+                    'Boss Battle — cooperative class vs. boss HP system with collaborative answers',
+                    'Team Showdown — team-based competitive scoring with Firebase live sync',
+                    'Live Pulse — quick formative assessment check-ins',
+                    'Democracy Mode — students vote on choices in real time',
+                    'Interactive Bingo with auto-caller, Memory Match, Word Search, Crossword, Concept Sort'
+                ]
+            },
+            {
+                id: 'nearpod',
+                name: 'Nearpod (School)',
+                category: 'Interactive Lessons',
+                categoryColor: '#0d9488',
+                categoryBg: '#f0fdfa',
+                perStudent: 0,
+                perTeacher: 397,
+                priceNote: 'per teacher/year (Platinum tier)',
+                whatTheyDo: 'Interactive slide-based lessons with embedded activities, polls, and VR field trips.',
+                parity: [
+                    'Teacher-Paced and Student-Paced navigation modes with live broadcast',
+                    'Live Session platform with session codes, "Following Teacher" sync banner',
+                    'Group Resource Assignment — push different leveled content to different student groups simultaneously',
+                    'Interactive embedded activities: polls, open-ended responses, matching, sorting',
+                    'Full Resource Pack — one-click batch generation of complete lesson packages',
+                    'Presentation Mode (quiz slides) with teacher controls and student response tracking'
+                ]
+            },
+            {
+                id: 'readwrite',
+                name: 'Read&Write (Texthelp)',
+                category: 'Accessibility & UDL',
+                categoryColor: '#2563eb',
+                categoryBg: '#eff6ff',
+                perStudent: 18,
+                perTeacher: 0,
+                priceNote: 'per student/year (K-12 Group license)',
+                whatTheyDo: 'Browser extension adding text-to-speech, highlighting, dictation, and reading support tools.',
+                parity: [
+                    'Native Text-to-Speech with multiple narrator voices and click-to-read',
+                    'Immersive Reader with karaoke-style word highlighting during TTS playback',
+                    'Bionic Reading — bolded word starts for guided eye tracking',
+                    'Dyslexia Fonts (OpenDyslexic, Lexend, Atkinson Hyperlegible) + 20+ font options',
+                    'Color Overlays (Blue, Peach, Yellow), High Contrast Mode, Dark Mode',
+                    'Reading Ruler, Line Focus, Syllabification, Grammar Highlighting (POS color coding)',
+                    'Adjustable text size, line height, letter spacing, word spacing',
+                    'Speech-to-text dictation in every input field'
+                ]
+            },
+            {
+                id: 'amira',
+                name: 'Amira Learning',
+                category: 'Oral Reading Fluency',
+                categoryColor: '#dc2626',
+                categoryBg: '#fef2f2',
+                perStudent: 20,
+                perTeacher: 0,
+                priceNote: 'per student/year',
+                whatTheyDo: 'AI listening companion that assesses K-5 oral reading fluency with WCPM scoring and comprehension.',
+                parity: [
+                    'Oral Fluency Coach — students read aloud, AI calculates WCPM in real time',
+                    'Color-coded accuracy heat map (green=correct, yellow=hesitation, red=missed)',
+                    'Configurable time limits for timed reading assessments',
+                    'ORF screening passages with grade-calibrated benchmark probes',
+                    'Fluency data persistence — assessment history saved locally for longitudinal tracking',
+                    'Recording controls with playback for teacher review'
+                ]
+            },
+            {
+                id: 'magicschool',
+                name: 'MagicSchool AI (Enterprise)',
+                category: 'AI Content Generation',
+                categoryColor: '#ea580c',
+                categoryBg: '#fff7ed',
+                perStudent: 4,
+                perTeacher: 0,
+                priceNote: 'per student/year (Enterprise tier)',
+                whatTheyDo: 'AI-powered teacher productivity suite with 80+ tools for lesson planning, rubrics, and content generation.',
+                parity: [
+                    'AI text generation from any topic, grade, or standard — with web grounding to prevent hallucinations',
+                    'Lesson Plan Builder that synthesizes all generated resources with internal links',
+                    'Rubric Generator, Writing Scaffolds (sentence starters, paragraph frames, discussion prompts)',
+                    'Quiz Generator with DOK tuning, Fact Check Protocol, and QTI/Canvas export',
+                    'Multimodal intake: OCR for PDFs/images, Whisper transcription for audio/video, URL import',
+                    'Standards Finder (CCSS, NGSS, TEKS) with AI consultation and alignment reports',
+                    'Glossary Generator with Tier 2/3 extraction, multi-language support, and visual icons',
+                    '550+ contextual help guides explaining the pedagogical "why" behind every tool'
+                ]
+            }
+        ];
+
+        let selectedProducts = new Set();
+
+        function getStudentCount() {
+            return parseInt(document.getElementById('studentCount').value) || 400;
+        }
+        function getTeacherCount() {
+            return parseInt(document.getElementById('teacherCount').value) || 30;
+        }
+
+        function calculateCost(product) {
+            const students = getStudentCount();
+            const teachers = getTeacherCount();
+            return (product.perStudent * students) + (product.perTeacher * teachers);
+        }
+
+        function calculateTotalSavings() {
+            let total = 0;
+            selectedProducts.forEach(id => {
+                const product = PRODUCTS.find(p => p.id === id);
+                if (product) total += calculateCost(product);
+            });
+            return total;
+        }
+
+        function formatCurrency(amount) {
+            if (amount >= 1000) {
+                return '$' + amount.toLocaleString('en-US');
+            }
+            return '$' + amount;
+        }
+
+        function updateSavingsDisplay() {
+            const total = calculateTotalSavings();
+            const amountEl = document.getElementById('savingsAmount');
+            const subtitleEl = document.getElementById('savingsSubtitle');
+            const countEl = document.getElementById('selectedCount');
+            const barEl = document.getElementById('savingsBar');
+
+            amountEl.textContent = formatCurrency(total);
+            amountEl.classList.toggle('zero', total === 0);
+            barEl.classList.toggle('has-savings', total > 0);
+
+            const count = selectedProducts.size;
+            countEl.textContent = count === 0 ? '0 tools selected' :
+                count === 1 ? '1 tool selected' :
+                    count + ' tools selected';
+
+            if (total === 0) {
+                subtitleEl.textContent = 'Select tools below to calculate';
+            } else {
+                subtitleEl.textContent = `per year for a ${getStudentCount()}-student school`;
+            }
+
+            // Update card price displays too
+            PRODUCTS.forEach(p => {
+                const costEl = document.getElementById(`cost-${p.id}`);
+                if (costEl) costEl.textContent = formatCurrency(calculateCost(p));
+            });
+        }
+
+        function toggleProduct(id) {
+            if (selectedProducts.has(id)) {
+                selectedProducts.delete(id);
+            } else {
+                selectedProducts.add(id);
+            }
+            const card = document.querySelector(`[data-product="${id}"]`);
+            if (card) card.classList.toggle('selected', selectedProducts.has(id));
+            updateSavingsDisplay();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = PRODUCTS.map(p => `
+                <div class="product-card" data-product="${p.id}" onclick="toggleProduct('${p.id}')">
+                    <div class="product-header">
+                        <div class="product-check">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <div class="product-info" style="flex:1">
+                            <span class="product-category" style="color:${p.categoryColor};background:${p.categoryBg}">${p.category}</span>
+                            <h3>${p.name}</h3>
+                            <p style="font-size:0.8rem;color:#64748b;line-height:1.5;margin-bottom:12px">${p.whatTheyDo}</p>
+                            <div class="product-price" style="color:${p.categoryColor}" id="cost-${p.id}">${formatCurrency(calculateCost(p))}</div>
+                            <div class="product-price-note">${p.priceNote}</div>
+                        </div>
+                    </div>
+                    <div class="product-body">
+                        <div class="parity-section">
+                            <div class="parity-title">
+                                <i data-lucide="layers" style="width:12px;height:12px"></i>
+                                What AlloFlow Offers Instead
+                            </div>
+                            <ul class="parity-list">
+                                ${p.parity.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Re-init Lucide icons inside cards
+            lucide.createIcons();
+        }
+
+        // Select All / Deselect All
+        function selectAll() {
+            PRODUCTS.forEach(p => {
+                selectedProducts.add(p.id);
+                const card = document.querySelector(`[data-product="${p.id}"]`);
+                if (card) card.classList.add('selected');
+            });
+            updateSavingsDisplay();
+        }
+
+        // Init
+        renderProducts();
+
+        // Recalculate on input change
+        document.getElementById('studentCount').addEventListener('input', updateSavingsDisplay);
+        document.getElementById('teacherCount').addEventListener('input', updateSavingsDisplay);
+
+        // Auto-select all after 1.5s for impact
+        setTimeout(() => {
+            selectAll();
+        }, 1500);
+
+        // Copy Link
+        function copyCanvasLink() {
+            const link = "https://gemini.google.com/share/c8baf80a46cc";
+            navigator.clipboard.writeText(link).then(() => {
+                document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
+            }).catch(() => alert("Failed to copy. Check permissions."));
+        }
+    </script>
+</body>
+
+</html>

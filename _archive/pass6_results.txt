@@ -1,0 +1,319 @@
+======================================================================
+ANALYSIS 1: API Key Handling
+======================================================================
+API key references: 19
+  L96: apiKey: process.env.REACT_APP_API_KEY || '',
+  L109: const apiKey = typeof __firebase_config !== 'undefined'
+  L111: : (process.env.REACT_APP_GEMINI_API_KEY || '');
+  L111: : (process.env.REACT_APP_GEMINI_API_KEY || '');
+  L170: let globalCachedKey = ""; // Cache key to prevent false negatives if window.apiKey is transient
+  L17777: const translateChunk = async (chunkData, targetLanguage, apiKey) => {
+  L17779: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiK
+  L17928: const useTranslation = (targetLanguage, apiKey) => {
+  L18036: translatedChunk = await translateChunk(chunk, targetLanguage, apiKey);
+  L18066: }, [targetLanguage, apiKey, trigger]);
+  L18097: const { t, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useTra
+  L22829: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiK
+  L38867: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiK
+  L39479: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey
+  L39506: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey
+  L39550: const url = `${baseUrl}?key=${apiKey}`;
+  L39561: const gcpUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+  L39665: }, [apiKey]);
+  L39702: const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+
+======================================================================
+ANALYSIS 2: XSS Vectors
+======================================================================
+dangerouslySetInnerHTML: 10
+  L21032: dangerouslySetInnerHTML={{ __html: htmlContent }}
+  L21450: dangerouslySetInnerHTML={{
+  L28789: dangerouslySetInnerHTML={{
+  L57209: <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html:
+  L57664: <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html:
+  L61320: dangerouslySetInnerHTML={{ __html: t('analysis.header_description') }}
+  L65767: dangerouslySetInnerHTML={{ __html: t('udl_advice.header_description') }}
+  L67597: <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('visuals.warning.desc') }}></p>
+  L67598: <p dangerouslySetInnerHTML={{ __html: t('visuals.warning.tip') }}></p>
+  L68025: dangerouslySetInnerHTML={{ __html: generatedContent.data.graphData }}
+eval() calls: 0
+.innerHTML assignments: 5
+  L2912: e.target.parentElement.innerHTML = '<span class="text-red-400 text-xs">⚠️ Error</span>';
+  L28510: container.innerHTML = reportHtml;
+  L31731: style.innerHTML = DICE_CSS;
+  L34095: style.innerHTML = `
+  L39990: const printContent = document.getElementById('printable-game-area').innerHTML;
+
+======================================================================
+ANALYSIS 3: Data Storage & Persistence
+======================================================================
+localStorage refs: 48
+sessionStorage refs: 0
+storageDB refs: 26
+IndexedDB refs: 11
+
+storageDB operations:
+  L17986: const cachedPack = await storageDB.get(storageKey);
+  L18011: try { await storageDB.set(storageKey, cloudPack); } catch(e) { warnLog('Caught error:', e?.message || e); }
+  L18053: try { await storageDB.set(storageKey, accumulatedPack); } catch(e) { warnLog('Caught error:', e?.message || e); }
+  L31750: await storageDB.set('allo_student_work', studentResponses);
+  L31894: storageDB.set('allo_global_points', globalPoints);
+  L31920: storageDB.set('allo_point_history', pointHistory);
+  L32928: await storageDB.set('allo_adventure_save', sanitizedState);
+  L36382: const savedHistory = await storageDB.get('allo_offline_history');
+  L36400: const savedProfiles = await storageDB.get('allo_offline_profiles');
+  L36408: const savedUnits = await storageDB.get('allo_offline_units');
+  L36474: await storageDB.set('allo_offline_history', fullPayload);
+  L36482: await storageDB.set('allo_offline_history', strippedPayload);
+  L36503: await storageDB.set('allo_offline_profiles', { items: profiles });
+  L36516: await storageDB.set('allo_offline_units', { items: units });
+  L36955: await storageDB.set('allo_draft_content', draftData);
+  L36980: const savedPoints = await storageDB.get('allo_global_points');
+  L36982: const savedHistory = await storageDB.get('allo_point_history');
+  L36986: const savedWork = await storageDB.get('allo_student_work');
+  L36991: const advSave = await storageDB.get('allo_adventure_save');
+  L36996: const parsed = await storageDB.get('allo_draft_content');
+  L46093: const parsed = await storageDB.get('allo_adventure_save');
+
+======================================================================
+ANALYSIS 4: Adventure Mode Save/Load
+======================================================================
+  L11682: • **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.
+  L14479: resume_adventure: "Resume Adventure",
+  L14480: resume_adventure_desc: "Continue your saved adventure",
+  L14482: adventure_saved: "Adventure progress included in save",
+  L14822: feedback_adventure_start: "Your personalized adventure story is loading! Get ready for an interactive narrative where yo
+  L15069: dashboard_stat_activities: "Total number of activities completed by all students in the loaded data. Includes quizzes, a
+  L15189: adventure_cloud_storage: "Your adventure progress is saved to the cloud for access anywhere.",
+  L15203: adventure_low_quality: "Use lower quality images for faster loading. Reduces AI-generated illustration resolution to spe
+  L15204: adventure_resume_btn: "Resume your previously saved adventure progress. Adventures automatically save after each choice,
+  L15207: adventure_setup_chk_lowqual: "Use lower resolution images for faster loading.",
+  L15213: adventure_start_btn: "Start the adventure with your configured settings. The AI generates an immersive opening scene inc
+  L15493: adventure_resume_btn_title: "Resume Btn",
+  L16089: resume: "Resume Previous Adventure",
+  L16645: save_reminder: "💾 Consider saving your adventure progress!",
+  L17865: adventure_cloud_storage: "Your adventure progress is saved to the cloud for access anywhere.",
+  L17868: adventure_low_quality: "Use lower quality images for faster loading (recommended for slow connections).",
+  L30977: hasSavedAdventure: false,
+  L31227: warnLog('No adventure images to download');
+  L31235: link.download = `adventure_scene_${img.turn}.png`;
+  L31335: const { isAdventureCloudEnabled, isSocialStoryMode, socialStoryFocus, pendingAdventureUpdate, dynamicReflectionQuestion,
+  L31355: const setHasSavedAdventure = (v) => advDispatch({ type: 'ADV_SET', field: 'hasSavedAdventure', value: v });
+  L31365: const savedAdvCloud = localStorage.getItem('allo_adventure_cloud');
+  L32917: if (adventureState.turnCount > 0 && !adventureState.isLoading) {
+  L32928: await storageDB.set('allo_adventure_save', sanitizedState);
+  L32930: warnLog("Adventure Save Error", e);
+  L33326: 'tool_adventure': "Launch an AI-driven interactive narrative experience. Students make choices that shape the story whil
+  L33554: 'generator_actions': "Hub for all content generation tools. Available generators include: Quiz (assessment with answer k
+  L33751: 'adventure_allow_cloud': "Control whether AI-generated adventure images are stored in the cloud. When enabled: images sa
+  L33753: 'adventure_cancel_new': "Abandon new adventure setup and go back to your active adventure. Click when: you started a new
+  L33754: 'adventure_cloud_storage': "Control cloud sync for adventure data. When enabled: progress saves across devices, images a
+  L33755: 'adventure_confirm_new': "Finalize creating a new adventure. Current adventure progress is automatically saved before sw
+  L33756: 'adventure_lock_settings': "Prevent students from changing adventure configuration. When locked: difficulty, turn count,
+  L33765: 'export_storybook_images': "Download all adventure images as a ZIP file. Package includes: all generated images from you
+  L33766: 'export_storybook_text': "Download adventure narrative as a text document. Export includes: complete story text, student
+  L33909: 'sidebar_tab_history': "Access all your saved content and session history. History includes: auto-saved sessions from re
+  L33963: adventure_setup_chk_story: "Simplify the interface for pure storytelling. When ON: resource panels are hidden, no stats 
+  L33965: adventure_start_btn: "Launch the adventure with configured settings. Starting: generates opening scene, creates initial 
+  L33966: adventure_resume_btn: "Return to your in-progress adventure. Resume loads: your exact story position, all choices made, 
+  L36991: const advSave = await storageDB.get('allo_adventure_save');
+  L36992: if (advSave && advSave.turnCount > 0) setHasSavedAdventure(true);
+  L44087: addToast(t('student.adventure_saved'), "info");
+  L44225: setHasSavedAdventure(true);
+  L45079: if (!adventureAutoRead || adventureState.isLoading || adventureState.turnCount <= lastReadTurnRef.current) return;
+  L45091: }, [adventureState.turnCount, adventureState.isLoading, adventureAutoRead, adventureState.history, adventureState.curren
+  L45660: addToast(t('adventure.save_reminder') || "💾 Consider saving your adventure progress!", "info");
+  L45967: setAdventureState(prev => ({ ...prev, isLoading: false }));
+  L46064: setAdventureState(prev => ({ ...prev, isLoading: false }));
+  L46088: setHasSavedAdventure(false); // Force "New Game" state
+  L46090: const handleResumeAdventure = async () => {
+  L46093: const parsed = await storageDB.get('allo_adventure_save');
+  L46096: setHasSavedAdventure(false);
+  L46116: addToast(`Resumed Adventure (Level ${safeState.level})`, "success");
+  L46189: setAdventureState(prev => ({ ...prev, isLoading: true }));
+  L46231: setAdventureState(prev => ({ ...prev, isLoading: false }));
+  L46294: handleAdventureChoice(actionToRetry.payload);
+  L46296: setAdventureTextInput(actionToRetry.payload);
+  L46297: handleAdventureTextSubmit(actionToRetry.payload);
+  L46623: setFailedAdventureAction({ type: 'text', payload: currentInput });
+  L46624: setAdventureState(prev => ({ ...prev, isLoading: false }));
+  L46962: setFailedAdventureAction({ type: 'choice', payload: normalizedChoice });
+  L48237: sendBotMsg("Adventure started! You have a complete resource pack now. Use **Export** to save it all.");
+  L59742: {hasSavedAdventure && (
+  L59743: <button aria-label="Resume saved adventure"
+  L59744: data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
+  L59749: {isResumingAdventure ? t('adventure.loading_save') : t('adventure.resume')}
+  L60565: {hasSavedAdventure ? (
+  L60567: <button aria-label="Resume saved adventure"
+  L60568: data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
+  L60573: {t('adventure.resume')}
+  L66556: <RefreshCw size={14} className={adventureState.isLoading ? "animate-spin" : ""} /> {t('adventure.restart')}
+  L66563: {!adventureState.currentScene && adventureState.history.length === 0 && !adventureState.isLoading && (
+  L66565: {hasSavedAdventure && !showNewGameSetup ? (
+  L66576: data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
+  L66579: <History size={20}/> {t('adventure.resume')}
+  L66591: {hasSavedAdventure && (
+  L66595: title={t('adventure.back_to_resume')}
+  L66829: {adventureState.isLoading && (
+  L66832: <RefreshCw size={14} className="animate-spin"/> {t('adventure.status.loading_story')}
+  L66873: {adventureState.isImageLoading ? (
+  L66965: {adventureState.isImageLoading ? (
+  L67206: disabled={adventureState.isLoading}
+
+======================================================================
+ANALYSIS 5: Student / PII Data Handling
+======================================================================
+  'studentName': 4 refs
+  'student_name': 6 refs
+  'email': 7 refs
+  'address': 24 refs
+
+======================================================================
+ANALYSIS 6: Student View / Project Mode
+======================================================================
+  L12081: project_loaded_student_view: "Loaded in Student View",
+  L12191: loaded_student_view: "Loaded student view.",
+  L12301: save_student: "Save as Student Project (Locked View)",
+  L14935: history_save_student: "Save the current work as a Student Project (locked view).",
+  L15196: adventure_immersive_inventory: "View your collected items and achievements in the adventure. The inventory shows: collec
+  L31379: const [studentProjectSettings, setStudentProjectSettings] = useState({
+  L31863: if (!isTeacherMode && !studentProjectSettings.allowPersonaFreeResponse) {
+  L31867: }, [isTeacherMode, studentProjectSettings.allowPersonaFreeResponse]);
+  L32357: const base = studentProjectSettings.baseXP || 100;
+  L33381: xp_modal_trigger: "Open the XP and Achievement dashboard. Panel shows: total XP earned this session and all-time, curren
+  L33709: 'header_xp_modal': "Open your XP and Level dashboard—the gamification center for tracking progress. View: Total XP (life
+  L33756: 'adventure_lock_settings': "Prevent students from changing adventure configuration. When locked: difficulty, turn count,
+  L33866: 'teacher_gate_unlock': "Submit password for verification. If correct: teacher features unlock, gate disappears, you have
+  L33868: 'submit_confirm_btn': "Final submission of your completed work. Before clicking: review all responses, check for complet
+  L33872: 'faq_edit_toggle': "Switch between view and edit modes for FAQ content. When ON (Teacher Mode): click any Q&A to edit te
+  L43945: studentName: confirmedName || studentNickname || studentProjectSettings.nickname || "Anonymous",
+  L44026: ...studentProjectSettings,
+  L44263: if (!rawData.studentNickname) addToast(t('toasts.loaded_student_view'), "info");
+  L56985: {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
+  L57420: {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
+  L59752: {globalPoints < studentProjectSettings.adventureUnlockXP ? (
+  L59757: {t('adventure.locked_desc_prefix')} <span className="font-bold text-yellow-400">{studentProjectSettings.adventureUnlockX
+  L59762: style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
+  L59765: <p className="text-[10px] mt-1 font-mono opacity-70">{globalPoints} / {studentProjectSettings.adventureUnlockXP} XP</p>
+  L59811: disabled={!isTeacherMode && !studentProjectSettings.adventurePermissions?.allowLanguageSwitch}
+  L60049: {(isTeacherMode || studentProjectSettings.adventurePermissions?.allowCloudImageStorage !== false) && (
+  L60068: {adventureFreeResponseEnabled && isAdventureCloudEnabled && (isTeacherMode || studentProjectSettings.adventurePermission
+  L60081: checked={studentProjectSettings.adventurePermissions?.lockAllSettings || false}
+  L60102: checked={studentProjectSettings.adventurePermissions?.allowCloudImageStorage !== false}
+  L60538: {globalPoints >= studentProjectSettings.adventureUnlockXP && (
+  L60543: {globalPoints < studentProjectSettings.adventureUnlockXP ? (
+  L60549: {t('adventure.earn')} <span className="font-bold text-purple-600">{studentProjectSettings.adventureUnlockXP} XP</span> {
+  L60555: style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
+  L60559: {globalPoints} / {studentProjectSettings.adventureUnlockXP} XP
+  L66616: {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePe
+  L66621: disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adv
+  L66632: {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adven
+  L66637: disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettin
+  L66649: {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventu
+  L66654: disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings
+  L66680: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEn
+  L66685: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66693: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureChanceMode ? '
+  L66698: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66706: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${isAdventureStoryMode ? 
+  L66711: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66719: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 
+  L66724: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66734: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${enableFactionResources 
+  L66739: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66753: <div className={`bg-indigo-50 p-3 rounded-lg border border-indigo-100 ${(!isTeacherMode && studentProjectSettings.advent
+  L66761: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66775: disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+  L66785: {(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSettings.adv
+  L66790: disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProjectSett
+  L66791: placeholder={(!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowCustomInstructions || studentProject
+  L66935: {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
+  L66949: <span>{t('adventure.storybook_locked', { needed: studentProjectSettings.adventureMinXP - adventureState.xp })}</span>
+  L69583: {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+  L69739: {!isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+  L69835: {(isTeacherMode || studentProjectSettings.allowDictation) && (
+  L69905: currentNickname={studentNickname || studentProjectSettings.nickname}
+  L70118: checked={studentProjectSettings.allowDictation}
+  L70131: checked={studentProjectSettings.allowSocraticTutor}
+  L70145: checked={studentProjectSettings.allowFreeResponse}
+  L70159: checked={studentProjectSettings.allowPersonaFreeResponse}
+  L70177: value={studentProjectSettings.adventureUnlockXP}
+  L70193: value={studentProjectSettings.baseXP}
+  L70209: value={studentProjectSettings.adventureMinXP}
+  L70224: checked={studentProjectSettings.adventurePermissions?.allowDifficultySwitch ?? true}
+  L70237: checked={studentProjectSettings.adventurePermissions?.allowModeSwitch ?? false}
+  L70250: checked={studentProjectSettings.adventurePermissions?.allowCustomInstructions ?? false}
+  L70263: checked={studentProjectSettings.adventurePermissions?.allowVisualsToggle ?? true}
+  L70276: checked={studentProjectSettings.adventurePermissions?.lockAllSettings ?? false}
+
+======================================================================
+ANALYSIS 7: JSON Export/Import Functions
+======================================================================
+
+Save/Export/Download functions:
+  L10555: const handleExportCSV = () => {
+  L10719: onClick={handleExportCSV}
+  L28465: const handleExportAnalyticsPDF = async () => {
+  L28572: const handleExportCSV = () => {
+  L28638: onClick={handleExportCSV} data-help-key="dashboard_export_csv_btn"
+  L28930: onClick={handleExportAnalyticsPDF} data-help-key="dashboard_export_pdf_btn"
+  L37282: const handleSaveProfile = () => {
+  L37361: const handleExportProfiles = () => {
+  L37403: const handleImportProfiles = (e) => {
+  L40999: const handleDownloadImage = () => {
+  L41891: const handleDownloadAudio = async (rawText, filename, contentId) => {
+  L43010: const handleExportQTI = async () => {
+  L43144: const handleExportIMS = async () => {
+  L43462: const handleExportSlides = () => {
+  L43744: const handleExportPDF = () => {
+  L43745: handleExport('print');
+  L43805: const handleExport = async (mode = 'html') => {
+  L44378: const handleSaveEdit = (e) => {
+  L45063: const handleSaveExtensionToHistory = (hint) => {
+  L47100: const handleExportStorybook = async (includeImages = false) => {
+  L47257: const handleExportFlashcards = (mode = 'standard') => {
+  L49421: const handleSavePersonaChat = () => {
+  L49546: const handleSaveReflection = async () => {
+  L56438: onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
+  L56446: onClick={() => { handleExport('print'); setShowExportMenu(false); }}
+  L56453: onClick={() => { handleExport('worksheet'); setShowExportMenu(false); }}
+  L56460: onClick={() => { handleExport('html'); setShowExportMenu(false); }}
+  L56467: onClick={() => { handleExportSlides(); setShowExportMenu(false); }}
+  L56477: onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
+  L56709: onClick={() => handleSaveExtensionToHistory(hint)}
+  L56842: handleExportStorybook(true);
+  L56854: handleExportStorybook(false);
+  L57022: onClick={handleSavePersonaChat}
+  L57240: <button aria-label="Submit reflection for grading" onClick={handleSaveReflection} disabled={!personaReflectionInput.trim
+  L57457: onClick={handleSavePersonaChat}
+  L57723: onClick={handleSaveReflection} data-help-key="persona_submit_btn"
+  L60617: onChange={handleImportProfiles}
+  L60622: <button onClick={handleExportProfiles} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('profil
+  L60675: onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
+  L60677: <button onClick={handleSaveProfile} className="text-xs bg-indigo-600 text-white px-2 rounded hover:bg-indigo-500">{t('co
+  L60911: <button onClick={(e) => handleSaveEdit(e)} className="p-1 text-green-600 hover:bg-green-100 rounded" aria-label={t('comm
+  L61771: onClick={() => handleExportFlashcards('standard')}
+  L61781: onClick={() => handleExportFlashcards('language')}
+  L62911: <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled={downloadingConte
+  L62936: <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={downloadingContentI
+  L62964: <button onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lan
+  L63317: <button onClick={() => handleDownloadAudio(generatedContent.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')} d
+  L64524: onClick={handleExportQTI}
+  L67603: <button onClick={handleDownloadImage} data-help-key="visuals_download" className="flex-1 flex items-center justify-cente
+  L68187: onClick={handleExportPDF}
+  L68424: <button onClick={() => handleExport('print')} className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 roun
+
+======================================================================
+ANALYSIS 8: storageDB Definition & Architecture
+======================================================================
+  L17584: const storageDB = {
+  L17986: const cachedPack = await storageDB.get(storageKey);
+  L36382: const savedHistory = await storageDB.get('allo_offline_history');
+  L36400: const savedProfiles = await storageDB.get('allo_offline_profiles');
+  L36408: const savedUnits = await storageDB.get('allo_offline_units');
+  L36980: const savedPoints = await storageDB.get('allo_global_points');
+  L36982: const savedHistory = await storageDB.get('allo_point_history');
+  L36986: const savedWork = await storageDB.get('allo_student_work');
+  L36991: const advSave = await storageDB.get('allo_adventure_save');
+  L36996: const parsed = await storageDB.get('allo_draft_content');
+  L46093: const parsed = await storageDB.get('allo_adventure_save');

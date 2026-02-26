@@ -1,0 +1,115 @@
+=== AlloFlowContent definition ===
+  L31382: const AlloFlowContent = () => {
+
+=== wordSoundsSessionGoal at L7936 context ===
+  L7931:                     setWordSoundsFeedback?.(null);
+  L7932:                     setUserAnswer('');
+  L7933:                 } else {
+  L7934:                     // Truly no words available - show session complete modal
+  L7935:                     // FIX: Prevent premature completion if goal not met
+  L7936:                     if (wordSoundsScore.correct >= wordSoundsSessionGoal) {
+  L7937:                         console.log("WordSounds: Session Goal Met! Complete.");
+  L7938:                         setShowSessionComplete(true);
+  L7939:                     } else {
+  L7940:                         console.log("⚠️ Queue empty but goal not met. Forcing refill...");
+  L7941:                         generateSessionQueue(wordSoundsActivity, 'medium');
+  L7942:                         const retryWord = getAdaptiveRandomWord();
+
+=== AlloFlowContent function declaration area ===
+  L31382: const AlloFlowContent = () => {
+  L31383:     const lastHandleSpeakRef = useRef(null); // Fixed Injection
+  L31384:   const { t, setUiLanguage, currentUiLanguage, isTranslating } = React.useContext(LanguageContext);
+  L31385:   const [user, setUser] = useState(auth.currentUser);
+  L31386:   useEffect(() => {
+  L31387:       return onAuthStateChanged(auth, (u) => setUser(u));
+  L31388:   }, []);
+  L31389:   const [wordSoundsAutoReview, setWordSoundsAutoReview] = useState(false); // Review Fix
+  L31390:   const [lzLoaded, setLzLoaded] = useState(false);
+  L31391:   const [isTeacherToolbarExpanded, setIsTeacherToolbarExpanded] = useState(false);
+  L31392:   const [studentProgressLog, setStudentProgressLog] = useState([]);
+  L31393:   const [isStorageDisabled, setIsStorageDisabled] = useState(false);
+  L31394:   const addToastRef = useRef(null);
+  L31395:   const [showImmersiveInventory, setShowImmersiveInventory] = useState(false);
+  L31396:   const [activeBlueprint, setActiveBlueprint] = useState(null);
+  L31397:   const [blueprintSelection, setBlueprintSelection] = useState({});
+  L31398:   const [isReviewingBlueprint, setIsReviewingBlueprint] = useState(false);
+  L31399:   const [wordBankPosition, setWordBankPosition] = useState(null);
+  L31400:   const [isDraggingBank, setIsDraggingBank] = useState(false);
+  L31401:   const [dragBankOffset, setDragBankOffset] = useState({ x: 0, y: 0 });
+
+=== CSS z-index 9999 context (L11030-11055) ===
+  L11030:     /* Serif */
+  L11031:     .font-merriweather { font-family: 'Merriweather', serif; }
+  L11032:     .font-gentium { font-family: 'Gentium Book Plus', serif; }
+  L11033:     .font-lora { font-family: 'Lora', serif; }
+  L11034:     .font-playfair { font-family: 'Playfair Display', serif; }
+  L11035: 
+  L11036:     /* Mobile Responsive Fixes */
+  L11037:     @media (max-width: 768px) {
+  L11038:       /* Ensure dropdown menus and select elements appear above other content on mobile */
+  L11039:       select, [role="listbox"], [role="menu"], [role="combobox"] {
+  L11040:         z-index: 9999 !important;
+  L11041:         position: relative;
+  L11042:       }
+  L11043: 
+  L11044:       /* Fix dropdown parent containers to allow overflow on mobile */
+  L11045:       .overflow-hidden:has(select),
+  L11046:       .overflow-hidden:has([role="listbox"]),
+  L11047:       .overflow-hidden:has([role="menu"]) {
+  L11048:         overflow: visible !important;
+  L11049:       }
+  L11050: 
+  L11051:       /* Fix wizard/modal content overflow on mobile - use dynamic viewport height */
+  L11052:       [class*="fixed"][class*="inset-0"] > div {
+  L11053:         max-height: 95vh;
+  L11054:         max-height: 95dvh;
+  L11055:       }
+
+=== Word Sounds Modal container (L1650 area) ===
+  L1646:             );
+  L1647:         }
+  L1648: 
+  L1649:         return (
+  L1650:             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+  L1651:                 <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+  L1652: 
+  L1653:                     {/* Header */}
+  L1654:                     <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
+  L1655:                         <div className="flex items-center gap-4">
+  L1656:                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+  L1657:                                 <Sparkles size={32} className="text-yellow-300 animate-pulse" />
+  L1658:                             </div>
+  L1659:                             <div>
+  L1660:                                 <h2 className="text-3xl font-black tracking-tight">{t('word_sounds.title', 'Word Sounds Studio')}</h2>
+
+=== WordSoundsContent render site (L65030-65060) ===
+  L65031:                                 audioCache={glossaryAudioCache}
+  L65032:                                 glossaryTerms={generatedContent?.data || []}
+  L65033:                                 onClose={() => { setIsWordSoundsMode(false); setActiveView('input'); }}
+  L65034:                                 onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+  L65035:                                 wsPreloadedWords={wsPreloadedWords}
+  L65036:                                 initialActivitySequence={wsActivitySequence}
+  L65037:                                 initialShowReviewPanel={wordSoundsAutoReview}
+  L65038:                                 setWsPreloadedWords={setWsPreloadedWords}
+  L65039:                                 wordSoundsActivity={wordSoundsActivity}
+  L65040:                                 setWordSoundsActivity={setWordSoundsActivity}
+  L65041:                                 wordSoundsScore={wordSoundsScore}
+  L65042:                                 setWordSoundsScore={setWordSoundsScore}
+  L65043:                                 currentWordSoundsWord={currentWordSoundsWord}
+  L65044:                                 setCurrentWordSoundsWord={setCurrentWordSoundsWord}
+  L65045:                                 wordSoundsPhonemes={wordSoundsPhonemes}
+  L65046:                                 setWordSoundsPhonemes={setWordSoundsPhonemes}
+  L65047:                                 wordSoundsLanguage={wordSoundsLanguage}
+  L65048:                                 setWordSoundsLanguage={setWordSoundsLanguage}
+  L65049:                                 wordSoundsFeedback={wordSoundsFeedback}
+  L65050:                                 setWordSoundsFeedback={setWordSoundsFeedback}
+  L65051:                                 wordSoundsHistory={wordSoundsHistory}
+  L65052:                                 setWordSoundsHistory={setWordSoundsHistory}
+  L65053:                                 onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+  L65054:                                 speakWord={speakWord}
+  L65055:                                 callGemini={callGemini}
+  L65056:                                 callTTS={callTTS}
+  L65057:                                 callImagen={callImagen}
+  L65058:                                 selectedVoice={selectedVoice}
+  L65059:                                 t={t}
+  L65060:                                 // Adaptive Difficulty Props

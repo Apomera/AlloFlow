@@ -1,0 +1,4 @@
+L3750: const PHONEME_BANK = {
+L3763: const digraphs = PHONEME_BANK['Digraphs'] || [];
+L3776: const rControlled = PHONEME_BANK['R-Controlled'] || [];
+L3781: const digraphs = PHONEME_BANK['Digraphs'] || [];

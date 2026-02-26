@@ -1,0 +1,75 @@
+rd: data.word,
+                         phonemes: validatedPhonemes,
+                          phonemeCount: validatedPhonemes.length,
+                         syllables: data.syllables,
+                         rhymes: data.rhymes || [data.rhymeWord],
+                         rhymeWord: data.rhymeWord || (data.rhymes && data.rhymes[0]) || '',
+                         rhymeDistractors: data.rhymeDistractors || [],
+                         blendingDistractors: data.blendingDistractors || [],
+                         familyEnding: data.familyEnding || '',
+                         familyMembers: data.familyMembers || [],
+                         firstSound: data.firstSound || (data.phonemes && data.phonemes[0]) || '',
+                         lastSound: data.lastSound || (data.phonemes && data.phonemes[data.phonemes.length - 1]) || '',
+                         definition: data.definition,
+                         image: imageUrl
+                     });
+                 } catch (e) {
+                     warnLog("Word processing failed for:", rawWord, e.message);
+                     const fallbackPhonemes = rawWord.toLowerCase().split('');
+                     processed.push({
+                         term: rawWord,
+                         word: rawWord,
+                         targetWord: rawWord,
+                         phonemes: fallbackPhonemes,
+                         phonemeCount: fallbackPhonemes.length,
+                         firstSound: fallbackPhonemes[0] || rawWord[0],
+                         lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || rawWord[rawWord.length - 1],
+                         image: null,
+                         _fallbackUsed: true
+                     });
+                 }
+                     const lastItem = processed[processed.length - 1];
+                     if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed) {
+                         const ttsTasks = new Set();
+                         if (lastItem.rhymeWord) ttsTasks.add(lastItem.rhymeWord);
+                         (lastItem.rhymeDistractors || []).forEach(w => w && ttsTasks.add(w));
+                         (lastItem.blendingDistractors || []).forEach(w => w && ttsTasks.add(w));
+                         (lastItem.familyMembers || []).forEach(w => w && ttsTasks.add(w));
+                         try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught error:', e?.message || e); }
+                     }
+                     setGeneratedCount(prev => prev + 1);
+             }
+             let sequence = [];
+             const enabledActivities = [];
+             if (includeLessonPlan) {
+                 lessonPlanOrder.forEach(actId => {
+                     const cfg = lessonPlan[actId];
+                     if (cfg && cfg.enabled) {
+                         enabledActivities.push({ id: actId, count: cfg.count, enabled: true });
+                         for (let k = 0; k < cfg.count; k++) sequence.push(actId);
+                     }
+                 });
+             }
+             const lessonPlanConfig = includeLessonPlan ? {
+                 masteryMode: 'consecutive',
+                 masteryThreshold: 3,
+                 activities: enabledActivities,
+                 order: lessonPlanOrder.filter(id => lessonPlan[id]?.enabled),
+                 totalItems: sequence.length,
+                 estimatedMinutes: Math.ceil(sequence.length * 0.5)
+             } : null;
+             const configSummary = lessonPlanConfig
+                 ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive • ` +
+                   enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
+                   ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
+                 : 'Quick Practice Mode';
+             onStartGame(processed, sequence, lessonPlanConfig, configSummary);
+             setIsProcessing(false);
+        };
+        if (isMinimized) {
+            return (
+                <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in slide-in-from-bottom-10 fade-in w-80">
+                     <div className="flex justify-between items-center mb-3">
+                         <div className="flex items-center gap-2">
+                             <Loader2 className={`text-violet-600 ${isProcessing ? 'animate-spin' : ''}`} size={20} />
+                    

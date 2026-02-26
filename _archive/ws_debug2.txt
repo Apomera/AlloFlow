@@ -1,0 +1,166 @@
+Preview card found at line 60765
+
+=== PARENT CONTEXT (100 lines before preview card) ===
+
+    60665:                              </div>
+>>> 60666:                              {isTeacherMode && (
+    60667:                                 <div className="mb-4 flex gap-2 animate-in fade-in slide-in-from-top-1">
+    60668:                                     <div className="relative flex-grow">
+    60669:                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-600">
+    60670:                                             <Sparkles size={14} />
+    60671:                                         </div>
+    60672:                                         <input aria-label={t('common.enter_source_refine_instruction')}
+    60673:                                             type="text"
+    60674:                                             value={sourceRefineInstruction}
+    60675:                                             onChange={(e) => setSourceRefineInstruction(e.target.value)}
+>>> 60676:                                             onKeyDown={(e) => e.key === 'Enter' && handleAiRefineSource()}
+    60677:                                             placeholder={t('analysis.refine_placeholder')}
+    60678:                                             className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition-all shadow-sm bg-white"
+>>> 60679:                                             disabled={isProcessing}
+    60680:                                         />
+    60681:                                     </div>
+    60682:                                     <button aria-label={t('common.ai_refine_source')}
+    60683:                                         onClick={handleAiRefineSource}
+>>> 60684:                                         disabled={!sourceRefineInstruction.trim() || isProcessing}
+    60685:                                         className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+    60686:                                     >
+>>> 60687:                                         {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Send size={14}/>}
+    60688:                                     </button>
+    60689:                                 </div>
+    60690:                              )}
+>>> 60691:                              {isEditingAnalysis ? (
+    60692:                                 <div className="w-full bg-white border border-indigo-200 rounded-lg overflow-hidden shadow-sm">
+    60693:                                     {/* Formatting Toolbar */}
+    60694:                                     <div className="flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100">
+    60695:                                         <button
+>>> 60696:                                           onClick={() => handleFormatText('bold', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)}
+    60697:                                           className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors"
+    60698:                                           title={t('formatting.bold')}
+    60699:                                         >
+    60700:                                             <Bold size={16} strokeWidth={3} />
+    60701:                                         </button>
+    60702:                                         <button
+>>> 60703:                                           onClick={() => handleFormatText('italic', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)}
+    60704:                                           className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors"
+    60705:                                           title={t('formatting.italic')}
+    60706:                                         >
+    60707:                                             <Italic size={16} />
+    60708:                                         </button>
+    60709:                                         <button
+>>> 60710:                                           onClick={() => handleFormatText('highlight', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)}
+    60711:                                           className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors"
+    60712:                                           title={t('formatting.highlight')}
+    60713:                                         >
+    60714:                                             <Highlighter size={16} />
+    60715:                                         </button>
+    60716:                                         <div className="w-px h-4 bg-indigo-200 mx-1"></div>
+    60717:                                         <button
+>>> 60718:                                           onClick={() => handleFormatText('h1', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)}
+    60719:                                           className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs"
+    60720:                                           title={t('formatting.h1')}
+    60721:                                         >
+    60722:                                             H1
+    60723:                                         </button>
+    60724:                                         <button
+>>> 60725:                                           onClick={() => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)}
+    60726:                                           className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs"
+    60727:                                           title={t('formatting.h2')}
+    60728:                                         >
+    60729:                                             H2
+    60730:                                         </button>
+    60731:                                         <div className="w-px h-4 bg-indigo-200 mx-1"></div>
+    60732:                                         <button
+>>> 60733:                                           onClick={() => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)}
+    60734:                                           className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors"
+    60735:                                           title={t('formatting.list')}
+    60736:                                         >
+    60737:                                             <List size={16} />
+    60738:                                         </button>
+    60739:                                     </div>
+    60740:                                     <textarea
+    60741:                                         ref={analysisEditorRef}
+>>> 60742:                                         value={generatedContent?.data.originalText}
+    60743:                                         onChange={(e) => handleAnalysisTextChange(e.target.value)}
+    60744:                                         className="w-full min-h-[300px] bg-white p-4 focus:outline-none text-sm text-slate-700 font-serif leading-relaxed resize-y"
+    60745:                                         placeholder={t('common.edit_source_text')}
+    60746:                                         spellCheck="false"
+    60747:                                     />
+    60748:                                 </div>
+>>> 60749:                              ) : (
+    60750:                                 <div className="text-sm text-slate-700 font-serif leading-relaxed max-w-none">
+>>> 60751:                                     {renderFormattedText(generatedContent?.data.originalText, false)}
+>>> 60752:                                     {generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && (
+    60753:                                         <div className="mt-8 pt-8 border-t border-slate-200 opacity-80">
+    60754:                                             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+    60755:                                                 <FileText size={14}/> {t('output.original_source_label')}
+    60756:                                             </h4>
+>>> 60757:                                             {renderFormattedText(generatedContent?.data.rawEnglishText, false)}
+    60758:                                         </div>
+    60759:                                     )}
+    60760:                                 </div>
+    60761:                              )}
+    60762:                           </div>
+    60763:                     </div>
+    60764:                 )}
+>>> 60765:                 {activeView === 'word-sounds' && (
+    60766:                   <div className="space-y-6">
+    60767:                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
+    60768:                       <div className="text-4xl mb-3">🎵</div>
+>>> 60769:                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || 'Word Sounds Studio'}</h3>
+
+
+=== SEARCH: generatedContent guards near output panel ===
+
+  60752:                                     {generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && (
+
+
+=== SEARCH: isWordSoundsMode near output panel ===
+
+
+
+=== PARENT BLOCK STRUCTURE (wider view) ===
+
+  60494 (indent 26): </div>
+  60495 (indent 26): {(() => {
+  60496 (indent 30): const rawGrammarNotes = generatedContent?.data.grammar || [];
+  60497 (indent 30): const isInvalidGrammarNote = (g) => {
+  60504 (indent 30): };
+  60505 (indent 30): const realGrammarErrors = rawGrammarNotes.filter(g => !isInvalidGrammarNote(g));
+  60507 (indent 30): const hasGrammarErrors = realGrammarErrors.length > 0;
+  60508 (indent 30): const handleFixGrammarErrors = async () => {
+  60530 (indent 0): ERROR TO FIX: ${errorDesc}
+  60531 (indent 0): TEXT TO CORRECT:
+  60532 (indent 0): "${contextToFix}",
+  60533 (indent 0): Return only the corrected version of this exact text:`;
+  60573 (indent 30): };
+  60574 (indent 30): return (
+  60650 (indent 30): );
+  60651 (indent 26): })()}
+  60652 (indent 26): <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative group">
+  60653 (indent 29): <div className="flex justify-between items-center mb-3">
+  60654 (indent 32): <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('output.common_original')}</h4>
+  60655 (indent 32): {isTeacherMode && (
+  60656 (indent 32): <button
+  60660 (indent 32): >
+  60663 (indent 32): </button>
+  60664 (indent 32): )}
+  60665 (indent 29): </div>
+  60666 (indent 29): {isTeacherMode && (
+  60667 (indent 32): <div className="mb-4 flex gap-2 animate-in fade-in slide-in-from-top-1">
+  60689 (indent 32): </div>
+  60690 (indent 29): )}
+  60691 (indent 29): {isEditingAnalysis ? (
+  60692 (indent 32): <div className="w-full bg-white border border-indigo-200 rounded-lg overflow-hidden shadow-sm">
+  60748 (indent 32): </div>
+  60749 (indent 29): ) : (
+  60750 (indent 32): <div className="text-sm text-slate-700 font-serif leading-relaxed max-w-none">
+  60760 (indent 32): </div>
+  60761 (indent 29): )}
+  60762 (indent 26): </div>
+  60763 (indent 20): </div>
+  60764 (indent 16): )}
+  60765 (indent 16): {activeView === 'word-sounds' && (
+  60766 (indent 18): <div className="space-y-6">
+  60767 (indent 20): <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
+  60768 (indent 22): <div className="text-4xl mb-3">🎵</div>
+  60769 (indent 22): <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || 'Word Sounds Studio'}</h3>

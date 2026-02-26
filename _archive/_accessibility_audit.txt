@@ -1,0 +1,122 @@
+======================================================================
+1. ARIA ATTRIBUTE COVERAGE
+======================================================================
+  ✅ aria-label: 609
+  ✅ role=: 151
+  ✅ aria-hidden: 26
+  ✅ aria-modal: 14
+  ✅ aria-expanded: 13
+  ✅ aria-live: 11
+  ✅ aria-pressed: 10
+  ✅ aria-labelledby: 4
+  ✅ aria-disabled: 4
+  ✅ aria-describedby: 3
+  ✅ aria-selected: 3
+  ✅ aria-checked: 1
+  ❌ aria-current: 0
+  ❌ aria-required: 0
+  ❌ aria-invalid: 0
+  ❌ aria-busy: 0
+  ❌ aria-valuemin: 0
+  ❌ aria-valuemax: 0
+  ❌ aria-valuenow: 0
+
+======================================================================
+2. INTERACTIVE ELEMENTS ANALYSIS
+======================================================================
+  Total <button>: 794
+  With aria-label: 253
+  Without aria-label: 541
+
+  Total <input>: 212
+  With aria-label or <label>: 200
+  Without label: 12
+
+  Total <textarea>: 65
+
+======================================================================
+3. IMAGE ALT TEXT COVERAGE
+======================================================================
+  Total <img>: 25
+  With alt text: 25
+  With empty alt (decorative): 1
+  Missing alt: 0
+
+======================================================================
+4. KEYBOARD NAVIGATION
+======================================================================
+  onKeyDown handlers: 92
+  onKeyUp handlers: 0
+  onKeyPress handlers: 0
+  tabIndex: 74
+
+  ⚠️  Clickable <div> without keyboard handler or role: 0
+  ⚠️  Clickable <span> without keyboard handler or role: 0
+
+======================================================================
+5. FOCUS MANAGEMENT
+======================================================================
+  .focus() calls: 18
+  autoFocus: 31
+  focus-visible in CSS: 0
+  focus-within in CSS: 4
+  outline-none: 327
+  focus:ring: 714
+  focus:outline: 104
+
+======================================================================
+6. SEMANTIC HTML & LANDMARKS
+======================================================================
+  ✅ <main: 2
+  ✅ <nav: 1
+  ✅ <header: 1
+  ✅ <aside: 1
+  ✅ <section: 1
+  ✅ <details: 1
+  ✅ <summary: 1
+  ❌ <footer: 0
+  ❌ <article: 0
+  ❌ <figure: 0
+  ❌ <figcaption: 0
+
+======================================================================
+7. HEADING HIERARCHY
+======================================================================
+  <h1>: 6
+  <h2>: 69
+  <h3>: 95
+  <h4>: 124
+  <h5>: 15
+  <h6>: 2
+
+======================================================================
+8. COLOR CONTRAST & VISUAL ACCESSIBILITY
+======================================================================
+  'sr-only' (screen reader only): 22
+  'not-sr-only': 2
+  'contrast' theme references: 37
+  'high-contrast' mentions: 0
+  'reduced-motion' / prefers-reduced-motion: 1
+
+======================================================================
+9. LIVE REGIONS & ANNOUNCEMENTS
+======================================================================
+  aria-live='polite': 10
+  aria-live='assertive': 1
+  role='alert': 1
+  role='status': 10
+
+======================================================================
+10. ACCESSIBILITY ANTI-PATTERNS
+======================================================================
+
+  Generic/placeholder aria-labels: 5
+  L31839: aria-label="Close" — <button aria-label="Close"
+  L38013: aria-label="Close" — <button aria-label="Close"
+  L68232: aria-label="Close" — <button aria-label="Close" onClick={() => {
+  L68279: aria-label="Close" — <button aria-label="Close" onClick={() => {
+  L69242: aria-label="Refresh" — <button aria-label="Refresh" onClick={() => {
+
+  tabIndex=-1 (removed from tab order): 0
+  outline-none without focus replacement: checking...
+  outline-none WITHOUT focus style replacement: 1

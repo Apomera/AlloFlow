@@ -1,0 +1,32 @@
+
+=== "download_audio" found at 6 lines ===
+  Line 15195:         simplified_download_audio: "Download the text as an audio file for listening practice.",
+  Line 15232:         glossary_download_audio: "Download audio pronunciations for all glossary terms as an audio file.",
+  Line 31912:     'glossary_download_audio': 'glossary',
+  Line 31943:     'simplified_download_audio': 'simplified',
+  Line 62144:                                                 <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled
+  Line 62553:                                 <button onClick={() => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')
+
+=== "Download Audio" found at 1 lines ===
+  Line 40664:         warnLog("Download Audio Error:", err);
+
+=== "handleDownloadAudio" found at 5 lines ===
+  Line 40525:   const handleDownloadAudio = async (rawText, filename, contentId) => {
+  Line 62144:                                                 <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled
+  Line 62169:                                                 <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={d
+  Line 62197:                                                         <button onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audi
+  Line 62553:                                 <button onClick={() => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')
+
+=== Lines 62214-62500 with "audio" or "download" ===
+
+=== Lines 60190-60260 with "download" or "audio" ===
+
+=== Buttons with "download" anywhere ===
+  13152:                                 <button aria-label={t('common.download')}
+  15826:             <button aria-label={t('common.download')}
+  59562:                      <button aria-label={t('common.download')}
+  62144:                                                 <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled
+  62169:                                                 <button onClick={() => handleDownloadAudio(item.def, `def-${idx}-audio`, `dl-def-${idx}`)} disabled={d
+  62197:                                                         <button onClick={() => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audi
+  62553:                                 <button onClick={() => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')
+  66992:                             <button onClick={handleDownloadImage} data-help-key="visuals_download" className="flex-1 flex items-center justify-center 

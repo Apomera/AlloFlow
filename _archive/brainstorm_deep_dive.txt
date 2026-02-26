@@ -1,0 +1,46 @@
+=== BRAINSTORM DEEP DIVE RESEARCH ===
+
+--- STATE & MODES ---
+[setBrainstorm] Line 31300: const [brainstormCustomInstructions, setBrainstormCustomInstructions] = useState('');
+
+--- OUTPUT TYPES ---
+[mind-map] Line 51096: if (r.type === 'mind-map' && r.data?.nodes) return `${r.data.nodes.length} nodes`;
+
+--- CUSTOMIZATION OPTIONS ---
+
+--- VISUAL FEATURES ---
+
+--- CURRENT TOUR DESCRIPTION ---
+Line 27559: id: 'tour-tool-brainstorm',
+Line 27560: text: `Spark engagement with reliable, creative application ideas. This tool connects your lesson topic to real-world scenarios and project-based learning opportunities.
+Line 27561: 
+Line 27562: ### Ideation Categories
+Line 27563: • **Project-Based Learning**: Long-term project ideas and driving questions.
+Line 27564: • **Real-World Connections**: How this topic applies to careers and daily life.
+Line 27565: • **Discussion Hooks**: Provocative questions to start the class.
+Line 27566: 
+Line 27567: ### Pro Tip
+Line 27568: • Use references to local context to increase relevance.
+Line 27569: 
+Line 27570: ### UDL Connection
+Line 27571: • **Engagement**: Optimize relevance, value, and authenticity (Guideline 7) by connecting learning to real-world problems.`,
+Line 27572: 
+Line 27573: title: t('tour.brainstorm_title'),
+Line 27574: },
+Line 27575: {
+Line 27576: id: 'tour-tool-persona',
+Line 27577: text: `Persona Interview Mode brings content to life through immersive character conversations. Interview historical figures, fictional characters, or AI-generated experts in a gamified experience that builds empathy and deepens understanding.
+Line 27578: 
+Line 27579: ### Interview Modes
+Line 27580: • **1-on-1 Interview**: Deep conversation with a single character for focused exploration.
+Line 27581: • **Panel Discussion**: Select multiple personas for group debates and diverse perspectives.
+Line 27582: • **Free Response vs Multiple Choice**: Toggle between open-ended typing or guided question options.
+Line 27583: 
+Line 27584: ### Gamification Features
+Line 27585: • **XP System**: Earn Interview XP for quality questions and thoughtful engagement.
+Line 27586: • **Badges**: Unlock achievements like *Harmonizer*, *First Insight*, *Rapport Builder*, and *Master Interviewer*.
+Line 27587: • **Reflection Grading**: Submit a final reflection to earn bonus XP with AI-powered feedback.
+Line 27588: • **Hard Mode**: Disable hints for extra challenge and higher XP rewards.
+Line 27589: 
+
+--- UI PANEL OPTIONS ---

@@ -1,0 +1,64 @@
+======================================================================
+ANALYSIS 1: Most Common State Variable Names (Shadowing Risk)
+======================================================================
+Total unique state variable names: 694
+Names used more than once: 33
+  'score' x8: L23119, L23428, L23786, L24116, L24454, L24789, L25214, L25936
+  'isWon' x5: L23120, L23783, L24455, L24787, L25771
+  'announcement' x5: L23123, L23430, L23787, L24461, L24791
+  'items' x5: L23422, L23782, L24113, L24453, L30431
+  'isProcessing' x4: L1589, L10367, L18271, L34575
+  'isMinimized' x3: L1590, L3385, L10368
+  'attempts' x3: L3465, L23784, L24457
+  'feedback' x3: L4154, L7950, L25935
+  'draggedItem' x3: L4897, L24117, L24456
+  'error' x3: L18274, L21676, L34578
+  'imageVisibilityMode' x2: L1532, L3408
+  'wordSoundsSessionGoal' x2: L1560, L32029
+  'isEditing' x2: L3384, L30433
+  'tracingPhase' x2: L3399, L32004
+  'playingIndex' x2: L3884, L4062
+  'foundWords' x2: L4312, L32709
+  'progress' x2: L17931, L18272
+  'selectedAdj' x2: L18461, L26470
+  'selectedAnimal' x2: L18462, L26471
+  'gameMode' x2: L23121, L32704
+  'isFullscreen' x2: L23122, L37276
+  'isChecked' x2: L23426, L24115
+  'keyboardSelectedItemId' x2: L24120, L24460
+  'grid' x2: L24782, L25769
+  'currentIndex' x2: L25932, L30090
+  'newGroupName' x2: L27865, L43234
+  'standardMode' x2: L29058, L36552
+  'standardInputValue' x2: L29059, L36548
+  'aiStandardRegion' x2: L29060, L36682
+  'aiStandardQuery' x2: L29061, L36683
+  'suggestedStandards' x2: L29062, L36684
+  'isFindingStandards' x2: L29063, L36685
+  'isPlaying' x2: L30091, L36826
+
+======================================================================
+ANALYSIS 2: Potential Derived State (useEffect -> setState)
+======================================================================
+Potential derived state effects: 31
+(These could potentially be replaced with useMemo or inline computation)
+
+======================================================================
+ANALYSIS 3: Prop Drilling Indicators
+======================================================================
+Max props in single component: 4 (at L22931)
+React.createContext: 1
+useContext calls: 38
+
+======================================================================
+ANALYSIS 4: Complex State Objects
+======================================================================
+useState({ }) with objects: 46
+useState([ ]) with arrays: 66
+useReducer calls: 7
+
+======================================================================
+ANALYSIS 5: useCallback Dependency Arrays
+======================================================================
+useCallback with empty deps []: 0
+(Empty deps means the callback never updates - OK for stable operations)

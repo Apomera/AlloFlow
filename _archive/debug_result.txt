@@ -1,0 +1,31 @@
+Loaded 111 unique extracted values.
+
+--- MISSING BLOB #1 ---
+Location: 2783336
+Context:
+SB8x/H1VlDPcADyT9aQZ5iSrsuc+PALzzHefTke6dxZ3bZJLZNgElD9Lw+qk/8cU7trjbuLs4EAt4b3gQHxgdc=',
+    'th': 'BLOB_CONTENT',
+    'l': 'data:audio/webm;base64,GkXfo59ChoEBQve
+
+--- MISSING BLOB #2 ---
+Location: 2901850
+Context:
+U4UD5N671aQVZa0AdJXKR6aKhYAoD7DrdEPx5vAboTQL0Rsnb8C1tta2kBfBV/AcU7trjbuLs4EAt4b3gQHxgdc=',
+    'k': 'BLOB_CONTENT',
+    'u': 'data:audio/webm;base64,GkXfo59ChoEBQve
+
+--- MISSING BLOB #3 ---
+Location: 3172887
+Context:
+nmOt4jRSrojgA7zXr9xEPFPuivfA9/SUjOb91VTdV4HqmyUkrWwNvr7VDwC1fzwcU7trjbuLs4EAt4b3gQHxgdc=',
+    'g': 'BLOB_CONTENT',
+    'ng': 'data:audio/webm;base64,GkXfo59ChoEBQv
+
+--- MISSING BLOB #4 ---
+Location: 3394884
+Context:
+V1y6x8/zTtktWdENAEUOKGWcvtDYaDvNhd8wi0whg1I0cd7W7SbdtpP+m/qqpf8cU7trjbuLs4EAt4b3gQHxgdc=',
+    'p': 'BLOB_CONTENT',
+    'm': 'data:audio/webm;base64,GkXfo59ChoEBQve
+
+Total missing blobs: 4

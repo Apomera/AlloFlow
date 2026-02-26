@@ -1,0 +1,5 @@
+﻿31653: const isCanvas = React.useMemo(() => {
+37521: if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) return;
+61777: ) : inputText && !isCanvas ? (
+74156: {(!isCanvas || isCloudSyncEnabled) && (
+74166: ) : isStorageDisabled && !isCanvas ? (

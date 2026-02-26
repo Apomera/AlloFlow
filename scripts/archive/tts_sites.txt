@@ -1,0 +1,43 @@
+L1673:                          try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught e
+L3496:                 audio.playbackRate = ttsSpeed;
+L3671:                     const url = await callTTS(text, selectedVoice);
+L3696:                 const ttsPromise = callTTS(text, selectedVoice);
+L3712:             await speakWord(text, wordSoundsLanguage || 'en-US', ttsSpeed);
+L3847:                                             audio.playbackRate = 0.9;
+L3855:                                         const url = await callTTS(instruction, selectedVoice);
+L3858:                                             audio.playbackRate = 0.9;
+L6501:                             await Promise.allSettled(rhymeOptionsRef.current.map(w => callTTS(w)));
+L6977:                             await Promise.allSettled(effectiveBlendingOptions.map(w => callTTS(w)));
+L7003:                             await Promise.allSettled(rhymeOptionsRef.current.map(w => callTTS(w)));
+L18011:                       audio.playbackRate = voiceSpeed; // Apply voice speed to audio playback
+L29196: const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, l
+L33736:                       if (typeof callTTS === 'function') { const url = await callTTS(term, selectedVoice, 1, 1).catch(e => { warnL
+L35745:                       const url = await callTTS(effectiveText, selectedVoice).catch(e => { warnLog('TTS Rejection handled:', e.mes
+L35787:   const [playbackRate, setPlaybackRate] = useState(1.0);
+L35788:   const playbackRateRef = useRef(1.0);
+L35884:       playbackRateRef.current = playbackRate;
+L35886:           audioRef.current.playbackRate = playbackRate;
+L35888:   }, [playbackRate]);
+L40205:           const audioUrl = await callTTS(word, selectedVoice);
+L40208:               audio.playbackRate = voiceSpeed; // Use global voice speed
+L40467:               audio.playbackRate = playbackRateRef.current;
+L40480:                   const promise = callTTS(textToSpeak, currentVoice).then(url => {
+L40496:               audio.playbackRate = playbackRateRef.current;
+L40555:                   audioBufferRef.current[nextBufferKey] = callTTS(textToPreload, targetVoice)
+L40569:                           a.playbackRate = playbackRateRef.current;
+L40608:                           const safeDuration = (duration * 1000) / playbackRateRef.current;
+L40707:                      callTTS(part, selectedVoice).then(url => {
+L40720:             audio.playbackRate = 0.85; // Apply speed setting
+L40840:         console.log("[handleSpeak] 🔊 Using DIRECT callTTS() for:", effectiveText.substring(0, 30), "contentId:", contentId);
+L40844:             const audioUrl = await callTTS(effectiveText, selectedVoice);
+L40849:                 audio.playbackRate = 0.85;
+L45229:                        audioUrl = await callTTS(optText, voiceId);
+L48474:                       await callTTS(textWithName, selectedVoice);
+L48481:                       callTTS(nextMsg.msg.text, selectedVoice).catch(e => warnLog("Persona TTS lookahead failed:", e?.message || e
+L52964:                   const audioUrl = await callTTS(sequence[idx], selectedVoice);
+L52968:                   audio.playbackRate = playbackRateRef.current;
+L52988:                           const speed = playbackRateRef.current || 1.0;
+L60371:                         <span className="text-[10px] font-bold text-slate-500 w-8 text-right tabular-nums">{playbackRate}x</span>
+L60377:                             value={playbackRate}
+L62265:                                 playbackRate={playbackRate}
+L62654:                                                     audio.playbackRate = 0.5;

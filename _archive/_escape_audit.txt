@@ -1,0 +1,118 @@
+=== ESCAPE ROOM useState DECLARATIONS ===
+  L26724: const [teamEscapeToast, setTeamEscapeToast] = useState(null);
+  L26725: const [lastEscapedTeams, setLastEscapedTeams] = useState([]);
+  L31960: const [escapeRoomCompletions, setEscapeRoomCompletions] = useState(() => {
+  L32529: const [escapeRoomState, setEscapeRoomState] = useState({
+  L32544: const [escapeTimeLeft, setEscapeTimeLeft] = useState(300);
+  L32545: const [isEscapeTimerRunning, setIsEscapeTimerRunning] = useState(false);
+
+=== ESCAPE ROOM setState CALLS ===
+  setEscapeRoom: 4 calls at [51667, 51963, 66720, 67136]
+  setEscapeRoomCompletions: 2 calls at [31960, 32187]
+  setEscapeRoomState: 41 calls at [32529, 51332, 51533, 51549, 51565, 51638, 51655, 51703, 51754, 51779]...
+  setEscapeTimeLeft: 3 calls at [32544, 51361, 52085]
+
+=== ESCAPE ROOM COMPONENTS ===
+  L10241: const er = data.escapeRoomStats;
+  L26716: const StudentEscapeRoomOverlay = ({ sessionData, user, activeSessionCode, targetAppId, t, playSound }) => {
+  L26717: const escapeState = sessionData?.escapeRoomState;
+  L27423: const EscapeRoomTeacherControls = ({ sessionData, activeSessionCode, appId, t, addToast }) => {
+  L27424: const escapeState = sessionData?.escapeRoomState;
+  L32186: const recordEscapeRoomCompletion = useCallback((resourceId, data) => {
+  L51314: const generateEscapeRoom = async () => {
+  L51322: const puzzleCount = escapeRoomState?.puzzleCount || 10;
+  L51328: const selectedDifficulty = escapeRoomState?.difficulty || 'normal';
+  L51364: const escapeRoomPrompt = `You are creating an ADVANCED educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.
+  L51483: const response = await callGemini(escapeRoomPrompt, true);
+  L51554: const launchCollaborativeEscapeRoom = async () => {
+  L51576: const escapeRoomPrompt = `You are creating an educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.
+  L51592: const response = await callGemini(escapeRoomPrompt, true);
+  L51660: const endCollaborativeEscapeRoom = async () => {
+  L51672: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L51676: const newSolved = new Set(escapeRoomState.solvedPuzzles);
+  L51680: const newClues = { ...escapeRoomState.discoveredClues };
+  L51686: const shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
+  L51690: const calculatedStreak = escapeRoomState.currentStreak + 1;
+  L51692: const difficultyMultiplier = escapeRoomState.difficulty === 'hard' ? 1.5 :
+  L51694: const hintPenalty = (escapeRoomState.hintsUsed?.[puzzleId] || 0) * 5;
+  L51697: const timeBonus = escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 180 ? 10 :
+  L51724: const userTeam = sessionData.escapeRoomState.teams?.[user.uid];
+  L51727: const currentSolved = sessionData.escapeRoomState.teamProgress?.[userTeam]?.solvedPuzzles || [];
+  L51728: const totalPuzzles = sessionData.escapeRoomState.puzzles?.length || 5;
+  L51777: const puzzle = escapeRoomState.puzzles?.find(p => p.linkedObject?.id === obj.id || p.linkedObjectId === obj.id);
+  L51795: const newTimeRemaining = Math.max(0, escapeRoomState.timeRemaining - timePenalty);
+  L51816: const handleEscapeRoomAnswer = (puzzleId, selectedIndex) => {
+  L51817: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L51829: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L51844: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L51859: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L51862: const currentSelected = escapeRoomState.matchingSelected;
+  L51888: const newPairs = [...escapeRoomState.matchingPairs, pair];
+  L51910: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L51930: const finalPuzzle = escapeRoomState.finalDoorPuzzle;
+  L51943: const isPerfect = (escapeRoomState.wrongAttempts || 0) === 0;
+  L51963: const resetEscapeRoom = () => {
+  L52015: const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L52060: const openEscapeRoomSettings = () => {
+  L52070: const updateEscapeRoomSetting = (key, value) => {
+  L52075: const launchEscapeRoomWithSettings = () => {
+  L67064: const maxTime = escapeRoomState.maxTime || 300;
+  L67068: const puzzlesSolved = escapeRoomState.solvedPuzzles.size;
+  L67069: const totalPuzzles = escapeRoomState.totalPuzzles;
+  L67070: const wrongAttempts = escapeRoomState.wrongAttempts || 0;
+  L67071: const hintsUsed = escapeRoomState.totalHintsUsed || 0;
+  L67072: const xpMultiplier = escapeRoomState.xpMultiplier || 1;
+  L67174: const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === obj.id);
+  L67175: const isSolved = puzzle && escapeRoomState.solvedPuzzles.has(puzzle.id);
+  L67209: const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === escapeRoomState.selectedObject.id);
+  L67288: const currentOrder = escapeRoomState.sequenceOrder?.length > 0
+  L67364: const currentOrder = escapeRoomState.sequenceOrder?.length > 0
+  L67393: const isSelected = escapeRoomState.textInput === word;
+  L67456: const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelected?.column === 'left';
+  L67488: const isSelected = escapeRoomState.matchingSelected?.item === item && escapeRoomState.matchingSelected?.column === 'right';
+
+=== escapeRoomState PROPERTY ACCESS ===
+  .textInput: 20 refs
+  .puzzles: 12 refs
+  .solvedPuzzles: 11 refs
+  .hintsRemaining: 9 refs
+  .isActive: 8 refs
+  .finalDoorPuzzle: 8 refs
+  .difficulty: 7 refs
+  .hintsUsed: 7 refs
+  .teamProgress: 5 refs
+  .timeRemaining: 5 refs
+  .matchingSelected: 5 refs
+  .matchingPairs: 5 refs
+  .selectedObject: 5 refs
+  .wrongAttempts: 4 refs
+  .isEscaped: 4 refs
+  .room: 4 refs
+  .sequenceOrder: 4 refs
+  .streak: 3 refs
+  .discoveredClues: 3 refs
+  .teams: 2 refs
+  .isGameOver: 2 refs
+  .totalXpEarned: 2 refs
+  .finalDoorUnlocked: 2 refs
+  .timerEnabled: 2 refs
+  .totalPuzzles: 2 refs
+  .puzzleCount: 2 refs
+  .lives: 1 refs
+  .revealedHints: 1 refs
+  .isPaused: 1 refs
+  .timeElapsed: 1 refs
+  .hintsRevealed: 1 refs
+  .currentStreak: 1 refs
+  .isGenerating: 1 refs
+  .maxTime: 1 refs
+  .totalHintsUsed: 1 refs
+  .xpMultiplier: 1 refs
+  .objects: 1 refs
+  .showFinalDoor: 1 refs
+  .showSettings: 1 refs
+
+=== escapeRoomState SPREADS/DESTRUCTURES ===
+  L32529: const [escapeRoomState, setEscapeRoomState] = useState({
+  L51680: const newClues = { ...escapeRoomState.discoveredClues };
+  L51888: const newPairs = [...escapeRoomState.matchingPairs, pair];

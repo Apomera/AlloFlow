@@ -1,0 +1,328 @@
+﻿Current: 69860 lines
+Backup:  74910 lines
+Difference: -5050 lines
+
+================================================================================
+MARKER COMPARISON
+================================================================================
+
+*** DIFFERENCE: 'const warnLog' ***
+  Current: 1 hits
+  Backup:  0 hits
+    CURR L89: const warnLog = (...args) => { console.warn(...args); };
+
+*** DIFFERENCE: 'speechSynthesis.speak' ***
+  Current: 4 hits
+  Backup:  5 hits
+    CURR L3847:                                         window.speechSynthesis.speak(utter);
+    CURR L18000:                  window.speechSynthesis.speak(utterance);
+    CURR L31168:   window.speechSynthesis.speak(utterance);
+    CURR L52759:                           window.speechSynthesis.speak(utterance);
+    BAK  L1071:     window.speechSynthesis.speak(utterance);
+    BAK  L3995:                                         window.speechSynthesis.speak(utter);
+    BAK  L19857:                  window.speechSynthesis.speak(utterance);
+    BAK  L33802:   window.speechSynthesis.speak(utterance);
+    BAK  L57304:                           window.speechSynthesis.speak(utterance);
+
+*** DIFFERENCE: 'SpeechSynthesisUtterance' ***
+  Current: 4 hits
+  Backup:  5 hits
+    CURR L3845:                                         const utter = new SpeechSynthesisUtterance(instruction);
+    CURR L17988:                  const utterance = new SpeechSynthesisUtterance(cleanText);
+    CURR L31156:   const utterance = new SpeechSynthesisUtterance(text);
+    CURR L52745:           const utterance = new SpeechSynthesisUtterance(sequence[idx]);
+    BAK  L1065:     const utterance = new SpeechSynthesisUtterance(pronunciation);
+    BAK  L3993:                                         const utter = new SpeechSynthesisUtterance(instruction);
+    BAK  L19844:                  const utterance = new SpeechSynthesisUtterance(cleanText);
+    BAK  L33787:   const utterance = new SpeechSynthesisUtterance(text);
+    BAK  L57288:                           const utterance = new SpeechSynthesisUtterance(sequence[idx]);
+
+*** DIFFERENCE: 'ttsQuotaExhausted' ***
+  Current: 6 hits
+  Backup:  0 hits
+    CURR L3444:     const ttsQuotaExhausted = React.useRef(false); // Fast-skip cloud TTS when quota known exhausted
+    CURR L38279:         if (ttsQuotaExhausted.current) {
+    CURR L38347:               ttsQuotaExhausted.current = true;
+    CURR L38349:               setTimeout(() => { ttsQuotaExhausted.current = false; }, 60000);
+    CURR L38427:             ttsQuotaExhausted.current = true;
+    CURR L38429:             setTimeout(() => { ttsQuotaExhausted.current = false; ttsFailureCount.current = 0; }, 60
+
+*** DIFFERENCE: 'playSequence(' ***
+  Current: 8 hits
+  Backup:  7 hits
+    CURR L40211:                           playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, n
+    CURR L40215:                       playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+    CURR L40361:               playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreload
+    CURR L40398:                         playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, nul
+    CURR L40404:                           playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, n
+    CURR L40407:                       playSequence(index + 1, sentences, sessionId, mode, voiceMap, activeSpeaker);
+    CURR L40606:         console.log("[handleSpeak] Using playSequence() - mode:", mode, "sentences:", cleanSentences
+    CURR L40607:         playSequence(startIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker);
+    BAK  L43671:                           playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, n
+    BAK  L43675:                       playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker);
+    BAK  L43830:               playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, nextPreload
+    BAK  L43870:                         playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, nul
+    BAK  L43876:                           playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, n
+    BAK  L43879:                       playSequence(index + 1, sentences, sessionId, mode, voiceMap, activeSpeaker);
+    BAK  L44091:         playSequence(startIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker);
+
+*** DIFFERENCE: 'fetchTTSBytes returned null' ***
+  Current: 1 hits
+  Backup:  0 hits
+    CURR L38451:               if (!ttsResult) { console.warn("[TTS] fetchTTSBytes returned null"); return null; }
+
+*** DIFFERENCE: 'BROWSER TTS' ***
+  Current: 2 hits
+  Backup:  0 hits
+    CURR L18002:                  console.log("[AlloBot] ΓÜá∩╕Å BROWSER TTS FALLBACK! cloudSuccess:", cloudSuccess);
+    CURR L52744:                           console.warn("[playSequence] ΓÜá∩╕Å Using BROWSER TTS for:", sequence[idx]?.su
+
+*** DIFFERENCE: 'browser TTS' ***
+  Current: 6 hits
+  Backup:  5 hits
+    CURR L931: // Maps phonemes to pronounceable text for browser TTS fallback.
+    CURR L933: // Speak a phoneme using browser TTS with proper pronunciation
+    CURR L3842:                                     // Use browser TTS for instruction repeat
+    CURR L6756:         // Cancel browser TTS
+    CURR L8003:                 // 1. Cancel any browser TTS in progress
+    CURR L38409:           // Handle TTS quota exhaustion gracefully - return null so callers use browser TTS
+    BAK  L1026: // Maps phonemes to pronounceable text for browser TTS fallback.
+    BAK  L1057: // Speak a phoneme using browser TTS with proper pronunciation
+    BAK  L3990:                                     // Use browser TTS for instruction repeat
+    BAK  L7168:         // Cancel browser TTS
+    BAK  L8400:                 // 1. Cancel any browser TTS in progress
+
+*** DIFFERENCE: 'Browser TTS' ***
+  Current: 6 hits
+  Backup:  7 hits
+    CURR L932: // Browser TTS can't say "b" correctly, but CAN say "buh" or "the sound buh".
+    CURR L3711:             warnLog("Falling back to Browser TTS for word:", text);
+    CURR L17984:           // Fallback Strategy: Native Browser TTS
+    CURR L31150:   warnLog("Browser TTS not supported");
+    CURR L52754:                                warnLog("Browser TTS Fallback also failed", e);
+    CURR L52762:                            warnLog("Browser TTS Logic Error", fallbackErr);
+    BAK  L1027: // Browser TTS can't say "b" correctly, but CAN say "buh" or "the sound buh".
+    BAK  L1072:     debugLog(`≡ƒöè Browser TTS phoneme: "${phoneme}" ΓåÆ "${pronunciation}"`);
+    BAK  L3831:             console.warn("Falling back to Browser TTS for word:", text);
+    BAK  L19840:           // Fallback Strategy: Native Browser TTS
+    BAK  L33779:   console.warn("Browser TTS not supported");
+    BAK  L57298:                                console.error("Browser TTS Fallback also failed", e);
+    BAK  L57307:                            console.error("Browser TTS Logic Error", fallbackErr);
+
+*** DIFFERENCE: 'Falling back to' ***
+  Current: 3 hits
+  Backup:  4 hits
+    CURR L3711:             warnLog("Falling back to Browser TTS for word:", text);
+    CURR L38578:           warnLog("Character Portrait blocked by safety filters. Falling back to placeholder icon.")
+    CURR L39641:                       warnLog(`Citation validation: cleanup lost ${rawCitCount - cleanedCitCount}/${
+    BAK  L3831:             console.warn("Falling back to Browser TTS for word:", text);
+    BAK  L19859:                  console.log("AlloBot: Falling back to native speech. Reason: cloudSuccess=", cloudS
+    BAK  L41788:           console.warn("Character Portrait blocked by safety filters. Falling back to placeholder ic
+    BAK  L43010:                       console.warn(`Citation validation: cleanup lost ${rawCitCount - cleanedCitCoun
+
+================================================================================
+FOCUSED DIFF: callTTS function
+================================================================================
+
+--- const callTTS ---
+  Current starts at L38438, Backup starts at L41630
+  L38439 CURR:       console.log("[callTTS] Γû╢ ENTRY. text:", text?.substring(0, 40), "voice:", voiceName, "muted:", isGlobalMuted());
+  L41631 BAK:        // Global mute check - return silent placeholder
+
+  L38440 CURR:       // Global mute check - return silent placeholder
+  L41632 BAK:        if (isGlobalMuted()) {
+
+  L38441 CURR:       if (isGlobalMuted()) {
+  L41633 BAK:            console.log('[TTS] Skipped due to global mute');
+
+  L38442 CURR:           console.log('[TTS] Skipped due to global mute');
+  L41634 BAK:            return null; // Callers should handle null gracefully
+
+  L38443 CURR:           return null; // Callers should handle null gracefully
+  L41635 BAK:        }
+
+  L38444 CURR:       }
+  L41636 BAK:        let lastError = null;
+
+  L38445 CURR:       let lastError = null;
+  L41637 BAK:  
+
+  L38449 CURR:               const ttsResult = await fetchTTSBytes(text, voiceName, speed);
+  L41641 BAK:                const { bytes: pcmBytes } = await fetchTTSBytes(text, voiceName, speed);
+
+  L38450 CURR: 
+  L41642 BAK:                const wavBuffer = pcmToWav(pcmBytes);
+
+  L38451 CURR:               if (!ttsResult) { console.warn("[TTS] fetchTTSBytes returned null"); return null; }
+  L41643 BAK:                const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+
+  L38452 CURR: 
+  L41644 BAK:                const url = URL.createObjectURL(blob);
+
+  L38453 CURR:               const { bytes: pcmBytes } = ttsResult;
+  L41645 BAK:                return url;
+
+  L38454 CURR: 
+  L41646 BAK:            } catch (e) {
+
+  L38455 CURR:               const wavBuffer = pcmToWav(pcmBytes);
+  L41647 BAK:                lastError = e;
+
+  L38456 CURR:               const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+  L41648 BAK:  
+
+  L38457 CURR:               const url = URL.createObjectURL(blob);
+  L41649 BAK:                // Don't retry on certain errors
+
+  L38458 CURR:               console.log("[callTTS] Γ£à SUCCESS! Audio URL created:", url?.substring(0, 50));
+  L41650 BAK:                if (e.message?.includes('Missing API Key')) {
+
+  L38459 CURR:               return url;
+  L41651 BAK:                    throw e; // No point retrying without key
+
+  L38460 CURR:           } catch (e) {
+  L41652 BAK:                }
+
+  L38461 CURR:               lastError = e;
+  L41653 BAK:  
+
+  Total differences in first 60 lines: 55
+
+--- const fetchTTSBytes ---
+  Current starts at L38274, Backup starts at L41460
+  L38276 CURR:     // WRAPPER: Queue the request to enforce serial execution using GLOBAL queue
+  L41462 BAK:  
+
+  L38277 CURR:     const queuedTask = globalTtsQueue.then(async () => {
+  L41463 BAK:  
+
+  L38278 CURR:         // FAST PATH: Skip cloud TTS entirely if quota is known exhausted
+  L41464 BAK:  
+
+  L38279 CURR:         if (ttsQuotaExhausted.current) {
+  L41465 BAK:      // WRAPPER: Queue the request to enforce serial execution using GLOBAL queue
+
+  L38280 CURR:             console.warn("[TTS] Quota exhausted (cached). Skipping cloud TTS for:", text.substring(0, 20));
+  L41466 BAK:      const queuedTask = globalTtsQueue.then(async () => {
+
+  L38281 CURR:             return null; // Caller falls back to browser speechSynthesis
+  L41467 BAK:      // CACHE LOGIC: Update cache if key found, fallback to cache if missing
+
+  L38282 CURR:         }
+  L41468 BAK:      // STICKY CACHE: If we have a cached key, use it immediately and SKIP expensive window checks.
+
+  L38283 CURR:         console.log("[TTS] Attempting Gemini TTS for:", text.substring(0, 30), "voice:", voiceName);
+  L41469 BAK:  
+
+  L38284 CURR:         const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
+  L41470 BAK:          // KEY RECOVERY: Always re-check environment if global cache is empty
+
+  L38285 CURR:         // Only append key parameter if we actually have one
+  L41471 BAK:  
+
+  L38286 CURR:         const url = `${baseUrl}?key=${apiKey}`;
+  L41472 BAK:          // Using apiKey directly (auto-injected by platform)
+
+  L38287 CURR:         // Helper: Decode Base64
+  L41473 BAK:  
+
+  L38288 CURR:         const decodeBase64 = (base64) => {
+  L41474 BAK:  
+
+  L38289 CURR:              const binaryString = window.atob(base64);
+  L41475 BAK:  
+
+  L38290 CURR:              const len = binaryString.length;
+  L41476 BAK:  
+
+  L38291 CURR:              const bytes = new Uint8Array(len);
+  L41477 BAK:          // DEBUG: Explicitly log so user can see in console if key is detected
+
+  L38292 CURR:              for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
+  L41478 BAK:          // console.log("TTS Key Debug:", {
+
+  L38293 CURR:              return bytes;
+  L41479 BAK:          //    effectiveKey: effectiveKey ? 'PRESENT' : 'MISSING'
+
+  L38294 CURR:         };
+  L41480 BAK:          // });
+
+  L38295 CURR:         // Helper: Google Cloud TTS (Better for phonemes)
+  L41481 BAK:  
+
+  Total differences in first 60 lines: 58
+
+--- const speakWord ---
+  Current starts at L31147, Backup starts at L33776
+  L31150 CURR:   warnLog("Browser TTS not supported");
+  L33779 BAK:    console.warn("Browser TTS not supported");
+
+  L31154 CURR:   // Cancel pending
+  L33783 BAK:  
+
+  L31155 CURR:   window.speechSynthesis.cancel();
+  L33784 BAK:    // Cancel pending
+
+  L31156 CURR:   const utterance = new SpeechSynthesisUtterance(text);
+  L33785 BAK:    window.speechSynthesis.cancel();
+
+  L31157 CURR:   utterance.lang = lang;
+  L33786 BAK:  
+
+  L31158 CURR:   utterance.rate = speed || 1.0;
+  L33787 BAK:    const utterance = new SpeechSynthesisUtterance(text);
+
+  L31159 CURR:   // Handle completion
+  L33788 BAK:    utterance.lang = lang;
+
+  L31160 CURR:   utterance.onend = () => {
+  L33789 BAK:    utterance.rate = speed || 1.0;
+
+  L31161 CURR:   resolve();
+  L33790 BAK:  
+
+  L31162 CURR:   };
+  L33791 BAK:    // Handle completion
+
+  L31163 CURR:   // Handle errors safely
+  L33792 BAK:    utterance.onend = () => {
+
+  L31164 CURR:   utterance.onerror = (e) => {
+  L33793 BAK:    resolve();
+
+  L31165 CURR:   warnLog("TTS Error:", e);
+  L33794 BAK:    };
+
+  L31166 CURR:   resolve();
+  L33795 BAK:  
+
+  L31167 CURR:   };
+  L33796 BAK:    // Handle errors safely
+
+  L31168 CURR:   window.speechSynthesis.speak(utterance);
+  L33797 BAK:    utterance.onerror = (e) => {
+
+  L31169 CURR:   });
+  L33798 BAK:    console.warn("TTS Error:", e);
+
+  L31170 CURR:   }, []);
+  L33799 BAK:    resolve();
+
+  L31171 CURR:   const cursorStyles = {
+  L33800 BAK:    };
+
+  L31172 CURR:       read: 'cursor-text',
+  L33801 BAK:  
+
+  Total differences in first 60 lines: 54
+
+================================================================================
+FOCUSED DIFF: warnLog/debugLog definitions
+================================================================================
+  CURR L89: const warnLog = (...args) => { console.warn(...args); };
+  CURR L88: const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
+  BAK L114: const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
+  CURR L87: const DEBUG_LOG = false;
+  CURR L88: const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };
+  BAK L113: const DEBUG_LOG = false;
+  BAK L114: const debugLog = (...args) => { if (DEBUG_LOG) console.log(...args); };

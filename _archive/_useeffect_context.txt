@@ -1,0 +1,30 @@
+
+=== L2205 ===
+L2202: 
+L2203:     // Poll for audio readiness
+L2204:     // PERF: Early return if no preloaded words
+L2205:     React.useEffect(() => {
+L2206:         if (!preloadedWords || preloadedWords.length === 0) return;
+L2207: 
+L2208:         const checkAudio = () => {
+L2209:              // Heuristic: Check if audio cache has entries for these words
+
+=== L6662 ===
+L6659:     }, []);
+L6660: 
+L6661:         // Initialize Elkonin boxes and rhyme options when phoneme data or activity changes
+L6662:     React.useEffect(() => {
+L6663:         if (!wordSoundsPhonemes) return;
+L6664: 
+L6665:         // FIX: Use phonemes array length as fallback for phonemeCount
+L6666:         const effectiveCount = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+
+=== L6802 ===
+L6799: 
+L6800:     // STABILIZATION & PRE-FETCH FOR ISOLATION
+L6801:     // This effect only runs as FALLBACK if options weren't pre-generated in fetchWordData
+L6802:     React.useEffect(() => {
+L6803:         if (wordSoundsActivity !== 'isolation' || !wordSoundsPhonemes) {
+L6804:             if (isolationState) setIsolationState(null); // Clear when leaving
+L6805:             return;
+L6806:         }

@@ -1,0 +1,124 @@
+=== probeHistory IN JSON EXPORTS ===
+
+=== SAVE MODAL / EXPORT STUDENT PROJECT ===
+L43379: mode: 'student',
+
+=== JSON EXPORT DATA SHAPE ===
+L11990: try { localStorage.setItem('alloflow_research_mode', JSON.stringify(mode)); } catch {}
+L31322: try { safeSetItem('allo_word_sounds_history', JSON.stringify(wordSoundsHistory)); } catch(e) { warnLog('localStorage wri
+L31855: try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+L42682: const payloadTest = JSON.stringify(history.filter(h => h.id).map(h => ({type: h.type, id: h.id, title: h.title})));
+L43190: const projectJson = JSON.stringify(history, null, 2);
+
+=== AC STUDENT IMPORT (L13030-13060) ===
+L13026: </div>
+L13027: <button
+L13028: onClick={() => generateStudentFriendlyReport({ history, wordSoundsHistory, phonemeMastery, word
+L13029: className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-o
+L13030: >
+L13031: <Download size={18} /> Download My Progress Report
+L13032: </button>
+L13033: </div>
+L13034: </div>
+L13035: )}
+L13036: {!isIndependentMode && (<div className="flex flex-wrap gap-3 mb-4">
+L13037: <label className="cursor-pointer">
+L13038: <input aria-label={t('common.upload_json_file')}
+L13039: type="file"
+L13040: accept=".json"
+L13041: multiple
+L13042: onChange={handleFileImport}
+L13043: className="hidden"
+L13044: />
+L13045: <div
+L13046: data-help-key="dashboard_import_btn"
+L13047: className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex i
+L13048: <Upload size={16} />
+L13049: {t('class_analytics.import_button')}
+L13050: </div>
+L13051: </label>
+L13052: {importedStudents.length > 0 && (
+L13053: <>
+L13054: <button aria-label={t('common.download')}
+L13055: data-help-key="dashboard_export_csv"
+L13056: onClick={handleExportCSV}
+L13057: className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex
+L13058: >
+L13059: <Download size={16} />
+L13060: {t('class_analytics.export_csv')}
+L13061: </button>
+L13062: {showLiveSyncInput && !isLiveListening ? (
+L13063: <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 
+L13064: <Cloud size={14} className="text-blue-500 shrink-0" />
+L13065: <input
+L13066: type="text"
+L13067: placeholder={t('common.placeholder_session_code')}
+L13068: value={liveSyncCode}
+L13069: onChange={e => setLiveSyncCode(e.target.value)}
+L13070: onKeyDown={e => {
+
+=== AC STUDENT TABLE (probe buttons, L13440-13530) ===
+L13445: setMathFluencyTimer(probeData.timeLimit);
+L13453: setTimeout(() => finishMathFluencyProbe(), 0);
+L13461: aria-label="Start math probe"
+L13464: ▶ Start Math Probe
+L13469: <h3 className="text-sm font-bold text-slate-700">Literacy Fluency Probes</h3>
+L13474: <button
+L13475: onClick={() => {
+L13479: setIsProbeMode(true);
+L13480: setProbeActivity('nwf');
+L13481: addToast('NWF Probe — Nonsense Word Fluency', 'info');
+L13490: </button>
+L13491: <button
+L13492: onClick={() => {
+L13496: setIsProbeMode(true);
+L13497: setProbeActivity('lnf');
+L13498: addToast('LNF Probe — Letter Naming Fluency', 'info');
+L13507: </button>
+L13508: <button
+L13509: onClick={() => {
+L13513: setIsProbeMode(true);
+L13514: setProbeActivity('ran');
+L13515: addToast('RAN Probe — Rapid Automatized Naming', 'info');
+L13524: </button>
+L13527: </button>
+L13530: {window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE
+
+=== EXPORT WITH PROBE DATA? ===
+
+=== SAVE MODAL (showSaveModal) ===
+L29837: showSaveModal: false,
+L29945: const { isTeacherToolbarExpanded, showStudyTimerModal, showTimerConfetti, showSubmitModal, show
+L29960: const setShowSaveModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showSaveModal', value: v }
+L72471: {showSaveModal && (
+
+=== AC DATA EXPORT ===
+L11410: const exportScreeningCSV = () => {
+L11428: a.download = 'screening_results_' + new Date().toISOString().slice(0,10) + '.csv';
+L11433: addToast('Screening CSV exported', 'success');
+L11454: const generateRTICSV = () => {
+L11479: link.download = `RTI_Report_${new Date().toISOString().split('T')[0]}.csv`;
+L11486: const exportFluencyCSV = () => {
+L11515: link.download = 'Fluency_Assessments_' + new Date().toISOString().split('T')[0] + '.csv';
+L11663: const exportResearchCSV = () => {
+L11709: link.download = 'AlloFlow_Research_Export_' + new Date().toISOString().split('T')[0] + '.csv';
+L11714: addToast && addToast('Research CSV exported with ' + students.length + ' students', 'success');
+L11960: onClick: exportResearchCSV
+L11961: }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'),
+L12239: link.download = 'Fidelity_Log_' + new Date().toISOString().split('T')[0] + '.csv';
+L12243: }, '\u{1F4C4} Export Fidelity Log'),
+L12261: link.download = 'Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
+L12265: }, '\u{1F4DD} Export Survey Data')
+L12745: const handleExportCSV = () => {
+L12782: link.download = `class_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+L12923: a.download = 'my_learning_journey_' + new Date().toISOString().split('T')[0] + '.html';
+L12926: if (addToast) addToast('\u{1F4CA} Your progress report has been downloaded!', 'success');
+L13031: <Download size={18} /> Download My Progress Report
+L13054: <button aria-label={t('common.download')}
+L13056: onClick={handleExportCSV}
+L13059: <Download size={16} />
+L13722: onClick={generateRTICSV}
+L13726: 📊 Export RTI Report
+L13728: <span className="text-xs text-slate-500">Download CSV with tier classifications, metrics, and r
+L13840: title="Download a growth-focused report suitable for sharing with the student"
+L13842: <Download size={14} /> Student Report

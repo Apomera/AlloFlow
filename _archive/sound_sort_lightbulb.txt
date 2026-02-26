@@ -1,0 +1,50 @@
+L10151: title={useMicInput ? (ts('word_sounds.switch_click_mode') || "Switch to Click Mode") : (ts('word_sounds.switch_mic_mode') || "Switch to Microphone Mode")}
+L10152: >
+L10153: {useMicInput ? <Mic size={16} /> : <MicOff size={16} />}
+L10154: </button>
+L10155: {/* Pure Sound Toggle */}
+L10156: <button
+L10157: onClick={() => setShowLetterHints(prev => !prev)}
+L10158: className={`flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold ${
+L10159: showLetterHints
+L10160: ? 'bg-white/20 border-white/30 text-white'
+L10161: : 'bg-violet-800 border-violet-500 text-violet-100 shadow-inner'
+L10162: }`}
+L10163: title={showLetterHints ? (ts('word_sounds.switch_sound_only') || "Switch to Sound Only Mode (Hide Letters)") : (ts('word_sounds.switch_letter_mode') || "Switch to Letter Mode (Show Letters)")}
+L10164: >
+L10165: <span>{showLetterHints ? '👁️' : '👂'}</span>
+L10166: <span className="hidden sm:inline">{showLetterHints ? ts('word_sounds.mode_phonics') || 'Phonics' : ts('word_sounds.mode_sound') || 'Sound Only'}</span>
+L10167: </button>
+L10168: <DifficultyIndicator />
+L10169: {/* Language Selector (Only if multiple languages exist) */}
+L10170: {availableLanguages.length > 1 && setWordSoundsLanguage && (
+L10171: <div className="relative group">
+L10172: <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+L10173: <Globe size={12} className="text-indigo-200" />
+L10174: </div>
+L10175: <select aria-label="Selection"
+L10176: value={wordSoundsLanguage || 'en-US'}
+L10177: onChange={(e) => setWordSoundsLanguage(e.target.value)}
+L10178: className="bg-violet-800 border border-violet-600 rounded-full pl-8 pr-8 py-1 text-white text-xs cursor-pointer hover:bg-violet-700 transition-colors outline-none appearance-none shadow-sm"
+L10179: title={ts('common.language') || "Language"}
+L10180: >
+L10181: {availableLanguages.map(lang => (
+L10182: <option key={lang} value={getSpeechLangCode(lang)}>
+L10183: {lang === 'English' ? '🇺🇸 English' : `${lang}`}
+L10184: </option>
+L10185: ))}
+L10186: </select>
+L10187: <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+L10188: <ChevronDown size={12} className="text-indigo-200" />
+L10189: </div>
+L10190: </div>
+L10191: )}
+L10192: {/* Instruction Toggle */}
+L10193: <button
+L10194: onClick={() => setPlayInstructions(prev => !prev)}
+L10195: className={`flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold ${
+L10196: playInstructions
+L10197: ? 'bg-indigo-100 border-indigo-200 text-indigo-700'
+L10198: : 'bg-white/10 border-white/30 text-white/70'
+L10199: }`}
+L10200: title={playInstructions ? "Instructions are ON" : "Instructions are OFF"}

@@ -1,0 +1,44 @@
+adventure.tooltips.stability|
+bingo.exit_caller_aria|
+common.confirm_action|Confirm
+common.continued|Cont.
+common.family_guide|
+common.family_learning_guide|
+common.gemini_bridge|Gemini Bridge
+common.ready|Ready
+common.standard_audit|Standard Audit
+common.study_guide|
+common.tool_simplified|Text Adaptation
+common.udl_aligned|
+common.udl_lesson_plan|
+errors.storage_full|Storage full — could not save
+escape_room.all_solved_bonus|
+escape_room.config_saved|💾 Escape Room saved! Load it anytime from settings.
+escape_room.invalid_save|Saved data is corrupted
+escape_room.load_saved|Load Saved
+escape_room.loaded_saved|📂 Saved Escape Room loaded! Review and launch when ready.
+escape_room.no_saved|No saved Escape Room found
+escape_room.preview_confirmed|✅ Escape Room locked — ready to play!
+escape_room.xp_earned_streak|
+export.answer_key_title|Answer Key
+fluency.custom_norms|Custom (Manual)
+fluency.custom_wcpm|Target WCPM
+fluency.prosody_expression|Expression
+fluency.prosody_pacing|Pacing
+fluency.prosody_phrasing|Phrasing
+fullpack.group_all|\u{1F3AF} All Groups
+fullpack.group_current|Current Settings
+fullpack.group_tooltip|Generate for a specific group or all groups
+language_selector.status_retrying_chunk|
+meta.multi_part|Multi-part
+meta.processing_sections|
+persona.topic_spark_tooltip|
+process.enter_text|Please enter or paste text first
+roster.bridge_mode_btn|🌐 Bridge Mode
+tour.spotlight_message|
+visual_director.panel_refined|Panel refined!
+visuals.replace_image|Replace
+visuals.restore_ai_image|Restore AI image
+visuals.restore_original|Restore
+visuals.upload_image|Upload your own image
+wizard.step_codename|Pick Your Codename!

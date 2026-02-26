@@ -1,0 +1,3 @@
+﻿Removed duplicate SMART_TEXT_VISIBILITY block
+Removed duplicate getEffectiveTextMode block
+Saved

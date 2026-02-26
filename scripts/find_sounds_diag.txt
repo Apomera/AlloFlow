@@ -1,0 +1,55 @@
+=== 'loading' text in isolation/find_sounds rendering ===
+L6472: setIsLoadingPhonemes(false);
+L6516: if (!isBackground) setIsLoadingPhonemes(true);
+L6622: setIsLoadingPhonemes(false);
+L7153: }, [isPreloading, preloadedWords.length, wordPool, callGemini, handleAudio, wordSoundsLanguage]);
+L7567: if (firstWordReady && preloadedWords.length > 0 && !currentWordSoundsWord && !isLoadingPhonemes) {
+L7579: }, [firstWordReady, preloadedWords, currentWordSoundsWord, isLoadingPhonemes, showReviewPanel]);
+L7582: if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+L7587: }, [wordSoundsPhonemes, nextWordBuffer, isLoadingPhonemes, prefetchNextWords]);
+L7881: if (currentWordSoundsWord && !isLoadingPhonemes) {
+L7938: }, [currentWordSoundsWord, isLoadingPhonemes, handleAudio, wordSoundsActivity, rhymeOptions, playBlending]);
+L8020: setIsLoadingPhonemes(false);
+L8075: setIsLoadingPhonemes(false);
+L8101: setIsLoadingPhonemes(false);
+L8116: if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
+L8136: }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+L9052: setIsLoadingPhonemes(false);
+L9079: setIsLoadingPhonemes(false);
+L9107: setIsLoadingPhonemes(false);
+L9970: if (isLoadingPhonemes) {
+L9974: <p className="text-slate-500 mb-4">{ts('word_sounds.loading_phonemes')}</p>
+L9999: return <div className="p-8 text-center animate-pulse text-violet-400">Loading sounds...</div>;
+L10001: if (!isolationState) return <div className="p-8 text-center animate-pulse text-violet-400">Loading sounds...</div>;
+L11421: regeneratingIndex={regeneratingIndex} isLoading={isLoadingPhonemes}
+L11431: setIsLoadingPhonemes(false);
+L11457: {isLoadingPhonemes ? <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : <Music size={16} />}
+L11458: <span>{isLoadingPhonemes ? "Generating Sounds..." : "Word Sounds"}</span>
+L11479: {isLoadingPhonemes ? (
+L11480: <div data-help-key="word_sounds_loading_minimized" className="space-y-3">
+
+=== isLoadingPhonemes set to TRUE ===
+L6516: if (!isBackground) setIsLoadingPhonemes(true);
+
+=== isLoadingPhonemes set to FALSE ===
+L6472: setIsLoadingPhonemes(false);
+L6622: setIsLoadingPhonemes(false);
+L8020: setIsLoadingPhonemes(false);
+L8075: setIsLoadingPhonemes(false);
+L8101: setIsLoadingPhonemes(false);
+L9052: setIsLoadingPhonemes(false);
+L9079: setIsLoadingPhonemes(false);
+L9107: setIsLoadingPhonemes(false);
+L11431: setIsLoadingPhonemes(false);
+
+=== isLoadingPhonemes gate/check ===
+L7567: if (firstWordReady && preloadedWords.length > 0 && !currentWordSoundsWord && !isLoadingPhonemes) {
+L7582: if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+L7881: if (currentWordSoundsWord && !isLoadingPhonemes) {
+L8116: if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
+L9970: if (isLoadingPhonemes) {
+L11457: {isLoadingPhonemes ? <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : <Music size={16} />}
+L11458: <span>{isLoadingPhonemes ? "Generating Sounds..." : "Word Sounds"}</span>
+L11479: {isLoadingPhonemes ? (
+
+=== isolation/find_sounds advancement ===

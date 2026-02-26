@@ -1,0 +1,76 @@
+
+=== "parseTaggedContent" at line 37051 ===
+    37049:     );
+    37050: });
+>>> 37051: const parseTaggedContent = (text) => {
+    37052:     if (!text) return [];
+    37053:     const extractSyllables = (word) => {
+    37054:         if (!word || typeof word !== 'string') return { text: word, syllables: [word] };
+    37055:         if (word.includes('·')) {
+    37056:             const syllables = word.split('·');
+    37057:             return { text: syllables.join(''), syllables };
+    37058:         }
+    37059:         return { text: word, syllables: [word] };
+    37060:     };
+    37061:       let result = [];
+    37062:       let idCounter = 0;
+    37063:       text = text.replace(/([^\n])\s+(#{1,6}\s)/g, '$1\n\n$2');
+    37064:       const lines = text.split(/(\n)/g);
+    37065:       lines.forEach(line => {
+    37066:           if (line === '\n') {
+    37067:               result.push({ text: '\n', pos: 'newline', syllables: ['\n'], id: `pos-${idCounter++}` });
+    37068:               return;
+    37069:           }
+    37070:           if (!line.trim()) {
+    37071:                if (line.length > 0) {
+    37072:                  result.push({ text: line, pos: 'none', syllables: [line], id: `pos-${idCounter++}` });
+    37073:                }
+    37074:                return;
+    37075:           }
+    37076:           const headerMatch = line.match(/^\s*(#{1,6})\s+(.*)$/);
+    37077:           if (headerMatch) {
+    37078:               const level = headerMatch[1].length;
+    37079:               const headerContent = headerMatch[2];
+    37080:               const cleanHeaderContent = headerContent.replace(/<[nvad]>/g, '').replace(/<\/[nvad]>/g, '');
+
+=== "parseTagged" at line 37051 ===
+    37049:     );
+    37050: });
+>>> 37051: const parseTaggedContent = (text) => {
+    37052:     if (!text) return [];
+    37053:     const extractSyllables = (word) => {
+    37054:         if (!word || typeof word !== 'string') return { text: word, syllables: [word] };
+    37055:         if (word.includes('·')) {
+    37056:             const syllables = word.split('·');
+    37057:             return { text: syllables.join(''), syllables };
+    37058:         }
+    37059:         return { text: word, syllables: [word] };
+    37060:     };
+    37061:       let result = [];
+    37062:       let idCounter = 0;
+    37063:       text = text.replace(/([^\n])\s+(#{1,6}\s)/g, '$1\n\n$2');
+    37064:       const lines = text.split(/(\n)/g);
+    37065:       lines.forEach(line => {
+    37066:           if (line === '\n') {
+    37067:               result.push({ text: '\n', pos: 'newline', syllables: ['\n'], id: `pos-${idCounter++}` });
+    37068:               return;
+    37069:           }
+    37070:           if (!line.trim()) {
+    37071:                if (line.length > 0) {
+    37072:                  result.push({ text: line, pos: 'none', syllables: [line], id: `pos-${idCounter++}` });
+    37073:                }
+    37074:                return;
+    37075:           }
+    37076:           const headerMatch = line.match(/^\s*(#{1,6})\s+(.*)$/);
+    37077:           if (headerMatch) {
+    37078:               const level = headerMatch[1].length;
+    37079:               const headerContent = headerMatch[2];
+    37080:               const cleanHeaderContent = headerContent.replace(/<[nvad]>/g, '').replace(/<\/[nvad]>/g, '');
+
+
+=== Functions processing POS tags ===
+
+
+=== Word data object creation ===
+  Line 37067:               result.push({ text: '\n', pos: 'newline', syllables: ['\n'], id: `pos-${idCounter++}` });
+  Line 37072:                  result.push({ text: line, pos: 'none', syllables: [line], id: `pos-${idCounter++}` });

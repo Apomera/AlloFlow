@@ -1,0 +1,3 @@
+=== Main Gemini SDK / Chat setup ===
+
+=== genAI initialization ===

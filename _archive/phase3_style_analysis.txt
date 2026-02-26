@@ -1,0 +1,19 @@
+=== STYLE BLOCK ANALYSIS ===
+
+L19884 [JSX]: <style>{`
+L25989 [JSX]: <style>{`
+L27044 [JSX]: <style>{`
+L41071 [PLAIN]: <style>
+L44258 [PLAIN]: <style>
+L44586 [PLAIN]: <style>
+L48862 [PLAIN]: <style>
+L49138 [PLAIN]: <style>
+L57939 [JSX]: <style>{`
+L57946 [JSX]: <style>{`
+L58432 [JSX]: <style>{`
+L59414 [PLAIN]: <style>
+L69349 [PLAIN]: <style>{rubricZoom ? `
+
+Total: 13 blocks
+JSX (dynamic, must stay inline): 6
+PLAIN (static, can consolidate): 7

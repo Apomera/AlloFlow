@@ -1,0 +1,20 @@
+OK: FLUENCY_BENCHMARKS const
+OK: calculateRunningRecordMetrics fn
+OK: getBenchmarkComparison fn
+OK: self_corrected in prompt
+OK: said field in prompt example
+OK: insertions array in prompt
+OK: Localization: running_record
+OK: Localization: substitutions
+OK: Localization: benchmark_title
+OK: State: fluencyBenchmarkGrade
+OK: State: fluencyBenchmarkSeason
+OK: UI: rrMetrics usage
+OK: UI: benchmarkResult usage
+OK: UI: grade selector
+OK: Word display: self_corrected color
+OK: Word display: said tooltip
+OK: Legend: 5 categories
+OK: Legend: mispronounced entry
+
+Total: 18/18 passed

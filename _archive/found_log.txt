@@ -1,0 +1,37 @@
+!!! MATCH FOUND at Line 28790 !!!
+   28780:     // The actual fetch relies on callTTS being available at runtime (delayed by setTimeout).
+   28781:     useEffect(() => {
+   28782:         const warmUpGlossaryAudio = async () => {
+   28783:              // Only run if we have glossary data
+   28784:              if (!filteredGlossaryData || filteredGlossaryData.length === 0) return;
+   28785: 
+   28786:              // Only preload if we are actually looking at the glossary (performance)
+   28787:              const isGlossaryActive = activeView === 'glossary' || isEditingGlossary; 
+   28788:              if (!isGlossaryActive) return;
+   28789: 
+>> 28790:              console.log("🔥 Warming up Glossary Audio Cache...");
+   28791:              
+   28792:              // Limit to first 20 terms to prevent API throttling
+   28793:              const termsToLoad = filteredGlossaryData.slice(0, 20);
+   28794: 
+   28795:              for (const item of termsToLoad) {
+   28796:                   const term = item.term;
+   28797:                   if (!term) continue;
+   28798: 
+   28799:                   // Skip if already cached (Session or Persistent)
+   28800:                   if (glossaryAudioCache.current.has(term)) continue;
+   28801:                   
+   28802:                   try {
+   28803:                       const effectiveText = (!term.includes(' ') && term.length < 100) ? t(term) : term;
+   28804:                       
+   28805:                       // Double check cache with effective text
+   28806:                       if (glossaryAudioCache.current.has(effectiveText)) continue;
+   28807: 
+   28808:                       // Dynamically check if callTTS is available (it's defined later in the component)
+   28809:                       // This avoids TDZ errors while still allowing warm-up after initial render.
+   28810:                       if (typeof callTTS !== 'function') {
+   28811:                           console.log("callTTS not yet available, skipping warm-up for now.");
+   28812:                           return;
+   28813:                       }
+   28814: 
+---------------------------------------------------

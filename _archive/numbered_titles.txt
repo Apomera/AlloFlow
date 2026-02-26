@@ -1,0 +1,65 @@
+Found 21 numbered titles:
+
+Line 10826: 2. Analyze & Verify
+  Context: analysis_title: "2. Analyze & Verify",
+
+Line 10828: 3. Glossary & Language Selection
+  Context: glossary_title: "3. Glossary & Language Selection",
+
+Line 10830: 4. Leveled Text & Settings
+  Context: simplified_title: "4. Leveled Text & Settings",
+
+Line 10832: 5. Visual Organizer
+  Context: outline_title: "5. Visual Organizer",
+
+Line 10834: 6. Visual Support
+  Context: visual_title: "6. Visual Support",
+
+Line 10836: 7. FAQ Generator
+  Context: faq_title: "7. FAQ Generator",
+
+Line 10838: 8. Writing Scaffolds
+  Context: scaffolds_title: "8. Writing Scaffolds",
+
+Line 10840: 9. Exit Ticket
+  Context: quiz_title: "9. Exit Ticket",
+
+Line 10842: 18. One-Click Generation
+  Context: fullpack_title: "18. One-Click Generation",
+
+Line 10844: 10. Activity Ideas
+  Context: brainstorm_title: "10. Activity Ideas",
+
+Line 10846: 11. Sequence Builder
+  Context: timeline_title: "11. Sequence Builder",
+
+Line 10848: 12. Concept Sort
+  Context: concept_title: "12. Concept Sort",
+
+Line 10850: 13. Math & STEM Solver
+  Context: math_title: "13. Math & STEM Solver",
+
+Line 10852: 14. Historical Interview
+  Context: persona_title: "14. Historical Interview",
+
+Line 10854: 15. Adventure Mode
+  Context: adventure_title: "15. Adventure Mode",
+
+Line 10856: 16. Standard Audit
+  Context: alignment_title: "16. Standard Audit",
+
+Line 10858: 17. Lesson Plan
+  Context: lesson_title: "17. Lesson Plan",
+
+Line 10862: 20. Teacher Dashboard
+  Context: dashboard_title: "20. Teacher Dashboard",
+
+Line 10864: 21. Export & Share
+  Context: actions_title: "21. Export & Share",
+
+Line 39529: 4. Ensure it looks friendly and inviting.
+  Context: ${(isAdventureStoryMode || isSocialMode) ? "4. Ensure it looks friendly and inviting." : ""}
+
+Line 44245: 3. Alignment with the Target Standards.
+  Context: ${standardsContext ? '3. Alignment with the Target Standards.' : ''}
+

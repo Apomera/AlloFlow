@@ -1,0 +1,120 @@
+﻿=== Snippet 1: handleLaunchORF (around 12473) ===
+12466:         const avgCorrelation = correlations.length > 0 ? Math.round((correlations.reduce((s, v) => s + v, 0) / correlations.length) * 100) / 100 : null;
+12467:         const weaknessCounts = {};
+12468:         all.forEach(s => { if (s.insights.weakness) weaknessCounts[s.insights.weakness] = (weaknessCounts[s.insights.weakness] || 0) + 1; });
+12469:         const commonWeakness = Object.entries(weaknessCounts).sort((a, b) => b[1] - a[1])[0];
+12470:         return { studentCount: all.length, avgCorrelation, commonWeakness: commonWeakness?.[0], commonWeaknessCount: commonWeakness?.[1], byStudent: all };
+12471:     };
+12472: 
+12473:     const handleLaunchORF = (grade, form) => {
+12474:         const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
+12475:         const passage = passages ? passages[form] || passages['A'] : null;
+12476:         if (!passage) {
+12477:             addToast('No ORF passage available for grade ' + grade, 'warning');
+12478:             return;
+12479:         }
+12480:         setProbeGradeLevel(grade);
+12481:         setProbeActivity('orf');
+12482:         setProbeForm(form);
+12483:         setGeneratedContent(prev => ({
+12484:             ...(prev || {}),
+12485:             id: 'orf-screening-' + Date.now(),
+12486:             text: passage,
+12487:             title: 'ORF Screening Passage \u2014 Grade ' + grade + ' Form ' + form,
+12488:             sourceText: passage,
+12489:             isScreeningORF: true
+12490:         }));
+12491:         setIsFluencyMode(true);
+12492:         setFluencyStatus('ready');
+12493:         setFluencyResult(null);
+12494:         setActiveView('simplified_read_mode');
+12495:         addToast('ORF passage loaded \u2014 press Record to begin', 'info');
+12496:     };
+12497: 
+12498: const launchBenchmarkProbe = (grade, activity, form = 'A') => {
+12499:         const gradeBank = typeof BENCHMARK_PROBE_BANKS !== 'undefined' && BENCHMARK_PROBE_BANKS[grade];
+12500:         const bank = gradeBank ? gradeBank[form] : null;
+12501:         if (activity === 'orf') {
+12502:             if (typeof onLaunchORF === 'function') {
+12503:                 onLaunchORF(grade, form);
+12504:             }
+12505:             return;
+12506:         }
+12507:         if (!bank || !bank[activity]) {
+12508:             addToast('No probe words available for ' + grade + ' / ' + activity, 'warning');
+12509:             return;
+12510:         }
+
+=== Snippet 2: handleLaunchORF (around 30963) ===
+30956:     if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {
+30957:       setScreenerSession({ ...screenerSession, results: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });
+30958:     } else {
+30959:       setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });
+30960:     }
+30961:   }, [fluencyStatus, fluencyResult]);
+30962: 
+30963:   const handleLaunchORF = (grade, form) => {
+30964:     const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
+30965:     const passage = passages ? passages[form] || passages['A'] : null;
+30966:     if (!passage) {
+30967:       addToast('No ORF passage available for grade ' + grade, 'warning');
+30968:       return;
+30969:     }
+30970:     setProbeGradeLevel(grade);
+30971:     setProbeActivity('orf');
+30972:     setProbeForm(form);
+30973:     setGeneratedContent(prev => ({
+30974:       ...(prev || {}),
+30975:       id: 'orf-screening-' + Date.now(),
+30976:       text: passage,
+30977:       title: 'ORF Screening Passage \u2014 Grade ' + grade + ' Form ' + form,
+30978:       sourceText: passage,
+30979:       isScreeningORF: true
+30980:     }));
+30981:     setIsFluencyMode(true);
+30982:     setFluencyStatus('ready');
+30983:     setFluencyResult(null);
+30984:     setActiveView('simplified_read_mode');
+30985:     addToast('ORF passage loaded \u2014 press Record to begin', 'info');
+30986:   };
+30987: 
+30988:   const [probeTargetStudent, setProbeTargetStudent] = useState(null);
+30989: 
+30990:   const [latestProbeResult, setLatestProbeResult] = useState(null);
+
+=== Snippet 3: Benchmark logic (around 68521) ===
+68511:                                 <label className="text-xs font-bold text-slate-500 uppercase">{t('fluency.benchmark_title')}</label>
+68512:                                 <select aria-label="Grade" value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+68513:                                     {Object.keys(FLUENCY_BENCHMARKS).map(g => (<option key={g} value={g}>{t('fluency.grade_select')} {g}</option>))}
+68514:                                     <option value="custom">{t('fluency.custom_norms') || 'Custom (Manual)'}</option>
+68515:                                 </select>
+68516:                                 <select aria-label="Season" value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+68517:                                     <option value="fall">{t('fluency.season_fall')}</option>
+68518:                                     <option value="winter">{t('fluency.season_winter')}</option>
+68519:                                     <option value="spring">{t('fluency.season_spring')}</option>
+68520:                                 </select>
+68521:                                 <span className="text-xs text-slate-400">{t('fluency.benchmark_target')}: {benchmarkResult.target} WCPM</span>
+68522:                             </div>
+68523:                             {fluencyBenchmarkGrade === 'custom' && (
+68524:                                 <div className="flex justify-center gap-3 mb-4 items-center animate-in slide-in-from-top duration-200">
+68525:                                     <label className="text-[10px] font-bold text-slate-500 uppercase">{t('fluency.custom_wcpm') || 'Target WCPM'}:</label>
+68526:                                     {['fall', 'winter', 'spring'].map(s => (
+68527:                                         <div key={s} className="flex flex-col items-center gap-0.5">
+68528:                                             <input
+68529:                                                 type="number"
+68530:                                                 min="0"
+68531:                                                 max="300"
+68532:                                                 value={fluencyCustomNorms[s] || ''}
+68533:                                                 onChange={(e) => setFluencyCustomNorms(prev => ({ ...prev, [s]: parseInt(e.target.value) || 0 }))}
+68534:                                                 className="w-16 text-center text-xs font-bold border border-slate-200 rounded-lg px-1 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+68535:                                                 placeholder="0"
+68536:                                                 aria-label={`${s} target WCPM`}
+68537:                                             />
+68538:                                             <span className="text-[9px] text-slate-400 font-bold uppercase">{t(`fluency.season_${s}`) || s}</span>
+68539:                                         </div>
+68540:                                     ))}
+68541:                                 </div>
+68542:                             )}
+68543:                             {/* Running Record Summary */}
+68544:                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+68545:                                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">

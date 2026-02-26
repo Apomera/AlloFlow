@@ -1,0 +1,104 @@
+﻿C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\letter_audio_base64.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\patch_rename_sound_sort.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_letter_files.txt
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_eighth_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_fifth_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_first_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_fourth_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_ninth_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_second_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_seventh_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_sixth_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_tenth_sound_in.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\audio_input3\what_is_the_third_sound_in (2).webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Feedback\_now_try_the_little_letter__instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\a_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\blend_these_sounds_together__instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\break_this_word_into_sounds_instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\b_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\c_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\d_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\e_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\find_all_the_words_that_end_with_the_sound_instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\find_all_the_words_that_start_with_the_sound_instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\f_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\g_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\how_many_sounds_do_you_hear__instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\h_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\i_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\j_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\k_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\l_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\m_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\n_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\o_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\p_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\q_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\r_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\s_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\tap_the_letters_to_hear_the_sounds_instructionp.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\trace_the_letter_instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\t_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\unscramble_the_letters_to_make_the_word_instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\unscramble_the_sounds_to_make_the_word__instructions.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\u_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\v_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\which_letter_is_missing__instruction.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\w_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\x_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\y_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Instructions List\z_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\a_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\b_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\c_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\d_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\e_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\f_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\g_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\h_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\i_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\j_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\k_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\l_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\m_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\n_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\o_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\p_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\q_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\r_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\s_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\t_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\u_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\v_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\w_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\x_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\y_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\Letter Name audio\z_sound.webm
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\caniuse-lite\data\features\css-first-letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\caniuse-lite\data\features\css-initial-letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\caniuse-lite\data\features\css-letter-spacing.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\eslint\lib\rules\utils\patterns\letters.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\eslint-plugin-react\lib\util\isFirstLetterCapitalized.d.ts
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\eslint-plugin-react\lib\util\isFirstLetterCapitalized.d.ts.map
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\eslint-plugin-react\lib\util\isFirstLetterCapitalized.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\lodash\_deburrLetter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\lucide-react\dist\esm\icons\letter-text.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\lucide-react\dist\esm\icons\letter-text.js.map
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Cased_Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Letter_Number.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Lowercase_Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Modifier_Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Other_Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Titlecase_Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\prismflow-deploy\node_modules\regenerate-unicode-properties\General_Category\Uppercase_Letter.js
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\analyze_word_sounds.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\apply_sound_matching_fixes.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\diagnose_or_sound.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\diagnose_or_sound_v2.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\fix_or_sound.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\fix_word_sounds.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\refactor_sound_matching.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\refactor_sound_matching_design.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\replace_or_sound.py
+C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\_archive\word_sounds_analysis_report.txt

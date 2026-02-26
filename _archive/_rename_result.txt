@@ -1,0 +1,17 @@
+﻿Added migration shim for lessonPlan persistence
+
+Total changes: 30
+Saved (4697509 chars)
+
+Remaining 'word_families' references (11):
+  L1140: sound_sort: getAudio('instructions', 'word_families'),
+  L1147: sound_sort_house: getAudio('instructions', 'word_families'),
+  L1205: _LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_sort', getAudio('instructions', 'inst_word_families'));
+  L1541: // MIGRATION SHIM: Rename word_families -> sound_sort in saved lessonPlan
+  L1543: if (lessonPlan.word_families) {
+  L1545: const { word_families, ...rest } = prev;
+  L1546: return { ...rest, sound_sort: word_families };
+  L1549: if (lessonPlanOrder.includes('word_families')) {
+  L1550: setLessonPlanOrder(prev => prev.map(id => id === 'word_families' ? 'sound_sort' : id));
+  L6739: sound_sort: 'inst_word_families',
+  L6743: if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wor

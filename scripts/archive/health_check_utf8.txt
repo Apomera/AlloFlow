@@ -1,0 +1,57 @@
+﻿============================================================
+  AlloFlow Health Check ΓÇö 69,889 lines
+============================================================
+
+Γû╢ [1/8] Brace Balance Check...
+   Brace depth at EOF: -24
+Γû╢ [2/8] Duplicate Definition Check...
+   Found 378 potentially duplicated const names
+Γû╢ [3/8] React Hooks Rules Check...
+   Hooks in conditionals: 43
+Γû╢ [4/8] Console Pollution Check...
+   console.log: 23, console.warn: 10, debugLog: 172, warnLog: 477
+Γû╢ [5/8] Stale Patch Markers Check...
+   Found 4 patch/debug markers in code
+Γû╢ [6/8] Empty Catch Blocks Check...
+   Empty catch blocks: 0
+Γû╢ [7/8] Missing Await Check...
+   Async functions: 193, possible missing await: 298
+Γû╢ [8/8] Structure Metrics...
+   Blank: 220, Comments: 2304
+   Hooks: 712 state, 209 effect, 257 callback, 39 memo, 161 ref
+
+============================================================
+  RESULTS SUMMARY
+============================================================
+
+≡ƒö┤ CRITICAL ISSUES (1):
+   ≡ƒö┤ BRACE IMBALANCE: depth=-24 (expected 0)
+
+ΓÜá∩╕Å  WARNINGS (15):
+   ΓÜá∩╕Å const 'prompt' defined 81x (L1552, L1571, L5391, L5959, L16635)
+   ΓÜá∩╕Å const 'result' defined 77x (L1553, L1611, L4576, L4666, L5484)
+   ΓÜá∩╕Å const 'sessionRef' defined 43x (L19871, L19889, L25535, L25567, L25592)
+   ΓÜá∩╕Å const 'updatedContent' defined 42x (L34321, L38771, L43564, L45832, L45868)
+   ΓÜá∩╕Å const 'newData' defined 34x (L34318, L43560, L45866, L46062, L46236)
+   ΓÜá∩╕Å const 'url' defined 28x (L3538, L3671, L3689, L3698, L3855)
+   ΓÜá∩╕Å const 'val' defined 27x (L1900, L1913, L9629, L16446, L17000)
+   ΓÜá∩╕Å const 'text' defined 27x (L3470, L5748, L6507, L10418, L10509)
+   ΓÜá∩╕Å Possible hook in conditional at L3318: const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
+   ΓÜá∩╕Å Possible hook in conditional at L3318: const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
+   ΓÜá∩╕Å Possible hook in conditional at L4709: const getEffectiveDifficulty = React.useCallback(() => {
+   ΓÜá∩╕Å Patch marker: L21266: return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+   ΓÜá∩╕Å Patch marker: L33398: const handleSetGlossaryFilterToDomain = React.useCallback(() => setGlossaryFilter('domain'), []);
+   ΓÜá∩╕Å Patch marker: L33538: console.log('PATCH-VER-02'); executeGlossaryWarmup().catch(e => warnLog('Glossary warmup error (supp
+   ΓÜá∩╕Å Patch marker: L60956: onClick={handleSetGlossaryFilterToDomain}
+
+Γä╣∩╕Å  INFO (5):
+   ≡ƒôè Logging: 23 console.log, 10 console.warn, 8 console.error, 172 debugLog, 477 warnLog
+   Γ£à No empty catch blocks
+   ≡ƒôè Async functions defined: 193, calls without await: 298
+   ≡ƒôè Structure: 220 blank lines, 2304 comments
+   ≡ƒôè Hooks: 712 useState, 209 useEffect, 257 useCallback, 39 useMemo, 161 useRef
+
+============================================================
+  VERDICT: NEEDS ATTENTION ≡ƒö┤
+  1 critical, 15 warnings, 5 info
+============================================================

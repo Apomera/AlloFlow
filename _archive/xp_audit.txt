@@ -1,0 +1,31 @@
+XP SYSTEM AUDIT
+======================================================================
+
+=== DEDUPED (have resourceId or use wrapper): 17 ===
+  L21989: score, "Memory Match Complete"
+  L22301: earnedPoints, "Matching Worksheet Complete"
+  L22672: totalPoints, "Sequence Builder"
+  L22975: earnedPoints, "Concept Sort Complete"
+  L23293: score, "Venn Diagram Sort"
+  L23765: currentScore, "Crossword Challenge Complete"
+  L24004: newScore, "Syntax Scramble"
+  L24696: currentScore, "Word Scramble Complete"
+  L30985: points, activity, generatedContent?.id
+  L34254: xpAwarded, "Concept Map AI Challenge", generatedContent?.id
+  L34341: xpAwarded, "Concept Map Challenge", generatedContent?.id
+  L36617: newTotalScore, "Cloze Activity", generatedContent.id
+  L37611: earnedXP, "Oral Fluency Check", generatedContent.id
+  L48170: 50, "Persona Secret Unlocked", generatedContent?.id
+  L48400: totalXP, "Reflection Insight", newItem.id
+  L52514: newScore, "Flashcard Quiz MCQ", generatedContent.id
+  L53548: 100, "Mastery Writing", generatedContent.id
+
+=== NOT DEDUPED (no resourceId, can double-award): 3 ===
+  L38795: 5, "Word Search Find", null | resourceId=null
+  L47924: xpEarned, "Panel Debate Insight" | resourceId=MISSING
+  L48122: actualReward, "Rapport Building", null | resourceId=null
+
+=== CROSSWORD awardedPoints ANALYSIS ===
+  L23510: const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+  L23765: if (onScoreUpdate) onScoreUpdate(currentScore, "Crossword Challenge Complete");
+  L23937: const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, onGameComplete }) => {

@@ -1,0 +1,9 @@
+--- Match for '<StudentWelcomeModal' at line 62585 ---
+62582:         isProcessing={isLargeFileProcessing}
+62583:         t={t}
+62584:       />
+62585:       <StudentWelcomeModal 
+62586:         isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
+62587:         onClose={() => setShowStudentWelcome(false)}
+62588:         onUpload={() => projectFileInputRef.current?.click()}
+

@@ -1,0 +1,234 @@
+DIAGNOSIS: Word Sounds Access Failure
+File: 72076 lines
+
+================================================================================
+1. handleRestoreView DEFINITION AND CALLS
+================================================================================
+
+--- Line 36481 ---
+    36476:                     key={pIdx}
+    36477:                     onClick={(e) => {
+    36478:                         e.stopPropagation();
+    36479:                         const targetItem = history.find(h => h.id === resourceId);
+    36480:                         if (targetItem) {
+>>> 36481:                             handleRestoreView(targetItem);
+    36482:                             addToast(`Jumped to: ${targetItem.title || getDefaultTitle(targetItem.type)}`, "success");
+    36483:                         } else {
+    36484:                             addToast(t('toasts.resource_not_found_history'), "error");
+    36485:                         }
+    36486:                     }}
+
+--- Line 36509 ---
+    36504:                               key={pIdx}
+    36505:                               onClick={(e) => {
+    36506:                                   e.stopPropagation();
+    36507:                                   const targetItem = history.find(h => h.id === resourceId);
+    36508:                                   if (targetItem) {
+>>> 36509:                                       handleRestoreView(targetItem);
+    36510:                                       addToast(`Jumped to: ${targetItem.title || getDefaultTitle(targetItem.type)}`, "success");
+    36511:                                   } else {
+    36512:                                       addToast(t('toasts.resource_not_found'), "error");
+    36513:                                   }
+    36514:                               }}
+
+--- Line 43019 ---
+    43014:         }
+    43015:         if (projectFileInputRef.current) projectFileInputRef.current.value = '';
+    43016:     };
+    43017:     reader.readAsText(file);
+    43018:   };
+>>> 43019:   const handleRestoreView = (item) => {
+    43020:       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
+    43021:       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
+    43022:       setActiveView(item.type);
+    43023:       setIsMapLocked(false);
+    43024:       if (item.type === 'word-sounds') {
+
+--- Line 43020 ---
+    43015:         if (projectFileInputRef.current) projectFileInputRef.current.value = '';
+    43016:     };
+    43017:     reader.readAsText(file);
+    43018:   };
+    43019:   const handleRestoreView = (item) => {
+>>> 43020:       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
+    43021:       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
+    43022:       setActiveView(item.type);
+    43023:       setIsMapLocked(false);
+    43024:       if (item.type === 'word-sounds') {
+    43025:           console.error("[WS-DBG] handleRestoreView: word-sounds detected. Forcing clean remount...");
+
+--- Line 43025 ---
+    43020:       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
+    43021:       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
+    43022:       setActiveView(item.type);
+    43023:       setIsMapLocked(false);
+    43024:       if (item.type === 'word-sounds') {
+>>> 43025:           console.error("[WS-DBG] handleRestoreView: word-sounds detected. Forcing clean remount...");
+    43026:           setIsWordSoundsMode(false);
+    43027:           setWordSoundsAutoReview(false);
+    43028:           setTimeout(() => {
+    43029:               console.error("[WS-DBG] handleRestoreView timeout firing! Setting isWordSoundsMode=true & autoReview=true");
+    43030:               setIsWordSoundsMode(true);
+
+================================================================================
+2. setActiveView INSIDE handleRestoreView
+================================================================================
+
+--- Line 43022 ---
+    43020:       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
+    43021:       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
+>>> 43022:       setActiveView(item.type);
+    43023:       setIsMapLocked(false);
+    43024:       if (item.type === 'word-sounds') {
+
+--- Line 43022 ---
+    43020:       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
+    43021:       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
+>>> 43022:       setActiveView(item.type);
+    43023:       setIsMapLocked(false);
+    43024:       if (item.type === 'word-sounds') {
+
+================================================================================
+3. ALL isWordSoundsMode REFERENCES
+================================================================================
+
+--- Line 29562 ---
+    29560:   wordSoundsFamilies: {},
+    29561:   wordSoundsAudioLibrary: {},
+>>> 29562:   isWordSoundsMode: false,
+    29563:   wordSoundsActivity: 'counting',
+    29564:   wordSoundsScore: { correct: 0, total: 0, streak: 0 },
+
+--- Line 30782 ---
+    30780:   });
+    30781:   const [wsState, wsDispatch] = useReducer(wsReducer, WS_INITIAL_STATE);
+>>> 30782:   const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, orthoSessionGoal, wordSoundsSessionProgress, wordSoundsTtsSpeed, wordSoundsFamilies, wordSoundsAudioLibrary, isWordSoundsMode, wordSoundsActivity, wordSoundsScore, currentWordSoundsWord, wordSoundsPhonemes, wordSoundsLanguage, wordSoundsFeedback } = wsState;
+    30783:   const setWsPreloadedWords = (v) => wsDispatch({ type: 'WS_SET', field: 'wsPreloadedWords', value: v });
+    30784:   const setWsActivitySequence = (v) => wsDispatch({ type: 'WS_SET', field: 'wsActivitySequence', value: v });
+
+--- Line 30794 ---
+    30792:   const setWordSoundsFamilies = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsFamilies', value: v });
+    30793:   const setWordSoundsAudioLibrary = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsAudioLibrary', value: v });
+>>> 30794:   const setIsWordSoundsMode = (v) => wsDispatch({ type: 'WS_SET', field: 'isWordSoundsMode', value: v });
+    30795:   const setWordSoundsActivity = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsActivity', value: v });
+    30796:   const setWordSoundsScore = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsScore', value: v });
+
+--- Line 31379 ---
+    31377:   };
+    31378:   useEffect(() => {
+>>> 31379:       if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+    31380:           if (window.speechSynthesis) window.speechSynthesis.cancel();
+    31381:           setIsWordSoundsMode(false);
+
+--- Line 31383 ---
+    31381:           setIsWordSoundsMode(false);
+    31382:       }
+>>> 31383:   }, [activeView, isWordSoundsMode]);
+    31384:   const [isPresentationMode, setIsPresentationMode] = useState(false);
+    31385:   const [presentationState, setPresentationState] = useState({});
+
+--- Line 43029 ---
+    43027:           setWordSoundsAutoReview(false);
+    43028:           setTimeout(() => {
+>>> 43029:               console.error("[WS-DBG] handleRestoreView timeout firing! Setting isWordSoundsMode=true & autoReview=true");
+    43030:               setIsWordSoundsMode(true);
+    43031:               setCurrentWordSoundsWord(null);
+
+--- Line 61455 ---
+    61453:                     )}
+    61454: 
+>>> 61455:                     {isWordSoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (
+    61456:                         <ErrorBoundary fallbackMessage="Word Sounds encountered an error." onError={(error) => console.error("ErrorBoundary CAUGHT:", error?.message || error)} onRetry={() => { setWordSoundsPhonemes(null); setCurrentWordSoundsWord(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); }}>
+    61457:                             <WordSoundsModal alloBotRef={alloBotRef}
+
+--- Line 69584 ---
+    69582:       {!isZenMode && !showUDLGuide && (<>
+    69583:       {/* Floating Help Toggle — only visible when a modal/overlay blocks the header ? */}
+>>> 69584:       {(isHelpMode || showWizard || isWordSoundsMode || isSyntaxGame || isMemoryGame || isCrosswordGame || isMatchingGame || isTimelineGame || isConceptSortGame || isReviewGame || escapeRoomState.isActive || isProjectSettingsOpen) && (
+    69585:       <button
+    69586:         data-help-ignore="true"
+
+================================================================================
+4. WordSoundsStudio COMPONENT RENDERING
+================================================================================
+
+================================================================================
+5. activeView === output CHECKS
+================================================================================
+
+================================================================================
+6. activeView === word-sounds RENDERING GATES
+================================================================================
+
+--- Line 60178 ---
+    60173:                 activeView === 'persona' ? <><History className="text-yellow-600" size={20} /> {t('persona.title')}</> :
+    60174:                 activeView === 'concept-sort' ? <><Filter className="text-amber-600" size={20} /> {t('concept_sort.title')}</> :
+    60175:                 activeView === 'timeline' ? <><ListOrdered className="text-rose-600" size={20} /> {t('timeline.title')}</> :
+    60176:                 activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
+    60177:                 activeView === 'image' ? <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</> :
+>>> 60178:                 activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
+    60179:                 activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
+    60180:                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
+    60181:                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
+    60182:                 </h3>
+    60183:                 {isTeacherMode && generatedContent && (
+
+--- Line 60754 ---
+    60749:                                 </div>
+    60750:                              )}
+    60751:                           </div>
+    60752:                     </div>
+    60753:                 )}
+>>> 60754:                 {activeView === 'word-sounds' && (
+    60755:                   <div className="space-y-6">
+    60756:                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
+    60757:                       <div className="text-4xl mb-3">🎵</div>
+    60758:                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || 'Word Sounds Studio'}</h3>
+    60759:                       <p className="text-sm text-slate-500 mb-1">{generatedContent?.configSummary || 'Ready to practice'}</p>
+
+================================================================================
+7a. isWordSoundsMode && GUARDS
+================================================================================
+
+--- Line 31379 ---
+    31376:       'phonics': 'cursor-help',
+    31377:   };
+    31378:   useEffect(() => {
+>>> 31379:       if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+    31380:           if (window.speechSynthesis) window.speechSynthesis.cancel();
+    31381:           setIsWordSoundsMode(false);
+    31382:       }
+
+--- Line 61455 ---
+    61452:                         </ErrorBoundary>
+    61453:                     )}
+    61454: 
+>>> 61455:                     {isWordSoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (
+    61456:                         <ErrorBoundary fallbackMessage="Word Sounds encountered an error." onError={(error) => console.error("ErrorBoundary CAUGHT:", error?.message || error)} onRetry={() => { setWordSoundsPhonemes(null); setCurrentWordSoundsWord(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); }}>
+    61457:                             <WordSoundsModal alloBotRef={alloBotRef}
+    61458:                                 lessonPlanConfig={generatedContent?.lessonPlanConfig}
+
+================================================================================
+7b. !isWordSoundsMode GUARDS
+================================================================================
+
+================================================================================
+9. WordSoundsStudio JSX RENDER (with wide context)
+================================================================================
+
+================================================================================
+10. CONFLICT ANALYSIS
+================================================================================
+
+handleRestoreView sets: setActiveView(item.type);
+  -> This means activeView becomes item.type which is "word-sounds"
+
+handleRestoreView sets: setActiveView(item.type);
+  -> This means activeView becomes item.type which is "word-sounds"
+
+================================================================================
+11. HIDDEN/EARLY-RETURN CONDITIONS
+================================================================================
+  Line 31379: if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+  Line 32857: if (generatedContent.type !== 'glossary' && generatedContent.type !== 'word-sounds') return;
+  Line 43156: case 'word-sounds': return t('output.word_sounds_studio') || 'Word Sounds Studio';

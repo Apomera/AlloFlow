@@ -1,0 +1,138 @@
+======================================================================
+ANALYSIS 1: UI_STRINGS Block
+======================================================================
+UI_STRINGS block: L11216 to L17296 (6080 lines)
+
+t() calls: 3600
+ts() calls: 92
+
+======================================================================
+ANALYSIS 2: Hardcoded Strings in JSX (outside UI_STRINGS)
+======================================================================
+Hardcoded strings found: 313
+  L1886 [TITLE]: Minimize
+  L1889 [ARIA]: Close Minimize
+  L1929 [ARIA]: Word count slider
+  L1942 [ARIA]: Session goal slider
+  L1956 [ARIA]: Image theme input
+  L1971 [ARIA]: Image Display Mode
+  L1975 [TITLE]: Control when word images appear during activities
+  L2043 [ARIA]: Selection
+  L2073 [ARIA]: Quick add word
+  L2123 [ARIA]: Selection
+  L2241 [ARIA]: Toggle enabled
+  L2259 [ARIA]: Adjust lesson plan
+  L2355 [TITLE]: Phonemes
+  L2795 [TITLE]: Regenerate this word
+  L2807 [TITLE]: Move up
+  L2813 [TITLE]: Move down
+  L2840 [TITLE]: Delete word
+  L2896 [TITLE]: Play phoneme sequence
+  L2923 [TITLE]: Regenerate image
+  L2940 [TITLE]: Generate image for this word
+  L2952 [ARIA]: Selection
+  L3062 [ARIA]: Rhyme Time Options
+  L3066 [PLACEHOLDER]: Correct rhyme
+  L3070 [ARIA]: Enter D
+  L3078 [PLACEHOLDER]: Distractor
+  L3089 [TITLE]: Play TTS
+  L3103 [TITLE]: Regenerate this option
+  L3128 [ARIA]: Enter D
+  L3146 [TITLE]: Play TTS
+  L3160 [TITLE]: Regenerate this option
+  L3962 [TITLE]: Play All Sounds
+  L3995 [TITLE]: Repeat instruction
+  L3996 [ARIA]: Repeat instruction
+  L4017 [ARIA]: Enter Opt
+  L4101 [ARIA]: Enter Opt
+  L4215 [ARIA]: Edit Spelling Word
+  L4251 [ARIA]: Drag letters here...
+  L4255 [PLACEHOLDER]: Drag letters here...
+  L4377 [ARIA]: Family word...
+  L4381 [PLACEHOLDER]: Family word...
+  L4406 [ARIA]: Distractor...
+  L4410 [PLACEHOLDER]: Distractor...
+  L4443 [TITLE]: Hear target sound
+  L4613 [ARIA]: Enter G
+  L8387 [ARIA]: Play word
+  L8422 [TITLE]: Read instructions
+  L8663 [ARIA]: Text field
+  L8750 [ARIA]: Enter P
+  L8827 [ARIA]: Enter Word
+  L8859 [TITLE]: Listen to this option
+  L9009 [TITLE]: Slow playback
+  L9044 [ARIA]: Enter User Answer
+  L9053 [PLACEHOLDER]: Type the word...
+  L9073 [ARIA]: Microphone
+  L9193 [ARIA]: Enter User Answer
+  L9201 [PLACEHOLDER]: Type or tap letters...
+  L9231 [ARIA]: Microphone
+  L9343 [ARIA]: Microphone
+  L9979 [TITLE]: Maximize
+  L9983 [ARIA]: Close Maximize
+
+======================================================================
+ANALYSIS 3: addToast Usage
+======================================================================
+Total addToast calls: 433
+Using t(): 382
+Hardcoded: 51
+
+Hardcoded toast messages:
+  L7738: addToast(ts('common.mic_error') || "Microphone error", "error");
+  L29167: if (addToast && err.message) addToast(err.message, "error");
+  L29772: if(addToast) addToast(`Added ${std.code}`, "success");
+  L32630: addToast(`Points awarded!`, "success");
+  L32998: addToast(`Welcome, ${name}!`, "success");
+  L34422: addToast(`Element not found: ${elementId}`, "error");
+  L34555: addToast(`Overlay: ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)}`, 'info');
+  L36265: addToast(`Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
+  L36284: addToast(`Group Resource: ${target.title || getDefaultTitle(target.type)}`, "info");
+  L37228: addToast(t(toastKey) || fallbackMsg, "info");
+  L37929: addToast(`Jumped to: ${targetItem.title || getDefaultTitle(targetItem.type)}`, "success");
+  L37956: addToast(`Jumped to: ${targetItem.title || getDefaultTitle(targetItem.type)}`, "success");
+  L38826: addToast(`Great Reading! +${earnedXP} XP`, "success");
+  L39282: addToast(`Successfully translated ${newItems.length} resources!`, "success");
+  L39417: addToast(`Settings Updated: ${changes.join(', ')}`, "success");
+  L39830: addToast(`Repeating terms to fill ${size}x${size} grid.`, "info");
+  L39862: addToast(`Generated ${bingoSettings.cardCount} Bingo cards!`, "success");
+  L40951: addToast(errMsg, "error");
+  L44099: addToast(`Project saved as ${filename}`, "success");
+  L44198: addToast(`Welcome back, ${savedNickname}!`, "success");
+  L44676: addToast(t(startToastKey), "info");
+  L44724: addToast(t(successToastKey), "success");
+  L45614: addToast(`Debate Concluded! Moving to new topic: ${data.newTopic || 'Next Topic'}`, "success");
+  L45624: addToast(`Obtained: ${names}`, "success");
+  L45627: if (data.inventoryUpdate.remove) addToast(`Lost: ${data.inventoryUpdate.remove}`, "error");
+  L45635: addToast(`System State: ${stateNames}`, "success");
+  L45640: addToast(`State Decreased: ${stateNames}`, "warning");
+  L45999: addToast(`Obtained: ${names}`, "success");
+  L46016: addToast(`Initial State: ${resNames}`, "success");
+  L46116: addToast(`Resumed Adventure (Level ${safeState.level})`, "success");
+  L46159: addToast(newState ? "Democracy Mode Enabled: Class Voting ON" : "Democracy Mode Disabled: Solo Play", "info");
+  L46994: addToast(`Moved ${movedItemTitle} up`, "info");
+  L46998: addToast(`Moved ${movedItemTitle} down`, "info");
+  L49167: addToast(`Synthesis! Harmony +${data.updates.harmony.scoreChange}`, "success");
+  L49336: addToast(`Rapport Increased (+${delta}) | +${actualReward} XP${bonusLabel}`, "success");
+  L49339: addToast(`Rapport Increased (+${delta}) | XP Cap Reached`, "info");
+  L49342: addToast(`Rapport Decreased (${delta})`, "error");
+  L49937: addToast(`Executing Blueprint: Generating ${finalResources.length} resources...`, "info");
+  L50736: addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
+  L50778: addToast(`All ${type} resources generated!`, "success");
+  L51155: addToast(`Text is long. Processing ${chunks.length} sections...`, "info");
+  L51240: addToast(`${getDefaultTitle(type)} generated!`, "success");
+  L52571: addToast(`${toastTitle} generated!`, "success");
+  L52598: addToast(errMsg, "error");
+  L52831: addToast(`Added concept: ${text}`, "success");
+  L54395: addToast(`Found ${standards.length} verified standards.`, "success");
+  L54767: addToast(e.message || "Grading failed.", "error");
+  L54815: addToast(validation.error, "error");
+  L55015: addToast(`+${xpEarned} XP!`, "success");
+  L58352: addToast(`Added ${std.code} to list`, "success");
+  L58882: addToast(`Added ${std.code} to list`, "success");
+
+======================================================================
+ANALYSIS 4: Inline Button/Label Text
+======================================================================
+Buttons with literal text (no t()): 0
+Buttons using t(): 0

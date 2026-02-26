@@ -1,0 +1,110 @@
+47098: 
+47099:           if (newImageUrl) {
+47100:               setPersonaState(prev => ({
+47101:                   ...prev,
+47102:                   avatarUrl: newImageUrl,
+47103:                   isImageLoading: false
+47104:               }));
+47105:               if (generatedContent && generatedContent.type === 'persona') {
+47106:                   const newData = generatedContent.data.map(p => 
+47107:                       p.name === personaState.selectedCharacter.name ? { ...p, avatarUrl: newImageUrl } : p
+47108:                   );
+47109:                   
+47110:                   const updatedContent = { ...generatedContent, data: newData };
+47111:                   setGeneratedContent(updatedContent);
+47112:                   setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+47113:               }
+47114:           } else {
+47115:               setPersonaState(prev => ({ ...prev, isImageLoading: false }));
+47116:           }
+47117:       } catch (e) {
+47118:           console.warn("Persona reaction update failed", e);
+47119:           setPersonaState(prev => ({ ...prev, isImageLoading: false }));
+47120:       }
+47121:   }; 
+47122:   // Retry portrait generation for failed avatars
+47123:   const handleRetryPortraitGeneration = async (character, charIndex = null) => {
+47124:       if (!character) {
+47125:           console.warn("handleRetryPortraitGeneration called with no character");
+47126:           return;
+47127:       }
+47128:       console.log("🖼️ Attempting portrait regeneration for:", character.name);
+47129:       
+47130:       // Determine if we're in panel mode and find the character index
+47131:       const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length > 0;
+47132:       if (isPanelMode && charIndex === null) {
+47133:           // Find the character index in selectedCharacters array
+47134:           charIndex = personaState.selectedCharacters.findIndex(c => c.name === character.name);
+47135:           if (charIndex === -1) charIndex = null; // Not found in panel, treat as single mode
+47136:       }
+47137:       
+47138:       // Update loading state
+47139:       if (isPanelMode && charIndex !== null) {
+47140:           // Panel mode: update specific character
+47141:           // FIX: Set BOTH isImageLoading AND isUpdating for consistent UI feedback
+47142:           setPersonaState(prev => ({
+47143:               ...prev,
+47144:               selectedCharacters: prev.selectedCharacters.map((c, i) => 
+47145:                   i === charIndex ? { ...c, isImageLoading: true, isUpdating: true } : c
+47146:               )
+47147:           }));
+47148:       } else {
+47149:           // Single interview mode
+47150:           setPersonaState(prev => ({ 
+47151:               ...prev, 
+47152:               isImageLoading: true, 
+47153:               avatarGenerationFailed: false 
+47154:           }));
+47155:       }
+47156:       
+47157:       const description = character.visualDescription || `Portrait of ${character.name}`;
+47158:       const style = character.artStyle || "Oil painting, museum quality";
+47159:       
+47160:       let imageUrl = await generateCharacterPortrait(description, style);
+47161:       
+47162:       // Retry with simplified prompt if first attempt fails
+47163:       if (!imageUrl) {
+47164:           console.warn(`Retrying portrait for ${character.name} with simplified prompt...`);
+47165:           const simplePrompt = `Portrait of ${character.name} (${character.role}).`;
+47166:           imageUrl = await generateCharacterPortrait(simplePrompt, style);
+47167:       }
+47168:       
+47169:       if (imageUrl) {
+47170:           if (charIndex !== null) {
+47171:               // Panel mode success
+47172:               setPersonaState(prev => ({
+47173:                   ...prev,
+47174:                   selectedCharacters: prev.selectedCharacters.map((c, i) => 
+47175:                       i === charIndex ? { ...c, avatarUrl: imageUrl, isImageLoading: false, isUpdating: false } : c
+47176:                   )
+47177:               }));
+47178:           } else {
+47179:               // Single interview mode success
+47180:               setPersonaState(prev => ({
+47181:                   ...prev,
+47182:                   avatarUrl: imageUrl,
+47183:                   isImageLoading: false,
+47184:                   avatarGenerationFailed: false
+47185:               }));
+47186:           }
+47187:           // Update generatedContent data
+47188:           if (generatedContent?.type === 'persona') {
+47189:               const newData = generatedContent.data.map(p => 
+47190:                   p.name === character.name ? { ...p, avatarUrl: imageUrl } : p
+47191:               );
+47192:               const updatedContent = { ...generatedContent, data: newData };
+47193:               setGeneratedContent(updatedContent);
+47194:               setHistory(prev => prev.map(item => 
+47195:                   item.id === generatedContent.id ? updatedContent : item
+47196:               ));
+47197:           }
+47198:           addToast(t('toasts.portrait_generated'), "success");
+47199:       } else {
+47200:           if (charIndex !== null) {
+47201:               // Panel mode failure
+47202:               setPersonaState(prev => ({
+47203:                   ...prev,
+47204:                   selectedCharacters: prev.selectedCharacters.map((c, i) => 
+47205:                       i === charIndex ? { ...c, isImageLoading: false, isUpdating: false, avatarGenerationFailed: true } : c
+47206:                   )
+47207:               }));

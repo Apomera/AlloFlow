@@ -1,0 +1,364 @@
+
+============================================================
+FILE: index.html
+============================================================
+
+Section Comments:
+  • Navbar
+  • Mobile Nav Overlay
+  • Hero
+  • Allobot SVG (inline for CSS animation support)
+  • Stats Bar
+  • Video Demo
+  • NotebookLM Video Overviews
+  • Teachers / Admin Video
+  • Parents / Families Video
+  • How It Works
+  • Dual Mission
+  • Interactive Study Guides (NotebookLM)
+  • Audio Briefing
+  • Custom Audio Player Mockup
+  • Slide Deck preview
+  • Feature Highlights (Condensed — link to full page)
+  • Social Proof / Testimonials
+  • Pricing
+  • Privacy
+  • CTA Footer
+  • Footer
+  • Back to Top Button
+
+Headings:
+  H1: Differentiation on Auto-Pilot
+  H2: Learn More
+  H2: No Install. Just Click & Go.
+  H3: Get the Link
+  H3: Open in Gemini
+  H3: Differentiate
+  H2: Eliminating the "Differentiation Tax"
+  H3: For Teachers: Speed
+  H3: For Students: Access
+  H2: Explore the Pedagogy
+  H3: The "Why" Behind AlloFlow
+  H4: UDL Architecture Briefing
+  H2: Universal Design for Learning
+  H2: Built by an Educator, for Educators
+  H3: Share Your Story
+  H2: Simple, Transparent Access
+  H2: Data Privacy & Architecture
+  H4: File-Based Persistence
+  H4: Google Education Infrastructure
+  H4: Local-First Student Data
+  H2: Ready to Transform Your Classroom?
+
+Section IDs: ['pricing', 'privacy']
+
+Card Titles (25):
+  📦 Runs inside Gemini Canvas
+  📦 For Teachers & Administrators
+  📦 For Parents & Families
+  📦 Get the Link Copy the Canvas link from this site or your district library.
+  📦 Open in Gemini Paste the link into your browser. The app launches instantly.
+  📦 Differentiate Generate quizzes, games, leveled text, and more. Save locally.
+  📦 For Teachers: Speed Manual differentiation takes hours. AlloFlow automates text leveling, glossary c
+  📦 For Students: Access Students receive a personalized "Lesson Pack" and review material at their own 
+  📦 02:14 / 08:31
+  📦 Click to Explore
+  📦 See all features →
+  📦 Adventure Mode
+  📦 Word Sounds Studio
+  📦 Exit Tickets & Quizzes
+  📦 Interactive Games
+  📦 Leveled Text
+  📦 Escape Room
+  📦 Free
+  📦 Recommended for Families
+  📦 AI Plus
+  📦 🎁 ~$4/mo for first 2 months
+  📦 AI Pro
+  📦 File-Based Persistence Because Gemini Canvas environments don't persist internal databases across se
+  📦 Google Education Infrastructure By running as an artifact within Gemini Canvas, AlloFlow piggybacks 
+  📦 Local-First Student Data Student progress, XP, quiz scores, and session data are tracked — but store
+
+Keyword Coverage:
+  FOUND (24):
+    ✅ adventure
+    ✅ assessment
+    ✅ bingo
+    ✅ blend
+    ✅ codename
+    ✅ crossword
+    ✅ differentiation
+    ✅ dyslexia
+    ✅ escape room
+    ✅ immersive reader
+    ✅ isolation
+    ✅ leveled text
+    ✅ open-source
+    ✅ orf
+    ✅ phonics
+    ✅ privacy
+    ✅ quiz
+    ✅ rpg
+    ✅ rti
+    ✅ standards alignment
+    ✅ student portal
+    ✅ text-to-speech
+    ✅ word sounds
+    ✅ youtube
+  MISSING (57):
+    ❌ adaptation
+    ❌ adaptation studio
+    ❌ ai search
+    ❌ analytics
+    ❌ benchmark
+    ❌ blueprint
+    ❌ boss battle
+    ❌ branching
+    ❌ cause and effect
+    ❌ code sandbox
+    ❌ conflict resolution
+    ❌ csv export
+    ❌ debate
+    ❌ democracy mode
+    ❌ dialogue mode
+    ❌ gate code
+    ❌ gemini bridge
+    ❌ gradebook
+    ❌ grading
+    ❌ graphic organizer
+    ❌ grounding
+    ❌ image-to-text
+    ❌ jeopardy
+    ❌ jina
+    ❌ lesson plan
+    ❌ lesson seed
+    ❌ letter tracing
+    ❌ live group
+    ❌ mastery check
+    ❌ mtss
+    ❌ multi-chunk
+    ❌ multiple choice
+    ❌ no account
+    ❌ no login
+    ❌ ocr
+    ❌ opendyslexic
+    ❌ oral reading
+    ❌ parent wellness
+    ❌ persona chat
+    ❌ phoneme
+    ❌ progress monitoring
+    ❌ qr code
+    ❌ read aloud
+    ❌ reading ruler
+    ❌ report profile
+    ❌ rhyme
+    ❌ sandbox
+    ❌ share link
+    ❌ socratic
+    ❌ sound sort
+    ❌ transcript
+    ❌ tts
+    ❌ url import
+    ❌ venn diagram
+    ❌ wcpm
+    ❌ wellness
+    ❌ word families
+
+============================================================
+FILE: features.html
+============================================================
+
+Section Comments:
+  • Navbar
+  • Page Header
+  • Jump Navigation
+  • Engagement
+  • Representation
+  • Action & Expression
+  • Content Intake & Advanced Generation
+  • Grading & Analytics
+  • Architecture & Developer Tools
+  • Content Intake & Integrations
+  • STEM & Productivity
+  • Architecture & Privacy
+  • Accessibility
+  • Footer
+  • Back to Top Button
+
+Headings:
+  H1: The Complete UDL Toolkit
+  H2: Engagement
+  H2: Representation
+  H2: Action & Expression
+  H2: Content Intake & Generation
+  H2: Grading, Analytics & Mastery
+  H2: Architecture & Privacy
+  H2: Content Intake & Integrations
+  H2: STEM, Multimedia & Productivity
+  H2: Architecture & Privacy
+  H2: Designed for Every Learner
+  H4: Dyslexia Support
+  H4: Global Localization
+  H4: Dictation
+  H4: Reading Ruler
+  H4: Text-to-Speech
+  H4: Color Overlays
+  H4: Keyboard Nav
+  H4: High Contrast
+
+Section IDs: ['engagement', 'representation', 'action', 'intake', 'grading', 'architecture', 'intake', 'stem', 'architecture', 'accessibility']
+
+Card Titles (68):
+  📦 Adventure Mode
+  📦 Multiplayer & Bosses
+  📦 Interactive Games
+  📦 Interview Mode
+  📦 Escape Room
+  📦 Team Showdown
+  📦 Leveled Text
+  📦 Visuals & Organizers
+  📦 Glossary & Flashcards
+  📦 Source Analysis
+  📦 Word Sounds (Phonics)
+  📦 Letter Tracing
+  📦 Exit Ticket (Quiz)
+  📦 Oral Fluency Coach
+  📦 Writing Scaffolds
+  📦 Socratic Tutor
+  📦 Rubric Builder
+  📦 RTI Monitoring
+  📦 Multimodal Intake
+  📦 AI Web Grounding
+  📦 Multi-Chunk Writing
+  📦 Dialogue Mode
+  📦 Full Resource Packs
+  📦 The Gemini Bridge
+  📦 FAQ Generator
+  📦 Interview / Persona Mode
+  📦 Activity Brainstorm
+  📦 Immersive Reader Suite
+  📦 Teacher Dashboard
+  📦 Mastery Check System
+  📦 Alignment Reports
+  📦 IndexedDB Local Storage
+  📦 Optional Firebase Sync
+  📦 JSON Project Exports
+  📦 LZ-String Compression
+  📦 Privacy by Design
+  📦 Teacher Gate
+  📦 Offline HTML Bundles
+  📦 Exponential Backoff
+  📦 YouTube Transcript Import
+  📦 URL Content Import
+  📦 AI Search & Grounding
+  📦 OCR & Media Transcription
+  📦 Gemini Bridge
+  📦 RTI / MTSS Monitoring
+  📦 Full Resource Pack
+  📦 Context-Aware STEM
+  📦 Native Exports
+  📦 AlloBot Guide
+  📦 UDL Alignment
+  📦 Smart Profiles
+  📦 Lesson Plan Builder
+  📦 Live Differentiation
+  📦 Fact Check Protocol
+  📦 Google Education Infrastructure
+  📦 Standard JSON "Sneakernet"
+  📦 Frictionless Sharing
+  📦 Local-First Student Data
+  📦 No Cloud Accounts Required
+  📦 Single-File Monolith
+  📦 Dyslexia Support OpenDyslexic font & Bionic Reading
+  📦 Global Localization Translate the full UI into any language
+  📦 Dictation Speech-to-text in every input field
+  📦 Reading Ruler Mouse-following focus bar
+  📦 Text-to-Speech Click any word to hear it read aloud
+  📦 Color Overlays Blue, Peach, Yellow tint overlays
+  📦 Keyboard Nav All games playable via Tab/Arrow keys
+  📦 High Contrast Dark Mode & Black/Yellow mode
+
+Keyword Coverage:
+  FOUND (54):
+    ✅ adventure
+    ✅ ai search
+    ✅ analytics
+    ✅ benchmark
+    ✅ bingo
+    ✅ blend
+    ✅ boss battle
+    ✅ branching
+    ✅ codename
+    ✅ crossword
+    ✅ debate
+    ✅ democracy mode
+    ✅ dialogue mode
+    ✅ differentiation
+    ✅ dyslexia
+    ✅ escape room
+    ✅ gemini bridge
+    ✅ gradebook
+    ✅ grading
+    ✅ grounding
+    ✅ immersive reader
+    ✅ jina
+    ✅ lesson plan
+    ✅ letter tracing
+    ✅ leveled text
+    ✅ mastery check
+    ✅ mtss
+    ✅ multi-chunk
+    ✅ ocr
+    ✅ open-source
+    ✅ opendyslexic
+    ✅ oral reading
+    ✅ phonics
+    ✅ privacy
+    ✅ progress monitoring
+    ✅ quiz
+    ✅ read aloud
+    ✅ reading ruler
+    ✅ rhyme
+    ✅ rpg
+    ✅ rti
+    ✅ sandbox
+    ✅ socratic
+    ✅ sound sort
+    ✅ student portal
+    ✅ text-to-speech
+    ✅ transcript
+    ✅ tts
+    ✅ url import
+    ✅ venn diagram
+    ✅ wcpm
+    ✅ word families
+    ✅ word sounds
+    ✅ youtube
+  MISSING (27):
+    ❌ adaptation
+    ❌ adaptation studio
+    ❌ assessment
+    ❌ blueprint
+    ❌ cause and effect
+    ❌ code sandbox
+    ❌ conflict resolution
+    ❌ csv export
+    ❌ gate code
+    ❌ graphic organizer
+    ❌ image-to-text
+    ❌ isolation
+    ❌ jeopardy
+    ❌ lesson seed
+    ❌ live group
+    ❌ multiple choice
+    ❌ no account
+    ❌ no login
+    ❌ orf
+    ❌ parent wellness
+    ❌ persona chat
+    ❌ phoneme
+    ❌ qr code
+    ❌ report profile
+    ❌ share link
+    ❌ standards alignment
+    ❌ wellness

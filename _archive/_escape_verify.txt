@@ -1,0 +1,83 @@
+Total lines: 72918
+
+=== 1. useReducer DECLARATION ===
+  L32531: // ESCAPE ROOM STATE MANAGEMENT (useReducer)
+  L32567: const [escapeRoomState, dispatchEscape] = React.useReducer(escapeReducer, ESCAPE_ROOM_INITIAL_STATE);
+
+=== 2. escapeReducer FUNCTION ===
+  L32550:   function escapeReducer(state, action) {
+  L32551:     switch (action.type) {
+  L32552:       case 'UPDATE':
+  L32553:         return { ...state, ...action.payload };
+  L32554:       case 'FUNC_UPDATE':
+  L32555:         return action.updater(state);
+  L32556:       case 'RESET':
+  L32557:         return { ...ESCAPE_ROOM_INITIAL_STATE, solvedPuzzles: new Set() };
+  L32558:       case 'SET_TIME_LEFT':
+  L32559:         return { ...state, timeLeft: action.value };
+  L32560:       case 'SET_TIMER_RUNNING':
+  L32561:         return { ...state, isTimerRunning: action.value };
+  L32562:       default:
+  L32563:         return state;
+  L32564:     }
+  L32565:   }
+  L32566: 
+  L32567:   const [escapeRoomState, dispatchEscape] = React.useReducer(escapeReducer, ESCAPE_ROOM_INITIAL_STATE);
+  L32568:   const [scoreAnimation, setScoreAnimation] = useState({ teamId: null, points: 0 });
+  L32569:   const [soundEnabled, setSoundEnabled] = useState(true);
+
+=== 3. REMAINING setEscapeRoomState (should be 0) ===
+  L51354: setEscapeRoomState(prev => ({
+  L51555: setEscapeRoomState(prev => ({
+  L51571: setEscapeRoomState(prev => ({ ...prev, isActive: false, isGenerating: false }));
+  L51587: setEscapeRoomState(prev => ({
+  L51660: setEscapeRoomState(prev => ({
+  L51677: setEscapeRoomState(prev => ({ ...prev, isActive: false, isGenerating: false }));
+  L51725: setEscapeRoomState(prev => ({
+  L51776: setEscapeRoomState(prev => ({ ...prev, showClueAnimation: false }));
+  L51801: setEscapeRoomState(prev => ({
+  L51819: setEscapeRoomState(prev => ({
+  L51830: setEscapeRoomState(prev => ({ ...prev, isActive: false, hasEscaped: false }));
+  L51888: setEscapeRoomState(prev => ({
+  L51894: setEscapeRoomState(prev => ({
+  L51917: setEscapeRoomState(prev => ({
+  L51925: setEscapeRoomState(prev => ({ ...prev, matchingSelected: null }));
+  L51975: setEscapeRoomState(prev => ({
+  L51986: setEscapeRoomState({
+  L52068: setEscapeRoomState(prev => ({
+  L52083: setEscapeRoomState(prev => ({
+  L52093: setEscapeRoomState(prev => ({ ...prev, [key]: value }));
+  L52098: setEscapeRoomState(prev => ({ ...prev, showSettings: false }));
+  L52121: setEscapeRoomState(prev => ({ ...prev, isActive: false }));
+  L67165: onClick={() => setEscapeRoomState(prev => ({ ...prev, isActive: false }))}
+  L67228: <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setEscapeRoomState(prev => ({ ...prev, selectedObject: null 
+  L67236: onClick={() => setEscapeRoomState(prev => ({ ...prev, selectedObject: null }))}
+  L67320: setEscapeRoomState(prev => ({ ...prev, sequenceOrder: newOrder }));
+  L67342: setEscapeRoomState(prev => ({ ...prev, sequenceOrder: newOrder }));
+  L67419: onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
+  L67438: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
+  L67570: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value.toUpperCase() }))}
+  L67616: onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
+  L67642: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
+  L67671: onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: true, textInput: '' }))}
+  L67686: onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: false }))}
+  L67693: onClick={() => setEscapeRoomState(prev => ({ ...prev, showFinalDoor: false }))}
+  L67723: onClick={() => setEscapeRoomState(prev => ({ ...prev, textInput: word }))}
+  L67745: onChange={(e) => setEscapeRoomState(prev => ({ ...prev, textInput: e.target.value }))}
+  L71843: <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setEscapeRoo
+  L71846: onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
+  L71911: onClick={() => setEscapeRoomState(prev => ({ ...prev, showSettings: false }))}
+  Total remaining: 40
+
+=== 4. REMAINING setEscapeTimeLeft (should be 0) ===
+  Total remaining: 0
+
+=== 5. REMAINING setIsEscapeTimerRunning (should be 0) ===
+  Total remaining: 0
+
+=== 6. dispatchEscape CALLS ===
+  Total dispatchEscape calls: 6
+    type='SET_TIMER_RUNNING': 3 calls
+    type='SET_TIME_LEFT': 2 calls
+
+=== 7. SAMPLE dispatchEscape(UPDATE) CALLS ===

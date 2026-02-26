@@ -1,0 +1,61 @@
+﻿GEIS protocol 1  order and materials
+Process the level one instruction sets using the listed data sources and AI software:
+Support Materials
+GEIS protocol 2 order and materials
+This document, which provides information to assist with the process of developing reports
+001 eval tier 1 data repository
+This is the blank document to transfer the finished output of instruction sets 01-10 for processing by 21 & 22 algorithms
+002 Intro, SSF tier 2 repository
+This is the blank document to transfer the finished output of instruction sets 21 & 22 for processing by 31,  algorithms
+Instruction Set
+Gemini Advanced AI Model
+Documents to include with Instruction Set
+11 MCP IS RFR 2 (Flash) 
+2.0 Flash
+CDS Referral for Evaluation form
+12 MCP background form (Flash)
+2.0 Flash
+MCP Background Information form
+13 MCP IS previous evals summary 03 (Pro)
+2.0 Pro Experimental
+Copies of previous evaluations (speech, OT) from CINC
+14 MCP previous psych or MD evals (Flash)
+TBD
+Copies of previous psychological or medical evaluation reports
+15 MCP IS preschool childcare report 01 (Flash)
+2.0 Flash
+MCP Report on Preschool or Daycare Participation form
+16 MCP IS IEP-IFSP summary 3 (Flash)
+2.0 Flash
+Copy of IEP or IFSP from CINC
+17 MCP IS CDS obs 02 (Flash)
+2.0 Flash
+Copy of Observation in the Learning Environment report in CINC
+18 MCP IS ASEBA 42 (Pro)
+2.0 Pro Experimental
+ASEBA summary
+19 MCP IS parent interview 03 (Pro)
+2.0 Pro Experimental
+Transcript of recorded parent interview
+20 MCP IS eval obs & test results 2 (Pro)
+2.0 Pro Experimental
+EvaluatorΓÇÖs report on behaviors observed during the evaluation
+Transfer results to 001 repository for tier 2 processing:
+31 MCP report tier 2 01 Intro
+2.0 Pro Experimental
+Output of instruction sets 11-20
+32 MCP report tier 2 01 SSF
+2.0 Pro Experimental
+Output of instruction sets 11-20
+Transfer results to 002 repository for tier 3 processing:
+41 MCP report tier 3 01 Concl & Dx
+2.0 Pro Experimental
+Output of instruction set 31 & 32
+Transfer results of 41 to 51 for processing:
+51 MCP report tier 4 01 Recs (draft)
+2.0 Pro Experimental
+Output of instruction set 41 (and 31, 32?)
+99 MCP final review, all ISs
+All
+n.b. ΓÇ£finishingΓÇ¥ instructions that can be used to push error correction for all algorithms.
+Note:  as of March 2025, 2.0 Pro Experimental does not allow documents such as MS Word, Google Docs, or PDF files to be loaded separately.  All information on which these instruction sets is based must be loaded directly into the chat prompt.  PDF files must be converted to Google Docs or MS Word documents before adding these to the instruction set.

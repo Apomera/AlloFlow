@@ -1,0 +1,31 @@
+  pulseScale (L17642) — WRITE-ONLY (SAFE TO REMOVE)
+  isAdding (L22847) — PERF CONCERN: 7 writes, 1 reads
+  awardedPoints (L23520) — WRITE-ONLY (SAFE TO REMOVE)
+  blueprintSelection (L29786) — WRITE-ONLY (SAFE TO REMOVE)
+  isReviewingBlueprint (L29787) — WRITE-ONLY (SAFE TO REMOVE)
+  studyDuration (L29996) — WRITE-ONLY (SAFE TO REMOVE)
+  dyslexicFont (L31388) — FULLY DEAD (declaration only, never used)
+  fontTheme (L31389) — FULLY DEAD (declaration only, never used)
+  isDefining (L31407) — WRITE-ONLY (SAFE TO REMOVE)
+  isRevising (L31412) — WRITE-ONLY (SAFE TO REMOVE)
+  isCustomReviseOpen (L31414) — PERF CONCERN: 6 writes, 1 reads
+  pendingFactionResources (L31579) — FULLY DEAD (declaration only, never used)
+  isStudentLinkMode (L31592) — PERF CONCERN: 6 writes, 1 reads
+  sourceStandards (L35494) — WRITE-ONLY (SAFE TO REMOVE)
+Write-only / fully dead: 11
+  - pulseScale (L17642): setPulseScale called 1x, getter NEVER read
+  - awardedPoints (L23520): setAwardedPoints called 1x, getter NEVER read
+  - blueprintSelection (L29786): setBlueprintSelection called 4x, getter NEVER read
+  - isReviewingBlueprint (L29787): setIsReviewingBlueprint called 4x, getter NEVER read
+  - studyDuration (L29996): setStudyDuration called 4x, getter NEVER read
+  - dyslexicFont (L31388): setDyslexicFont called 0x, getter NEVER read
+  - fontTheme (L31389): setFontTheme called 0x, getter NEVER read
+  - isDefining (L31407): setIsDefining called 4x, getter NEVER read
+  - isRevising (L31412): setIsRevising called 5x, getter NEVER read
+  - pendingFactionResources (L31579): setPendingFactionResources called 0x, getter NEVER read
+  - sourceStandards (L35494): setSourceStandards called 1x, getter NEVER read
+Debug-only reads: 0
+Performance concerns (high write/low read): 3
+  - isAdding (L22847): 7 writes, 1 reads
+  - isCustomReviseOpen (L31414): 6 writes, 1 reads
+  - isStudentLinkMode (L31592): 6 writes, 1 reads

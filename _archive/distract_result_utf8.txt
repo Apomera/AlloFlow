@@ -1,0 +1,921 @@
+﻿
+AlloFlowANTI.txt:2755:
+                      
+       
+"rhymeDistractors": 
+["dog", "sun", "bed", 
+"leg", "cup"],
+AlloFlowANTI.txt:2756:
+                      
+       "blendingDistra
+ctors": ["cord", 
+"core", "born", 
+"worn", "torn"],
+AlloFlowANTI.txt:2792:
+                      
+   rhymeDistractors: 
+data.rhymeDistractors 
+|| [],
+AlloFlowANTI.txt:2793:
+                      
+   
+blendingDistractors: d
+ata.blendingDistractor
+s || [],
+AlloFlowANTI.txt:2820:
+                      
+   (lastItem.rhymeDist
+ractors || 
+[]).forEach(w => w && 
+ttsTasks.add(w));
+AlloFlowANTI.txt:2821:
+                      
+   (lastItem.blendingD
+istractors || 
+[]).forEach(w => w && 
+ttsTasks.add(w));
+AlloFlowANTI.txt:4008:
+                      
+                  {/* 
+Rhyme Word & 
+Distractors - Always 
+Editable */}
+AlloFlowANTI.txt:4018:
+                      
+                      
+        {(word.rhymeDi
+stractors || 
+[]).map((d, i) => (
+AlloFlowANTI.txt:4023:
+                      
+                      
+                      
+  const newDist = [...
+(word.rhymeDistractors
+ || [])];
+AlloFlowANTI.txt:4025:
+                      
+                      
+                      
+  onUpdateWord(idx, { 
+...word, 
+rhymeDistractors: 
+newDist });
+AlloFlowANTI.txt:4050:
+                      
+                      
+                      
+      await onRegenera
+teOption(idx, 
+'rhymeDistractors', 
+i, d);
+AlloFlowANTI.txt:4064:
+                      
+                      
+                const 
+newDist = [...(word.rh
+ymeDistractors || 
+[]), ''];
+AlloFlowANTI.txt:4065:
+                      
+                      
+                
+onUpdateWord(idx, { 
+...word, 
+rhymeDistractors: 
+newDist });
+AlloFlowANTI.txt:4071:
+                      
+                  {/* 
+Blending Distractors 
+- Always Editable */}
+AlloFlowANTI.txt:4078:
+                      
+                      
+        {(word.blendin
+gDistractors || 
+[]).map((d, i) => (
+AlloFlowANTI.txt:4083:
+                      
+                      
+                      
+  const newDist = [...
+word.blendingDistracto
+rs];
+AlloFlowANTI.txt:4085:
+                      
+                      
+                      
+  onUpdateWord(idx, { 
+...word, 
+blendingDistractors: 
+newDist });
+AlloFlowANTI.txt:4109:
+                      
+                      
+                      
+      await onRegenera
+teOption(idx, 'blendin
+gDistractors', i, d);
+AlloFlowANTI.txt:4123:
+                      
+                      
+                const 
+newDist = [...(word.bl
+endingDistractors || 
+[]), ''];
+AlloFlowANTI.txt:4124:
+                      
+                      
+                
+onUpdateWord(idx, { 
+...word, 
+blendingDistractors: 
+newDist });
+AlloFlowANTI.txt:5404:
+            if 
+(data.options && 
+data.distractors) {
+AlloFlowANTI.txt:5405:
+                const 
+newKey = JSON.stringif
+y([...data.options].so
+rt()) + '|' + JSON.str
+ingify([...data.distra
+ctors].sort());
+AlloFlowANTI.txt:5410:
+                      
+  
+...(data.distractors 
+|| []).map(w => ({ 
+text: w, isFamily: 
+false }))
+AlloFlowANTI.txt:5427:
+        }, 
+[data.options, 
+data.distractors]);
+AlloFlowANTI.txt:5453:
+                      
+  <p 
+className="text-sm tex
+t-slate-500">Modify 
+the family members 
+and distractors 
+below.</p>
+AlloFlowANTI.txt:5486:
+                      
+  {/* Distractors 
+Column */}
+AlloFlowANTI.txt:5489:
+                      
+          <span classN
+ame="bg-amber-200 p-1 
+rounded">🚫</span> 
+Distractors
+AlloFlowANTI.txt:5492:
+                      
+          
+{(data.distractors || 
+[]).map((word, i) => (
+AlloFlowANTI.txt:5912:
+                    
+rhymeDistractors: 
+term.rhymeDistractors,
+AlloFlowANTI.txt:5913:
+                    
+blendingDistractors: t
+erm.blendingDistractor
+s,
+AlloFlowANTI.txt:5914:
+                    or
+thographyDistractors: 
+term.orthographyDistra
+ctors
+AlloFlowANTI.txt:6115:
+        const 
+distractors = [];
+AlloFlowANTI.txt:6116:
+        const 
+numDistractors = 
+Math.max(3, Math.ceil(
+phonemes.length * 
+0.5));
+AlloFlowANTI.txt:6119:
+            if 
+(distractors.length 
+>= numDistractors) 
+break;
+AlloFlowANTI.txt:6124:
+                
+distractors.push({
+AlloFlowANTI.txt:6125:
+                    
+id: `distractor-${dist
+ractors.length}-${Date
+.now()}`,
+AlloFlowANTI.txt:6132:
+        return fisherY
+atesShuffle([...correc
+tChips, 
+...distractors]);
+AlloFlowANTI.txt:6237:
+        if 
+(wordSoundsActivity 
+=== 'blending' && data
+.blendingDistractors 
+&& 
+setBlendingOptions) {
+AlloFlowANTI.txt:6240:
+                 data.
+blendingDistractors
+AlloFlowANTI.txt:6320:
+            let 
+rhymeDistractors = [];
+AlloFlowANTI.txt:6329:
+                    
+rhymeDistractors = 
+shuffled.filter(w => 
+w !== 
+wordLower).slice(0, 
+5);
+AlloFlowANTI.txt:6333:
+            if (rhymeD
+istractors.length === 
+0 && rhymeEndingShort.
+length >= 2) {
+AlloFlowANTI.txt:6335:
+                
+rhymeDistractors = 
+consonants
+AlloFlowANTI.txt:6340:
+            const 
+blendingDistractors = 
+[];
+AlloFlowANTI.txt:6354:
+                if (w 
+!== wordLower && 
+Math.abs(w.length - 
+wordLower.length) <= 
+1 && blendingDistracto
+rs.length < 5) {
+AlloFlowANTI.txt:6355:
+                    bl
+endingDistractors.push
+(w);
+AlloFlowANTI.txt:6364:
+                
+rhymeWord: 
+rhymeDistractors[0] 
+|| '',
+AlloFlowANTI.txt:6365:
+                
+rhymeDistractors: 
+rhymeDistractors,
+AlloFlowANTI.txt:6366:
+                
+blendingDistractors: 
+blendingDistractors,
+AlloFlowANTI.txt:6368:
+                
+familyMembers: 
+rhymeDistractors,
+AlloFlowANTI.txt:6389:
+            
+rhymeDistractors: [],
+AlloFlowANTI.txt:6390:
+            orthograph
+yDistractors: []
+AlloFlowANTI.txt:6394:
+        const repairBl
+endingDistractors = 
+async () => {
+AlloFlowANTI.txt:6405:
+                let 
+rawDistractors = wordS
+oundsPhonemes?.blendin
+gDistractors || [];
+AlloFlowANTI.txt:6406:
+                let 
+uniqueDistractors = 
+[...new Set(
+AlloFlowANTI.txt:6407:
+                    
+rawDistractors
+AlloFlowANTI.txt:6411:
+                if (un
+iqueDistractors.length
+ < 3) {
+AlloFlowANTI.txt:6412:
+                    
+debugLog("⚠️ 
+Insufficient unique 
+distractors. 
+Repairing...");
+AlloFlowANTI.txt:6419:
+                      
+       const merged = 
+[...uniqueDistractors,
+ ...fixed];
+AlloFlowANTI.txt:6420:
+                      
+       
+uniqueDistractors = 
+[...new Set(
+AlloFlowANTI.txt:6428:
+                const 
+finalDistractors = uni
+queDistractors.slice(0
+, 5);
+AlloFlowANTI.txt:6429:
+                if (fi
+nalDistractors.length 
+=== 0) {
+AlloFlowANTI.txt:6430:
+                    fi
+nalDistractors.push('c
+at', 'dog', 'run');
+AlloFlowANTI.txt:6432:
+                const 
+finalOptions = 
+[targetToCheck, 
+...finalDistractors];
+AlloFlowANTI.txt:6438:
+        repairBlending
+Distractors();
+AlloFlowANTI.txt:6440:
+    const generateOrth
+ographyDistractors = 
+(word) => {
+AlloFlowANTI.txt:6442:
+        const 
+distractors = [];
+AlloFlowANTI.txt:6445:
+            distractor
+s.push(lowerWord.repla
+ce(/(.)/, '$1'));
+AlloFlowANTI.txt:6447:
+            distractor
+s.push(lowerWord.slice
+(0, 2) + lowerWord[1] 
++ lowerWord.slice(2));
+AlloFlowANTI.txt:6452:
+                distra
+ctors.push(lowerWord.s
+lice(0, i) + vowelSwap
+s[lowerWord[i]] + 
+lowerWord.slice(i + 
+1));
+AlloFlowANTI.txt:6458:
+            distractor
+s.push(lowerWord.slice
+(0, midIndex) + lowerW
+ord.slice(midIndex + 
+1));
+AlloFlowANTI.txt:6460:
+        distractors.pu
+sh(lowerWord + 's');
+AlloFlowANTI.txt:6461:
+        if (lowerWord.
+includes('c')) distrac
+tors.push(lowerWord.re
+place('c', 'k'));
+AlloFlowANTI.txt:6462:
+        if (lowerWord.
+includes('k')) distrac
+tors.push(lowerWord.re
+place('k', 'c'));
+AlloFlowANTI.txt:6463:
+        if (lowerWord.
+includes('ph')) distra
+ctors.push(lowerWord.r
+eplace('ph', 'f'));
+AlloFlowANTI.txt:6464:
+        const 
+filtered = [...new Set
+(distractors)].filter(
+d => d !== lowerWord 
+&& d.length > 0);
+AlloFlowANTI.txt:6519:
+                      
+      const 
+distractorSets = [
+AlloFlowANTI.txt:6520:
+                      
+          ...(wordEntr
+y.blendingDistractors 
+|| []),
+AlloFlowANTI.txt:6521:
+                      
+          ...(wordEntr
+y.rhymeDistractors || 
+[]),
+AlloFlowANTI.txt:6524:
+                      
+      if (distractorSe
+ts.length > 0) {
+AlloFlowANTI.txt:6525:
+                      
+          await Promis
+e.all(distractorSets.m
+ap(d => 
+handleAudio(d, 
+false).catch(() => 
+{})));
+AlloFlowANTI.txt:6575:
+  "blendingDistractors
+": ["word1", "word2", 
+"word3"],
+AlloFlowANTI.txt:6578:
+  "orthographyDistract
+ors": 
+["misspelling1", 
+"misspelling2", 
+"misspelling3"]
+AlloFlowANTI.txt:6586:
+- "orthographyDistract
+ors": Create 3 
+plausible 
+misspellings of the 
+word (swap vowels, 
+double letters, 
+phonetic spellings). 
+Must NOT be real 
+words.
+AlloFlowANTI.txt:6663:
+                      
+           ...(phoneme
+Data?.blendingDistract
+ors || []),
+AlloFlowANTI.txt:6666:
+                      
+           ...(phoneme
+Data?.rhymeDistractors
+ || [])
+AlloFlowANTI.txt:6968:
+                    
+rhymeDistractors: phon
+emeData.rhymeDistracto
+rs || [],
+AlloFlowANTI.txt:6971:
+                    
+blendingDistractors: p
+honemeData.blendingDis
+tractors || [],
+AlloFlowANTI.txt:6974:
+                    or
+thographyDistractors: 
+phonemeData.orthograph
+yDistractors || [],
+AlloFlowANTI.txt:7008:
+             const 
+prompt = listKey === 
+'rhymeDistractors'
+AlloFlowANTI.txt:7253:
+                const 
+generated = generateOr
+thographyDistractors(t
+argetWord);
+AlloFlowANTI.txt:7254:
+                const 
+distractors = fisherYa
+tesShuffle(generated).
+slice(0, 5);
+AlloFlowANTI.txt:7255:
+                setOrt
+hographyOptions(fisher
+YatesShuffle([targetWo
+rd, ...distractors]));
+AlloFlowANTI.txt:7284:
+                    
+let distractors = [];
+AlloFlowANTI.txt:7287:
+                      
+      distractors.push
+(...commonWords[ending
+]);
+AlloFlowANTI.txt:7290:
+                    
+return fisherYatesShuf
+fle(distractors).slice
+(0, 5);
+AlloFlowANTI.txt:7292:
+                const 
+distractors = wordSoun
+dsPhonemes?.rhymeDistr
+actors?.length >= 3
+AlloFlowANTI.txt:7293:
+                    ? 
+wordSoundsPhonemes?.rh
+ymeDistractors?.slice(
+0, 5)
+AlloFlowANTI.txt:7310:
+                const 
+filteredDistractors = 
+distractors.filter(d 
+=> {
+AlloFlowANTI.txt:7314:
+                const 
+options = 
+[correctRhyme, ...filt
+eredDistractors.slice(
+0, 4)];
+AlloFlowANTI.txt:7343:
+                    
+const distractors = fi
+sherYatesShuffle(pool)
+.slice(0, 4);
+AlloFlowANTI.txt:7344:
+                    se
+tRhymeOptions(distract
+ors);
+AlloFlowANTI.txt:7372:
+            const 
+isoDistractors = isoAl
+lPhonemes.filter(p => 
+p.toLowerCase() !== co
+rrectSound?.toLowerCas
+e()).slice(0, 3);
+AlloFlowANTI.txt:7374:
+            const 
+used = new Set([correc
+tSound?.toLowerCase(),
+ ...(isoDistractors 
+|| []).map(d => 
+d.toLowerCase())]);
+AlloFlowANTI.txt:7398:
+                if (is
+oDistractors.length 
+>= 5) break;
+AlloFlowANTI.txt:7399:
+                if (!u
+sed.has(sim.toLowerCas
+e())) { isoDistractors
+.push(sim); used.add(s
+im.toLowerCase()); }
+AlloFlowANTI.txt:7404:
+                if (is
+oDistractors.length 
+>= 5) break;
+AlloFlowANTI.txt:7405:
+                if (!u
+sed.has(p.toLowerCase(
+))) { isoDistractors.p
+ush(p); used.add(p.toL
+owerCase()); }
+AlloFlowANTI.txt:7409:
+            const 
+isoOptions = fisherYat
+esShuffle([...new Set(
+[effectiveCorrect, ...
+isoDistractors.slice(0
+, 5)])]);
+AlloFlowANTI.txt:7604:
+                if 
+(activityId === 
+'blending' && preloade
+dWord.blendingDistract
+ors) {
+AlloFlowANTI.txt:7605:
+                    
+const distractors = pr
+eloadedWord.blendingDi
+stractors.slice(0, 5);
+AlloFlowANTI.txt:7606:
+                    se
+tBlendingOptions(fishe
+rYatesShuffle([targetW
+ord, 
+...distractors]));
+AlloFlowANTI.txt:7610:
+                if 
+(activityId === 
+'rhyming' && preloaded
+Word.rhymeDistractors)
+ {
+AlloFlowANTI.txt:7612:
+                    
+const distractors = pr
+eloadedWord.rhymeDistr
+actors.slice(0, 5);
+AlloFlowANTI.txt:7614:
+                      
+  ? fisherYatesShuffle
+([correctRhyme, 
+...distractors])
+AlloFlowANTI.txt:7615:
+                      
+  : distractors;
+AlloFlowANTI.txt:7759:
+                 if (!
+newPhonemes.rhymeDistr
+actors) newPhonemes.rh
+ymeDistractors = [];
+AlloFlowANTI.txt:7764:
+                     
+while (newPhonemes.rhy
+meDistractors.length 
+<= index) newPhonemes.
+rhymeDistractors.push(
+'');
+AlloFlowANTI.txt:7765:
+                     n
+ewPhonemes.rhymeDistra
+ctors[index] = 
+newValue;
+AlloFlowANTI.txt:7769:
+                     n
+ewPhonemes.rhymeDistra
+ctors.splice(index, 
+1);
+AlloFlowANTI.txt:7773:
+                     n
+ewPhonemes.rhymeDistra
+ctors.push('');
+AlloFlowANTI.txt:8330:
+                      
+      const pool = wor
+dSoundsPhonemes?.ortho
+graphyDistractors?.len
+gth > 0 ? wordSoundsPh
+onemes.orthographyDist
+ractors : (phonemeData
+?.orthographyDistracto
+rs || generateOrthogra
+phyDistractors(targetW
+ord));
+AlloFlowANTI.txt:8331:
+                      
+      const 
+distractors = fisherYa
+tesShuffle(pool).slice
+(0, 5);
+AlloFlowANTI.txt:8332:
+                      
+      const options = 
+fisherYatesShuffle([ta
+rgetWord, 
+...distractors]);
+AlloFlowANTI.txt:8347:
+                      
+      const 
+distractorPool = phone
+meData?.rhymeDistracto
+rs || ['dog', 'cat', 
+'run', 'bed', 'sit'];
+AlloFlowANTI.txt:8348:
+                      
+      const 
+distractors = fisherYa
+tesShuffle(distractorP
+ool).slice(0, 5);
+AlloFlowANTI.txt:8350:
+                      
+          ? fisherYate
+sShuffle([correctRhyme
+, ...distractors])
+AlloFlowANTI.txt:8351:
+                      
+          : 
+distractors;
+AlloFlowANTI.txt:8364:
+                      
+  if 
+(wordSoundsActivity 
+=== 'blending' && phon
+emeData?.blendingDistr
+actors) {
+AlloFlowANTI.txt:8365:
+                      
+      const 
+distractors = phonemeD
+ata.blendingDistractor
+s.slice(0, 5);
+AlloFlowANTI.txt:8366:
+                      
+      const options = 
+fisherYatesShuffle([ta
+rgetWord, 
+...distractors]);
+AlloFlowANTI.txt:8387:
+                      
+  const distractors = 
+allPhonemes.filter(p 
+=> p !== correctPhonem
+e).slice(0, 5);
+AlloFlowANTI.txt:8388:
+                      
+  while 
+(distractors.length < 
+5) distractors.push(['
+b','d','f','g','k','l'
+,'m','n','p','r','s','
+t'][Math.floor(Math.ra
+ndom() * 12)]);
+AlloFlowANTI.txt:8389:
+                      
+  const isoOptions = f
+isherYatesShuffle([cor
+rectPhoneme, ...distra
+ctors.slice(0, 5)]);
+AlloFlowANTI.txt:8449:
+                      
+  if 
+(wordSoundsActivity 
+=== 'blending' && prel
+oadedMatch.blendingDis
+tractors) {
+AlloFlowANTI.txt:8450:
+                      
+      const 
+distractors = preloade
+dMatch.blendingDistrac
+tors.slice(0, 5);
+AlloFlowANTI.txt:8451:
+                      
+      const options = 
+fisherYatesShuffle([ta
+rgetWord, 
+...distractors]);
+AlloFlowANTI.txt:8456:
+                      
+  if 
+(wordSoundsActivity 
+=== 'rhyming' && prelo
+adedMatch.rhymeDistrac
+tors) {
+AlloFlowANTI.txt:8458:
+                      
+      const 
+distractors = preloade
+dMatch.rhymeDistractor
+s.slice(0, 5);
+AlloFlowANTI.txt:8460:
+                      
+          ? fisherYate
+sShuffle([correctRhyme
+, ...distractors])
+AlloFlowANTI.txt:8461:
+                      
+          : 
+distractors;
+AlloFlowANTI.txt:8721:
+             if (!newP
+honemes.rhymeDistracto
+rs) {
+AlloFlowANTI.txt:8722:
+                 newPh
+onemes.rhymeDistractor
+s = ['dog', 'bed', 
+'sit'];
+AlloFlowANTI.txt:8728:
+                 
+while (newPhonemes.rhy
+meDistractors.length 
+<= index) newPhonemes.
+rhymeDistractors.push(
+'');
+AlloFlowANTI.txt:8729:
+                 newPh
+onemes.rhymeDistractor
+s[index] = newValue;
+AlloFlowANTI.txt:9682:
+                    
+debugLog("⚠️ 
+Generating 
+distractors for Sight 
+& Spell (options were 
+empty)");
+AlloFlowANTI.txt:9683:
+                    
+const generated = gene
+rateOrthographyDistrac
+tors(correctWord);
+AlloFlowANTI.txt:9684:
+                    
+const distractors = 
+generated.slice(0, 5);
+AlloFlowANTI.txt:9685:
+                    
+safeOptions = 
+[correctWord, 
+...distractors];
+AlloFlowANTI.txt:10224
+:                
+const distractorsPool 
+= pool.filter(w => {
+AlloFlowANTI.txt:10258
+:                
+const 
+selectedDistractors = 
+shuffleSeeded(filterBy
+Difficulty(distractors
+Pool)).slice(0, 
+distractorLimit);
+AlloFlowANTI.txt:10270
+:                     
+       distractors: 
+selectedDistractors
+AlloFlowANTI.txt:10492
+:                
+const 
+selectedDistractors = 
+wfShuffle(distractorPo
+ol).slice(0, 
+rimeDistractorLimit);
+AlloFlowANTI.txt:10506
+:                     
+       distractors: 
+selectedDistractors
+AlloFlowANTI.txt:14655
+:                
+const 
+selectedDistractors = 
+wfShuffle(distractorPo
+ol).slice(0, 
+rimeDistractorLimit);
+AlloFlowANTI.txt:14669
+:                     
+       distractors: 
+selectedDistractors
+AlloFlowANTI.txt:33736
+:      let 
+allDistractors = [];
+AlloFlowANTI.txt:33752
+:          
+allDistractors = 
+generatedContent?.data
+AlloFlowANTI.txt:33761
+:          
+allDistractors = 
+generatedContent?.data
+AlloFlowANTI.txt:33765
+:      const 
+shuffledDistractors = 
+fisherYatesShuffle(all
+Distractors).slice(0, 
+5);
+AlloFlowANTI.txt:33766
+:      const options 
+= [correctOption, ...s
+huffledDistractors];
+AlloFlowANTI.txt:36318
+:                
+const 
+selectedDistractors = 
+wfShuffle(distractorPo
+ol).slice(0, 
+rimeDistractorLimit);
+AlloFlowANTI.txt:36332
+:                     
+       distractors: 
+selectedDistractors
+AlloFlowANTI.txt:45848
+:            
+Determine if the 
+indicated correct 
+answer is the single, 
+factually correct 
+option. Then explain 
+the correct answer 
+and debunk the 
+distractors.
+AlloFlowANTI.txt:49713
+:                
+const 
+selectedDistractors = 
+wfShuffle(distractorPo
+ol).slice(0, 
+rimeDistractorLimit);
+AlloFlowANTI.txt:49727
+:                     
+       distractors: 
+selectedDistractors
+AlloFlowANTI.txt:49966
+:                     
+   Determine if the 
+indicated correct 
+answer is the single, 
+factually correct 
+option. Then explain 
+the correct answer 
+and debunk the 
+distractors.
+AlloFlowANTI.txt:53382
+:                - 
+${isSimpler ? 
+"Simplify vocabulary, 
+focus on direct 
+recall (DOK 1), 
+ensure distractors 
+are clearly 
+incorrect/distinct." 
+: "Increase 
+vocabulary rigor, 
+focus on 
+inference/analysis 
+(DOK 2-3), make 
+distractors more 
+plausible to test 
+deep understanding."}
+
+

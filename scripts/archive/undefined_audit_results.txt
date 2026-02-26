@@ -1,0 +1,182 @@
+﻿================================================================================
+SYSTEMATIC UNDEFINED AUDIT ΓÇö AlloFlowANTI.txt
+================================================================================
+
+≡ƒôª PHASE 1: History Item Creation Sites
+------------------------------------------------------------
+Found 17 history item creation sites.
+
+
+≡ƒöì PHASE 2: Item Shape Analysis
+------------------------------------------------------------
+
+≡ƒÜ¿ PHASE 3: Conditional/Optional Field Patterns in Item Definitions
+------------------------------------------------------------
+
+≡ƒöÑ PHASE 4: Firestore Write Path Coverage
+------------------------------------------------------------
+
+≡ƒôï PHASE 5: Config Field Analysis
+------------------------------------------------------------
+
+================================================================================
+≡ƒôè AUDIT RESULTS
+================================================================================
+
+============================================================
+1. HISTORY ITEMS MISSING FIELDS (17 issues)
+============================================================
+  L34495: newChallengeItem
+    Missing: config, type
+    Detail: Defined at L34487, keys: ['id', 'title', 'data', 'meta', 'timestamp']
+  L36582: newItem
+    Missing: config
+    Detail: Defined at L36573, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L37790: fluencyRecordItem
+    Missing: config
+    Detail: Defined at L37769, keys: ['id', 'type', 'title', 'timestamp', 'meta', 'data', 'audioRecording', 'mimeType', 'fullAnalysis', 'wordData', 'feedback', 'sourceText', 'metrics', 'totalWords']
+  L43483: newItem
+    Missing: config, type
+    Detail: Defined at L43477, keys: ['id', 'title', 'timestamp']
+  L43842: newItem
+    Missing: config
+    Detail: Defined at L43830, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L44195: newItem
+    Missing: config
+    Detail: Defined at L44187, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L45181: newAdventureItem
+    Missing: config
+    Detail: Defined at L45159, keys: ['id', 'type', 'title', 'meta', 'timestamp', 'data', 'snapshot', 'currentScene', 'history', 'level', 'xp', 'energy', 'gold', 'inventory', 'systemResources', 'voiceMap', 'turnCount', 'isGameOver']
+  L47675: newItem
+    Missing: config
+    Detail: Defined at L47662, keys: ['id', 'type', 'title', 'data', 'meta', 'timestamp']
+  L48496: newItem
+    Missing: config
+    Detail: Defined at L48488, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48676: newItem
+    Missing: config
+    Detail: Defined at L48668, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48709: newItem
+    Missing: config
+    Detail: Defined at L48701, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48742: newItem
+    Missing: config
+    Detail: Defined at L48734, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48769: newItem
+    Missing: config
+    Detail: Defined at L48761, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48785: newItem
+    Missing: config
+    Detail: Defined at L48777, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L50390: tempItem
+    Missing: config, type
+    Detail: Defined at L50382, keys: ['id', 'data', 'meta', 'title', 'timestamp']
+  L51830: newItem
+    Missing: type
+    Detail: Defined at L51816, keys: ['id', 'data', 'meta', 'title', 'timestamp', 'config', 'grade', 'language', 'standards', 'interests']
+  L54257: newItem
+    Missing: config, type
+    Detail: Defined at L54247, keys: ['id', 'data', 'title', 'timestamp']
+
+============================================================
+2. RISKY FIELD PATTERNS (0 patterns)
+============================================================
+
+============================================================
+3. UNPROTECTED FIRESTORE WRITES (47 writes)
+============================================================
+  L16937: await setDoc(translationRef, accumulatedPack);
+  L19902: await updateDoc(sessionRef, {
+  L19920: await updateDoc(sessionRef, {
+  L21375: writePromises.push(setDoc(assetRef, { data: val }));
+  L25702: await updateDoc(sessionRef, {
+  L25737: await updateDoc(sessionRef, {
+  L25763: await updateDoc(sessionRef, {
+  L25963: await updateDoc(sessionRef, {
+  L26315: await updateDoc(sessionRef, {
+  L26323: await updateDoc(sessionRef, { 'escapeRoomState.timeRemaining': newTime });
+  L26349: await updateDoc(sessionRef, { 'escapeRoomState.isPaused': !isPaused });
+  L26355: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+  L26543: await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": true });
+  L26559: await updateDoc(sessionRef, {
+  L26566: try { await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": false }); } catch(e) { warnLog('Firestore sync f
+  L26583: await updateDoc(sessionRef, { "quizState.bossStats.image": newImage });
+  L26591: try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestio
+  L26672: try { await updateDoc(sessionRef, updatePayload); } catch(e) { warnLog('Firestore sync failed:', e); }
+  L26681: await updateDoc(sessionRef, {
+  L26694: await updateDoc(sessionRef, {
+  L26708: await updateDoc(sessionRef, {
+  L26745: try { await updateDoc(sessionRef, updates); } catch(e) { warnLog('Firestore sync failed:', e); }
+  L31190: await setDoc(ref, {
+  L35102: await setDoc(historyRef, {
+  L35111: await setDoc(historyRef, {
+  L35303: updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
+  L35309: updateDoc(sessionRef, {
+  L42281: await updateDoc(sessionRef, {
+  L42294: await updateDoc(sessionRef, {
+  L42304: await updateDoc(sessionRef, {
+  L42325: await updateDoc(sessionRef, updates);
+  L42334: await updateDoc(sessionRef, {
+  L42344: await updateDoc(sessionRef, {
+  L42508: await updateDoc(sessionRef, { mode: newMode });
+  L42573: await updateDoc(sessionRef, {
+  L43448: updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog("Sync error:", e));
+  L45283: await updateDoc(sessionRef, { 'democracy.isActive': newState });
+  L45763: await updateDoc(sessionRef, {
+  L46086: updateDoc(sessionRef, { "democracy.votes": {} }).catch(e => warnLog("Vote reset failed", e));
+  L49284: await updateDoc(sessionRef, {
+  L49326: await updateDoc(sessionRef, { 'escapeRoomState.isActive': false });
+  L49384: updateDoc(sessionRef, {
+  L53477: updateDoc(sessionRef, { currentResourceId: targetItem.id }).catch(e => warnLog("Sync error:", e));
+  L54659: await updateDoc(sessionRef, { resources });
+  L63848: try { await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" }); } catch(e) { warnLog('Fire
+  L63867: try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync fa
+  L63998: await updateDoc(sessionRef, {
+
+============================================================
+4. ITEMS MISSING CONFIG (16 items)
+============================================================
+  L34495: newChallengeItem (type: unknown)
+    Defined at L34487, keys: ['id', 'title', 'data', 'meta', 'timestamp']
+  L36582: newItem (type: math)
+    Defined at L36573, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L37790: fluencyRecordItem (type: unknown)
+    Defined at L37769, keys: ['id', 'type', 'title', 'timestamp', 'meta', 'data', 'audioRecording', 'mimeType', 'fullAnalysis', 'wordData', 'feedback', 'sourceText', 'metrics', 'totalWords']
+  L43483: newItem (type: unknown)
+    Defined at L43477, keys: ['id', 'title', 'timestamp']
+  L43842: newItem (type: unknown)
+    Defined at L43830, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L44195: newItem (type: unknown)
+    Defined at L44187, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L45181: newAdventureItem (type: unknown)
+    Defined at L45159, keys: ['id', 'type', 'title', 'meta', 'timestamp', 'data', 'snapshot', 'currentScene', 'history', 'level', 'xp', 'energy', 'gold', 'inventory', 'systemResources', 'voiceMap', 'turnCount', 'isGameOver']
+  L47675: newItem (type: persona)
+    Defined at L47662, keys: ['id', 'type', 'title', 'data', 'meta', 'timestamp']
+  L48496: newItem (type: unknown)
+    Defined at L48488, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48676: newItem (type: unknown)
+    Defined at L48668, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48709: newItem (type: unknown)
+    Defined at L48701, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48742: newItem (type: unknown)
+    Defined at L48734, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48769: newItem (type: unknown)
+    Defined at L48761, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L48785: newItem (type: unknown)
+    Defined at L48777, keys: ['id', 'type', 'data', 'meta', 'title', 'timestamp']
+  L50390: tempItem (type: unknown)
+    Defined at L50382, keys: ['id', 'data', 'meta', 'title', 'timestamp']
+  L54257: newItem (type: unknown)
+    Defined at L54247, keys: ['id', 'data', 'title', 'timestamp']
+
+================================================================================
+≡ƒÆí SUMMARY
+================================================================================
+  Total creation sites: 17
+  Items with missing fields: 17
+  Risky field patterns: 0
+  Unprotected Firestore writes: 47
+  Items missing config: 16
+
+  The stripUndefined() safety net handles ALL of these at runtime,
+  but fixing them at the source prevents silent data loss.

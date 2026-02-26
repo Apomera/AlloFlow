@@ -1,0 +1,147 @@
+=== ALL BRAINSTORM REFERENCES ===
+
+L44: 'tour-tool-brainstorm': 'brainstorm',
+L68: 'brainstorm',
+L7279: brainstorm_generated: "Brainstorm ideas generated!",
+L7424: tool_brainstorm: "Brainstorm Activity Ideas",
+L8585: brainstorm_title: "Engagement Ideas",
+L8586: brainstorm_desc: "Get creative ideas for opening hooks and class activities.",
+L8644: sidebar_brainstorm_title: "Engagement Ideas",
+L8645: sidebar_brainstorm_desc: "Get creative hooks, opening activities, and engagement strategies to introduce your content an
+L8837: brainstorm: {
+L8838: title: "Brainstorm Activity Ideas",
+L9288: teacher_copy_intro: "Includes Answer Keys, Fact Checks, Analyses, UDL Advice, and Brainstorming Ideas.",
+L9894: fallback_brainstorm: "Need a break? The 'Brainstorm' tool can suggest physical classroom activities.",
+L10829: title: "Brainstorm",
+L11023: apply_brainstorm: "Apply to Brainstorm",
+L11024: apply_brainstorm_tooltip: "Use this idea to generate Brainstorm activities"
+L11075: brainstorm_title: "Activity Ideas",
+L11076: brainstorm_desc: "Connects abstract concepts to the real world. Generates step-by-step Teacher Guides and suggests activ
+L11132: brainstorm: "Activity Ideas",
+L12443: case 'brainstorm': return <Lightbulb size={16} />;
+L12784: case 'brainstorm': return 'wand';
+L13255: } else if (type === 'brainstorm') {
+L13256: message = `Brainstorming complete! I've found some creative activities to connect${topicStr} to the real world.`;
+L13316: tips.push(t('tips.fallback_brainstorm'));
+L16293: "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'source', 'analys
+L16701: "brainstorm": "tour-tool-brainstorm",
+L16710: "bridge": "tour-tool-brainstorm",
+L24686: { value: 'brainstorm', label: t('blueprint.tools.brainstorm') },
+L26456: const [isEditingBrainstorm, setIsEditingBrainstorm] = useState(false);
+L26983: const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'outline', 'image', 'faq', 'sentence-frames', 
+L27060: 'tour-tool-brainstorm': 'brainstorm',
+L27134: // === BRAINSTORM ===
+L27135: 'brainstorm_custom_instructions': 'brainstorm',
+L27136: 'brainstorm_simulation_type': 'brainstorm',
+L27137: 'brainstorm_step_count': 'brainstorm',
+L27138: 'brainstorm_generate_button': 'brainstorm',
+L27139: 'brainstorm_simulation_detailed': 'brainstorm',
+L27140: 'brainstorm_step_count_detailed': 'brainstorm',
+L27141: 'brainstorm_panel': 'brainstorm',
+L27142: 'brainstorm_card': 'brainstorm',
+L27143: 'brainstorm_guide': 'brainstorm',
+L27239: 'tool_brainstorm': 'brainstorm',
+L27595: id: 'tour-tool-brainstorm',
+L27616: • **Idea Lists**: Bulleted brainstorming results.
+L27626: title: t('tour.brainstorm_title'),
+L27969: 'tool_brainstorm': "Generate creative activity ideas connected to real-world contexts.",
+L27995: // === BRAINSTORM - Detailed Configuration Help ===
+L27997: 'brainstorm_simulation_detailed': "Six Hats: Explore ideas from multiple perspectives (emotional, logical, creative, cri
+L27998: 'brainstorm_step_count_detailed': "More steps = more refined and developed ideas, but takes longer. Recommended: 3-5 ste
+L28056: // Brainstorm
+L28057: 'brainstorm_panel': "Generate creative ideas connected to real-world contexts and physical activities.",
+L28058: 'brainstorm_card': "Review generated ideas. Edit them, view connections, or generate a step-by-step teacher guide.",
+L28059: 'brainstorm_guide': "A step-by-step guide for implementing this activity in your classroom.",
+L28095: // Note: tool_fullpack, tool_lesson_plan, tool_quiz, tool_alignment, tool_adventure, tool_brainstorm, tool_simplified, t
+L28197: // === BRAINSTORM ===
+L28198: 'brainstorm_simulation_type': "Select a thinking routine or simulation mode (e.g., Socratic Bridge, Roleplay).",
+L28199: 'brainstorm_step_count': "Number of iterative steps or exchanges in the simulation.",
+L28200: 'brainstorm_custom_instructions': "Set the context or specific problem to brainstorm around.",
+L28201: 'brainstorm_generate_button': "Launch the brainstorming simulation.",
+L28850: 'brainstorm': 'tour-tool-brainstorm',
+L31377: const [brainstormCustomInstructions, setBrainstormCustomInstructions] = useState('');
+L33752: } else if (item.type === 'brainstorm') {
+L36865: if (item.type === 'brainstorm') return '';
+L37148: } else if (item.type === 'brainstorm') {
+L38832: const studentHistory = history.filter(item => !['udl-advice', 'brainstorm'].includes(item.type));
+L39222: case 'brainstorm': return t('brainstorm.title');
+L39733: } else if (type === 'brainstorm') {
+L39837: setBrainstormCustomInstructions(`Generate activities specifically based on this pedagogical strategy: "${hint.text}"`);
+L39839: handleGenerate('brainstorm');
+L43214: sendBotMsg("Sorting activity ready. Shall we **Brainstorm** hands-on activity ideas next?");
+L43215: flyToElement(getStageElementId('brainstorm'));
+L43216: advanceStage('brainstorm');
+L43218: sendBotMsg("Skipping sort. Want to **Brainstorm** activity ideas?");
+L43219: flyToElement(getStageElementId('brainstorm'));
+L43220: advanceStage('brainstorm');
+L43226: case 'brainstorm':
+L43228: sendBotMsg("Brainstorming engagement strategies...");
+L43229: await handleGenerate('brainstorm');
+L43230: if (isShowMeMode) performHighlight('tour-tool-brainstorm');
+L43239: sendBotMsg("Brainstorm activity ideas? (Yes/Skip)");
+L44969: Valid Tools: analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, 
+L44999: const VALID_TOOLS_LIST = "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, c
+L45067: "brainstormConfig": { "focus": "string" }
+L45115: if (config.brainstormConfig?.focus) {
+L45116: setBrainstormCustomInstructions(`Generate activities focused on: ${config.brainstormConfig.focus}`);
+L45984: type === 'brainstorm' ? brainstormCustomInstructions :
+L46048: if (['analysis', 'brainstorm', 'udl-advice', 'alignment-report'].includes(type)) {
+L46097: setIsEditingBrainstorm(false);
+L47157: } else if (type === 'brainstorm') {
+L47158: setGenerationStep(t('status_steps.brainstorming') || "Brainstorming ideas...");
+L47159: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun a
+L47202: console.error("Brainstorm Parse Error:", parseErr);
+L47203: throw new Error("Failed to parse Brainstorm JSON. The AI response was not valid.");
+L47310: case 'brainstorm':
+L47950: if (type === 'brainstorm') flyToElement('tour-tool-brainstorm');
+L47955: if (type === 'gemini-bridge') flyToElement('tour-tool-brainstorm');
+L48020: { type: 'brainstorm', directive: '' },
+L48096: case 'brainstorm': userOverride = brainstormCustomInstructions; break;
+L49738: : validHistory.filter(item => !['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type));
+L50233: const handleBrainstormChange = (index, field, value) => {
+L50234: if (!generatedContent || generatedContent.type !== 'brainstorm') return;
+L51174: if (r.type === 'brainstorm' && Array.isArray(r.data)) return `${r.data.length} ideas`;
+L51209: brainstorm: '💡', persona: '🎭', timeline: '📅', 'concept-sort': '🗂️',
+L52566: title={t('hints.apply_brainstorm_tooltip')}
+L52568: <Lightbulb size={12}/> {t('hints.apply_brainstorm')}
+L55224: <div id="tour-tool-brainstorm" data-help-key="tool_brainstorm" className={`rounded-3xl border-2 transition-all bg-white 
+L55225: ${activeView === 'brainstorm' ? 'border-yellow-600 shadow-xl shadow-yellow-500/20' : 'border-slate-200 hover:border-yell
+L55228: data-help-key="tool_brainstorm"
+L55229: onClick={() => toggleTool('brainstorm')}
+L55232: <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_brains
+L55233: {expandedTools.includes('brainstorm') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16} class
+L55235: {expandedTools.includes('brainstorm') && (
+L55239: <label className="block text-xs font-medium text-slate-700 mb-1">{t('brainstorm.instructions')}</label>
+L55241: data-help-key="brainstorm_custom_instructions"
+L55242: value={brainstormCustomInstructions}
+L55243: onChange={(e) => setBrainstormCustomInstructions(e.target.value)}
+L55244: placeholder={t('brainstorm.placeholder_input')}
+L55250: onClick={() => handleGenerate('brainstorm')}
+L55254: <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2">{t('brain
+L55260: <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('brainstorm.divider_or')}</span>
+L55267: <Terminal size={12}/> {t('brainstorm.simulation_type')}
+L55270: data-help-key="brainstorm_simulation_type"
+L55295: data-help-key="brainstorm_step_count"
+L55311: data-help-key="brainstorm_generate_button"
+L55317: {t('brainstorm.canvas_prompt')}
+L57090: activeView === 'brainstorm' ? <><Lightbulb className="text-yellow-600" size={20} /> Ideas</> :
+L62196: {activeView === 'brainstorm' && (
+L62197: <div className="space-y-6" data-help-key="brainstorm_panel">
+L62202: onClick={() => setIsEditingBrainstorm(!isEditingBrainstorm)}
+L62203: className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrain
+L62205: {isEditingBrainstorm ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
+L62206: {isEditingBrainstorm ? t('common.done_editing') : t('brainstorm.edit')}
+L62212: <div key={idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow" d
+L62213: {isEditingBrainstorm ? (
+L62220: onChange={(e) => handleBrainstormChange(idx, 'title', e.target.value)}
+L62222: placeholder={t('brainstorm.placeholder_title')}
+L62228: onChange={(e) => handleBrainstormChange(idx, 'description', e.target.value)}
+L62231: placeholder={t('brainstorm.placeholder_desc')}
+L62235: <strong className="block mb-1">{t('brainstorm.label_connection')}:</strong>
+L62238: onChange={(e) => handleBrainstormChange(idx, 'connection', e.target.value)}
+L62241: placeholder={t('brainstorm.placeholder_connection')}
+L62253: <strong>{t('brainstorm.label_connection')}:</strong> {idea.connection}
+L62259: <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-200" data-help-key="brainstorm_gui
+L62260: <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16}/> {t('brainstorm.teacher_gui
+L62272: {isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')}
+L64453: {isGeneratingExtensionGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')}

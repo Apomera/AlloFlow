@@ -1,0 +1,153 @@
+======================================================================
+MEDIUM-RISK WORD SOUNDS DIAGNOSTIC AUDIT
+File: AlloFlowANTI.txt
+======================================================================
+
+----------------------------------------------------------------------
+AUDIT 1: wordSoundsSessionGoal Duplicate State
+----------------------------------------------------------------------
+[OK] Only 1 declaration found at L1300. No duplication.
+
+  Setter references found: 4
+  L1300: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30); // Items per session (default 30)
+  L1707: onChange={(e) => setWordSoundsSessionGoal && setWordSoundsSessionGoal(parseInt(e.target.value))}
+  L3086: setWordSoundsSessionGoal,
+  L65019: setWordSoundsSessionGoal={setWordSoundsSessionGoal}
+
+----------------------------------------------------------------------
+AUDIT 2: useEffect Hooks Missing Dependency Arrays
+----------------------------------------------------------------------
+[ISSUE] Found 10 useEffect hooks potentially missing dependency arrays:
+  L2205: React.useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L6662: React.useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L6802: React.useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L18913: useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L19621: useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L27737: useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L34487: useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L36992: useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L37675: useEffect(() => {
+         Note: likely missing deps (ends with });)
+  L38376: useEffect(() => {
+         Note: likely missing deps (ends with });)
+
+----------------------------------------------------------------------
+AUDIT 3: Unguarded .map() Calls (Word Sounds Range)
+----------------------------------------------------------------------
+[ISSUE] Found 41 potentially unguarded .map() calls:
+  L1420: previewList.map(...)  ->  setSelectedIndices(new Set(previewList.map((_, i) => i)));
+  L1576: enabledActivities.map(...)  ->  enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
+  L1976: lessonPlanOrder.map(...)  ->  {lessonPlanOrder.map(actId => {
+  L2115: previewList.map(...)  ->  {previewList.map((word, i) => {
+  L2752: phonemes.map(...)  ->  {phonemes.map(p => (
+  L4022: alphabet.map(...)  ->  {alphabet.map((letter) => (
+  L4299: prev.map(...)  ->  setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: true } : c));
+  L4320: prev.map(...)  ->  setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: false } : c));
+  L4327: prev.map(...)  ->  setChips(prev => prev.map(c => ({...c, isPlaced: false})));
+  L4335: slots.map(...)  ->  {slots.map((slot, i) => (
+  L4487: result.map(...)  ->  return result.map(p => PHONEME_NORMALIZE[p] || p);
+  L4618: wordPool.map(...)  ->  return wordPool.map(entry => ({
+  L4694: preloadedWords.map(...)  ->  const rawPool = (wordPool && wordPool.length > 0) ? wordPool : preloadedWords.map(pw => ({
+  L4795: phonemes.map(...)  ->  const correctChips = phonemes.map((rawP, i) => {
+  L4808: phonemes.map(...)  ->  const usedPhonemes = new Set(phonemes.map(p => (p || '').toLowerCase().trim()));
+  L5623: wordsToPreload.map(...)  ->  const prefetchPromises = wordsToPreload.map(async (wordEntry, i) => {
+  L5642: distractorSets.map(...)  ->  await Promise.all(distractorSets.map(d => handleAudio(d, false).catch(() => {})));
+  L5646: keys.map(...)  ->  await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+  L5903: keys.map(...)  ->  await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+  L5932: phonemes.map(...)  ->  phonemes = phonemes.map(p => normalizePhoneme(p));
+  L6143: prev.map(...)  ->  setWsPreloadedWords(prev => prev.map(w =>
+  L6156: prev.map(...)  ->  setWsPreloadedWords(prev => prev.map(pw => {
+  L6611: phonemes.map(...)  ->  const chips = phonemes.map((p, i) => ({
+  L6620: phonemes.map(...)  ->  const usedPhonemes = new Set(phonemes.map(p => p.toLowerCase()));
+  L6655: shuffledChips.map(...)  ->  return shuffledChips.map((chip, i) => ({
+  L8025: prev.map(...)  ->  setSoundChips(prev => prev.map(c =>
+  L8038: prev.map(...)  ->  setSoundChips(prev => prev.map(c =>
+  L8066: newChips.map(...)  ->  newChips = newChips.map(c => c.id === item.id ? { ...c, used: true } : c);
+  L8073: newChips.map(...)  ->  newChips = newChips.map(c => c.id === item.id ? { ...c, used: false } : c);
+  L8101: newChips.map(...)  ->  newChips = newChips.map(c => c.id === item.id ? { ...c, used: true } : c);
+  L8112: newChips.map(...)  ->  newChips = newChips.map(c => c.id === item.id ? { ...c, used: false } : c);
+  L8856: elkoninBoxes.map(...)  ->  {elkoninBoxes.map((chip, i) => {
+  L8981: elkoninBoxes.map(...)  ->  const userPhonemes = elkoninBoxes.map(b => (b.phoneme || '').trim()).join('').toLowerCase();
+  L8982: expected.map(...)  ->  const expectedPhonemes = expected.map(p => (p || '').trim()).join('').toLowerCase();
+  L9420: scrambledLetters.map(...)  ->  {scrambledLetters.map((letter, idx) => (
+  L9577: letterOptions.map(...)  ->  {letterOptions.map((letter, idx) => (
+  L9866: numberOptions.map(...)  ->  {numberOptions.map((num) => (
+  L10278: availableLanguages.map(...)  ->  {availableLanguages.map(lang => (
+  L10376: ACTIVITIES.map(...)  ->  {ACTIVITIES.map(activity => (
+  L10631: importedStudents.map(...)  ->  const rows = importedStudents.map(student => [
+  L10803: importedStudents.map(...)  ->  {importedStudents.map(student => (
+
+----------------------------------------------------------------------
+AUDIT 4: Silent Catch Blocks (Empty Error Handlers)
+----------------------------------------------------------------------
+[OK] No silent catches in WS range (L1000-L12000).
+
+  Global silent catches (entire file): 0
+
+----------------------------------------------------------------------
+AUDIT 5: PHONEME_STORAGE_KEY Duplication
+----------------------------------------------------------------------
+[ISSUE] Found 5 PHONEME_STORAGE_KEY declarations:
+  L841: const PHONEME_STORAGE_KEY = 'allo_phoneme_bank_v1';
+  L856: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L872: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L886: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+  L6305: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+
+  RECOMMENDATION: Consolidate to single declaration near top of WS scope.
+
+  Total references: 4
+  L858: localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L890: localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+  L6304: // Uses global PHONEME_STORAGE_KEY from L841
+  L6306: if (bank[targetWord]) { delete bank[targetWord]; localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank)); }
+
+----------------------------------------------------------------------
+AUDIT 6: Unsafe Property Access (Missing Optional Chaining)
+----------------------------------------------------------------------
+[ISSUE] Found 1 potentially unsafe property accesses:
+  L9693 (wordSoundsPhonemes deep access): if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes && wordSoundsPhonemes.phonemes.length > 0) {
+
+----------------------------------------------------------------------
+AUDIT 7: setState(null) Without Guards
+----------------------------------------------------------------------
+[INFO] Found 33 setState(null) calls without explicit guards:
+  L2010: setDraggedActivity(null);
+  L2012: onDragEnd={() => setDraggedActivity(null)}
+  L2438: setDraggedPhoneme(null);
+  L2439: setDragOverIndex(null);
+  L2444: setDragOverIndex(null);
+  L2457: setExpandedIndex(null); // Collapse on reorder
+  L2804: try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
+  L2862: try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
+  L3303: setTimeout(() => setErrorMessage(null), duration);
+  L3818: setPlayingIndex(null); // Clear highlight
+  L3893: setFeedback(null);
+  L3926: setDraggedLetter(null);
+  L4105: setTimeout(() => setShakenWord(null), 500);
+  L4985: setPhonemeError(null);
+  L6353: setRegeneratingIndex(null);
+  ... and 18 more
+
+  NOTE: Many of these are intentional resets and may not need guards.
+
+----------------------------------------------------------------------
+AUDIT 8: checkAnswer Function Shadowing
+----------------------------------------------------------------------
+[INFO] Found 4 checkAnswer definitions (shadowing risk):
+  L7497: const checkAnswer = React.useCallback((answer, expectedAnswer) => {
+  L23656: const checkAnswers = () => {
+  L24359: const checkAnswers = () => {
+  L25455: const checkAnswer = () => {
+
+  NOTE: If these are in separate component scopes, shadowing is safe.
+  This is a maintenance hazard, not a runtime bug.
+

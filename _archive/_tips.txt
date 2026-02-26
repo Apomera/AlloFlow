@@ -1,0 +1,4 @@
+﻿=== Word sounds tip/hint function ===
+L736: 'word_sounds.tip': 'Click on the word to hear it spoken aloud!',
+
+=== showTip / useTip / tipMode ===

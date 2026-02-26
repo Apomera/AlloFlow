@@ -1,0 +1,10 @@
+L50121:       } else if (type === 'simplified') {
+L50700:       } else if (type === 'quiz') {
+L51042:       } else if (type === 'faq') {
+L51112:       } else if (type === 'sentence-frames') {
+L51739:       if (type === 'simplified') {
+L51762:       const toastTitle = type === 'simplified' ? "Adapted Text" : getDefaultTitle(type);
+L51766:           if (type === 'simplified') flyToElement('ui-tool-simplified');
+L51768:           if (type === 'quiz') flyToElement('ui-tool-quiz');
+L51769:           if (type === 'faq') flyToElement('tour-tool-faq');
+L51771:           if (type === 'sentence-frames') flyToElement('tour-tool-scaffolds');

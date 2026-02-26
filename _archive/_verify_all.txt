@@ -1,0 +1,36 @@
+=== FIX 1: isMountedRef ===
+  L3137: const isMountedRef = React.useRef(true); // Guard against unmounted state updates
+  L3198: const isMountedRef = React.useRef(true); // Track mount state for async cleanup
+  L3299: isMountedRef.current = true;
+  L3300: return () => { isMountedRef.current = false; };
+  L3333: setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+  L4135: setTimeout(() => { if (isMountedRef.current) setShakenWord(null); }, 500);
+  L6939: if (!isMountedRef.current) return;
+  L7579: setTimeout(() => { if (isMountedRef.current) setWordSoundsFeedback?.(null); }, 1500);
+  L7599: setTimeout(() => { if (isMountedRef.current) setIsCelebrating(false); }, 2500);
+  L7678: if (!isMountedRef.current) return;
+  L7681: if (!isMountedRef.current) return;
+  L7697: setTimeout(() => { if (isMountedRef.current) setShowSessionComplete(true); }, 2500);
+  L7708: setTimeout(() => { if (isMountedRef.current) setShowLetterHints(false); }, 2000);
+  L7728: if (!isMountedRef.current) return;
+  L7732: if (!isMountedRef.current) return;
+  L7743: setTimeout(() => { if (isMountedRef.current) setWordSoundsActivity('orthography'); }, 2000);
+  L8472: isMountedRef.current = false;
+  L9468: if (!isMountedRef.current) return;
+  L9594: if (!isMountedRef.current) return;
+
+=== FIX 2: setPreloadedWords fallbacks ===
+  L5227: // When DISABLE_GEMINI_PHONEMES is true, generate local fallback data
+  L5325: console.log("📦 Generated local fallback phoneme data for:", word, phonemeData);
+  L5993: // If still 0 phonemes after 3 retries, use ENHANCED local fallback
+  L6238: console.warn("⚠️ REORDER: Using local fallback (won't persist across unmount)");
+  L6264: console.warn("⚠️ UPDATE: Using local fallback (won't persist across unmount)");
+  L6308: console.warn("⚠️ DELETE: Using local fallback (won't persist across unmount)");
+  L7058: // CONSOLIDATED: Use preloaded data or local fallback instead of fetchWordData
+  L7132: // CONSOLIDATED: Use lightweight local fallback instead of full fetchWordData pipeline
+  L7133: console.log("📦 Using local fallback for:", targetWord, "(preloaded data unavailable)");
+  L7948: // CONSOLIDATED: Use local fallback instead of fetchWordData
+  L7949: console.log("📦 Using local fallback for:", targetWord, "(no preloaded match)");
+  L7974: // CONSOLIDATED: Use preloaded data or local fallback
+
+=== Remaining error-only branches ===

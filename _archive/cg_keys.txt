@@ -1,0 +1,8 @@
+﻿Total chat_guide keys: 7
+  chat_guide.advice_saved
+  chat_guide.advice_saved_raw
+  chat_guide.highlight_confirm
+  chat_guide.history_saved_toast
+  chat_guide.independent_welcome
+  chat_guide.save_actionable_btn
+  chat_guide.save_actionable_loading

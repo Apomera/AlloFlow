@@ -1,0 +1,160 @@
+Total useMemo calls: 53
+
+#1 L1498 (indent=8) ⚠️ OUTSIDE MAIN COMPONENT: const previewList = React.useMemo(() => {
+  Enclosing: L1346: const PHONEME_AUDIO_BANK = new Proxy({}, {
+
+#2 L4178 (indent=4): const WordFamiliesView = React.useMemo(() => ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, showLetterHints }) =>
+  Enclosing: UNKNOWN
+
+#3 L4533 (indent=4): const ACTIVITIES = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#4 L4598 (indent=4): const wordPool = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#5 L4639 (indent=4): const availableLanguages = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#6 L4708 (indent=4): const categorizedPool = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#7 L4762 (indent=4): const easyPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) 
+  Enclosing: UNKNOWN
+
+#8 L4763 (indent=4): const mediumPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word
+  Enclosing: UNKNOWN
+
+#9 L4764 (indent=4): const hardPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficulty(w.word) 
+  Enclosing: UNKNOWN
+
+#10 L5664 (indent=12) ⚠️ OUTSIDE MAIN COMPONENT: const validResults = useMemo(() => results.filter(Boolean), [results]);
+  Enclosing: UNKNOWN
+
+#11 L5717 (indent=8) ⚠️ OUTSIDE MAIN COMPONENT: const wordsNeedingAudio = useMemo(() => preloadedWords.filter(w => !w.ttsReady && !w._audioRequested), [preloadedWords, ttsReady])
+  Enclosing: UNKNOWN
+
+#12 L6376 (indent=12) ⚠️ OUTSIDE MAIN COMPONENT: const isoDistractors = useMemo(() => isoAllPhonemes.filter(p => p.toLowerCase() !== correctSound?.toLowerCase()).slice(0, 3), [iso
+  Enclosing: UNKNOWN
+
+#13 L7930 (indent=8) ⚠️ OUTSIDE MAIN COMPONENT: const samplePathPoints = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#14 L8408 (indent=4): const scrambledLetters = React.useMemo(() =>
+  Enclosing: UNKNOWN
+
+#15 L8414 (indent=4): const hiddenIndex = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#16 L8420 (indent=4): const letterOptions = React.useMemo(() => {
+  Enclosing: UNKNOWN
+
+#17 L8530 (indent=16) ⚠️ OUTSIDE MAIN COMPONENT: const availableChips = useMemo(() => soundChips.filter(c => !c.used), [soundChips]);
+  Enclosing: UNKNOWN
+
+#18 L8904 (indent=16) ⚠️ OUTSIDE MAIN COMPONENT: const correctCount = useMemo(() => letterFeedback.filter(l => l.correct).length, [letterFeedback, correct]);
+  Enclosing: UNKNOWN
+
+#19 L10354 (indent=4): const sortedAndFiltered = React.useMemo(() => {
+  Enclosing: L10320: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+#20 L10547 (indent=4): const classSummary = React.useMemo(() => {
+  Enclosing: L10320: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+#21 L10568 (indent=8) ⚠️ OUTSIDE MAIN COMPONENT: const students = useMemo(() => importedStudents.filter(s => s.stats.quizAvg > 0), [importedStudents, quizAvg, stats]);
+  Enclosing: L10320: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+#22 L17529 (indent=2): const particles = React.useMemo(() => Array.from({ length: 24 }).map((_, i) => ({
+  Enclosing: L17523: const handleEnd = () => {
+
+#23 L18107 (indent=18) ⚠️ OUTSIDE MAIN COMPONENT: const complexTerms = useMemo(() => termNames.filter(t => t.length > 8 || t.includes(' ')), [termNames]);
+  Enclosing: L18051: const pendingSpeechTimerRef = useRef(null);
+
+#24 L19559 (indent=8) ⚠️ OUTSIDE MAIN COMPONENT: const rows = useMemo(() => body.split(/\\\\\s*/).filter(r => r.trim()), [body, split]);
+  Enclosing: L19549: const processMathHTML = (text) => {
+
+#25 L22132 (indent=18) ⚠️ OUTSIDE MAIN COMPONENT: const filtered = useMemo(() => prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== defId), [prev, defId, keyboardSel
+  Enclosing: L22126: const handleDefKeyDown = (e, defId) => {
+
+#26 L22203 (indent=18) ⚠️ OUTSIDE MAIN COMPONENT: const filtered = useMemo(() => prev.filter(c => c.defId !== hitDefId), [prev, defId, hitDefId]);
+  Enclosing: L22143: const handleMouseDown = (e, termId) => {
+
+#27 L22219 (indent=6) ⚠️ OUTSIDE MAIN COMPONENT: const correctCount = useMemo(() => connections.filter(c => c.termId === c.defId).length, [connections, defId, termId]);
+  Enclosing: L22217: const checkAnswers = () => {
+
+#28 L22974 (indent=2): const deckItems = useMemo(() => items.filter(i => i.currentContainer === 'deck'), [items]);
+  Enclosing: L22923: const renderCard = (item) => {
+
+#29 L23240 (indent=2): const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
+  Enclosing: L23239: const hasTranslations = items.some(i => i.translation);
+
+#30 L23241 (indent=2): const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
+  Enclosing: L23240: const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
+
+#31 L23242 (indent=2): const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
+  Enclosing: L23241: const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
+
+#32 L23243 (indent=2): const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  Enclosing: L23242: const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
+
+#33 L23448 (indent=2): const availableLangs = React.useMemo(() => {
+  Enclosing: L23447: const [crosswordLang, setCrosswordLang] = useState('English');
+
+#34 L24596 (indent=4): const items = useMemo(() => data.filter(item => item.term && item.term.length > 2), [data, term]);
+  Enclosing: L24593: const [isGameOver, setIsGameOver] = useState(false);
+
+#35 L26135 (indent=2): const escapedTeams = useMemo(() => allTeams.filter(t => escapeState.teamProgress?.[t]?.isEscaped), [allTeams, escapeState, isEscap
+  Enclosing: L26134: const totalPuzzles = puzzles.length;
+
+#36 L26270 (indent=8) ⚠️ OUTSIDE MAIN COMPONENT: const count = useMemo(() => Object.values(responses || {}).filter(r => r === idx).length, [Object, responses, values]);
+  Enclosing: L26259: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appI
+
+#37 L26553 (indent=4): const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g]) => g !== null), [groups]);
+  Enclosing: L26259: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appI
+
+#38 L27100 (indent=2): const analytics = useMemo(() => calculateAnalyticsMetrics(dashboardData), [dashboardData]);
+  Enclosing: L27098: const { count: studentCount, avgLevel: classAvgLevel } = getClassMetrics();
+
+#39 L27102 (indent=2): const misconceptionChartData = useMemo(() => analytics.misconceptions.map((m, idx) => ({
+  Enclosing: L27100: const analytics = useMemo(() => calculateAnalyticsMetrics(dashboardData), [dashboardData]);
+
+#40 L27106 (indent=2): const selectedStudent = useMemo(() => dashboardData.find(s => s.id === selectedStudentId), [dashboardData, selectedStudentId]);
+  Enclosing: L27102: const misconceptionChartData = useMemo(() => analytics.misconceptions.map((m, idx) => ({
+
+#41 L27111 (indent=6) ⚠️ OUTSIDE MAIN COMPONENT: const quizzes = useMemo(() => history.filter(h => h.type === 'quiz'), [history, quiz, type]);
+  Enclosing: L27107: const getStudentAvgScore = (student) => {
+
+#42 L27295 (indent=2): const quizHistory = useMemo(() => selectedStudent?.history?.filter(h => h.type === 'quiz') || [], [selectedStudent?.history]);
+  Enclosing: L27247: const handleExportCSV = () => {
+
+#43 L28825 (indent=12) ⚠️ OUTSIDE MAIN COMPONENT: const w = useMemo(() => cleaned.split(' ').filter(word => word.length > 0), [cleaned, split, word]);
+  Enclosing: L28798: const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+
+#44 L29748 (indent=2): const isCanvas = React.useMemo(() => {
+  Enclosing: L29747: const glossaryAudioCache = useRef(new Map());
+
+#45 L29811 (indent=2): const adventureImageDB = React.useMemo(() => ({
+  Enclosing: L29748: const isCanvas = React.useMemo(() => {
+
+#46 L34756 (indent=2): const latestLessonPlan = React.useMemo(() => {
+  Enclosing: L34755: const [isSaveActionPulsing, setIsSaveActionPulsing] = useState(false);
+
+#47 L35443 (indent=2): const filteredGlossaryData = useMemo(() => {
+  Enclosing: L35441: const [passAnalysisToQuiz, setPassAnalysisToQuiz] = useState(false);
+
+#48 L36445 (indent=2): const latestGlossary = React.useMemo(() => {
+  Enclosing: L36388: const handleBankMouseDown = (e) => {
+
+#49 L36460 (indent=2): const isClozeComplete = React.useMemo(() => {
+  Enclosing: L36445: const latestGlossary = React.useMemo(() => {
+
+#50 L36465 (indent=2): const displayLanguages = React.useMemo(() => {
+  Enclosing: L36460: const isClozeComplete = React.useMemo(() => {
+
+#51 L42649 (indent=2): const isScaffoldComplete = React.useMemo(() => {
+  Enclosing: L42641: const calculateStudentStats = () => {
+
+#52 L54068 (indent=2): const botAccessory = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards]);
+  Enclosing: L54049: const getBotAccessoryInternal = () => {
+
+#53 L54070 (indent=2): const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingAudio, phon
+  Enclosing: L54068: const botAccessory = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards])

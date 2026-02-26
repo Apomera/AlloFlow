@@ -1,0 +1,12 @@
+﻿  [UPDATED] sound_match_start <- find_all_the_words_that_start_with_the_sound_instruction.webm (75100 b64 chars)
+  [UPDATED] sound_match_end <- find_all_the_words_that_end_with_the_sound_instruction.webm (71236 b64 chars)
+  [ADDED] sound_match_start_short <- find_all_words_that_start_with_instruction.webm (72524 b64 chars)
+  [ADDED] sound_match_end_short <- find_all_the_words_that_end_with_instruction.webm (63508 b64 chars)
+
+audio_bank.json saved (5,220,760 bytes)
+Total instruction entries: 76
+  sound_match_start: PRESENT
+  sound_match_end: PRESENT
+  sound_match_start_short: PRESENT
+  sound_match_end_short: PRESENT
+  mapping: PRESENT

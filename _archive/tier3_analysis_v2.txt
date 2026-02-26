@@ -1,0 +1,34 @@
+=== Tier 3 v2: Comprehensive Style Analysis ===
+Total style objects: 141
+Inside AlloFlowContent: 64
+
+=== Duplicates in AlloFlowContent (2+) ===
+  [3x] { pointerEvents: 'none' }
+  [2x] { textShadow: '0 2px 4px rgba(255,255,255,1)' }
+  [2x] { width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }
+  [2x] { width: `${Math.min(100, (adventureState.xp / adventureState.xpToNextLevel) * 100)}%` }
+  [2x] { width: `${adventureState.energy}%` }
+
+=== All duplicates (2+) ===
+  [4x] { imageRendering: 'pixelated' }
+  [3x] { width: `${percent}%` }
+  [3x] { pointerEvents: 'none' }
+  [2x] { width: `${progressPercent}%` }
+  [2x] { animationDelay: '0.5s' }
+  [2x] { animationDelay: `${idx * 50}ms` }
+  [2x] { textShadow: '0 2px 4px rgba(255,255,255,1)' }
+  [2x] { width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }
+  [2x] { width: `${Math.min(100, (adventureState.xp / adventureState.xpToNextLevel) * 100)}%` }
+  [2x] { width: `${adventureState.energy}%` }
+
+=== Constant style candidates (no variables, 2+ occurrences) ===
+  [DYNAMIC 4x] { imageRendering: 'pixelated' }
+  [DYNAMIC 3x] { width: `${percent}%` }
+  [DYNAMIC 3x] { pointerEvents: 'none' }
+  [DYNAMIC 2x] { width: `${progressPercent}%` }
+  [DYNAMIC 2x] { animationDelay: '0.5s' }
+  [DYNAMIC 2x] { animationDelay: `${idx * 50}ms` }
+  [DYNAMIC 2x] { textShadow: '0 2px 4px rgba(255,255,255,1)' }
+  [DYNAMIC 2x] { width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }
+  [DYNAMIC 2x] { width: `${Math.min(100, (adventureState.xp / adventureState.xpToNextLevel) * 100)}%` }
+  [DYNAMIC 2x] { width: `${adventureState.energy}%` }

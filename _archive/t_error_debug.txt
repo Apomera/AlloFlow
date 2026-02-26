@@ -1,0 +1,110 @@
+=== React.memo components near blob lines 50276/50359 ===
+
+
+=== Source lines 50270-50370 ===
+  50270:                 visualPlan: executedPlan
+  50271:             };
+  50272:             metaInfo = t('visual_director.multi_panel', { count: executedPlan.panels.length }) || `Multi-Panel (${execut
+  50273:         } else {
+  50274:         setGenerationStep(t('status_steps.rendering_diagram'));
+  50275:         let imageBase64; try { imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual); } catch(e) { warnLo
+  50276: 
+  50277:         if (fillInTheBlank || noText || creativeMode) {
+  50278:              try {
+  50279:                  setGenerationStep(t('status.refining_image'));
+  50280:                  const rawBase64 = imageBase64.split(',')[1];
+  50281:                  let refinePrompt = "";
+  50282:                  if (fillInTheBlank) {
+  50283:                      refinePrompt = "Edit this educational diagram. Replace ALL text labels, numbers, and words with emp
+  50284:                  } else if (noText) {
+  50285:                      refinePrompt = "Remove all text, labels, letters, numbers, and words from this image. Keep the visu
+  50286:                  } else if (creativeMode) {
+  50287:                      refinePrompt = "Enhance this image to make it significantly more eye-catching and visually appealin
+  50288:                  }
+  50289:                  if (refinePrompt) {
+  50290:                      const refinedImage = await callGeminiImageEdit(refinePrompt, rawBase64, targetWidth, targetQual);
+  50291:                      if (refinedImage) {
+  50292:                          imageBase64 = refinedImage;
+  50293:                          addToast(t('visuals.actions.enhanced_success'), "success");
+  50294:                      }
+  50295:                  }
+  50296:              } catch (refineErr) {
+  50297:                  warnLog("Auto-refinement failed:", refineErr);
+  50298:                  addToast(t('visuals.actions.enhanced_skipped'), "warning");
+  50299:              }
+  50300:         }
+  50301:         content = { prompt: finalPrompt, style: styleDescription, imageUrl: imageBase64, altText: altText };
+  50302:         if (fillInTheBlank) {
+  50303:             metaInfo = t('meta.worksheet_mode');
+  50304:         } else {
+  50305:             metaInfo = effectiveVisualStyle !== 'Default' ? effectiveVisualStyle : t('meta.visual_diagram');
+  50306:         }
+  50307:         }
+  50308:       } else if (type === 'quiz') {
+  50309:         setShowQuizAnswers(false);
+  50310:         let analysisContext = "";
+  50311:         if (passAnalysisToQuiz) {
+  50312:              const analysisItem = history.slice().reverse().find(h => h.type === 'analysis');
+  50313:              if (analysisItem && analysisItem.data) {
+  50314:                  const { concepts, readingLevel } = analysisItem.data;
+  50315:                  const levelStr = typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
+  50316:                  analysisContext = `
+  50317:                  PRIORITY CONTEXT FROM SOURCE ANALYSIS:
+  50318:                  - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}
+  50319:                  - Detected Source Level: ${levelStr}
+  50320:                  INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for under
+  50321:                  `;
+  50322:              }
+  50323:         }
+  50324:         let dokInstruction = "";
+  50325:         if (dokLevel === "Mixed") {
+  50326:             dokInstruction = "Structure the questions progressively: Start with simple DOK 1 (Recall) questions, then mo
+  50327:         } else if (dokLevel) {
+  50328:             dokInstruction = `Target Webb's Depth of Knowledge (DOK): ${dokLevel}`;
+  50329:         }
+  50330:         const prompt = `
+  50331:           Create a short "Exit Ticket" quiz based on this text for ${gradeLevel} level students.
+  50332:           ${dnaPromptBlock}
+  50333:           Language: ${effectiveLanguage}.
+  50334:           ${dokInstruction}
+  50335:           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
+  50336:           ${analysisContext}
+  50337:           Include:
+  50338:           1. ${effectiveQuizCount} Multiple Choice Questions (with 4 options each).
+  50339:           2. ${quizReflectionCount} Open-Ended Reflection Question(s).
+  50340:           3. The correct answer for the MCQs.
+  50341:           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary"
+  50342:           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emoji
+  50343:           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
+  50344:           ${effectiveLanguage !== 'English' ? 'For every question, option, and reflection, provide an English translatio
+  50345:           ${dialectInstruction}
+  50346:           Return ONLY valid JSON format: { "questions": [{ "question": "...", ${effectiveLanguage !== 'English' ? '"ques
+  50347:           ${differentiationContext}
+  50348:           Text: "${textToProcess}"
+  50349:         `;
+  50350:         setGenerationStep(t('status_steps.drafting_quiz'));
+  50351:         const result = await callGemini(prompt, true);
+  50352: 
+  50353:         try {
+  50354:             content = JSON.parse(cleanJson(result));
+  50355:             if (!content) content = {};
+  50356:             if (Array.isArray(content)) {
+  50357:                  content = { questions: content, reflections: [] };
+  50358:             }
+  50359:             if (!content.questions || !Array.isArray(content.questions)) content.questions = [];
+  50360:             if (!content.reflections || !Array.isArray(content.reflections)) content.reflections = [];
+  50361:             content.questions = content.questions.map(q => ({
+  50362:                 ...q,
+  50363:                 question: q.question || "Question text missing",
+  50364:                 options: Array.isArray(q.options) ? q.options : ["True", "False"],
+  50365:                 correctAnswer: q.correctAnswer || "",
+  50366:             }));
+  50367:             try {
+  50368:                 const checkedQuestions = await Promise.all(content.questions.map(async (q, idx) => {
+  50369:                     setGenerationStep(`${t('status_steps.verifying_answers')} (${idx + 1}/${content.questions.length})..
+  50370:                     await new Promise(resolve => setTimeout(resolve, idx * 200));
+
+=== Components near line 50276 without t destructured ===
+
+  Component start at line 50114:                 const adjacentRimes = rimeKeys.filter(r => r !== targetRime && (
+  *** NO t() DESTRUCTURED! ***

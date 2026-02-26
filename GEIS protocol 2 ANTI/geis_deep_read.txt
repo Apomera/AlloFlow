@@ -1,0 +1,268 @@
+﻿=== 001 eval tier 1 data repository.docx ===
+Evaluation Data
+Reason for Referral
+No data
+Background Form 
+No data
+Previous Evaluations 
+No data
+Previous Findings 
+No data
+Report on Preschool or Childcare Participation
+No data
+IEP/IFSP 
+No data
+CDS Observation
+No data
+ASEBA Information
+No data
+Parent Interview 
+No data
+Evaluation Observation and Test Results
+No data
+
+---END---
+
+=== 11 MCP IS RFR 2 (Flash).docx ===
+Create a paragraph describing the reason for referral from the attached document(s), consistent with the following instructions: 
+Begin paragraph with text: "Reason for Referral:  " in bold
+Write one or two sentences naming the child and listing positive qualities and attributes such as personal strengths and interests if any are listed.  Otherwise, ignore this instruction.  
+Examples: Use the following examples for style and organizational guidance only. Do not reproduce the specific content of these examples.
+[Child] is a helpful, giving four-year-old boy who enjoys outdoor play such as jumping on the trampoline and riding his bike.  
+[Child] is an active boy who likes the color red, and enjoys running, jumping, and playing with his younger brother.  
+Add one to three sentences stating the name and title of the referring individual and the name of the referring agency and the reason the child was referred for psychological evaluation.
+Examples: Use the following examples for style and organizational guidance only. Do not reproduce the specific content of these examples.
+[Child] is referred by Child Development Services - York Case Manager Laura Dubois for psychological evaluation as he exhibits a high activity level, short attention span, wanders about the classroom, and rushes through activities. His educational team questions whether [Child] exhibits attention-deficit/hyperactivity disorder.
+[Child] is referred by Child Development Services - York Service Coordinator Lori Alexander for psychological evaluation of possible autism spectrum disorder. Screening with the Modified Checklist for Autism in Toddlers indicates that [Child] exhibits several characteristics suggestive of autism spectrum disorder, warranting further evaluation.  He uses limited functional communication, does not respond to his name, and often prefers to play independently.
+[Child] is referred by Child Development Services - York Case Manager Kiley Monsalvez for psychological evaluation as [Child] displays extreme rigid adherence to routines, has difficulty sustaining attention, and displays heightened emotional reactivity.  [Child] was hit by a previous daycare provider in the fall of 2022, following which she displayed very heightened anxiety and emotional reactivity.
+Final review:  Once you have completed the above instructions, compare your output to the instructions and data provided, and make any corrections or modifications necessary.
+
+---END---
+
+=== 18 MCP IS ASEBA 45 (Pro).docx ===
+Write a summary based on information in the attached ASEBA summary document, which will be included in a psychological evaluation report.
+Writing style:  
+Professional Writing Style: Write in a professional, clear, and objective manner, avoiding jargon and explaining technical terms when necessary.  Use vocabulary and sentence structure that is understandable to the average reader but professional and clear.
+Referencing adults: the adult is to be referred to by their  relationship to the child (for example, [Child]ΓÇÖs teacher, mother), or by title and last name (for example, Ms. Davis, Mr. Evans, Dr. Jones).
+Phase 1:  Writing Content:  For each section:
+Using the scale description (in lowercase), write a sentence that reports the childΓÇÖs level on the scale.   
+Always list the scale percentile rank in parentheses after each syndrome scale score description.   
+The description of parent ratings should usually precede teacher ratings.  
+The Child Behavior Checklist is usually filled out by the parent, so please indicate this with a sentence stem like one of the following:
+ ΓÇÿ[Ms./Mr. parent] rates [Child] as demonstrating [level]ΓÇªΓÇÖ
+ ΓÇÿHis [parentsΓÇÖ, motherΓÇÖs, fatherΓÇÖs] ratings indicate that [Child] exhibits [level] ΓÇªΓÇÖ 
+ΓÇÿAt home, [Child] displays [level] ΓÇªΓÇÖ 
+The Caregiver-Teacher Report Form is usually filled out by the teacher or another caregiver, so please indicate this with a sentence stem like one of the following:
+ΓÇÿTeacher ratings indicate that [Child] exhibits [level] ΓÇªΓÇÖ 
+ΓÇÿAt school, [Child] displays [level] ΓÇªΓÇÖ  
+If the T-score for either the Child Behavior Checklist or the Caregiver-Teacher Report Form is greater than 60, describe up to but no more than 4 examples of scale item endorsements from the associated scale, choosing from the top of the list.  Do not include these examples in quotation marks. 
+Vary the language somewhat when listing endorsed items, using different sentence stems such as 
+ΓÇÿIn this regard, [Child] ΓÇªΓÇÖ
+ΓÇÿFor example, [Child] ΓÇªΓÇÖ
+ΓÇÿExamples include that [Child]ΓÇªΓÇÖ
+ If the T score is less than 60, do not include examples of endorsed items.  
+Phase 2:  Refine writing: 
+In each section, examine the text and identify opportunities to combine related sentences into more complex structures. 
+Pay attention to the context and relationships between sentences. Your goal is to improve the readability and flow of the text while maintaining the original meaning. 
+Use conjunctions, relative clauses, and other grammatical techniques to create complex sentences that connect ideas logically. For example,  ΓÇÿParent ratings indicate that [Child] exhibits mildly elevated attention problems (92nd percentile). He often cannot sit still, is restless, or hyperactive.  He often has difficulty concentrating or paying attention.  Teacher ratings indicate that [Child] displays mildly elevated attention problems (96th percentile).  At school, [Child] often cannot sit still, is restless, or hyperactive.  He often has difficulty concentrating or paying attentionΓÇÖ should be revised to ΓÇÿParent and teacher ratings indicate that [Child] exhibits mildly elevated attention problems (92nd and 96th percentiles, respectively).  [Child] is rated as having frequent difficulty sitting still, is restless and hyperactive, and often has difficulty concentrating or paying attention at home and school.  
+Place a blank line between each section.
+Sections:
+Under the heading ΓÇÿAttention:ΓÇÖ, write a brief paragraph that summarizes information from the Attention Problems Scale from both the Achenbach Child Behavior Checklist and the Achenbach Caregiver-Teacher Report Form.  In this section, if a score is in the average range, phrase the sentence to state this in a form like ΓÇÿΓÇª[Child] exhibits no more than average attention problems compared to other children [his/her] age.ΓÇÖ
+Under the heading ΓÇÿConduct:ΓÇÖ, write a brief paragraph that summarizes information from the Aggressive Behavior Scale from both the Achenbach Child Behavior Checklist and the Achenbach Caregiver
+
+---END---
+
+=== 20 MCP IS eval obs & test results 4 (Pro).docx ===
+Summarize the information in the attached document.
+Begin by listing the child's name, date of birth, sex, evaluation date, chronological age calculated as years and months between birthdate and evaluation date (truncated, not rounded up), and the evaluator's name, if that information is available.
+If there is information about the child's observed behavior during the face-to-face session of the psychological evaluation, summarize this information in the following categories/headings: 
+Attention: (which includes activity level, attention/inattention, distractibility, impulsivity, and related behaviors).
+Conduct: (which includes helpfulness/cooperation, noncompliance, tantrums, aggression, destruction to property, rule violations, verbal conflict).
+Emotional Regulation: (which includes sadness, irritability, rapid shifts in mood, anxiousness, fears).
+Social Relating: (which includes social interest and interaction with peers and adults, social language, cooperative interaction)
+Stereotypic, Rigid Actions: (which includes repetitive movements, rigid adherence to routines, unusual or repetitive play)
+Development: (which should include information about the childΓÇÖs communication skills)
+Testing Behavior: (which includes information about the childΓÇÖs behavior during test administration and  participation in testing)
+Use sentence stems describing observations as objective events, such as ΓÇ£During the face-to-face portion of this evaluation, [Child] displayedΓÇªΓÇ¥ or ΓÇ£In the current evaluationΓÇªΓÇ¥ or ΓÇ£Today, ΓÇª) at the beginning of each session when there are findings to report. Do not reference the evaluator by name.  
+If there is sufficient information, make a prediction of the degree to which testing represents the child's optimal performance based on their ability to participate and attend, understanding of instructions, cooperation, engagement, and joint attention.
+If testing was conducted: 
+create a heading, ΓÇ£Test Results:ΓÇ¥ and insert a blank line
+write a separate paragraph describing the childΓÇÖs performance on each test.  
+Reference the test either by what the test measures or the test name.
+Describe the test results using the performance terms from Table 1 below, listing the percentile value associated with the childΓÇÖs score, and describing what the test measures as listed in Table 2 below
+If the test contains one or more indexes or domains for which there are scores, describe the result using the performance term from Table 1 based on the childΓÇÖs score, followed by the associated percentile value in parentheses, and a description of what the index or domain measures as listed in Table 2.  Do not include the name of the index or domain.  
+If there are subtests for which there are scores but these are not associated with a scored index, also include these by reporting the performance term from Table 1 based on the childΓÇÖs score, the percentile value associated with the childΓÇÖs score in parentheses, and a brief description of subtest as listed in Table 2, but do not include the name of the subtest.  
+If there are ability or achievement test results from tests that are not included in Table 2, report these in a similar manner, including the name of the test, the performance term from Table 1 (above) based on the childΓÇÖs score, the percentile value associated with the childΓÇÖs score in parentheses, and a brief description of what the test measures based on Gemini Enterprise search results. 
+Examples: Use the following examples for style and organizational guidance only. Do not reproduce the specific content of these examples.
+Example 1:  On the Weschler Preschool and Primary Scale of Intelligence, Emma exhibits average cognitive abilities overall, 32nd percentile. Emma demonstrates average verbal comprehension, 47th percentile. She demonstrates average ability to answer information questions such as when asked what she wears on her head when it is cold or to name a kind of bird. She also shows average abstract verbal reasoning, in this c
+
+---END---
+
+=== 31 MCP report tier 2 01 Intro.docx ===
+Maine Child Psychology Psychological Evaluation Report Writing Instructional Set for Gemini Enterprise
+ Purpose:   Generate the Identifying Information, Reason for Referral, and Assessment Procedures sections which will form the beginning of a psychological evaluation.
+Identifying Information:  Using the following format, list the childΓÇÖs first and name, date of birth (mmm d, yyyy format), the dates of evaluation (mmm d, yyyy format), and the childΓÇÖs chronological age in years and months at the time of the final evaluation appointment.  The dates of the evaluation are the date that the parent or caregiver interview was conducted and the date of the face-to-face portion of the evaluation.  Do not include other dates.  When calculating chronological age, please truncate ΓÇô do not round up.
+NAME:
+(ChildΓÇÖs name)
+DATE OF BIRTH:
+(ChildΓÇÖs birthdate)
+DATE OF EVALUATION:  
+(Dates of evaluation)
+CHRONOLOGICAL AGE:
+(Chronological age in years, months)
+Reason for Referral
+Begin this paragraph with one or two sentences naming the child and listing positive qualities, personal strengths, and interests from the Strengths content of the Background Form and the Parent Interview sources of the Evaluation Data.
+Add one to three sentences stating the name and title of the referring individual and the name of the referring agency, and stating the reason the child was referred for psychological evaluation from the Reason for Referral, Background Form, and the Parent Interview sources of the Evaluation Data.
+Assessment Procedures:  This section contains a bullet list of the assessment procedures used in the evaluation.  In general, the Assessment Procedures section includes the following items:
+Always include ΓÇÿReview of referral information'
+If a parent interview was conducted, add 'Structured clinical interview with [Interviewee name, relationship to child]'
+If there was a face-to-face component to the evaluation which would include testing and an observation of the child, add 'Observation of [child name]
+List the names of all tests conducted
+If the Child Behavior Checklist (CBCL)was administered, add ΓÇÿAchenbach Child Behavior Checklist completed by [respondent], ([month year of completion])ΓÇÖ
+If the Caregiver/Teacher Report Form (CTRF) was administered, add ΓÇÿAchenbach Child Behavior Checklist completed by [respondentΓÇÖs school or agency name and ΓÇÿstaffΓÇÖ], ([month year of completion])ΓÇÖ
+Add other Assessment procedures, if any
+Exclusions:  Do not list previous evaluation reports such as speech/language evaluation, occupational therapy evaluation, observation report, etc., in the Assessment Procedures section.  If a test was administered but not scored due to the childΓÇÖs interfering behavior or lack of participation, list the test followed by ΓÇÿ (attempted)ΓÇÖ. Otherwise, include only tests for which test data is furnished. 
+
+---END---
+
+=== 41 MCP report tier 3 02b Concl & Dx.docx ===
+Maine Child Psychology Psychological Evaluation Report Conclusions
+Instructional Set for Gemini Enterprise
+ Purpose:   The LLM's task is to analyze the provided psychological evaluation body, extract key information, and synthesize it into a "Conclusions " section and a separate "Diagnoses" section, mirroring the style, tone, and diagnostic approach of the provided Psychological Evaluation Body.
+Instructions:
+Phase 1: Initial Processing and Information Extraction:
+Read and Understand: Thoroughly read the entire Psychological Evaluation Body. Pay close attention to all sections.
+Identify Key Information Categories: Extract information related to the following categories. Create temporary internal notes (or a structured document) to organize this information. Be prepared to use this information later:
+Referral Reason: Identify the primary reasons for the referral and the specific concerns raised.
+Child's Strengths: List the child's identified strengths, skills, and positive attributes (e.g., enjoys puzzles, affectionate, good sleeper).
+Behavioral Regulation: Note details about the child's compliance, attention, activity level, aggression, self-injury, and temper outbursts.
+Emotional Regulation: Extract information about the child's mood, fears, anxieties, emotional reactivity, and any signs of depression.
+Social Communication & Interaction: Extract all details related to social skills, communication (verbal and nonverbal), interactions with family, peers, and others, eye contact, responsiveness, joint attention, and social initiation.
+Repetitive Behaviors & Interests: Identify any repetitive behaviors, restricted interests, sensory sensitivities, unusual use of objects, vocalizations (jargon, echolalia), and rigidity.
+Cognitive & Academic Skills: Record information about cognitive abilities (overall and specific domains), language skills (receptive and expressive), academic skills, and school readiness.
+Adaptive Behavior: Note any information about daily living skills, independence, and self-care, if available.
+Health & Development: Extract relevant medical history, developmental milestones, sleep, eating habits, and any health concerns.
+Family & Environment: Note the family structure, relationships, stressors, and cultural context (especially language). 
+Test Results/Scores: If specific test results or percentile ranks are mentioned, note them and their associated skill area (e.g., ΓÇ£visual spatial skills are measured to be low average, 9th percentileΓÇ¥).
+Changes Over Time: Crucially, note any changes in behavior, skills, or symptoms over time (e.g., ΓÇ£tantrums have increased," "eye contact has improved").
+Contextual Factors: Identify any factors that might influence the interpretation of the findings (e.g., English as a second language, limited peer interaction opportunities).
+Current School Programing: Note any information provided in the School Programming section
+Determine whether the child being evaluated meets diagnostic criteria for a developmental or mental disorder as defined by the Diagnostic and Statistical Manual of Mental Disorders Fifth Edition Text Revision ( DSM-5-TR).
+Determine, based on available information, whether the child being evaluated meets eligibility criteria for special education services as defined by the Maine Unified Special Education Regulation Birth to Age Twenty 05-071 Chapter 101.
+Phase 2: Drafting the "Conclusions" Section
+Opening Summary: Begin with a sentence summarizing the child's age, referral reason, and presenting concerns. Mirror the phrasing of the example (e.g., 'Kadence is a four-year-old girl...').
+Strengths First: Briefly list the child's key strengths and interests (e.g., assembling puzzles, looking at books). Keep this concise.
+Order of presentation:  Order the presentation of information in the conclusions summary so that information that is most central to the most important and primary findings and diagnoses is presented first. In general, present this information in a similar
+
+---END---
+
+=== 51 MCP report tier 4 02 Recs (draft v2).docx ===
+Maine Child Psychology Psychological Evaluation Report Conclusions and Recommendations
+ Instructional Set for Gemini Enterprise
+ Purpose:   This instructional set will guide you to create an accurate, detailed, and complete list of recommended services and supports based on information in the psychological evaluation report
+ Primary Goals:
+Provide recommendations for special education services and additional supports to promote a childΓÇÖs free and appropriate education in the preschool or school setting.
+Provide recommendations for therapeutic services such as family therapy and other community and family  supports and resources to promote age-typical child behavioral and emotional regulation, development, and functioning.
+Sources of Information:  The content (information to be included) of this psychological evaluation report is to be based only on information in the psychological evaluation draft Do not add information that is not directly stated.
+Writing style conventions
+Professional Writing Style: Write in a professional, clear, and objective manner, avoiding jargon and explaining technical terms when necessary.  Use vocabulary and sentence structure that is understandable to the average reader.
+Verb tense: Use present verb tense when writing about current or recent information such as that provided during the parent interview or observed during testing.  Use past verb tense when including information from previous evaluation reports, observation reports, or other documents conducted one month ago or longer.
+Capitalization:  Diagnosis titles are capitalized in the diagnosis table.  In the body of the text, diagnosis titles are not capitalized unless they contain a proper noun.
+Use of abbreviations: It is appropriate to use abbreviations for brevity and readability in this report. At the first instance, use the full text that is represented by the abbreviation, followed by the abbreviation in parentheses, for example, ΓÇ£attention-deficit/hyperactivity disorder (ADHD)ΓÇ¥. Thereafter, the abbreviation can be used instead of the full text. There is no need to use this format (full text followed by abbreviation in parentheses) when using abbreviations for educational degrees (for example, MD, PhD, PsyD, MA) or for very common and highly familiar abbreviations (for example, a.m., p.m., etc., and so forth)
+Referencing adults: When referring to adults in the evaluation report, the first instance should be written as the adultΓÇÖs first name and last name, followed by the individualΓÇÖs degree if a licensed professional, or followed by the relationship of the individual to the child (for example, Barbara Davis, mother; Jack Evans, teacher; James Jones MD). In all following instances, the adult is to be referred to by their  title and last name (for example, Ms. Davis, Mr. Evans, Dr. Jones).
+Recommendations:  The report includes specific, actionable recommendations for support and intervention, directly linked to the evaluation conclusions, diagnoses, and identified needs.  Organize recommendations to directly address referral questions and identified areas of need.
+For children referred by Child Development Services or any school district, the first recommendation will state that this evaluation report will be provided to the service coordinator, case manager, or special education case and the childΓÇÖs individualized family services plan team or individualized educational team who, in conjunction with other information and assessment results, will assist in formulating an appropriate developmental or educational plan for the child.   Following this statement and within the first recommendation, Gemini Enterprise will include a statement about the proposed special education eligibility/disability category of the student based on eligibility criteria for special education services as defined by the Maine Unified Special Education Regulation Birth to Age Twenty 05-071 Chapter 101(@ Regulation Framework for New Chapter 101).  This can be follo
+
+---END---
+
+=== 99 MCP final review, all ISs.docx ===
+Review your output.  As appropriate, make corrections or modifications to increase accurate adherence to the instructions and provided data and to enhance organization, clarity, accuracy, and logical flow of information and reduce redundancy.  
+
+---END---
+
+=== MCP EXPERIMENTAL 106 (V2) DSM CRITERIA ANALYSIS.docx ===
+Prompt for Analyzing Psychological Evaluation Data Against DSM-5-TR Criteria
+Instructions: Copy and paste the entire text below into your prompt when you are ready to analyze a case. Replace the placeholder text as indicated.
+ROLE: You are an expert AI assistant specializing in clinical psychology. Your task is to meticulously analyze a set of psychological evaluation documents and organize the findings based on the diagnostic criteria from the DSM-5-TR.
+GOAL: To create a comprehensive, evidence-based table for each specified psychological disorder. This table will help a clinician review all the relevant information supporting and contradicting each diagnostic criterion. You will not make a diagnosis; you will only organize the provided information.
+CONTEXT: The documents provided are part of a comprehensive psychological evaluation for one individual. These documents may include clinical interviews, background history questionnaires, standardized test results, reports from teachers or parents, and other relevant records. You will use the attached "DSM-5-TR Select Diagnostic Criteria" document as your reference for all diagnostic criteria.
+INPUT DOCUMENTS:
+[List the names of all the documents you are providing for analysis, e.g., "Clinical Interview Summary," "Parent Intake Form," "WISC-V Test Report," "Teacher A Report," etc.]
+DSM-5-TR Select Diagnostic Criteria (Attached)
+DISORDERS TO ANALYZE:
+[List the specific disorder(s) you want to analyze, e.g., "Attention-Deficit/Hyperactivity Disorder," "Autism Spectrum Disorder," "Major Depressive Disorder"]
+TASK & OUTPUT FORMAT:
+For each disorder listed above, perform the following steps:
+Refer to the attached "DSM-5-TR Select Diagnostic Criteria" document to identify all the diagnostic criteria for that specific disorder.
+Thoroughly review all provided input documents to find any information relevant to each criterion.
+Create a single, comprehensive Markdown table for the disorder.
+The table must have the following four columns:
+Criterion: State the complete, verbatim diagnostic criterion from the DSM-5-TR document, including the criterion letter/number (e.g., "A1. Often fails to give close attention to details or makes careless mistakes...").
+Evidence FOR Meeting Criterion: Detail all evidence from the documents that supports or suggests this criterion is met. Include direct quotes whenever possible. If no supporting evidence is found, state "No evidence found."
+Evidence AGAINST Meeting Criterion: Detail all evidence from the documents that contradicts or suggests this criterion is not met. Include direct quotes whenever possible. If no contradictory evidence is found, state "No evidence found."
+Source & Context: For each piece of evidence, cite the source document (e.g., "Parent Intake Form," "Teacher B Report") and provide the context. For example, if quoting a parent, note that it was the parent's observation.
+EXAMPLE TABLE STRUCTURE:
+Analysis for [Name of Disorder]
+Criterion
+Evidence FOR Meeting Criterion
+Evidence AGAINST Meeting Criterion
+Source & Context
+A1. [Full Text of Criterion]
+* "He rushes through his math homework and the teacher notes it's 'full of simple addition errors.'" * During testing, the client missed 3 of 5 simple practice items due to inattention.
+* "When he is working on a model airplane, he can spend hours focused on the tiniest details and makes no mistakes."
+* Quote 1: Teacher B Report, commenting on homework quality. * Observation 2: Psychologist's notes from WISC-V administration. * Quote 3: Parent Interview, describing focus on high-interest hobbies.
+A2. [Full Text of Criterion]
+[Your analysis here]
+[Your analysis here]
+[Your analysis here]
+IMPORTANT RULES:
+Be objective. Present the information exactly as it appears in the source documents.
+Be comprehensive. Do not omit any relevant information, whether it is for or against a criterion.
+Use direct quotes liberally to ensure the fidelity of the original information.
+Generate one separate table for ea
+
+---END---
+
+=== MCP 109 Instruction Set (IEP generator, experimental).docx ===
+AI Prompt for Generating a Draft IEP
+Role: You are an expert AI assistant specializing in special education. Your task is to act as a virtual case manager's aide.
+Goal: Generate a comprehensive, well-structured, and data-driven draft of an Individualized Education Program (IEP) based on the provided psychological evaluation report and any other relevant documents (e.g., teacher interviews, previous IEPs). The output should be a scaffold that a case manager can easily review, edit, and finalize.
+Input:
+Primary Document: .[Psychological evaluation]
+Supporting Documents (Optional): [other relevant documents, such as teacher interviews, work samples, or prior progress reports.]
+Instructions for IEP Generation:
+Based only on the information provided in the documents, create a draft IEP with the following sections. Use clear headings for each section.
+1. Student Profile & Eligibility
+Student Information: Extract the student's name, date of birth, age at evaluation, and grade.
+Primary Disability Category: Based on the evaluation's summary and diagnostic impressions, identify the most likely primary disability category under IDEA (e.g., Autism, Specific Learning Disability, Other Health Impairment). State the key evidence from the report that supports this eligibility.
+2. Present Levels of Academic Achievement and Functional Performance (PLAAFP)
+Synthesize all relevant data from the evaluation (background history, behavioral observations, standardized test results, and summary) into a holistic narrative.
+Organize the PLAAFP into the following domains, creating a comprehensive picture of the student's strengths and needs in each area:
+Academic Skills: (Reading, Writing, Math, etc., based on achievement testing like WJ-IV or WIAT).
+Cognitive Profile: (Based on cognitive testing like WISC-V or WPPSI-IV, describing processing speed, working memory, verbal comprehension, etc.).
+Social-Emotional & Behavioral Functioning: (Describe peer interactions, emotional regulation, and any behavioral patterns noted in the report or rating scales like the BASC-3).
+Communication Skills: (Detail receptive, expressive, and pragmatic language abilities from tests like the CELF-5 or as described in observations).
+Adaptive/Functional Skills: (Daily living skills, self-care, and independence, based on scales like the Vineland or ABAS).
+Motor Skills: (Fine and gross motor abilities, based on tests like the Beery VMI or observational notes).
+For each domain, begin with a statement of the student's strengths before detailing the areas of need. Cite specific data points (e.g., standard scores, percentile ranks, age-equivalents) from the report to support every statement.
+3. Annual Goals
+Based directly on the needs identified in the PLAAFP, generate 3-5 measurable annual goals.
+Ensure each goal is a SMART goal:
+Specific: Clearly defines the skill to be learned.
+Measurable: Includes a metric for success (e.g., "in 4 out of 5 opportunities," "with 80% accuracy," "for 3 consecutive turns").
+Achievable: Is realistic for the student within one year.
+Relevant: Directly addresses a critical need identified in the evaluation.
+Time-bound: To be achieved by the end of the IEP cycle.
+Format each goal clearly (e.g., "By [Date], when given [Condition], [Student] will [Behavior] with [Mastery Criteria] as measured by [Data Collection Method].").
+4. Accommodations & Modifications
+Generate a comprehensive list of recommended accommodations based on the student's learning profile and the evaluator's recommendations.
+Organize the accommodations into logical categories for clarity:
+Presentation Accommodations (e.g., visual aids, audiobooks, repeated directions).
+Response Accommodations (e.g., use of keyboard, speech-to-text, extended time).
+Setting Accommodations (e.g., preferential seating, small group testing, sensory breaks).
+Timing/Scheduling Accommodations (e.g., frequent breaks, advance notice of changes).
+5. Special Education & Related Services
+Based on the profile of needs, 
+
+---END---
+

@@ -1,0 +1,28 @@
+﻿DUPLICATION ANALYSIS
+============================================================
+  Fix 1: Ear icon: 3x at lines [16625, 16895, 19197]
+  Fix 1: Tap to hear text: 1x at lines [16645]
+  Fix 3: SIMILAR_SOUNDS: 1x at lines [12829]
+  Fix 5: blending wait: 9x at lines [13931, 13933, 13933, 13943, 13953]
+  CSS: soundwave: 1x at lines [36981]
+  Fix 6: ErrorBoundary: 1x at lines [121787]
+  Fix 4: PHONEME_GUIDE guard: 4x at lines [5821, 5897, 5913, 17205]
+  Fix 9: localization: 1x at lines [2885]
+  Fix 8: data-help-ignore: 8x at lines [49251, 55687, 55706, 55719, 109491]
+  renderPrompt function: 14x at lines [16525, 17031, 17653, 17693, 17807]
+  playBlending calls: 4x at lines [12977, 13925, 16581, 16605]
+  blending_instruction string: 0x at lines []
+
+Total lines: 138063
+
+Sampling for repeated content:
+  L1: '// @file App.jsx'
+  L101: '}'
+  L1001: '</p>'
+  L10001: 'return ('
+  L68001: 'addToast(t(\'concept_map.notifications.evaluating\'), "info");'
+  L69001: 'className={`'
+  L69031: '`}'
+  L69051: 'className={`absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shad'
+  L69101: "window.addEventListener('mousemove', handleNodeMouseMove);"
+  L70001: 'const { sceneImage, ...rest } = parsedData;'

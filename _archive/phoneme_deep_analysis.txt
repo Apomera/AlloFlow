@@ -1,0 +1,386 @@
+================================================================================
+DEEP PHONEME DATA FLOW ANALYSIS
+================================================================================
+
+### 1. ALL PLACES WHERE 'phonemes' IS SET/ASSIGNED ###
+
+--- L1173 ---
+                           term: data.word,
+                           word: data.word,
+                           phonemes: data.phonemes,
+                           syllables: data.syllables,
+                           rhymes: data.rhymes,
+
+--- L1568 ---
+      const addPhoneme = (wordIdx, phoneme) => {
+          const word = preloadedWords[wordIdx];
+          const newPhonemes = [...(word.phonemes || []), phoneme];
+          onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+      };
+
+--- L1569 ---
+          const word = preloadedWords[wordIdx];
+          const newPhonemes = [...(word.phonemes || []), phoneme];
+          onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+      };
+  
+
+--- L1575 ---
+      const removePhoneme = (wordIdx, phonemeIdx) => {
+          const word = preloadedWords[wordIdx];
+          const newPhonemes = (word.phonemes || []).filter((_, i) => i !== phonemeIdx);
+          onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+      };
+
+--- L1576 ---
+          const word = preloadedWords[wordIdx];
+          const newPhonemes = (word.phonemes || []).filter((_, i) => i !== phonemeIdx);
+          onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+      };
+  
+
+--- L1582 ---
+      const handlePhonemeReorder = (wordIdx, fromIndex, toIndex) => {
+          const word = preloadedWords[wordIdx];
+          const phonemes = [...(word.phonemes || [])];
+          const [moved] = phonemes.splice(fromIndex, 1);
+          phonemes.splice(toIndex, 0, moved);
+
+--- L1830 ---
+                                                  onDrop={(e) => handleDrop(e, idx)}
+                                              >
+                                                  {(Array.isArray(word.phonemes) ? word.phonemes : []).map((p, i) => (
+                                                      <div
+                                                          key={i}
+
+--- L1851 ---
+                                                      </div>
+                                                  ))}
+                                                  {(!word.phonemes || word.phonemes.length === 0) && (
+                                                      <span className="text-slate-400 text-sm italic">No phonemes - click 
+                                                  )}
+
+--- L1858 ---
+                                              {showPhonemeBank === idx && (
+                                                  <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-
+                                                      {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
+                                                          <div key={category} className="mb-3">
+                                                              <div className="text-xs font-bold text-slate-400 uppercase m
+
+--- L2341 ---
+              let ttsText = text;
+              // Enhanced prompting logic
+              const isDigraph = /^[a-zA-Z]{2,3}$/.test(text.trim()) && wordSoundsPhonemes?.phonemes?.includes(text);
+              if (/^[a-zA-Z]$/.test(text) || isDigraph) {
+                  ttsText = `Pronounce the phoneme sound for the letter "${text}". Do not say the letter name. Say the sou
+
+--- L2378 ---
+          setBlendingProgress(0);
+  
+          for (let i = 0; i < (wordSoundsPhonemes.phonemes?.length || 0); i++) {
+              const phoneme = wordSoundsPhonemes?.phonemes?.[i];
+              setBlendingProgress(i + 1);
+
+--- L2379 ---
+  
+          for (let i = 0; i < (wordSoundsPhonemes.phonemes?.length || 0); i++) {
+              const phoneme = wordSoundsPhonemes?.phonemes?.[i];
+              setBlendingProgress(i + 1);
+  
+
+--- L2905 ---
+  
+      const SoundMappingView = ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+          const [slots, setSlots] = React.useState(new Array(data.phonemes?.length || 0).fill(null));
+          const [chips, setChips] = React.useState([]);
+  
+
+--- L3119 ---
+                      // Copy analysis data if this word matches the full term (single-word term)
+                      // or if the term has word-specific data (future proofing)
+                      phonemes: (fullTerm.toLowerCase() === word.toLowerCase() && term.phonemes) ? term.phonemes : null,
+                      syllables: (fullTerm.toLowerCase() === word.toLowerCase() && term.syllables) ? term.syllables : null
+                      rhymeWord: term.rhymeWord,
+
+--- L3410 ---
+  
+      // Update phoneme mastery after an answer
+      const updatePhonemeMastery = React.useCallback((phonemes, isCorrect) => {
+          if (!phonemes || !Array.isArray(phonemes) || !setPhonemeMastery) return;
+  
+
+--- L3532 ---
+      // Optimizes API usage by fetching ALL activity data for a word at once.
+      const wordDataCache = React.useRef(new Map());
+      const pendingRequests = React.useRef(new Map()); // Map<word, { phonemes, rhymes, orthography... }>
+  
+      // HELPER: Apply fetched/cached word data to component state
+
+--- L3588 ---
+  
+          // 2. CHECK GLOSSARY PRE-GENERATED DATA (Zero-Latency)
+          const poolEntry = wordPool.find(p => p.word === word.toLowerCase() && p.phonemes && p.phonemes.length > 0);
+          if (poolEntry) {
+               console.log("⚡ using Glossary pre-generated data for:", word);
+
+--- L3654 ---
+                              phonemeData = {
+                                  word: targetWord,
+                                  phonemes: fallbackPhonemes,
+                                  phonemeCount: fallbackPhonemes.length,
+                                  rhymeWord: targetWord,
+
+--- L3685 ---
+                          phonemeData = {
+                              word: fallbackWord,
+                              phonemes: fallbackPhonemes,
+                              phonemeCount: fallbackPhonemes.length,
+                              rhymeWord: fallbackWord,
+
+--- L3700 ---
+                      const isoPosition = ['first', 'last'][Math.floor(Math.random() * 2)];
+                      const correctSound = isoPosition === 'first' ? phonemeData?.firstSound : phonemeData?.lastSound;
+                      const allPhonemes = phonemeData?.phonemes || [];
+                              const isoDistractors = [];
+                      const used = new Set([correctSound?.toLowerCase()]);
+
+--- L3768 ---
+      // Fallback generator
+      const generateFallbackData = (word) => {
+          const phonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+          return {
+              word,
+
+--- L3934 ---
+                              ...nextWordEntry,
+                              targetWord,
+                              phonemes: data
+                          });
+                      }
+
+--- L4090 ---
+                           phonemeData = {
+                              word: targetWord,
+                              phonemes: smartPhonemes,
+                              phonemeCount: smartPhonemes.length,
+                              rhymeWords: [],
+
+--- L4139 ---
+                      return {
+                          ...wordEntry,
+                          phonemes: phonemeData,
+                          ttsReady: true
+                      };
+
+--- L4270 ---
+              const refreshedWord = {
+                      ...existingWord, // Keep existing properties like image, difficulty
+                      phonemes: phonemeData.phonemes || [],
+                      phonemeCount: phonemeData.phonemeCount || phonemeData.phonemes?.length || 0,
+                      rhymeWord: phonemeData.rhymeWord || '',
+
+--- L4271 ---
+                      ...existingWord, // Keep existing properties like image, difficulty
+                      phonemes: phonemeData.phonemes || [],
+                      phonemeCount: phonemeData.phonemeCount || phonemeData.phonemes?.length || 0,
+                      rhymeWord: phonemeData.rhymeWord || '',
+                      rhymeDistractors: phonemeData.rhymeDistractors || [],
+
+--- L4277 ---
+                      familyMembers: phonemeData.familyMembers || [],
+                      blendingDistractors: phonemeData.blendingDistractors || [],
+                      firstSound: phonemeData.firstSound || (phonemeData.phonemes?.[0] || ''),
+                      lastSound: phonemeData.lastSound || (phonemeData.phonemes?.[phonemeData.phonemes?.length - 1] || '')
+                      _regeneratedAt: Date.now() // Track when refreshed
+
+--- L4278 ---
+                      blendingDistractors: phonemeData.blendingDistractors || [],
+                      firstSound: phonemeData.firstSound || (phonemeData.phonemes?.[0] || ''),
+                      lastSound: phonemeData.lastSound || (phonemeData.phonemes?.[phonemeData.phonemes?.length - 1] || '')
+                      _regeneratedAt: Date.now() // Track when refreshed
+                  };
+
+--- L4539 ---
+  
+          // FIX: Use phonemes array length as fallback for phonemeCount
+          const effectiveCount = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+  
+          // Initialize Elkonin boxes/Chips if switching into these modes
+
+--- L4667 ---
+              const correctSound = currentPosition === 'first' ? wordSoundsPhonemes?.firstSound : wordSoundsPhonemes?.last
+  
+              const isoAllPhonemes = wordSoundsPhonemes?.phonemes || [];
+              const isoDistractors = isoAllPhonemes.filter(p => p.toLowerCase() !== correctSound?.toLowerCase()).slice(0, 
+              const isoCommon = ['b', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'w'];
+
+--- L4970 ---
+              mode: showLetterHints ? 'visual' : 'sound_only',
+              difficulty: getEffectiveDifficulty(),
+              phonemes: wordSoundsPhonemes?.phonemes || []
+          }]);
+  
+
+--- L5049 ---
+                  // FIX: Extract with correct property names from preloadInitialBatch structure
+                  const targetWord = bufferedWord.targetWord || bufferedWord.displayWord || bufferedWord.word || '';
+                  const phonemeData = bufferedWord.phonemes || bufferedWord; // phonemes might be nested or flat
+                  const wordImage = bufferedWord.image;
+  
+
+--- L5401 ---
+          } else if (wordSoundsActivity === 'segmentation' || wordSoundsActivity === 'blending') {
+               // For segmentation/blending, we are editing PHONEMES directly
+               const newPhonemes = [...(wordSoundsPhonemes?.phonemes || [])];
+               newPhonemes[index] = newValue;
+               const updated = { ...wordSoundsPhonemes, phonemes: newPhonemes };
+
+--- L5403 ---
+               const newPhonemes = [...(wordSoundsPhonemes?.phonemes || [])];
+               newPhonemes[index] = newValue;
+               const updated = { ...wordSoundsPhonemes, phonemes: newPhonemes };
+               setWordSoundsPhonemes(updated);
+  
+
+--- L5692 ---
+                                       if (elkoninBoxes.some(b => b === null)) return;
+  
+                                       const expected = wordSoundsPhonemes?.phonemes || [];
+                                       const errors = [];
+                                       let isPerfect = true;
+
+--- L5734 ---
+                                          </div>
+                                          <div className="flex flex-wrap gap-2 justify-center mt-2">
+                                              {(wordSoundsPhonemes?.phonemes || []).map((p, idx) => (
+                                                  <input
+                                                      key={`blend-ph-${idx}`}
+
+--- L5868 ---
+                          data={{
+                               word: currentWordSoundsWord,
+                               phonemes: wordSoundsPhonemes?.phonemes || [],
+                               graphemes: wordSoundsPhonemes?.graphemes || currentWordSoundsWord?.split('') || []
+                          }}
+
+--- L6180 ---
+                          }, 1500);
+                      } else {
+                          setWordSoundsFeedback({ type: 'incorrect', message: `Not quite! The letter makes the "${wordSoun
+                          handleAudio(currentWordSoundsWord);
+                      }
+
+--- L6367 ---
+              case 'counting': {
+                   // Counting (Phonemes/Sounds) Logic
+                   const count = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+                   const numberOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Expanded range for longer words
+  
+
+--- L28006 ---
+  • **Count Sounds**: How many phonemes in the word?
+  • **Find Sounds (Isolation)**: Identify first/middle/last sounds.
+  • **Blend Sounds**: Listen to phonemes, blend into a word.
+  • **Break Apart (Segmentation)**: Separate words into sounds using Elkonin boxes.
+  • **Rhyme Time**: Find rhyming words from options.
+
+
+### 2. GEMINI RESPONSE PARSING (data.phonemes) ###
+L1173: phonemes: data.phonemes,
+L2905: const [slots, setSlots] = React.useState(new Array(data.phonemes?.length || 0).fill(null));
+L2980: setSlots(new Array(data.phonemes?.length || 0).fill(null));
+
+
+### 3. WHERE estimatePhonemesBasic IS CALLED ###
+L3076: const estimatePhonemesBasic = React.useCallback((word) => {
+L3651: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLowerCase().split('');
+L3682: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(fallbackWord) : fallbackWord.toLowerCase().split(
+L3768: const phonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+
+
+### 4. FALLBACK CONDITIONS (when is fallback triggered) ###
+L836: // Maps phonemes to pronounceable text for browser TTS fallback.
+L3075: // Smart phoneme estimation with digraph/trigraph detection for fallback accuracy
+L3236: // Filter by difficulty with fallback
+L3244: // Fallback: if not enough words, include adjacent difficulties
+L3651: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLowerCase().split('');
+L3654: phonemes: fallbackPhonemes,
+L3655: phonemeCount: fallbackPhonemes.length,
+L3660: mappingGraphemes: fallbackPhonemes,
+L3661: firstSound: fallbackPhonemes[0],
+L3662: lastSound: fallbackPhonemes[fallbackPhonemes.length - 1]
+L3679: // CRISIS FALLBACK: Ensure phonemeData is populated even if Try block crashed
+L3682: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(fallbackWord) : fallbackWord.toLowerCase().split(
+L3685: phonemes: fallbackPhonemes,
+L3686: phonemeCount: fallbackPhonemes.length,
+L3691: mappingGraphemes: fallbackPhonemes,
+L3692: firstSound: fallbackPhonemes[0],
+L3693: lastSound: fallbackPhonemes[fallbackPhonemes.length - 1]
+L3695: console.warn("Activated Crisis Fallback for phonemeData");
+L4065: // Fallback logic with digraph detection for better phoneme counting
+L4538: // FIX: Use phonemes array length as fallback for phonemeCount
+L4622: // Fallback: generate fake rhymes if AI didn't provide one
+L4639: // This effect only runs as FALLBACK if options weren't pre-generated in fetchWordData
+L4863: // Fallback: Fetch if not preloaded
+L5114: // FALLBACK: Normal fetch if buffer empty
+L5118: // FIX: If queue is empty, regenerate with MEDIUM difficulty (fallback to prevent loops)
+L5385: // Fallback if type not provided, assume member?
+L10504: fallback_guide: "Select 'Show Me' in the AI Guide if you get lost!",
+L12408: if (!result) result = WORD_SOUNDS_STRINGS[keyString]; // Fallback for word_sounds.*
+L13695: // Fallback to native if audio load fails? Maybe too complex for now.
+L13706: console.warn("Cloud TTS specific error, trying fallback:", e);
+L13874: // Fallback to generic randomized tips if no specific context logic
+L13876: else if (type === 'lesson-plan') tips.push(t('tips.fallback_guide'));
+L25902: // Fallback if bot ref not available
+L29325: // Fallback: Check if this key happens to be a Tour Step ID (rare but possible mapping)
+L34779: // CACHE LOGIC: Update cache if key found, fallback to cache if missing
+L34929: console.warn("Gemini TTS Refused (safety/phoneme). Switching to fallback.");
+L35859: // Fallback: Continue generation but lose grounding for this specific chunk
+L42501: "climaxResult": "One of: 'victory', 'failure', or null. REQUIRED if a Climax Scene is currently active. Return 'victory'
+L48494: if (!content.text) content.text = t('adventure.fallback_opening');
+
+
+### 5. fetchWordData FUNCTION STRUCTURE ###
+Function starts at L3553
+L3602: TRY BLOCK START
+L3639: TRY BLOCK START
+L3649: // Fallback
+L3651: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLo
+L3651: FALLBACK ESTIMATION: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLo
+L3654: phonemes: fallbackPhonemes,
+L3655: phonemeCount: fallbackPhonemes.length,
+L3660: mappingGraphemes: fallbackPhonemes,
+L3661: firstSound: fallbackPhonemes[0],
+L3662: lastSound: fallbackPhonemes[fallbackPhonemes.length - 1]
+L3679: // CRISIS FALLBACK: Ensure phonemeData is populated even if Try block crashed
+L3681: const fallbackWord = word || 'word';
+L3682: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(fallbackWord) : fallbackWord.
+L3682: FALLBACK ESTIMATION: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(fallbackWord) : fallbackWord.
+L3684: word: fallbackWord,
+L3685: phonemes: fallbackPhonemes,
+L3686: phonemeCount: fallbackPhonemes.length,
+L3687: rhymeWord: fallbackWord,
+L3691: mappingGraphemes: fallbackPhonemes,
+L3692: firstSound: fallbackPhonemes[0],
+L3693: lastSound: fallbackPhonemes[fallbackPhonemes.length - 1]
+L3695: console.warn("Activated Crisis Fallback for phonemeData");
+Function ends around L3762
+
+
+### 6. IS PHONEME_BANK PASSED TO GEMINI PROMPT? ###
+L1557: const PHONEME_BANK = {
+L1858: {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
+
+
+### 7. JSON PARSING OF GEMINI RESPONSE ###
+L808: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+L824: const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+L3643: phonemeData = JSON.parse(jsonMatch[0]);
+L3807: distractors = JSON.parse(repairMatch[0]);
+L4062: phonemeData = JSON.parse(jsonMatch[0]);
+L26618: if (saved) return JSON.parse(saved);
+L26638: if (saved) return JSON.parse(saved);
+L26647: if (saved) return JSON.parse(saved);
+L26657: const data = JSON.parse(saved);
+L26673: if (saved) return JSON.parse(saved);
+L50230: const newTermItem = JSON.parse(cleanJson(result));

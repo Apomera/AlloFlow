@@ -1,0 +1,1134 @@
+﻿HELP_STRINGS keys: 0
+data-help-key attrs: 562
+
+Covered (in both): 0
+Gaps (data-help-key but no HELP_STRINGS entry): 562
+Extra (HELP_STRINGS but no data-help-key): 0
+
+--- GAPS (562): DOM elements with no help text ---
+  MISSING: adventure_allow_cloud
+  MISSING: adventure_auto_climax
+  MISSING: adventure_cancel_new
+  MISSING: adventure_chance_mode
+  MISSING: adventure_choice_btn
+  MISSING: adventure_choice_toggle
+  MISSING: adventure_cloud_storage
+  MISSING: adventure_confirm_new
+  MISSING: adventure_custom_instructions
+  MISSING: adventure_difficulty
+  MISSING: adventure_edit_options
+  MISSING: adventure_free_response
+  MISSING: adventure_immersive_autoread
+  MISSING: adventure_immersive_exit
+  MISSING: adventure_immersive_inventory
+  MISSING: adventure_immersive_toggle_ui
+  MISSING: adventure_input_field
+  MISSING: adventure_input_mode
+  MISSING: adventure_input_send
+  MISSING: adventure_language
+  MISSING: adventure_lock_settings
+  MISSING: adventure_low_quality
+  MISSING: adventure_resume_btn
+  MISSING: adventure_setup_chk_chance
+  MISSING: adventure_setup_chk_freeresponse
+  MISSING: adventure_setup_chk_lowqual
+  MISSING: adventure_setup_chk_story
+  MISSING: adventure_setup_difficulty
+  MISSING: adventure_setup_input_mode
+  MISSING: adventure_setup_language
+  MISSING: adventure_social_story
+  MISSING: adventure_start_btn
+  MISSING: adventure_story_mode
+  MISSING: adventure_system_state
+  MISSING: analysis_check_accuracy
+  MISSING: analysis_generate_button
+  MISSING: bingo_card_count_input
+  MISSING: bingo_close_btn
+  MISSING: bingo_exit_caller_btn
+  MISSING: bingo_images_chk
+  MISSING: bingo_launch_caller_btn
+  MISSING: bingo_next_clue
+  MISSING: bingo_prev_clue
+  MISSING: bingo_print_btn
+  MISSING: bingo_regenerate_btn
+  MISSING: bingo_speed_slider
+  MISSING: bingo_toggle_autoplay
+  MISSING: bingo_toggle_history
+  MISSING: bot_avatar
+  MISSING: bot_mic_btn
+  MISSING: bot_mute_btn
+  MISSING: bot_settings_btn
+  MISSING: bot_sleep_btn
+  MISSING: brainstorm_card
+  MISSING: brainstorm_custom_instructions
+  MISSING: brainstorm_generate_button
+  MISSING: brainstorm_guide
+  MISSING: brainstorm_panel
+  MISSING: brainstorm_simulation_type
+  MISSING: brainstorm_step_count
+  MISSING: chat_auto_send
+  MISSING: chat_autofill
+  MISSING: chat_close
+  MISSING: chat_consult_btn
+  MISSING: chat_expand
+  MISSING: chat_framework_select
+  MISSING: chat_grade_select
+  MISSING: chat_input
+  MISSING: chat_save
+  MISSING: chat_save_advice_btn
+  MISSING: chat_send
+  MISSING: chat_show_me
+  MISSING: chat_voice_mode
+  MISSING: concept_sort_add_btn
+  MISSING: concept_sort_add_item
+  MISSING: concept_sort_bucket
+  MISSING: concept_sort_card_item
+  MISSING: concept_sort_categories
+  MISSING: concept_sort_category
+  MISSING: concept_sort_check_answers
+  MISSING: concept_sort_deck
+  MISSING: concept_sort_game
+  MISSING: concept_sort_generate_button
+  MISSING: concept_sort_header
+  MISSING: concept_sort_item
+  MISSING: concept_sort_items
+  MISSING: concept_sort_panel
+  MISSING: concept_sort_reset
+  MISSING: concept_sort_start_button
+  MISSING: crossword_close_btn
+  MISSING: crossword_clues_list
+  MISSING: crossword_controls
+  MISSING: crossword_game_container
+  MISSING: crossword_grid
+  MISSING: dashboard_add_file_btn_input
+  MISSING: dashboard_clear_all_btn
+  MISSING: dashboard_clear_btn
+  MISSING: dashboard_close_btn
+  MISSING: dashboard_detail_back
+  MISSING: dashboard_detail_running_record
+  MISSING: dashboard_detail_safety
+  MISSING: dashboard_detail_transcript
+  MISSING: dashboard_drop_zone_input
+  MISSING: dashboard_export_csv
+  MISSING: dashboard_export_csv_btn
+  MISSING: dashboard_export_pdf_btn
+  MISSING: dashboard_import_btn
+  MISSING: dashboard_review_btn
+  MISSING: dashboard_stat_activities
+  MISSING: dashboard_stat_flags
+  MISSING: dashboard_stat_quiz
+  MISSING: dashboard_stat_students
+  MISSING: dashboard_student_row
+  MISSING: dashboard_student_table
+  MISSING: democracy_toggle
+  MISSING: entry_adjective
+  MISSING: entry_animal
+  MISSING: entry_load_exist
+  MISSING: entry_randomize_btn
+  MISSING: entry_start_new
+  MISSING: escape_room_cipher_input
+  MISSING: escape_room_cipher_submit
+  MISSING: escape_room_close_btn
+  MISSING: escape_room_fillin_input
+  MISSING: escape_room_fillin_submit
+  MISSING: escape_room_hint_button
+  MISSING: escape_room_leaderboard
+  MISSING: escape_room_lives
+  MISSING: escape_room_matching_container
+  MISSING: escape_room_mcq_option
+  MISSING: escape_room_object
+  MISSING: escape_room_progress
+  MISSING: escape_room_scramble_input
+  MISSING: escape_room_scramble_submit
+  MISSING: escape_room_sequence_container
+  MISSING: escape_room_streak
+  MISSING: escape_room_team
+  MISSING: escape_room_timer
+  MISSING: export_copy_button
+  MISSING: export_html
+  MISSING: export_ims
+  MISSING: export_pdf_button
+  MISSING: export_print
+  MISSING: export_qti
+  MISSING: export_slides
+  MISSING: export_storybook_images
+  MISSING: export_storybook_text
+  MISSING: export_worksheet
+  MISSING: fab_dictation
+  MISSING: fab_focus
+  MISSING: fab_line_focus
+  MISSING: fab_ruler
+  MISSING: fab_timer
+  MISSING: fab_toggle
+  MISSING: faq_count
+  MISSING: faq_custom_instructions
+  MISSING: faq_edit_toggle
+  MISSING: faq_goal_panel
+  MISSING: faq_item
+  MISSING: flashcard_next
+  MISSING: flashcard_play_sequence
+  MISSING: flashcard_prev
+  MISSING: fullpack_auto_config
+  MISSING: fullpack_generate
+  MISSING: fullpack_resource_count
+  MISSING: gen_loading_hint
+  MISSING: gen_loading_progress
+  MISSING: gen_loading_screen
+  MISSING: generator_actions
+  MISSING: global_mute_toggle
+  MISSING: glossary_add_term
+  MISSING: glossary_auto_remove
+  MISSING: glossary_bingo
+  MISSING: glossary_crossword
+  MISSING: glossary_custom_instructions
+  MISSING: glossary_definition_level
+  MISSING: glossary_delete_image
+  MISSING: glossary_download_audio
+  MISSING: glossary_edit
+  MISSING: glossary_edit_tier
+  MISSING: glossary_export_language
+  MISSING: glossary_export_standard
+  MISSING: glossary_filter_all
+  MISSING: glossary_filter_tier2
+  MISSING: glossary_filter_tier3
+  MISSING: glossary_health_check
+  MISSING: glossary_image_size
+  MISSING: glossary_image_style
+  MISSING: glossary_language_flashcards
+  MISSING: glossary_language_input
+  MISSING: glossary_matching
+  MISSING: glossary_memory_game
+  MISSING: glossary_play_bingo
+  MISSING: glossary_puzzle_lang
+  MISSING: glossary_regen_image
+  MISSING: glossary_remove_words
+  MISSING: glossary_scramble
+  MISSING: glossary_search
+  MISSING: glossary_speak_term
+  MISSING: glossary_standard_flashcards
+  MISSING: glossary_terms_table
+  MISSING: glossary_tier2_count
+  MISSING: glossary_tier3_count
+  MISSING: glossary_word_search
+  MISSING: group_active_list
+  MISSING: group_create_button
+  MISSING: group_create_input
+  MISSING: group_modal_container
+  MISSING: group_resource_library
+  MISSING: group_roster_list
+  MISSING: header_about
+  MISSING: header_bot_toggle
+  MISSING: header_cloud_sync
+  MISSING: header_dashboard
+  MISSING: header_export
+  MISSING: header_jump_lesson
+  MISSING: header_language
+  MISSING: header_session_join
+  MISSING: header_session_start
+  MISSING: header_session_status
+  MISSING: header_settings_anim
+  MISSING: header_settings_overlay
+  MISSING: header_settings_text
+  MISSING: header_settings_text_bionic
+  MISSING: header_settings_text_font
+  MISSING: header_settings_text_line_height
+  MISSING: header_settings_text_reset
+  MISSING: header_settings_text_size
+  MISSING: header_settings_text_spacing
+  MISSING: header_settings_theme
+  MISSING: header_settings_voice
+  MISSING: header_settings_voice_select
+  MISSING: header_settings_voice_speed
+  MISSING: header_settings_voice_volume
+  MISSING: header_submit
+  MISSING: header_support
+  MISSING: header_tour_start
+  MISSING: header_translate
+  MISSING: hints_generate_extension
+  MISSING: hints_recall
+  MISSING: history_cancel_unit_btn
+  MISSING: history_clear_button
+  MISSING: history_create_unit_btn
+  MISSING: history_delete_unit_btn
+  MISSING: history_filter_unit_select
+  MISSING: history_item_drag
+  MISSING: history_load_project
+  MISSING: history_max_toggle
+  MISSING: history_move_down_btn
+  MISSING: history_move_to_unit_btn
+  MISSING: history_move_up_btn
+  MISSING: history_panel
+  MISSING: history_rename_btn
+  MISSING: history_save_student
+  MISSING: history_save_teacher
+  MISSING: history_save_unit_btn
+  MISSING: history_settings
+  MISSING: history_unit_name_input
+  MISSING: immersive_line_focus
+  MISSING: immersive_syllables
+  MISSING: immersive_wide_text
+  MISSING: input_area
+  MISSING: inventory_item
+  MISSING: lesson_edit_instruction
+  MISSING: lesson_plan_custom_additions
+  MISSING: mastery_draft_input
+  MISSING: matching_check_btn
+  MISSING: matching_def_item
+  MISSING: matching_reset_btn
+  MISSING: matching_term_item
+  MISSING: math_context
+  MISSING: math_generate_button
+  MISSING: math_generate_similar
+  MISSING: math_graph
+  MISSING: math_input
+  MISSING: math_mode
+  MISSING: math_panel
+  MISSING: math_problem
+  MISSING: math_quantity
+  MISSING: math_student_work
+  MISSING: math_subject
+  MISSING: math_toggle_answers
+  MISSING: memory_card_item
+  MISSING: memory_fullscreen_btn
+  MISSING: memory_mode_select
+  MISSING: memory_reset_btn
+  MISSING: outline_custom_instructions
+  MISSING: outline_generate_button
+  MISSING: outline_structure
+  MISSING: persona_auto_read
+  MISSING: persona_auto_send
+  MISSING: persona_back_btn
+  MISSING: persona_card
+  MISSING: persona_close
+  MISSING: persona_conclude
+  MISSING: persona_custom_instructions
+  MISSING: persona_free_response
+  MISSING: persona_generate_button
+  MISSING: persona_hints_toggle
+  MISSING: persona_panel
+  MISSING: persona_reflection_input
+  MISSING: persona_response_mode
+  MISSING: persona_save_chat
+  MISSING: persona_select_button
+  MISSING: persona_show_hints
+  MISSING: persona_submit_btn
+  MISSING: persona_topic_spark
+  MISSING: profiles_export_button
+  MISSING: profiles_import_button
+  MISSING: profiles_save_button
+  MISSING: profiles_select_dropdown
+  MISSING: quiz_add_group_btn
+  MISSING: quiz_assign_student_select
+  MISSING: quiz_custom_instructions
+  MISSING: quiz_dok
+  MISSING: quiz_generate_button
+  MISSING: quiz_group_language_select
+  MISSING: quiz_group_resource_select
+  MISSING: quiz_local_stats_btn
+  MISSING: quiz_mode_select
+  MISSING: quiz_new_group_input
+  MISSING: quiz_next_question_btn
+  MISSING: quiz_prev_question_btn
+  MISSING: quiz_question_count
+  MISSING: quiz_reflection_count
+  MISSING: quiz_reveal_btn
+  MISSING: quiz_start_question_btn
+  MISSING: quiz_student_answer_option
+  MISSING: quiz_student_mode_header
+  MISSING: quiz_student_overlay
+  MISSING: quiz_student_question
+  MISSING: resource_delete_button
+  MISSING: role_independent
+  MISSING: role_parent
+  MISSING: role_student
+  MISSING: role_teacher
+  MISSING: scaffolds_custom_instructions
+  MISSING: scaffolds_edit_toggle
+  MISSING: scaffolds_goal_panel
+  MISSING: scaffolds_grading
+  MISSING: scaffolds_item
+  MISSING: scaffolds_paragraph_frame
+  MISSING: scaffolds_reset
+  MISSING: scaffolds_student_input
+  MISSING: scaffolds_type
+  MISSING: settings_adventure_xp
+  MISSING: settings_base_xp
+  MISSING: settings_close_btn
+  MISSING: settings_free_response
+  MISSING: settings_lock_all
+  MISSING: settings_perm_custom
+  MISSING: settings_perm_difficulty
+  MISSING: settings_perm_mode
+  MISSING: settings_perm_visuals
+  MISSING: settings_persona_free
+  MISSING: settings_unlock_xp
+  MISSING: sidebar_tab_create
+  MISSING: sidebar_tab_history
+  MISSING: simplified_add_term
+  MISSING: simplified_charts
+  MISSING: simplified_check_level
+  MISSING: simplified_citations
+  MISSING: simplified_cloze_mode
+  MISSING: simplified_compare_mode
+  MISSING: simplified_complexity_slider
+  MISSING: simplified_copy_text
+  MISSING: simplified_custom_instructions
+  MISSING: simplified_define_mode
+  MISSING: simplified_differentiation
+  MISSING: simplified_dok
+  MISSING: simplified_download_audio
+  MISSING: simplified_duplicate
+  MISSING: simplified_edit
+  MISSING: simplified_emojis
+  MISSING: simplified_explain_mode
+  MISSING: simplified_format
+  MISSING: simplified_grade_level
+  MISSING: simplified_immersive_reader
+  MISSING: simplified_interests
+  MISSING: simplified_language
+  MISSING: simplified_length
+  MISSING: simplified_overwrite_toggle
+  MISSING: simplified_phonics_mode
+  MISSING: simplified_read_along
+  MISSING: simplified_read_mode
+  MISSING: simplified_revise_mode
+  MISSING: simplified_rigor_report
+  MISSING: simplified_scramble_game
+  MISSING: simplified_standards
+  MISSING: simplified_teacher_tools
+  MISSING: socratic_auto_read
+  MISSING: socratic_auto_send
+  MISSING: socratic_close
+  MISSING: socratic_expand
+  MISSING: socratic_input
+  MISSING: socratic_toggle
+  MISSING: source_generate_btn
+  MISSING: source_generate_button
+  MISSING: source_input
+  MISSING: source_link_btn
+  MISSING: source_settings_instructions
+  MISSING: source_settings_length
+  MISSING: source_upload_btn
+  MISSING: source_verify_checkbox
+  MISSING: standards_query_input
+  MISSING: standards_region_input
+  MISSING: standards_search_btn
+  MISSING: submit_confirm_btn
+  MISSING: syntax_check
+  MISSING: syntax_close
+  MISSING: syntax_dropped_word
+  MISSING: syntax_finish
+  MISSING: syntax_next
+  MISSING: syntax_pool_word
+  MISSING: teacher_gate_input
+  MISSING: teacher_gate_modal
+  MISSING: teacher_gate_unlock
+  MISSING: timeline_check_btn
+  MISSING: timeline_count
+  MISSING: timeline_draggable_item
+  MISSING: timeline_generate_button
+  MISSING: timeline_move_down
+  MISSING: timeline_move_up
+  MISSING: timeline_reset_btn
+  MISSING: timeline_topic
+  MISSING: timer_close_btn
+  MISSING: timer_duration_btn
+  MISSING: timer_reset_btn
+  MISSING: timer_task_input
+  MISSING: tool_adventure
+  MISSING: tool_alignment
+  MISSING: tool_analysis
+  MISSING: tool_brainstorm
+  MISSING: tool_concept_sort
+  MISSING: tool_define_mode
+  MISSING: tool_explain_mode
+  MISSING: tool_faq
+  MISSING: tool_fullpack
+  MISSING: tool_glossary
+  MISSING: tool_lesson_plan
+  MISSING: tool_math
+  MISSING: tool_outline
+  MISSING: tool_persona
+  MISSING: tool_quiz
+  MISSING: tool_read_mode
+  MISSING: tool_scaffolds
+  MISSING: tool_simplified
+  MISSING: tool_syntax_game
+  MISSING: tool_timeline
+  MISSING: tool_udl
+  MISSING: tool_visual
+  MISSING: tool_wordsounds
+  MISSING: tour-analysis-settings
+  MISSING: tour-faq-settings
+  MISSING: tour-glossary-settings
+  MISSING: tour-scaffolds-settings
+  MISSING: tour-simplified-settings
+  MISSING: tour-visual-settings
+  MISSING: tour-wordsounds-panel
+  MISSING: ui_lang_export_btn
+  MISSING: ui_lang_import_btn
+  MISSING: ui_lang_manual_input
+  MISSING: ui_lang_manual_submit
+  MISSING: ui_lang_regenerate_btn
+  MISSING: ui_language_select
+  MISSING: venn_back_btn
+  MISSING: venn_bank_item
+  MISSING: venn_drop_zone_a
+  MISSING: venn_drop_zone_b
+  MISSING: venn_drop_zone_shared
+  MISSING: venn_game_container
+  MISSING: venn_header
+  MISSING: venn_item_bank
+  MISSING: venn_move_a
+  MISSING: venn_move_b
+  MISSING: venn_move_bank
+  MISSING: venn_move_cancel
+  MISSING: venn_move_shared
+  MISSING: venn_sorted_item
+  MISSING: visuals_art_style
+  MISSING: visuals_creative_mode
+  MISSING: visuals_custom_instructions
+  MISSING: visuals_delete
+  MISSING: visuals_download
+  MISSING: visuals_no_text
+  MISSING: visuals_prompt
+  MISSING: visuals_refiner
+  MISSING: visuals_regenerate
+  MISSING: visuals_worksheet_mode
+  MISSING: welcome_load_btn
+  MISSING: welcome_skip_btn
+  MISSING: wizard_back_results_btn
+  MISSING: wizard_close_btn
+  MISSING: wizard_complete_btn
+  MISSING: wizard_content_next_btn
+  MISSING: wizard_dok_select
+  MISSING: wizard_find_standard_btn
+  MISSING: wizard_format_select
+  MISSING: wizard_grade_option
+  MISSING: wizard_growth_goal_input
+  MISSING: wizard_instructions_input
+  MISSING: wizard_interest_add_btn
+  MISSING: wizard_interest_input
+  MISSING: wizard_interest_remove_btn
+  MISSING: wizard_lang_add_btn
+  MISSING: wizard_lang_common_select
+  MISSING: wizard_lang_input
+  MISSING: wizard_lang_remove_btn
+  MISSING: wizard_length_select
+  MISSING: wizard_level_select
+  MISSING: wizard_next_grade_btn
+  MISSING: wizard_prev_btn
+  MISSING: wizard_region_input
+  MISSING: wizard_search_btn
+  MISSING: wizard_search_input
+  MISSING: wizard_search_result_link
+  MISSING: wizard_search_result_select
+  MISSING: wizard_skip_btn
+  MISSING: wizard_standard_select
+  MISSING: wizard_std_manual_add_btn
+  MISSING: wizard_std_manual_input
+  MISSING: wizard_std_mode_ai
+  MISSING: wizard_std_mode_manual
+  MISSING: wizard_std_remove_btn
+  MISSING: wizard_tone_select
+  MISSING: wizard_topic_input
+  MISSING: wizard_url_fetch_btn
+  MISSING: wizard_url_input
+  MISSING: wizard_verify_checkbox
+  MISSING: wizard_vocab_input
+  MISSING: word_sounds_loading_minimized
+  MISSING: word_sounds_review_back
+  MISSING: word_sounds_review_delete_word
+  MISSING: word_sounds_review_distractor_input
+  MISSING: word_sounds_review_image_gen
+  MISSING: word_sounds_review_move_word
+  MISSING: word_sounds_review_phoneme_bank
+  MISSING: word_sounds_review_play_distractor
+  MISSING: word_sounds_review_play_phonemes
+  MISSING: word_sounds_review_play_word
+  MISSING: word_sounds_review_regen_word
+  MISSING: word_sounds_review_start
+  MISSING: wordsounds_open_btn
+  MISSING: wordsounds_pool_item
+  MISSING: wordsounds_test_sequence
+  MISSING: ws_gen_close
+  MISSING: ws_gen_count_slider
+  MISSING: ws_gen_expand
+  MISSING: ws_gen_family_select
+  MISSING: ws_gen_minimize
+  MISSING: ws_gen_quick_add_btn
+  MISSING: ws_gen_quick_add_input
+  MISSING: ws_gen_review_btn
+  MISSING: ws_gen_session_slider
+  MISSING: ws_gen_src_custom
+  MISSING: ws_gen_src_family
+  MISSING: ws_gen_src_glossary
+  MISSING: ws_gen_syllable_max
+  MISSING: ws_gen_syllable_min
+  MISSING: ws_gen_theme_input
+  MISSING: xp_modal_summary
+  MISSING: xp_modal_trigger
+
+--- Would help_mode have covered any gaps? ---
+  adventure_allow_cloud
+  adventure_auto_climax
+  adventure_cancel_new
+  adventure_chance_mode
+  adventure_choice_btn
+  adventure_choice_toggle
+  adventure_cloud_storage
+  adventure_confirm_new
+  adventure_custom_instructions
+  adventure_difficulty
+  adventure_edit_options
+  adventure_free_response
+  adventure_immersive_autoread
+  adventure_immersive_exit
+  adventure_immersive_inventory
+  adventure_immersive_toggle_ui
+  adventure_input_field
+  adventure_input_mode
+  adventure_input_send
+  adventure_language
+  adventure_lock_settings
+  adventure_low_quality
+  adventure_resume_btn
+  adventure_setup_chk_chance
+  adventure_setup_chk_freeresponse
+  adventure_setup_chk_lowqual
+  adventure_setup_chk_story
+  adventure_setup_difficulty
+  adventure_setup_input_mode
+  adventure_setup_language
+  adventure_social_story
+  adventure_start_btn
+  adventure_story_mode
+  adventure_system_state
+  analysis_check_accuracy
+  analysis_generate_button
+  bingo_card_count_input
+  bingo_close_btn
+  bingo_exit_caller_btn
+  bingo_images_chk
+  bingo_launch_caller_btn
+  bingo_next_clue
+  bingo_prev_clue
+  bingo_print_btn
+  bingo_regenerate_btn
+  bingo_speed_slider
+  bingo_toggle_autoplay
+  bingo_toggle_history
+  bot_avatar
+  bot_mic_btn
+  bot_mute_btn
+  bot_settings_btn
+  bot_sleep_btn
+  brainstorm_card
+  brainstorm_custom_instructions
+  brainstorm_generate_button
+  brainstorm_guide
+  brainstorm_panel
+  brainstorm_simulation_type
+  brainstorm_step_count
+  chat_auto_send
+  chat_autofill
+  chat_close
+  chat_consult_btn
+  chat_expand
+  chat_framework_select
+  chat_grade_select
+  chat_input
+  chat_save
+  chat_save_advice_btn
+  chat_send
+  chat_show_me
+  chat_voice_mode
+  concept_sort_add_btn
+  concept_sort_add_item
+  concept_sort_bucket
+  concept_sort_card_item
+  concept_sort_categories
+  concept_sort_category
+  concept_sort_check_answers
+  concept_sort_deck
+  concept_sort_game
+  concept_sort_generate_button
+  concept_sort_header
+  concept_sort_item
+  concept_sort_items
+  concept_sort_panel
+  concept_sort_reset
+  concept_sort_start_button
+  crossword_close_btn
+  crossword_clues_list
+  crossword_controls
+  crossword_game_container
+  crossword_grid
+  dashboard_add_file_btn_input
+  dashboard_clear_all_btn
+  dashboard_clear_btn
+  dashboard_close_btn
+  dashboard_detail_back
+  dashboard_detail_running_record
+  dashboard_detail_safety
+  dashboard_detail_transcript
+  dashboard_drop_zone_input
+  dashboard_export_csv
+  dashboard_export_csv_btn
+  dashboard_export_pdf_btn
+  dashboard_import_btn
+  dashboard_review_btn
+  dashboard_stat_activities
+  dashboard_stat_flags
+  dashboard_stat_quiz
+  dashboard_stat_students
+  dashboard_student_row
+  dashboard_student_table
+  democracy_toggle
+  entry_adjective
+  entry_animal
+  entry_load_exist
+  entry_randomize_btn
+  entry_start_new
+  escape_room_cipher_input
+  escape_room_cipher_submit
+  escape_room_close_btn
+  escape_room_fillin_input
+  escape_room_fillin_submit
+  escape_room_hint_button
+  escape_room_leaderboard
+  escape_room_lives
+  escape_room_matching_container
+  escape_room_mcq_option
+  escape_room_object
+  escape_room_progress
+  escape_room_scramble_input
+  escape_room_scramble_submit
+  escape_room_sequence_container
+  escape_room_streak
+  escape_room_team
+  escape_room_timer
+  export_copy_button
+  export_html
+  export_ims
+  export_pdf_button
+  export_print
+  export_qti
+  export_slides
+  export_storybook_images
+  export_storybook_text
+  export_worksheet
+  fab_dictation
+  fab_focus
+  fab_line_focus
+  fab_ruler
+  fab_timer
+  fab_toggle
+  faq_count
+  faq_custom_instructions
+  faq_edit_toggle
+  faq_goal_panel
+  faq_item
+  flashcard_next
+  flashcard_play_sequence
+  flashcard_prev
+  fullpack_auto_config
+  fullpack_generate
+  fullpack_resource_count
+  gen_loading_hint
+  gen_loading_progress
+  gen_loading_screen
+  generator_actions
+  global_mute_toggle
+  glossary_add_term
+  glossary_auto_remove
+  glossary_bingo
+  glossary_crossword
+  glossary_custom_instructions
+  glossary_definition_level
+  glossary_delete_image
+  glossary_download_audio
+  glossary_edit
+  glossary_edit_tier
+  glossary_export_language
+  glossary_export_standard
+  glossary_filter_all
+  glossary_filter_tier2
+  glossary_filter_tier3
+  glossary_health_check
+  glossary_image_size
+  glossary_image_style
+  glossary_language_flashcards
+  glossary_language_input
+  glossary_matching
+  glossary_memory_game
+  glossary_play_bingo
+  glossary_puzzle_lang
+  glossary_regen_image
+  glossary_remove_words
+  glossary_scramble
+  glossary_search
+  glossary_speak_term
+  glossary_standard_flashcards
+  glossary_terms_table
+  glossary_tier2_count
+  glossary_tier3_count
+  glossary_word_search
+  group_active_list
+  group_create_button
+  group_create_input
+  group_modal_container
+  group_resource_library
+  group_roster_list
+  header_about
+  header_bot_toggle
+  header_cloud_sync
+  header_dashboard
+  header_export
+  header_jump_lesson
+  header_language
+  header_session_join
+  header_session_start
+  header_session_status
+  header_settings_anim
+  header_settings_overlay
+  header_settings_text
+  header_settings_text_bionic
+  header_settings_text_font
+  header_settings_text_line_height
+  header_settings_text_reset
+  header_settings_text_size
+  header_settings_text_spacing
+  header_settings_theme
+  header_settings_voice
+  header_settings_voice_select
+  header_settings_voice_speed
+  header_settings_voice_volume
+  header_submit
+  header_support
+  header_tour_start
+  header_translate
+  hints_generate_extension
+  hints_recall
+  history_cancel_unit_btn
+  history_clear_button
+  history_create_unit_btn
+  history_delete_unit_btn
+  history_filter_unit_select
+  history_item_drag
+  history_load_project
+  history_max_toggle
+  history_move_down_btn
+  history_move_to_unit_btn
+  history_move_up_btn
+  history_panel
+  history_rename_btn
+  history_save_student
+  history_save_teacher
+  history_save_unit_btn
+  history_settings
+  history_unit_name_input
+  immersive_line_focus
+  immersive_syllables
+  immersive_wide_text
+  input_area
+  inventory_item
+  lesson_edit_instruction
+  lesson_plan_custom_additions
+  mastery_draft_input
+  matching_check_btn
+  matching_def_item
+  matching_reset_btn
+  matching_term_item
+  math_context
+  math_generate_button
+  math_generate_similar
+  math_graph
+  math_input
+  math_mode
+  math_panel
+  math_problem
+  math_quantity
+  math_student_work
+  math_subject
+  math_toggle_answers
+  memory_card_item
+  memory_fullscreen_btn
+  memory_mode_select
+  memory_reset_btn
+  outline_custom_instructions
+  outline_generate_button
+  outline_structure
+  persona_auto_read
+  persona_auto_send
+  persona_back_btn
+  persona_card
+  persona_close
+  persona_conclude
+  persona_custom_instructions
+  persona_free_response
+  persona_generate_button
+  persona_hints_toggle
+  persona_panel
+  persona_reflection_input
+  persona_response_mode
+  persona_save_chat
+  persona_select_button
+  persona_show_hints
+  persona_submit_btn
+  persona_topic_spark
+  profiles_export_button
+  profiles_import_button
+  profiles_save_button
+  profiles_select_dropdown
+  quiz_add_group_btn
+  quiz_assign_student_select
+  quiz_custom_instructions
+  quiz_dok
+  quiz_generate_button
+  quiz_group_language_select
+  quiz_group_resource_select
+  quiz_local_stats_btn
+  quiz_mode_select
+  quiz_new_group_input
+  quiz_next_question_btn
+  quiz_prev_question_btn
+  quiz_question_count
+  quiz_reflection_count
+  quiz_reveal_btn
+  quiz_start_question_btn
+  quiz_student_answer_option
+  quiz_student_mode_header
+  quiz_student_overlay
+  quiz_student_question
+  resource_delete_button
+  role_independent
+  role_parent
+  role_student
+  role_teacher
+  scaffolds_custom_instructions
+  scaffolds_edit_toggle
+  scaffolds_goal_panel
+  scaffolds_grading
+  scaffolds_item
+  scaffolds_paragraph_frame
+  scaffolds_reset
+  scaffolds_student_input
+  scaffolds_type
+  settings_adventure_xp
+  settings_base_xp
+  settings_close_btn
+  settings_free_response
+  settings_lock_all
+  settings_perm_custom
+  settings_perm_difficulty
+  settings_perm_mode
+  settings_perm_visuals
+  settings_persona_free
+  settings_unlock_xp
+  sidebar_tab_create
+  sidebar_tab_history
+  simplified_add_term
+  simplified_charts
+  simplified_check_level
+  simplified_citations
+  simplified_cloze_mode
+  simplified_compare_mode
+  simplified_complexity_slider
+  simplified_copy_text
+  simplified_custom_instructions
+  simplified_define_mode
+  simplified_differentiation
+  simplified_dok
+  simplified_download_audio
+  simplified_duplicate
+  simplified_edit
+  simplified_emojis
+  simplified_explain_mode
+  simplified_format
+  simplified_grade_level
+  simplified_immersive_reader
+  simplified_interests
+  simplified_language
+  simplified_length
+  simplified_overwrite_toggle
+  simplified_phonics_mode
+  simplified_read_along
+  simplified_read_mode
+  simplified_revise_mode
+  simplified_rigor_report
+  simplified_scramble_game
+  simplified_standards
+  simplified_teacher_tools
+  socratic_auto_read
+  socratic_auto_send
+  socratic_close
+  socratic_expand
+  socratic_input
+  socratic_toggle
+  source_generate_btn
+  source_generate_button
+  source_input
+  source_link_btn
+  source_settings_instructions
+  source_settings_length
+  source_upload_btn
+  source_verify_checkbox
+  standards_query_input
+  standards_region_input
+  standards_search_btn
+  submit_confirm_btn
+  syntax_check
+  syntax_close
+  syntax_dropped_word
+  syntax_finish
+  syntax_next
+  syntax_pool_word
+  teacher_gate_input
+  teacher_gate_modal
+  teacher_gate_unlock
+  timeline_check_btn
+  timeline_count
+  timeline_draggable_item
+  timeline_generate_button
+  timeline_move_down
+  timeline_move_up
+  timeline_reset_btn
+  timeline_topic
+  timer_close_btn
+  timer_duration_btn
+  timer_reset_btn
+  timer_task_input
+  tool_adventure
+  tool_alignment
+  tool_analysis
+  tool_brainstorm
+  tool_concept_sort
+  tool_define_mode
+  tool_explain_mode
+  tool_faq
+  tool_fullpack
+  tool_glossary
+  tool_lesson_plan
+  tool_math
+  tool_outline
+  tool_persona
+  tool_quiz
+  tool_read_mode
+  tool_scaffolds
+  tool_simplified
+  tool_syntax_game
+  tool_timeline
+  tool_udl
+  tool_visual
+  tool_wordsounds
+  tour-analysis-settings
+  tour-faq-settings
+  tour-glossary-settings
+  tour-scaffolds-settings
+  tour-simplified-settings
+  tour-visual-settings
+  tour-wordsounds-panel
+  ui_lang_export_btn
+  ui_lang_import_btn
+  ui_lang_manual_input
+  ui_lang_manual_submit
+  ui_lang_regenerate_btn
+  ui_language_select
+  venn_back_btn
+  venn_bank_item
+  venn_drop_zone_a
+  venn_drop_zone_b
+  venn_drop_zone_shared
+  venn_game_container
+  venn_header
+  venn_item_bank
+  venn_move_a
+  venn_move_b
+  venn_move_bank
+  venn_move_cancel
+  venn_move_shared
+  venn_sorted_item
+  visuals_art_style
+  visuals_creative_mode
+  visuals_custom_instructions
+  visuals_delete
+  visuals_download
+  visuals_no_text
+  visuals_prompt
+  visuals_refiner
+  visuals_regenerate
+  visuals_worksheet_mode
+  welcome_load_btn
+  welcome_skip_btn
+  wizard_back_results_btn
+  wizard_close_btn
+  wizard_complete_btn
+  wizard_content_next_btn
+  wizard_dok_select
+  wizard_find_standard_btn
+  wizard_format_select
+  wizard_grade_option
+  wizard_growth_goal_input
+  wizard_instructions_input
+  wizard_interest_add_btn
+  wizard_interest_input
+  wizard_interest_remove_btn
+  wizard_lang_add_btn
+  wizard_lang_common_select
+  wizard_lang_input
+  wizard_lang_remove_btn
+  wizard_length_select
+  wizard_level_select
+  wizard_next_grade_btn
+  wizard_prev_btn
+  wizard_region_input
+  wizard_search_btn
+  wizard_search_input
+  wizard_search_result_link
+  wizard_search_result_select
+  wizard_skip_btn
+  wizard_standard_select
+  wizard_std_manual_add_btn
+  wizard_std_manual_input
+  wizard_std_mode_ai
+  wizard_std_mode_manual
+  wizard_std_remove_btn
+  wizard_tone_select
+  wizard_topic_input
+  wizard_url_fetch_btn
+  wizard_url_input
+  wizard_verify_checkbox
+  wizard_vocab_input
+  word_sounds_loading_minimized
+  word_sounds_review_back
+  word_sounds_review_delete_word
+  word_sounds_review_distractor_input
+  word_sounds_review_image_gen
+  word_sounds_review_move_word
+  word_sounds_review_phoneme_bank
+  word_sounds_review_play_distractor
+  word_sounds_review_play_phonemes
+  word_sounds_review_play_word
+  word_sounds_review_regen_word
+  word_sounds_review_start
+  wordsounds_open_btn
+  wordsounds_pool_item
+  wordsounds_test_sequence
+  ws_gen_close
+  ws_gen_count_slider
+  ws_gen_expand
+  ws_gen_family_select
+  ws_gen_minimize
+  ws_gen_quick_add_btn
+  ws_gen_quick_add_input
+  ws_gen_review_btn
+  ws_gen_session_slider
+  ws_gen_src_custom
+  ws_gen_src_family
+  ws_gen_src_glossary
+  ws_gen_syllable_max
+  ws_gen_syllable_min
+  ws_gen_theme_input
+  xp_modal_summary
+  xp_modal_trigger

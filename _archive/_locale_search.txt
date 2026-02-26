@@ -1,0 +1,41 @@
+
+--- const ts = (1 matches) ---
+  L4538: const ts = React.useCallback((key, params = {}) => getWordSoundsString(t, key, params), [t]);
+
+--- function ts( (0 matches) ---
+
+--- const t = (4 matches) ---
+  L1443: const t = tProp || ((key, fallback) => fallback || key);
+  L16767: const t = useCallback((keyString, params = {}) => {
+  L23095: const t = titles[key];
+  L34533: const t = item.translations?.[flashcardLang];
+
+--- UI_STRINGS (4 matches) ---
+  L11087: const UI_STRINGS = {
+  L16721: const flatStrings = flattenObject(UI_STRINGS);
+  L16780: if (!result) result = getVal(UI_STRINGS, keys);
+  L41096: const english = UI_STRINGS.lesson_headers[modeKey][key];
+
+--- LanguageContext (41 matches) ---
+  L16794: export const LanguageContext = React.createContext();
+  L16828: <LanguageContext.Provider value={value}>
+  L16830: </LanguageContext.Provider>
+  L16836: const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, impor
+  L16966: const { t } = useContext(LanguageContext);
+  L17214: const { t } = useContext(LanguageContext);
+  L17437: const { t } = useContext(LanguageContext);
+  L19560: const { t } = useContext(LanguageContext);
+  L19666: const { t } = useContext(LanguageContext);
+  L20007: const { t } = useContext(LanguageContext);
+  L20197: const { t } = useContext(LanguageContext);
+  L20496: const { t } = useContext(LanguageContext);
+  L21013: static contextType = LanguageContext;
+  L21551: const { t } = useContext(LanguageContext);
+  L21627: const { t } = useContext(LanguageContext);
+
+--- LanguageProvider (3 matches) ---
+  L16795: export const LanguageProvider = ({ children }) => {
+  L68953: <LanguageProvider>
+  L68955: </LanguageProvider>
+
+--- useLanguage (0 matches) ---

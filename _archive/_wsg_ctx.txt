@@ -1,0 +1,25 @@
+L68012:                     disabled={!hasPrevResource || isSyncMode}
+L68013:                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-indigo-600 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+L68014:                 >
+L68015:                     <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
+L68016:                 </button>
+L68017:                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+L68018:                     {t('common.resource_counter', { current: currentResourceIndex + 1, total: filteredHistory.length })}
+L68019:                 </div>
+L68020:                 <button
+L68021:                     onClick={() => handleNavigateResource('next')}
+L68022:                     disabled={!hasNextResource || isSyncMode}
+L68023:                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-indigo-600 hover:bg-white hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+L68024:                 >
+L68025:                     {t('common.next')} <ArrowDown className="-rotate-90" size={16}/>
+L68026:                 </button>
+L68027:             </div>
+L68028:           )}
+L68029:         </div>
+L68030:       {activeView === 'word-sounds-generator' && (
+L68031:           <WordSoundsGenerator
+L68032:               glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
+L68033:               t={t}
+L68034:               gradeLevel={gradeLevel || 'K-2'}
+L68035:               onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+L68036:                    const resourceId = `ws-${Date.now()}`;

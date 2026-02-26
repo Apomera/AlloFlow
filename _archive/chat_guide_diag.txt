@@ -1,0 +1,32 @@
+﻿=== chat_guide section trace from L16735 ===
+
+L16735 [d:0->1]: chat_guide: {
+L16754 [d:1->2]: flow: {
+L16757 [d:2->2]: topic_detected: "Topic detected: \"{topic}\". Generating comprehensive source te
+L16764 [d:2->2]: added_lang: "Added {lang}. Generating Glossary...",
+L16766 [d:2->2]: adapting_text: "Adapting text for {grade}...",
+L16768 [d:2->2]: integrating_interest: "Integrating \"{interest}\". Generating text...",
+L16769 [d:2->2]: offer_text: "Should I adapt the text for {grade}? (Yes/Skip)",
+L16771 [d:2->2]: generating_text: "Understood. Generating text for {grade}...",
+L16776 [d:2->2]: initial_prompt_context: "I've detected source material (\"{snippet}\").\n\nHow w
+L16791 [d:2->2]: adapting_text: 'Adapting text for grade {grade}...',
+L16792 [d:2->2]: added_lang: 'Added {lang} translation.',
+L16795 [d:2->2]: generating_text: 'Generating text for grade {grade}...',
+L16798 [d:2->2]: integrating_interest: 'Integrating student interest: {interest}',
+L16805 [d:2->2]: offer_text: 'Would you like adapted text for grade {grade}?',
+L16815 [d:2->2]: adapting_text: 'Adapting text for grade {grade}...',
+L16816 [d:2->2]: added_lang: 'Added {lang} translation.',
+L16819 [d:2->2]: generating_text: 'Generating text for grade {grade}...',
+L16822 [d:2->2]: integrating_interest: 'Integrating student interest: {interest}',
+L16829 [d:2->2]: offer_text: 'Would you like adapted text for grade {grade}?',
+L16839 [d:2->1]: },
+L16840 [d:1->2]: blueprint: {
+L16865 [d:2->1]: },
+L16866 [d:1->2]: pack: {
+L16868 [d:2->2]: designing: "Designing a {count}-resource lesson blueprint... You'll be able to s
+L16873 [d:2->2]: designing: 'Designing pack with {count} items...',
+L16877 [d:2->2]: designing: 'Designing pack with {count} items...',
+L16879 [d:2->1]: }
+L16880 [d:1->0]: },
+
+=== chat_guide section ENDS at L16880 ===

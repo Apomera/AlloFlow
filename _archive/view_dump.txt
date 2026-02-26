@@ -1,0 +1,148 @@
+=== SoundMappingView (1681-1764) ===
+1681:     const SoundMappingView = ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+1682:         const [slots, setSlots] = React.useState(new Array(data.phonemes.length).fill(null));
+1683:         const [chips, setChips] = React.useState([]);
+1684: 
+1685:         React.useEffect(() => {
+1686:             if (data.graphemes) {
+1687:                 // Prepare interactive chips
+1688:                 const labeled = data.graphemes.map((g, i) => ({
+1689:                     id: i,
+1690:                     text: g,
+1691:                     isPlaced: false
+1692:                 }));
+1693:                 // Shuffle chips for the "bank"
+1694:                 setChips(labeled.sort(() => Math.random() - 0.5));
+1695:                 setSlots(new Array(data.graphemes.length).fill(null));
+1696:             }
+1697:         }, [data.graphemes]);
+1698: 
+1699:         const handleChipClick = (chip) => {
+1700:             // Edit mode: don't place, just edit
+1701:             if (isEditing) return;
+1702: 
+1703:             // If dragging from bank to slot
+1704:             const emptyIdx = slots.findIndex(s => s === null);
+1705:             if (emptyIdx !== -1) {
+1706:                 const newSlots = [...slots];
+1707:                 newSlots[emptyIdx] = chip;
+1708:                 setSlots(newSlots);
+1709: 
+1710:                 // Mark chip as placed (remove from visible bank)
+1711:                 setChips(prev => prev.map(c => c.id === chip.id ? { ...c, isPlaced: true } : c));
+1712: 
+1713:                 onPlayAudio(chip.text);
+1714: 
+1715:                 // Check if full
+1716:                 if (newSlots.every(s => s !== null)) {
+1717:                     // Check logic
+1718:                     setTimeout(() => onCheckAnswer('correct'), 1000);
+1719:                 }
+1720:             }
+1721:         };
+1722: 
+1723:         const reset = () => {
+1724:             setSlots(new Array(data.phonemes.length).fill(null));
+1725:             setChips(prev => prev.map(c => ({...c, isPlaced: false})));
+1726:         };
+1727: 
+1728:         return (
+1729:             <div className="flex flex-col items-center gap-8">
+1730:                 <div className="flex flex-wrap justify-center gap-4 py-8">
+1731:                     {isEditing ? (
+1732:                         /* Edit mode: Show raw graphemes in order to avoid shuffling/focus loss */
+1733:                         data.graphemes.map((g, i) => (
+1734:                             <div key={i} className="relative">
+1735:                                 <input
+1736:                                     value={g}
+1737:                                     onChange={(e) => onUpdateOption && onUpdateOption(i, e.target.value)}
+1738:                                     className="w-20 h-20 rounded-2xl border-4 text-center text-3xl font-bold outline-none focus:ring-4 focus:ring-amber-500 border-amber-300 bg-white text-slate-700"
+1739:                                     onKeyDown={(e) => e.stopPropagation()}
+1740:                                 />
+1741:                                 <span className="absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-sm">{i+1}</span>
+1742:                             </div>
+1743:                         ))
+1744:                     ) : (
+1745:                         /* Game mode: Show shuffled chips */
+1746:                         chips.filter(c => !c.isPlaced).map((chip) => (
+1747:                         <button
+1748:                             key={chip.id}
+1749:                             onClick={() => handleChipClick(chip)}
+1750:                             className="w-20 h-20 rounded-2xl bg-white border-b-4 border-slate-200 text-3xl font-bold text-slate-600 shadow-sm hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg transition-all active:scale-95"
+1751:                         >
+1752:                             {chip.text}
+1753:                         </button>
+1754:                         ))
+1755:                     )}
+1756:                  </div>
+1757: 
+1758:                  {/* HELP */}
+1759:                  <button onClick={() => onPlayAudio(data.word)} className="flex items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors">
+1760:                      <Volume2 size={16}/> {ts('word_sounds.listen_word') || 'Listen to Word'}
+1761:                  </button>
+1762:             </div>
+1763:         );
+1764:     };
+1765: 
+
+=== getDifficultyFilteredPool (1909-1930) ===
+1909:     const getDifficultyFilteredPool = React.useCallback(() => {
+1910:         const effectiveDifficulty = getEffectiveDifficulty();
+1911: 
+1912:         // Filter by difficulty with fallback
+1913:         let filtered = categorizedPool.filter(e => e.difficulty === effectiveDifficulty);
+1914: 
+1915:         // Fallback: if not enough words, include adjacent difficulties
+1916:         if (filtered.length < 3) {
+1917:             if (effectiveDifficulty === 'easy') {
+1918:                 filtered = categorizedPool.filter(e => e.difficulty !== 'hard');
+1919:             } else if (effectiveDifficulty === 'hard') {
+1920:                 filtered = categorizedPool.filter(e => e.difficulty !== 'easy');
+1921:             } else {
+1922:                 filtered = categorizedPool; // Use all for medium
+1923:             }
+1924:         }
+1925: 
+1926:         return filtered.length > 0 ? filtered : categorizedPool;
+1927:     }, [categorizedPool, getEffectiveDifficulty]);
+1928: 
+1929: 
+1930: 
+
+=== UI_STRINGS Start (5315-5350) ===
+5315: const UI_STRINGS = {
+5316:   common: {
+5317:     check: "Check Answer",
+5318:     save: "Save",
+5319:     cancel: "Cancel",
+5320:     close: "Close",
+5321:     edit: "Edit",
+5322:     delete: "Delete",
+5323:     copy: "Copy",
+5324:     download: "Download",
+5325:     print: "Print",
+5326:     reset: "Reset",
+5327:     back: "Back",
+5328:     next: "Next",
+5329:     prev: "Prev",
+5330:     finish: "Finish",
+5331:     skip: "Skip",
+5332:     start: "Start",
+5333:     end: "End",
+5334:     resource: "Resource",
+5335:     loading: "Loading...",
+5336:     processing: "Processing...",
+5337:     error: "Error",
+5338:     error_details: "Error Details",
+5339:     success: "Success",
+5340:     remove: "Remove",
+5341:     add: "Add",
+5342:     regenerate: "Regenerate",
+5343:     upload: "Upload",
+5344:     fetch: "Fetch",
+5345:     send: "Send",
+5346:     done: "Done",
+5347:     submit: "Submit",
+5348:     generic_error: "Sorry, something went wrong. Please try again.",
+5349:     duplicate: "Duplicate",
+5350:     copy_text: "Copy Text",

@@ -1,0 +1,33 @@
+﻿Starting: 70597 lines
+
+Removing 22 blocks:
+  L55230-L55232: Tier 2: Dead function LanguageSelector (3 lines)
+  L49265-L49289: Tier 2: Dead function renderPersonaTextWithClickableWords (25 lines)
+  L39584-L39597: Tier 1: Commented block (14 lines)
+  L37494-L37513: Tier 2: Dead function handleWordSoundsStartGame (20 lines)
+  L32916-L32928: Tier 1: Commented block (13 lines)
+  L32778-L32789: Tier 1: Commented block (12 lines)
+  L32692-L32699: Tier 2: Dead function getDifficultyDescription (8 lines)
+  L32685-L32691: Tier 2: Dead function getModeDescription (7 lines)
+  L30832-L30882: Tier 2: Dead function MarkdownRenderer (51 lines)
+  L29289-L29291: Tier 2: Dead function selectLength (3 lines)
+  L29129-L29132: Tier 2: Dead function selectGrade (4 lines)
+  L22731-L22740: Tier 2: Dead function useDebounce (10 lines)
+  L18318-L18491: Tier 2: Dead function LargeFileImportModal (174 lines)
+  L18208-L18210: Tier 2: Dead function getLangName (3 lines)
+  L7922-L7928: Tier 2: Dead function renderSettingsControls (7 lines)
+  L3914-L3927: Tier 1: Commented block (14 lines)
+  L2573-L2576: Tier 2: Dead function getAudioForIPA (4 lines)
+  L1515-L1524: Tier 2: Dead function isSafeWord (10 lines)
+  L1077-L1104: Tier 2: Dead function useAutoSync (28 lines)
+  L1067-L1075: Tier 2: Dead function getStudentUid (9 lines)
+  L986-L999: Tier 2: Dead function speakPhoneme (14 lines)
+  L64-L89: Tier 2: Dead function LoadAudioButton (26 lines)
+
+Total removed: 459 lines
+Final: 70138 lines (was 70597)
+
+Validating UI_STRINGS structure...
+  UI_STRINGS closes at L11104 ΓÇö BALANCED Γ£à
+
+Done!

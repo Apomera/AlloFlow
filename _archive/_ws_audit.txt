@@ -1,0 +1,362 @@
+=== AUDIT 1: Dead / Disabled Code ===
+  L5479: // DISABLED: Review Panel handles all preloading. Pre-fetch is legacy code.
+  L5479: // DISABLED: Review Panel handles all preloading. Pre-fetch is legacy code.
+  L6141: // DISABLED: preloadInitialBatch is blocking and redundant.
+  L6141: // DISABLED: preloadInitialBatch is blocking and redundant.
+  L6904: // DISABLED when playInstructions is ON to prevent concurrent audio
+  L7668: // TODO: Start revisit mode
+  L19326: // DEBUG: Trace why Cloud TTS might be skipped
+
+=== AUDIT 2: console.error / console.warn in WS Modal ===
+  L3236: console.warn("setWsPreloadedWords is not defined - updates won't persist");
+  L3333: if (!input) { console.warn("handleAudio called with null input"); return Promise.resolve(); }
+  L3347: console.warn("Data URI playback failed", e);
+  L3368: console.warn("Bank playback failed", e);
+  L3393: console.warn("Playback failed", e);
+  L3406: console.warn("Audio load error:", audio.src, e);
+  L3551: console.warn(`No audio match for phoneme "${text}", using browser TTS`);
+  L3563: console.warn("TTS Failed", e);
+  L3568: console.warn("Falling back to Browser TTS");
+  L3600: console.error("Blending playback error:", err);
+  L3647: console.error("Sequence error", e);
+  L4570: console.warn("⚠️ WordSoundsModal: glossaryTerms is empty or undefined");
+  L4736: console.warn("⚠️ generateSessionQueue: No words available in pool or preloaded!");
+  L5103: console.warn("Gemini Oracle failed:", apiErr);
+  L5131: console.warn("Unified Oracle error:", e);
+  L5151: console.warn("Activated Crisis Fallback for phonemeData");
+  L5211: console.warn("Prefetch failed for", phoneme, "- retrying once...");
+  L5400: console.error("Blending repair failed", repairErr);
+  L5563: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L5570: console.warn(`Prefetch failed for ${targetWord}`, e);
+  L5582: console.error("Prefetch loop error", e);
+  L5607: console.warn("Word pool empty, skipping preload");
+  L5670: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L5692: console.warn("⚠️ estimateLocal called with empty word!");
+  L5697: console.warn("⚠️ Word has no letters after cleaning:", word);
+  L5713: console.warn("⚠️ Estimator produced empty result for:", word, "- using letter fallback");
+  L5772: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L5865: console.warn(`❌ Gemini failed after 3 attempts for "${targetWord}"`, lastError);
+  L5927: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L5960: console.warn("⚠️ ZERO PHONEMES detected for:", targetWord, "- will retry Gemini");
+  L5982: console.warn(`⚠️ Retry ${retryAttempt} failed:`, retryErr.message);
+  L5988: console.warn("⚠️ All 3 Gemini retries failed for:", targetWord, "- using enhanced local estimation");
+  L6093: console.warn("Parallel fetch failed for", targetWord, err);
+  L6129: console.error("Bulk preload failed:", err);
+  L6175: await handleAudio(text, false).catch(e => console.warn("Audio prefetch failed:", e)); // Fetch & Cache (no play)
+  L6187: console.warn(`Audio prefetch failed for ${text}`, e);
+  L6230: console.error("❌ REORDER FAILED: setWsPreloadedWords is undefined!");
+  L6248: console.error("❌ UPDATE FAILED: setWsPreloadedWords is undefined!");
+  L6286: console.warn("⚠️ DELETE: Lifted setter unavailable, trying direct state manipulation");
+  L6288: console.error("❌ DELETE FAILED: No setter available! Please check wsPreloadedWords prop.");
+  L6330: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L6373: console.error("Regeneration failed:", err);
+  L6421: console.error("Option regeneration failed", e);
+  L6437: console.warn("No words to regenerate");
+  L6464: console.error("Failed to regenerate:", targetWord, err);
+  L6475: console.error("❌ No state setter available for regenerate all");
+  L6513: console.warn(`⚠️ Rate limited on "${word}", will retry...`);
+  L6520: console.warn("callImagen not available - check if prop is passed");
+  L6538: console.error("Failed to generate image:", e);
+  L6579: console.warn("callGeminiImageEdit not available");
+  L6597: console.error("Failed to refine image:", e);
+  L6889: console.warn("Prefetch failed for", phoneme, "- retrying once...");
+  L7017: console.warn("WordSounds: All pools exhausted, stopping auto-advance.");
+  L7221: console.warn("No phonemes found for isolation init");
+  L7266: try { audio.pause(); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L7532: console.error("Audio juice failed", e);
+  L7806: console.warn("⚠️ Orthography buffer mismatch, skipping:", bufferedTargetWord, "vs", targetWord);
+  L7829: console.warn("⚠️ Rhyme buffer mismatch, skipping:", bufferedTargetWord, "vs", targetWord);
+  L7962: console.warn("❌ Refill failed (no words). Ending session.");
+  L7971: console.error("CheckAnswer CRITICAL FAIL", e);
+  L8034: console.error("Mic Error", e);
+  L8412: } catch (e) { console.error("Audio scratch failed", e); }
+  L8421: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L8439: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L8445: try { audioCtxRef.current.close(); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L8785: console.error(e);
+  L9800: console.warn(`No matches found for ${targetWord} (${mode}: ${targetPhoneme}) in pool.`);
+  L10547: console.warn(`Failed to parse ${file.name}:`, err);
+  L17365: console.warn("safeJsonParse: jsonrepair failed, attempting standard parse...");
+  L17371: console.error("safeJsonParse: Parsing failed", e);
+  L17550: console.error(`storageDB Read Error [${key}]:`, e);
+  L17562: console.error(`storageDB Write Error [${key}]:`, e);
+  L17569: } catch (e) { console.error(`storageDB Del Error [${key}]:`, e); }
+  L17574: } catch (e) { console.error("storageDB Clear Error:", e); }
+  L17598: console.warn(`⚠️ Transient API error ${response.status}, retrying...`);
+  L17648: console.warn("Primary proxy failed, attempting fallback...", e);
+  L17657: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L17878: console.warn(`translateChunk failed to parse for ${targetLanguage}. Attempting AI repair...`);
+  L17892: console.warn(`translateChunk failed for ${targetLanguage}`, e);
+  L17943: console.error("Import failed", err);
+  L17973: console.warn("Local storage check skipped (Sandbox mode?):", dbErr);
+  L17989: try { await storageDB.set(storageKey, cloudPack); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L17994: console.warn("Cloud translation check failed:", cloudErr);
+  L18010: console.warn(`Chunk ${i+1} failed. Retry attempt ${chunkAttempt-1}...`);
+  L18029: console.warn("Failed to save translation to cloud (Permissions?):", saveErr);
+  L18031: try { await storageDB.set(storageKey, accumulatedPack); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L18039: console.error("[useTranslation] Load Error:", e);
+  L18052: // console.warn("t() received non-string key:", keyString); // Optional: Warn in dev
+  L18757: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L19206: console.error("Flight sound error", e);
+  L19255: console.warn("AlloBot: Suppressing duplicate speech:", safeText);
+  L19364: console.warn("Bot audio error/interrupted", e);
+  L19376: console.warn("Cloud TTS specific error, trying fallback:", e);
+  L19389: console.warn("Native TTS Error", e);
+  L19401: console.error("Native TTS failed completely", nativeErr);
+  L21185: console.error("Team assignment failed:", e);
+  L21204: console.error("Error submitting quiz response:", e);
+  L22122: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L22126: try { node.stop(); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L22127: try { node.disconnect(); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L22130: try { oldGain.disconnect(); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L22171: console.error("Audio generation failed, attempting fallback.", err);
+  L22182: } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L22614: console.error("ErrorBoundary caught an error:", error, errorInfo);
+  L22723: console.warn("Image optimization error:", e);
+  L22729: console.warn("Image load error during optimization:", e);
+  L22783: }).catch(e => console.warn("Failed to load asset", assetId));
+  L22845: console.error("Error accessing microphone:", err);
+  L22950: console.error("Gemini Audio Analysis Failed:", error);
+  L24407: console.error("Add item failed", e);
+  L25664: console.error("Caller audio failed");
+  L25672: console.error("Caller TTS Error", e);
+  L26662: console.error(e);
+  L27157: console.error("Escape room team assignment failed:", e);
+  L27206: console.error("Failed to sync puzzle completion:", e);
+  L27228: console.error("Failed to sync life loss:", e);
+  L27448: console.error("Failed to use hint:", e);
+  L27820: console.error('Failed to sync timer:', e);
+  L28062: console.warn("Boss refinement failed, using original", e);
+  L28070: console.error("Boss Gen Failed", e);
+  L28094: console.error("Boss visual update failed", e);
+  L28230: console.warn("Quiz end Firestore failed (Canvas sandbox):", err.message);
+  L28969: console.error("PDF Export Error", e);
+  L28994: console.warn("Skipping invalid file (not a student save):", file.name);
+  L28998: console.error("Failed to parse file:", file.name);
+  L29004: console.error("Error reading file:", file.name);
+  L29569: console.error("Standards search error:", e);
+  L29630: console.warn("Wizard URL Fetch Error:", err);
+  L29699: } catch (e) { console.error(e); } finally { setIsSearching(false); }
+
+=== AUDIT 3: Hardcoded distractors / magic numbers ===
+  L5067: const DISABLE_GEMINI_PHONEMES = true;
+  L5069: if (!DISABLE_GEMINI_PHONEMES) {
+  L5218: } // END if (!DISABLE_GEMINI_PHONEMES)
+  L5220: // When DISABLE_GEMINI_PHONEMES is true, generate local fallback data
+  L5684: const DISABLE_GEMINI_PHONEMES_V2 = false;
+  L5687: if (DISABLE_GEMINI_PHONEMES_V2) {
+
+=== AUDIT 4: try/catch with empty catch or swallowed errors ===
+  L5665: EMPTY CATCH: await Promise.all(distractorSets.map(d => handleAudio(d, false).catch(() => {}))); -> }
+  L5772: EMPTY CATCH: } catch(e) { console.warn('Caught error:', e?.message || e); } -> 
+  L6175: EMPTY CATCH: await handleAudio(text, false).catch(e => console.warn("Audio prefetch failed:", e)); // Fetch & Cac -> 
+  L6330: EMPTY CATCH: } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L8445: EMPTY CATCH: try { audioCtxRef.current.close(); } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L11251: EMPTY CATCH: Enable 'Check Accuracy' before running the analysis to catch potential misinformation early. The AI  -> 
+  L17574: EMPTY CATCH: } catch (e) { console.error("storageDB Clear Error:", e); } -> }
+  L17657: EMPTY CATCH: } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L18031: EMPTY CATCH: try { await storageDB.set(storageKey, accumulatedPack); } catch(e) { console.warn('Caught error:', e -> 
+  L18757: EMPTY CATCH: } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L19372: EMPTY CATCH: }).catch(handleAudioError); -> }
+  L22122: EMPTY CATCH: } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L22130: EMPTY CATCH: try { oldGain.disconnect(); } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L22182: EMPTY CATCH: } catch(e) { console.warn('Caught error:', e?.message || e); } -> }
+  L22783: EMPTY CATCH: }).catch(e => console.warn("Failed to load asset", assetId)); -> 
+
+=== AUDIT 5: Async operations that may update unmounted state ===
+  L3326: TIMEOUT+STATE: setTimeout(() => setErrorMessage(null), duration);
+  L3345: TIMEOUT+STATE: setTimeout(resolve, 5000); // Fail-safe timeout
+  L3366: TIMEOUT+STATE: setTimeout(resolve, 5000); // Fail-safe timeout
+  L3390: TIMEOUT+STATE: setTimeout(resolve, 3000); // Fail-safe
+  L3410: TIMEOUT+STATE: setTimeout(resolve, 1000);
+  L3594: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 900));
+  L3644: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 750));
+  L3659: TIMEOUT+STATE: //                 const timer = setTimeout(() => {
+  L3839: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600));
+  L3963: TIMEOUT+STATE: setTimeout(() => onCheckAnswer(userSpelling), 500);
+  L4123: TIMEOUT+STATE: setTimeout(() => onCheckAnswer('correct'), 1000);
+  L4128: TIMEOUT+STATE: setTimeout(() => setShakenWord(null), 500);
+  L4301: TIMEOUT+STATE: const timer = setTimeout(() => {
+  L4329: TIMEOUT+STATE: setTimeout(() => onCheckAnswer('correct'), 1000);
+  L5212: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 500));
+  L5574: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 50));
+  L5861: TIMEOUT+STATE: if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt)); // Backoff
+  L6214: TIMEOUT+STATE: const timer = setTimeout(() => {
+  L6368: TIMEOUT+STATE: setTimeout(async () => {
+  L6505: TIMEOUT+STATE: await new Promise(r => setTimeout(r, backoffMs));
+  L6624: TIMEOUT+STATE: const timer = setTimeout(() => prefetchNextWords(), 1000);
+  L6890: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 500));
+  L6917: TIMEOUT+STATE: const timer = setTimeout(async () => {
+  L6934: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600));
+  L6941: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 450));
+  L6950: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600));
+  L6960: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 400));
+  L7149: TIMEOUT+STATE: setTimeout(() => {
+  L7177: TIMEOUT+STATE: setTimeout(() => {
+  L7284: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 800)); // Initial delay for fade-in
+  L7317: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 200));
+  L7325: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 200));
+  L7331: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 200));
+  L7363: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 300));
+  L7372: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 300));
+  L7385: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 200));
+  L7392: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 200));
+  L7412: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 400)); // Small gap
+  L7418: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600)); // Gap after phonemes
+  L7424: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 500)); // Gap between options
+  L7433: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 400)); // Small gap
+  L7441: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 500)); // Small gap before options
+  L7447: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600)); // Gap between options
+  L7454: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 400));
+  L7460: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600)); // Gap after word
+  L7466: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 450));
+  L7474: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 400)); // Small gap after instruction
+  L7481: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 400)); // Small gap after instruction
+  L7559: TIMEOUT+STATE: setTimeout(() => setWordSoundsFeedback?.(null), 1500);
+  L7579: TIMEOUT+STATE: setTimeout(() => setIsCelebrating(false), 2500);
+  L7657: TIMEOUT+STATE: setTimeout(() => {
+  L7659: TIMEOUT+STATE: setTimeout(() => { autoDirectorCooldown.current = false; }, 15000);
+  L7675: TIMEOUT+STATE: setTimeout(() => setShowSessionComplete(true), 2500);
+  L7686: TIMEOUT+STATE: setTimeout(() => setShowLetterHints(false), 2000);
+  L7705: TIMEOUT+STATE: setTimeout(() => {
+  L7708: TIMEOUT+STATE: setTimeout(() => {
+  L7719: TIMEOUT+STATE: setTimeout(() => setWordSoundsActivity('orthography'), 2000);
+  L7768: TIMEOUT+STATE: setTimeout(() => {
+  L7868: TIMEOUT+STATE: setTimeout(() => prefetchNextWords(), 100);
+  L8568: TIMEOUT+STATE: setTimeout(() => onComplete(true), 800);
+  L8778: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 500)); // 500ms for beginning readers
+  L8781: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600));
+  L9106: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 600));
+  L9250: TIMEOUT+STATE: setTimeout(() => handleAudio(currentWordSoundsWord), 300);
+  L9277: TIMEOUT+STATE: setTimeout(() => {
+  L9443: TIMEOUT+STATE: setTimeout(() => {
+  L9568: TIMEOUT+STATE: setTimeout(() => {
+  L9846: TIMEOUT+STATE: setTimeout(() => {
+  L10559: TIMEOUT+STATE: await new Promise(resolve => setTimeout(resolve, 10));
+  L17609: TIMEOUT+STATE: await new Promise(resolve => setTimeout(resolve, delay));
+  L17644: TIMEOUT+STATE: const timeoutId = setTimeout(() => controller.abort(), 20000);
+  L17654: TIMEOUT+STATE: const timeoutId = setTimeout(() => controller.abort(), 20000);
+  L17675: TIMEOUT+STATE: const timeoutId = setTimeout(() => controller.abort(), 20000);
+  L18012: TIMEOUT+STATE: await new Promise(r => setTimeout(r, 2000 * Math.min(chunkAttempt, 5))); // Backoff up to 10s
+  L18019: TIMEOUT+STATE: if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
+  L18036: TIMEOUT+STATE: setTimeout(() => setIsTranslating(false), 500);
+  L18300: TIMEOUT+STATE: await new Promise(resolve => setTimeout(resolve, 1500));
+  L18874: TIMEOUT+STATE: const timer = setTimeout(() => setParticles([]), 1500);
+  L19034: TIMEOUT+STATE: velocityTimerRef.current = setTimeout(() => {
+  L19073: TIMEOUT+STATE: const timer = setTimeout(() => {
+  L19110: TIMEOUT+STATE: timer = setTimeout(() => {
+  L19112: TIMEOUT+STATE: setTimeout(() => {
+  L19148: TIMEOUT+STATE: setTimeout(() => setAntennaAction(null), 1900);
+  L19151: TIMEOUT+STATE: setTimeout(() => setAntennaAction(null), 4000);
+  L19233: TIMEOUT+STATE: setTimeout(() => {
+  L19236: TIMEOUT+STATE: setTimeout(() => setIsLanding(false), 1000);
+  L19280: TIMEOUT+STATE: setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+  L19410: TIMEOUT+STATE: speechTimeoutRef.current = setTimeout(resetState, duration);
+  L19427: TIMEOUT+STATE: setTimeout(() => {
+  L19450: TIMEOUT+STATE: const timer = setTimeout(() => {
+  L19492: TIMEOUT+STATE: pendingSpeechTimerRef.current = setTimeout(() => {
+  L19604: TIMEOUT+STATE: ambientTimer = setTimeout(() => {
+  L19614: TIMEOUT+STATE: setTimeout(() => setIdleAnimation(null), 2000);
+  L22124: TIMEOUT+STATE: setTimeout(() => {
+  L22160: TIMEOUT+STATE: const autoKillTimer = setTimeout(() => {
+  L22815: TIMEOUT+STATE: const handler = setTimeout(() => {
+  L23173: TIMEOUT+STATE: setTimeout(() => setStatus('neutral'), 800);
+  L23330: TIMEOUT+STATE: setTimeout(() => {
+  L23341: TIMEOUT+STATE: setTimeout(() => {
+  L25524: TIMEOUT+STATE: setTimeout(() => btn.classList.remove('animate-pulse', 'bg-red-600'), 500);
+  L25707: TIMEOUT+STATE: autoPlayTimerRef.current = setTimeout(() => {
+  L26255: TIMEOUT+STATE: setTimeout(() => {
+  L26261: TIMEOUT+STATE: setTimeout(() => setFeedback('idle'), 800);
+  L26492: TIMEOUT+STATE: const rollTimer = setTimeout(() => {
+  L26495: TIMEOUT+STATE: const endTimer = setTimeout(() => onComplete(), 3500);
+  L27128: TIMEOUT+STATE: setTimeout(() => setTeamEscapeToast(null), 4000);
+  L27138: TIMEOUT+STATE: setTimeout(() => setShowConfetti(false), 5000);
+  L28261: TIMEOUT+STATE: setTimeout(generateBossAsset, 100);
+  L29558: TIMEOUT+STATE: setTimeout(() => {
+  L29695: TIMEOUT+STATE: setTimeout(() => {
+
+=== AUDIT 6: Audio race patterns ===
+  L3591: AWAIT AUDIO: await handleAudio(phoneme);
+  L5657: AWAIT AUDIO: await handleAudio(targetWord, false);
+  L5665: AWAIT AUDIO: await Promise.all(distractorSets.map(d => handleAudio(d, false).catch(() => {})));
+  L5669: AWAIT AUDIO: await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+  L5913: AWAIT AUDIO: await handleAudio(targetWord, false);
+  L5926: AWAIT AUDIO: await Promise.all(keys.map(k => handleAudio(k, false).catch(() => {})));
+  L6175: AWAIT AUDIO: await handleAudio(text, false).catch(e => console.warn("Audio prefetch failed:", e)); // Fetch & Cache (no play)
+  L6369: AWAIT AUDIO: await handleAudio(targetWord, true);
+  L6929: AWAIT AUDIO: await handleAudio(currentWordSoundsWord);
+  L6939: AWAIT AUDIO: await handleAudio(isolationState.isoOptions[i]);
+  L6958: AWAIT AUDIO: await handleAudio(text);
+  L7315: AWAIT AUDIO: await handleAudio(INSTRUCTION_AUDIO['trace_letter']); // "Trace the letter"
+  L7321: AWAIT AUDIO: await handleAudio(LETTER_NAME_AUDIO[lowLet]);
+  L7323: AWAIT AUDIO: await handleAudio(upperLet);
+  L7329: AWAIT AUDIO: await handleAudio(INSTRUCTION_AUDIO['for']);
+  L7335: AWAIT AUDIO: await handleAudio(currentWordSoundsWord);
+  L7361: AWAIT AUDIO: await handleAudio(INSTRUCTION_AUDIO['sound_match_start']); // "Find all words that start with..."
+  L7364: AWAIT AUDIO: await handleAudio(targetSound); // "... /b/"
+  L7370: AWAIT AUDIO: await handleAudio(INSTRUCTION_AUDIO['sound_match_end']); // "Find all words that end with..."
+  L7373: AWAIT AUDIO: await handleAudio(targetSound); // "... /ar/"
+  L7383: AWAIT AUDIO: await handleAudio(INSTRUCTION_AUDIO['rhyming']);
+  L7387: AWAIT AUDIO: await handleAudio(currentWordSoundsWord); // Chain target word after instruction
+  L7390: AWAIT AUDIO: await handleAudio("Which word rhymes with");
+  L7394: AWAIT AUDIO: await handleAudio(currentWordSoundsWord);
+  L7403: AWAIT AUDIO: await handleAudio(instructionAudioSrc);
+  L7405: AWAIT AUDIO: await handleAudio(instructionText);
+  L7422: AWAIT AUDIO: await handleAudio(blendingOptions[i]);
+  L7435: AWAIT AUDIO: await handleAudio(currentWordSoundsWord); // Play the word ONLY
+  L7445: AWAIT AUDIO: await handleAudio(rhymeOptions[i]);
+  L7456: AWAIT AUDIO: await handleAudio(currentWordSoundsWord);
+  L7464: AWAIT AUDIO: await handleAudio(isolationState.isoOptions[i]);
+  L7476: AWAIT AUDIO: await handleAudio(currentWordSoundsWord);
+  L7483: AWAIT AUDIO: await handleAudio(currentWordSoundsWord);
+  L8776: AWAIT AUDIO: await handleAudio(box.phoneme);
+  L9104: AWAIT AUDIO: await handleAudio(blendingOptions[i]);
+
+=== AUDIT 7: DISABLE_GEMINI_PHONEMES and estimatePhonemesBasic usage ===
+  L4466: const estimatePhonemesBasic = React.useCallback((word) => {
+  L5067: const DISABLE_GEMINI_PHONEMES = true;
+  L5069: if (!DISABLE_GEMINI_PHONEMES) {
+  L5093: // ALWAYS derive phonemes using rule-based estimatePhonemesBasic (NOT Gemini)
+  L5094: const derivedPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLowerCase().split('');
+  L5108: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(targetWord) : targetWord.toLowerCase().split('');
+  L5138: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(fallbackWord) : fallbackWord.toLowerCase().split('');
+  L5218: } // END if (!DISABLE_GEMINI_PHONEMES)
+  L5220: // When DISABLE_GEMINI_PHONEMES is true, generate local fallback data
+  L5222: const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+  L5337: const phonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+  L5684: const DISABLE_GEMINI_PHONEMES_V2 = false;
+  L5687: if (DISABLE_GEMINI_PHONEMES_V2) {
+  L5991: const estimatePhonemesEnhanced = (word) => {
+  L6072: const fallbackPhonemes = estimatePhonemesEnhanced(targetWord);
+
+=== AUDIT 8: useCallback/useMemo with potential stale closures ===
+
+=== AUDIT 9: prefetchNextWords calls after consolidation ===
+  L5478: const prefetchNextWords = React.useCallback(async () => {
+  L6624: const timer = setTimeout(() => prefetchNextWords(), 1000);
+  L6627: }, [wordSoundsPhonemes, nextWordBuffer, isLoadingPhonemes, prefetchNextWords]);
+  L7150: prefetchNextWords();
+  L7157: }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length])
+  L7868: setTimeout(() => prefetchNextWords(), 100);
+  L7979: nextWordBuffer, preloadedWords, prefetchNextWords, generateSoundChips]); // Added dependencies
+
+=== AUDIT 10: setIsLoadingPhonemes(true) without matching false ===
+  setIsLoadingPhonemes(true): 1 calls at [5062]
+  setIsLoadingPhonemes(false): 9 calls at [5007, 5328, 7048, 7110, 7119, 7903, 7931, 7960, 10055]
+
+=== AUDIT 11: showSessionComplete / session completion triggers ===
+  L3319: const [showSessionComplete, setShowSessionComplete] = React.useState(false);
+  L7075: setShowSessionComplete(true); // Let user choose next action
+  L7675: setTimeout(() => setShowSessionComplete(true), 2500);
+  L7940: setShowSessionComplete(true);
+  L7963: setShowSessionComplete(true);
+  L9948: if (showSessionComplete) {
+  L9986: setShowSessionComplete(false);
+  L9998: setShowSessionComplete(false);
+  L10015: setShowSessionComplete(false);
+
+=== AUDIT 12: Remaining fetchWordData calls ===
+  L5542: const data = await fetchWordData(targetWord, 0, true); // isBackground = true
+  L6337: const phonemeData = await fetchWordData(targetWord, 0, false, true);
+  L6455: const freshData = await fetchWordData(targetWord, 0, true); // Force fresh fetch
+  L10459: onClick={() => fetchWordData(phonemeError)}

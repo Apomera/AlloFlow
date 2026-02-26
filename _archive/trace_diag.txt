@@ -1,0 +1,117 @@
+=== LETTER TRACING PHASE TRANSITION DIAGNOSTIC ===
+
+--- 1. tracingPhase Declarations ---
+L3313: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+L30634: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+
+--- 2. setTracingPhase Calls ---
+L3313: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+L6252: setTracingPhase('upper');
+L9578: setTracingPhase('lower');
+L9587: setTracingPhase('upper');
+L9597: setTracingPhase('upper');
+L30634: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+
+--- 3. isMountedRef Declarations and Writes ---
+L3376: const isMountedRef = React.useRef(true); // Track mount state for async cleanup
+L3492: setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+L4106: setTimeout(() => { if (isMountedRef.current) onCheckAnswer(userSpelling); }, 500);
+L4255: setTimeout(() => { if (isMountedRef.current) onCheckAnswer('correct'); }, 1200);
+L4261: setTimeout(() => { if (isMountedRef.current) { setShakenWord(null); setWrongFeedback(null); } }, 1500);
+L4473: setTimeout(() => { if (isMountedRef.current) onCheckAnswer('correct'); }, 1000);
+L5964: if (!isMountedRef.current) return;
+L6492: if (!isMountedRef.current) return;
+L6494: if (!isMountedRef.current) return;
+L7130: if (isMountedRef.current && currentWordSoundsWord) {
+L7137: if (isMountedRef.current && currentWordSoundsWord) handleAudio(currentWordSoundsWord);
+L7160: if (isMountedRef.current) {
+L7166: if (isMountedRef.current) handleAudio(expectedAnswer);
+L7172: setTimeout(() => { if (isMountedRef.current) setWordSoundsFeedback?.(null); }, 3000);
+L7188: setTimeout(() => { if (isMountedRef.current) setIsCelebrating(false); }, 2500);
+L7271: if (!isMountedRef.current) return;
+L7274: if (!isMountedRef.current) return;
+L7291: if (!isMountedRef.current) return;
+L7303: setTimeout(() => { if (isMountedRef.current) setShowSessionComplete(true); }, 2500);
+L7320: setTimeout(() => { if (isMountedRef.current) setShowLetterHints(false); }, 2000);
+L7339: if (!isMountedRef.current) return;
+L7343: if (!isMountedRef.current) return;
+L7363: if (!isMountedRef.current) return;
+L7375: if (!isMountedRef.current) return;
+L7472: if (isMountedRef.current) handleAudio(expectedAnswer);
+L8057: isMountedRef.current = false;
+L8189: setTimeout(() => { if (isMountedRef.current) onComplete(true); }, 800);
+L8193: setTimeout(() => { if (isMountedRef.current) setFeedback(null); }, 2000);
+L8196: setTimeout(() => { if (isMountedRef.current) setFeedback(null); }, 2000);
+L8739: if (!isMountedRef.current) return;
+L8940: if (!isMountedRef.current) return;
+L9095: if (!isMountedRef.current) return;
+L9221: if (!isMountedRef.current) return;
+L9574: if (!isMountedRef.current) return;
+L9586: if (!isMountedRef.current) return;
+
+--- 4. onComplete Calls ---
+L8189: setTimeout(() => { if (isMountedRef.current) onComplete(true); }, 800);
+
+--- 5. LetterTraceView Key and Props ---
+L727: 'word_sounds.letter_tracing_prompt': 'Trace the letter to practice writing!',
+L728: 'word_sounds.activity_letter_tracing': 'Letter Trace',
+L729: 'word_sounds.letter_tracing_desc': 'Trace the first letter',
+L809: 'word_sounds.letter_tracing_success': 'Great tracing! ✍️',
+L1125: _LOAD_INSTRUCTION_AUDIO_RAW('inst_letter_tracing', getAudio('instructions', 'inst_letter_tracing'));
+L1454: 'letter_tracing': 'alwaysOn',          // VAKT requires visual context
+L1484: letter_tracing: { enabled: false, count: 5 },
+L1493: 'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble'
+L2120: letter_tracing: { id: 'letter_tracing', label: 'Letter Tracing', icon: PenTool },
+L3331: 'letter_tracing': 'alwaysOn',
+L3347: 'letter_tracing': 'alwaysOn',     // Must see letter to trace it
+L4563: { id: 'letter_tracing', label: ts('word_sounds.activity_letter_tracing') || 'Letter Trace', icon: '✍️', description: ts('word_sounds.letter_tracing_desc') || 'Trace the first letter', tier: 'phonologi
+L6251: if (wordSoundsActivity === 'letter_tracing') {
+L6830: letter_tracing: 'inst_letter_tracing',
+L6837: if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSoundsActivity !== 'rhyming' && wordSoundsActivity !== 'letter_tracing' && 
+L6852: } else if (wordSoundsActivity === 'letter_tracing') {
+L7901: const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
+L8380: const instKeyMap = { orthography: 'inst_orthography', spelling_bee: 'inst_spelling_bee', word_scramble: 'inst_word_scramble', missing_letter: 'inst_missing_letter', counting: 'inst_counting', blending
+L9539: case 'letter_tracing': {
+L9561: <LetterTraceView
+L11801: activity_letter_tracing: 'Letter Trace',
+L11806: letter_tracing_desc: 'Practice letter formation with guided tracing',
+
+--- 6. audioInstances ref (used in cleanup) ---
+L3375: const audioInstances = React.useRef(new Map());
+
+--- 7. INSTRUCTION_AUDIO for fb_great_job, now_try_lowercase, fb_amazing ---
+L1099: _LOAD_INSTRUCTION_AUDIO_RAW('fb_amazing', getAudio('instructions', 'fb_amazing'));
+L1101: _LOAD_INSTRUCTION_AUDIO_RAW('fb_great_job', getAudio('instructions', 'fb_great_job'));
+L1109: _LOAD_INSTRUCTION_AUDIO_RAW('now_try_lowercase', getAudio('instructions', 'now_try_lowercase'));
+L7411: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_amazing']) {
+L7413: const audio = new Audio(INSTRUCTION_AUDIO['fb_amazing']);
+L7441: const pool = ['fb_great_job','fb_nice','fb_keep_going',
+L9570: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_great_job']) {
+L9571: handleAudio(INSTRUCTION_AUDIO['fb_great_job']);
+L9575: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['now_try_lowercase']) {
+L9576: handleAudio(INSTRUCTION_AUDIO['now_try_lowercase']);
+L9582: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['fb_amazing']) {
+L9583: handleAudio(INSTRUCTION_AUDIO['fb_amazing']);
+
+--- 8. tracingPhase Reset to 'upper' ---
+L3313: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+L30634: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+
+--- 9. Word Advancement references (could trigger re-render) ---
+L7489: setCurrentWordSoundsWord(targetWord);
+
+--- 10. Refs Inside LetterTraceView (L7901-8300) ---
+L7902: const canvasRef = React.useRef(null);
+L7903: const maskRef = React.useRef(null); // Hidden mask for validation
+L7910: const audioCtxRef = React.useRef(null); // Web Audio Context
+L7911: const noiseNodeRef = React.useRef(null); // Noise Node
+L8057: isMountedRef.current = false;
+L8189: setTimeout(() => { if (isMountedRef.current) onComplete(true); }, 800);
+L8193: setTimeout(() => { if (isMountedRef.current) setFeedback(null); }, 2000);
+L8196: setTimeout(() => { if (isMountedRef.current) setFeedback(null); }, 2000);
+
+--- 11. resetKey and Tracing Resets ---
+L7906: const [resetKey, setResetKey] = React.useState(0);
+L7995: }, [letter, resetKey]);
+L8155: }, [letter, resetKey]);
+L8291: setResetKey(k => k + 1);

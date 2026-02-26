@@ -1,0 +1,6 @@
+Scanning for loader functions...
+Line 1138: function _LOAD_LETTER_NAME_AUDIO_RAW() { return {
+Line 1167: const LETTER_NAME_AUDIO = new Proxy({}, { get: function(target, prop) { if (!_CACHE_LETTER_NAME_AUDIO) _CACHE_LETTER_NAME_AUDIO = _LOAD_LETTER_NAME_AUDIO_RAW(); return _CACHE_LETTER_NAME_AUDIO[prop]; } });
+Line 1171: function _LOAD_INSTRUCTION_AUDIO_RAW() {
+Line 1244: function _LOAD_ISOLATION_AUDIO_RAW() {
+Line 1311: function _LOAD_PHONEME_AUDIO_BANK_RAW() {

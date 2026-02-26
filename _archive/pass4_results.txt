@@ -1,0 +1,47 @@
+======================================================================
+ANALYSIS 1: Inline Style Objects in JSX
+======================================================================
+Inline style={{ }} count: 135
+(These create new objects on every render but are standard React practice)
+
+======================================================================
+ANALYSIS 2: Memoization Patterns
+======================================================================
+useMemo calls: 30
+useCallback calls: 260
+React.memo wraps: 53
+
+======================================================================
+ANALYSIS 3: Potentially Expensive Render-Path Operations
+======================================================================
+JSON.parse calls: 93
+JSON.stringify calls: 61
+.filter().map() chains: 31
+.sort() calls: 28
+
+======================================================================
+ANALYSIS 4: Inline Arrow Functions in JSX Event Handlers
+======================================================================
+Inline arrow function event handlers: 1065
+(Standard React pattern, only concerning in frequently re-rendered lists)
+
+======================================================================
+ANALYSIS 5: List Rendering Key Props
+======================================================================
+.map() calls (potential list renders): 689
+key= props: 1116
+Index-based keys (key={i/idx/index}): 170
+
+======================================================================
+ANALYSIS 6: Component Structure
+======================================================================
+Function component definitions: 25
+Total lines: 70547
+Average lines per component: ~2821
+
+======================================================================
+ANALYSIS 7: State Variables (Re-render Triggers)
+======================================================================
+useState calls: 654
+useRef calls: 160
+State-to-ref ratio: 654:160

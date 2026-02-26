@@ -1,0 +1,10 @@
+=== WordSoundsContent definition ===
+
+=== AlloFlowContent definition ===
+  L31383: const AlloFlowContent = () => {
+
+=== WordSoundsContent props destructuring ===
+
+=== All wordSoundsSessionGoal in AlloFlowContent (after L31382) ===
+  L32371: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(30); // Items per session
+  L65071: wordSoundsSessionGoal={wordSoundsSessionGoal}

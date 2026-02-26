@@ -1,0 +1,3 @@
+﻿L67534:             const StemLabComponent = window.AlloModules && window.AlloModules.StemLab;
+L67536:             if (StemLabComponent) {
+L67538:                 return React.createElement(StemLabComponent, {ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast, angleChallenge, an

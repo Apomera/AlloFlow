@@ -1,0 +1,191 @@
+{
+    "mode": "student",
+    "studentNickname": "Maya Chen",
+    "responses": {
+        "quiz-1": {
+            "score": 90
+        },
+        "quiz-2": {
+            "score": 85
+        },
+        "quiz-3": {
+            "score": 95
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-2",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-3",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "resource",
+            "id": "res-1"
+        },
+        {
+            "type": "resource",
+            "id": "res-2"
+        },
+        {
+            "type": "resource",
+            "id": "res-3"
+        }
+    ],
+    "adventureSnapshot": {
+        "xp": 450,
+        "level": 5,
+        "energy": 80,
+        "turnCount": 12,
+        "timestamp": "2026-02-14T10:30:00Z"
+    },
+    "escapeRoomStats": {
+        "xpEarned": 200,
+        "timeTaken": 420,
+        "puzzlesSolved": 5,
+        "totalPuzzles": 5,
+        "wrongAttempts": 1,
+        "hintsUsed": 0,
+        "difficulty": "normal"
+    },
+    "fluencyAssessments": [
+        {
+            "wcpm": 85,
+            "timestamp": "2026-02-10T09:00:00Z"
+        },
+        {
+            "wcpm": 92,
+            "timestamp": "2026-02-11T09:00:00Z"
+        },
+        {
+            "wcpm": 105,
+            "timestamp": "2026-02-12T09:00:00Z"
+        },
+        {
+            "wcpm": 112,
+            "timestamp": "2026-02-14T09:00:00Z"
+        }
+    ],
+    "wordSoundsState": {
+        "history": [
+            {
+                "word": "cat",
+                "correct": true
+            },
+            {
+                "word": "dog",
+                "correct": true
+            },
+            {
+                "word": "fish",
+                "correct": true
+            },
+            {
+                "word": "bird",
+                "correct": true
+            },
+            {
+                "word": "tree",
+                "correct": false
+            },
+            {
+                "word": "house",
+                "correct": true
+            },
+            {
+                "word": "moon",
+                "correct": true
+            },
+            {
+                "word": "star",
+                "correct": true
+            }
+        ],
+        "sessionScore": {
+            "correct": 7,
+            "total": 8,
+            "streak": 5
+        },
+        "dailyProgress": {
+            "2026-02-10": {
+                "wordsCompleted": 3
+            },
+            "2026-02-11": {
+                "wordsCompleted": 3
+            },
+            "2026-02-14": {
+                "wordsCompleted": 2
+            }
+        }
+    },
+    "gameCompletions": {
+        "memory": [
+            {
+                "score": 90,
+                "timestamp": "2026-02-10T10:00:00Z"
+            },
+            {
+                "score": 95,
+                "timestamp": "2026-02-12T10:00:00Z"
+            }
+        ],
+        "crossword": [
+            {
+                "score": 100,
+                "timestamp": "2026-02-14T11:00:00Z"
+            }
+        ]
+    },
+    "labelChallengeResults": [
+        {
+            "score": 80,
+            "timestamp": "2026-02-10T14:00:00Z"
+        },
+        {
+            "score": 90,
+            "timestamp": "2026-02-12T14:00:00Z"
+        },
+        {
+            "score": 95,
+            "timestamp": "2026-02-14T14:00:00Z"
+        }
+    ],
+    "socraticChatHistory": {
+        "messages": [
+            {
+                "role": "user",
+                "text": "What causes volcanoes?"
+            },
+            {
+                "role": "assistant",
+                "text": "Great question!"
+            }
+        ],
+        "messageCount": 2,
+        "savedAt": "2026-02-14T15:00:00Z"
+    },
+    "globalPoints": 1250,
+    "timeOnTask": {
+        "totalSessionMinutes": 95
+    },
+    "flashcardEngagement": {
+        "totalReviews": 45,
+        "accuracy": 88
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

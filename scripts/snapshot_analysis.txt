@@ -1,0 +1,68 @@
+﻿python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python -c "f=open(r'
+c:\Users\cabba\OneDriv
+e\Desktop\UDL-Tool-Upd
+ated\ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Traceback    
+ (most recent call    
+ last)::String) [    
+], RemoteExceptio    n
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+L114:         setToolSnapshots,
+L123:         toolSnapshots,
+L336:                                     {toolSnapshots.length > 0 && (
+  File "<string>", 
+line 1, in <module>
+    f=open(r'c:\Users\
+cabba\OneDrive\Desktop
+\UDL-Tool-Updated\scri
+pts\stem_lab_module_cl
+ean.js','r',encoding='
+utf-8');lines=f.readli
+nes();f.close();[print
+('L'+str(i+1)+': '+lin
+e.rstrip()[:140]) for 
+i,line in 
+enumerate(lines) if 
+'snapshot' in 
+line.lower() or 
+'toolSnapshots' in 
+line]
+                      
+                      
+                      
+                      
+                      
+                      
+                 ~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+  File "C:\Python314\L
+ib\encodings\cp1252.py
+", line 19, in encode
+    return codecs.char
+map_encode(input,self.
+errors,encoding_table)
+[0]
+           ~~~~~~~~~~~
+~~~~~~~~~~^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 
+'charmap' codec can't 
+encode character 
+'\U0001f4f8' in 
+position 103: 
+character maps to 
+<undefined>

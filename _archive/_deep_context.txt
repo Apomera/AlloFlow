@@ -1,0 +1,148 @@
+=== useEffect L6662 finding end ===
+
+=== useEffect L6802 finding end ===
+L6861: END at });
+L6860:                 isoOptions
+L6861:             });
+L6862: 
+L6863:             // PRE-FETCH AUDIO FOR OPTIONS
+L6864:             isoOptions.forEach(phoneme => {
+L6865:                 handleAudio(phoneme, false).catch(async (err) => {
+
+=== useEffect L2205 finding end ===
+L2221: END
+L2220:                  total: preloadedWords.length
+L2221:              });
+L2222:         };
+L2223: 
+L2224:         const interval = setInterval(checkAudio, 1000);
+L2225:         checkAudio();
+
+=== L6914 context ===
+L6911:                         await new Promise(r => setTimeout(r, 600));
+L6912: 
+L6913:                         // Play each sound option with highlighting
+L6914:                         for (let i = 0; i < isolationState.isoOptions.length; i++) {
+L6915:                              setHighlightedIsoIndex(i); // Highlight current option
+L6916:                              await handleAudio(isolationState.isoOptions[i]);
+L6917:                              if (cancelled) return;
+L6918:                              await new Promise(r => setTimeout(r, 450));
+L6919:                         }
+L6920:                         setHighlightedIsoIndex(null); // Clear highlight when done
+
+=== L7422 context ===
+L7419:                  // ADDED: Play phoneme options after the word with highlighting
+L7420:                  if (isolationState?.isoOptions?.length > 0) {
+L7421:                      await new Promise(r => setTimeout(r, 600)); // Gap after word
+L7422:                      for (let i = 0; i < isolationState.isoOptions.length; i++) {
+L7423:                          if (cancelled) break;
+L7424:                          setHighlightedIsoIndex(i); // Highlight current option
+L7425:                          await handleAudio(isolationState.isoOptions[i]);
+L7426:                          if (cancelled) return;
+L7427:                          await new Promise(r => setTimeout(r, 450));
+L7428:                      }
+
+=== L6304 context ===
+L6301:         } else {
+L6302:              try {
+L6303:                 // Fallback inline if helper not visible
+L6304:                 const PHONEME_STORAGE_KEY = 'allo_phoneme_bank_v1';
+L6305:                 const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+L6306:                 if (bank[targetWord]) { delete bank[targetWord]; localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank)); }
+L6307:              } catch(e) { console.warn('Caught error:', e?.message || e); }
+L6308:         }
+L6309: 
+L6310:         // Removed: setRegeneratingIndex is now at the start
+L6311: 
+L6312:         try {
+
+=== L841 context ===
+L838: // --- PERSISTENT PHONEME STORAGE (PHONEME BANK) ---
+L839: // Use localStorage to cache generated phoneme audio permanently to reduce API usage.
+L840: 
+L841: const PHONEME_STORAGE_KEY = 'allo_phoneme_bank_v1';
+L842: 
+L843: const saveAudioToStorage = async (key, audioUrl) => {
+L844:     try {
+L845:         // Only cache short phoneme keys (1-3 chars) to avoid bloating storage with full words
+L846:         // Also allow specific common words if needed
+L847:         if (key.length > 3 && !['sh', 'ch', 'th', 'ph', 'wh', 'ck', 'ng', 'qu'].includes(key)) return;
+L848: 
+L849:         const response = await fetch(audioUrl);
+L850:         const blob = await response.blob();
+L851: 
+L852:         const reader = new FileReader();
+L853:         reader.onloadend = () => {
+L854:             const base64data = reader.result;
+L855:             try {
+L856:                 const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+L857:                 bank[key] = base64data;
+L858:                 localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+L859:                 console.log(`💾 Persisted phoneme audio for: "${key}"`);
+L860:             } catch (e) {
+L861:                 console.warn("Storage quota full, could not persist phoneme:", key);
+L862:             }
+L863:         };
+L864:         reader.readAsDataURL(blob);
+L865:     } catch (e) {
+L866:         console.warn("Failed to persist audio:", e);
+L867:     }
+L868: };
+L869: 
+L870: const loadAudioFromStorage = (key) => {
+L871:     try {
+L872:         const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+L873:         if (bank[key]) {
+L874:             console.log(`⚡ Loaded phoneme from persistent bank: "${key}"`);
+L875:             return bank[key]; // Returns Data URL (Base64)
+L876:         }
+L877:     } catch (e) {
+L878:         return null;
+L879:     }
+L880:     return null;
+L881: };
+L882: 
+L883: // FIX: Helper to remove audio for regeneration
+L884: const removeAudioFromStorage = (key) => {
+L885:     try {
+L886:         const bank = JSON.parse(localStorage.getItem(PHONEME_STORAGE_KEY) || '{}');
+L887:         let normalized = key;
+L888:         if (bank[key]) {
+L889:             delete bank[key];
+L890:             localStorage.setItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+L891:             console.log("🗑️ Removed audio from storage:", key);
+L892:         }
+L893:     } catch (e) {
+L894:         console.warn("Failed to remove audio:", e);
+L895:     }
+
+=== L32320 context ===
+L32316:   // Word Sounds Enhancement State - Adaptive Difficulty & Gamification
+L32317:   const [wordSoundsDifficulty, setWordSoundsDifficulty] = useState('auto'); // 'easy', 'medium', 'hard', 'auto'
+L32318:   const [wordSoundsAccuracyHistory, setWordSoundsAccuracyHistory] = useState([]); // Last 10 answers for adaptive difficulty
+L32319:   const [wordSoundsStreak, setWordSoundsStreak] = useState(0);
+L32320:   const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useState(10);
+L32321:   const [wordSoundsSessionProgress, setWordSoundsSessionProgress] = useState(0);
+L32322:   const [wordSoundsBadges, setWordSoundsBadges] = useState(() => {
+L32323:       if (typeof window !== 'undefined') {
+L32324:           try {
+L32325:               const saved = localStorage.getItem('allo_word_sounds_badges');
+L32326:               if (saved) return JSON.parse(saved);
+L32327:           } catch (e) { console.error("Failed to load word sounds badges", e); }
+L32328:       }
+L32329:       return [];
+L32330:   });
+
+=== L10883 context ===
+L10879:                                     <div className="bg-slate-100 p-3 font-bold text-slate-700">
+L10880:                                         {t('class_analytics.view_transcript')}
+L10881:                                     </div>
+L10882:                                     <div className="max-h-96 overflow-y-auto p-3 space-y-2">
+L10883:                                         {selectedStudent.data.personaState.chatHistory.map((msg, idx) => (
+L10884:                                             <div
+L10885:                                                 key={idx}
+L10886:                                                 className={`p-2 rounded-lg text-sm ${
+L10887:                                                     msg.role === 'user' || msg.sender === 'student'
+L10888:                                                         ? 'bg-indigo-100 ml-8'
+L10889:                                                         : 'bg-slate-100 mr-8'
+L10890:                                                 }`}

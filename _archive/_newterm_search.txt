@@ -1,0 +1,6 @@
+LINE 33241: const [newGlossaryTerm, setNewGlossaryTerm] = useState('');
+LINE 56113: if (!newGlossaryTerm.trim()) return;
+LINE 56122: Analyze the input term "${newGlossaryTerm}".
+LINE 56137: Analyze the input term "${newGlossaryTerm}".
+LINE 65317: value={newGlossaryTerm}
+LINE 65326: disabled={!newGlossaryTerm.trim() || isAddingTerm}

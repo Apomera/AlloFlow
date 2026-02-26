@@ -1,0 +1,10 @@
+Line 26898: const [isHelpMode, setIsHelpMode] = useState(false);
+Line 30173: if (!isHelpMode) return;
+Line 30243: }, [isHelpMode, tourSteps]);
+Line 30249: if (isHelpMode) {
+Line 30339: }, [isHelpMode]);
+Line 53755: onClick={() => setIsHelpMode(!isHelpMode)}
+Line 53756: className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+Line 53757: title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+Line 53758: aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+Line 55304: if (isHelpMode) return;

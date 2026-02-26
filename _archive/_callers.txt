@@ -1,0 +1,66 @@
+=== handleWordSoundsStartGame callers ===
+L38126:   const handleWordSoundsStartGame = (generatedTerms) => {
+
+=== What is generatedTerms? (L38126-38160 with context) ===
+L38126:   const handleWordSoundsStartGame = (generatedTerms) => {
+L38127:     setWordSoundsAutoReview(false); // Force Play Mode
+L38128:       // 1. Create History Item (Persistence)
+L38129:       const newItem = {
+L38130:           id: Date.now().toString(),
+L38131:           type: 'word-sounds', // Uses existing Phonology View
+L38132:           title: "Word Sounds Activity",
+L38133:           data: generatedTerms, // The Oracle Data
+L38134:           timestamp: new Date(),
+L38135:           meta: `${generatedTerms.length} Words`
+L38136:       };
+L38137: 
+L38138:       // 2. Save to State
+L38139:       setHistory(prev => [...prev, newItem]);
+L38140:       setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L38141: 
+L38142:       // 3. Launch Game
+L38143:       // Set isWordSoundsMode to true so WordSoundsModal renders
+L38144:       setIsWordSoundsMode(true);
+L38145:       setActiveView('word-sounds');
+L38146: 
+L38147:       addToast("Word Sounds Ready!", "success");
+L38148:   };
+L38149: 
+L38150:   const handleOpenWordSounds = () => {
+
+=== Context for L71440-71458 ===
+L71431:               glossaryTerms={generatedContent?.data || []}
+L71432:               t={t}
+L71433:               gradeLevel={gradeLevel || 'K-2'}
+L71434:               /* imageVisibilityMode is handled inside WordSoundsGenerator */
+L71435:               onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+L71436:                    // Create a resource entry for history with full RTI config
+L71437:                    const resourceId = `ws-${Date.now()}`;
+L71438:                    const wordSoundsResource = {
+L71439:                        id: resourceId,
+L71440:                        type: 'word-sounds',
+L71441:                        title: `Word Sounds (${words.length} words)`,
+L71442:                        data: words,
+L71443:                        timestamp: Date.now(),
+L71444:                        lessonPlanSequence: sequence || [],
+L71445:                        lessonPlanConfig: lessonPlanConfig || null,
+L71446:                        configSummary: configSummary || 'Quick Practice Mode'
+L71447:                    };
+L71448:                    setGeneratedContent(wordSoundsResource);
+L71449:                    setHistory(prev => [wordSoundsResource, ...prev]);
+L71450: 
+L71451:                    // Set up Word Sounds state
+L71452:                    setWsPreloadedWords(words);
+L71453:                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
+L71454:                    setWordSoundsActivity('word-sounds');
+L71455:                    setWordSoundsAutoReview(true);
+L71456:                    setIsWordSoundsMode(true);
+L71457:                    setActiveView('output');
+L71458:                }}
+
+=== activeView=word-sounds-generator references ===
+L36:   'ui-tool-wordsounds': 'word-sounds-generator',
+L32827:       if (isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') {
+L38151:         setActiveView('word-sounds-generator');
+L64982:                                 onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+L71429:       {activeView === 'word-sounds-generator' && (

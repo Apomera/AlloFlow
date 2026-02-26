@@ -1,0 +1,51 @@
+=== CONSOLE STATEMENTS: 11 ===
+  L42: console.log("Initializing Audio Bank from " + _AUDIO_BANK_URL);
+  L47: console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BANK));
+  L50: console.warn("[AudioBank] Auto-fetch failed:", err.message, "- Use the Upload button in the header t
+  L62: console.log("[AudioBank] Caches invalidated - audio data now available.");
+  L89: const warnLog = (...args) => { if (DEBUG_LOG) console.warn(...args); };
+  L896: console.warn("Storage quota full, could not persist phoneme:", key);
+  L901: console.warn("Failed to persist audio:", e);
+  L927: console.warn("Failed to remove audio:", e);
+  L3363: console.warn("setWsPreloadedWords is not defined - updates won't persist");
+  L69408: const originalConsoleError = console.error;
+  L69409: console.error = (...args) => {
+
+=== INTERVALS WITHOUT CLEANUP: 0 ===
+
+=== EVENT LISTENERS WITHOUT REMOVAL: 3 types ===
+  'audio_bank_loaded' added at L57 (no removeEventListener found)
+  'DOMContentLoaded' added at L41712 (no removeEventListener found)
+  'input' added at L41717 (no removeEventListener found)
+
+=== INLINE STYLE OBJECTS: 140 ===
+  (each creates a new object on every render)
+
+=== AWAIT WITHOUT TRY/CATCH: 82 ===
+  L308: const chunkTranscript = await transcribeChunk(base64, 'audio/wav');
+  L421: const arrayBuffer = await this.readFileAsArrayBuffer(videoFile);
+  L427: const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+  L443: const audioFile = await this.extractAudioFromVideo(file, onProgress);
+  L5663: const results = await Promise.all(prefetchPromises);
+  L6426: await new Promise(r => setTimeout(r, 500));
+  L6822: await handleAudio(upperLet);
+  L6824: await new Promise(r => setTimeout(r, 200));
+  L6827: await handleAudio(INSTRUCTION_AUDIO['for']);
+  L6829: await new Promise(r => setTimeout(r, 200));
+  L6832: await handleAudio(currentWordSoundsWord);
+  L6876: await handleAudio(INSTRUCTION_AUDIO['sound_match_start']); // "Find all words that start with..."
+  L6877: await new Promise(r => setTimeout(r, 300));
+  L6878: await handleAudio(targetSound); // "... /b/"
+  L6884: await handleAudio(INSTRUCTION_AUDIO['sound_match_end']); // "Find all words that end with..."
+  ... and 67 more
+
+=== LARGE DEPENDENCY ARRAYS (>=6 deps): 0 ===
+
+=== CODEBASE STATS ===
+  Lines: 69,422
+  Size: 4.4 MB
+  React.memo components: 53
+  useState hooks: 712
+  useEffect hooks: 209
+  useCallback hooks: 257
+  useMemo hooks: 58

@@ -1,0 +1,232 @@
+TOP 80 HIGHEST Z-INDEX VALUES
+====================================================================================================
+z=11000   Line 69771 : className={`fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-
+z=11000   Line 69587 : className="fixed z-[11000] animate-in fade-in zoom-in-95 duration-200"
+z=10999   Line 69685 : <div className="fixed pointer-events-none animate-pulse z-[10999]"
+z=10998   Line 69574 : data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
+z=10002   Line 25924 : <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+z=10001   Line 61716 : className="fixed left-0 right-0 pointer-events-none z-[10001] border-t border-b border-yellow-400/30 bg-yellow-100/5"
+z=10001   Line 61712 : className="fixed left-0 right-0 bottom-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+z=10001   Line 61708 : className="fixed top-0 left-0 right-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+z=10001   Line 56496 : <div className={`absolute top-full right-0 mt-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-sl
+z=10001   Line 25913 : <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+z=10001   Line 25200 : <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+z=10000   Line 70460 : <div className={`fixed bottom-24 md:bottom-8 z-[10000] flex flex-col items-end gap-4 no-print transition-all duration-300 ${runTour ? 'right-[530px]' : 'right-6'}`}>
+z=10000   Line 69709 : <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }}>
+z=10000   Line 56495 : <div className="fixed inset-0 z-[10000]" onClick={() => setShowVoiceSettings(false)}></div>
+z=10000   Line 25565 : <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
+z=10000   Line 18302 : className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-40
+z=9999    Line 69701 : <div className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
+z=9999    Line 57548 : className="fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in zoom-in-95 duration-150"
+z=9999    Line 57348 : className="fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+z=9999    Line 55559 : className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-md focus:font-b
+z=9999    Line 26098 : <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+z=9999    Line 25451 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+z=9999    Line 25427 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+z=9999    Line 25402 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center">
+z=9999    Line 25390 : <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center">
+z=9999    Line 10580 : z-index: 9999 !important;
+z=1000    Line 71239 : <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-slate-200 flex items-cent
+z=1000    Line 19873 : <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-help-key="teacher_gate_modal">
+z=1000    Line 19388 : <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`} data-help-key="quiz_student_overlay">
+z=400     Line 61724 : ${(playingContentId && playingContentId.startsWith('persona-message-')) ? 'fixed bottom-32 z-[400]' : 'absolute bottom-8 z-[220]'}
+z=400     Line 55563 : <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
+z=300     Line 71173 : <div className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowAdventureConfirma
+z=300     Line 71046 : className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+z=300     Line 70842 : <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setIsProjectSettingsOpen
+z=300     Line 70726 : <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowCloudWarning(fals
+z=300     Line 70683 : <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsTranslateModalOpen(
+z=300     Line 70639 : <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowSaveModal(false)}
+z=300     Line 57257 : className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200"
+z=300     Line 56923 : <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowInfoModal(false)}
+z=300     Line 28819 : <div className="fixed inset-0 z-[300] bg-white text-slate-900 flex flex-col animate-in fade-in duration-200">
+z=300     Line 27608 : <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setShowClearConfirm(false)}>
+z=300     Line 25052 : className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+z=300     Line 24961 : className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+z=300     Line 24825 : className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
+z=300     Line 16702 : <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+z=300     Line 16495 : <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+z=300     Line 455   : className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+z=250     Line 69977 : {showFluencyConfetti && <div className="absolute inset-0 pointer-events-none z-[250] flex items-center justify-center"><ConfettiExplosion /></div>}
+z=220     Line 61724 : ${(playingContentId && playingContentId.startsWith('persona-message-')) ? 'fixed bottom-32 z-[400]' : 'absolute bottom-8 z-[220]'}
+z=210     Line 63539 : className="fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 ease-out"
+z=210     Line 63534 : className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out"
+z=210     Line 63529 : className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out"
+z=202     Line 24662 : className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-[202]"
+z=201     Line 30171 : z-index: 201;
+z=200     Line 70228 : <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setEscapeRoomState(prev => ({ ..
+z=200     Line 70183 : <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-500" onClick={() => setShowGlobalLevelUp(false)}>
+z=200     Line 69976 : <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+z=200     Line 68221 : <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setSelectedInventoryItem(nul
+z=200     Line 66993 : <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => setShowLedger(false)}>
+z=200     Line 63493 : className="fixed inset-0 z-[200] bg-[#fdfbf7] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans"
+z=200     Line 57177 : <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowXPModal(false)} r
+z=200     Line 56308 : className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-
+z=200     Line 32799 : z-index: 200 !important; /* Ensure on top */
+z=200     Line 27888 : className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+z=200     Line 27228 : className="fixed inset-0 z-[200] bg-slate-100 flex flex-col animate-in fade-in duration-300"
+z=200     Line 24657 : className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center"
+z=200     Line 22946 : <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key="venn_game_container">
+z=200     Line 19198 : <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
+z=200     Line 9469  : <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in zoom-in duration-300">
+z=200     Line 2245  : <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
+z=190     Line 61282 : <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transitio
+z=160     Line 55797 : <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowGroupModal(false)} data-help-key="grou
+z=150     Line 61695 : className="absolute top-4 right-4 z-[150] bg-slate-800/80 hover:bg-slate-800 text-white px-4 py-2 rounded-full backdrop-blur-md transition-all font-bold text-xs flex items-center g
+z=150     Line 55581 : <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowSessionModal(false)}>
+z=150     Line 24700 : className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+z=110     Line 70315 : className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocrati
+z=110     Line 57111 : <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowHintsModal(false)
+z=109     Line 70431 : className="fixed inset-0 z-[109] cursor-grabbing"
+z=100     Line 64064 : className="fixed z-[100] bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200"
+z=100     Line 63956 : className="fixed z-[100] flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200"
+
+
+VOICE SETTINGS AREA (Lines 56490-56560)
+====================================================================================================
+56490:                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_voice')}</span>
+56491:                                 {showVoiceSettings ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+56492:                             </button>
+56493:                             {showVoiceSettings && (
+56494:                                 <>
+56495:                                     <div className="fixed inset-0 z-[10000]" onClick={() => setShowVoiceSettings(false)}></div>
+56496:                                     <div className={`absolute top-full right-0 mt-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
+56497:                                         <div className="space-y-3">
+56498:                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+56499:                                                 <h4 className="font-bold text-sm">{t('settings.voice.label')}</h4>
+56500:                                             </div>
+56501: 
+56502:                                             <div>
+56503:                                                 <select
+56504:                                                     value={selectedVoice}
+56505:                                                     onChange={(e) => setSelectedVoice(e.target.value)}
+56506:                                                     data-help-key="header_settings_voice_select"
+56507:                                                     className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+56508:                                                 >
+56509:                                                     {AVAILABLE_VOICES.map(voice => (
+56510:                                                         <option key={voice} value={voice}>{voice}</option>
+56511:                                                     ))}
+56512:                                                 </select>
+56513: 
+56514: 
+56515:                                                 <div className="flex gap-2 mt-3">
+56516:                                                     <div className="flex-1">
+56517:                                                         <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Speed: {voiceSpeed}x</label>
+56518:                                                         <input
+56519:                                                             type="range"
+56520:                                                             min="0.5"
+56521:                                                             max="2"
+56522:                                                             step="0.1"
+56523:                                                             value={voiceSpeed}
+56524:                                                             onChange={(e) => setVoiceSpeed(parseFloat(e.target.value))}
+56525:                                                             data-help-key="header_settings_voice_speed"
+56526:                                                             className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+56527:                                                         />
+56528:                                                     </div>
+56529:                                                     <div className="flex-1">
+56530:                                                         <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Volume: {Math.round(voiceVolume * 100)}%</label>
+56531:                                                         <input
+56532:                                                             type="range"
+56533:                                                             min="0"
+56534:                                                             max="1"
+56535:                                                             step="0.1"
+56536:                                                             value={voiceVolume}
+56537:                                                             onChange={(e) => setVoiceVolume(parseFloat(e.target.value))}
+56538:                                                             data-help-key="header_settings_voice_volume"
+56539:                                                             className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+56540:                                                         />
+56541:                                                     </div>
+56542:                                                 </div>
+56543: 
+56544:                                                 <p className="text-[9px] text-slate-500 mt-2 italic leading-tight">
+56545:                                                     {t('settings.voice.helper')}
+56546:                                                 </p>
+56547:                                             </div>
+56548:                                         </div>
+56549:                                     </div>
+56550:                                 </>
+56551:                             )}
+56552:                         </div>
+56553: 
+56554:                         <div className="w-px h-6 bg-white/20 mx-1"></div>
+56555:                         <button
+56556:                           onClick={() => setDisableAnimations(!disableAnimations)}
+56557:                           data-help-key="header_settings_anim"
+56558:                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${disableAnimations ? 'bg-red-500 text-white shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
+56559:                           title={disableAnimations ? t('a11y.anim_enable') : t('a11y.anim_disable')}
+56560:                           aria-label={t('a11y.anim_toggle')}
+
+
+HEADER UTILS AREA (Lines 56630-56700)
+====================================================================================================
+56630:                             </>
+56631:                         )}
+56632:                     </div>
+56633:                     <div id="tour-header-utils" className={`relative z-[100] flex items-center gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+56634:                         {isTeacherMode && (
+56635:                             <button
+56636:                                 onClick={() => setShowHintsModal(true)}
+56637:                                 data-help-key="hints_recall"
+56638:                                 className="p-2 rounded-xl hover:bg-white/10 text-yellow-300 transition-colors relative"
+56639:                                 title={t('common.recall_hints')}
+56640:                                 aria-label={t('common.recall_hints')}
+56641:                             >
+56642:                                 <Lightbulb size={20} className={hintHistory.length > 0 ? "fill-yellow-500/20" : ""} />
+56643:                                 {hintHistory.length > 0 && (
+56644:                                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50"></span>
+56645:                                 )}
+56646:                             </button>
+56647:                         )}
+56648:                         <button
+56649:                             onClick={() => setIsBotVisible(!isBotVisible)}
+56650:                             data-help-key="header_bot_toggle"
+56651:                             className={`p-2 rounded-xl transition-colors ${isBotVisible ? 'bg-indigo-500 text-white shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+56652:                             title={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
+56653:                             aria-label={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
+56654:                         >
+56655:                             <div className="relative">
+56656:                                 <Smile size={20} />
+56657:                                 {!isBotVisible && <div className="absolute inset-0 flex items-center justify-center"><div className="w-full h-0.5 bg-red-400 rotate-45"></div></div>}
+56658:                             </div>
+56659:                         </button>
+56660:                         <button
+56661:                             data-help-ignore="true"
+56662:                             onClick={() => setIsHelpMode(!isHelpMode)}
+56663:                             className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+56664:                             title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+56665:                             aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+56666:                         >
+56667:                             <CircleHelp size={20} />
+56668:                         </button>
+56669:                         {isTeacherMode && (
+56670:                             <button
+56671:                                 onClick={handleCloudToggleClick}
+56672:                                 data-help-key="header_cloud_sync"
+56673:                                 className={`p-2 rounded-xl transition-colors ${isCloudSyncEnabled ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+56674:                                 title={isCloudSyncEnabled ? t('header.cloud_sync_active') : t('header.cloud_sync_enable')}
+56675:                                 aria-label={t('header.cloud_sync_toggle')}
+56676:                             >
+56677:                                 {isCloudSyncEnabled ? <Cloud size={20} /> : <CloudOff size={20} />}
+56678:                             </button>
+56679:                         )}
+56680: 
+56681:                         {isTeacherMode && (
+56682:                             <button
+56683:                               onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
+56684:                               data-help-key="header_tour_start"
+56685:                               className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
+56686:                               title={t('toolbar.start_tour')}
+56687:                               aria-label={t('toolbar.start_tour_aria')}
+56688:                             >
+56689:                               <MapIcon size={20} />
+56690:                             </button>
+56691:                         )}
+56692:                         <button
+56693:                           onClick={() => setShowInfoModal(true)}
+56694:                           data-help-key="header_about"
+56695:                           className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
+56696:                           title={t('toolbar.about_label')}
+56697:                           aria-label={t('toolbar.about_aria')}
+56698:                         >
+56699:                           <Info size={20} />
+56700:                         </button>

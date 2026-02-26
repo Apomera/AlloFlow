@@ -1,0 +1,39 @@
+if (isMinimized) {
+            return (
+                <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in slide-in-from-bottom-10 fade-in w-80">
+                     <div className="flex justify-between items-center mb-3">
+                         <div className="flex items-center gap-2">
+                             <Loader2 className={`text-violet-600 ${isProcessing ? 'animate-spin' : ''}`} size={20} />
+                             <span className="font-bold text-slate-700 text-sm">
+                                 {isProcessing ? 'Generating...' : 'Word Sounds'}
+                             </span>
+                         </div>
+                         <button data-help-key="ws_gen_expand" onClick={() => setIsMinimized(false)} className="p-1 hover:bg-slate-100 rounded text-slate-500">
+                             <Maximize2 size={18} />
+                         </button>
+                     </div>
+                     {isProcessing && (
+                         <div className="space-y-2">
+                             <div className="flex justify-between text-xs font-bold text-violet-600">
+                                 <span>{t('status.analyzing', 'Processing...')}</span>
+                                 <span>{generatedCount} / {selectedIndices.size}</span>
+                             </div>
+                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                 <div
+                                     className="h-full bg-violet-600 transition-all duration-300"
+                                     style={{ width: `${selectedIndices.size ? (generatedCount / selectedIndices.size) * 100 : 0}%` }}
+                                 />
+                             </div>
+                         </div>
+                     )}
+                     {!isProcessing && (
+                          <div className="text-center">
+                              <button
+                                  aria-label="Generate"
+                                  data-help-key="ws_gen_expand" onClick={() => setIsMinimized(false)}
+                                  className="text-xs bg-violet-100 text-violet-700 font-bold px-3 py-1.5 rounded-full hover:bg-violet-200"
+                              >
+                                  Tap to Expand
+                              </button>
+                          </div>
+                     )

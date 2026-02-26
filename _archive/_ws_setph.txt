@@ -1,0 +1,92 @@
+layedWord = React.useRef(null);
+    const wordDataCache = React.useRef(new Map());
+    const pendingRequests = React.useRef(new Map());
+    const applyWordDataToState = (data) => {
+        if (data && data.word && pendingRequests.current.has(data.word.toLowerCase())) {
+             const { resolve } = pendingRequests.current.get(data.word.toLowerCase());
+             resolve(data);
+             pendingRequests.current.delete(data.word.toLowerCase());
+        }
+        if (!data) return;
+        setWordSoundsPhonemes(data);
+        if (wordSoundsActivity === 'blending' && data.blendingDistractors && setBlendingOptions) {
+             const target = (data.word || '').trim().toLowerCase();
+             const unique = [...new Set(
+                 data.blendingDistractors
+                 .map(d => (d || '').toString().trim().toLowerCase())
+                 .filter(d => d && d !== target)
+             )];
+             if (unique.length >= 3) {
+                 const validUnique = unique.slice(0, 5);
+                 const opts = fisherYatesShuffle([target, ...validUnique]);
+                 setBlendingOptions(opts);
+             }
+        }
+        setIsLoadingPhonemes(false);
+        setPhonemeError(null);
+        if (data.word) {
+            wordDataCache.current.set(data.word.toLowerCase(), data);
+        }
+    };
+    const fetchWordData = React.useCallback(async (word, retryCount = 0, isBackground = false, forceRefresh = false) => {
+        latestRequestedWord.current = word;
+        if (!word) return;
+        if (pendingRequests.current.has(word.toLowerCase())) {
+            debugLog(`⏳ Request for "${word}" already pending, waiting...`);
+            const { promise } = pendingRequests.current.get(word.toLowerCase());
+            return promise;
+        }
+        let resolveRequest, rejectRequest;
+        const requestPromise = new Promise((resolve, reject) => { resolveRequest = resolve; rejectRequest = reject; });
+        pendingRequests.current.set(word.toLowerCase(), { promise: requestPromise, resolve: resolveRequest, reject: rejectRequest });
+        const cleanupRequest = () => {
+             pendingRequests.current.delete(word.toLowerCase());
+        };
+        if (retryCount === 0) setPhonemeError(null);
+        const cached = wordDataCache.current.get(word.toLowerCase());
+        if (cached) {
+             applyWordDataToState(cached);
+             resolveRequest(cached);
+             cleanupRequest();
+             return;
+        }
+        const poolEntry = wordPool.find(p => p.word === word.toLowerCase() && p.phonemes && p.phonemes.length > 0);
+        if (poolEntry && !forceRefresh) {
+             debugLog("⚡ using Glossary pre-generated data for:", word);
+             applyWordDataToState(poolEntry);
+             return poolEntry;
+        }
+        const MAX_RETRIES = 3;
+        if (!isBackground) setIsLoadingPhonemes(true);
+        let phonemeData = null;
+        if (!phonemeData) {
+            const fallbackPhonemes = estimatePhonemesBasic ? estimatePhonemesBasic(word) : word.toLowerCase().split('');
+            const wordLower = word.toLowerCase();
+            const rhymeEnding = wordLower.length >= 3 ? wordLower.slice(-3) : wordLower.slice(-2);
+            const rhymeEndingShort = wordLower.slice(-2);
+            const rhymeFamilies = {
+                'an': ['can', 'fan', 'man', 'pan', 'ran', 'tan', 'van', 'ban', 'dan'],
+                'at': ['cat', 'bat', 'hat', 'mat', 'rat', 'sat', 'pat', 'fat'],
+                'op': ['hop', 'mop', 'top', 'pop', 'stop', 'chop', 'drop', 'shop'],
+                'ig': ['big', 'dig', 'fig', 'pig', 'wig', 'jig', 'rig'],
+                'og': ['dog', 'fog', 'hog', 'log', 'jog', 'frog', 'blog'],
+                'un': ['bun', 'fun', 'run', 'sun', 'pun', 'spun'],
+                'ug': ['bug', 'dug', 'hug', 'jug', 'mug', 'rug', 'tug', 'plug'],
+                'in': ['bin', 'fin', 'pin', 'win', 'tin', 'spin', 'grin', 'chin'],
+                'it': ['bit', 'fit', 'hit', 'kit', 'pit', 'sit', 'wit', 'spit'],
+                'ot': ['cot', 'dot', 'got', 'hot', 'lot', 'not', 'pot', 'shot'],
+                'et': ['bet', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'wet'],
+                'en': ['ben', 'den', 'hen', 'men', 'pen', 'ten', 'when', 'then'],
+                'ed': ['bed', 'fed', 'led', 'red', 'wed', 'shed', 'sled'],
+                'ap': ['cap', 'gap', 'lap', 'map', 'nap', 'rap', 'tap', 'trap', 'clap'],
+                'ip': ['dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'chip', 'ship', 'trip'],
+                'ck': ['back', 'pack', 'rack', 'tack', 'black', 'crack', 'snack', 'track'],
+                'ell': ['bell', 'cell', 'fell', 'sell', 'tell', 'well', 'yell', 'shell', 'spell'],
+                'ill': ['bill', 'fill', 'hill', 'mill', 'pill', 'will', 'chill', 'drill', 'skill'],
+                'all': ['ball', 'call', 'fall', 'hall', 'mall', 'tall', 'wall', 'small'],
+                'ook': ['book', 'cook', 'hook', 'look', 'took', 'brook', 'shook'],
+                'ake': ['bake', 'cake', 'fake', 'lake', 'make', 'rake', 'take', 'wake', 'shake', 'snake'],
+                'ame': ['came', 'fame', 'game', 'name', 'same', 'tame', 'blame', 'flame', 'frame', 'shame'],
+                'ate': ['date', 'fate', 'gate', 'hate', 'late', 'mate', 'rate', 'plate', 'skate', 'state'],
+                'ide': ['hide', 'ride', 'side', 'wide', 'bride', 'glide', 'pride', 'slide'],
+                'ine': ['dine', 'fine', 'line', 'mine', 'nine', 'pine', 'vine', 'sh

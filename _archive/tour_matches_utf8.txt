@@ -1,0 +1,72 @@
+﻿
+AlloFlowANTI.txt:31749
+:    const tourSteps 
+= [
+AlloFlowANTI.txt:31776
+:    if (runTour && 
+tourSteps[tourStep]) {
+AlloFlowANTI.txt:31778
+:            const 
+stepId = tourSteps[tou
+rStep].id;
+AlloFlowANTI.txt:31835
+:             const 
+idx = 
+tourSteps.findIndex(s 
+=> s.id === key);
+AlloFlowANTI.txt:31837
+:                 
+setTimeout(() => expan
+dAndShow(explicitHelp,
+ key, 
+tourSteps[idx].title, 
+tourSteps[idx].text), 
+100);
+AlloFlowANTI.txt:31847
+:  }, [isHelpMode, 
+tourSteps]);
+AlloFlowANTI.txt:32019
+:      const step = 
+tourSteps[tourStep];
+AlloFlowANTI.txt:32132
+:      const 
+stepIndex = 
+tourSteps.findIndex(s 
+=> s.id === 
+elementId);
+AlloFlowANTI.txt:32192
+:      if (tourStep < 
+tourSteps.length - 1) 
+{
+AlloFlowANTI.txt:32232
+:      const step = 
+tourSteps[tourStep];
+AlloFlowANTI.txt:68319
+:                     
+       <h4 
+className="font-bold 
+text-indigo-900 text-l
+g">{tourSteps[tourStep
+].title}</h4>
+AlloFlowANTI.txt:68321
+:                     
+           {tourStep 
++ 1} / 
+{tourSteps.length}
+AlloFlowANTI.txt:68325
+:                     
+       {(tourSteps[tou
+rStep].text || '').spl
+it(/\r?\n/).map((line,
+ i) => {
+AlloFlowANTI.txt:68401
+:                     
+               
+{tourStep === 
+tourSteps.length - 1 
+? t('common.finish') 
+: t('common.next')} 
+<ArrowRight 
+size={14}/>
+
+

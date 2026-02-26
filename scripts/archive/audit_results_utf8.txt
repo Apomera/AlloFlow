@@ -1,0 +1,65 @@
+﻿Total lines: 69883
+
+=== TIMER LEAKS (useEffect w/o cleanup) ===
+  L3441: setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+  L6467: const timer = setTimeout(async () => {
+  L6680: setTimeout(() => {
+  L6704: setTimeout(() => {
+  L6794: await new Promise(r => setTimeout(r, 800)); // Initial delay for fade-in
+  L8409: setTimeout(() => handleAudio(currentWordSoundsWord), 300);
+  L18099: pendingSpeechTimerRef.current = setTimeout(() => {
+  L21746: setTimeout(() => setStatus('neutral'), 800);
+  L33008: setTimeout(() => {
+  L33532: await new Promise(r => setTimeout(r, 100));
+  L35106: setTimeout(() => initAuth(retryCount + 1), delay);
+  L37827: glossaryHealthCheckTimerRef.current = setTimeout(() => {
+  L37835: setTimeout(() => {
+  L46399: setTimeout(() => {
+TOTAL: 14
+
+=== MAP CALLS MISSING key= ===
+  L1501: const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
+  L1513: const customWords = customText.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+  L1544: setSelectedIndices(new Set(previewList.map((_, i) => i)));
+  L1554: const words = result.replace(/[^a-zA-Z,\s-]/g, '').split(',').map(w => w.trim()).filter(w => w);
+  L1673: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught error:', e?.mess
+  L1701: enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' ΓåÆ ') +
+  L2078: {lessonPlanOrder.map(actId => {
+  L4209: ...(data.options || []).map(w => ({ text: w, isFamily: true })),
+  L4210: ...(data.distractors || []).map(w => ({ text: w, isFamily: false }))
+  L4417: const labeled = data.graphemes?.map((g, i) => ({
+  ... and 372 more
+TOTAL: 382
+
+=== GEMINI MODEL REFERENCES ===
+  L990: // Centralized Gemini model identifiers ΓÇö single source of truth
+  L991: // Firebase (non-Canvas) uses Gemini 3 Flash for better reasoning quality
+  L992: const GEMINI_MODELS = {
+  L993: default: _isCanvasEnv ? 'gemini-2.5-flash-preview-09-2025' : 'gemini-3-flash',
+  L994: image: 'gemini-2.5-flash-image-preview',
+  L995: flash: _isCanvasEnv ? 'gemini-2.5-flash-preview' : 'gemini-3-flash',
+  L996: tts: 'gemini-2.5-flash-preview-tts',
+  L1404: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLev
+  L3667: // Non-English: try Gemini TTS as fallback
+  L3670: debugLog(`Non-English phoneme "${text}" - using Gemini TTS`);
+  L3676: warnLog("Gemini TTS failed for phoneme", e);
+  L3725: // Use Gemini/TTS if available via handleAudio
+  L3850: } catch (e) { /* fall through to Gemini TTS */ }
+  L3852: // 2. Fallback to Gemini TTS
+  L16633: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiK
+  L21514: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiK
+  L37610: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent?key=${apiK
+  L37693: warnLog("Gemini Model Refusal caught in callGemini (suppressed crash):", err.message);
+  L38238: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent?key=${apiKey
+  L38265: const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.flash}:generateContent?key=${apiKey
+  L38309: // Γòæ FALLBACK ORDER: Audio Bank ΓåÆ Gemini TTS ΓåÆ Browser speechSynthesis  Γòæ
+  L38316: const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
+  L38356: warnLog("Cloud TTS failed for phoneme, trying Gemini...", gcpErr);
+  L38389: warnLog("Gemini Model Refusal (finishReason: OTHER). Attempting fallbacks...");
+  L38433: console.log("[TTS] Γ£à Gemini TTS succeeded! Audio data size:", base64Audio.length, "chars");
+  L38448: warnLog("Gemini TTS Refused (safety/phoneme). Switching to fallback.");
+  L38451: console.warn("[TTS] Gemini TTS Fetch Error:", err.message);
+  L40219: // This helps Gemini TTS maintain consistent accent/character voice across chunks
+TOTAL: 28
+
+=== DONE ===

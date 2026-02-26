@@ -1,0 +1,200 @@
+=== CALLERS of fetchWordData ===
+  L5520: const data = await fetchWordData(targetWord, 0, true); // isBackground = true
+  L6315: const phonemeData = await fetchWordData(targetWord, 0, false, true);
+  L6433: const freshData = await fetchWordData(targetWord, 0, true); // Force fresh fetch
+  L7016: fetchWordData(retryTargetWord);
+  L7081: fetchWordData(targetWord);
+  L7886: fetchWordData(targetWord);
+  L7908: fetchWordData(target);
+  L10408: onClick={() => fetchWordData(phonemeError)}
+
+=== CALLERS of processWordsInBatches ===
+
+=== setWordPool / wordPool assignments ===
+  L4492: const wordPool = React.useMemo(() => {
+
+=== setCurrentWordSoundsWord / currentWordSoundsWord assignments ===
+  L7013: setCurrentWordSoundsWord(retryTargetWord);
+  L7051: setCurrentWordSoundsWord(targetWord);
+  L7160: setCurrentWordSoundsWord(w);
+  L7744: setCurrentWordSoundsWord(targetWord);
+  L7845: setCurrentWordSoundsWord(targetWord);
+  L7907: setCurrentWordSoundsWord(target);
+  L10002: setCurrentWordSoundsWord(firstWord.targetWord || firstWord.word);
+
+=== setWordSoundsPhonemes / wordSoundsPhonemes state ===
+  L3047: wordSoundsPhonemes,
+  L3558: if (isPlayingAudio || !wordSoundsPhonemes?.phonemes) return;
+  L3564: for (let i = 0; i < (wordSoundsPhonemes.phonemes?.length || 0); i++) {
+  L3565: const phoneme = wordSoundsPhonemes?.phonemes?.[i];
+  L3576: setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
+  L3583: }, [wordSoundsPhonemes, handleAudio]);
+  L4966: setWordSoundsPhonemes(data);
+  L5336: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes) {
+  L5337: const targetToCheck = (currentWordSoundsWord || wordSoundsPhonemes?.word || '').trim().toLowerCase();
+  L5352: let rawDistractors = wordSoundsPhonemes?.blendingDistractors || [];
+  L5400: }, [wordSoundsActivity, wordSoundsPhonemes, currentWordSoundsWord, callGemini]);
+  L6600: if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+  L6605: }, [wordSoundsPhonemes, nextWordBuffer, isLoadingPhonemes, prefetchNextWords]);
+  L6664: if (!wordSoundsPhonemes) return;
+  L6667: const effectiveCount = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+  L6670: if (['segmentation', 'blending'].includes(wordSoundsActivity) && wordSoundsPhonemes.phonemes) {
+  L6674: wordSoundsPhonemes?.phonemes && setSoundChips(generateUniqueSoundChips(wordSoundsPhonemes.phonemes));
+  L6681: const targetWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+  L6700: const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+  L6706: const correctRhyme = wordSoundsPhonemes?.rhymeWord;
+  L6740: const distractors = wordSoundsPhonemes?.rhymeDistractors?.length >= 3
+  L6741: ? wordSoundsPhonemes?.rhymeDistractors?.slice(0, 5)
+  L6796: }, [wordSoundsPhonemes, wordSoundsActivity, currentWordSoundsWord, generateSoundChips]);
+  L6804: if (wordSoundsActivity !== 'isolation' || !wordSoundsPhonemes) {
+  L6810: const currentWord = wordSoundsPhonemes?.word || currentWordSoundsWord;
+  L6826: const phonemeCount = wordSoundsPhonemes?.phonemes?.length || 2;
+  L6833: const phonemes = wordSoundsPhonemes?.phonemes || [];
+  L6835: const correctSound = phonemes[positionIdx] || wordSoundsPhonemes?.firstSound;
+  L6837: const isoAllPhonemes = wordSoundsPhonemes?.phonemes || [];
+  L6875: }, [wordSoundsActivity, wordSoundsPhonemes, handleAudio, currentWordSoundsWord]); // Removed isolationState to prevent loop
+  L7077: setWordSoundsPhonemes(preloadedWord); // Full object with blendingDistractors
+  L7172: if (wordSoundsActivity === 'isolation' && currentWordSoundsWord && wordSoundsPhonemes) {
+  L7177: const phonemesRaw = wordSoundsPhonemes.phonemes || (Array.isArray(wordSoundsPhonemes) ? wordSoundsPhonemes : []);
+  L7217: }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, isolationState]);
+  L7312: if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes) {
+  L7313: targetSound = mode === 'first' ? wordSoundsPhonemes.phonemes[0] : wordSoundsPhonemes.phonemes[wordSoundsPhonemes.phonemes.length - 1];
+  L7373: if (wordSoundsActivity === 'blending' && wordSoundsPhonemes?.phonemes) {
+  L7582: phonemes: wordSoundsPhonemes?.phonemes || []
+  L7687: if (wordSoundsPhonemes?.phonemes) {
+  L7688: wordSoundsPhonemes?.phonemes && updatePhonemeMastery(wordSoundsPhonemes.phonemes, isCorrect);
+  L7864: setWordSoundsPhonemes(preloadedMatch);
+  L7924: }, [wordSoundsScore, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes,
+  L7942: expected = wordSoundsPhonemes?.rhymeWord;
+  L7956: }, [useMicInput, isListening, userAnswer, wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, checkAnswer]);
+  L7998: if (wordSoundsActivity === 'rhyming') expected = wordSoundsPhonemes?.rhymeWord;
+  L8012: }, [wordSoundsLanguage, isListening, currentWordSoundsWord, wordSoundsActivity, wordSoundsPhonemes, checkAnswer, addToast, playSound, ts]);
+  L8135: const newPhonemes = { ...wordSoundsPhonemes };
+  L8166: setWordSoundsPhonemes(newPhonemes);
+  L8172: const newGraphemes = [...(wordSoundsPhonemes?.graphemes || [])];
+  L8174: setWordSoundsPhonemes(prev => ({ ...prev, graphemes: newGraphemes }));
+  L8177: const newPhonemes = [...(wordSoundsPhonemes?.phonemes || [])];
+  L8179: const updated = { ...wordSoundsPhonemes, phonemes: newPhonemes };
+  L8180: setWordSoundsPhonemes(updated);
+  L8659: {[...Array(wordSoundsPhonemes?.phonemeCount || 3)].map((_, i) => (
+  L8768: if (!wordSoundsPhonemes) {
+  L8820: image: isolationState?.image || currentWordImage || wordSoundsPhonemes?.image // Use image from isolationState first
+  L8961: const expected = wordSoundsPhonemes?.phonemes || [];
+  L9003: {isEditing && wordSoundsPhonemes?.phonemes && (
+  L9009: {(wordSoundsPhonemes?.phonemes || []).map((p, idx) => (
+  L9180: phonemes: wordSoundsPhonemes?.phonemes || [],
+  L9181: graphemes: wordSoundsPhonemes?.graphemes || currentWordSoundsWord?.split('') || []
+  L9522: setWordSoundsFeedback({ type: 'incorrect', message: `Not quite! The letter makes the "${wordSoundsPhonemes?.phonemes?.[hiddenIndex] || correctLetter}" sound` });
+  L9658: rhymeWord: wordSoundsPhonemes?.rhymeWord,
+  L9669: const isRhyme = ans?.toLowerCase() === wordSoundsPhonemes?.rhymeWord?.toLowerCase();
+  L9694: if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes && wordSoundsPhonemes.phonemes.length > 0) {
+  L9696: ? wordSoundsPhonemes.phonemes[0]
+  L9697: : wordSoundsPhonemes.phonemes[wordSoundsPhonemes.phonemes.length - 1];
+  L9807: const count = wordSoundsPhonemes?.phonemeCount || wordSoundsPhonemes?.phonemes?.length || 0;
+  L10003: setWordSoundsPhonemes(firstWord);
+  L32779: const [wordSoundsPhonemes, setWordSoundsPhonemes] = useState(null);
+  L64996: wordSoundsPhonemes={wordSoundsPhonemes}
+
+=== startActivity / handleStartActivity / Play button ===
+  L810: 'word_sounds.start': 'Start Activity',
+  L1441: const handleStart = async () => {
+  L2074: onClick={handleStart}
+  L2085: {isProcessing ? t('status.generating', 'Generating...') : t('word_sounds.start', 'Start Activity')}
+  L2167: onStartActivity,
+  L3025: onClick={onStartActivity}
+  L3028: <Play size={18} /> Start Activity
+  L3128: // AUTO-START: Moved to after startActivity definition (see L6700+)
+  L5567: // EAGER-START: Load first word immediately, start activity, preload rest in background
+  L6593: // Activity will start when user clicks "Start Activity" in Review Panel
+  L6948: const startActivity = React.useCallback((activityId, forceWord = null, excludeWord = null, recursionDepth = 0) => {
+  L7087: // Moved AFTER startActivity definition to avoid "Cannot access before initialization" error.
+  L7119: }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+  L7140: startActivity(activitySequence[0]);
+  L7143: }, [activitySequence, wordSoundsActivity, preloadedWords.length, startActivity, showReviewPanel]);
+  L7620: startActivity(nextActivity);
+  L9939: startActivity(wordSoundsActivity); // Restart same activity
+  L9995: onStartActivity={() => {
+  L10380: onClick={() => startActivity(activity.id)}
+  L11841: start: "Start Activity",
+  L13727: start_activity: "Start Activity",
+  L13765: start: "Start Activity",
+  L13779: start_action: "Start Activity",
+  L18237: const handleStartTranscription = async () => {
+  L18355: onClick={handleStartTranscription}
+  L28046: const handleStartQuestion = async () => {
+  L28431: onClick={handleStartQuestion} data-help-key="quiz_start_question_btn"
+  L45419: const handleStartEdit = (e, item) => {
+  L46876: const handleStartSequel = () => {
+  L47239: const handleStartAdventure = () => {
+  L47350: const handleStartOptionEdit = () => {
+  L49617: await handleStartAdventure();
+  L50359: const handleStartPanelChat = async () => {
+  L59152: handleStartSequel();
+  L62698: data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+  L63077: data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+  L63086: data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+  L63458: onClick={(e) => handleStartEdit(e, item)}
+  L69084: data-help-key="adventure_edit_options" onClick={handleStartOptionEdit}
+  L69154: data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+  L70114: onClick={handleStartSequel}
+  L71323: onClick={handleStartPanelChat}
+
+=== word.phonemes (review panel reads) ===
+  L2220: ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length, // Proxy
+  L2384: const newPhonemes = [...(word.phonemes || []), phoneme];
+  L2391: const newPhonemes = (word.phonemes || []).filter((_, i) => i !== phonemeIdx);
+  L2398: const phonemes = [...(word.phonemes || [])];
+  L2425: const currentPhonemes = Array.isArray(word.phonemes) ? [...word.phonemes] : [];
+  L2610: {word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && (
+  L2616: for (const phoneme of word.phonemes) {
+  L2695: {word.phonemes?.length || 0} sounds
+  L2721: {(Array.isArray(word.phonemes) ? word.phonemes : []).map((p, i) => (
+  L2742: {((() => { const p = word.phonemes; const a = Array.isArray(p) ? p : (p?.phonemes && Array.isArray(p.phonemes)) ? p.phonemes : []; return a.length === 0; })()) && (
+
+=== wordSoundsPhonemes.phonemes (game reads) ===
+  L8012: }, [wordSoundsLanguage, isListening, currentWordSoundsWord, wordSoundsActivity, wordSoundsPhonemes, checkAnswer, addToast, playSound, ts]);
+  L8135: const newPhonemes = { ...wordSoundsPhonemes };
+  L8172: const newGraphemes = [...(wordSoundsPhonemes?.graphemes || [])];
+  L8177: const newPhonemes = [...(wordSoundsPhonemes?.phonemes || [])];
+  L8179: const updated = { ...wordSoundsPhonemes, phonemes: newPhonemes };
+  L8659: {[...Array(wordSoundsPhonemes?.phonemeCount || 3)].map((_, i) => (
+  L8768: if (!wordSoundsPhonemes) {
+  L8820: image: isolationState?.image || currentWordImage || wordSoundsPhonemes?.image // Use image from isolationState first
+  L8961: const expected = wordSoundsPhonemes?.phonemes || [];
+  L9003: {isEditing && wordSoundsPhonemes?.phonemes && (
+  L9009: {(wordSoundsPhonemes?.phonemes || []).map((p, idx) => (
+  L9180: phonemes: wordSoundsPhonemes?.phonemes || [],
+  L9181: graphemes: wordSoundsPhonemes?.graphemes || currentWordSoundsWord?.split('') || []
+
+=== applyWordDataToState ===
+  L4958: const applyWordDataToState = (data) => {
+  L5022: applyWordDataToState(cached);
+  L5032: applyWordDataToState(poolEntry);
+  L5299: applyWordDataToState(phonemeData);
+  L7750: applyWordDataToState(phonemeData);
+
+=== advanceToNextWord / nextWord logic ===
+  L3169: const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
+  L4664: const nextWord = queue[0];
+  L4671: return nextWord;
+  L5456: const prefetchNextWords = React.useCallback(async () => {
+  L5490: let nextWordEntry = null;
+  L5494: nextWordEntry = queueCandidates[queueIndex];
+  L5499: if (!nextWordEntry) {
+  L5508: nextWordEntry = validCandidates[Math.floor(Math.random() * validCandidates.length)];
+  L5511: const targetWord = nextWordEntry.singleWord || nextWordEntry.word;
+  L5523: ...nextWordEntry,
+  L5544: difficulty: nextWordEntry.difficulty || categorizeWordDifficulty(targetWord)
+  L6120: // We rely on the useEffect at line ~3004 to start the activity and trigger prefetchNextWords().
+  L6600: if (wordSoundsPhonemes && !nextWordBuffer && !isLoadingPhonemes) {
+  L6602: const timer = setTimeout(() => prefetchNextWords(), 1000);
+  L6605: }, [wordSoundsPhonemes, nextWordBuffer, isLoadingPhonemes, prefetchNextWords]);
+  L6813: // SKIP if options were already pre-generated by fetchWordData or prefetchNextWords
+  L6963: setNextWordBuffer(null); // Clear buffer on new activity start
+  L7112: prefetchNextWords();
+  L7119: }, [wordPool, currentWordSoundsWord, wordSoundsActivity, startActivity, isLoadingPhonemes, prefetchNextWords, showReviewPanel, preloadedWords.length]);
+  L7825: setNextWordBuffer(null); // Clear legacy buffer
+  L7830: setTimeout(() => prefetchNextWords(), 100);
+  L7892: setTimeout(() => prefetchNextWords(), 500);
+  L7909: setTimeout(() => prefetchNextWords(), 500);
+  L7928: nextWordBuffer, preloadedWords, prefetchNextWords, generateSoundChips]); // Added dependencies

@@ -1,0 +1,362 @@
+=== COMPREHENSIVE TOUR MANUAL AUDIT ===
+
+--- CURRENT TOUR STEP DESCRIPTIONS ---
+
+
+### tour-input-panel
+Begin your lesson creation journey here. This Input Panel is the foundation for all generated resources. It serves as the central hub where you define the content, context, and parameters.
+
+### Input Options
+• **Text Paste**: Paste content directly from any article, story, or lesson plan.
+• **File Upload**: Upload PDFs, images, text files, audio (MP3/WAV), or video for automatic extraction.
+• **URL Fetch**: Paste any article URL to automatically extract and import its content.
+• **AI Resource Se...
+--------------------------------------------------
+
+### tour-tool-analysis
+Review the AI's deep understanding of your content. This analysis ensures accuracy before generating student materials by breaking down the text into its atomic pedagogical components.
+
+### Panel Options
+• **Check Accuracy**: Enable web grounding to verify factual claims and identify potential inaccuracies in your source text.
+
+### Analysis Components
+• **Executive Summary**: A concise overview of the input text's main ideas and purpose.
+• **Key Themes**: Identifies core concepts and 'Big Ideas'...
+--------------------------------------------------
+
+### ui-tool-glossary
+Generate a comprehensive Visual Glossary to support vocabulary acquisition. This tool is essential for pre-teaching and front-loading concepts.
+
+### Panel Options
+• **Tier 2/Tier 3 Counts**: Specify how many academic vs domain-specific terms to extract.
+• **Definition Level**: Adjust complexity from Kindergarten to College level.
+• **Bilingual Support**: Add up to 4 target languages for multilingual glossaries.
+• **Custom Instructions**: Provide specific guidance for term selection or definition...
+--------------------------------------------------
+
+### ui-tool-simplified
+Differentiate your text for diverse learners. This tool rewrites content to specific proficiency levels and provides a rich Immersive Reader with literacy supports.
+
+### Panel Options
+• **Grade Goal**: Scale complexity from Kindergarten to College level.
+• **Mode Selection**: Standard Rewrite, Explain & Expand, or Summarize.
+• **Language**: Translate the leveled text into a target language.
+
+### Immersive Reader Features
+• **Focus Reader (RSVP)**: Speed-read one word at a time for concentration....
+--------------------------------------------------
+
+### tour-tool-wordsounds
+Build foundational literacy skills with the Word Sounds Studio. Focuses on phonemic awareness and phonics.
+
+### Panel Options
+• **Grade Level**: Set the target age group (K-2, 3-5) to adjust word difficulty.
+• **Activity Mode**: Select from 'Phonics' (Letters+Sounds) or 'Sound Only' (Auditory).
+• **Source**: Use current Glossary terms or generate new words by phoneme.
+
+### Resource Features
+• **Phonemic Activities**: Interactive Counting, Isolating, and Blending tasks.
+• **Segmentation**: Break ...
+--------------------------------------------------
+
+### tour-tool-outline
+Create visual representations of your content's structure. Choose from multiple graphic organizer formats tailored to different thinking styles.
+
+### Organizer Types
+• **Venn Diagram**: Compare and contrast two or more concepts interactively.
+• **Flow Chart**: Visualize sequential processes, timelines, or decision trees.
+• **Structured Outline**: Hierarchical list showing main ideas and supporting details.
+
+### Interactive Features
+• **Drag-and-Drop**: Students sort items into correct Venn secti...
+--------------------------------------------------
+
+### tour-tool-visual
+Enhance comprehension with AI-generated imagery. This tool automatically creates a visual representation of key concepts to support Dual Coding strategies.
+
+### Resource Features
+• **Auto-Generation**: Creates a relevant image based on your text analysis.
+• **Regenerate**: Request a new variation if the first image isn't perfect.
+• **Downloadable**: Save the image for use in slides or handouts.
+
+### UDL Connection
+• **Representation**: Clarify syntax and structure (Guideline 2) by providing visu...
+--------------------------------------------------
+
+### tour-tool-faq
+Anticipate student confusion before it happens. This tool automatically generates a predictive FAQ based on the text's complexity, proactively addressing common misconceptions.
+
+### Key Features
+• **Auto-Generation**: Instantly creates Questions & Answers based on the text analysis.
+• **Audio Support**: Text-to-Speech for both questions and answers to support auditory learners.
+• **Bilingual Support**: Option to view and hear translations if a target language is selected.
+• **Interactive Mode**:...
+--------------------------------------------------
+
+### tour-tool-scaffolds
+Support student output with structured writing aids. By providing graduated levels of support, you enable students to express their understanding regardless of their writing proficiency.
+
+### Scaffold Types
+• **Sentence Frames**: List-based sentence starters to help students begin their thoughts.
+• **Paragraph Frames**: Cloze-style paragraphs for structuring complete arguments or summaries.
+• **Checklists & Rubrics**: Auto-generated success criteria for self-monitoring.
+
+### Advanced Features
+• ...
+--------------------------------------------------
+
+### ui-tool-quiz
+Assess understanding with diverse, gamified assessment modes. Perfect for engagement and formative checks.
+
+### Game Modes
+• **Live Quiz**: Launch a synchronized session with real-time leaderboards.
+• **Team Showdown**: Collaborative team-based competition.
+• **Escape Room**: Immersive puzzle-based assessment with themed rooms, hints, and clue discovery.
+• **Review Mode**: Self-paced review with immediate feedback.
+
+### Resource Features
+• **Presentation Mode**: Project questions for whole-class...
+--------------------------------------------------
+
+### tour-tool-brainstorm
+Spark engagement with reliable, creative application ideas. This tool connects your lesson topic to real-world scenarios and project-based learning opportunities.
+
+### Ideation Categories
+• **Project-Based Learning**: Long-term project ideas and driving questions.
+• **Real-World Connections**: How this topic applies to careers and daily life.
+• **Discussion Hooks**: Provocative questions to start the class.
+
+### Pro Tip
+• Use references to local context to increase relevance.
+
+### UDL Connection...
+--------------------------------------------------
+
+### tour-tool-persona
+Bring history and literature to life by simulating a conversation with a relevant character. This immersive experience builds empathy and deepens contextual understanding through direct interaction.
+
+
+### Simulation Settings
+• **Character Selection**: Choose from historical figures, fictional characters, or experts.
+• **Context Definition**: Define the specific era or scene for the simulation.
+
+### Interaction Features
+• **Hot Seat**: Students ask questions and get in-character responses.
+• **Vo...
+--------------------------------------------------
+
+### tour-tool-timeline
+Visualize sequence and cause-and-effect relationships. This tool extracts key events and dates, presenting them in a linear format that supports students with processing speed or memory challenges.
+
+
+### Visualization Features
+• **Auto-Extraction**: Identifies dates and events automatically from the text.
+• **Chronological Flow**: Arrange events in strict time order.
+• **Process Steps**: Can also be used to visualize scientific processes or recipes.
+• **Interactive**: Click events to see detaile...
+--------------------------------------------------
+
+### tour-tool-concept-sort
+Reinforce categorization skills and conceptual relationships. Students drag-and-drop terms into defined categories, actively processing the connections between ideas.
+
+
+### Activity Options
+• **Category Setup**: Define the bins/groups (e.g., "Mammals vs Reptiles").
+• **Item Count**: Set how many items to generate for sorting.
+
+### Gameplay
+• **Drag-and-Drop**: Interactive sorting interface for digital use.
+• **Instant Feedback**: Immediate validation of correct/incorrect sorts.
+• **Printable**: ...
+--------------------------------------------------
+
+### tour-tool-math
+Integrate numeracy into any subject. This tool generates word problems that use the characters and themes from your source text, showing learners how math applies in this specific context.
+
+### Problem Settings
+• **Math Domains**: Covers core standards across various difficulty levels.
+• **Difficulty**: Adjust complexity to match learner needs.
+
+### Output Features
+• **Contextualized Problems**: Word problems use the characters/themes from your source text.
+• **Worked Solutions**: Step-by-step e...
+--------------------------------------------------
+
+### tour-tool-adventure
+Create immersive learning experiences with multiple simulation modes. From personal narratives to large-scale system simulations.
+
+### Simulation Modes
+• **Adventure Mode**: Classic choose-your-own-adventure branching narratives.
+• **Social Story Mode**: Generate supportive scenarios for SEL and behavior guidance.
+• **System Simulation**: Manage factions, resources, and macro-level decisions.
+
+### Interactive Features
+• **Branching Narrative**: Choices affect story outcomes with AI-generated con...
+--------------------------------------------------
+
+### tour-tool-alignment
+Ensure your lesson hits the mark. This report automatically cross-references your generated resources against Common Core Standards and UDL Guidelines, identifying strengths and gaps.
+
+
+### Alignment Checks
+• **CAST UDL Guidelines**: Checks for Engagement, Representation, and Action/Expression.
+• **Standards Verification**: Cross-reference with Common Core, NGSS, or State Standards.
+• **Gap Analysis**: Identifies missing elements or weak points in your lesson plan.
+• **Suggestions**: Actionable ...
+--------------------------------------------------
+
+### tour-tool-lesson-plan
+Generate a complete, structured Lesson Plan that ties everything together. It provides a roadmap for instruction, including specific scripts for 'I Do, We Do, You Do' teaching phases.
+
+
+### Plan Components
+• **Learning Objectives**: SMART goals derived from the content.
+• **Materials List**: Comprehensive checklist of required resources.
+• **Direct Instruction**: Scripted 'I Do' section.
+• **Guided Practice**: Collaborative 'We Do' activities.
+• **Independent Practice**: 'You Do' assignments.
+• ...
+--------------------------------------------------
+
+### tour-tool-fullpack
+The universal 'Easy Button' for instant, high-quality content generation. Perfect for teachers, parents, and self-guided learners, this tool bundles every available resource into a unified package tailored to your specific needs.
+
+### Smart Automation
+• **Auto-Configuration**: Intelligently selects the optimal settings for every tool based on the initial text analysis.
+• **Context-Aware**: Ensures quizzes, scaffolds, and games are perfectly aligned to the text complexity and themes.
+
+### Bundle ...
+--------------------------------------------------
+
+### tour-header-utils
+Customize your experience and manage your account settings.
+
+### Menu Items
+• **Profile & Settings**: Configure your grade level, subject area, and default language preferences.
+• **Documentation**: Access comprehensive user guides, video tutorials, and pedagogical support.
+
+### System Features
+• **Dark Mode**: Toggle the interface theme for low-light environments.
+• **Voice Settings**: Adjust the speed and gender of the Text-to-Speech voices.
+
+### Pro Tip
+• Configure your 'Profile Context' to h...
+--------------------------------------------------
+
+### tour-header-tools
+The Navigational Dashboard. Quick access to every tool in the platform.
+
+### Dashboard Features
+• **Tool Icons**: One-click navigation to any generation tool (Quiz, Glossary, etc.).
+• **Status Indicators**: Colored dots indicate which tools currently have active content.
+• **Keyboard Shortcuts**: Use numbered hotkeys to jump between tools rapidly.
+
+### Pro Tip
+• Tools are organized logically from 'Input' to 'Output'. Follow the flow left-to-right for a natural lesson building process.
+--------------------------------------------------
+
+### tour-header-actions
+Export and Share your work. Make your digital resources physical.
+
+### Export Options
+• **PDF Download**: Generate a clean, printable version of your resource.
+• **Word Export**: Download an editable DOCX file for further customization.
+• **Clipboard**: Copy content directly to paste into your LMS or email.
+
+### Sharing Features
+• **Shareable Links**: Generate a URL to send a live, interactive version to colleagues.
+• **Print View**: Optimized layout removing UI elements for paper printing.
+
+###...
+--------------------------------------------------
+
+### tour-history-panel
+Your Session History. Never lose a great generation.
+
+### History Controls
+• **Session List**: View a chronological list of all resources generated in this session.
+• **Restore**: Instantly reload any previous item back into the main view.
+• **Version Control**: Compare different iterations of the same resource.
+
+### Analysis Features
+• **Metadata**: See the exact parameters (grade level, difficulty) used for each generation.
+• **Save/Load**: Use the 'Save Session' button to download your work a...
+--------------------------------------------------
+
+
+=== FEATURE VERIFICATION ===
+
+--- FAQ FEATURES ---
+
+Difficulty levels: 0 occurrences
+Question count: 0 occurrences
+TTS for FAQ: 0 occurrences
+Sorting: 0 occurrences
+View modes: 0 occurrences
+
+--- SCAFFOLDS/SENTENCE FRAMES FEATURES ---
+
+Scaffold modes: 0 occurrences
+Difficulty: 0 occurrences
+Sentence frames: 0 occurrences
+Discussion starters: 0 occurrences
+
+--- BRAINSTORM FEATURES ---
+
+Brainstorm modes: 0 occurrences
+Categories: 0 occurrences
+Export: 0 occurrences
+
+--- TIMELINE FEATURES ---
+
+Timeline modes: 0 occurrences
+Zoom: 0 occurrences
+Events: 0 occurrences
+Interactive: 0 occurrences
+
+--- CONCEPT SORT FEATURES ---
+
+Concept sort: 15 occurrences
+Categories: 0 occurrences
+Gamification: 0 occurrences
+Sorting game: 0 occurrences
+
+--- MATH FEATURES ---
+
+Math modes: 15 occurrences
+Difficulty: 0 occurrences
+Word problems: 0 occurrences
+Math visuals: 0 occurrences
+Graphs: 18 occurrences
+
+--- LESSON PLAN FEATURES ---
+
+Duration: 0 occurrences
+Format: 0 occurrences
+Templates: 0 occurrences
+Sections: 0 occurrences
+UDL Guidelines: 1 occurrences
+
+--- ALIGNMENT/STANDARDS FEATURES ---
+
+Alignment modes: 0 occurrences
+Standards matching: 0 occurrences
+DOK: 0 occurrences
+Blooms: 0 occurrences
+Alignment score: 0 occurrences
+
+--- PERSONA/CHARACTER INTERVIEW FEATURES ---
+
+Persona modes: 0 occurrences
+Voice: 0 occurrences
+Backgrounds: 0 occurrences
+History: 0 occurrences
+Reflection: 26 occurrences
+Panel modes: 5 occurrences
+
+
+=== UNIQUE SETTINGS AND MODES ===
+
+Mode setters found: 41 unique
+Difficulty mentions: 240
+Export functions: 38 unique

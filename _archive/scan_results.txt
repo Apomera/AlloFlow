@@ -1,0 +1,20 @@
+=== Raw string t() calls ===
+  phono_activity_length -> L1854: <span className="font-bold text-slate-700">{t('word_sounds.phono_activity_length', '🎵 Sound Activities per Session')}</span>
+  phono_activity_length -> L1863: <p className="text-xs text-slate-500 mt-2">{t('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
+  phono_activity_length_hint -> L1863: <p className="text-xs text-slate-500 mt-2">{t('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
+  ortho_activity_length -> L2079: <span className="font-bold text-slate-700">{t('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
+  ortho_activity_hint_off -> L2094: : t('word_sounds.ortho_activity_hint_off', 'Slide right to add spelling practice after phonics activities')
+  ortho_activity_hint -> L2093: ? t('word_sounds.ortho_activity_hint_on', `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`)
+  ortho_activity_hint -> L2094: : t('word_sounds.ortho_activity_hint_off', 'Slide right to add spelling practice after phonics activities')
+
+=== UI_STRINGS word_sounds block ===
+  block starts L11695
+
+=== Slider rendering (wordSoundsSessionGoal / orthoSessionGoal) ===
+  L1859: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+  L2084: data-help-key="ws_gen_ortho_slider" value={orthoSessionGoal || 0}
+
+=== QuickStartWizard render ===
+  L68719: />\n      <QuickStartWizard
+
+=== AlloBot showQuickStart state ===

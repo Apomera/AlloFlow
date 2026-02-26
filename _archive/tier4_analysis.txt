@@ -1,0 +1,161 @@
+=== Tier 4: React.memo Analysis ===
+Input: 73,811 lines
+
+Total components found: 69
+Already memo'd: 17
+Not memo'd: 52
+
+=== Already React.memo'd ===
+  ImmersiveWord: 34558 lines, L39254, uses in AlloFlow: 1
+  AlloBot: 2165 lines, L18830, uses in AlloFlow: 1
+  CrosswordGame: 460 lines, L24959, uses in AlloFlow: 1
+  BingoGame: 426 lines, L25583, uses in AlloFlow: 1
+  MatchingGame: 374 lines, L23527, uses in AlloFlow: 1
+  TimelineGame: 357 lines, L23901, uses in AlloFlow: 1
+  ConceptSortGame: 357 lines, L24258, uses in AlloFlow: 1
+  VennGame: 344 lines, L24615, uses in AlloFlow: 1
+  MemoryGame: 306 lines, L23203, uses in AlloFlow: 1
+  WordScrambleGame: 217 lines, L26178, uses in AlloFlow: 1
+  StudentBingoGame: 169 lines, L26009, uses in AlloFlow: 1
+  SyntaxScramble: 164 lines, L25419, uses in AlloFlow: 1
+  ImmersiveWord: 72 lines, L30865, uses in AlloFlow: 1
+  InventoryGrid: 59 lines, L26395, uses in AlloFlow: 1
+  DiceOverlay: 57 lines, L26454, uses in AlloFlow: 1
+  ConfettiExplosion: 22 lines, L22981, uses in AlloFlow: 14
+  ComplexityGauge: 21 lines, L23019, uses in AlloFlow: 1
+
+=== NOT memo'd (candidates) ===
+  BranchItem: 18410 lines, L55402, uses in AlloFlow: 6 ★
+  MarkdownRenderer: 7944 lines, L31310, uses in AlloFlow: 0
+  StudentAnalyticsPanel: 7873 lines, L10271, uses in AlloFlow: 1 ★
+  WordSoundsModal: 7160 lines, L3111, uses in AlloFlow: 1 ★
+  SoundMappingView: 3657 lines, L4354, uses in AlloFlow: 1 ★
+  LetterTraceView: 2260 lines, L8011, uses in AlloFlow: 1 ★
+  LargeFileTranscriptionModal: 1790 lines, L441, uses in AlloFlow: 1 ★
+  QuickStartWizard: 1101 lines, L29461, uses in AlloFlow: 1 ★
+  WordSoundsGenerator: 919 lines, L1312, uses in AlloFlow: 1 ★
+  WordSoundsReviewPanel: 880 lines, L2231, uses in AlloFlow: 1 ★
+  TeacherLiveQuizControls: 762 lines, L27951, uses in AlloFlow: 1 ★
+  StudentEscapeRoomOverlay: 712 lines, L27052, uses in AlloFlow: 1 ★
+  TeacherDashboard: 681 lines, L28780, uses in AlloFlow: 1 ★
+  InfoTooltip: 465 lines, L22516, uses in AlloFlow: 4 ★
+  AdventureAmbience: 438 lines, L22078, uses in AlloFlow: 1 ★
+  OrthographyView: 368 lines, L3986, uses in AlloFlow: 1 ★
+  StudentQuizOverlay: 350 lines, L21116, uses in AlloFlow: 1 ★
+  GlobalMuteButton: 336 lines, L105, uses in AlloFlow: 1 ★
+  TeacherGate: 330 lines, L21674, uses in AlloFlow: 1 ★
+  StudentSubmitModal: 264 lines, L18341, uses in AlloFlow: 1 ★
+  InteractiveBlueprintCard: 215 lines, L30937, uses in AlloFlow: 1 ★
+  DraftFeedbackInterface: 208 lines, L21466, uses in AlloFlow: 1 ★
+  LargeFileImportModal: 197 lines, L18144, uses in AlloFlow: 0
+  EscapeRoomTeacherControls: 187 lines, L27764, uses in AlloFlow: 1 ★
+  SpeedReaderOverlay: 168 lines, L30562, uses in AlloFlow: 1 ★
+  RoleSelectionModal: 140 lines, L26601, uses in AlloFlow: 1 ★
+  ImmersiveToolbar: 135 lines, L30730, uses in AlloFlow: 1 ★
+  CharacterColumn: 135 lines, L31175, uses in AlloFlow: 2 ★
+  ToggleButton: 132 lines, L30733, uses in AlloFlow: 8 ★
+  SpeechBubble: 121 lines, L18605, uses in AlloFlow: 1 ★
+  StudentEntryModal: 120 lines, L26741, uses in AlloFlow: 1 ★
+  MissionReportCard: 111 lines, L21005, uses in AlloFlow: 1 ★
+  RhymeView: 94 lines, L3892, uses in AlloFlow: 1 ★
+  AdventureShop: 90 lines, L26511, uses in AlloFlow: 1 ★
+  BilingualFieldRenderer: 89 lines, L39165, uses in AlloFlow: 13 ★
+  ClozeInput: 84 lines, L23119, uses in AlloFlow: 1 ★
+  ClimaxProgressBar: 74 lines, L22004, uses in AlloFlow: 1 ★
+  LongitudinalProgressChart: 67 lines, L28713, uses in AlloFlow: 1 ★
+  StudentWelcomeModal: 53 lines, L26861, uses in AlloFlow: 1 ★
+  SimpleBarChart: 53 lines, L26914, uses in AlloFlow: 4 ★
+  JetpackParticles: 46 lines, L18736, uses in AlloFlow: 1
+  ConfettiEffect: 46 lines, L27006, uses in AlloFlow: 1
+  AnimatedNumber: 43 lines, L23076, uses in AlloFlow: 3
+  BotConfettiBurst: 40 lines, L18790, uses in AlloFlow: 1
+  SimpleDonutChart: 39 lines, L26967, uses in AlloFlow: 3
+  Sticker: 36 lines, L23040, uses in AlloFlow: 1
+  HarmonyMeter: 23 lines, L31152, uses in AlloFlow: 1
+  SkeletonLoader: 18 lines, L23509, uses in AlloFlow: 1
+  Stamp: 16 lines, L23003, uses in AlloFlow: 1
+  LandingDust: 10 lines, L18726, uses in AlloFlow: 1
+  MathSymbol: 10 lines, L20995, uses in AlloFlow: 6
+  ReactionBubble: 8 lines, L18782, uses in AlloFlow: 1
+
+=== RECOMMENDED for React.memo (>50 lines, used in AlloFlowContent) ===
+  ★ BranchItem: 18410 lines, 6 uses
+  ★ StudentAnalyticsPanel: 7873 lines, 1 uses
+  ★ WordSoundsModal: 7160 lines, 1 uses
+  ★ SoundMappingView: 3657 lines, 1 uses
+  ★ LetterTraceView: 2260 lines, 1 uses
+  ★ LargeFileTranscriptionModal: 1790 lines, 1 uses
+  ★ QuickStartWizard: 1101 lines, 1 uses
+  ★ WordSoundsGenerator: 919 lines, 1 uses
+  ★ WordSoundsReviewPanel: 880 lines, 1 uses
+  ★ TeacherLiveQuizControls: 762 lines, 1 uses
+  ★ StudentEscapeRoomOverlay: 712 lines, 1 uses
+  ★ TeacherDashboard: 681 lines, 1 uses
+  ★ InfoTooltip: 465 lines, 4 uses
+  ★ AdventureAmbience: 438 lines, 1 uses
+  ★ OrthographyView: 368 lines, 1 uses
+  ★ StudentQuizOverlay: 350 lines, 1 uses
+  ★ GlobalMuteButton: 336 lines, 1 uses
+  ★ TeacherGate: 330 lines, 1 uses
+  ★ StudentSubmitModal: 264 lines, 1 uses
+  ★ InteractiveBlueprintCard: 215 lines, 1 uses
+  ★ DraftFeedbackInterface: 208 lines, 1 uses
+  ★ EscapeRoomTeacherControls: 187 lines, 1 uses
+  ★ SpeedReaderOverlay: 168 lines, 1 uses
+  ★ RoleSelectionModal: 140 lines, 1 uses
+  ★ ImmersiveToolbar: 135 lines, 1 uses
+  ★ CharacterColumn: 135 lines, 2 uses
+  ★ ToggleButton: 132 lines, 8 uses
+  ★ SpeechBubble: 121 lines, 1 uses
+  ★ StudentEntryModal: 120 lines, 1 uses
+  ★ MissionReportCard: 111 lines, 1 uses
+  ★ RhymeView: 94 lines, 1 uses
+  ★ AdventureShop: 90 lines, 1 uses
+  ★ BilingualFieldRenderer: 89 lines, 13 uses
+  ★ ClozeInput: 84 lines, 1 uses
+  ★ ClimaxProgressBar: 74 lines, 1 uses
+  ★ LongitudinalProgressChart: 67 lines, 1 uses
+  ★ StudentWelcomeModal: 53 lines, 1 uses
+  ★ SimpleBarChart: 53 lines, 4 uses
+
+Total recommended: 38
+
+=== Wrapping details ===
+  BranchItem: Arrow function - wrap with React.memo()
+  StudentAnalyticsPanel: Arrow function - wrap with React.memo()
+  WordSoundsModal: Arrow function - wrap with React.memo()
+  SoundMappingView: Arrow function - wrap with React.memo()
+  LetterTraceView: Arrow function - wrap with React.memo()
+  LargeFileTranscriptionModal: Arrow function - wrap with React.memo()
+  QuickStartWizard: Arrow function - wrap with React.memo()
+  WordSoundsGenerator: Arrow function - wrap with React.memo()
+  WordSoundsReviewPanel: Arrow function - wrap with React.memo()
+  TeacherLiveQuizControls: Arrow function - wrap with React.memo()
+  StudentEscapeRoomOverlay: Arrow function - wrap with React.memo()
+  TeacherDashboard: Arrow function - wrap with React.memo()
+  InfoTooltip: Arrow function - wrap with React.memo()
+  AdventureAmbience: Arrow function - wrap with React.memo()
+  OrthographyView: Arrow function - wrap with React.memo()
+  StudentQuizOverlay: Arrow function - wrap with React.memo()
+  GlobalMuteButton: Arrow function - wrap with React.memo()
+  TeacherGate: Arrow function - wrap with React.memo()
+  StudentSubmitModal: Arrow function - wrap with React.memo()
+  InteractiveBlueprintCard: Arrow function - wrap with React.memo()
+  DraftFeedbackInterface: Arrow function - wrap with React.memo()
+  EscapeRoomTeacherControls: Arrow function - wrap with React.memo()
+  SpeedReaderOverlay: Arrow function - wrap with React.memo()
+  RoleSelectionModal: Arrow function - wrap with React.memo()
+  ImmersiveToolbar: Arrow function - wrap with React.memo()
+  CharacterColumn: Arrow function - wrap with React.memo()
+  ToggleButton: Arrow function - wrap with React.memo()
+  SpeechBubble: Arrow function - wrap with React.memo()
+  StudentEntryModal: Arrow function - wrap with React.memo()
+  MissionReportCard: Arrow function - wrap with React.memo()
+  RhymeView: Arrow function - wrap with React.memo()
+  AdventureShop: Arrow function - wrap with React.memo()
+  BilingualFieldRenderer: Arrow function - wrap with React.memo()
+  ClozeInput: Arrow function - wrap with React.memo()
+  ClimaxProgressBar: Arrow function - wrap with React.memo()
+  LongitudinalProgressChart: Arrow function - wrap with React.memo()
+  StudentWelcomeModal: Arrow function - wrap with React.memo()
+  SimpleBarChart: Arrow function - wrap with React.memo()

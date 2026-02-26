@@ -1,0 +1,33 @@
+=== EXPORT / ACTIONS PANEL ANALYSIS ===
+
+=== EXPORT HELP KEYS ===
+  data-help-key="export_ims"
+  data-help-key="export_html"
+  data-help-key="export_copy_button"
+  data-help-key="export_pdf_button"
+  data-help-key="export_storybook_images"
+  data-help-key="export_qti"
+  data-help-key="export_slides"
+  data-help-key="export_storybook_text"
+  data-help-key="glossary_export_language"
+  data-help-key="glossary_export_standard"
+  data-help-key="export_print"
+  data-help-key="export_worksheet"
+  data-help-key="profiles_export_button"
+  data-help-key="ui_lang_export_btn"
+  data-help-key="header_export"
+  data-help-key="dashboard_export_csv"
+  data-help-key="header_export"
+
+
+=== EXPORT FUNCTIONS ===
+  handleExport
+
+
+=== EXPORT TYPES/FORMATS ===
+  PDF: 4 matches
+  ZIP: 5 matches
+  PPTX: 5 matches
+  QTI: 70 matches
+  IMS: 103 matches
+  CSV: 4 matches

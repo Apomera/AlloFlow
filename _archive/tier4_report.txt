@@ -1,0 +1,92 @@
+=== Tier 4 v2: React.memo Wrapping ===
+  SKIP WordSoundsModal: no arrow found near L3111
+  SKIP WordSoundsReviewPanel: no arrow found near L2231
+
+Found 36 component definitions
+  BranchItem: L55402 to L55460 (59 lines, (...))
+  StudentAnalyticsPanel: L10271 to L10737 (467 lines, {...})
+  SoundMappingView: L4354 to L4488 (135 lines, {...})
+  LetterTraceView: L8011 to L8419 (409 lines, {...})
+  LargeFileTranscriptionModal: L441 to L548 (108 lines, {...})
+  QuickStartWizard: L29461 to L30560 (1100 lines, {...})
+  WordSoundsGenerator: L1312 to L2225 (914 lines, {...})
+  TeacherLiveQuizControls: L27951 to L28621 (671 lines, {...})
+  StudentEscapeRoomOverlay: L27052 to L27761 (710 lines, {...})
+  TeacherDashboard: L28780 to L29460 (681 lines, {...})
+  InfoTooltip: L22516 to L22524 (9 lines, (...))
+  AdventureAmbience: L22078 to L22161 (84 lines, {...})
+  OrthographyView: L3986 to L4160 (175 lines, {...})
+  StudentQuizOverlay: L21116 to L21465 (350 lines, {...})
+  GlobalMuteButton: L105 to L132 (28 lines, {...})
+  TeacherGate: L21674 to L21741 (68 lines, {...})
+  StudentSubmitModal: L18341 to L18544 (204 lines, {...})
+  InteractiveBlueprintCard: L30937 to L31151 (215 lines, {...})
+  DraftFeedbackInterface: L21466 to L21673 (208 lines, {...})
+  EscapeRoomTeacherControls: L27764 to L27949 (186 lines, {...})
+  SpeedReaderOverlay: L30562 to L30728 (167 lines, {...})
+  RoleSelectionModal: L26601 to L26739 (139 lines, {...})
+  ImmersiveToolbar: L30730 to L30863 (134 lines, {...})
+  CharacterColumn: L31175 to L31277 (103 lines, {...})
+  ToggleButton: L30733 to L30744 (12 lines, (...))
+  SpeechBubble: L18605 to L18725 (121 lines, {...})
+  StudentEntryModal: L26741 to L26860 (120 lines, {...})
+  MissionReportCard: L21005 to L21114 (110 lines, {...})
+  RhymeView: L3892 to L3984 (93 lines, {...})
+  AdventureShop: L26511 to L26600 (90 lines, {...})
+  BilingualFieldRenderer: L39165 to L39189 (25 lines, {...})
+  ClozeInput: L23119 to L23202 (84 lines, {...})
+  ClimaxProgressBar: L22004 to L22076 (73 lines, {...})
+  LongitudinalProgressChart: L28713 to L28779 (67 lines, {...})
+  StudentWelcomeModal: L26861 to L26913 (53 lines, {...})
+  SimpleBarChart: L26914 to L26966 (53 lines, {...})
+
+Will wrap: 36
+
+Successfully wrapped: 36
+
+Output: 7,618,271 bytes, 73,811 lines
+Total React.memo: 53
+Braces: 23688 open, 23696 close, diff=-8
+Parens: 33316 open, 33337 close, diff=-21
+
+=== Verification ===
+  ✓ BranchItem
+  ✓ StudentAnalyticsPanel
+  ✗ WordSoundsModal
+  ✓ SoundMappingView
+  ✓ LetterTraceView
+  ✓ LargeFileTranscriptionModal
+  ✓ QuickStartWizard
+  ✓ WordSoundsGenerator
+  ✗ WordSoundsReviewPanel
+  ✓ TeacherLiveQuizControls
+  ✓ StudentEscapeRoomOverlay
+  ✓ TeacherDashboard
+  ✓ InfoTooltip
+  ✓ AdventureAmbience
+  ✓ OrthographyView
+  ✓ StudentQuizOverlay
+  ✓ GlobalMuteButton
+  ✓ TeacherGate
+  ✓ StudentSubmitModal
+  ✓ InteractiveBlueprintCard
+  ✓ DraftFeedbackInterface
+  ✓ EscapeRoomTeacherControls
+  ✓ SpeedReaderOverlay
+  ✓ RoleSelectionModal
+  ✓ ImmersiveToolbar
+  ✓ CharacterColumn
+  ✓ ToggleButton
+  ✓ SpeechBubble
+  ✓ StudentEntryModal
+  ✓ MissionReportCard
+  ✓ RhymeView
+  ✓ AdventureShop
+  ✓ BilingualFieldRenderer
+  ✓ ClozeInput
+  ✓ ClimaxProgressBar
+  ✓ LongitudinalProgressChart
+  ✓ StudentWelcomeModal
+  ✓ SimpleBarChart
+
+=== DONE ===

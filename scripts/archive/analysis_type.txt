@@ -1,0 +1,14 @@
+L49928:         const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L49929:         if (type !== 'analysis' && latestAnalysis?.data?.originalText) {
+L49981:         if (['analysis', 'brainstorm', 'udl-advice', 'alignment-report'].includes(type)) {
+L50772:              const analysisItem = history.slice().reverse().find(h => h.type === 'analysis');
+L50873:       } else if (type === 'analysis') {
+L51008:         if (typeof analysisData.readingLevel === 'string') {
+L51807:       if (type === 'analysis') {
+L51808:           const existingCount = history.filter(h => h.type === 'analysis').length;
+L51852:           if (type === 'analysis') flyToElement('tour-tool-analysis');
+L51866:           const actionName = type === 'analysis' ? 'analyzing the source' : 'generating content';
+L51876:     const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L51914:              const hasAnalysis = history.some(h => h.type === 'analysis');
+L51916:                  resourcesToGen.unshift({ type: 'analysis', directive: "Essential verification step." });
+L51957:             resourcesToGen.sort((a, b) => (a.type === 'analysis' ? -1 : b.type === 'analysis' ? 1 : 0));

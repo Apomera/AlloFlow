@@ -1,0 +1,112 @@
+=== 1. Audio preloading in WordSoundsGenerator.handleStart ===
+  L1558: if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed) {
+  L1565: // Execute prefetch
+  L1566: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { console.warn('Caught error:', e?.message || e); }
+
+=== 2. Audio preloading in Modal (prefetchAudioForWords) ===
+  L6141:         // DISABLED: preloadInitialBatch is blocking and redundant.
+  L6142:         // We rely on the useEffect at line ~3004 to start the activity and trigger prefetchNextWords().
+  L6143:         /*
+  L6144:         if (wordPool && wordPool.length > 0 && preloadedWords.length === 0 && !isPreloading) {
+  L6145:             preloadInitialBatch();
+  L6146:         }
+  L6147:         */
+  L6148:     }, [wordPool, preloadedWords.length, isPreloading, preloadInitialBatch]);
+  L6149: 
+  L6150: 
+  L6151:     // FIX: Active Audio Prefetcher for Preloaded Words
+  L6152:     // Ensures audio is available even if we skipped the blocking preloadInitialBatch
+  L6153:     // PERF: Early return if no preloaded words
+  L6154:     React.useEffect(() => {
+  L6155:         if (!preloadedWords || preloadedWords.length === 0) return;
+  L6156: 
+  L6157:         // Identify words missing TTS confirmation
+  L6158:         const wordsNeedingAudio = preloadedWords.filter(w => !w.ttsReady && !w._audioRequested);
+  L6159: 
+  L6160:         if (wordsNeedingAudio.length === 0) return;
+  L6161: 
+  L6162:         console.log(`🎧 Prefetching audio for ${wordsNeedingAudio.length} words...`);
+  L6163: 
+  L6164:         // 1. Mark as requested to prevent redundant loops
+  L6165:         if (setWsPreloadedWords) {
+  L6166:              setWsPreloadedWords(prev => prev.map(w =>
+  L6167:                  wordsNeedingAudio.some(n => n.word === w.word) ? { ...w, _audioRequested: true } : w
+  L6168:              ));
+  L6169:         }
+  L6170: 
+  L6171:         // 2. Fetch Audio concurrently
+  L6172:         wordsNeedingAudio.forEach(async (w) => {
+  L6173:             const text = w.word;
+  L6174:             try {
+  L6175:                 await handleAudio(text, false).catch(e => console.warn("Audio prefetch failed:", e)); // Fetch & Cache (no play)
+  L6176: 
+  L6177:                 // 3. Mark as ready
+  L6178:                 if (setWsPreloadedWords) {
+  L6179:                     setWsPreloadedWords(prev => prev.map(pw => {
+  L6180:                         if (pw.word === text) {
+  L6181:                             return { ...pw, ttsReady: true, _audioRequested: false };
+  L6182:                         }
+  L6183:                         return pw;
+  L6184:                     }));
+  L6185:                 }
+  L6186:             } catch (e) {
+  L6187:                 console.warn(`Audio prefetch failed for ${text}`, e);
+  L6188:             }
+  L6189:         });
+  L6190:     }, [preloadedWords, handleAudio, setWsPreloadedWords]);
+  L6191: 
+  L6192:     // NEW: Watch for preloaded words and show Review Panel when ready
+  L6193:     React.useEffect(() => {
+  L6194:         // Show Review Panel when words are READY (have TTS audio cached)
+  L6195:         // FIX: Wait until words have ttsReady=true (not just phonemes - ensures audio works immediately)
+
+=== 3. ttsReady flag usage ===
+  L2233: // Accessing global audioInstances if available, or just treating 'ttsReady' flag if I had one.
+  L2235: // I will rely on the fact that preloadedWords might be updated with ttsReady,
+  L2242: ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length, // Proxy
+  L2627: title={playingWordIndex === idx ? "Playing..." : !word.ttsReady ? "Loading audio..." : "Play word"}
+  L5680: return { ...wordEntry, ttsReady: true, difficulty: wordEntry.difficulty || categorizeWordDifficulty(targetWord) };
+  L5786: ttsReady: true,
+  L6089: ttsReady: true
+  L6158: const wordsNeedingAudio = preloadedWords.filter(w => !w.ttsReady && !w._audioRequested);
+  L6181: return { ...pw, ttsReady: true, _audioRequested: false };
+  L6195: // FIX: Wait until words have ttsReady=true (not just phonemes - ensures audio works immediately)
+  L6198: const readyWords = preloadedWords.filter(w => w.ttsReady === true);
+  L45412: // FIX: Clear ttsReady to force TTS re-cache (audio data not persisted)
+  L45415: ttsReady: false,
+
+=== 4. Image generation (callImagen / handleGenerateWordImage) ===
+  L1266: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview }) 
+  L6499: const handleGenerateWordImage = React.useCallback(async (index, word) => {
+  L40417: const callImagen = async (prompt, width = 300, qual = 0.7) => {
+  L48330: const imageBase64 = await callImagen(generatedContent.data.prompt, targetWidth, targetQual);
+  L54255: const imageUrl = await callImagen(imgPrompt);
+
+=== 5. Image gen calls and concurrency ===
+  L1509: imageUrl = await callImagen(finalPrompt);
+  L6521: imageBase64 = await callImagen(imagePrompt);
+  L40502: let imageUrl = await callImagen(prompt, 400, 0.9);
+  L40547: let imageUrl = await callImagen(prompt);
+  L46333: let imageUrl = await callImagen(prompt, targetWidth, targetQual);
+  L48330: const imageBase64 = await callImagen(generatedContent.data.prompt, targetWidth, targetQual);
+  L52750: let imageUrl = await callImagen(imgPrompt);
+  L53292: let imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual);
+  L54255: const imageUrl = await callImagen(imgPrompt);
+  L56036: let imageUrl = await callImagen(imgPrompt);
+  L56112: let imageUrl = await callImagen(imgPrompt);
+  L56199: let imageUrl = await callImagen(prompt);
+  L56265: imageUrl = await callImagen(imgPrompt);
+
+=== 6. DISABLE_GEMINI_PHONEMES block boundaries ===
+  BLOCK 1 START: L5067
+  BLOCK 1 END: L5218
+
+=== 7. DISABLE_GEMINI_PHONEMES_V2 block ===
+  L5684: const DISABLE_GEMINI_PHONEMES_V2 = false;
+  L5687: if (DISABLE_GEMINI_PHONEMES_V2) {
+
+=== 8. prefetchNextWords boundaries ===
+  FUNC START: L5478
+  DISABLED: L5479
+  EARLY RETURN: L5480
+  FUNC END: L5586

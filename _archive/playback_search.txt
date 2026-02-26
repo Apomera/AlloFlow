@@ -1,0 +1,132 @@
+
+=== "playbackRate" found at 25 lines ===
+  Line 4669: // #endregion
+    4668:                 audio.currentTime = 0;
+    4669:                 audio.playbackRate = ttsSpeed;
+    4670:                 await audio.play();
+  Line 4987: // #endregion
+    4986:                                             const audio = new Audio(bankAudio);
+    4987:                                             audio.playbackRate = 0.9;
+    4988:                                             await audio.play();
+  Line 4997: // #endregion
+    4996:                                             const audio = new Audio(url);
+    4997:                                             audio.playbackRate = 0.9;
+    4998:                                             await audio.play();
+  Line 16509: // #endregion
+    16508:                       const audio = new Audio(audioUrl);
+    16509:                       audio.playbackRate = voiceSpeed;
+    16510:                       audio.volume = voiceVolume;
+  Line 28873: // #endregion
+    28872: });
+    28873: const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLet
+    28874:   const { t } = useContext(LanguageContext);
+  Line 35108: // #endregion
+    35107:   const [playbackState, setPlaybackState] = useState({ sentences: [], currentIdx: -1 });
+    35108:   const [playbackRate, setPlaybackRate] = useState(1.0);
+    35109:   const playbackRateRef = useRef(1.0);
+  Line 35109: // #endregion
+    35108:   const [playbackRate, setPlaybackRate] = useState(1.0);
+    35109:   const playbackRateRef = useRef(1.0);
+    35110:   const playbackSessionRef = useRef(0);
+  Line 35206: // #endregion
+    35205:       const groupTtsOverride = getGroupTtsSpeed();
+    35206:       playbackRateRef.current = groupTtsOverride ?? playbackRate;
+    35207:       if (audioRef.current) {
+  Line 35208: // #endregion
+    35207:       if (audioRef.current) {
+    35208:           audioRef.current.playbackRate = playbackRate;
+    35209:       }
+  Line 35210: // #endregion
+    35209:       }
+    35210:   }, [playbackRate]);
+    35211:   useEffect(() => {
+
+=== "currentChunk" found at 22 lines ===
+  Line 14899: // #endregion
+    14898:   const chunks = [];
+    14899:   let currentChunk = {};
+    14900:   let currentCount = 0;
+  Line 14902: // #endregion
+    14901:   keys.forEach((key, index) => {
+    14902:     currentChunk[key] = obj[key];
+    14903:     currentCount++;
+  Line 14905: // #endregion
+    14904:     if (currentCount >= maxKeys || index === keys.length - 1) {
+    14905:       chunks.push(currentChunk);
+    14906:       currentChunk = {};
+  Line 14906: // #endregion
+    14905:       chunks.push(currentChunk);
+    14906:       currentChunk = {};
+    14907:       currentCount = 0;
+  Line 38560: // #endregion
+    38559:       const chunks = [];
+    38560:       let currentChunk = "";
+    38561:       const paragraphs = text.split(/\n{2,}/);
+  Line 38566: // #endregion
+    38565:               for (const sentence of sentences) {
+    38566:                   if ((currentChunk.length + sentence.length) > maxLength && currentChunk.length > 0) {
+    38567:                       chunks.push(currentChunk.trim());
+  Line 38567: // #endregion
+    38566:                   if ((currentChunk.length + sentence.length) > maxLength && currentChunk.length > 0) {
+    38567:                       chunks.push(currentChunk.trim());
+    38568:                       currentChunk = "";
+  Line 38568: // #endregion
+    38567:                       chunks.push(currentChunk.trim());
+    38568:                       currentChunk = "";
+    38569:                   }
+  Line 38570: // #endregion
+    38569:                   }
+    38570:                   currentChunk += sentence + " ";
+    38571:               }
+  Line 38573: // #endregion
+    38572:           } else {
+    38573:               if ((currentChunk.length + para.length) > maxLength && currentChunk.length > 0) {
+    38574:                   chunks.push(currentChunk.trim());
+
+=== "currentSentenceIdx" found at 5 lines ===
+  Line 62285: // #endregion
+    62284:                                         }
+    62285:                                         let currentSentenceIdx = 0;
+    62286:                                         let currentSentenceText = sentences[0] || "";
+  Line 62294: // #endregion
+    62293:                                             const tokenStr = wordData.text.replace(/\s+/g, '').toLowerCase();
+    62294:                                             const assignedIdx = currentSentenceIdx;
+    62295:                                             currentTokenBuffer += tokenStr;
+  Line 62297: // #endregion
+    62296:                                             if (currentTokenBuffer.length >= normalizedSentence.length) {
+    62297:                                                 if (currentSentenceIdx < sentences.length - 1) {
+    62298:                                                     currentSentenceIdx++;
+  Line 62298: // #endregion
+    62297:                                                 if (currentSentenceIdx < sentences.length - 1) {
+    62298:                                                     currentSentenceIdx++;
+    62299:                                                     currentSentenceText = sentences[currentSentenceIdx];
+  Line 62299: // #endregion
+    62298:                                                     currentSentenceIdx++;
+    62299:                                                     currentSentenceText = sentences[currentSentenceIdx];
+    62300:                                                     normalizedSentence = currentSentenceText.replace(/\s+/g, '').toLowerCase();
+
+=== "autoPlay" found at 5 lines ===
+  Line 22635: // #endregion
+    22634:   const callerAudioRef = useRef(null);
+    22635:   const autoPlayTimerRef = useRef(null);
+    22636:   const startCaller = () => {
+  Line 22709: // #endregion
+    22708:   const handleAutoStep = () => {
+    22709:       if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    22710:       autoPlayTimerRef.current = setTimeout(() => {
+  Line 22710: // #endregion
+    22709:       if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    22710:       autoPlayTimerRef.current = setTimeout(() => {
+    22711:           if (isAutoPlaying) {
+  Line 22721: // #endregion
+    22720:       return () => {
+    22721:           if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    22722:       };
+  Line 22727: // #endregion
+    22726:           if (callerAudioRef.current) callerAudioRef.current.pause();
+    22727:           if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    22728:       };
+
+
+=== ImmersiveToolbar playbackRate usage ===
+  Line 28873: const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLet

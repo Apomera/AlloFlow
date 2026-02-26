@@ -1,0 +1,30 @@
+=== isolationState correctAnswer ===
+
+=== isolation edit mode ===
+
+=== isolation options rendering ===
+L7846: isoOptions.forEach(phoneme => {
+
+=== rhyme correct answer / rhymeWord ===
+L6796: const keys = [wordEntry.firstSound, wordEntry.lastSound, wordEntry.rhymeWord].filter(Boolean);
+L7662: const correctRhyme = wordSoundsPhonemes?.rhymeWord;
+L7717: const correctRime = getRime(correctRhyme);
+L7722: const options = [correctRhyme, ...filteredDistractors.slice(0, 4)]; // 1 correct + 4 distractors
+L7724: if (rhymeOptions.length === 0 || !rhymeOptions.includes(correctRhyme)) {
+L8065: const correctRhyme = preloadedWord.rhymeWord;
+L8067: const options = correctRhyme
+L8954: const correctRhyme = phonemeData?.rhymeWord;
+L8957: const options = correctRhyme
+L9043: const correctRhyme = preloadedMatch.rhymeWord;
+L9045: const options = correctRhyme
+L9170: if (wordSoundsActivity === 'rhyming') expected = wordSoundsPhonemes?.rhymeWord;
+L10840: const isRhyme = ans?.toLowerCase() === wordSoundsPhonemes?.rhymeWord?.toLowerCase();
+
+=== blending options / correct word ===
+
+=== handleOptionUpdate isolation ===
+L9311: if (!newPhonemes.familyMembers) newPhonemes.familyMembers = [];
+L9312: newPhonemes.familyMembers[index] = newValue;
+L9313: }
+L9314: setWordSoundsPhonemes(newPhonemes);
+L9315: } else if (wordSoundsActivity === 'isolation') {

@@ -1,0 +1,10 @@
+LINE 52604: type === 'glossary' ? glossaryCustomInstructions :
+LINE 52667: if (type === 'glossary') {
+LINE 52692: if (type === 'glossary') flyToElement('ui-tool-glossary');
+LINE 52708: setGlossarySearchTerm('');
+LINE 52745: if (type === 'glossary') {
+LINE 52758: if (glossaryDefinitionLevel === 'Same as Source Text') {
+LINE 52760: } else if (glossaryDefinitionLevel === 'Same as Global Level') {
+LINE 52763: levelContext = `Write definitions simplified for a ${glossaryDefinitionLevel} student.`;
+LINE 53971: case 'glossary':
+LINE 54626: if (type === 'glossary') flyToElement('ui-tool-glossary');

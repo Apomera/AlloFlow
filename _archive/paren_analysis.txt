@@ -1,0 +1,28 @@
+return ( at L67890
+Depth first hits 0 at L67949:                             </>);
+!! CONFIRMED: return() closes at L67949, BEFORE the button at L68382
+The button is OUTSIDE the return() - this is the build error!
+
+L68378:             }}
+L68379:         />
+L68380:       )}
+L68381:       {/* Floating Help Toggle — accessible above all modals */}
+L68382:       <button
+L68383:         data-help-ignore="true"
+L68384:         onClick={handleToggleIsHelpMode}
+L68385:         aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+L68386:         title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+L68387:         className={`fixed left-3 top-1/2 -translate-y-1/2 z-[10999] w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 transitio
+L68388:           isHelpMode
+L68389:             ? 'bg-yellow-400 border-yellow-500 text-slate-900 scale-110 animate-pulse shadow-yellow-400/50'
+L68390:             : 'bg-white/60 border-slate-300/50 text-slate-400 hover:bg-white hover:border-indigo-400 hover:text-indigo-600 hover:scale-110 hover:shado
+L68391:         }`}
+L68392:         style={{ fontSize: '16px', fontWeight: 900, lineHeight: 1 }}
+L68393:       >
+L68394:         {isHelpMode ? <X size={16}/> : '?'}
+L68395:       </button>
+L68396:       {!isZenMode && !showUDLGuide && (
+L68397:       <div className={`fixed bottom-24 md:bottom-8 z-[10000] flex flex-col items-end gap-4 no-print transition-all duration-300 ${runTour ? 'right-[53
+L68398:           {isFabExpanded && (
+L68399:               <div
+L68400:                 data-help-toggle="true"

@@ -1,0 +1,2720 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Mic, 
+  Video, 
+  Brain, 
+  MessageSquare, 
+  Activity, 
+  Save, 
+  Play, 
+  Pause, 
+  CheckCircle, 
+  Sparkles, 
+  Layout, 
+  ChevronRight,
+  Eye,
+  Hand,
+  UploadCloud,
+  FileVideo,
+  FileAudio,
+  ArrowLeft,
+  Minimize2,
+  Maximize2,
+  Wand2,
+  X,
+  Copy,
+  Loader2,
+  Lightbulb,
+  FileText,
+  Baby,
+  RefreshCw,
+  Target,
+  School,
+  Puzzle,
+  MessageCircle,
+  Search,
+  BookOpen,
+  Map,
+  Compass,
+  ThermometerSun,
+  Users,
+  Download,
+  FolderOpen,
+  Zap,
+  Smile,
+  Share2,
+  Link,
+  ClipboardList,
+  UserPlus,
+  Image as ImageIcon,
+  Battery,
+  Clock,
+  Grid3x3,
+  Sun,
+  Table,
+  BatteryCharging,
+  Move,
+  Focus,
+  GitCommit,
+  Navigation,
+  Ear,
+  Hexagon,
+  Palette,
+  Microscope,
+  ArrowRightLeft,
+  BookOpenCheck,
+  BarChart2,
+  BrainCircuit,
+  FileHeart,
+  AlertTriangle,
+  GraduationCap,
+  ListTodo,
+  Book
+} from 'lucide-react';
+
+// --- Gemini API Configuration ---
+const apiKey = ""; // Injected by environment
+
+// --- Helper for Unique IDs ---
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+// --- Mock Data for Simulation ---
+const MOCK_EVENTS = [
+  { type: 'system', text: 'Session initialized. Gemini Multimodal Stream Active.', timestamp: 0 },
+  { type: 'audio', speaker: 'Clinician', text: "I have some toys here. This is a spinning light wand.", timestamp: 1000 },
+  
+  // Gaze Sequence 1: Initial Engagement
+  { type: 'gaze', target: 'partner', duration: 2000, intensity: 'medium', label: 'Initial Check-in', timestamp: 1500 },
+  { type: 'video_analysis', label: 'Sensory Event', detail: 'Visual Inspection', description: 'Child brings object to peripheral vision. Intense focus detected.', confidence: 0.98, timestamp: 4000, domain: 'sensory' },
+  
+  // Nudge Trigger 1
+  { type: 'nudge', text: "Deep visual focus detected. Suggestion: Join quietly, do not interrupt flow.", category: 'sensory', timestamp: 5000 },
+
+  // Gaze Sequence 2: Flow State
+  { type: 'gaze', target: 'object', duration: 6000, intensity: 'high', label: 'Monotropic Flow Entry', timestamp: 4000 },
+  { type: 'audio', speaker: 'Child', text: "(Silence) ... It spins fast.", timestamp: 8000 },
+  { type: 'audio', speaker: 'Clinician', text: "It does! Do you want to see the other one?", timestamp: 11000 },
+  
+  // Gaze Sequence 3: Regulation/Processing
+  { type: 'video_analysis', label: 'Social Response', detail: 'Reduced Reciprocity', description: 'Child maintains gaze on object, does not orient to clinician voice.', confidence: 0.89, timestamp: 12000, domain: 'social' },
+  { type: 'gaze', target: 'regulation', duration: 3500, intensity: 'low', label: 'Auditory Processing (Aversion)', timestamp: 11500 },
+  
+  // Nudge Trigger 2
+  { type: 'nudge', text: "Delayed response. Wait 5 more seconds. They might be processing.", category: 'regulation', timestamp: 13000 },
+
+  // Gaze Sequence 4: Re-engagement & Flow
+  { type: 'audio', speaker: 'Child', text: "Does it have a motor? Is it a DC motor?", timestamp: 16000 },
+  { type: 'gaze', target: 'partner', duration: 1500, intensity: 'medium', label: 'Social Query', timestamp: 16000 },
+  
+  // Nudge Trigger 3
+  { type: 'nudge', text: "Specific Interest (Motors). Pivot: 'Let's look at the battery compartment.'", category: 'language', timestamp: 17000 },
+
+  { type: 'gaze', target: 'object', duration: 5000, intensity: 'high', label: 'Returning to Analysis', timestamp: 18000 },
+  
+  { type: 'ai_insight', label: 'Language Pattern', detail: 'Topic Specificity', description: 'Immediate query about mechanics (Systemizing). Potential Entry Point.', domain: 'language', timestamp: 19000 },
+];
+
+const DOMAINS = {
+  sensory: { label: 'Sensory Use & Interests', color: 'bg-rose-100 text-rose-800', border: 'border-rose-200' },
+  social: { label: 'Social & Emotional', color: 'bg-blue-100 text-blue-800', border: 'border-blue-200' },
+  language: { label: 'Language & Communication', color: 'bg-emerald-100 text-emerald-800', border: 'border-emerald-200' }
+};
+
+export default function App() {
+  // --- Global State ---
+  const [appMode, setAppMode] = useState('selection'); // 'selection', 'live', 'upload', 'dashboard', 'preplan'
+  
+  // --- Session State ---
+  const [isRecording, setIsRecording] = useState(false);
+  const [sessionTime, setSessionTime] = useState(0);
+  const [streamLog, setStreamLog] = useState([]);
+  const [activeTab, setActiveTab] = useState('sensory'); // 'sensory', 'social', 'language', 'synthesis'
+  const [observations, setObservations] = useState({
+    sensory: [],
+    social: [],
+    language: []
+  });
+  
+  // "Stealth Mode" State (for Live View)
+  const [isPeekMode, setIsPeekMode] = useState(false); 
+  
+  // Live Nudge State
+  const [liveNudge, setLiveNudge] = useState(null);
+  
+  // Upload State
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Simulation State
+  const [simIndex, setSimIndex] = useState(0);
+
+  // --- AI Feature State ---
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportContent, setReportContent] = useState("");
+  const [reportType, setReportType] = useState('clinical'); 
+  const [enhancingId, setEnhancingId] = useState(null); 
+  
+  // Suggestions State
+  const [suggestions, setSuggestions] = useState(null);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
+  // Synthesis State
+  const [coreThemes, setCoreThemes] = useState(null);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
+  
+  // Strengths Reframer
+  const [strengthsProfile, setStrengthsProfile] = useState(null);
+  const [isAnalyzingStrengths, setIsAnalyzingStrengths] = useState(false);
+
+  // Spiky Profile
+  const [spikyProfile, setSpikyProfile] = useState(null);
+  const [isGeneratingSpiky, setIsGeneratingSpiky] = useState(false);
+
+  // EF Supports
+  const [efSupportPlan, setEfSupportPlan] = useState(null);
+  const [isGeneratingEF, setIsGeneratingEF] = useState(false);
+
+  // My User Manual
+  const [myManual, setMyManual] = useState(null);
+  const [isGeneratingManual, setIsGeneratingManual] = useState(false);
+
+  // NEW: School Accommodations
+  const [schoolAccommodations, setSchoolAccommodations] = useState(null);
+  const [isGeneratingAccommodations, setIsGeneratingAccommodations] = useState(false);
+
+  // DSM-5 Mapper
+  const [dsmMapping, setDsmMapping] = useState(null);
+  const [isMappingDSM, setIsMappingDSM] = useState(false);
+
+  // Masking Analysis
+  const [maskingAnalysis, setMaskingAnalysis] = useState(null);
+  const [isAnalyzingMasking, setIsAnalyzingMasking] = useState(false);
+
+  // Autistic Joy Detector
+  const [joyAnalysis, setJoyAnalysis] = useState(null);
+  const [isAnalyzingJoy, setIsAnalyzingJoy] = useState(false);
+
+  // Deficit Reframer
+  const [reframingInput, setReframingInput] = useState("");
+  const [reframedOutput, setReframedOutput] = useState(null);
+  const [isReframing, setIsReframing] = useState(false);
+
+  // Goal Reframer
+  const [goalInput, setGoalInput] = useState("");
+  const [reframedGoal, setReframedGoal] = useState(null);
+  const [isReframingGoal, setIsReframingGoal] = useState(false);
+
+  // Domain Specific AI States
+  const [playScripts, setPlayScripts] = useState(null);
+  const [regulationPlan, setRegulationPlan] = useState(null);
+  const [socialProfile, setSocialProfile] = useState(null);
+  
+  // GLP Analysis
+  const [glpAnalysis, setGlpAnalysis] = useState(null);
+  const [isAnalyzingGLP, setIsAnalyzingGLP] = useState(false);
+
+  // Contextual AAC
+  const [aacVocabulary, setAacVocabulary] = useState(null);
+  const [isGeneratingAAC, setIsGeneratingAAC] = useState(false);
+
+  // NEW: Communication Dictionary
+  const [commDictionary, setCommDictionary] = useState(null);
+  const [isGeneratingComm, setIsGeneratingComm] = useState(false);
+
+  // Double Empathy & Interest Bridge
+  const [doubleEmpathy, setDoubleEmpathy] = useState(null);
+  const [isAnalyzingDoubleEmpathy, setIsAnalyzingDoubleEmpathy] = useState(false);
+  const [interestBridges, setInterestBridges] = useState(null);
+  const [isGeneratingBridge, setIsGeneratingBridge] = useState(false);
+
+  // Sensory Schedule & Matrix
+  const [sensorySchedule, setSensorySchedule] = useState(null);
+  const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
+  
+  // Sensory Matrix
+  const [sensoryMatrix, setSensoryMatrix] = useState(null);
+  const [isGeneratingMatrix, setIsGeneratingMatrix] = useState(false);
+
+  // Sensory Environment Designer
+  const [environmentPlan, setEnvironmentPlan] = useState(null);
+  const [isGeneratingEnv, setIsGeneratingEnv] = useState(false);
+
+  // Distress Decoder
+  const [distressInput, setDistressInput] = useState("");
+  const [distressAnalysis, setDistressAnalysis] = useState(null);
+  const [isAnalyzingDistress, setIsAnalyzingDistress] = useState(false);
+
+  // Peer Profile & Energy
+  const [peerProfile, setPeerProfile] = useState(null);
+  const [isGeneratingPeer, setIsGeneratingPeer] = useState(false);
+  
+  // Energy Accounting
+  const [energyAccount, setEnergyAccount] = useState(null);
+  const [isCalculatingEnergy, setIsCalculatingEnergy] = useState(false);
+
+  // Social Story Generator
+  const [socialStoryTopic, setSocialStoryTopic] = useState("");
+  const [socialStory, setSocialStory] = useState(null);
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
+
+  // NEW: Transition Plan
+  const [transitionPlan, setTransitionPlan] = useState(null);
+  const [isGeneratingTransition, setIsGeneratingTransition] = useState(false);
+
+  // Image Generation (Visual Aid)
+  const [visualAidUrl, setVisualAidUrl] = useState(null);
+  const [isGeneratingVisual, setIsGeneratingVisual] = useState(false);
+
+  // Dialogue Simulation
+  const [simulatedDialogue, setSimulatedDialogue] = useState(null);
+  const [isSimulatingDialogue, setIsSimulatingDialogue] = useState(false);
+
+  // Interest Deep Dive & Curriculum
+  const [interestTopic, setInterestTopic] = useState("");
+  const [interestDeepDive, setInterestDeepDive] = useState(null);
+  const [isAnalyzingInterest, setIsAnalyzingInterest] = useState(false);
+  const [curriculumIdeas, setCurriculumIdeas] = useState(null);
+  const [isGeneratingCurriculum, setIsGeneratingCurriculum] = useState(false);
+  
+  // Gaze / Attention State
+  const [attentionFlow, setAttentionFlow] = useState([]); // Array of gaze events
+
+  // Loading states for domain features
+  const [isGeneratingScripts, setIsGeneratingScripts] = useState(false);
+  const [isGeneratingRegulation, setIsGeneratingRegulation] = useState(false);
+  const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
+
+  // --- Pre-Planning State ---
+  const [researchQuery, setResearchQuery] = useState("");
+  const [isResearching, setIsResearching] = useState(false);
+  const [sessionPlan, setSessionPlan] = useState(null); 
+  const [planDrawerOpen, setPlanDrawerOpen] = useState(false);
+
+  // --- Refs ---
+  const streamEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  // --- API Helper ---
+  const callGemini = async (prompt, useSearch = false) => {
+    try {
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }]
+      };
+
+      if (useSearch) {
+        payload.tools = [{ google_search: {} }];
+      }
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
+      
+      if (!response.ok) throw new Error(`API Error: ${response.status}`);
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+    } catch (error) {
+      console.error("Gemini API Failed:", error);
+      return null;
+    }
+  };
+
+  const callImagen = async (prompt) => {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instances: [{ prompt: prompt + " --style simple-vector-art, soft colors, educational illustration, white background" }],
+            parameters: { sampleCount: 1 }
+          })
+        }
+      );
+      if (!response.ok) throw new Error(`Imagen Error: ${response.status}`);
+      const data = await response.json();
+      return data.predictions?.[0]?.bytesBase64Encoded ? `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}` : null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  // --- Effects ---
+  useEffect(() => {
+    if (streamEndRef.current) {
+      streamEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [streamLog, isPeekMode]);
+
+  useEffect(() => {
+    setSuggestions(null);
+  }, [activeTab]);
+
+  // Nudge Timer Cleanup
+  useEffect(() => {
+    if (liveNudge) {
+      const timer = setTimeout(() => setLiveNudge(null), 6000); // Nudge stays for 6s
+      return () => clearTimeout(timer);
+    }
+  }, [liveNudge]);
+
+  useEffect(() => {
+    let interval;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setSessionTime(prev => prev + 1000);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
+  useEffect(() => {
+    if (isRecording) {
+        const nextEvent = MOCK_EVENTS[simIndex];
+        if (nextEvent && sessionTime >= nextEvent.timestamp) {
+          const newEvent = { ...nextEvent, id: generateId() };
+          setStreamLog(prev => [...prev, newEvent]);
+          
+          if (newEvent.type === 'video_analysis' || newEvent.type === 'ai_insight') {
+             handleAutoAddObservation(newEvent);
+          }
+          if (newEvent.type === 'gaze') {
+             setAttentionFlow(prev => [...prev, newEvent]);
+          }
+          // NEW: Trigger Nudge
+          if (newEvent.type === 'nudge') {
+             setLiveNudge(newEvent);
+          }
+          
+          setSimIndex(prev => prev + 1);
+        }
+    }
+  }, [sessionTime, isRecording, simIndex]);
+
+  // --- Handlers ---
+
+  const handleSaveSession = () => {
+    const sessionData = {
+      observations,
+      sessionPlan,
+      streamLog,
+      coreThemes,
+      playScripts,
+      regulationPlan,
+      socialProfile,
+      glpAnalysis,
+      strengthsProfile,
+      doubleEmpathy,
+      interestBridges,
+      dsmMapping,
+      peerProfile,
+      maskingAnalysis,
+      aacVocabulary,
+      sensorySchedule,
+      joyAnalysis,
+      sensoryMatrix,
+      environmentPlan,
+      interestDeepDive,
+      curriculumIdeas,
+      energyAccount,
+      attentionFlow,
+      reframedOutput,
+      socialStory,
+      spikyProfile,
+      efSupportPlan,
+      myManual,
+      distressAnalysis,
+      reframedGoal,
+      commDictionary,
+      schoolAccommodations,
+      transitionPlan,
+      savedAt: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(sessionData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `migdas-session-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleLoadSession = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.observations) setObservations(data.observations);
+        if (data.sessionPlan) setSessionPlan(data.sessionPlan);
+        if (data.streamLog) setStreamLog(data.streamLog);
+        if (data.coreThemes) setCoreThemes(data.coreThemes);
+        if (data.playScripts) setPlayScripts(data.playScripts);
+        if (data.regulationPlan) setRegulationPlan(data.regulationPlan);
+        if (data.socialProfile) setSocialProfile(data.socialProfile);
+        if (data.glpAnalysis) setGlpAnalysis(data.glpAnalysis);
+        if (data.strengthsProfile) setStrengthsProfile(data.strengthsProfile);
+        if (data.doubleEmpathy) setDoubleEmpathy(data.doubleEmpathy);
+        if (data.interestBridges) setInterestBridges(data.interestBridges);
+        if (data.dsmMapping) setDsmMapping(data.dsmMapping);
+        if (data.peerProfile) setPeerProfile(data.peerProfile);
+        if (data.maskingAnalysis) setMaskingAnalysis(data.maskingAnalysis);
+        if (data.aacVocabulary) setAacVocabulary(data.aacVocabulary);
+        if (data.sensorySchedule) setSensorySchedule(data.sensorySchedule);
+        if (data.joyAnalysis) setJoyAnalysis(data.joyAnalysis);
+        if (data.sensoryMatrix) setSensoryMatrix(data.sensoryMatrix);
+        if (data.environmentPlan) setEnvironmentPlan(data.environmentPlan);
+        if (data.interestDeepDive) setInterestDeepDive(data.interestDeepDive);
+        if (data.curriculumIdeas) setCurriculumIdeas(data.curriculumIdeas);
+        if (data.energyAccount) setEnergyAccount(data.energyAccount);
+        if (data.attentionFlow) setAttentionFlow(data.attentionFlow);
+        if (data.reframedOutput) setReframedOutput(data.reframedOutput);
+        if (data.socialStory) setSocialStory(data.socialStory);
+        if (data.spikyProfile) setSpikyProfile(data.spikyProfile);
+        if (data.efSupportPlan) setEfSupportPlan(data.efSupportPlan);
+        if (data.myManual) setMyManual(data.myManual);
+        if (data.distressAnalysis) setDistressAnalysis(data.distressAnalysis);
+        if (data.reframedGoal) setReframedGoal(data.reframedGoal);
+        if (data.commDictionary) setCommDictionary(data.commDictionary);
+        if (data.schoolAccommodations) setSchoolAccommodations(data.schoolAccommodations);
+        if (data.transitionPlan) setTransitionPlan(data.transitionPlan);
+        setAppMode('dashboard');
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        alert("Failed to load session. Invalid JSON file.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null;
+  };
+
+  const handleAutoAddObservation = (event) => {
+    const domain = event.domain;
+    if (!domain) return;
+    setObservations(prev => ({
+      ...prev,
+      [domain]: [...prev[domain], {
+        id: generateId(),
+        text: event.description || event.text,
+        type: 'ai',
+        status: 'pending' 
+      }]
+    }));
+  };
+
+  const handleStartLive = () => {
+    setAppMode('live');
+    setIsRecording(true);
+    setStreamLog([{ type: 'system', text: 'Live Session Started. Audio/Video Recording...', timestamp: 0, id: generateId() }]);
+  };
+
+  const handleFileUpload = () => {
+    setAppMode('upload');
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      setUploadProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        // Process mock data
+        const processedObs = { sensory: [], social: [], language: [] };
+        let mockGaze = [];
+        MOCK_EVENTS.forEach(evt => {
+           if (evt.domain) {
+             processedObs[evt.domain].push({
+               id: generateId(),
+               text: evt.description || evt.text,
+               type: 'ai',
+               status: 'pending'
+             });
+           }
+           if (evt.type === 'gaze') {
+             mockGaze.push({ ...evt, id: generateId() });
+           }
+        });
+        setObservations(processedObs);
+        setAttentionFlow(mockGaze);
+        setTimeout(() => setAppMode('dashboard'), 500);
+      }
+    }, 100);
+  };
+
+  const handleAddObservation = (domain, text) => {
+    const newObs = { id: generateId(), text, type: 'manual', status: 'verified' };
+    setObservations(prev => ({
+      ...prev,
+      [domain]: [...prev[domain], newObs]
+    }));
+  };
+
+  const handleUpdateObservationText = (domain, id, newText) => {
+    setObservations(prev => ({
+      ...prev,
+      [domain]: prev[domain].map(obs => obs.id === id ? { ...obs, text: newText } : obs)
+    }));
+  };
+
+  // --- AI Features ---
+
+  const handleGenerateReport = async (type = 'clinical') => {
+     setReportType(type);
+     setReportModalOpen(true);
+     setIsGeneratingReport(true);
+     setReportContent("");
+
+     const notes = observations[activeTab].map(o => o.text).join("\n- ");
+     
+     if (!notes && activeTab !== 'synthesis') {
+       setReportContent("No observations found for this domain. Please add some notes first.");
+       setIsGeneratingReport(false);
+       return;
+     }
+
+     let prompt = "";
+     const context = activeTab === 'synthesis' 
+       ? `Sensory: ${observations.sensory.map(o=>o.text).join(' ')}\nSocial: ${observations.social.map(o=>o.text).join(' ')}\nLanguage: ${observations.language.map(o=>o.text).join(' ')}` 
+       : `Domain: ${DOMAINS[activeTab]?.label}\nNotes: ${notes}`;
+
+     if (type === 'clinical') {
+        prompt = `You are a MIGDAS-2 expert. Write a neuro-affirming clinical synthesis paragraph based on: \n${context}`;
+     } else if (type === 'parent') {
+        prompt = `Write a warm, accessible parent feedback letter paragraph explaining these observations: \n${context}`;
+     } else if (type === 'goals') {
+        prompt = `Generate 3 SMART IEP goals to support the strengths/needs in: \n${context}`;
+     } else if (type === 'accommodations') {
+        prompt = `List 5 practical classroom accommodations for: \n${context}`;
+     }
+
+     const result = await callGemini(prompt);
+     setReportContent(result || "Failed to generate report.");
+     setIsGeneratingReport(false);
+  };
+
+  const handleDownloadPDF = () => {
+    // Simulation of PDF generation
+    const element = document.createElement("a");
+    const file = new Blob([reportContent], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "MIGDAS_Report_Draft.txt";
+    document.body.appendChild(element); 
+    element.click();
+  };
+
+  const handleEnhanceObservation = async (obs) => {
+    if (!obs.text.trim()) return;
+    setEnhancingId(obs.id);
+    const prompt = `Rewrite to be objective, professional, and neuro-affirming (remove judgement): "${obs.text}"`;
+    const result = await callGemini(prompt);
+    if (result) handleUpdateObservationText(activeTab, obs.id, result);
+    setEnhancingId(null);
+  };
+
+  const handleSuggestNextSteps = async () => {
+    setIsSuggesting(true);
+    const notes = observations[activeTab].map(o => o.text).join("\n- ");
+    const prompt = `Context: MIGDAS-2 Assessment. Domain: ${DOMAINS[activeTab].label}. Notes: ${notes}. Suggest 3 naturalistic questions/activities to gather missing info. Format: Bullet points.`;
+    const result = await callGemini(prompt);
+    setSuggestions(result);
+    setIsSuggesting(false);
+  };
+
+  // Holistic Synthesis
+  const handleSynthesizeThemes = async () => {
+    setIsSynthesizing(true);
+    const allData = `
+      Sensory Notes: ${observations.sensory.map(o => o.text).join('; ')}
+      Social Notes: ${observations.social.map(o => o.text).join('; ')}
+      Language Notes: ${observations.language.map(o => o.text).join('; ')}
+    `;
+    const prompt = `
+      Analyze this MIGDAS-2 dataset across all 3 domains. 
+      Identify 3 distinct "Core Neurological Themes" or "Drivers" that explain the child's behavior holistically (e.g. "Visual-Spatial Processing Style", "Monotropic Focus").
+      Format as 3 distinct paragraphs with bold Titles.
+      Data: ${allData}
+    `;
+
+    const result = await callGemini(prompt);
+    setCoreThemes(result);
+    setIsSynthesizing(false);
+  };
+
+  // Strengths Reframer
+  const handleAnalyzeStrengths = async () => {
+    setIsAnalyzingStrengths(true);
+    const allData = `
+      Sensory Notes: ${observations.sensory.map(o => o.text).join('; ')}
+      Social Notes: ${observations.social.map(o => o.text).join('; ')}
+      Language Notes: ${observations.language.map(o => o.text).join('; ')}
+    `;
+    const prompt = `
+      Review these observations. Identify 3-5 key "Hidden Strengths" or adaptive strategies.
+      For each, cite the observed behavior (which might typically be seen as a deficit) and reframe it as a strength.
+      Example: "Reframes 'rigid routine' as 'Systemizing Strength & Reliability'".
+      Format: Bullet points with bold titles.
+      Data: ${allData}
+    `;
+    const result = await callGemini(prompt);
+    setStrengthsProfile(result);
+    setIsAnalyzingStrengths(false);
+  };
+
+  // Spiky Profile Generator
+  const handleGenerateSpikyProfile = async () => {
+    setIsGeneratingSpiky(true);
+    const allData = `
+      Sensory: ${observations.sensory.map(o => o.text).join('; ')}
+      Social: ${observations.social.map(o => o.text).join('; ')}
+      Language: ${observations.language.map(o => o.text).join('; ')}
+    `;
+    const prompt = `
+      Analyze the data for a "Spiky Profile" (Asynchronous Development).
+      Identify 3 distinct areas of High Skill/Passion (Peaks) and 3 distinct areas of Support Need (Valleys).
+      
+      Format your response as a list:
+      **Peaks:**
+      1. [Skill]: [Brief explanation]
+      ...
+      **Valleys:**
+      1. [Need]: [Brief explanation]
+      ...
+      Data: ${allData}
+    `;
+    const result = await callGemini(prompt);
+    setSpikyProfile(result);
+    setIsGeneratingSpiky(false);
+  };
+
+  // Executive Function Support Generator
+  const handleGenerateEFSupports = async () => {
+    setIsGeneratingEF(true);
+    const allData = `
+      Sensory: ${observations.sensory.map(o => o.text).join('; ')}
+      Social: ${observations.social.map(o => o.text).join('; ')}
+      Language: ${observations.language.map(o => o.text).join('; ')}
+    `;
+    const prompt = `
+      Based on the profile, design an "External Brain" system to support Executive Function.
+      Suggest specific tools or strategies for:
+      1. **Initiation/Starting Tasks** (e.g. Body Doubling)
+      2. **Working Memory** (e.g. Visual Checklists)
+      3. **Shifting/Transitioning** (e.g. Visual Timers)
+      4. **Inhibition/Impulse** (e.g. Sensory Pauses)
+      
+      Format as a concise, actionable plan.
+      Data: ${allData}
+    `;
+    const result = await callGemini(prompt);
+    setEfSupportPlan(result);
+    setIsGeneratingEF(false);
+  };
+
+  // My User Manual Generator
+  const handleGenerateMyManual = async () => {
+    setIsGeneratingManual(true);
+    const allData = `
+      Strengths: ${observations.sensory.map(o => o.text).join(' ')} ${observations.social.map(o => o.text).join(' ')} ${observations.language.map(o => o.text).join(' ')}
+    `;
+    const prompt = `
+      Create a "My User Manual" for this child to share with teachers/friends. 
+      Use first-person language ("I").
+      Sections:
+      1. **My Superpowers** (Strengths/Interests)
+      2. **My Kryptonite** (Sensory triggers/Stressors)
+      3. **How to Help Me Recharge** (Regulation strategies)
+      4. **The Best Way to Talk to Me** (Communication style)
+      
+      Data: ${allData}
+    `;
+    const result = await callGemini(prompt);
+    setMyManual(result);
+    setIsGeneratingManual(false);
+  };
+
+  // NEW: School Accommodations Generator
+  const handleGenerateAccommodations = async () => {
+    setIsGeneratingAccommodations(true);
+    const sensory = observations.sensory.map(o => o.text).join('; ');
+    const social = observations.social.map(o => o.text).join('; ');
+    const language = observations.language.map(o => o.text).join('; ');
+    const prompt = `
+      Based on the child's profile (Sensory: ${sensory}, Social: ${social}, Language: ${language}), generate a list of 5-7 specific, neuro-affirming school accommodations.
+      Focus on:
+      1. Sensory adjustments
+      2. Communication supports
+      3. Social recovery time
+      4. Predictability/Transition supports
+      Format as bullet points.
+    `;
+    const result = await callGemini(prompt);
+    setSchoolAccommodations(result);
+    setIsGeneratingAccommodations(false);
+  };
+
+  // DSM-5 Mapper
+  const handleMapToDSM = async () => {
+    setIsMappingDSM(true);
+    const allData = `
+      Sensory: ${observations.sensory.map(o => o.text).join('; ')}
+      Social: ${observations.social.map(o => o.text).join('; ')}
+      Language: ${observations.language.map(o => o.text).join('; ')}
+    `;
+    const prompt = `
+      Analyze these MIGDAS-2 observations and map them to the DSM-5 Diagnostic Criteria for Autism Spectrum Disorder.
+      Structure the response as: Criteria A (Social), Criteria B (Repetitive/Sensory), Clinical Impression.
+      Data: ${allData}
+    `;
+    const result = await callGemini(prompt);
+    setDsmMapping(result);
+    setIsMappingDSM(false);
+  };
+
+  // Masking Analysis
+  const handleAnalyzeMasking = async () => {
+    setIsAnalyzingMasking(true);
+    const social = observations.social.map(o => o.text).join('; ');
+    const sensory = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Review Social notes: "${social}" and Sensory notes: "${sensory}". 
+      Analyze the data for signs of 'Camouflaging' or 'Masking'. 
+      Is the child performing socially at a high sensory/cognitive cost? 
+      Output a 'Masking Risk Assessment'.
+    `;
+    const result = await callGemini(prompt);
+    setMaskingAnalysis(result);
+    setIsAnalyzingMasking(false);
+  };
+
+  // Autistic Joy
+  const handleAnalyzeJoy = async () => {
+    setIsAnalyzingJoy(true);
+    const allData = `
+      Sensory: ${observations.sensory.map(o => o.text).join('; ')}
+      Social: ${observations.social.map(o => o.text).join('; ')}
+      Language: ${observations.language.map(o => o.text).join('; ')}
+    `;
+    const prompt = `
+      Analyze the session notes for instances of "Autistic Joy", "Glimmers", or "Flow". 
+      List 3-4 instances found in the data, explaining the significance of each.
+      Data: ${allData}
+    `;
+    const result = await callGemini(prompt);
+    setJoyAnalysis(result);
+    setIsAnalyzingJoy(false);
+  };
+
+  // Deficit Reframer
+  const handleReframeText = async () => {
+    if (!reframingInput.trim()) return;
+    setIsReframing(true);
+    const prompt = `
+      Reframe the following deficit-based text into neuro-affirming, strengths-based language suitable for a MIGDAS-2 report.
+      Focus on the adaptive function of the behavior and the validity of the child's perspective.
+      
+      Input Text: "${reframingInput}"
+      
+      Output Format: Provide the "Neuro-Affirming Reframe" directly.
+    `;
+    const result = await callGemini(prompt);
+    setReframedOutput(result);
+    setIsReframing(false);
+  };
+
+  // Goal Reframer
+  const handleReframeGoal = async () => {
+    if (!goalInput.trim()) return;
+    setIsReframingGoal(true);
+    const prompt = `
+      Reframe this traditional/compliance-based IEP goal: "${goalInput}".
+      Transform it into a "Neuro-Affirming Goal" that prioritizes self-advocacy, autonomy, or authentic well-being.
+      Explain *why* the change was made in one sentence.
+    `;
+    const result = await callGemini(prompt);
+    setReframedGoal(result);
+    setIsReframingGoal(false);
+  };
+
+  // Domain Generators
+  const handleGenerateScripts = async () => {
+    setIsGeneratingScripts(true);
+    const notes = observations.language.map(o => o.text).join('; ');
+    const prompt = `
+      Based on these language/interest notes: "${notes}". 
+      Generate 3 specific, playful "Scripts" or phrases the clinician can use to join the child's play.
+    `;
+    const result = await callGemini(prompt);
+    setPlayScripts(result);
+    setIsGeneratingScripts(false);
+  };
+  
+  const handleSimulateDialogue = async () => {
+    if (!playScripts) return;
+    setIsSimulatingDialogue(true);
+    const notes = observations.language.map(o => o.text).join('; ');
+    const prompt = `
+      Act as the child described in these notes: "${notes}".
+      I have generated these potential play scripts for the clinician: ${playScripts}
+      Write a short dramatic dialogue showing how you would likely respond.
+    `;
+    const result = await callGemini(prompt);
+    setSimulatedDialogue(result);
+    setIsSimulatingDialogue(false);
+  };
+
+  const handleAnalyzeGLP = async () => {
+    setIsAnalyzingGLP(true);
+    const notes = observations.language.map(o => o.text).join('; ');
+    const prompt = `
+      Analyze these language observations for signs of Gestalt Language Processing (GLP).
+      Identify any potential 'scripts', 'mitigated echolalia', or 'chunks'.
+      Data: "${notes}"
+    `;
+    const result = await callGemini(prompt);
+    setGlpAnalysis(result);
+    setIsAnalyzingGLP(false);
+  };
+
+  const handleGenerateAAC = async () => {
+    setIsGeneratingAAC(true);
+    const notes = observations.language.map(o => o.text).join('; ');
+    const sensory = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Context: The child has interests/language skills described here: "${notes}" and "${sensory}". 
+      Generate a "Contextual Communication Board" vocabulary list (Core vs Fringe words).
+    `;
+    const result = await callGemini(prompt);
+    setAacVocabulary(result);
+    setIsGeneratingAAC(false);
+  };
+
+  // NEW: Communication Dictionary
+  const handleGenerateCommDictionary = async () => {
+    setIsGeneratingComm(true);
+    const notes = observations.language.map(o => o.text).join('; ');
+    const prompt = `
+      Create a "Communication Dictionary" based on these observations: ${notes}.
+      Format as a table with 3 columns:
+      1. **Signal/Behavior:** (What the child does, e.g., echolalia, flapping, withdrawal)
+      2. **Likely Meaning:** (The intent, e.g., 'I am regulated', 'I need a break', 'I am happy')
+      3. **Partner Response:** (How to support, e.g., 'Join in', 'Reduce volume', 'Validate')
+    `;
+    const result = await callGemini(prompt);
+    setCommDictionary(result);
+    setIsGeneratingComm(false);
+  };
+
+  const handleGenerateRegulation = async () => {
+    setIsGeneratingRegulation(true);
+    const notes = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Based on these sensory notes: "${notes}".
+      Generate a Regulation Support Plan (Calming vs Alerting strategies).
+    `;
+    const result = await callGemini(prompt);
+    setRegulationPlan(result);
+    setIsGeneratingRegulation(false);
+  };
+
+  const handleGenerateSensorySchedule = async () => {
+    setIsGeneratingSchedule(true);
+    const plan = regulationPlan || observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Based on the child's sensory profile: "${plan}".
+      Create a "Sensory Lifestyle Schedule" (Morning, School, After School, Bedtime).
+    `;
+    const result = await callGemini(prompt);
+    setSensorySchedule(result);
+    setIsGeneratingSchedule(false);
+  };
+
+  const handleGenerateSensoryMatrix = async () => {
+    setIsGeneratingMatrix(true);
+    const notes = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Create a structured Sensory Matrix from these notes: "${notes}".
+      Categorize behaviors into 5 senses and identify Seeking vs Avoiding patterns.
+    `;
+    const result = await callGemini(prompt);
+    setSensoryMatrix(result);
+    setIsGeneratingMatrix(false);
+  };
+  
+  // Sensory Environment Designer
+  const handleGenerateEnvironment = async () => {
+    setIsGeneratingEnv(true);
+    const notes = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Based on these sensory observations: "${notes}".
+      Design a "Sensory Friendly Environment" for this child.
+      
+      Provide specific recommendations for:
+      1. **Lighting:** (e.g. dimmers, natural light, avoiding fluorescents)
+      2. **Seating/Positioning:** (e.g. beanbag, rocking chair, floor space)
+      3. **Auditory Buffer:** (e.g. white noise, headphones, quiet corner)
+      4. **Visual Field:** (e.g. clutter-free vs. stimulating)
+      
+      Format as a checklist.
+    `;
+    const result = await callGemini(prompt);
+    setEnvironmentPlan(result);
+    setIsGeneratingEnv(false);
+  };
+
+  // Distress Decoder
+  const handleAnalyzeDistress = async () => {
+    if (!distressInput.trim()) return;
+    setIsAnalyzingDistress(true);
+    const sensoryContext = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Analyze this distress event using the "Iceberg Model" (Autism).
+      Event Description: "${distressInput}"
+      Child's Sensory Profile: "${sensoryContext}"
+      
+      Identify:
+      1. **The Visible Behavior**
+      2. **The Hidden Drivers** (Sensory overload, social exhaustion, loop of concern?)
+      3. **Immediate Co-Regulation Strategy** (What the adult should do NOW)
+    `;
+    const result = await callGemini(prompt);
+    setDistressAnalysis(result);
+    setIsAnalyzingDistress(false);
+  };
+
+  const handleGenerateVisualAid = async () => {
+    if (!regulationPlan) return;
+    setIsGeneratingVisual(true);
+    const extractPrompt = `Extract one visualizable "calming strategy" object from: ${regulationPlan}`;
+    const visualDescription = await callGemini(extractPrompt);
+    const result = await callImagen(visualDescription);
+    setVisualAidUrl(result);
+    setIsGeneratingVisual(false);
+  };
+
+  const handleGenerateInterestBridge = async () => {
+    setIsGeneratingBridge(true);
+    const notes = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Identify primary interest in: "${notes}".
+      Generate 3 creative "Interest Bridges" (Rapport, Regulation, Challenge).
+    `;
+    const result = await callGemini(prompt);
+    setInterestBridges(result);
+    setIsGeneratingBridge(false);
+  };
+
+  // Interest Deep Dive
+  const handleAnalyzeInterest = async () => {
+    if (!interestTopic) return;
+    setIsAnalyzingInterest(true);
+    const prompt = `
+      Topic: ${interestTopic}.
+      The child has a passionate interest in this topic. Help the clinician explore the *depth* of this interest (MIGDAS style).
+      
+      Generate 3 specific conversation angles:
+      1. **Sensory Connection:** How does the interest *feel/sound/look*?
+      2. **Systemizing/Cataloging:** Lists, stats, facts, or collections within the topic.
+      3. **Emotional Flow:** What is the "best part" that brings them joy?
+    `;
+    const result = await callGemini(prompt);
+    setInterestDeepDive(result);
+    setIsAnalyzingInterest(false);
+  };
+
+  // Interest-Based Curriculum
+  const handleGenerateCurriculum = async () => {
+    if (!interestTopic) return;
+    setIsGeneratingCurriculum(true);
+    const prompt = `
+      The child has a passionate interest in: "${interestTopic}".
+      Generate 3 "Interest-Based Learning" activity ideas that connect this interest to academic skills (e.g. Math, Reading, Science).
+      Focus on intrinsic motivation and using the interest as the vehicle for learning.
+    `;
+    const result = await callGemini(prompt);
+    setCurriculumIdeas(result);
+    setIsGeneratingCurriculum(false);
+  };
+
+  const handleGenerateSocialProfile = async () => {
+    setIsGeneratingSocial(true);
+    const notes = observations.social.map(o => o.text).join('; ');
+    const prompt = `
+      Based on these social notes: "${notes}".
+      Describe the child's "Preferred Interaction Style" and tips for the partner.
+    `;
+    const result = await callGemini(prompt);
+    setSocialProfile(result);
+    setIsGeneratingSocial(false);
+  };
+
+  const handleAnalyzeDoubleEmpathy = async () => {
+    setIsAnalyzingDoubleEmpathy(true);
+    const notes = observations.social.map(o => o.text).join('; ');
+    const prompt = `
+      Analyze social observations: "${notes}" through the Double Empathy lens.
+      Create a "Translation Card" (Behavior, NT Misinterpretation, ND Intent, Advocacy).
+    `;
+    const result = await callGemini(prompt);
+    setDoubleEmpathy(result);
+    setIsAnalyzingDoubleEmpathy(false);
+  };
+
+  const handleGeneratePeerProfile = async () => {
+    setIsGeneratingPeer(true);
+    const notes = observations.social.map(o => o.text).join('; ');
+    const interests = observations.sensory.map(o => o.text).join('; '); 
+    const prompt = `
+      Based on social style ("${notes}") and interests ("${interests}"), describe their **Ideal Peer Match**.
+    `;
+    const result = await callGemini(prompt);
+    setPeerProfile(result);
+    setIsGeneratingPeer(false);
+  };
+
+  const handleCalculateEnergy = async () => {
+    setIsCalculatingEnergy(true);
+    const social = observations.social.map(o => o.text).join('; ');
+    const sensory = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Perform "Energy Accounting" analysis on: "${social}" and "${sensory}".
+      Identify Withdrawals vs Deposits.
+    `;
+    const result = await callGemini(prompt);
+    setEnergyAccount(result);
+    setIsCalculatingEnergy(false);
+  };
+
+  // Social Story Generator
+  const handleGenerateSocialStory = async () => {
+    if (!socialStoryTopic.trim()) return;
+    setIsGeneratingStory(true);
+    const interests = observations.sensory.map(o => o.text).join('; ');
+    const prompt = `
+      Write a neuro-affirming "Social Script" or "Comic Strip Conversation" text about: "${socialStoryTopic}".
+      
+      Context: The child loves: "${interests}".
+      
+      Instructions:
+      1. Use the child's special interest metaphors if possible to explain the concept.
+      2. Focus on "The Why" (logic) rather than just compliance.
+      3. Validate their feelings about the situation.
+      
+      Format: Breakdown into 3-4 simple panels/steps.
+    `;
+    const result = await callGemini(prompt);
+    setSocialStory(result);
+    setIsGeneratingStory(false);
+  };
+
+  // NEW: Transition Support Plan
+  const handleGenerateTransitionPlan = async () => {
+    setIsGeneratingTransition(true);
+    const notes = observations.social.map(o => o.text).join('; ');
+    const prompt = `
+      Generate a Transition Support Plan for moving between activities/environments based on: ${notes}. 
+      Focus on signaling, visual supports, and maintaining flow.
+      Identify 3 strategies to bridge gaps between tasks.
+    `;
+    const result = await callGemini(prompt);
+    setTransitionPlan(result);
+    setIsGeneratingTransition(false);
+  };
+
+  const handleResearchInterest = async () => {
+    if (!researchQuery.trim()) return;
+    setIsResearching(true);
+    setSessionPlan(null);
+    const prompt = `
+      Topic: ${researchQuery}. 
+      Generate: Summary, Sensory cues, Scripts, Activities. Return JSON if possible.
+    `;
+    const result = await callGemini(prompt, true);
+    
+    try {
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            setSessionPlan({ ...parsed, topic: researchQuery });
+        } else {
+            setSessionPlan({
+                topic: researchQuery,
+                summary: result,
+                sensory: [],
+                scripts: [],
+                activities: []
+            });
+        }
+    } catch (e) {
+        setSessionPlan({
+            topic: researchQuery,
+            summary: "Raw Research Data:\n" + result,
+            sensory: [],
+            scripts: [],
+            activities: []
+        });
+    }
+    setIsResearching(false);
+  };
+
+  // --- Visualizer Components ---
+
+  const renderTriangle = (size = "large") => {
+    const sensCount = observations.sensory.length;
+    const socCount = observations.social.length;
+    const langCount = observations.language.length;
+    const scale = size === "small" ? 0.5 : 1;
+
+    return (
+      <div className={`relative flex justify-center items-center transition-all duration-1000`}>
+         <svg width="200" height="172" viewBox="0 0 100 86" className="drop-shadow-sm transition-all duration-1000">
+             <path d="M50 0 L100 86 L0 86 Z" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="2" />
+             <path d="M50 5 L75 43 L25 43 Z" fill="#f43f5e" fillOpacity={sensCount ? Math.min(0.2 + (sensCount * 0.1), 0.9) : 0.05} className="transition-all duration-1000"/>
+             <text x="50" y="30" fontSize="5" textAnchor="middle" fill={sensCount ? "#881337" : "#cbd5e1"} className="font-bold">SENSORY</text>
+             <path d="M25 43 L50 86 L0 86 Z" fill="#0ea5e9" fillOpacity={socCount ? Math.min(0.2 + (socCount * 0.1), 0.9) : 0.05} className="transition-all duration-1000"/>
+             <text x="25" y="70" fontSize="5" textAnchor="middle" fill={socCount ? "#075985" : "#cbd5e1"} className="font-bold">SOCIAL</text>
+             <path d="M75 43 L100 86 L50 86 Z" fill="#10b981" fillOpacity={langCount ? Math.min(0.2 + (langCount * 0.1), 0.9) : 0.05} className="transition-all duration-1000"/>
+             <text x="75" y="70" fontSize="5" textAnchor="middle" fill={langCount ? "#064e3b" : "#cbd5e1"} className="font-bold">LANGUAGE</text>
+           </svg>
+      </div>
+    );
+  };
+
+  const renderAttentionDynamics = () => {
+    // Determine max timeline extent
+    const maxTime = Math.max(...attentionFlow.map(e => e.timestamp + e.duration), 20000); // minimum 20s if empty
+    const normalizedEvents = attentionFlow.map(e => ({
+      ...e,
+      left: (e.timestamp / maxTime) * 100,
+      width: Math.max((e.duration / maxTime) * 100, 2) // min 2% width
+    }));
+
+    const lanes = [
+      { id: 'partner', label: 'Social', color: 'bg-blue-400', bg: 'bg-blue-50', icon: Users, text: 'Partner Connection' },
+      { id: 'regulation', label: 'Regulation', color: 'bg-indigo-400', bg: 'bg-indigo-50', icon: BatteryCharging, text: 'Internal Regulation' },
+      { id: 'object', label: 'Flow', color: 'bg-rose-400', bg: 'bg-rose-50', icon: Zap, text: 'Monotropic Flow' },
+    ];
+
+    const totalDuration = attentionFlow.reduce((acc, curr) => acc + curr.duration, 0) || 1;
+    const flowTime = attentionFlow.filter(e => e.target === 'object').reduce((acc, curr) => acc + curr.duration, 0);
+    const socialTime = attentionFlow.filter(e => e.target === 'partner').reduce((acc, curr) => acc + curr.duration, 0);
+    const regTime = attentionFlow.filter(e => e.target === 'regulation').reduce((acc, curr) => acc + curr.duration, 0);
+
+    return (
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        
+        {/* Header Section */}
+        <div className="flex justify-between items-end mb-6 border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg"><Focus size={18} /></div>
+              <h3 className="font-bold text-slate-800">Attention Dynamics Map</h3>
+            </div>
+            <p className="text-xs text-slate-500 max-w-lg">
+              Visualizing the <span className="font-semibold text-rose-500">Flow</span> between deep focus, social connection, and regulation. 
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+             <div className="px-3 py-1.5 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold border border-rose-100 flex flex-col items-center">
+                <span>{Math.round((flowTime/totalDuration)*100)}%</span>
+                <span className="text-[9px] uppercase opacity-70">Flow</span>
+             </div>
+             <div className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-100 flex flex-col items-center">
+                <span>{Math.round((socialTime/totalDuration)*100)}%</span>
+                <span className="text-[9px] uppercase opacity-70">Social</span>
+             </div>
+             <div className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-100 flex flex-col items-center">
+                <span>{Math.round((regTime/totalDuration)*100)}%</span>
+                <span className="text-[9px] uppercase opacity-70">Regulate</span>
+             </div>
+          </div>
+        </div>
+
+        {/* The Timeline Graph */}
+        <div className="relative">
+           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-20">
+              <defs>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#cbd5e1" />
+                  <stop offset="100%" stopColor="#94a3b8" />
+                </linearGradient>
+              </defs>
+           </svg>
+
+           <div className="space-y-4">
+             {lanes.map((lane) => (
+               <div key={lane.id} className="relative h-14 flex items-center">
+                  <div className="w-24 shrink-0 flex flex-col items-center justify-center mr-4">
+                     <div className={`p-2 rounded-full ${lane.bg} ${lane.color.replace('bg-', 'text-')} mb-1`}>
+                       <lane.icon size={16} />
+                     </div>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{lane.label}</span>
+                  </div>
+
+                  <div className="flex-1 relative h-10 bg-slate-50/50 rounded-xl border border-slate-100 overflow-hidden">
+                     <div className="absolute inset-0 flex flex-col justify-center opacity-10">
+                        <div className="border-b border-slate-300 w-full"></div>
+                     </div>
+
+                     {normalizedEvents.filter(e => e.target === lane.id).map((event) => (
+                        <div 
+                          key={event.id}
+                          className={`absolute top-1 bottom-1 rounded-lg shadow-sm border border-white/50 group cursor-help transition-all hover:scale-105 hover:z-10 flex items-center justify-center ${lane.color} bg-opacity-90`}
+                          style={{ left: `${event.left}%`, width: `${event.width}%` }}
+                        >
+                           <div className={`w-full h-full absolute inset-0 ${event.intensity === 'high' ? 'bg-white/0' : 'bg-white/30'}`}></div>
+                           {event.width > 5 && <lane.icon size={12} className="text-white relative z-10 opacity-80" />}
+                           <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 bg-slate-800 text-white text-xs p-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-20 shadow-xl">
+                              <div className="font-bold mb-0.5">{event.label}</div>
+                              <div className="flex justify-between text-[10px] text-slate-300">
+                                <span>{(event.duration/1000).toFixed(1)}s</span>
+                                <span className="capitalize">{event.intensity} Intensity</span>
+                              </div>
+                              <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+             ))}
+           </div>
+           
+           <div className="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pl-28 px-2">
+              <span>00:00</span>
+              <span>{(maxTime/2000).toFixed(0)}s</span>
+              <span>{(maxTime/1000).toFixed(0)}s</span>
+           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStrengthsCompass = () => {
+    const sensCount = observations.sensory.length;
+    const socCount = observations.social.length;
+    const langCount = observations.language.length;
+    const total = sensCount + socCount + langCount || 1;
+    
+    const x = ((socCount - sensCount) / total) * 40; 
+    const y = ((langCount - (sensCount + socCount)/2) / total) * 40; 
+
+    return (
+      <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm mb-8 relative overflow-hidden">
+         <div className="absolute top-0 right-0 p-4 opacity-10"><Navigation size={120} className="text-indigo-900"/></div>
+         
+         <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="p-2 bg-indigo-600 text-white rounded-lg shadow-md"><Compass size={24} /></div>
+            <div>
+              <h3 className="font-bold text-lg text-slate-800">Neuro-Profile Compass</h3>
+              <p className="text-xs text-slate-500">Mapping interaction and processing styles.</p>
+            </div>
+         </div>
+
+         <div className="relative w-full max-w-md mx-auto aspect-square bg-slate-50 rounded-full border-4 border-slate-100 shadow-inner flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center"><div className="w-full h-px bg-slate-200"></div></div>
+            <div className="absolute inset-0 flex items-center justify-center"><div className="h-full w-px bg-slate-200"></div></div>
+            
+            <div className="absolute top-4 text-[10px] font-bold tracking-widest text-emerald-600 uppercase bg-white px-2 py-1 rounded-full shadow-sm">Verbal / Systemizing</div>
+            <div className="absolute bottom-4 text-[10px] font-bold tracking-widest text-rose-600 uppercase bg-white px-2 py-1 rounded-full shadow-sm">Experiential / Sensory</div>
+            <div className="absolute left-4 text-[10px] font-bold tracking-widest text-indigo-600 uppercase bg-white px-2 py-1 rounded-full shadow-sm -rotate-90">Immersive</div>
+            <div className="absolute right-4 text-[10px] font-bold tracking-widest text-blue-600 uppercase bg-white px-2 py-1 rounded-full shadow-sm rotate-90">Partner-Oriented</div>
+
+            <div 
+              className="absolute w-6 h-6 bg-indigo-600 rounded-full shadow-xl border-4 border-white transition-all duration-1000 ease-out z-20 flex items-center justify-center group cursor-pointer"
+              style={{ transform: `translate(${x*4}px, ${-y*4}px)` }} 
+            >
+               <div className="w-2 h-2 bg-white rounded-full opacity-50 animate-ping"></div>
+               <div className="absolute bottom-full mb-3 w-40 bg-slate-800 text-white text-xs p-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-center">
+                  <div className="font-bold mb-1">Current Profile</div>
+                  <div className="text-[10px] text-slate-300 leading-tight">
+                    {x > 0 ? "Partner-Focused" : "Immersive Focus"} & <br/>
+                    {y > 0 ? "Verbal Processor" : "Sensory Processor"}
+                  </div>
+                  <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45"></div>
+               </div>
+            </div>
+
+            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
+               <polygon points={`${50+x}% ${50-y}%, 80% 50%, 50% 80%, 20% 50%`} fill="#4f46e5" />
+            </svg>
+         </div>
+      </div>
+    );
+  };
+
+  // Spiky Profile Visualizer (Static mock for concept)
+  const renderSpikyProfile = () => {
+    // Simulated data for visualization
+    const skills = [
+      { label: "Vocabulary", score: 90, type: 'peak' },
+      { label: "Pattern Rec", score: 85, type: 'peak' },
+      { label: "Deep Focus", score: 95, type: 'peak' },
+      { label: "Processing", score: 40, type: 'valley' },
+      { label: "Transition", score: 30, type: 'valley' },
+      { label: "Sensory Reg", score: 25, type: 'valley' }
+    ];
+
+    return (
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+         <div className="flex items-center gap-2 mb-6">
+            <BarChart2 size={20} className="text-indigo-600" />
+            <h3 className="font-bold text-slate-800">Spiky Profile Analysis</h3>
+         </div>
+         
+         <div className="flex items-end justify-between h-40 gap-2 mb-4 px-2">
+            {skills.map((skill, i) => (
+              <div key={i} className="flex flex-col items-center flex-1 group relative">
+                 <div 
+                   className={`w-full rounded-t-lg transition-all duration-700 ${skill.type === 'peak' ? 'bg-emerald-400' : 'bg-rose-400'}`}
+                   style={{ height: `${skill.score}%` }}
+                 />
+                 <span className="text-[10px] text-slate-500 mt-2 font-medium truncate w-full text-center">{skill.label}</span>
+                 {/* Tooltip */}
+                 <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs py-1 px-2 rounded">
+                   {skill.type === 'peak' ? 'High Skill' : 'Support Need'}
+                 </div>
+              </div>
+            ))}
+         </div>
+         <p className="text-xs text-center text-slate-400">
+           Visualizing asynchronous development: High strengths alongside specific support needs.
+         </p>
+      </div>
+    );
+  };
+
+  const renderSensoryRadar = () => {
+    // Basic heuristic: check notes for keywords to simulate "seeking" vs "avoiding" intensity
+    // In a real app, this would be computed by the LLM
+    const notes = observations.sensory.map(o => o.text.toLowerCase()).join(' ');
+    
+    // Simulate scores (0-100) based on string presence just for demo visualization
+    const visual = notes.includes('light') || notes.includes('look') ? 80 : 30;
+    const auditory = notes.includes('sound') || notes.includes('noise') ? 20 : 60; // maybe avoiding?
+    const tactile = notes.includes('touch') || notes.includes('texture') ? 70 : 40;
+    const vestibular = notes.includes('spin') || notes.includes('rock') ? 90 : 20;
+    const proprioceptive = notes.includes('pressure') || notes.includes('hug') ? 50 : 30;
+    const oral = notes.includes('mouth') || notes.includes('chew') ? 40 : 20;
+
+    // Helper to calculate polygon points for a hexagon
+    const getPoint = (value, angle) => {
+      const radius = (value / 100) * 40; // 40% of container size
+      const x = 50 + radius * Math.cos(angle);
+      const y = 50 + radius * Math.sin(angle);
+      return `${x},${y}`;
+    };
+
+    const angles = [0, 60, 120, 180, 240, 300].map(d => (d - 90) * (Math.PI / 180));
+    const scores = [visual, auditory, tactile, vestibular, proprioceptive, oral];
+    const polyPoints = scores.map((s, i) => getPoint(s, angles[i])).join(' ');
+
+    const labels = [
+      { text: "Visual", x: 50, y: 5, icon: Eye },
+      { text: "Auditory", x: 95, y: 25, icon: Ear },
+      { text: "Tactile", x: 95, y: 75, icon: Hand },
+      { text: "Vestibular", x: 50, y: 95, icon: RefreshCw }, // movement
+      { text: "Proprio", x: 5, y: 75, icon: Move }, // body position
+      { text: "Oral", x: 5, y: 25, icon: Smile }
+    ];
+
+    return (
+      <div className="bg-white border border-rose-100 rounded-2xl p-6 shadow-sm mb-8 relative">
+         <div className="flex items-center gap-2 mb-4 text-rose-800">
+            <Hexagon size={18} />
+            <h4 className="font-bold text-sm uppercase tracking-wide">Sensory Profile Radar</h4>
+         </div>
+         
+         <div className="relative aspect-square max-w-sm mx-auto">
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+               {/* Background Grid */}
+               {[20, 40, 60, 80, 100].map((r, i) => (
+                 <circle key={i} cx="50" cy="50" r={r * 0.4} fill="none" stroke="#e2e8f0" strokeWidth="0.5" />
+               ))}
+               {/* Spokes */}
+               {angles.map((a, i) => {
+                 const x = 50 + 40 * Math.cos(a);
+                 const y = 50 + 40 * Math.sin(a);
+                 return <line key={i} x1="50" y1="50" x2={x} y2={y} stroke="#e2e8f0" strokeWidth="0.5" />;
+               })}
+               
+               {/* The Data Shape */}
+               <polygon points={polyPoints} fill="rgba(244, 63, 94, 0.2)" stroke="#f43f5e" strokeWidth="2" />
+               
+               {/* Points */}
+               {scores.map((s, i) => {
+                  const [cx, cy] = getPoint(s, angles[i]).split(',');
+                  return <circle key={i} cx={cx} cy={cy} r="1.5" fill="#f43f5e" />;
+               })}
+            </svg>
+
+            {/* Labels overlay */}
+            {labels.map((l, i) => (
+              <div 
+                key={i} 
+                className="absolute flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${l.x}%`, top: `${l.y}%` }}
+              >
+                 <div className="bg-rose-50 text-rose-600 p-1.5 rounded-full mb-1 shadow-sm border border-rose-100">
+                   <l.icon size={12} />
+                 </div>
+                 <span className="text-[9px] font-bold text-slate-500 uppercase bg-white/80 px-1 rounded">{l.text}</span>
+              </div>
+            ))}
+         </div>
+         <p className="text-center text-xs text-slate-400 mt-4">
+           Shape indicates sensory dominance. Larger area = higher intensity/seeking behavior.
+         </p>
+      </div>
+    );
+  };
+
+  const renderSessionTimeline = () => {
+    // Simple timeline showing density of events
+    // Combine all observations and sort by approximate timestamp (simulated if no timestamp)
+    const allEvents = [
+      ...observations.sensory.map(o => ({...o, domain: 'sensory', time: Math.random() * 100 })),
+      ...observations.social.map(o => ({...o, domain: 'social', time: Math.random() * 100 })),
+      ...observations.language.map(o => ({...o, domain: 'language', time: Math.random() * 100 }))
+    ].sort((a, b) => a.time - b.time);
+
+    return (
+      <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+         <div className="flex justify-between items-center mb-2">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Session Timeline</h4>
+            <span className="text-[10px] text-slate-400">Total Events: {allEvents.length}</span>
+         </div>
+         <div className="h-8 bg-white rounded-lg border border-slate-200 relative overflow-hidden flex items-center">
+            {allEvents.map((evt, i) => (
+               <div 
+                 key={i}
+                 className={`absolute w-1 h-4 rounded-full opacity-60 ${
+                   evt.domain === 'sensory' ? 'bg-rose-400' : 
+                   evt.domain === 'social' ? 'bg-blue-400' : 'bg-emerald-400'
+                 }`}
+                 style={{ left: `${evt.time}%` }}
+                 title={`${evt.domain}: ${evt.text.substring(0, 20)}...`}
+               />
+            ))}
+            {/* Time markers */}
+            <div className="absolute left-0 bottom-0 text-[8px] text-slate-300 pl-1">Start</div>
+            <div className="absolute right-0 bottom-0 text-[8px] text-slate-300 pr-1">End</div>
+         </div>
+      </div>
+    );
+  };
+
+  // --- VIEWS ---
+
+  if (appMode === 'selection') {
+    return (
+      <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-800">
+        <header className="py-6 px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+              <Brain size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-800">MIGDAS-2 Canvas</h1>
+              <p className="text-sm text-slate-500">Neuro-Affirming Assessment Facilitator</p>
+            </div>
+          </div>
+          
+          {/* LOAD SESSION BUTTON */}
+          <div>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              onChange={handleLoadSession}
+              accept=".json"
+              className="hidden" 
+            />
+            <button 
+              onClick={() => fileInputRef.current.click()}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-colors text-sm font-medium"
+            >
+              <FolderOpen size={16} /> Resume Session (JSON)
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col items-center justify-center p-8">
+          <h2 className="text-3xl font-light mb-12 text-slate-700">How would you like to begin this session?</h2>
+          <div className="flex gap-8 w-full max-w-6xl">
+            <button onClick={() => setAppMode('preplan')} className="flex-1 bg-white p-8 rounded-2xl border-2 border-transparent hover:border-amber-500 shadow-xl hover:shadow-2xl transition-all group text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6"><Compass size={32} /></div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Pre-Planning</h3>
+                <p className="text-slate-500 mb-6">Research interests and generate interview questions using Google Search.</p>
+                <div className="flex items-center gap-2 text-amber-600 font-semibold text-sm">Start Research <ChevronRight size={16} /></div>
+              </div>
+            </button>
+            <button onClick={handleStartLive} className="flex-1 bg-white p-8 rounded-2xl border-2 border-transparent hover:border-indigo-500 shadow-xl hover:shadow-2xl transition-all group text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6"><Mic size={32} /></div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Live Session</h3>
+                <p className="text-slate-500 mb-6">Use the "Stealth Recorder". We'll track data coverage passively.</p>
+                <div className="flex items-center gap-2 text-indigo-600 font-semibold text-sm">Start Recording <ChevronRight size={16} /></div>
+              </div>
+            </button>
+            <button onClick={handleFileUpload} className="flex-1 bg-white p-8 rounded-2xl border-2 border-transparent hover:border-emerald-500 shadow-xl hover:shadow-2xl transition-all group text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6"><UploadCloud size={32} /></div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Analyze Media</h3>
+                <p className="text-slate-500 mb-6">Upload audio or video from a past session.</p>
+                <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm">Upload File <ChevronRight size={16} /></div>
+              </div>
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // --- PRE-PLANNING VIEW ---
+  if (appMode === 'preplan') {
+    return (
+      <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-800">
+        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setAppMode('selection')} className="p-2 hover:bg-slate-100 rounded-full text-slate-500"><ArrowLeft size={20} /></button>
+            <div>
+              <h1 className="font-semibold text-lg text-slate-800">Session Pre-Planning</h1>
+              <p className="text-xs text-slate-500">Research interests with Gemini & Google Search</p>
+            </div>
+          </div>
+          {sessionPlan && (
+            <button 
+              onClick={handleStartLive}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+            >
+              Start Session with Plan <ChevronRight size={16} />
+            </button>
+          )}
+        </header>
+
+        <main className="flex-1 flex flex-col p-8 overflow-y-auto max-w-4xl mx-auto w-full">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
+               <label className="block text-sm font-bold text-slate-700 mb-2">Child's Interest / Topic</label>
+               <div className="flex gap-2">
+                 <input 
+                   type="text" 
+                   value={researchQuery}
+                   onChange={(e) => setResearchQuery(e.target.value)}
+                   placeholder="e.g., Five Nights at Freddy's, Elevators, Minecraft Redstone..."
+                   className="flex-1 p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
+                   onKeyDown={(e) => e.key === 'Enter' && handleResearchInterest()}
+                 />
+                 <button 
+                   onClick={handleResearchInterest}
+                   disabled={isResearching}
+                   className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+                 >
+                   {isResearching ? <Loader2 size={20} className="animate-spin"/> : <Search size={20} />}
+                   Research
+                 </button>
+               </div>
+               <p className="text-xs text-slate-500 mt-2 flex items-center gap-1"><Sparkles size={12}/> Powered by Gemini + Google Search Grounding</p>
+            </div>
+
+            {sessionPlan && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
+                 {/* Summary Card */}
+                 <div className="col-span-full bg-slate-800 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+                    <div className="relative z-10">
+                      <h2 className="text-2xl font-bold mb-2">{sessionPlan.topic}</h2>
+                      <p className="text-slate-300 leading-relaxed text-lg">{sessionPlan.summary}</p>
+                    </div>
+                 </div>
+
+                 {/* Questions */}
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4 text-emerald-700 font-bold uppercase tracking-wider text-xs">
+                      <MessageCircle size={16} /> Conversation Scripts
+                    </div>
+                    <ul className="space-y-3">
+                       {sessionPlan.scripts?.length ? sessionPlan.scripts.map((script, i) => (
+                         <li key={i} className="p-3 bg-emerald-50 text-emerald-900 rounded-lg text-sm border border-emerald-100">"{script}"</li>
+                       )) : <p className="text-slate-400 italic">No scripts generated.</p>}
+                    </ul>
+                 </div>
+
+                 {/* Sensory */}
+                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4 text-rose-700 font-bold uppercase tracking-wider text-xs">
+                      <Eye size={16} /> Sensory Details to Probe
+                    </div>
+                    <ul className="space-y-3">
+                       {sessionPlan.sensory?.length ? sessionPlan.sensory.map((item, i) => (
+                         <li key={i} className="p-3 bg-rose-50 text-rose-900 rounded-lg text-sm border border-rose-100 flex gap-2">
+                           <span className="font-bold">•</span> {item}
+                         </li>
+                       )) : <p className="text-slate-400 italic">No sensory details generated.</p>}
+                    </ul>
+                 </div>
+
+                 {/* Activities */}
+                 <div className="col-span-full bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4 text-indigo-700 font-bold uppercase tracking-wider text-xs">
+                      <Puzzle size={16} /> Play Activity Ideas
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       {sessionPlan.activities?.length ? sessionPlan.activities.map((act, i) => (
+                         <div key={i} className="p-4 bg-indigo-50 text-indigo-900 rounded-xl border border-indigo-100 text-sm">
+                           {act}
+                         </div>
+                       )) : <p className="text-slate-400 italic">No activities generated.</p>}
+                    </div>
+                 </div>
+              </div>
+            )}
+        </main>
+      </div>
+    );
+  }
+
+  if (appMode === 'upload') {
+    return (
+      <div className="flex flex-col h-screen bg-slate-50 items-center justify-center font-sans">
+        <div className="bg-white p-12 rounded-2xl shadow-xl w-full max-w-md text-center">
+           <Loader2 size={40} className="animate-spin text-emerald-500 mx-auto mb-6" />
+           <h2 className="text-xl font-bold text-slate-800 mb-2">Processing Assessment...</h2>
+           <div className="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden mt-6">
+             <div className="bg-emerald-500 h-full rounded-full transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }}></div>
+           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- LIVE SESSION VIEW ---
+  if (appMode === 'live') {
+    return (
+      <div className="flex flex-col h-screen bg-slate-900 font-sans text-slate-200 relative overflow-hidden">
+        <div className="relative z-10 flex items-center justify-between p-6">
+           <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full border border-slate-700">
+               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+               <span className="font-mono text-sm">REC</span>
+               <span className="font-mono text-sm text-slate-400 ml-2">{Math.floor(sessionTime / 60000)}:{( (sessionTime % 60000) / 1000 ).toFixed(0).padStart(2, '0')}</span>
+           </div>
+           
+           <div className="flex items-center gap-3">
+             {/* Plan Toggle Button */}
+             {sessionPlan && (
+               <button 
+                 onClick={() => setPlanDrawerOpen(!planDrawerOpen)}
+                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${planDrawerOpen ? 'bg-amber-500 text-white' : 'bg-slate-800 text-amber-500 border border-slate-700'}`}
+               >
+                 <BookOpen size={16} /> {planDrawerOpen ? 'Hide Plan' : 'View Session Plan'}
+               </button>
+             )}
+             <button onClick={() => { setIsRecording(false); setAppMode('dashboard'); }} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg">End & Analyze</button>
+           </div>
+        </div>
+
+        {/* Live Nudge Overlay */}
+        {liveNudge && (
+          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 fade-in duration-500">
+             <div className="bg-slate-800/90 backdrop-blur border border-indigo-500/50 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-4 max-w-lg">
+                <div className={`p-3 rounded-full ${
+                  liveNudge.category === 'sensory' ? 'bg-rose-500' : 
+                  liveNudge.category === 'social' ? 'bg-blue-500' : 'bg-emerald-500'
+                } text-white`}>
+                   <Lightbulb size={24} className="animate-pulse" />
+                </div>
+                <div>
+                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Real-time Suggestion</h4>
+                   <p className="text-sm font-medium leading-tight">{liveNudge.text}</p>
+                </div>
+                <button onClick={() => setLiveNudge(null)} className="p-2 hover:bg-white/10 rounded-full text-slate-400"><X size={18}/></button>
+             </div>
+          </div>
+        )}
+
+        {/* Plan Sidebar Overlay */}
+        {planDrawerOpen && sessionPlan && (
+          <div className="absolute right-6 top-20 bottom-20 w-80 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl z-30 overflow-y-auto p-4 animate-in slide-in-from-right">
+             <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+               <h3 className="font-bold text-amber-500 flex items-center gap-2"><Compass size={16}/> {sessionPlan.topic}</h3>
+               <button onClick={() => setPlanDrawerOpen(false)}><X size={16} className="text-slate-400"/></button>
+             </div>
+             
+             <div className="space-y-4">
+                <div>
+                   <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Summary</h4>
+                   <p className="text-xs text-slate-300 leading-relaxed bg-slate-900 p-3 rounded-lg">{sessionPlan.summary}</p>
+                </div>
+                <div>
+                   <h4 className="text-xs font-bold text-emerald-400 uppercase mb-2">Scripts</h4>
+                   <ul className="space-y-2">
+                     {sessionPlan.scripts?.map((s,i) => <li key={i} className="text-xs bg-slate-900 p-2 rounded text-slate-300 border-l-2 border-emerald-500">"{s}"</li>)}
+                   </ul>
+                </div>
+                <div>
+                   <h4 className="text-xs font-bold text-rose-400 uppercase mb-2">Sensory Cues</h4>
+                   <ul className="space-y-2">
+                     {sessionPlan.sensory?.map((s,i) => <li key={i} className="text-sm text-slate-600 flex gap-2"><Eye size={16} className="text-rose-400 shrink-0"/> {s}</li>)}
+                   </ul>
+                </div>
+             </div>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+           <div className="transform scale-150 p-10 bg-white/5 rounded-3xl backdrop-blur-sm border border-white/10 shadow-2xl">{renderTriangle('large')}</div>
+           <div className="mt-12 text-slate-500 text-sm max-w-md text-center"><p>Focus on the interaction.</p></div>
+        </div>
+        <div className={`absolute bottom-0 left-0 right-0 bg-white text-slate-800 rounded-t-3xl shadow-2xl transition-all duration-300 ease-in-out z-20 flex flex-col ${isPeekMode ? 'h-[60vh]' : 'h-16'}`}>
+           <button onClick={() => setIsPeekMode(!isPeekMode)} className="w-full h-16 flex items-center justify-center border-b border-slate-100 hover:bg-slate-50 transition-colors rounded-t-3xl">
+             <div className="flex items-center gap-2 text-indigo-600 font-medium">
+               {isPeekMode ? <Minimize2 size={18}/> : <Maximize2 size={18}/>} {isPeekMode ? 'Hide Insights' : 'Peek at Insights'}
+             </div>
+           </button>
+           {isPeekMode && (
+             <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+               <div className="max-w-2xl mx-auto space-y-4">
+                 {streamLog.slice().reverse().map(item => (
+                   <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                     <p className="text-sm text-slate-700">{item.description || item.text}</p>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- DASHBOARD (Synthesis) ---
+  return (
+    <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-800 relative">
+      
+      {/* Report Modal */}
+      {reportModalOpen && (
+        <div className="absolute inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+              <div className="p-6 border-b border-slate-100 flex justify-between items-start">
+                 <div>
+                    <h3 className="font-bold text-lg text-indigo-600">Gemini Generator</h3>
+                    <p className="text-xs text-slate-500">Drafting content for {reportType}...</p>
+                 </div>
+                 <button onClick={() => setReportModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+              </div>
+              <div className="bg-slate-50 border-b border-slate-100 grid grid-cols-4 p-2 gap-2">
+                 {[
+                   { id: 'clinical', label: 'Clinical', icon: FileText },
+                   { id: 'parent', label: 'Parent Letter', icon: Baby },
+                   { id: 'goals', label: 'IEP Goals', icon: Target },
+                   { id: 'accommodations', label: 'Supports', icon: School }
+                 ].map(type => (
+                   <button key={type.id} onClick={() => handleGenerateReport(type.id)} className={`py-2 px-1 text-xs font-medium rounded-lg flex flex-col items-center justify-center gap-1 transition-all ${reportType === type.id ? 'bg-white shadow-sm text-indigo-700 ring-1 ring-slate-200' : 'text-slate-500 hover:bg-slate-100'}`}>
+                     <type.icon size={16} /> {type.label}
+                   </button>
+                 ))}
+              </div>
+              <div className="p-8 flex-1 overflow-y-auto">
+                 {isGeneratingReport ? (
+                   <div className="flex flex-col items-center justify-center h-48 space-y-4 text-slate-500"><Loader2 size={32} className="animate-spin text-indigo-500" /><p>Synthesizing...</p></div>
+                 ) : (
+                   <div className="prose prose-slate max-w-none"><p className="whitespace-pre-wrap leading-relaxed">{reportContent}</p></div>
+                 )}
+              </div>
+              <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                 <button 
+                   onClick={handleDownloadPDF} 
+                   className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 font-medium hover:bg-red-100 rounded-lg border border-red-100 transition-colors"
+                 >
+                   <Download size={16}/> Download PDF
+                 </button>
+                 <button onClick={() => setReportModalOpen(false)} className="px-4 py-2 text-slate-600 font-medium hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-colors">Close</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 flex flex-col px-6 shrink-0">
+        <div className="h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setAppMode('selection')} className="p-2 hover:bg-slate-100 rounded-full text-slate-500"><ArrowLeft size={20} /></button>
+            <div><h1 className="font-semibold text-lg text-slate-800">Assessment Analysis</h1></div>
+          </div>
+          <div className="flex items-center gap-3">
+            {sessionPlan && (
+               <button 
+                 onClick={() => setPlanDrawerOpen(true)}
+                 className="text-amber-600 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border border-amber-200"
+               >
+                 <Map size={16} /> View Session Plan
+               </button>
+            )}
+            {/* SAVE BUTTON */}
+            <button 
+               onClick={handleSaveSession}
+               className="text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border border-slate-200"
+            >
+               <Save size={16} /> Save
+            </button>
+            
+            <button onClick={() => handleGenerateReport('clinical')} className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-all">
+              <Sparkles size={16} /> Generate Report
+            </button>
+          </div>
+        </div>
+        
+        {/* NEW: Session Timeline Visualization */}
+        {renderSessionTimeline()}
+      </header>
+
+      {/* Plan Drawer (Dashboard) */}
+      {planDrawerOpen && sessionPlan && (
+          <div className="absolute right-0 top-16 bottom-0 w-80 bg-white border-l border-slate-200 shadow-2xl z-40 overflow-y-auto p-6 animate-in slide-in-from-right">
+             <div className="flex justify-between items-center mb-6">
+               <h3 className="font-bold text-slate-800 flex items-center gap-2"><Compass size={18} className="text-amber-500"/> Research Plan</h3>
+               <button onClick={() => setPlanDrawerOpen(false)}><X size={20} className="text-slate-400 hover:text-slate-600"/></button>
+             </div>
+             
+             <div className="space-y-6">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                   <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Topic</h4>
+                   <p className="font-medium text-slate-800">{sessionPlan.topic}</p>
+                   <p className="text-xs text-slate-500 mt-2 leading-relaxed">{sessionPlan.summary}</p>
+                </div>
+                <div>
+                   <h4 className="text-xs font-bold text-emerald-600 uppercase mb-2">Conversation Scripts</h4>
+                   <ul className="space-y-2">
+                     {sessionPlan.scripts?.map((s,i) => <li key={i} className="text-sm bg-emerald-50 p-3 rounded-lg text-emerald-900 border border-emerald-100">"{s}"</li>)}
+                   </ul>
+                </div>
+                <div>
+                   <h4 className="text-xs font-bold text-rose-600 uppercase mb-2">Sensory Cues</h4>
+                   <ul className="space-y-2">
+                     {sessionPlan.sensory?.map((s,i) => <li key={i} className="text-sm text-slate-600 flex gap-2"><Eye size={16} className="text-rose-400 shrink-0"/> {s}</li>)}
+                   </ul>
+                </div>
+             </div>
+          </div>
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* Sidebar */}
+        <div className="w-80 bg-white border-r border-slate-200 flex flex-col overflow-y-auto">
+           <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+             <div className="mb-4 text-center">
+                <div className="inline-block transform scale-75 origin-top">{renderTriangle('small')}</div>
+             </div>
+           </div>
+           <div className="flex flex-col p-4 gap-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">Domains</h3>
+              {Object.keys(DOMAINS).map(key => (
+                <button key={key} onClick={() => setActiveTab(key)} className={`flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-all ${activeTab === key ? `${DOMAINS[key].color.replace('text', 'bg').replace('800', '50')} ${DOMAINS[key].color.split(' ')[1]} ring-1 ring-inset` : 'text-slate-600 hover:bg-slate-50'}`}>
+                  <div className="flex items-center gap-3">
+                    {key === 'sensory' && <Hand size={18} />}
+                    {key === 'social' && <Brain size={18} />}
+                    {key === 'language' && <MessageSquare size={18} />}
+                    <span>{DOMAINS[key].label.split(' ')[0]}</span>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100">{observations[key].length}</span>
+                </button>
+              ))}
+              <div className="my-2 border-t border-slate-100"></div>
+              {/* NEW Synthesis Tab */}
+              <button 
+                onClick={() => setActiveTab('synthesis')}
+                className={`flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'synthesis' ? 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                 <div className="flex items-center gap-3"><Puzzle size={18} /> <span>Holistic Synthesis</span></div>
+                 <Sparkles size={14} className={activeTab === 'synthesis' ? 'text-amber-500' : 'text-slate-300'} />
+              </button>
+           </div>
+           
+           {/* Sidebar Co-Pilot (Only on Domain Tabs) */}
+           {activeTab !== 'synthesis' && (
+             <div className="p-4 mt-auto">
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-2 text-slate-700 font-bold text-sm mb-2"><Lightbulb size={16} /> AI Co-Pilot</div>
+                  {suggestions ? (
+                     <div className="mb-3">
+                       <div className="text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200 leading-relaxed whitespace-pre-line">{suggestions}</div>
+                       <button onClick={() => setSuggestions(null)} className="w-full text-center text-xs text-slate-500 hover:text-slate-800 mt-2 font-medium">Clear</button>
+                     </div>
+                  ) : (
+                    <button onClick={handleSuggestNextSteps} disabled={isSuggesting} className="w-full py-2 bg-white text-slate-700 text-xs font-bold rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
+                      {isSuggesting ? <Loader2 size={12} className="animate-spin" /> : "Suggest Next Questions ✨"}
+                    </button>
+                  )}
+                </div>
+             </div>
+           )}
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 bg-slate-50/50 p-8 overflow-y-auto">
+           <div className="max-w-4xl mx-auto">
+             
+             {/* CONDITIONAL VIEW: SYNTHESIS vs DOMAIN */}
+             {activeTab === 'synthesis' ? (
+                // --- SYNTHESIS VIEW ---
+                <div>
+                   <div className="p-8 rounded-2xl mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 flex items-start gap-4 shadow-sm">
+                      <div className="p-3 rounded-xl bg-white/60 text-amber-600"><Puzzle size={24} /></div>
+                      <div>
+                        <h2 className="text-xl font-bold text-amber-900">Holistic Pattern Analysis</h2>
+                        <p className="text-amber-700/80 mt-1 text-sm leading-relaxed max-w-2xl">
+                          Gemini analyzes data across all three domains to identify the underlying neurological themes that connect the child's sensory, social, and linguistic profile.
+                        </p>
+                      </div>
+                   </div>
+
+                   {/* NEW: School Accommodations Wizard */}
+                   {schoolAccommodations ? (
+                     <div className="mb-8 bg-blue-50 border border-blue-200 p-6 rounded-2xl relative shadow-md">
+                        <h4 className="text-sm font-bold text-blue-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <School size={16} /> School Accommodations Plan
+                        </h4>
+                        <div className="whitespace-pre-wrap leading-relaxed text-sm text-blue-900 font-medium">{schoolAccommodations}</div>
+                        <button onClick={() => setSchoolAccommodations(null)} className="absolute top-2 right-2 text-blue-500 hover:text-blue-700"><X size={16}/></button>
+                     </div>
+                   ) : (
+                     <div className="mb-8 text-center py-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm flex flex-col items-center justify-center">
+                        <School size={24} className="text-blue-400 mb-2" />
+                        <p className="text-blue-900 font-medium text-sm mb-3">Generate neuro-affirming classroom supports.</p>
+                        <button 
+                          onClick={handleGenerateAccommodations}
+                          disabled={isGeneratingAccommodations}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 text-xs"
+                        >
+                          {isGeneratingAccommodations ? <Loader2 size={14} className="animate-spin" /> : <><Wand2 size={14} /> Create Accommodations Plan</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* My User Manual Section */}
+                   {myManual ? (
+                     <div className="mb-8 bg-amber-50 border border-amber-200 p-6 rounded-2xl relative shadow-md">
+                        <h4 className="text-sm font-bold text-amber-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <FileHeart size={16} /> "My User Manual" (Self-Advocacy)
+                        </h4>
+                        <div className="whitespace-pre-wrap leading-relaxed text-sm text-amber-900 font-medium">{myManual}</div>
+                        <button onClick={() => setMyManual(null)} className="absolute top-2 right-2 text-amber-500 hover:text-amber-700"><X size={16}/></button>
+                     </div>
+                   ) : (
+                     <div className="mb-8 text-center py-8 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-amber-100 shadow-sm flex flex-col items-center justify-center">
+                        <FileHeart size={24} className="text-amber-400 mb-2" />
+                        <p className="text-amber-900 font-medium text-sm mb-3">Empower the child with a self-advocacy guide.</p>
+                        <button 
+                          onClick={handleGenerateMyManual}
+                          disabled={isGeneratingManual}
+                          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 text-xs"
+                        >
+                          {isGeneratingManual ? <Loader2 size={14} className="animate-spin" /> : <><FileHeart size={14} /> Generate "My User Manual"</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* Spiky Profile Section */}
+                   {spikyProfile ? (
+                     <div className="mb-8">
+                        {renderSpikyProfile()}
+                        <div className="mt-4 prose prose-emerald max-w-none bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
+                           <h4 className="text-sm font-bold text-emerald-800 uppercase tracking-wider mb-2">Profile Analysis</h4>
+                           <div className="whitespace-pre-wrap leading-relaxed text-sm text-slate-700">{spikyProfile}</div>
+                        </div>
+                        <button onClick={() => setSpikyProfile(null)} className="mt-2 text-xs text-slate-400 hover:text-slate-600">Clear profile</button>
+                     </div>
+                   ) : (
+                     <div className="mb-8 text-center py-8 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                        <BarChart2 size={24} className="text-indigo-400 mb-2" />
+                        <p className="text-indigo-900 font-medium text-sm mb-3">Visualize Asynchronous Development</p>
+                        <button 
+                          onClick={handleGenerateSpikyProfile}
+                          disabled={isGeneratingSpiky}
+                          className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold rounded-lg transition-all flex items-center gap-2 text-xs"
+                        >
+                          {isGeneratingSpiky ? <Loader2 size={14} className="animate-spin" /> : <><BarChart2 size={14} /> Generate "Spiky Profile"</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* Executive Function Support Section */}
+                   {efSupportPlan ? (
+                     <div className="mb-8 bg-sky-50 border border-sky-100 p-6 rounded-2xl relative">
+                        <h4 className="text-sm font-bold text-sky-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <BrainCircuit size={16} /> "External Brain" Support Plan
+                        </h4>
+                        <div className="whitespace-pre-wrap leading-relaxed text-sm text-sky-900">{efSupportPlan}</div>
+                        <button onClick={() => setEfSupportPlan(null)} className="absolute top-2 right-2 text-sky-400 hover:text-sky-600"><X size={16}/></button>
+                     </div>
+                   ) : (
+                     <div className="mb-8 text-center py-8 bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl border border-sky-100 shadow-sm flex flex-col items-center justify-center">
+                        <BrainCircuit size={24} className="text-sky-400 mb-2" />
+                        <p className="text-sky-900 font-medium text-sm mb-3">Design Executive Function Supports</p>
+                        <button 
+                          onClick={handleGenerateEFSupports}
+                          disabled={isGeneratingEF}
+                          className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 text-xs"
+                        >
+                          {isGeneratingEF ? <Loader2 size={14} className="animate-spin" /> : <><BrainCircuit size={14} /> Build "External Brain"</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* Deficit Reframer Section */}
+                   <div className="mb-8 bg-indigo-50 border border-indigo-100 p-6 rounded-2xl">
+                      <h4 className="text-sm font-bold text-indigo-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <ArrowRightLeft size={16} /> Neuro-Affirming Reframer
+                      </h4>
+                      <div className="flex gap-2 mb-3">
+                        <input 
+                          type="text" 
+                          placeholder='e.g., "Child is rigid and controlling about play"'
+                          className="flex-1 text-sm p-3 rounded-xl border border-indigo-200 bg-white focus:ring-2 focus:ring-indigo-300 outline-none"
+                          value={reframingInput}
+                          onChange={(e) => setReframingInput(e.target.value)}
+                        />
+                        <button 
+                          onClick={handleReframeText}
+                          disabled={isReframing || !reframingInput}
+                          className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                        >
+                          {isReframing ? <Loader2 size={16} className="animate-spin"/> : <Wand2 size={16} />} Reframe
+                        </button>
+                      </div>
+                      {reframedOutput && (
+                         <div className="relative animate-in fade-in slide-in-from-top-2 duration-300">
+                           <div className="text-sm text-indigo-900 bg-white p-4 rounded-xl border border-indigo-200 leading-relaxed shadow-sm">
+                             <span className="font-bold block mb-1 text-xs uppercase text-indigo-400">Reframed Perspective:</span>
+                             {reframedOutput}
+                           </div>
+                           <button onClick={() => setReframedOutput(null)} className="absolute top-2 right-2 text-indigo-300 hover:text-indigo-500"><X size={16}/></button>
+                         </div>
+                      )}
+                   </div>
+                   
+                   {/* Goal Reframer Section */}
+                   <div className="mb-8 bg-teal-50 border border-teal-100 p-6 rounded-2xl">
+                      <h4 className="text-sm font-bold text-teal-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Target size={16} /> Neuro-Affirming Goal Setter
+                      </h4>
+                      <div className="flex gap-2 mb-3">
+                        <input 
+                          type="text" 
+                          placeholder='e.g., "Will maintain eye contact for 5 seconds"'
+                          className="flex-1 text-sm p-3 rounded-xl border border-teal-200 bg-white focus:ring-2 focus:ring-teal-300 outline-none"
+                          value={goalInput}
+                          onChange={(e) => setGoalInput(e.target.value)}
+                        />
+                        <button 
+                          onClick={handleReframeGoal}
+                          disabled={isReframingGoal || !goalInput}
+                          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                        >
+                          {isReframingGoal ? <Loader2 size={16} className="animate-spin"/> : <Target size={16} />} Set Goal
+                        </button>
+                      </div>
+                      {reframedGoal && (
+                         <div className="relative animate-in fade-in slide-in-from-top-2 duration-300">
+                           <div className="text-sm text-teal-900 bg-white p-4 rounded-xl border border-teal-200 leading-relaxed shadow-sm whitespace-pre-wrap">
+                             {reframedGoal}
+                           </div>
+                           <button onClick={() => setReframedGoal(null)} className="absolute top-2 right-2 text-teal-300 hover:text-teal-500"><X size={16}/></button>
+                         </div>
+                      )}
+                   </div>
+
+                   {/* Neuro-Compass Visualizer */}
+                   {renderStrengthsCompass()}
+
+                   {/* Core Themes Section */}
+                   {coreThemes ? (
+                     <div className="space-y-6 mb-8">
+                        <div className="prose prose-amber max-w-none bg-white p-8 rounded-2xl shadow-sm border border-amber-100">
+                           <h3 className="text-lg font-bold text-amber-800 mb-4 flex items-center gap-2"><Sparkles size={18}/> Core Neurological Drivers</h3>
+                           <p className="whitespace-pre-wrap leading-relaxed text-slate-700">{coreThemes}</p>
+                        </div>
+                        <button onClick={() => setCoreThemes(null)} className="text-sm text-slate-400 hover:text-slate-600">Clear and re-analyze</button>
+                     </div>
+                   ) : (
+                     <div className="text-center py-10 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center mb-8">
+                        <Puzzle size={32} className="text-slate-300 mb-3" />
+                        <p className="text-slate-500 mb-4 text-sm">Synthesize {observations.sensory.length + observations.social.length + observations.language.length} total observations.</p>
+                        <button 
+                          onClick={handleSynthesizeThemes}
+                          disabled={isSynthesizing}
+                          className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm"
+                        >
+                          {isSynthesizing ? <Loader2 size={16} className="animate-spin" /> : <><Sparkles size={16} /> Discover Core Themes</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* Autistic Joy & Glimmers Section */}
+                   {joyAnalysis ? (
+                     <div className="space-y-6 mb-8">
+                        <div className="prose prose-yellow max-w-none bg-white p-8 rounded-2xl shadow-sm border border-yellow-100">
+                           <h3 className="text-lg font-bold text-yellow-700 mb-4 flex items-center gap-2"><Sun size={18}/> Autistic Joy & Glimmers</h3>
+                           <p className="whitespace-pre-wrap leading-relaxed text-slate-700">{joyAnalysis}</p>
+                        </div>
+                        <button onClick={() => setJoyAnalysis(null)} className="text-sm text-slate-400 hover:text-slate-600">Clear analysis</button>
+                     </div>
+                   ) : (
+                     <div className="text-center py-10 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border border-yellow-100 shadow-sm flex flex-col items-center justify-center mb-8">
+                        <Sun size={32} className="text-yellow-400 mb-3" />
+                        <p className="text-yellow-800 mb-4 text-sm font-medium">Find the joy, passion, and "glimmers".</p>
+                        <button 
+                          onClick={handleAnalyzeJoy}
+                          disabled={isAnalyzingJoy}
+                          className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm"
+                        >
+                          {isAnalyzingJoy ? <Loader2 size={16} className="animate-spin" /> : <><Sun size={16} /> Detect Joy & Flow ✨</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* Masking Analysis Section */}
+                   {maskingAnalysis ? (
+                     <div className="space-y-6 mb-8">
+                        <div className="prose prose-purple max-w-none bg-white p-8 rounded-2xl shadow-sm border border-purple-100">
+                           <h3 className="text-lg font-bold text-purple-800 mb-4 flex items-center gap-2"><Battery size={18}/> Masking & Camouflaging Analysis</h3>
+                           <p className="whitespace-pre-wrap leading-relaxed text-slate-700">{maskingAnalysis}</p>
+                        </div>
+                        <button onClick={() => setMaskingAnalysis(null)} className="text-sm text-slate-400 hover:text-slate-600">Clear analysis</button>
+                     </div>
+                   ) : (
+                     <div className="text-center py-10 bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-2xl border border-purple-100 shadow-sm flex flex-col items-center justify-center mb-8">
+                        <Battery size={32} className="text-purple-300 mb-3" />
+                        <p className="text-purple-700 mb-4 text-sm font-medium">Is high social performance causing sensory exhaustion?</p>
+                        <button 
+                          onClick={handleAnalyzeMasking}
+                          disabled={isAnalyzingMasking}
+                          className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm"
+                        >
+                          {isAnalyzingMasking ? <Loader2 size={16} className="animate-spin" /> : <><Eye size={16} /> Detect Masking Cost ✨</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* Strengths Profile Section */}
+                   {strengthsProfile ? (
+                     <div className="space-y-6 mb-8">
+                        <div className="prose prose-emerald max-w-none bg-white p-8 rounded-2xl shadow-sm border border-emerald-100">
+                           <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2"><Smile size={18}/> Hidden Strengths Profile</h3>
+                           <p className="whitespace-pre-wrap leading-relaxed text-slate-700">{strengthsProfile}</p>
+                        </div>
+                        <button onClick={() => setStrengthsProfile(null)} className="text-sm text-slate-400 hover:text-slate-600">Clear strengths</button>
+                     </div>
+                   ) : (
+                     <div className="text-center py-10 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 shadow-sm flex flex-col items-center justify-center mb-8">
+                        <Smile size={32} className="text-emerald-300 mb-3" />
+                        <p className="text-emerald-700 mb-4 text-sm font-medium">Shift the lens from deficits to strengths.</p>
+                        <button 
+                          onClick={handleAnalyzeStrengths}
+                          disabled={isAnalyzingStrengths}
+                          className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm"
+                        >
+                          {isAnalyzingStrengths ? <Loader2 size={16} className="animate-spin" /> : <><Zap size={16} /> Reframe as Strengths ✨</>}
+                        </button>
+                     </div>
+                   )}
+
+                   {/* DSM-5 Mapping Section */}
+                   {dsmMapping ? (
+                     <div className="space-y-6">
+                        <div className="prose prose-blue max-w-none bg-white p-8 rounded-2xl shadow-sm border border-blue-100">
+                           <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center gap-2"><ClipboardList size={18}/> DSM-5 Criteria Map</h3>
+                           <p className="whitespace-pre-wrap leading-relaxed text-slate-700">{dsmMapping}</p>
+                        </div>
+                        <button onClick={() => setDsmMapping(null)} className="text-sm text-slate-400 hover:text-slate-600">Clear mapping</button>
+                     </div>
+                   ) : (
+                     <div className="text-center py-10 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm flex flex-col items-center justify-center">
+                        <ClipboardList size={32} className="text-blue-300 mb-3" />
+                        <p className="text-blue-700 mb-4 text-sm font-medium">Map observations to diagnostic criteria.</p>
+                        <button 
+                          onClick={handleMapToDSM}
+                          disabled={isMappingDSM}
+                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-sm"
+                        >
+                          {isMappingDSM ? <Loader2 size={16} className="animate-spin" /> : <><ClipboardList size={16} /> Map to DSM-5 Criteria ✨</>}
+                        </button>
+                     </div>
+                   )}
+                </div>
+             ) : (
+                // --- DOMAIN VIEW ---
+                <div>
+                   <div className={`p-6 rounded-2xl mb-8 border ${DOMAINS[activeTab].color.replace('text', 'bg').replace('800', '50')} ${DOMAINS[activeTab].border} flex items-start gap-4 shadow-sm`}>
+                      <div className={`p-3 rounded-xl bg-white/60 ${DOMAINS[activeTab].color.split(' ')[1]}`}>
+                        {activeTab === 'sensory' && <Hand size={24} />}
+                        {activeTab === 'social' && <Brain size={24} />}
+                        {activeTab === 'language' && <MessageSquare size={24} />}
+                      </div>
+                      <div className="flex-1">
+                        <h2 className={`text-xl font-bold ${DOMAINS[activeTab].color.split(' ')[1]}`}>{DOMAINS[activeTab].label}</h2>
+                        <p className="text-slate-600 mt-1 text-sm">Review AI-detected patterns and add manual notes.</p>
+                      </div>
+                      
+                      {/* Domain Specific Tools */}
+                      {activeTab === 'language' && (
+                        <div className="flex gap-2 flex-wrap">
+                          <button 
+                            onClick={handleGenerateScripts} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-2"
+                          >
+                             <MessageCircle size={14} /> Play Scripts ✨
+                          </button>
+                          <button 
+                            onClick={handleAnalyzeGLP} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-2"
+                          >
+                             <MessageCircle size={14} /> GLP Analysis ✨
+                          </button>
+                          <button 
+                            onClick={handleSimulateDialogue} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-2"
+                          >
+                             <MessageCircle size={14} /> Simulate Interaction ✨
+                          </button>
+                          <button 
+                            onClick={handleGenerateAAC} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-2"
+                          >
+                             <Grid3x3 size={14} /> Contextual AAC ✨
+                          </button>
+                          {/* NEW: Curriculum Generator */}
+                          <button 
+                            onClick={handleGenerateCurriculum} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-2"
+                          >
+                             <GraduationCap size={14} /> Curriculum Bridge ✨
+                          </button>
+                          {/* NEW: Communication Dictionary */}
+                          <button 
+                            onClick={handleGenerateCommDictionary} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-2"
+                          >
+                             <Book size={14} /> Comm Dictionary ✨
+                          </button>
+                        </div>
+                      )}
+                      
+                      {activeTab === 'sensory' && (
+                        <div className="flex gap-2 flex-wrap">
+                          <button 
+                            onClick={handleGenerateRegulation} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition-colors flex items-center gap-2"
+                          >
+                             <ThermometerSun size={14} /> Create Regulation Plan ✨
+                          </button>
+                          <button 
+                            onClick={handleGenerateInterestBridge} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition-colors flex items-center gap-2"
+                          >
+                             <Link size={14} /> Bridge Interest to Learning ✨
+                          </button>
+                          <button 
+                            onClick={handleGenerateSensorySchedule} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition-colors flex items-center gap-2"
+                          >
+                             <Clock size={14} /> Sensory Lifestyle Schedule ✨
+                          </button>
+                          <button 
+                            onClick={handleGenerateSensoryMatrix} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition-colors flex items-center gap-2"
+                          >
+                             <Table size={14} /> Generate Sensory Matrix ✨
+                          </button>
+                          {/* NEW: Environment Designer */}
+                          <button 
+                            onClick={handleGenerateEnvironment} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-rose-700 text-xs font-bold rounded-lg border border-rose-200 transition-colors flex items-center gap-2"
+                          >
+                             <Palette size={14} /> Environment Designer ✨
+                          </button>
+                        </div>
+                      )}
+
+                      {activeTab === 'social' && (
+                        <div className="flex gap-2 flex-wrap">
+                          <button 
+                            onClick={handleGenerateSocialProfile} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition-colors flex items-center gap-2"
+                          >
+                             <Users size={14} /> Analyze Social Style ✨
+                          </button>
+                          <button 
+                            onClick={handleAnalyzeDoubleEmpathy} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition-colors flex items-center gap-2"
+                          >
+                             <Share2 size={14} /> Double Empathy Decoder ✨
+                          </button>
+                          <button 
+                            onClick={handleGeneratePeerProfile} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition-colors flex items-center gap-2"
+                          >
+                             <UserPlus size={14} /> Generate Peer Match Profile ✨
+                          </button>
+                          <button 
+                            onClick={handleCalculateEnergy} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition-colors flex items-center gap-2"
+                          >
+                             <BatteryCharging size={14} /> Energy Accounting ✨
+                          </button>
+                          {/* NEW: Transition Plan */}
+                          <button 
+                            onClick={handleGenerateTransitionPlan} 
+                            className="px-3 py-1.5 bg-white/50 hover:bg-white text-blue-700 text-xs font-bold rounded-lg border border-blue-200 transition-colors flex items-center gap-2"
+                          >
+                             <ArrowRightLeft size={14} /> Transition Plan ✨
+                          </button>
+                        </div>
+                      )}
+                   </div>
+
+                   {/* AI Output Display Areas */}
+                   
+                   {/* Attention Flow Visualizer */}
+                   {activeTab === 'social' && attentionFlow.length > 0 && renderAttentionDynamics()}
+
+                   {/* Sensory Radar Visualizer */}
+                   {activeTab === 'sensory' && renderSensoryRadar()}
+
+                   {/* Environment Plan Display */}
+                   {environmentPlan && activeTab === 'sensory' && (
+                      <div className="mb-6 bg-rose-50 border border-rose-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Palette size={12}/> Sensory Safe Environment Plan</h4>
+                         {isGeneratingEnv ? (
+                            <div className="flex items-center gap-2 text-rose-600"><Loader2 size={14} className="animate-spin"/> Designing space...</div>
+                         ) : (
+                            <div className="text-sm text-rose-900 whitespace-pre-wrap leading-relaxed">{environmentPlan}</div>
+                         )}
+                         <button onClick={() => setEnvironmentPlan(null)} className="absolute top-2 right-2 text-rose-400 hover:text-rose-700"><X size={14}/></button>
+                      </div>
+                   )}
+                   
+                   {/* NEW: Communication Dictionary Display */}
+                   {commDictionary && activeTab === 'language' && (
+                      <div className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Book size={12}/> Communication Dictionary</h4>
+                         {isGeneratingComm ? (
+                            <div className="flex items-center gap-2 text-emerald-600"><Loader2 size={14} className="animate-spin"/> Decoding signals...</div>
+                         ) : (
+                            <div className="text-sm text-emerald-900 whitespace-pre-wrap leading-relaxed">{commDictionary}</div>
+                         )}
+                         <button onClick={() => setCommDictionary(null)} className="absolute top-2 right-2 text-emerald-400 hover:text-emerald-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* NEW: Transition Plan Display */}
+                   {transitionPlan && activeTab === 'social' && (
+                      <div className="mb-6 bg-blue-50 border border-blue-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2 flex items-center gap-2"><ArrowRightLeft size={12}/> Transition Support Plan</h4>
+                         {isGeneratingTransition ? (
+                            <div className="flex items-center gap-2 text-blue-600"><Loader2 size={14} className="animate-spin"/> Generating plan...</div>
+                         ) : (
+                            <div className="text-sm text-blue-900 whitespace-pre-wrap leading-relaxed">{transitionPlan}</div>
+                         )}
+                         <button onClick={() => setTransitionPlan(null)} className="absolute top-2 right-2 text-blue-400 hover:text-blue-700"><X size={14}/></button>
+                      </div>
+                   )}
+                   
+                   {/* Curriculum Ideas Display */}
+                   {curriculumIdeas && activeTab === 'language' && (
+                      <div className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-2"><GraduationCap size={12}/> Interest-Based Curriculum Bridge</h4>
+                         {isGeneratingCurriculum ? (
+                            <div className="flex items-center gap-2 text-emerald-600"><Loader2 size={14} className="animate-spin"/> Designing activities...</div>
+                         ) : (
+                            <div className="text-sm text-emerald-900 whitespace-pre-wrap leading-relaxed">{curriculumIdeas}</div>
+                         )}
+                         <button onClick={() => setCurriculumIdeas(null)} className="absolute top-2 right-2 text-emerald-400 hover:text-emerald-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Language Scripts */}
+                   {playScripts && activeTab === 'language' && (
+                      <div className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-2"><MessageCircle size={12}/> Interaction Scripts</h4>
+                         <div className="text-sm text-emerald-900 whitespace-pre-wrap leading-relaxed">{playScripts}</div>
+                         <button onClick={() => setPlayScripts(null)} className="absolute top-2 right-2 text-emerald-400 hover:text-emerald-700"><X size={14}/></button>
+                      </div>
+                   )}
+                   
+                   {/* Dialogue Simulation Display */}
+                   {simulatedDialogue && activeTab === 'language' && (
+                      <div className="mb-6 bg-emerald-50 border border-emerald-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Sparkles size={12}/> Simulated Child Response</h4>
+                         {isSimulatingDialogue ? (
+                            <div className="flex items-center gap-2 text-emerald-600"><Loader2 size={14} className="animate-spin"/> Thinking as child...</div>
+                         ) : (
+                            <div className="text-sm text-emerald-900 whitespace-pre-wrap leading-relaxed font-mono bg-white/50 p-3 rounded-lg border border-emerald-100">{simulatedDialogue}</div>
+                         )}
+                         <button onClick={() => setSimulatedDialogue(null)} className="absolute top-2 right-2 text-emerald-400 hover:text-emerald-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* GLP Analysis Display */}
+                   {glpAnalysis && activeTab === 'language' && (
+                      <div className="mb-6 bg-teal-50 border border-teal-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Sparkles size={12}/> Gestalt Language Analysis</h4>
+                         {isAnalyzingGLP ? (
+                            <div className="flex items-center gap-2 text-teal-600"><Loader2 size={14} className="animate-spin"/> Analyzing language patterns...</div>
+                         ) : (
+                            <div className="text-sm text-teal-900 whitespace-pre-wrap leading-relaxed">{glpAnalysis}</div>
+                         )}
+                         <button onClick={() => setGlpAnalysis(null)} className="absolute top-2 right-2 text-teal-400 hover:text-teal-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* AAC Vocabulary Display */}
+                   {aacVocabulary && activeTab === 'language' && (
+                      <div className="mb-6 bg-lime-50 border border-lime-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-lime-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Grid3x3 size={12}/> Contextual AAC Vocabulary</h4>
+                         {isGeneratingAAC ? (
+                            <div className="flex items-center gap-2 text-lime-600"><Loader2 size={14} className="animate-spin"/> Selecting vocabulary...</div>
+                         ) : (
+                            <div className="text-sm text-lime-900 whitespace-pre-wrap leading-relaxed">{aacVocabulary}</div>
+                         )}
+                         <button onClick={() => setAacVocabulary(null)} className="absolute top-2 right-2 text-lime-400 hover:text-lime-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Interest Deep Dive Section */}
+                   {activeTab === 'language' && (
+                      <div className="mb-6 bg-amber-50 border border-amber-100 p-4 rounded-xl">
+                         <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Microscope size={12}/> Interest Deep Dive Explorer</h4>
+                         <div className="flex gap-2 mb-3">
+                           <input 
+                             type="text" 
+                             placeholder="Enter specific interest (e.g. Elevators, Titanic)" 
+                             className="flex-1 text-sm p-2 rounded border border-amber-200 bg-white"
+                             value={interestTopic}
+                             onChange={(e) => setInterestTopic(e.target.value)}
+                           />
+                           <button 
+                             onClick={handleAnalyzeInterest}
+                             disabled={isAnalyzingInterest || !interestTopic}
+                             className="px-3 py-1 bg-amber-200 text-amber-800 rounded text-xs font-bold hover:bg-amber-300 disabled:opacity-50"
+                           >
+                             {isAnalyzingInterest ? <Loader2 size={12} className="animate-spin"/> : "Explore"}
+                           </button>
+                         </div>
+                         {interestDeepDive && (
+                            <div className="relative">
+                              <div className="text-sm text-amber-900 whitespace-pre-wrap leading-relaxed bg-white/50 p-3 rounded-lg border border-amber-200">{interestDeepDive}</div>
+                              <button onClick={() => setInterestDeepDive(null)} className="absolute top-2 right-2 text-amber-400 hover:text-amber-700"><X size={14}/></button>
+                            </div>
+                         )}
+                      </div>
+                   )}
+                   
+                   {/* Sensory Regulation */}
+                   {regulationPlan && activeTab === 'sensory' && (
+                      <div className="mb-6 bg-rose-50 border border-rose-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider mb-2 flex items-center gap-2"><ThermometerSun size={12}/> Regulation Support Plan</h4>
+                         {isGeneratingRegulation ? (
+                            <div className="flex items-center gap-2 text-rose-600"><Loader2 size={14} className="animate-spin"/> Generating plan...</div>
+                         ) : (
+                            <div>
+                               <div className="text-sm text-rose-900 whitespace-pre-wrap leading-relaxed mb-4">{regulationPlan}</div>
+                               {visualAidUrl ? (
+                                 <div className="mt-4 border-t border-rose-200 pt-4">
+                                   <div className="text-xs font-bold text-rose-600 uppercase mb-2 flex items-center gap-2"><ImageIcon size={12}/> Visual Aid</div>
+                                   <img src={visualAidUrl} alt="Visual Support" className="rounded-lg shadow-sm border border-rose-200 max-w-sm" />
+                                 </div>
+                               ) : (
+                                 <button 
+                                   onClick={handleGenerateVisualAid}
+                                   disabled={isGeneratingVisual}
+                                   className="mt-2 text-xs bg-white text-rose-600 px-3 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 flex items-center gap-2 font-medium"
+                                 >
+                                   {isGeneratingVisual ? <Loader2 size={12} className="animate-spin"/> : <ImageIcon size={12} />} 
+                                   Generate Visual Regulation Card
+                                 </button>
+                               )}
+                            </div>
+                         )}
+                         <button onClick={() => setRegulationPlan(null)} className="absolute top-2 right-2 text-rose-400 hover:text-rose-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Sensory Schedule Display */}
+                   {sensorySchedule && activeTab === 'sensory' && (
+                      <div className="mb-6 bg-orange-50 border border-orange-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Clock size={12}/> Sensory Lifestyle Schedule</h4>
+                         {isGeneratingSchedule ? (
+                            <div className="flex items-center gap-2 text-orange-600"><Loader2 size={14} className="animate-spin"/> Designing schedule...</div>
+                         ) : (
+                            <div className="text-sm text-orange-900 whitespace-pre-wrap leading-relaxed">{sensorySchedule}</div>
+                         )}
+                         <button onClick={() => setSensorySchedule(null)} className="absolute top-2 right-2 text-orange-400 hover:text-orange-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Sensory Matrix Display */}
+                   {sensoryMatrix && activeTab === 'sensory' && (
+                      <div className="mb-6 bg-red-50 border border-red-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-red-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Table size={12}/> Sensory Matrix</h4>
+                         {isGeneratingMatrix ? (
+                            <div className="flex items-center gap-2 text-red-600"><Loader2 size={14} className="animate-spin"/> Organizing matrix...</div>
+                         ) : (
+                            <div className="text-sm text-red-900 whitespace-pre-wrap leading-relaxed font-mono bg-white/50 p-3 rounded-lg border border-red-100">{sensoryMatrix}</div>
+                         )}
+                         <button onClick={() => setSensoryMatrix(null)} className="absolute top-2 right-2 text-red-400 hover:text-red-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Interest Bridge Display */}
+                   {interestBridges && activeTab === 'sensory' && (
+                      <div className="mb-6 bg-fuchsia-50 border border-fuchsia-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-fuchsia-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Link size={12}/> Interest-Based Learning Bridges</h4>
+                         {isGeneratingBridge ? (
+                            <div className="flex items-center gap-2 text-fuchsia-600"><Loader2 size={14} className="animate-spin"/> Designing bridges...</div>
+                         ) : (
+                            <div className="text-sm text-fuchsia-900 whitespace-pre-wrap leading-relaxed">{interestBridges}</div>
+                         )}
+                         <button onClick={() => setInterestBridges(null)} className="absolute top-2 right-2 text-fuchsia-400 hover:text-fuchsia-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Social Story Generator (Social Tab) */}
+                   {activeTab === 'social' && (
+                      <div className="mb-6 bg-violet-50 border border-violet-100 p-6 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-violet-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                           <BookOpenCheck size={16} /> Social Story / Comic Strip Generator
+                         </h4>
+                         <div className="flex gap-2 mb-3">
+                           <input 
+                             type="text" 
+                             placeholder='e.g., "Why we wear headphones at assembly"' 
+                             className="flex-1 text-sm p-3 rounded-xl border border-violet-200 bg-white focus:ring-2 focus:ring-violet-300 outline-none"
+                             value={socialStoryTopic}
+                             onChange={(e) => setSocialStoryTopic(e.target.value)}
+                           />
+                           <button 
+                             onClick={handleGenerateSocialStory}
+                             disabled={isGeneratingStory || !socialStoryTopic}
+                             className="px-4 py-2 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                           >
+                             {isGeneratingStory ? <Loader2 size={16} className="animate-spin"/> : <Wand2 size={16} />} Create
+                           </button>
+                         </div>
+                         {socialStory && (
+                            <div className="relative animate-in fade-in slide-in-from-top-2 duration-300">
+                              <div className="text-sm text-violet-900 bg-white p-4 rounded-xl border border-violet-200 leading-relaxed shadow-sm whitespace-pre-wrap">
+                                {socialStory}
+                              </div>
+                              <button onClick={() => setSocialStory(null)} className="absolute top-2 right-2 text-violet-300 hover:text-violet-500"><X size={16}/></button>
+                            </div>
+                         )}
+                      </div>
+                   )}
+
+                   {/* Social Profile */}
+                   {socialProfile && activeTab === 'social' && (
+                      <div className="mb-6 bg-blue-50 border border-blue-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Users size={12}/> Interaction Style Profile</h4>
+                         {isGeneratingSocial ? (
+                            <div className="flex items-center gap-2 text-blue-600"><Loader2 size={14} className="animate-spin"/> Analyzing social style...</div>
+                         ) : (
+                            <div className="text-sm text-blue-900 whitespace-pre-wrap leading-relaxed">{socialProfile}</div>
+                         )}
+                         <button onClick={() => setSocialProfile(null)} className="absolute top-2 right-2 text-blue-400 hover:text-blue-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Double Empathy Display */}
+                   {doubleEmpathy && activeTab === 'social' && (
+                      <div className="mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-indigo-800 uppercase tracking-wider mb-2 flex items-center gap-2"><Share2 size={12}/> Double Empathy Translation Card</h4>
+                         {isAnalyzingDoubleEmpathy ? (
+                            <div className="flex items-center gap-2 text-indigo-600"><Loader2 size={14} className="animate-spin"/> Decoding interaction...</div>
+                         ) : (
+                            <div className="text-sm text-indigo-900 whitespace-pre-wrap leading-relaxed">{doubleEmpathy}</div>
+                         )}
+                         <button onClick={() => setDoubleEmpathy(null)} className="absolute top-2 right-2 text-indigo-400 hover:text-indigo-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Peer Profile Display */}
+                   {peerProfile && activeTab === 'social' && (
+                      <div className="mb-6 bg-sky-50 border border-sky-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-sky-800 uppercase tracking-wider mb-2 flex items-center gap-2"><UserPlus size={12}/> Ideal Peer Match Profile</h4>
+                         {isGeneratingPeer ? (
+                            <div className="flex items-center gap-2 text-sky-600"><Loader2 size={14} className="animate-spin"/> Generating profile...</div>
+                         ) : (
+                            <div className="text-sm text-sky-900 whitespace-pre-wrap leading-relaxed">{peerProfile}</div>
+                         )}
+                         <button onClick={() => setPeerProfile(null)} className="absolute top-2 right-2 text-sky-400 hover:text-sky-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Energy Accounting Display */}
+                   {energyAccount && activeTab === 'social' && (
+                      <div className="mb-6 bg-violet-50 border border-violet-100 p-4 rounded-xl relative">
+                         <h4 className="text-xs font-bold text-violet-800 uppercase tracking-wider mb-2 flex items-center gap-2"><BatteryCharging size={12}/> Social Energy Accounting</h4>
+                         {isCalculatingEnergy ? (
+                            <div className="flex items-center gap-2 text-violet-600"><Loader2 size={14} className="animate-spin"/> Calculating energy costs...</div>
+                         ) : (
+                            <div className="text-sm text-violet-900 whitespace-pre-wrap leading-relaxed">{energyAccount}</div>
+                         )}
+                         <button onClick={() => setEnergyAccount(null)} className="absolute top-2 right-2 text-violet-400 hover:text-violet-700"><X size={14}/></button>
+                      </div>
+                   )}
+
+                   {/* Observation Cards */}
+                   <div className="space-y-4">
+                      {observations[activeTab].length === 0 ? (
+                        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-2xl">
+                          <p className="text-slate-400">No data detected for this domain.</p>
+                        </div>
+                      ) : (
+                        observations[activeTab].map((obs) => (
+                          <div key={obs.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
+                             <div className="flex gap-4">
+                               <div className="mt-1">
+                                 {obs.type === 'ai' ? <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"><Sparkles size={16} /></div> : <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><div className="w-2 h-2 bg-slate-400 rounded-full" /></div>}
+                               </div>
+                               <div className="flex-1 relative">
+                                 <textarea 
+                                   className="w-full text-slate-800 text-sm leading-relaxed border-none focus:ring-0 resize-none bg-transparent p-0"
+                                   value={obs.text}
+                                   onChange={(e) => handleUpdateObservationText(activeTab, obs.id, e.target.value)}
+                                   rows={Math.max(2, Math.ceil(obs.text.length / 100))}
+                                 />
+                                 {enhancingId === obs.id && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><Loader2 size={20} className="animate-spin text-indigo-500" /></div>}
+                                 <div className="flex items-center justify-between mt-3">
+                                    <div className="flex items-center gap-4">
+                                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${obs.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{obs.status === 'verified' ? 'Verified' : 'Review Needed'}</span>
+                                    </div>
+                                    <button onClick={() => handleEnhanceObservation(obs)} className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-md text-xs font-medium"><Wand2 size={12} /> Enhance ✨</button>
+                                 </div>
+                               </div>
+                             </div>
+                          </div>
+                        ))
+                      )}
+                   </div>
+                   <button onClick={() => handleAddObservation(activeTab, "")} className="w-full py-4 mt-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all font-medium flex items-center justify-center gap-2"><Layout size={18} /> Add Manual Observation</button>
+                </div>
+             )}
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+}

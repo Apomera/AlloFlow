@@ -1,0 +1,26 @@
+﻿Adventure hooks found: 22
+Simple init: 22
+Lazy init: 0
+
+  L31729 [SIMPLE]: isAdventureCloudEnabled = useState(false)
+  L31782 [SIMPLE]: isSocialStoryMode = useState(false)
+  L31783 [SIMPLE]: socialStoryFocus = useState('')
+  L32048 [SIMPLE]: pendingAdventureUpdate = useState(null)
+  L32292 [SIMPLE]: dynamicReflectionQuestion = useState('')
+  L32332 [SIMPLE]: pointHistory = useState([])
+  L33249 [SIMPLE]: adventureDifficulty = useState('Normal')
+  L33298 [SIMPLE]: isResumingAdventure = useState(false)
+  L33299 [SIMPLE]: adventureEffects = useState({ xp: null, energy: null, levelUp: null })
+  L33301 [SIMPLE]: showStorybookExportModal = useState(false)
+  L33305 [SIMPLE]: adventureInputMode = useState('choice')
+  L33306 [SIMPLE]: adventureLanguageMode = useState('English')
+  L33307 [SIMPLE]: adventureTextInput = useState('')
+  L33308 [SIMPLE]: failedAdventureAction = useState(null)
+  L33309 [SIMPLE]: isAdventureStoryMode = useState(false)
+  L33310 [SIMPLE]: adventureFreeResponseEnabled = useState(false)
+  L33311 [SIMPLE]: adventureAutoRead = useState(false)
+  L33312 [SIMPLE]: adventureChanceMode = useState(false)
+  L33325 [SIMPLE]: adventureImageSize = useState(450)
+  L33342 [SIMPLE]: hasSavedAdventure = useState(false)
+  L33343 [SIMPLE]: showAdventureConfirmation = useState(false)
+  L35251 [SIMPLE]: hintHistory = useState([])

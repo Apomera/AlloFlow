@@ -1,0 +1,35 @@
+=== processWordsInBatches definition ===
+
+=== handleStart function body (L1441 area) ===
+  L1442: const wordsToProcess = previewList.filter((_, i) => selectedIndices.has(i));
+  L1443: if (wordsToProcess.length === 0) return;
+  L1445: setIsProcessing(true);
+  L1447: const processed = [];
+  L1449: for (let i = 0; i < wordsToProcess.length; i++) {
+  L1450: const rawWord = wordsToProcess[i];
+  L1477: const result = await callGemini(prompt, true);
+  L1488: imageUrl = await callImagen(finalPrompt);
+  L1497: processed.push({
+  L1518: console.warn("Word processing failed for:", rawWord, e.message);
+  L1521: processed.push({
+  L1535: const lastItem = processed[processed.length - 1];
+  L1544: try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { console.warn('Caught error:', e?.message || e); }
+  L1581: onStartGame(processed, sequence, lessonPlanConfig, configSummary);
+  L1582: setIsProcessing(false);
+  L1590: <Loader2 className={`text-violet-600 ${isProcessing ? 'animate-spin' : ''}`} size={20} />
+  L1592: {isProcessing ? 'Generating...' : 'Word Sounds'}
+  L1600: {isProcessing && (
+
+=== setPreloadedWords ===
+  L5556: setPreloadedWords(prev => [...prev, ...newPreloadedWords]);
+  L5917: // The existing code used `setPreloadedWords([...preloadedData])` incrementally.
+  L6084: setPreloadedWords(prev => {
+  L6095: setPreloadedWords(validResults);
+  L6506: setPreloadedWords(prev => {
+  L6519: setPreloadedWords(prev => {
+  L6565: setPreloadedWords(prev => {
+
+=== handleWordSoundsStartGame ===
+  L38127: const handleWordSoundsStartGame = (generatedTerms) => {
+
+=== wordSoundsTerms / setWordSoundsTerms ===

@@ -1,0 +1,154 @@
+=== L38120-38155 (Generation handler) ===
+L38120:   const handleRemoveStandard = (index) => {
+L38121:       setTargetStandards(prev => prev.filter((_, i) => i !== index));
+L38122:   };
+L38123: 
+L38124: 
+L38125: 
+L38126:   const handleWordSoundsStartGame = (generatedTerms) => {
+L38127:     setWordSoundsAutoReview(false); // Force Play Mode
+L38128:       // 1. Create History Item (Persistence)
+L38129:       const newItem = {
+L38130:           id: Date.now().toString(),
+L38131:           type: 'word-sounds', // Uses existing Phonology View
+L38132:           title: "Word Sounds Activity",
+L38133:           data: generatedTerms, // The Oracle Data
+L38134:           timestamp: new Date(),
+L38135:           meta: `${generatedTerms.length} Words`
+L38136:       };
+L38137: 
+L38138:       // 2. Save to State
+L38139:       setHistory(prev => [...prev, newItem]);
+L38140:       setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L38141: 
+L38142:       // 3. Launch Game
+L38143:       // Set isWordSoundsMode to true so WordSoundsModal renders
+L38144:       setIsWordSoundsMode(true);
+L38145:       setActiveView('word-sounds');
+L38146: 
+L38147:       addToast("Word Sounds Ready!", "success");
+L38148:   };
+L38149: 
+L38150:   const handleOpenWordSounds = () => {
+L38151:         setActiveView('word-sounds-generator');
+L38152:         // Parse sourceVocabulary string into array
+L38153:         const rawText = sourceVocabulary || "";
+L38154:         const derivedTerms = typeof rawText === 'string'
+L38155:             ? rawText.split(/[\n,]+/).map(t => t.trim()).filter(t => t.length > 0)
+
+=== L45330-45355 (Restore flow) ===
+L45330:       setGeneratedContent({ type: item.type, data: item.data, id: item.id });
+L45331:       setActiveView(item.type);
+L45332:       setIsMapLocked(false);
+L45333: 
+L45334:       // Launch Word Sounds Studio when restoring a word-sounds resource
+L45335:       if (item.type === 'word-sounds' || item.type === 'glossary') {
+L45336:           setIsWordSoundsMode(true);
+L45337:           // Restore preloaded words if saved with the resource
+L45338:           if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
+L45339:               console.log("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
+L45340:               // FIX: Clear ttsReady to force TTS re-cache (audio data not persisted)
+L45341:               const wordsWithFreshTtsFlags = item.wsPreloadedWords.map(w => ({
+L45342:                   ...w,
+L45343:                   ttsReady: false,
+L45344:                   _audioRequested: false
+L45345:               }));
+L45346:               setWsPreloadedWords(wordsWithFreshTtsFlags);
+L45347:           } else if (item.data && Array.isArray(item.data) && item.data.length > 0) {
+L45348:               // Fallback: Use item.data as preloadedWords for newly generated resources
+L45349:               console.log("📥 Restoring preloaded words from item.data:", item.data.length);
+L45350:               setWsPreloadedWords(item.data);
+L45351:           }
+L45352:       }
+L45353: 
+L45354:       if (item.type === 'adventure' && item.data?.snapshot) {
+L45355:           setAdventureState(prev => ({
+L45356:               ...prev,
+L45357:               ...item.data.snapshot,
+L45358:               isLoading: false,
+L45359:               isImageLoading: false
+L45360:           }));
+
+=== L45395-45415 (Another generation path) ===
+L45395:     if (!generatedContent) return;
+L45396:     const contentCopy = JSON.parse(JSON.stringify(generatedContent));
+L45397:     const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+L45398:     const newItem = {
+L45399:         ...contentCopy,
+L45400:         id: newId,
+L45401:         title: `${contentCopy.title || getDefaultTitle(contentCopy.type)} (${t('common.copy')})`,
+L45402:         timestamp: new Date()
+L45403:     };
+L45404:     setHistory(prev => [...prev, newItem]);
+L45405:     setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L45406:     addToast(t('toasts.resource_duplicated'), "success");
+L45407:   };
+L45408:   const handleDeleteHistoryItem = (e, id) => {
+L45409:     e.stopPropagation();
+L45410:     setHistory(prev => prev.filter(item => item.id !== id));
+L45411:     if (generatedContent && generatedContent.id === id) {
+L45412:         setGeneratedContent(null);
+L45413:         setActiveView('input');
+L45414:     }
+L45415:   };
+
+=== L57185-57205 (Third generation path) ===
+L57185:         if (saveOriginalOnAdjust) {
+L57186:             const newItem = {
+L57187:                 ...generatedContent,
+L57188:                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+L57189:                 data: updatedData,
+L57190:                 title: `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${changeLabel})`,
+L57191:                 timestamp: new Date()
+L57192:             };
+L57193:             if (newItem.levelCheck) delete newItem.levelCheck;
+L57194:             if (newItem.alignmentCheck) delete newItem.alignmentCheck;
+L57195: 
+L57196:             setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+L57197:             setHistory(prev => [...prev, newItem]);
+L57198:             addToast(t('toasts.saved_new_version', { label: changeLabel }), "success");
+L57199:         } else {
+L57200:             const updatedContent = { ...generatedContent, data: updatedData };
+L57201:             if (updatedContent.levelCheck) delete updatedContent.levelCheck;
+L57202:             if (updatedContent.alignmentCheck) delete updatedContent.alignmentCheck;
+L57203: 
+L57204:             setGeneratedContent(updatedContent);
+L57205:             setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L57206:             addToast(t('toasts.adjusted_version', { label: changeLabel }), "success");
+L57207:         }
+L57208: 
+L57209:     } catch (err) {
+L57210:         console.error(err);
+
+=== L71445-71475 (Fourth path) ===
+L71445:                        lessonPlanConfig: lessonPlanConfig || null,
+L71446:                        configSummary: configSummary || 'Quick Practice Mode'
+L71447:                    };
+L71448:                    setGeneratedContent(wordSoundsResource);
+L71449:                    setHistory(prev => [wordSoundsResource, ...prev]);
+L71450: 
+L71451:                    // Set up Word Sounds state
+L71452:                    setWsPreloadedWords(words);
+L71453:                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
+L71454:                    setWordSoundsActivity('word-sounds');
+L71455:                    setWordSoundsAutoReview(true);
+L71456:                    setIsWordSoundsMode(true);
+L71457:                    setActiveView('output');
+L71458:                }}
+L71459:               onClose={() => setActiveView('input')}
+L71460:               callGemini={callGemini}
+L71461:               callImagen={callImagen}
+L71462:               callTTS={callTTS}
+L71463:               preloadedWords={wsPreloadedWords || []}
+L71464:               onShowReview={() => {
+L71465:                   // Navigate to word sounds modal with review panel
+L71466:                   // Review panel auto-shows via useEffect in WordSoundsModal when:
+L71467:                   // preloadedWords.length > 0 && !hasStartedFromReview.current
+L71468:                   setWordSoundsActivity('word-sounds');
+L71469:                   setWordSoundsAutoReview(true); // Force Review Mode
+L71470:                   setIsWordSoundsMode(true);
+L71471:                   setActiveView('output');
+L71472:               }}
+L71473:           />
+L71474:       )}
+L71475: 

@@ -1,0 +1,4 @@
+L675:     'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+L978:     blending: getAudio('instructions', 'blending'),
+L1033: _LOAD_INSTRUCTION_AUDIO_RAW('inst_blending', getAudio('instructions', 'inst_blending'));
+L9513:                                     <p className="text-sm text-slate-500">{`Listen to the sounds, then ${useMicInput ? "say the word!" : "pick the word!"}`}</p>

@@ -1,0 +1,55 @@
+=== STYLE OBJECTS IN .map() LOOPS (DYNAMIC — highest impact): 8 ===
+  L24379: style={{ animationDuration: `${callDelay}s` }}
+  L24781: style={{ animationDelay: `${idx * 50}ms` }}
+  L26396: style={{ width: `${stat.percent}%` }}
+  L52409: <div key={i} className="relative group animate-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${i * 100
+  L60136: style={{ width: `${(processingProgress.current / processingProgress.total) * 100}%` }}
+  L63327: <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 a
+  L65433: style={{ width: `${adventureState.debateMomentum}%` }}
+  L66848: <div key={idx} className="relative animate-in slide-in-from-bottom-2 duration-300" style={{animationDelay: `${idx * 100}
+
+=== STYLE OBJECTS IN .map() LOOPS (STATIC — move to CSS): 22 ===
+  L8684: style={{
+  L8705: style={{
+  L10146: style={{
+  L10282: style={{ WebkitAppearance: 'none', appearance: 'none' }}
+  L17584: style={{
+  L17626: style={{
+  L18912: style={{
+  L21653: style={{
+  L21660: style={{
+  L21727: style={{
+  ... and 12 more
+
+=== STANDALONE DYNAMIC STYLES: 44 ===
+  L517: style={{ width: `${progressPercent}%` }}
+  L1769: style={{ width: `${selectedIndices.size ? (generatedCount / selectedIndices.size) * 100 : 0}%` }}
+  L2241: style={{ width: `${(generatedCount / selectedIndices.size) * 100}%` }}
+  L4403: style={{ backgroundColor: isComplete ? '#f5f3ff' : 'white' }}
+  L10319: style={{ width: `${Math.min((wordSoundsSessionProgress / SESSION_LENGTH) * 100, 100)}%` }}
+  L17074: style={{ width: `${progress}%` }}
+  L19137: <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: 'transform 0.1s ease-out' }}
+  L19168: style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
+  L19207: style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
+  L19323: <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+  ... and 34 more
+
+=== STANDALONE STATIC STYLES (move to CSS class): 66 ===
+  L2712: style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+  L2735: <div className="relative z-50" style={{ pointerEvents: 'auto' }}>
+  L2757: style={{ pointerEvents: 'auto', cursor: 'pointer', position: 'relative', zIndex: 100 }}
+  L5049: <div style={{
+  L5063: {wordSoundsDifficulty === 'auto' && <span style={{ fontSize: '10px', opacity: 0.7 }}>(Auto)</span>}
+  L8303: style={{
+  L8405: <div className="w-1 bg-violet-400 rounded-full" style={{height: '4px', animation: 'soundwave 0.6s ease-in-out infinite a
+  L8406: <div className="w-1 bg-violet-500 rounded-full" style={{height: '12px', animation: 'soundwave 0.6s ease-in-out infinite 
+  L8407: <div className="w-1 bg-violet-400 rounded-full" style={{height: '8px', animation: 'soundwave 0.6s ease-in-out infinite a
+  L8636: style={{
+  ... and 56 more
+
+=== SUMMARY ===
+  In .map() + dynamic: 8 (HIGHEST PERF IMPACT)
+  In .map() + static: 22 (move to CSS)
+  Standalone dynamic: 44
+  Standalone static: 66 (move to CSS)
+  TOTAL: 140

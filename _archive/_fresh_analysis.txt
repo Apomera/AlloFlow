@@ -1,0 +1,280 @@
+Total lines: 72925
+File size: 8.1 MB (estimated)
+
+=== 1. COMPONENT INVENTORY ===
+  L99: GlobalMuteButton
+  L1266: WordSoundsGenerator
+  L3812: RhymeView
+  L3906: OrthographyView
+  L4082: WordFamiliesView
+  L4274: SoundMappingView
+  L7930: LetterTraceView
+  L10154: StudentAnalyticsPanel
+  L17734: LanguageProvider
+  L17914: LargeFileImportModal
+  L18111: StudentSubmitModal
+  L18375: SpeechBubble
+  L18496: LandingDust
+  L18506: JetpackParticles
+  L18552: ReactionBubble
+  L18560: BotConfettiBurst
+  L18600: AlloBot
+  L20677: MathSymbol
+  L20687: MissionReportCard
+  L20798: StudentQuizOverlay
+  L21356: TeacherGate
+  L21686: ClimaxProgressBar
+  L21760: AdventureAmbience
+  L22198: InfoTooltip
+  L22663: ConfettiExplosion
+  L22685: Stamp
+  L22701: ComplexityGauge
+  L22722: Sticker
+  L22758: AnimatedNumber
+  L22801: ClozeInput
+  L22885: MemoryGame
+  L23191: SkeletonLoader
+  L23209: MatchingGame
+  L23583: TimelineGame
+  L23940: ConceptSortGame
+  L24297: VennGame
+  L24641: CrosswordGame
+  L25101: SyntaxScramble
+  L25265: BingoGame
+  L25691: StudentBingoGame
+  L25860: WordScrambleGame
+  L26077: InventoryGrid
+  L26136: DiceOverlay
+  L26193: AdventureShop
+  L26283: RoleSelectionModal
+  L26423: StudentEntryModal
+  L26543: StudentWelcomeModal
+  L26596: SimpleBarChart
+  L26649: SimpleDonutChart
+  L26688: ConfettiEffect
+  L26734: StudentEscapeRoomOverlay
+  L27441: EscapeRoomTeacherControls
+  L27628: TeacherLiveQuizControls
+  L28390: LongitudinalProgressChart
+  L28457: TeacherDashboard
+  L29138: QuickStartWizard
+  L30239: SpeedReaderOverlay
+  L30407: ImmersiveToolbar
+  L30410: ToggleButton
+  L30542: ImmersiveWord
+  L30609: InteractiveBlueprintCard
+  L30824: HarmonyMeter
+  L30847: CharacterColumn
+  L30982: MarkdownRenderer
+  L38681: BilingualFieldRenderer
+  L38770: ImmersiveWord
+  L54667: BranchItem
+  Total component-like declarations: 67
+
+=== 2. FEATURE FLAGS ===
+
+=== 3. API INTEGRATIONS ===
+  Gemini API (L1266)
+  Gemini API (L1433)
+  Gemini API (L1498)
+  Gemini API (L17388)
+  Gemini API (L22575)
+  Gemini API (L31560)
+  Gemini API (L31845)
+  Gemini API (L35544)
+  Gemini API (L35553)
+  Gemini API (L35619)
+  Gemini API (L37966)
+  Gemini API (L38039)
+  Gemini API (L39254)
+  Gemini API (L39255)
+  Gemini API (L39370)
+  Gemini API (L39447)
+  Gemini API (L39610)
+  Gemini API (L39671)
+  Gemini API (L39781)
+  Gemini API (L39782)
+  Gemini API (L39812)
+  Gemini API (L39813)
+  Gemini API (L39874)
+  Gemini API (L40055)
+  Gemini API (L40156)
+  Gemini API (L40486)
+  Gemini API (L40546)
+  Gemini API (L40641)
+  Gemini API (L40695)
+  Gemini API (L40771)
+  Gemini API (L40877)
+  Gemini API (L40913)
+  Gemini API (L41121)
+  Gemini API (L41558)
+  Gemini API (L41615)
+  Gemini API (L41659)
+  Gemini API (L41689)
+  Gemini API (L41795)
+  Gemini API (L45466)
+  Gemini API (L45538)
+  Gemini API (L45587)
+  Gemini API (L45716)
+  Gemini API (L45755)
+  Gemini API (L45995)
+  Gemini API (L46059)
+  Gemini API (L46566)
+  Gemini API (L46833)
+  Gemini API (L47502)
+  Gemini API (L47807)
+  Gemini API (L48001)
+  Gemini API (L48034)
+  Gemini API (L48085)
+  Gemini API (L48214)
+  Gemini API (L48499)
+  Gemini API (L48560)
+  Gemini API (L48708)
+  Gemini API (L49496)
+  Gemini API (L49633)
+  Gemini API (L49714)
+  Gemini API (L49915)
+  Gemini API (L49960)
+  Gemini API (L50008)
+  Gemini API (L50036)
+  Gemini API (L50255)
+  Gemini API (L50327)
+  Gemini API (L50445)
+  Gemini API (L50572)
+  Gemini API (L50759)
+  Gemini API (L50898)
+  Gemini API (L51005)
+  Gemini API (L51073)
+  Gemini API (L51129)
+  Gemini API (L51225)
+  Gemini API (L51501)
+  Gemini API (L51610)
+  Gemini API (L52350)
+  Gemini API (L5240)
+  Gemini API (L52841)
+  Gemini API (L52871)
+  Gemini API (L52899)
+  Gemini API (L52944)
+  Gemini API (L53011)
+  Gemini API (L53064)
+  Gemini API (L53167)
+  Gemini API (L53216)
+  Gemini API (L53339)
+  Gemini API (L53388)
+  Gemini API (L53439)
+  Gemini API (L53584)
+  Gemini API (L53664)
+  Gemini API (L53756)
+  Gemini API (L53824)
+  Gemini API (L53880)
+  Gemini API (L53924)
+  Gemini API (L54004)
+  Gemini API (L54060)
+  Gemini API (L54411)
+  Gemini API (L54545)
+  Gemini API (L55667)
+  Gemini API (L55744)
+  Gemini API (L55886)
+  Gemini API (L5607)
+  Gemini API (L56092)
+  Gemini API (L56124)
+  Gemini API (L56188)
+  Gemini API (L56260)
+  Gemini API (L56308)
+  Gemini API (L56370)
+  Gemini API (L56513)
+  Gemini API (L56559)
+  Gemini API (L56688)
+  Gemini API (L56752)
+  Gemini API (L56869)
+  Gemini API (L6053)
+  Imagen API (L1266)
+  Imagen API (L40054)
+  Imagen API (L47967)
+  Imagen API (L53892)
+  IndexedDB
+  Speech Recognition API
+  TTS API (L1266)
+  TTS API (L34910)
+  TTS API (L3558)
+  TTS API (L37108)
+  TTS API (L40013)
+  TTS API (L41700)
+  TTS API (L42007)
+  TTS API (L42383)
+  TTS API (L55523)
+  Web Speech API
+
+=== 4. STATE COMPLEXITY ===
+  useState:    743
+  useRef:      147
+  useEffect:   203
+  useCallback: 94
+  useMemo:     27
+
+=== 5. ACTIVITY / GAME INVENTORY ===
+  L20687: const MissionReportCard = ({ adventureState, globalLevel, onClose, onExport, onContinue, onNewGame, 
+  L24297: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+  L25868: const [isGameOver, setIsGameOver] = useState(false);
+  L26875: const isGameOver = newLives <= 0 && maxLives < 99;
+  L27707: const prompt = `Pixel art boss monster representing '${topic}'. Retro 8-bit video game sprite. Threa
+  L32263: const closeBingo = useCallback(() => setIsBingoGame(false), []);
+  L32264: const closeStudentBingo = useCallback(() => setIsStudentBingoGame(false), []);
+  L32265: const closeCrossword = useCallback(() => setIsCrosswordGame(false), []);
+  L32266: const closeMemory = useCallback(() => setIsMemoryGame(false), []);
+  L32267: const closeMatching = useCallback(() => setIsMatchingGame(false), []);
+  L32268: const closeTimeline = useCallback(() => setIsTimelineGame(false), []);
+  L32269: const closeConceptSort = useCallback(() => setIsConceptSortGame(false), []);
+  L32270: const closeSyntax = useCallback(() => setIsSyntaxGame(false), []);
+  L32462: const [isTimelineGame, setIsTimelineGame] = useState(false);
+  L32463: const [isConceptSortGame, setIsConceptSortGame] = useState(false);
+  L32464: const [isSyntaxGame, setIsSyntaxGame] = useState(false);
+  L32545: const [isReviewGame, setIsReviewGame] = useState(false);
+  L32757: const [isMemoryGame, setIsMemoryGame] = useState(false);
+  L32758: const [isCrosswordGame, setIsCrosswordGame] = useState(false);
+  L32759: const [isMatchingGame, setIsMatchingGame] = useState(false);
+  L32760: const [isBingoGame, setIsBingoGame] = useState(false);
+  L32761: const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
+  L32762: const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
+  L40182: const prompt = `Single 8-bit pixel art icon of ${itemName}${context} for a retro RPG video game inve
+  L40396: const isSolution = gameData.solutions.includes(`${r}-${c}`);
+  L42755: const isSol = item.gameData.solutions.includes(`${r}-${c}`);
+  L64776: const isAnswer = gameData.solutions && gameData.solutions.includes(`${r}-${c}`);
+  L66930: const isClaimed = reviewGameState.claimed.has(q.originalIndex);
+
+=== 6. AUDIO ASSET FOOTPRINT ===
+  Lines > 500 chars with audio/base64: 107
+  Lines > 1000 chars total: 113
+
+=== 7. ERROR HANDLING ===
+  try blocks:       356
+  catch blocks:     383
+  console.error:    244
+  console.warn:     186
+  ErrorBoundary:    36
+
+=== 8. LOCALIZATION ===
+  t() calls: 3463
+  ts() calls: 39
+
+=== 9. ACCESSIBILITY ===
+  aria-* attributes: 357
+  role attributes:   90
+  tabIndex:          39
+
+=== 10. CODE DENSITY BY REGION (5K line blocks) ===
+  L1-5000: Components:9 JSX:314 Logic:237
+  L5001-10000: Components:2 JSX:196 Logic:431
+  L10001-15000: Components:1 JSX:79 Logic:31
+  L15001-20000: Components:10 JSX:90 Logic:259
+  L20001-25000: Components:25 JSX:385 Logic:364
+  L25001-30000: Components:22 JSX:672 Logic:220
+  L30001-35000: Components:10 JSX:138 Logic:304
+  L35001-40000: Components:4 JSX:75 Logic:594
+  L40001-45000: Components:2 JSX:197 Logic:506
+  L45001-50000: Components:2 JSX:33 Logic:518
+  L50001-55000: Components:3 JSX:58 Logic:468
+  L55001-60000: Components:2 JSX:553 Logic:192
+  L60001-65000: Components:0 JSX:736 Logic:50
+  L65001-70000: Components:0 JSX:815 Logic:85
+  L70001-72925: Components:0 JSX:445 Logic:54

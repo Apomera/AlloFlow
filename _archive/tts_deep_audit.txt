@@ -1,0 +1,26 @@
+=== try-scoped callTTS/fetchTTSBytes patterns ===
+
+=== AlloBot onGenerateAudio scoping check ===
+  L24059: const url = await onGenerateAudio(textToRead, selectedVoice);
+        L24057: try {
+        L24058: if (onGenerateAudio) {
+    >>> L24059: const url = await onGenerateAudio(textToRead, selectedVoice);
+        L24060: if (!url) { setIsAudioPlaying(false); return; } // Global mute check
+        L24061: const audio = new Audio(url);
+        L24062: callerAudioRef.current = audio;
+        L24063: audio.onended = () => {
+
+=== authFailedRef (gates cloud TTS) ===
+  L17700: const authFailedRef = useRef(false);
+  L17917: if (!isSilent && soundEnabledRef.current && !authFailedRef.current) {
+
+=== soundEnabledRef ===
+  L17701: const soundEnabledRef = useRef(soundEnabled);
+  L17703: soundEnabledRef.current = soundEnabled;
+  L17917: if (!isSilent && soundEnabledRef.current && !authFailedRef.current) {
+  L17937: if (!soundEnabledRef.current) {
+
+=== globalMuteEnabled ===
+  L143: let globalMuteEnabled = localStorage.getItem('alloflow-global-muted') === 'true';
+  L155: globalMuteEnabled = muted;
+  L161: const isGlobalMuted = () => globalMuteEnabled;

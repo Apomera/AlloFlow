@@ -1,0 +1,67 @@
+=== screenerSession Initialization ===
+State(false);
+  const [probeGradeLevel, setProbeGradeLevel] = useState('K');
+  const [probeActivity, setProbeActivity] = useState('segmentation');
+  const [probeForm, setProbeForm] = useState('A');
+  const [screenerSession, setScreenerSession] = useState(null);
+  const [rosterQueue, setRosterQueue] = useState([]);
+
+  useEffect(() => {
+
+    if (!screenerSession || screenerSession.status !== 'interstitial') return;
+
+    const timer = setTimeout(() => {
+
+      const nextActivity = screenerSession.subtests[screenerSession.currentIndex];
+
+      setScreenerSession(prev => ({ ...prev, status: 'running' }));
+
+      launchBenchmarkProbe(screenerSession.grade, nextActivity, screenerSession.form);
+
+    }, 2000);
+
+    return () => clearTimeout(timer);
+
+  }, [screenerSession?.status, screenerSession?.currentIndex]);
+  React.useEffect(() => {
+    if (fluencyStatus !== 'complete' || !fluencyResult) return;
+    if (!screenerSession || screenerSession.status !== 'running') return;
+    const currentSubtest = screenerSession.subtests[screenerSession.currentIndex];
+    if (currentSubtest !== 'orf') return;
+    const orfResult = {
+      activity: 'orf',
+      grade: screenerSession.grade,
+      form: screenerSession.form,
+      student: screenerSession.student,
+
+
+=== Screener Start Functions ===
+;
+
+    const timer = setTimeout(() => {
+
+      const nextActivity = screenerSession.subtests[screenerSession.currentIndex];
+
+      setScreenerSession(prev => ({ ...prev, status: 'running' }));
+
+      launchBenchmarkProbe(screenerSession.grade, nextActivity, screenerSession.form);
+
+    }, 2000);
+
+    return () => clearTimeout(timer);
+
+  }, [screenerSession?.status, screenerSession?.currentIndex]);
+  React.useEffect(() => {
+    if (fluencyStatus !== 'complete' || !fluencyResult) return;
+    if (!screenerSession || screenerSession.status !== 'running') return;
+    const currentSubtest = screenerSession.subtests[screenerSession.currentIndex];
+    if (currentSubtest !== 'orf') return;
+    const orfResult = {
+      activity: 'orf',
+      grade: screenerSession.grade,
+      form: screenerSession.form,
+      student: screenerSession.student,
+      correct: fluencyResult.wcpm || 0,
+      total: fluencyResult.wordData ? fluencyResult.wordData.length : 0,
+      accuracy: fluencyResult.accuracy || fluencyResult.accuracyScore 
+

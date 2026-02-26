@@ -1,0 +1,8 @@
+Line 1171: _LOAD_INSTRUCTION_AUDIO_RAW found
+Line 1188: INSTRUCTION_AUDIO const found: const INSTRUCTION_AUDIO = new Proxy({}, {
+Line 1193: _LOAD_INSTRUCTION_AUDIO_RAW found
+Line 1200: _LOAD_INSTRUCTION_AUDIO_RAW found
+Line 1205: _LOAD_INSTRUCTION_AUDIO_RAW found
+Line 1209: _LOAD_INSTRUCTION_AUDIO_RAW found
+Line 7363: checkAnswer definition found: const checkAnswer = React.useCallback((answer, exp
+Line 25979: checkAnswer definition found: const checkAnswer = () => {

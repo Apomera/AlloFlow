@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlloFlow UDL Platform | Systems Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;500;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-base: #060913;
+            --bg-surface: rgba(16, 23, 42, 0.6);
+            --bg-glass: rgba(30, 41, 59, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --accent-primary: #6366F1;
+            --accent-secondary: #06B6D4;
+            --accent-tertiary: #10B981;
+            --gradient-1: linear-gradient(135deg, #4F46E5, #06B6D4);
+            --gradient-2: linear-gradient(135deg, #8B5CF6, #EC4899);
+            --gradient-3: linear-gradient(135deg, #10B981, #3B82F6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .background-fx {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--accent-primary);
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-secondary);
+            bottom: -100px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-tertiary);
+            top: 40%;
+            left: 40%;
+            opacity: 0.2;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(50px, 30px) scale(1.1);
+            }
+
+            100% {
+                transform: translate(-30px, 50px) scale(0.9);
+            }
+        }
+
+        #deck {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 8rem;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: all;
+        }
+
+        .slide.prev {
+            transform: scale(0.95) translateY(-20px);
+        }
+
+        .glass-panel {
+            background: var(--bg-glass);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            padding: 4rem;
+            width: 100%;
+            max-width: 1300px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .slide h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: #A5B4FC;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .grid-2-asym {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 1rem;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-icon i {
+            color: white;
+            width: 28px;
+            height: 28px;
+        }
+
+        .code-block {
+            background: #0B0F19;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #A5B4FC;
+            overflow-x: auto;
+        }
+
+        .diagram {
+            width: 100%;
+            height: 100%;
+            min-height: 380px;
+            border-radius: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diagram-node {
+            padding: 1rem 1.5rem;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1rem;
+            font-family: 'Outfit';
+            font-weight: 600;
+            text-align: center;
+            position: absolute;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 2;
+        }
+
+        .node-accent {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .node-emerald {
+            border-color: var(--accent-tertiary);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .node-cyan {
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+            border-width: 2px;
+        }
+
+        .line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1;
+        }
+
+        .line-dashed {
+            background: transparent;
+            border-top: 2px dashed rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .bullets {
+            list-style: none;
+        }
+
+        .bullets li {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1.1rem;
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .bullets li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-secondary);
+            box-shadow: 0 0 10px var(--accent-secondary);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .ctrl-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .slides-indicator {
+            display: flex;
+            align-items: center;
+            font-family: 'Outfit';
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            padding: 0 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-fx">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div id="deck">
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="glass-panel" style="text-align: center; padding: 6rem 4rem;">
+                <div class="badge">Architecture Monograph</div>
+                <h1>AlloFlow Architecture</h1>
+                <p style="font-size: 1.5rem; max-width: 800px; margin: 0 auto 3rem; color: #E2E8F0;">
+                    Systems Engineering & Scaling a High-Performance Educational Monolith.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+                    <div class="card" style="min-width: 220px;">
+                        <h3
+                            style="margin: 0; font-size: 2.5rem; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            7.5MB</h3>
+                        <p style="margin: 0; font-size: 0.875rem;">Single React File</p>
+                    </div>
+                    <div class="card" style="min-width: 220px;">
+                        <h3
+                            style="margin: 0; font-size: 2.5rem; background: var(--gradient-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            Gemini 2.5</h3>
+                        <p style="margin: 0; font-size: 0.875rem;">Dual Model Engine</p>
+                    </div>
+                    <div class="card" style="min-width: 220px;">
+                        <h3
+                            style="margin: 0; font-size: 2.5rem; background: var(--gradient-3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            255+</h3>
+                        <p style="margin: 0; font-size: 0.875rem;">Feature Flags</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Monolithic Advantage -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="grid-2">
+                    <div>
+                        <div class="badge">Core Principle</div>
+                        <h2>The Monolithic Root</h2>
+                        <p>AlloFlow operates on a radical architectural principle: <strong>Extreme
+                                consolidation.</strong> By housing the entire core engine in a single massive file
+                            (<code>AlloFlowANTI.txt</code>), we achieve zero-latency context propagation between deeply
+                            integrated UI features.</p>
+                        <ul class="bullets">
+                            <li><strong>Zero Router Overhead:</strong> True single-page dominance without route
+                                transitioning latency.</li>
+                            <li><strong>State Monopoly:</strong> All critical educational states live in root React
+                                Context, immediately accessible by the AI generation loops.</li>
+                            <li><strong>Deterministic Automation:</strong> Codebase mutations skip conventional
+                                build-trees, relying on deterministic Python Ast-patching for massive overhauls.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="grid-2" style="gap: 1.5rem;">
+                            <div class="card">
+                                <div class="card-icon" style="background: var(--gradient-2)"><i
+                                        data-lucide="layers"></i></div>
+                                <h3 style="font-size: 1.25rem;">75,000+ Lines</h3>
+                                <p style="font-size: 0.85rem;">One file, one global variable scope.</p>
+                            </div>
+                            <div class="card">
+                                <div class="card-icon" style="background: var(--gradient-1)"><i data-lucide="zap"></i>
+                                </div>
+                                <h3 style="font-size: 1.25rem;">Buildless Edits</h3>
+                                <p style="font-size: 0.85rem;">Edit locally, transpile instantly, deploy globally.</p>
+                            </div>
+                            <div class="card" style="grid-column: span 2;">
+                                <div class="card-icon" style="background: var(--gradient-3); margin-bottom: 1rem;"><i
+                                        data-lucide="box"></i></div>
+                                <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">The AI Response Loop</h3>
+                                <p style="font-size: 0.85rem; margin-bottom: 0;">UI State is fed directly into prompt
+                                    matrices. The Generative Assessment block reads Manipulative DOM grids (Base10,
+                                    Coordinates) and grades physical states instead of text inputs.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Dual-Model Orchestration -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="grid-2-asym">
+                    <div>
+                        <div class="badge">Generative Architecture</div>
+                        <h2 style="font-size: 2.5rem;">Dual AI Orchestration</h2>
+                        <p>AlloFlow doesn't use a single API tier. It dynamically routes inference based on latency
+                            constraints and reasoning depth using the <code>gemini-2.5</code> family.</p>
+                        <div class="grid-2" style="gap: 1rem; margin-top: 2rem;">
+                            <div class="card"
+                                style="padding: 1.5rem; background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.3);">
+                                <h3 style="font-size: 1.25rem; color: var(--accent-secondary);"><i data-lucide="zap"
+                                        style="display:inline-block; vertical-align: middle; margin-right: 0.5rem; width: 18px;"></i>
+                                    Gemini 2.5 Flash Lite</h3>
+                                <p style="font-size: 0.85rem; margin-bottom: 0;"><strong>Ultra-low Latency:</strong>
+                                    Phoneme parsing, JSON structural extraction, and high-frequency glossary lookups
+                                    where sub-second TTFB is mandatory.</p>
+                            </div>
+                            <div class="card"
+                                style="padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                                <h3 style="font-size: 1.25rem; color: var(--accent-tertiary);"><i data-lucide="brain"
+                                        style="display:inline-block; vertical-align: middle; margin-right: 0.5rem; width: 18px;"></i>
+                                    Gemini 2.5 Flash</h3>
+                                <p style="font-size: 0.85rem; margin-bottom: 0;"><strong>Cognitive
+                                        Heavy-Lifting:</strong> Full curriculum generation, Math JSON matrices, deep
+                                    pedagogy alignment, and native language restructuring.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="code-block">
+                            // AI JSON Healing Pipeline
+                            let rawContent;
+                            try {
+                            let cleaned = cleanJson(result);
+                            cleaned = cleaned.replace(/(?![/u\"bfnrt])/g, "");
+                            rawContent = safeJsonParse(cleaned);
+                            if (!rawContent) throw new Error("Null");
+                            } catch (parseErr) {
+                            // Deterministic Fallback Mode
+                            rawContent = recoverStructuralData(result);
+                            }
+                        </div>
+                        <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--text-muted); font-style: italic;">
+                            We don't trust raw LLM output. Every API call runs through aggressive regex sanitization and
+                            deterministic structural recovery algorithms to guarantee the UI never crashes on bad JSON.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: CDN Decoupling Pipeline -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="badge">Scale Limits</div>
+                <h2 style="text-align: center;">Dynamic CDN Module Loading</h2>
+                <p style="text-align: center; max-width: 800px; margin: 0 auto 3rem;">To keep the single-file React
+                    Engine under max constraints, physics-heavy visual systems are decoupled, pre-compiled, and injected
+                    at runtime via jsDelivr.</p>
+
+                <div class="diagram">
+                    <div class="line line-dashed" style="top: 40%; left: 15%; right: 15%; height: 2px;"></div>
+                    <div class="line" style="top: 40%; left: 50%; bottom: 20%; width: 2px;"></div>
+
+                    <div class="diagram-node node-accent"
+                        style="left: 15%; top: 40%; transform: translate(-50%, -50%);">
+                        <i data-lucide="braces" style="margin-bottom: 0.5rem;"></i><br>
+                        stem_lab_clean.js<br><span style="font-size: 0.75rem; font-weight: 300;">(Local Dev)</span>
+                    </div>
+
+                    <div class="diagram-node node-cyan" style="left: 50%; top: 40%; transform: translate(-50%, -50%);">
+                        <i data-lucide="github" style="margin-bottom: 0.5rem;"></i><br>
+                        GitHub Master<br><span style="font-size: 0.75rem; font-weight: 300;">(Compiled IIFE)</span>
+                    </div>
+
+                    <div class="diagram-node node-emerald"
+                        style="left: 85%; top: 40%; transform: translate(-50%, -50%); border-width: 2px;">
+                        <i data-lucide="server" style="margin-bottom: 0.5rem;"></i><br>
+                        Firebase Hosting<br><span style="font-size: 0.75rem; font-weight: 300;">(Main Monolith)</span>
+                    </div>
+
+                    <div
+                        style="position: absolute; left: 32%; top: 32%; background: #0B0F19; padding: 0.25rem 0.6rem; border-radius: 0.5rem; font-size: 0.75rem; color: var(--accent-secondary); font-weight: 600;">
+                        transpile_modules.js</div>
+                    <div
+                        style="position: absolute; left: 67%; top: 32%; background: #0B0F19; padding: 0.25rem 0.6rem; border-radius: 0.5rem; font-size: 0.75rem; color: var(--accent-secondary); font-weight: 600;">
+                        update_cdn_urls.py</div>
+                    <div
+                        style="position: absolute; left: 50%; top: 70%; transform: translateX(-50%); background: #0B0F19; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.85rem; color: var(--accent-tertiary); font-weight: 600; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3);">
+                        Runtime Dynamic Eval<br>
+                        <span
+                            style="font-size:0.7rem; font-family:monospace; color:#A5B4FC;">https://cdn.jsdelivr.net/gh/Apomera/...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: The Tour Engine & Help Mode -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="grid-2-asym">
+                    <div>
+                        <div class="badge">UX Orchestration</div>
+                        <h2>The Deterministic Tour Engine</h2>
+                        <p>AlloFlow features an integrated AI copilot that physically interacts with the application.
+                            Instead of basic static tooltips, the Tour Engine parses AI-generated JSON instructions to
+                            physically open sidebars, switch active modes, and scroll to target DOM elements.</p>
+                        <ul class="bullets">
+                            <li><strong>data-help-key Binding:</strong> Every interactive element is tagged. The Tour
+                                Engine queries the DOM to find coordinates and bind the Allobot avatar UI absolute to
+                                the target.</li>
+                            <li><strong>Progressive Revelation:</strong> The engine pauses TTS playback, waits for DOM
+                                rendering stability, and ensures the target element is visible before executing the next
+                                instruction sequence.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="card" style="border-left: 4px solid var(--accent-tertiary);">
+                            <h3 style="font-size: 1.1rem; color: var(--accent-tertiary);">LLM Tour Output Schema</h3>
+                            <div class="code-block"
+                                style="background: rgba(0,0,0,0.5); border: none; padding: 1rem; font-size: 0.8rem;">
+                                {
+                                "steps": [
+                                {
+                                "elementId": "tool_stemlab",
+                                "instruction": "Click here to open the 3D Manipulatives.",
+                                "action": "open_sidebar"
+                                },
+                                {
+                                "elementId": "math_subject",
+                                "instruction": "Select your science or math subject.",
+                                "action": "highlight"
+                                }
+                                ]
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Bridge Mode & TTS Caching -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="badge">Bimodal Pipeline</div>
+                <h2 style="text-align: center; margin-bottom: 3rem;">Bridge Mode & Synchronous TTS</h2>
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #F59E0B, #DC2626)"><i
+                                data-lucide="globe-2"></i></div>
+                        <h3>Deep Translation</h3>
+                        <p style="font-size: 0.9rem;">Unlike Google Translate over-the-top styling, AlloFlow translates
+                            pedagogical text at the AI generation root. The math problem is generated natively in the
+                            target language.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #10B981, #047857)"><i
+                                data-lucide="audio-waveform"></i></div>
+                        <h3>The Orchestration Gap</h3>
+                        <p style="font-size: 0.9rem;">To prevent reading delays, TTS audio (via experimental Preview
+                            endpoints or Web Speech) is fetched concurrently while the translated text streams to the UI
+                            context.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #8B5CF6, #4338CA)"><i
+                                data-lucide="database-zap"></i></div>
+                        <h3>Proxy Audio Caching</h3>
+                        <p style="font-size: 0.9rem;">Base64 TTS audio strings are captured and stored in
+                            highly-optimized Proxy wrappers to prevent memory leak invariant violations on re-renders.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="ctrl-btn" id="prevBtn"><i data-lucide="chevron-left"></i></button>
+            <div class="slides-indicator" id="indicator">1 / 6</div>
+            <button class="ctrl-btn" id="nextBtn"><i data-lucide="chevron-right"></i></button>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Presentation Logic
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const indicator = document.getElementById('indicator');
+        let currentSlide = 0;
+
+        function updateDeck() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+            indicator.textContent = `${currentSlide + 1} / ${slides.length}`;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateDeck();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateDeck();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    updateDeck();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateDeck();
+                }
+            }
+        });
+
+        updateDeck();
+    </script>
+</body>
+
+</html>

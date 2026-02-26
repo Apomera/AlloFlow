@@ -1,0 +1,92 @@
+﻿
+--- adventure.tooltips.stability ---
+       L65797:                                         )}
+   >>> L65798:                                         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/20
+       L65799:                                             <div className={`p-1 rounded-full ${adventureInputMode === 'system' ? 'bg-amber-500/20' : 'bg-yellow-500/2
+
+--- bingo.exit_caller_aria ---
+       L22448:                             className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-bold text-xs"
+   >>> L22449:                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
+       L22450:                         >
+
+--- common.family_guide ---
+       L42988:                 data: content,
+   >>> L42989:                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligne
+       L42990:                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
+
+--- common.family_learning_guide ---
+       L42989:                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligne
+   >>> L42990:                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
+       L42991:                 timestamp: new Date(),
+
+--- common.study_guide ---
+       L42988:                 data: content,
+   >>> L42989:                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligne
+       L42990:                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
+
+--- common.udl_aligned ---
+       L42988:                 data: content,
+   >>> L42989:                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligne
+       L42990:                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
+
+--- common.udl_lesson_plan ---
+       L42989:                 meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligne
+   >>> L42990:                 title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
+       L42991:                 timestamp: new Date(),
+
+--- escape_room.all_solved_bonus ---
+       L48539:       handleScoreUpdate(completionBonus, "Escape Room Complete", `escape-room-complete-${escapeRoomState.theme || 'default'}`);
+python : Traceback 
+(most recent call 
+last):
+At line:1 char:1
++ python scripts\extr
+act_fallbacks.py 
+2>&1 | Out-File 
+-Encoding utf8 fa ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Traceba   
+ ck (most recent     
+call last)::Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  File "C:\Users\cabb
+a\OneDrive\Desktop\UD
+L-Tool-Updated\script
+s\extract_fallbacks.p
+y", line 37, in 
+<module>
+    print(f"  
+{marker} L{j+1}: {lin
+es[j].rstrip()[:150]}
+")
+    ~~~~~^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+  File "C:\Python314\
+Lib\encodings\cp1252.
+py", line 19, in 
+encode
+    return codecs.cha
+rmap_encode(input,sel
+f.errors,encoding_tab
+le)[0]
+           ~~~~~~~~~~
+~~~~~~~~~~~^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^
+UnicodeEncodeError: 
+'charmap' codec 
+can't encode 
+character 
+'\U0001f3c6' in 
+position 31: 
+character maps to 
+<undefined>

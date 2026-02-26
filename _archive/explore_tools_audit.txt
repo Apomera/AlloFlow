@@ -1,0 +1,98 @@
+
+===== VOLUME EXPLORER =====
+Render check at L73583: {stemLabTab === 'explore' && stemLabTool === 'volume' && (() => {
+--- Interactivity ---
+L73614: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg transiti
+L73618: <button onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full b
+L73620: <button onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full b
+L73621: <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 
+L73628: <input type="range" min="1" max="10" value={cubeDims[dim]}
+L73629: onChange={(e) => { setCubeDims(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallen
+L73649: <input type="range" min="1" max={cubeDims.h} value={cubeShowLayers !== null ? cubeShowLayers : cubeD
+L73665: <button onClick={() => { const l=Math.floor(Math.random()*8)+1; const w=Math.floor(Math.random()*6)+
+L73666: <button onClick={() => { setCubeDims({l:3,w:2,h:2}); setCubeChallenge(null); setCubeFeedback(null); 
+L73667: <button onClick={() => {
+L73671: setCubeChallenge({ l: tl, w: tw, h: th, answer: targetVol, buildMode: true });
+L73672: setCubeAnswer('');
+L73675: }} className="flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounde
+L73677: {cubeChallenge && (
+L73679: <p className="text-sm font-bold text-amber-800 mb-2">{cubeChallenge.buildMode ? '🏗️ Build this shap
+L73681: <input type="number" value={cubeAnswer} onChange={(e) => setCubeAnswer(e.target.value)}
+L73682: onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); setCube
+L73683: placeholder="Volume..." className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-
+L73684: {cubeChallenge.buildMode && (
+L73686: <p className="font-bold mb-1">Target: {cubeChallenge.l} × {cubeChallenge.w} × {cubeChallenge.h} = {c
+L73687: <p>Use the sliders to build a prism with volume = {cubeChallenge.answer}</p>
+L73688: <p className={'mt-1 font-bold ' + (cubeDims.l * cubeDims.w * cubeDims.h === cubeChallenge.answer ? '
+L73689: Your build: {cubeDims.l}×{cubeDims.w}×{cubeDims.h} = {cubeDims.l * cubeDims.w * cubeDims.h} {cubeDim
+L73693: <button onClick={() => { const ans = parseInt(cubeAnswer); setCubeFeedback(ans === cubeChallenge.ans
+L73695: {cubeFeedback && <p className={"text-sm font-bold mt-2 " + (cubeFeedback.correct ? "text-green-600" 
+L73704: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73710: <input type="number" value={numberLineRange.min} onChange={(e) => setNumberLineRange(prev => ({...pr
+L73714: <input type="number" value={numberLineRange.max} o
+
+===== NUMBER LINE =====
+Render check at L73701: {stemLabTab === 'explore' && stemLabTool === 'numberline' && (
+--- Interactivity ---
+L73704: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73710: <input type="number" value={numberLineRange.min} onChange={(e) => setNumberLineRange(prev => ({...pr
+L73714: <input type="number" value={numberLineRange.max} onChange={(e) => setNumberLineRange(prev => ({...pr
+L73742: <input type="number" id="nlMarkerVal" min={numberLineRange.min} max={numberLineRange.max} placeholde
+L73743: <input type="text" id="nlMarkerLabel" placeholder="Label (optional)" className="flex-1 px-3 py-2 tex
+L73744: <button onClick={() => {
+L73758: <button onClick={() => setNumberLineMarkers(numberLineMarkers.filter((_, j) => j !== i))} className=
+L73761: {numberLineMarkers.length > 0 && <button onClick={() => setNumberLineMarkers([])} className="text-xs
+L73765: <button key={preset.label} onClick={() => { setNumberLineRange({ min: preset.min, max: preset.max })
+L73774: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73780: <input type="range" min="1" max="12" value={areaModelDims.rows} onChange={(e) => setAreaModelDims(pr
+L73785: <input type="range" min="1" max="12" value={areaModelDims.cols} onChange={(e) => setAreaModelDims(pr
+L73797: onClick: () => setAreaModelHighlight({ rows: row + 1, cols: col + 1 }),
+L73812: <button onClick={() => setAreaModelHighlight({ rows: 0, cols: 0 })} className="text-xs text-slate-40
+L73818: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73824: <input type="range" min="2" max="12" value={fractionPieces.denominator} onChange={(e) => setFraction
+L73829: <input type="range" min="0" max={fractionPieces.denominator} value={fractionPieces.numerator} onChan
+L73851: onClick: () => setFractionPieces(prev => ({...prev, numerator: filled && prev.numerator === i + 1 ? 
+L73862: onClick: () => setFractionPieces(prev => ({...prev, numerator: i < prev.numerator ? i : i + 1})),
+
+===== AREA MODEL =====
+Render check at L73771: {stemLabTab === 'explore' && stemLabTool === 'areamodel' && (
+--- Interactivity ---
+L73774: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73780: <input type="range" min="1" max="12" value={areaModelDims.rows} onChange={(e) => setAreaModelDims(pr
+L73785: <input type="range" min="1" max="12" value={areaModelDims.cols} onChange={(e) => setAreaModelDims(pr
+L73797: onClick: () => setAreaModelHighlight({ rows: row + 1, cols: col + 1 }),
+L73812: <button onClick={() => setAreaModelHighlight({ rows: 0, cols: 0 })} className="text-xs text-slate-40
+L73818: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73824: <input type="range" min="2" max="12" value={fractionPieces.denominator} onChange={(e) => setFraction
+L73829: <input type="range" min="0" max={fractionPieces.denominator} value={fractionPieces.numerator} onChan
+L73851: onClick: () => setFractionPieces(prev => ({...prev, numerator: filled && prev.numerator === i + 1 ? 
+L73862: onClick: () => setFractionPieces(prev => ({...prev, numerator: i < prev.numerator ? i : i + 1})),
+L73881: <button key={p.l} onClick={() => setFractionPieces({numerator:p.n,denominator:p.d})} className="px-3
+
+===== FRACTION TILES =====
+Render check at L73815: {stemLabTab === 'explore' && stemLabTool === 'fractions' && (
+--- Interactivity ---
+L73818: <button onClick={() => setStemLabTool(null)} className="p-1.5 hover:bg-slate-100 rounded-lg"><ArrowL
+L73824: <input type="range" min="2" max="12" value={fractionPieces.denominator} onChange={(e) => setFraction
+L73829: <input type="range" min="0" max={fractionPieces.denominator} value={fractionPieces.numerator} onChan
+L73851: onClick: () => setFractionPieces(prev => ({...prev, numerator: filled && prev.numerator === i + 1 ? 
+L73862: onClick: () => setFractionPieces(prev => ({...prev, numerator: i < prev.numerator ? i : i + 1})),
+L73881: <button key={p.l} onClick={() => setFractionPieces({numerator:p.n,denominator:p.d})} className="px-3
+
+===== EXPLORE TOOL STATE VARIABLES =====
+volumeW: NOT FOUND
+volumeH: NOT FOUND
+volumeD: NOT FOUND
+setVolumeW: NOT FOUND
+volumeShowLayers: NOT FOUND
+volumeRotate: NOT FOUND
+volumeExplode: NOT FOUND
+numberLineMin: NOT FOUND
+numberLineMax: NOT FOUND
+numberLineMarkers: L30984
+areaModelA: NOT FOUND
+areaModelB: NOT FOUND
+fractionParts: NOT FOUND
+fractionSelected: NOT FOUND
+fractionShape: NOT FOUND
+fractionCompare: NOT FOUND

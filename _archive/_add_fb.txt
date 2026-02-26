@@ -1,0 +1,16 @@
+﻿fb_super: 23480 bytes -> 31308 base64 chars
+fb_terrific: 21548 bytes -> 28732 base64 chars
+fb_wow: 17684 bytes -> 23580 base64 chars
+Added fb_super to audio_bank.json
+Added fb_terrific to audio_bank.json
+Added fb_wow to audio_bank.json
+Saved audio_bank.json
+Will add _LOAD for fb_super
+Will add _LOAD for fb_terrific
+Will add _LOAD for fb_wow
+Inserted 3 load lines after L1312
+Restored fb_wow for streak 25 at L7925
+Added fb_super, fb_terrific to feedback pool at L7930
+Saved AlloFlowANTI.txt
+
+Done!

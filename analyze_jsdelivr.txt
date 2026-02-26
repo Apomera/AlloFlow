@@ -1,0 +1,99 @@
+hartInstance = React.useRef(null);
+    React.useEffect(() => {
+        if (typeof Chart !== 'undefined') return;
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+        script.async = true;
+        document.head.appendChild(script);
+        return () => { /* keep script loaded */ };
+    }, []);
+    const handleSort 
+---
+entUiLanguage, apiKey);
+  useEffect(() => {
+      if (typeof window !== 'undefined' && !window.jsonrepair) {
+          const script = document.createElement('script');
+          script.src = "https://cdn.jsdelivr.net/npm/jsonrepair/lib/umd/jsonrepair.min.js";
+          script.async = true;
+          document.body.appendChild(script);
+      }
+  }, []);
+  useEffect(() => {
+    const isRtl = isRtlLang(currentUiLangu
+---
+ try {
+            await Promise.all([
+                loadScriptSequence([
+                    "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+                    "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
+                    "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js"
+                ], "LZString"),
+                loadScriptSequence([
+        
+---
+4/libs/lz-string.min.js"
+                ], "LZString"),
+                loadScriptSequence([
+                    "https://unpkg.com/idb-keyval@6.2.0/dist/iife/index.js",
+                    "https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/iife/index.js",
+                    "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.1/umd.js"
+                ], "idbKeyval")
+            ]);
+            setLzLoaded(true
+---
+{
+        console.error('[CDN-FAIL] ' + name + ' network/CORS error:', e);
+        window.onerror = prevOnError;
+      };
+      document.head.appendChild(s);
+    };
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b7cad97b5a257ca011f81bd2c42ef3445eede6a9/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b7cad97b5a257ca011f81bd2c42ef3445eed
+---
+ppendChild(s);
+    };
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b7cad97b5a257ca011f81bd2c42ef3445eede6a9/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b7cad97b5a257ca011f81bd2c42ef3445eede6a9/word_sounds_module.js');
+  }, []);
+
+  const [stemLabTool, setStemLabTool] = useState(null);
+  const [assessmentBlocks, setAssessmentBlocks
+---
+   }
+        }
+    }
+  }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.PptxGenJS) {
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js";
+        script.async = true;
+        script.onload = () => setPptxLoaded(true);
+        document.body.appendChild(script);
+        return () => {
+       
+---
+ {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Ope
+---
+c-regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta1/open-dyslexic-bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+        .font-dyslexic, .font-dyslexic * {
+            

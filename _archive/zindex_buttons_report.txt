@@ -1,0 +1,133 @@
+
+================================================================================
+TOUR-HEADER-TOOLS LOCATION AND CONTENTS
+================================================================================
+Line 21139: "tools": "tour-header-tools",
+  21154: <div className="w-1 bg-yellow-400 rounded-t animate-[bounce_1s_infinite] h-2"></div>
+  21155: <div className="w-1 bg-yellow-400 rounded-t animate-[bounce_1.2s_infinite] h-4"></div>
+  21156: <div className="w-1 bg-yellow-400 rounded-t animate-[bounce_0.8s_infinite] h-3"></div>
+  21157: <div className="w-1 bg-yellow-400 rounded-t animate-[bounce_1.1s_infinite] h-2"></div>
+  21158: </div>
+
+================================================================================
+SPECIFIC BUTTONS BY DATA-HELP-KEY
+================================================================================
+
+--- dashboard ---
+Line 463: onClick={onClose} data-help-key="dashboard_close_btn"
+Line 10297: data-help-key="dashboard_import_btn"
+Line 10307: data-help-key="dashboard_export_csv"
+
+--- export ---
+Line 56868: data-help-key="export_qti"
+Line 56877: data-help-key="export_print"
+Line 56885: data-help-key="export_worksheet"
+
+--- header_dashboard ---
+Line 56633: data-help-key="header_dashboard"
+
+--- header_export ---
+Line 56852: data-help-key="header_export"
+
+--- header_support ---
+Line 56726: data-help-key="header_support"
+
+--- header_translate ---
+Line 56844: data-help-key="header_translate"
+
+--- header_view ---
+Line 56621: data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+
+--- view_student ---
+Line 56621: data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+
+--- view_teacher ---
+Line 56621: data-help-key={isTeacherMode ? "header_view_student" : "header_view_teacher"}
+
+================================================================================
+ONCLICK HANDLERS FOR MENTIONED FEATURES
+================================================================================
+
+--- Teacher Dashboard (setShowClassAnalytics) ---
+Line 29887 [NO HELP KEY NEARBY]: const [showClassAnalytics, setShowClassAnalytics] = useState(false);
+Line 71188 [NO HELP KEY NEARBY]: onClose={() => setShowClassAnalytics(false)}
+
+--- Student/Teacher View Toggle (setIsTeacherMode) ---
+Line 29886 [NO HELP KEY NEARBY]: const [isTeacherMode, setIsTeacherMode] = useState(true);
+Line 31492 [NO HELP KEY NEARBY]: setIsTeacherMode(true);
+Line 31510 [NO HELP KEY NEARBY]: setIsTeacherMode(false);
+
+--- Export Options (setShowExportMenu) ---
+Line 30411 [NO HELP KEY NEARBY]: const [showExportMenu, setShowExportMenu] = useState(false);
+Line 56852 [HAS HELP KEY]: data-help-key="header_export"
+Line 56868 [HAS HELP KEY]: data-help-key="export_qti"
+Line 56877 [HAS HELP KEY]: data-help-key="export_print"
+Line 56885 [HAS HELP KEY]: data-help-key="export_worksheet"
+Line 56893 [HAS HELP KEY]: data-help-key="export_html"
+Line 56899 [NO HELP KEY NEARBY]: onClick={() => { handleExportSlides(); setShowExportMenu(false); }}
+Line 56912 [HAS HELP KEY]: data-help-key="export_ims"
+Line 56920 [NO HELP KEY NEARBY]: {showExportMenu && <div className="fixed inset-0 z-[90]" onClick={() => setShowExportMenu(false)}></div>}
+
+================================================================================
+SPOTLIGHT MESSAGE PANEL RENDERING
+================================================================================
+Line 31563: const [spotlightMessage, setSpotlightMessage] = useState(null); // {title, desc} or null
+Line 32825: #spotlight-message-panel {
+Line 32831: #spotlight-message-panel h3,
+Line 32832: #spotlight-message-panel p,
+Line 32833: #spotlight-message-panel span,
+Line 32834: #spotlight-message-panel div,
+Line 32835: #spotlight-message-panel strong,
+Line 32836: #spotlight-message-panel em {
+Line 32842: #spotlight-message-panel + svg {
+Line 33003: setSpotlightMessage({ title, text });
+Line 47013: setSpotlightMessage(t('tour.spotlight_message', { name: displayName }));
+Line 47832: setSpotlightMessage(`Here is the ${displayName} section.`);
+Line 56704: onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
+Line 69616: <div id="spotlight-message-panel" className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border
+  69618: <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none anima
+  69619: <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none ani
+Line 69955: setSpotlightMessage('');
+
+================================================================================
+TOUR-HEADER-UTILS FULL CONTENT
+================================================================================
+Line 56657: onClick={() => setShowHintsModal(true)}
+Line 56658: data-help-key="hints_recall"
+Line 56670: onClick={() => setIsBotVisible(!isBotVisible)}
+Line 56671: data-help-key="header_bot_toggle"
+Line 56683: onClick={() => setIsHelpMode(!isHelpMode)}
+Line 56692: onClick={handleCloudToggleClick}
+Line 56693: data-help-key="header_cloud_sync"
+Line 56704: onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
+Line 56705: data-help-key="header_tour_start"
+Line 56714: onClick={() => setShowInfoModal(true)}
+Line 56715: data-help-key="header_about"
+Line 56726: data-help-key="header_support"
+Line 56742: <div className="scale-90 origin-right sm:origin-center" data-help-key="header_language">
+Line 56750: onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
+Line 56752: data-help-key="header_session_start"
+Line 56766: data-help-key="header_session_status"
+Line 56767: onClick={() => {
+Line 56784: onClick={() => setIsJoinPopoverOpen(!isJoinPopoverOpen)}
+Line 56786: data-help-key="header_session_join"
+Line 56819: onClick={() => joinClassSession(joinCodeInput)}
+Line 56831: <div className="fixed inset-0 z-[90]" onClick={() => setIsJoinPopoverOpen(false)}></div>
+Line 56841: onClick={() => setIsTranslateModalOpen(true)}
+Line 56844: data-help-key="header_translate"
+Line 56850: onClick={() => setShowExportMenu(!showExportMenu)}
+Line 56852: data-help-key="header_export"
+Line 56866: onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
+Line 56868: data-help-key="export_qti"
+Line 56875: onClick={() => { handleExport('print'); setShowExportMenu(false); }}
+Line 56877: data-help-key="export_print"
+Line 56883: onClick={() => { handleExport('worksheet'); setShowExportMenu(false); }}
+Line 56885: data-help-key="export_worksheet"
+Line 56891: onClick={() => { handleExport('html'); setShowExportMenu(false); }}
+Line 56893: data-help-key="export_html"
+Line 56899: onClick={() => { handleExportSlides(); setShowExportMenu(false); }}
+Line 56902: data-help-key="export_slides"
+Line 56910: onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
+Line 56912: data-help-key="export_ims"
+Line 56920: {showExportMenu && <div className="fixed inset-0 z-[90]" onClick={() => setShowExportMenu(false)}></div>}
+... (truncated)

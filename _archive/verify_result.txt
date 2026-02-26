@@ -1,0 +1,12 @@
+BOM at byte 0
+Total BOMs: 1
+File size: 7374543 bytes
+Bracket 'or' assignments: 1
+Literal 'or' keys in objects: 0
+New audio b64 prefix (GkXfo59ChoEBQveBAULy...): FOUND
+Cancellation guards: 20
+Duplicate PHONEME AUDIO BANK comments: 0
+
+Total lines: 72991
+
+OVERALL: ALL CHECKS PASSED

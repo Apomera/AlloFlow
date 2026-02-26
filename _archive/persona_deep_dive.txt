@@ -1,0 +1,152 @@
+=== PERSONA PANEL DEEP DIVE ===
+
+--- PERSONA STATE VARIABLES ---
+Line 26619: const [personaState, setPersonaState] = useState({
+Line 25652: const [isPersonaFreeResponse, setIsPersonaFreeResponse] = useState(true);
+Line 25661: const [showPersonaHints, setShowPersonaHints] = useState(false);
+Line 25662: const [personaTurnHintsViewed, setPersonaTurnHintsViewed] = useState(false);
+Line 25670: const [isPersonaReflectionOpen, setIsPersonaReflectionOpen] = useState(false);
+Line 25671: const [personaReflectionInput, setPersonaReflectionInput] = useState('');
+Line 26619: const [personaState, setPersonaState] = useState({
+Line 26637: const [personaAutoRead, setPersonaAutoRead] = useState(false);
+Line 26638: const [personaAutoSend, setPersonaAutoSend] = useState(false);
+Line 26640: const [personaInput, setPersonaInput] = useState('');
+Line 26641: const [isPersonaChatOpen, setIsPersonaChatOpen] = useState(false);
+Line 26642: const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
+Line 30631: const [personaCustomInstructions, setPersonaCustomInstructions] = useState('');
+Line 52356: const newState = !personaAutoRead;
+Line 52761: const newState = !personaAutoRead;
+Line 1462: const [expandedIndex, setExpandedIndex] = React.useState(null);
+Line 24814: const [isTeacherToolbarExpanded, setIsTeacherToolbarExpanded] = useState(false);
+Line 25675: const [reflectionFeedback, setReflectionFeedback] = useState(null); // {score, feedback, xpEarned, subjectName}
+Line 25676: const [isFabExpanded, setIsFabExpanded] = useState(false);
+Line 25677: const [showExportMenu, setShowExportMenu] = useState(false);
+Line 26645: const [adventureEffects, setAdventureEffects] = useState({ xp: null, energy: null, levelUp: null });
+Line 26647: const [showStorybookExportModal, setShowStorybookExportModal] = useState(false);
+Line 26679: const [showXPModal, setShowXPModal] = useState(false);
+Line 26702: const [isJoinPanelExpanded, setIsJoinPanelExpanded] = useState(false);
+Line 30830: const [expandedTools, setExpandedTools] = useState(['source-input']);
+Line 31320: const [isUDLGuideExpanded, setIsUDLGuideExpanded] = useState(false);
+Line 31437: const [isSocraticExpanded, setIsSocraticExpanded] = useState(false);
+Line 25792: const [wordSoundsStreak, setWordSoundsStreak] = useState(0);
+Line 26253: const [wordSoundsScore, setWordSoundsScore] = useState({ correct: 0, total: 0, streak: 0 });
+Line 25795: const [wordSoundsBadges, setWordSoundsBadges] = useState(() => {
+Line 26168: const [showGlobalLevelUp, setShowGlobalLevelUp] = useState(false);
+Line 26218: const [isEditingLeveledText, setIsEditingLeveledText] = useState(false);
+Line 26475: const [isCheckingLevel, setIsCheckingLevel] = useState(false);
+Line 26479: const [complexityLevel, setComplexityLevel] = useState(5);
+Line 26645: const [adventureEffects, setAdventureEffects] = useState({ xp: null, energy: null, levelUp: null });
+Line 26674: const [glossaryDefinitionLevel, setGlossaryDefinitionLevel] = useState('Same as Source Text');
+Line 30622: const [gradeLevel, setGradeLevel] = useState('3rd Grade');
+Line 30625: const [leveledTextLength, setLeveledTextLength] = useState('Same as Source');
+Line 30628: const [leveledTextCustomInstructions, setLeveledTextCustomInstructions] = useState('');
+Line 30635: const [dokLevel, setDokLevel] = useState('');
+Line 30793: const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
+Line 30797: const [sourceLevel, setSourceLevel] = useState('5th Grade');
+Line 31429: const [udlStandardGrade, setUdlStandardGrade] = useState(gradeLevel);
+
+--- GAMIFICATION FEATURES ---
+[xp] Line 6135: stats.interviewXP = data.personaState.accumulatedXP || data.personaState.totalXP || 0;
+[xp] Line 10853: persona_desc: "Identify historical figures or experts related to your topic. Students can interv
+[xp] Line 27351: text: `Create immersive learning experiences with multiple simulation modes. From personal
+... and 26 more matches for 'xp'
+[badge] Line 43907: addToast(`🤝 ${t('persona.badges.harmonizer')}!`, "success");
+[badge] Line 44079: addToast(`🎯 ${t('persona.badges.first_insight')}!`, "success");
+[badge] Line 44086: addToast(`💡 ${t('persona.badges.rapport_builder')}!`, "success");
+... and 2 more matches for 'badge'
+[level] Line 43271: }, [history, inputText, sourceTopic, gradeLevel, personaCustomInstructions, generatedContent]);
+[score] Line 24595: <span className="text-xs font-bold text-indigo-700">{t('persona.harmony_score', { score
+[score] Line 44107: handleScoreUpdate(50, "Persona Secret Unlocked", generatedContent?.id);
+[score] Line 44311: const fullData = `${formattedChatLog}\n\n---\n\n${metaHeader}${personaReflectionInput}\n\n
+... and 9 more matches for 'score'
+[reward] Line 44050: actualReward = Math.min(xpReward, PERSONA_XP_CAP - currentAccumulated);
+[progress] Line 28002: 'role_independent': "Self-directed learning: Access to all content with personal progress tracki
+
+--- PANEL/MULTI-PERSONA FEATURES ---
+Line 43323: const isPanelMode = personaState.mode === 'panel' && personaState.selectedCharacters?.length >
+Line 43650: const isPanelMode = personaState.selectedCharacters?.length === 2;
+Line 27564: 'persona_mode_toggle': "SINGLE mode shows one persona at a time. PANEL mode allows multiple pers
+Line 27351: text: `Create immersive learning experiences with multiple simulation modes. From personal
+Line 27563: 'persona_free_response_detailed': "When ENABLED: Persona gives open-ended conversational answers
+Line 27564: 'persona_mode_toggle': "SINGLE mode shows one persona at a time. PANEL mode allows multiple pers
+Line 27623: 'persona_card': "Select a persona to chat with. You can select multiple for a panel discussion."
+Line 27706: 'persona_response_mode': "Switch between 'Multiple Choice' (easier) and 'Free Response' (open-en
+Line 27564: 'persona_mode_toggle': "SINGLE mode shows one persona at a time. PANEL mode allows multiple pers
+Line 54923: className={`w-full p-3 text-left hover:bg-fuchsia-50 flex justify-betwee
+Line 64248: <><MessageCircleQuestion size={18} className="group-hove
+Line 27564: 'persona_mode_toggle': "SINGLE mode shows one persona at a time. PANEL mode allows multiple pers
+Line 27623: 'persona_card': "Select a persona to chat with. You can select multiple for a panel discussion."
+Line 44380: ? `Analyze this panel discussion. The final harmony score is ${personaState.harmonySco
+Line 8422: sidebar_interview_desc: "Generate AI personas of historical figures or text characters for s
+Line 27280: • **Debate Mode**: Challenge the persona's viewpoint on a topic.
+
+--- VOICE/AUDIO FEATURES ---
+Line 28066: 'persona_auto_read': "When ON: Personas speak their responses aloud automatically. Uses current
+Line 28066: 'persona_auto_read': "When ON: Personas speak their responses aloud automatically. Uses current
+
+--- INTERVIEW/CONVERSATION FEATURES ---
+[question] Line 10456: persona_free_desc: "Let students type questions instead of just selecting options.",
+[question] Line 27283: • Project the Persona Chat on the board and have the whole class vote on what question to ask next.
+... and 10 more for 'question'
+[answer] Line 27563: 'persona_free_response_detailed': "When ENABLED: Persona gives open-ended conversational answers
+[answer] Line 28068: 'persona_custom_instructions': "Shape the persona's background (e.g., 'Answer as someone who wit
+... and 1 more for 'answer'
+[response] Line 9787: persona_auto_read: "Automatically read character responses aloud using Text-to-Speech.",
+[response] Line 9957: settings_persona_free: "Allow students to enter custom persona responses.",
+... and 61 more for 'response'
+[chat] Line 6136: if (data.personaState.chatHistory?.length > 0) stats.totalActivities++;
+[chat] Line 6142: // Extract safety flags from persona chat history
+... and 74 more for 'chat'
+[message] Line 27696: 'persona_auto_send': "Automatically sends your message after a pause, useful for hands-free inte
+[message] Line 36012: if (contentId && (contentId === 'simplified-main' || contentId === 'adventure-active' || content
+... and 14 more for 'message'
+[turn] Line 12221: case 'persona': return <History size={16} />;
+[turn] Line 25662: const [personaTurnHintsViewed, setPersonaTurnHintsViewed] = useState(false);
+... and 21 more for 'turn'
+
+--- PERSONA UI LABELS/TRANSLATIONS ---
+Line 7194: tool_persona: "Interview Mode",
+Line 8064: export_transcripts: "Export Interview Transcripts",
+Line 8073: interview_xp: "Interview XP",
+Line 9187: title: "Interview Mode",
+Line 9193: intro: "Interview Mode Setup",
+Line 9194: setup_title: "Interview Mode Setup",
+Line 9213: mode_single: "1-on-1 Interview",
+Line 10114: pii_warning_desc: "Cloud saving is enabled with free response mode. Remind students not to include personal informat
+Line 10612: title: "Interview Mode",
+Line 10853: persona_desc: "Identify historical figures or experts related to your topic. Students can interview them in an inter
+Line 26921: 'persona_mode_toggle': 'persona',
+Line 26922: 'persona_panel': 'persona',
+Line 27280: • **Debate Mode**: Challenge the persona's viewpoint on a topic.
+Line 27530: 'tool_persona': "Interview historical figures or fictional characters to explore topics.",
+Line 27562: 'persona_custom_instructions_detailed': "Add specific traits, background, or expertise. Examples: 'Renaissance paint
+Line 27564: 'persona_mode_toggle': "SINGLE mode shows one persona at a time. PANEL mode allows multiple personas to interact in
+Line 27622: 'persona_panel': "Interview historical figures or fictional characters to deepen understanding.",
+Line 27623: 'persona_card': "Select a persona to chat with. You can select multiple for a panel discussion.",
+Line 27706: 'persona_response_mode': "Switch between 'Multiple Choice' (easier) and 'Free Response' (open-ended typing) interact
+Line 28066: 'persona_auto_read': "When ON: Personas speak their responses aloud automatically. Uses current voice settings.",
+Line 28067: 'persona_conclude': "End the interview and generate a reflection summary. Earns bonus XP for completed conversations
+Line 43159: Task: Identify 6 specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Ma
+Line 43240: title: "Interview Mode Options",
+Line 44179: const historyText = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : (m.speakerName |
+Line 44256: chatLogText = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : (m.speakerName || 'Panelist
+Line 44331: earnedBadges: [...(prev.earnedBadges || []), 'master_interviewer']
+Line 44360: setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharact
+Line 47399: Task: Identify 3 specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier',
+Line 52419: title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free
+Line 52423: {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
+Line 52594: <button onClick={() => { setReflectionFeedback(null); setIsPersonaReflection
+Line 52624: {isGradingReflection ? t('persona.status_grading') : t('persona.submit_x
+Line 52823: title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
+Line 52827: {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
+Line 52987: {!personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_s
+Line 53093: setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory
+Line 53151: {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
+Line 54885: {expandedTools.includes('persona') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown
+Line 54913: {isPersonaFreeResponse ? t('persona.sidebar_mode_free') : t('persona.sidebar_mode_mc')}
+Line 64168: : t('persona.instruction_panel', { current: personaState.selectedCharacters.
+Line 64176: onClick={() => setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacter
+Line 64177: className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.m
+Line 64182: onClick={() => setPersonaState(prev => ({ ...prev, mode: 'panel' }))}
+Line 64183: className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.m
+Line 64250: <>{isSelectedInPanel ? <CheckCircle2 size={18}/> : <Plus size={18}/>} {isSel

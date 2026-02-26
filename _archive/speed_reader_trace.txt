@@ -1,0 +1,43 @@
+=== TRACING SPEED READER RENDERING ===
+
+
+=== CHECKING immersiveText / focusText VARIABLES ===
+
+
+=== IMMERSIVE VIEW RENDER ===
+Line 26490: const [isImmersiveReaderActive, setIsImmersiveReaderActive] = useState(false);
+Line 49760: setIsImmersiveReaderActive(!isImmersiveReaderActive);
+Line 49805: setIsImmersiveReaderActive(true);
+Line 58317: {isImmersiveReaderActive && generatedContent?.immersiveData && (
+Line 58325: onClose={() => setIsImmersiveReaderActive(false)}
+Line 58593: setIsImmersiveReaderActive(true);
+
+
+=== SIMPLIFIED/LEVELED TEXT ===
+Line 26218: const [isEditingLeveledText, setIsEditingLeveledText] = useState(false);
+Line 26868: // === SIMPLIFIED / LEVELED TEXT ===
+Line 27711: // === SIMPLIFIED TEXT ===
+Line 27940: // === SIMPLIFIED TEXT (Additional) ===
+
+
+=== isReading HIGHLIGHT STYLES ===
+62951:                                                         <button
+62952:                                                             key={idx}
+62953:                                                             onClick={() => handleAdventureChoice(opt)}
+62954:                                                             className={`p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap
+62955:                                                                 ${isDebateSetup 
+62956:                                                                     ? 'border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-600 hover:text-white hover:border-
+62957:                                                                     : 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white hover
+62958:                                                                 ${isReadingThisOption ? 'ring-4 ring-yellow-400 bg-yellow-100 border-yellow-400 text-indigo-900 
+62959:                                                             `}
+62960:                                                         >
+62961:                                                             <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs border shrink-0 tran
+62962:                                                                 ${isReadingThisOption ? 'bg-yellow-400 text-indigo-900 border-yellow-600' : 
+62963:                                                                 isDebateSetup
+62964:                                                                     ? 'bg-white text-teal-700 border-teal-200 group-hover:border-transparent'
+62965:                                                                     : 'bg-white text-indigo-600 border-indigo-200 group-hover:border-transparent'}`}>
+62966:                                                                 {isDebateSetup ? <Scale size={12}/> : (idx + 1)}
+62967:                                                             </span>
+62968:                                                             <span className="z-10">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
+62969:                                                             <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group
+62970:                                                         </button>

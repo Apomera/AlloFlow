@@ -1,0 +1,80 @@
+
+--- helpMode (0 matches) ---
+
+--- showHelp (0 matches) ---
+
+--- setShowHelp (0 matches) ---
+
+--- helpModeActive (0 matches) ---
+
+--- quickStart (0 matches) ---
+
+--- wizard (301 matches) ---
+  L756: 'word_sounds.badge_blend_wizard': 'Blend Wizard',
+  L10946: /* Fix wizard/modal content overflow on mobile - use dynamic viewport height */
+  L11843: close_wizard: "Close Wizard",
+  L12290: wizard: {
+  L12337: file_process_msg: "The wizard will close to process your file.",
+  L14850: wizard_topic_input: "Enter the topic or subject area for your lesson. Be specific for best results (e.g., 'Photosynthesis in plant
+  L14851: wizard_grade_option: "Select the target grade level for your content. This affects vocabulary complexity, reading level, and conce
+  L14852: wizard_next_grade_btn: "Proceed to the next step in the wizard. You can always go back to previous steps to modify your choices.",
+  L14853: wizard_prev_btn: "Go back to the previous wizard step to change your selections. Your progress is saved automatically.",
+  L14854: wizard_skip_btn: "Skip this optional step and proceed with default settings. You can always customize these settings later.",
+  L14855: wizard_complete_btn: "Complete the wizard and generate your content with the selected settings. This may take a few moments.",
+  L14856: wizard_close_btn: "Close the wizard. If you've made progress, you'll be asked if you want to save your selections.",
+  L14857: wizard_standard_select: "Select education standards to align your content with (Common Core, NGSS, state standards, etc.).",
+  L14858: wizard_search_input: "Search for specific standards by keyword or code (e.g., 'CCSS.ELA-LITERACY.RI.5.1' or 'main idea').",
+  L14859: wizard_search_btn: "Search the standards database for matching entries. Results can be added to your lesson alignment.",
+
+--- toggleHelp (0 matches) ---
+
+--- help-mode (41 matches) ---
+  L18443: .help-mode-interactive {
+  L18450: .help-mode-interactive:hover {
+  L32586: document.body.classList.add('help-mode-active');
+  L32589: style.id = 'help-mode-styles';
+  L32597: .help-mode-active {
+  L32601: .help-mode-active #tour-header-utils button {
+  L32607: .help-mode-active #tour-header-settings button,
+  L32608: .help-mode-active #tour-header-settings select,
+  L32609: .help-mode-active #tour-header-settings [data-help-key] {
+  L32615: .help-mode-active #tour-header-tools button,
+  L32616: .help-mode-active #tour-header-tools [data-help-key] {
+  L32622: .help-mode-active #tour-header-actions button,
+  L32623: .help-mode-active #tour-header-actions a,
+  L32624: .help-mode-active #tour-header-actions [data-help-key] {
+  L32630: .help-mode-active header button,
+
+--- HelpMode (18 matches) ---
+  L27541: const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, addToast, isParentM
+  L27590: setIsHelpMode(false);
+  L27792: onClick={() => { setShowWizardHelp(h => !h); setIsHelpMode(prev => !prev); }}
+  L27805: <button onClick={() => { setIsHelpMode(false); onClose(); }} className="p-2 rounded-full text-slate-500 hover:text-slate-600 hover
+  L27817: <button onClick={() => { setShowWizardHelp(false); setIsHelpMode(false); }} className="text-indigo-400 hover:text-indigo-600 shrin
+  L29893: const [isHelpMode, setIsHelpMode] = useState(false);
+  L32506: if (!isHelpMode) return;
+  L32580: }, [isHelpMode, tourSteps]);
+  L32585: if (isHelpMode) {
+  L32761: }, [isHelpMode, theme]);
+  L33203: const handleToggleIsHelpMode = React.useCallback(() => setIsHelpMode(prev => !prev), []);
+  L54692: onClick={handleToggleIsHelpMode}
+  L54693: className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-whi
+  L54694: title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+  L54695: aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+
+--- wizardMode (0 matches) ---
+
+--- setHelpMode (0 matches) ---
+
+--- isHelpMode (11 matches) ---
+  L27541: const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, addToast, isParentM
+  L29893: const [isHelpMode, setIsHelpMode] = useState(false);
+  L32506: if (!isHelpMode) return;
+  L32580: }, [isHelpMode, tourSteps]);
+  L32585: if (isHelpMode) {
+  L32761: }, [isHelpMode, theme]);
+  L54693: className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-whi
+  L54694: title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+  L54695: aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+  L56182: if (isHelpMode) return;
+  L68532: isHelpMode={isHelpMode}

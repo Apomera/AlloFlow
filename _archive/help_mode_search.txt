@@ -1,0 +1,260 @@
+=== SPOTLIGHT PATTERNS ===
+
+Line 8333: spotlight_title: "Spotlight",
+Line 10870: spotlight_message: "Here is the {name} section.",
+Line 10871: spotlight_title: "Feature Spotlight"
+Line 26216: const spotlightOpenTimeRef = useRef(0);
+Line 26815: const [isSpotlightMode, setIsSpotlightMode] = useState(false);
+Line 26816: const [spotlightMessage, setSpotlightMessage] = useState(null); // {title, desc} or null
+Line 26817: const [botSpotlightPos, setBotSpotlightPos] = useState(null);
+Line 27904: 'fab_focus': "Creates a spotlight effect around your cursor to reduce visual overwhelm. Great for ADHD focus or low-vision tracking.",
+Line 28149: // Shared Helper: Handle Expansion & Spotlight
+Line 28163: showSpotlight(element, title, text);
+Line 28167: showSpotlight(element, title, text);
+Line 28304: // For granular help (spotlightMessage exists), showSpotlight already set metrics
+Line 28305: if (spotlightMessage) return;
+Line 28317: // Add extra padding for certain panels that need larger spotlight frames
+Line 28352: setBotSpotlightPos({ x: targetX, y: targetY });
+Line 28356: }, [runTour, tourStep, spotlightMessage]);
+Line 28365: // Shared helper to display spotlight on an element
+Line 28366: const showSpotlight = useCallback((element, title, text) => {
+Line 28369: setBotSpotlightPos({ x: rect.left + rect.width/2, y: rect.top + rect.height/2 });
+Line 28370: setSpotlightMessage({ title, text });
+Line 28371: spotlightOpenTimeRef.current = Date.now();
+Line 28372: setIsSpotlightMode(true);
+Line 28460: spotlightOpenTimeRef.current = Date.now();
+Line 28461: setIsSpotlightMode(true);
+Line 28480: if (false && isSpotlightMode && !runTour) { // DISABLED: Handled by dedicated Backdrop
+Line 28485: setIsSpotlightMode(false);
+Line 28487: setBotSpotlightPos(null);
+Line 28498: }, [isSpotlightMode, runTour]);
+Line 28520: // FIX: If we have a specific spotlight message (Granular Help),
+Line 28522: if (spotlightMessage) {
+Line 28527: if (!isSpotlightMode) spotlightOpenTimeRef.current = Date.now();
+Line 28528: setIsSpotlightMode(true);
+Line 28544: }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage]);
+Line 42142: spotlightOpenTimeRef.current = Date.now();
+Line 42143: setIsSpotlightMode(true);
+Line 42144: setSpotlightMessage(t('tour.spotlight_message', { name: displayName }));
+Line 42158: setBotSpotlightPos({ x: targetX, y: targetY });
+Line 42963: setSpotlightMessage(`Here is the ${displayName} section.`);
+Line 50984: background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%); /* Subtle top spotlight */
+Line 51610: onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
+Line 53127: <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLG
+Line 64346: {isSpotlightMode && tourRect && spotlightMessage && (
+Line 64355: if (spotlightOpenTimeRef.current && (Date.now() - spotlightOpenTimeRef.current < 500)) return;
+Line 64357: setIsSpotlightMode(false);
+Line 64382: {spotlightMessage.title || 'Help'}
+Line 64387: setIsSpotlightMode(false);
+Line 64397: {(spotlightMessage.text || '').split(/\r?\n|\\n/).map((line, i) => {
+Line 64484: {isSpotlightMode && botSpotlightPos && (
+Line 64490: cx={botSpotlightPos.x - 53}
+Line 64491: cy={botSpotlightPos.y + 20}
+Line 64493: (tourRect.left + tourRect.width/2) - (botSpotlightPos.x - 53),
+Line 64494: (tourRect.top + tourRect.height/2) - (botSpotlightPos.y + 10)
+Line 64511: M ${botSpotlightPos.x - 53} ${botSpotlightPos.y + 20}
+Line 64533: {!isSpotlightMode && (
+Line 64554: {spotlightMessage ? (
+Line 64557: <Sparkles size={18} className="text-yellow-500 fill-current"/> {spotlightMessage.title || t('tour.spotlight_title')}
+Line 64560: {(spotlightMessage.text || spotlightMessage || '').split(/\r?\n|\\n/).map((line, i) => {
+Line 64702: {spotlightMessage ? (
+Line 64709: setIsSpotlightMode(false);
+Line 64710: setSpotlightMessage('');
+Line 65989: holdingPointer={isSpotlightMode}
+
+
+=== POINTER EVENTS PATTERNS ===
+
+Line 1552: style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+Line 1754: style={{ position: 'relative', zIndex: 9999, pointerEvents: isLoading ? 'none' : 'auto', opacity: isLoading ? 0.7 : 1 }}
+Line 5574: <div className="absolute inset-0 bg-violet-200/20 animate-pulse pointer-events-none" />
+Line 5577: <div className="text-center pointer-events-none p-4 z-10">
+Line 5854: <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+Line 5869: <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+Line 11676: <div className="relative group z-50 pointer-events-auto flex flex-col gap-1.5 items-end">
+Line 12321: w-max max-w-[200px] z-50 pointer-events-none
+Line 12333: className="block mt-1 text-[10px] font-black text-indigo-500 hover:text-indigo-700 underline cursor-pointer pointer-events-auto"
+Line 12349: <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex justify-center items-end w-24 h-12 pointer-events-none z-[-1]">
+Line 12385: <div className="absolute inset-0 pointer-events-none z-0">
+Line 12404: className="absolute top-0 right-1/2 translate-x-1/2 text-4xl animate-float-reaction pointer-events-none select-none z-50 filter drop-shadow-md"
+Line 12428: <div className="absolute top-1/2 left-1/2 w-0 h-0 z-[-1] pointer-events-none">
+Line 13847: style={{ mixBlendMode: 'screen', pointerEvents: 'none' }}
+Line 14550: <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,tran
+Line 16038: <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-
+Line 16501: <div className="absolute inset-0 overflow-hidden pointer-events-none z-50 flex justify-center items-center">
+Line 16532: z-20 pointer-events-none backdrop-blur-[1px] bg-white/10 shadow-sm mask-image-grunge origin-center
+Line 16570: className="absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] pointer-events-none select-none z-50 hover:scale-110 transit
+Line 16578: <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none overflow-hidden rounded-xl">
+Line 17288: <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 print:hidden">
+Line 18316: <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+Line 18358: <div className="w-full max-w-[800px] flex justify-between px-4 md:px-12 mb-2 z-20 pointer-events-none">
+Line 18359: <div className="bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shad
+Line 18362: <div className="bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shad
+Line 18931: className="absolute inset-0 pointer-events-none focus:outline-none"
+Line 19052: {userOrder.length === 0 && <span className="text-slate-500 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
+Line 19671: <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+Line 20109: <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-event
+Line 20536: <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+Line 22274: <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transiti
+Line 23551: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+Line 23570: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+Line 23590: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+Line 23613: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+Line 23644: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+Line 23800: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+Line 23817: <div className="absolute top-3 left-3 pointer-events-none">
+Line 25439: pointer-events: none;
+Line 28227: pointer-events: auto !important;
+Line 28252: pointer-events: none !important;
+Line 28257: pointer-events: auto !important;
+Line 28262: pointer-events: auto !important;
+Line 29014: <text x="0" y="5" textAnchor="middle" className="text-xs font-bold pointer-events-none select-none fill-slate-700 font-sans uppercase tracking-wider">
+Line 29023: <foreignObject x="-40" y="-20" width="80" height="40" style={{ pointerEvents: 'none' }}>
+Line 29038: <foreignObject x="-45" y="-25" width="90" height="50" style={{ pointerEvents: 'none' }}>
+Line 29052: <foreignObject x="-70" y="-25" width="140" height="50" style={{ pointerEvents: 'none' }}>
+Line 29781: {!isMapLocked && <div className="absolute inset-0 bg-dot-pattern pointer-events-none z-0"></div>}
+Line 29782: <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+Line 29862: className={!isMapLocked ? "pointer-events-auto cursor-pointer hover:opacity-70 group" : ""} // UPDATED (Step D)
+Line 29924: <rect x="0" y="0" width="100%" height="100%" fill="rgba(99, 102, 241, 0.05)" className="pointer-events-none animate-pulse" />
+Line 29957: <div className={`px-2 line-clamp-4 pointer-events-none select-none ${node.type === 'flow-decision' ? '-rotate-45' : ''}`}>
+Line 29973: <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-slate-500 pointer-events-none border bor
+Line 29981: <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+Line 32029: <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-800 text-white text-xs rounded shadow-xl opacity-0 group-hover/
+Line 50491: <div role="status" aria-live="polite" className="fixed top-44 left-[45%] -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center
+Line 50495: className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all animate-in slide-in-from-right-10 fade-in
+Line 51249: <div className={`hidden md:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme ===
+Line 53127: <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLG
+Line 53405: <div className="fixed inset-0 z-0 pointer-events-none">
+Line 53415: className={`absolute inset-0 pointer-events-none z-[60] transition-colors duration-300 ${
+Line 53916: <div className="absolute bottom-2 right-4 text-[10px] font-medium transition-opacity duration-500 text-slate-500 pointer-events-none flex items-center
+Line 55052: <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+Line 55077: <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+Line 55099: <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+Line 55125: <div className="absolute top-2.5 left-2 pointer-events-none">
+Line 56535: className="fixed top-0 left-0 right-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+Line 56539: className="fixed left-0 right-0 bottom-0 bg-black/70 pointer-events-none z-[10001] transition-none"
+Line 56543: className="fixed left-0 right-0 pointer-events-none z-[10001] border-t border-b border-yellow-400/30 bg-yellow-100/5"
+Line 56550: left-1/2 transform -translate-x-1/2 animate-in slide-in-from-bottom-6 fade-in duration-300 w-full max-w-md flex justify-center pointer-events-none
+Line 56553: <div className="bg-slate-800/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl border border-slate-600 flex items-center gap-4 pointer-
+Line 56666: <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
+Line 57145: <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-600">
+Line 58352: className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out"
+Line 58357: className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out"
+Line 58362: className="fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 ease-out"
+Line 58437: <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
+Line 60054: <div className="absolute inset-0 opacity-10 pointer-events-none">
+Line 60097: <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-300 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-
+Line 60238: <div className="absolute inset-0 opacity-10 pointer-events-none">
+Line 60394: <div className={`flex-grow grid grid-cols-3 md:grid-cols-5 gap-4 place-items-center ${!isEscapeTimerRunning ? 'opacity-50 pointer-events-none' : ''}`}
+Line 61858: <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[1px]">
+Line 61884: <div className={`absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-e
+Line 61929: <div className={`absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] pointer-events-none z-20 
+Line 61978: <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+Line 62198: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-i
+Line 62212: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200
+Line 62226: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${isAdventureStoryMode ? 'bg-indigo-50 border-indigo-20
+Line 62240: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-20
+Line 62256: <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${enableFactionResources ? 'bg-amber-50 border-amber-20
+Line 62277: <div className={`bg-indigo-50 p-3 rounded-lg border border-indigo-100 ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSetting
+Line 62514: <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none"></div>
+Line 64254: <h4 className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wider pointer-events-none">
+Line 64299: <p className="text-[10px] text-blue-500 mt-2 text-center font-medium pointer-events-none">{t('simplified.cloze_instructions')}</p>
+Line 64373: <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse"></div>
+Line 64374: <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse" style={{animationD
+Line 64447: <svg className="absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95"
+Line 64461: <div className="fixed pointer-events-none animate-pulse z-[10999]"
+Line 64477: <div className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
+Line 64485: <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }}>
+Line 64542: pointerEvents: 'none',
+Line 64705: style={{ pointerEvents: "all", zIndex: 9999 }}
+Line 64753: {showFluencyConfetti && <div className="absolute inset-0 pointer-events-none z-[250] flex items-center justify-center"><ConfettiExplosion /></div>}
+Line 65826: {showTimerConfetti && <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"><ConfettiExplosion /></div>}
+Line 66015: <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border bo
+
+
+=== TOUR OVERLAY PATTERNS ===
+
+Line 8333: spotlight_title: "Spotlight",
+Line 10870: spotlight_message: "Here is the {name} section.",
+Line 10871: spotlight_title: "Feature Spotlight"
+Line 26216: const spotlightOpenTimeRef = useRef(0);
+Line 26815: const [isSpotlightMode, setIsSpotlightMode] = useState(false);
+Line 26816: const [spotlightMessage, setSpotlightMessage] = useState(null); // {title, desc} or null
+Line 26817: const [botSpotlightPos, setBotSpotlightPos] = useState(null);
+Line 27904: 'fab_focus': "Creates a spotlight effect around your cursor to reduce visual overwhelm. Great for ADHD focus or low-vision tracking.",
+Line 28149: // Shared Helper: Handle Expansion & Spotlight
+Line 28163: showSpotlight(element, title, text);
+Line 28167: showSpotlight(element, title, text);
+Line 28304: // For granular help (spotlightMessage exists), showSpotlight already set metrics
+Line 28305: if (spotlightMessage) return;
+Line 28317: // Add extra padding for certain panels that need larger spotlight frames
+Line 28352: setBotSpotlightPos({ x: targetX, y: targetY });
+Line 28356: }, [runTour, tourStep, spotlightMessage]);
+Line 28365: // Shared helper to display spotlight on an element
+Line 28366: const showSpotlight = useCallback((element, title, text) => {
+Line 28369: setBotSpotlightPos({ x: rect.left + rect.width/2, y: rect.top + rect.height/2 });
+Line 28370: setSpotlightMessage({ title, text });
+Line 28371: spotlightOpenTimeRef.current = Date.now();
+Line 28372: setIsSpotlightMode(true);
+Line 28373: // setRunTour(true); // REMOVED to decouple from full tour overlay
+Line 28460: spotlightOpenTimeRef.current = Date.now();
+Line 28461: setIsSpotlightMode(true);
+Line 28480: if (false && isSpotlightMode && !runTour) { // DISABLED: Handled by dedicated Backdrop
+Line 28485: setIsSpotlightMode(false);
+Line 28487: setBotSpotlightPos(null);
+Line 28498: }, [isSpotlightMode, runTour]);
+Line 28520: // FIX: If we have a specific spotlight message (Granular Help),
+Line 28522: if (spotlightMessage) {
+Line 28527: if (!isSpotlightMode) spotlightOpenTimeRef.current = Date.now();
+Line 28528: setIsSpotlightMode(true);
+Line 28544: }, [runTour, tourStep, isTeacherMode, isSpotlightMode, updateTourMetrics, spotlightMessage]);
+Line 42142: spotlightOpenTimeRef.current = Date.now();
+Line 42143: setIsSpotlightMode(true);
+Line 42144: setSpotlightMessage(t('tour.spotlight_message', { name: displayName }));
+Line 42158: setBotSpotlightPos({ x: targetX, y: targetY });
+Line 42963: setSpotlightMessage(`Here is the ${displayName} section.`);
+Line 50984: background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%); /* Subtle top spotlight */
+Line 51610: onClick={() => { setRunTour(true); setTourStep(0); setSpotlightMessage(''); }}
+Line 53127: <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLG
+Line 64346: {isSpotlightMode && tourRect && spotlightMessage && (
+Line 64355: if (spotlightOpenTimeRef.current && (Date.now() - spotlightOpenTimeRef.current < 500)) return;
+Line 64357: setIsSpotlightMode(false);
+Line 64382: {spotlightMessage.title || 'Help'}
+Line 64387: setIsSpotlightMode(false);
+Line 64397: {(spotlightMessage.text || '').split(/\r?\n|\\n/).map((line, i) => {
+Line 64475: {/* Legacy Tour Overlay (Restricted to actual Tour Mode) */}
+Line 64484: {isSpotlightMode && botSpotlightPos && (
+Line 64490: cx={botSpotlightPos.x - 53}
+Line 64491: cy={botSpotlightPos.y + 20}
+Line 64493: (tourRect.left + tourRect.width/2) - (botSpotlightPos.x - 53),
+Line 64494: (tourRect.top + tourRect.height/2) - (botSpotlightPos.y + 10)
+Line 64511: M ${botSpotlightPos.x - 53} ${botSpotlightPos.y + 20}
+Line 64533: {!isSpotlightMode && (
+Line 64554: {spotlightMessage ? (
+Line 64557: <Sparkles size={18} className="text-yellow-500 fill-current"/> {spotlightMessage.title || t('tour.spotlight_title')}
+Line 64560: {(spotlightMessage.text || spotlightMessage || '').split(/\r?\n|\\n/).map((line, i) => {
+Line 64702: {spotlightMessage ? (
+Line 64709: setIsSpotlightMode(false);
+Line 64710: setSpotlightMessage('');
+Line 65989: holdingPointer={isSpotlightMode}
+
+
+=== CLICK HANDLER WITH HELP ===
+
+Line 17739: <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-
+Line 17740: <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity
+Line 50725: <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowGroupMod
+Line 51322: <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[10px] text-indigo-500 hover:text-indigo-700 font-bold flex
+Line 51589: onClick={() => setIsHelpMode(!isHelpMode)}
+Line 53157: onClick={() => { if (!isHelpMode) setAutoSendVoice(!autoSendVoice); }}
+Line 53169: onClick={() => { if (!isHelpMode) saveFullChat(); }}
+Line 53178: onClick={() => { if (!isHelpMode) setIsShowMeMode(!isShowMeMode); }}
+Line 53186: onClick={() => { if (!isHelpMode) setIsUDLGuideExpanded(!isUDLGuideExpanded); }}
+Line 53192: <button data-help-key="chat_close" onClick={() => { if (!isHelpMode) setShowUDLGuide(false); }} className="hover:bg-white/20 p-1 rounded" aria-label={
+Line 56092: <button onClick={() => profileInputRef.current.click()} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('profiles.import_too
+Line 56093: <button onClick={handleExportProfiles} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('profiles.export_tooltip')} aria-labe
+Line 58240: <button onClick={() => handleSpeak(item.term, `term-${idx}`)} disabled={isGeneratingAudio && playingContentId !== `term-${idx}`} className={`p-1 round
+Line 58241: <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled={downloadingContentId === `dl-term-${idx}`} cla
+Line 58678: <button onClick={() => handleDownloadAudio(generatedContent.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')} disabled={downloadingContentId 
+Line 63161: <button onClick={handleDownloadImage} data-help-key="visuals_download" className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-whi
+Line 63162: <button onClick={handleDeleteImage} data-help-key="visuals_delete" className="flex-none flex items-center justify-center gap-2 bg-red-50 text-red-600 

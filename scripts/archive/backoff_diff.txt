@@ -1,0 +1,28 @@
+=== ALL fetchWithExponentialBackoff uses ===
+
+CURR:
+  L16756:           const response = await fetchWithExponentialBackoff(url, {
+  L37630:       const response = await fetchWithExponentialBackoff(url, {
+  L38250:       const response = await fetchWithExponentialBackoff(url, {
+  L38276:       const response = await fetchWithExponentialBackoff(url, {
+  L38325:                 const res = await fetchWithExponentialBackoff(gcpUrl, {
+
+BAK:
+  L18325:       const response = await fetchWithExponentialBackoff(url, {
+  L40733:       const response = await fetchWithExponentialBackoff(url, {
+  L41413:       const response = await fetchWithExponentialBackoff(url, {
+  L41443:       const response = await fetchWithExponentialBackoff(url, {
+  L41518:             const res = await fetchWithExponentialBackoff(gcpUrl, {
+
+=== All fetch( calls in TTS area ===
+
+CURR (L38201-L38500):
+  L38356:           // Use simple fetch (matching working app pattern)
+  L38357:           const response = await fetch(url, {
+  L38388:                       const retryResponse = await fetch(url, {
+
+BAK (L41351-L41700):
+  L41552:           // Use simple fetch (matching working app pattern)
+  L41553:           const response = await fetch(url, {
+  L41577:                       const retryResponse = await fetch(url, {
+  L41680:       const response = await fetch(url, {

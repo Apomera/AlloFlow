@@ -1,0 +1,162 @@
+art or Logic Gate diagram in "graphData".
+                    - Keep SVG code clean, minimal, responsive (viewBox), and use standard colors.
+                ` : ''}
+                Return ONLY JSON in the following format:
+                {
+                  "problem": "Clean Latex string of the input",
+                  "answer": "Final Answer string",
+                  "steps": [{ "explanation": "Step explanation", "latex": "Step math in Latex" }],
+                  "graphData": "SVG string or null",
+                  "realWorld": "Connection string explanation",
+                  "manipulativeSupport": null,
+                  "manipulativeResponse": null
+                }
+              `;
+          }
+          console.error('[MATH] Sending prompt to Gemini, mode:', mathMode, 'subject:', mathSubject);
+          const result = await callGemini(prompt, true);
+          console.error('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
+          let rawContent;
+          try {
+              let cleaned = cleanJson(result);
+              cleaned = cleaned.replace(/(?![/u"bfnrt])/g, "");
+              cleaned = cleaned.replace(/(f|n|r|t|b)(?=[a-zA-Z])/g, "$1");
+              rawContent = safeJsonParse(cleaned);
+              if (!rawContent) throw new Error("Parsed JSON is null");
+          } catch (parseErr) {
+              console.error('[MATH] JSON Parse Error:', parseErr, 'Cleaned input:', cleaned?.substring(0, 300));
+              warnLog("Math Parse Error:", parseErr);
+              throw new Error("Failed to parse Math JSON. The AI response was not valid.");
+          }
+          let normalizedContent = {
+              title: rawContent.title || 'Math & STEM Solver',
+              problems: [],
+              graphData: rawContent.graphData || null
+          };
+          const normalizeSteps = (steps) => {
+              if (!Array.isArray(steps)) return [];
+              return steps.map(s => {
+                  if (typeof s === 'string') return { explanation: s, latex: '' };
+                  return s;
+              });
+          };
+          if (Array.isArray(rawContent.problems)) {
+              normalizedContent.problems = rawContent.problems.map(p => ({
+                  ...p,
+                  steps: normalizeSteps(p.steps)
+              }));
+          } else {
+              normalizedContent.problems = [{
+                  question: rawContent.problem || problemToSolve,
+                  answer: rawContent.answer,
+                  steps: normalizeSteps(rawContent.steps || (Array.isArray(rawContent.steps) ? rawContent.steps : [])),
+                  realWorld: rawContent.realWorld
+              }];
+          }
+
+          normalizedContent.problems = verifyMathProblems(normalizedContent.problems);
+          const verifiedCount = normalizedContent.problems.filter(p => p._verification?.verified).length;
+          const mismatchCount = normalizedContent.problems.filter(p => p._verification?.mismatch).length;
+          if (mismatchCount > 0) {
+            warnLog(`Math verification: ${mismatchCount} answer(s) auto-corrected via expression evaluation`);
+          }
+          if (verifiedCount > 0) {
+            console.error('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
+          }
+          const newItem = {
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              type: 'math',
+              data: normalizedContent,
+              meta: `${mathSubject} - ${mathMode}`,
+              title: normalizedContent.title,
+              timestamp: new Date(),
+
+              config: {}
+
+          };
+          setGeneratedContent({ type: 'math', data: normalizedContent, id: newItem.id });
+          setHistory(prev => [...prev, newItem]);
+          console.error('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
+          addToast(t('math.success_toast'), "success");
+          flyToElement('tour-tool-math');
+      } catch (e) {
+          console.error('[MATH] Generation failed:', e.message, e.stack);
+          warnLog("Unhandled error:", e);
+          setError(t('math.error_generation'));
+          addToast(t('math.error_generation'), "error");
+      } finally {
+          setIsProcessing(false);
+      }
+  };
+  const handleMathEdit = async (editInstruction) => {
+      if (!editInstruction.trim() || !generatedContent?.data?.problems) return;
+      setIsMathEditingChat(true);
+      try {
+          const currentProblems = generatedContent.data.problems.map((p, i) =>
+              `Problem ${i+1}: ${p.question} (Answer: ${p.answer})`
+          ).join("\n");
+          const prompt = `
+              You are an Expert Math Curriculum Designer.
+              ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+              A teacher has an existing problem set and wants to modify it.
+              
+              CURRENT PROBLEMS:
+              ${currentProblems}
+              
+              TEACHER'S EDIT REQUEST: "${editInstruction}"
+              Grade Level: ${gradeLevel}
+              Subject: ${mathSubject}
+              
+              INSTRUCTIONS:
+              Apply the teacher's requested changes to the problem set.
+              This may include: making problems easier/harder, adding more problems,
+              changing topics, adjusting difficulty, adding specific problem types,
+              changing the theme/context, or any other modification.
+              Keep problems the teacher didn't mention unchanged unless the edit applies to all.
+              
+              Return ONLY the MODIFIED problem set as JSON:
+              {
+                "title": "Modified Problem Set",
+                "problems": [
+                  {
+                    "question": "Problem text...",
+                    "expression": "Math expression",
+                    "answer": "The answer",
+                    "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression" }],
+                    "realWorld": "Connection..."
+                  }
+                ],
+                "graphData": null
+              }
+          `;
+          const result = await callGemini(prompt, true);
+          let cleaned = cleanJson(result);
+          cleaned = cleaned.replace(/(?![/u"bfnrt])/g, "");
+          const rawContent = safeJsonParse(cleaned);
+          if (!rawContent) throw new Error("Parse failed");
+          const normalizeSteps = (steps) => {
+              if (!Array.isArray(steps)) return [];
+              return steps.map(s => typeof s === "string" ? { explanation: s, latex: "" } : s);
+          };
+          const normalizedContent = {
+              title: rawContent.title || generatedContent.data.title || "Modified Problems",
+              problems: (rawContent.problems || []).map(p => ({ ...p, steps: normalizeSteps(p.steps) })),
+              graphData: rawContent.graphData || generatedContent.data.graphData || null
+          };
+          setGeneratedContent(prev => ({ ...prev, data: normalizedContent }));
+          addToast(`✏️ Problems updated: "${editInstruction.substring(0, 40)}..."`, "success");
+          setMathEditInput("");
+      } catch (e) {
+          warnLog("Math Edit Error:", e);
+          addToast("Failed to modify problems — try rephrasing your request", "error");
+      } finally {
+          setIsMathEditingChat(false);
+      }
+  };
+  const handleGenerateSimilar = async () => {
+      const firstProblem = generatedContent?.data?.problems?.[0]?.question;
+      if (!firstProblem) return;
+      setIsProcessing(true);
+      addToast(t('math.creating_variation'), "info");
+      try {
+      

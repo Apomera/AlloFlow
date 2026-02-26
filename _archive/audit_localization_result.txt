@@ -1,0 +1,344 @@
+======================================================================
+LOCALIZATION AUDIT REPORT
+Generated: Feb 19, 2026
+Source: AlloFlowANTI.txt | UI Strings: ui_strings.js
+======================================================================
+
+## SUMMARY
+  t() keys in code:          2942
+  Keys in ui_strings.js:     4054
+  MISSING from ui_strings:   15
+  UNUSED (stale) keys:       1134
+  Hardcoded JSX strings:     287
+  Hardcoded attributes:      482
+
+======================================================================
+## 1. MISSING KEYS (t() used in code but not in ui_strings.js)
+======================================================================
+These keys are referenced via t() but don't exist in ui_strings.js.
+The t() function will return the raw key or inline fallback.
+
+
+  ### _root (4 keys)
+    - adventure_title
+      L31666: { id: 'tour-tool-adventure', text: t('tour.adventure_text'), title: t('tour.adventure_title') },
+    - cancel
+      L195: cancelRequested: false,
+    - move_down
+      L14948: history_move_down_btn: "Move this resource down in the list order.",
+    - move_up
+      L14950: history_move_up_btn: "Move this resource up in the list order.",
+
+  ### about (1 keys)
+    - about.features_list
+      L55031: const featuresList = t('about.features_list', { returnObjects: true });
+
+  ### bingo (4 keys)
+    - bingo.close_generator
+      L22378: data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
+    - bingo.exit_caller_aria
+      L22449: data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
+    - bingo.launch_caller_aria
+      L22439: data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
+    - bingo.pause_duration
+      L22462: title={t('bingo.pause_duration', { seconds: callDelay })}
+
+  ### codenames (2 keys)
+    - codenames.adjectives
+      L15363: const adjectives = t('codenames.adjectives') || [];
+    - codenames.animals
+      L15364: const animals = t('codenames.animals') || [];
+
+  ### language_selector (3 keys)
+    - language_selector.status_checking
+      L15091: setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }));
+    - language_selector.status_generating
+      L15110: setStatusMessage(t('language_selector.status_generating', { lang: targetLanguage }));
+    - language_selector.status_translating_part
+      L15132: setStatusMessage(t('language_selector.status_translating_part', { current: i + 1, total: chunks.leng
+
+  ### quick_start (1 keys)
+    - quick_start.found_resources
+      L38151: addToast(t('quick_start.found_resources', {count: uniqueOptions.length}), "success");
+
+======================================================================
+## 2. UNUSED KEYS (in ui_strings.js but never referenced in code)
+======================================================================
+These keys exist in ui_strings.js but no t() call references them.
+They may be dead code or used via dynamic key construction.
+
+    - about.category
+    - about.color
+    - about.desc
+    - about.features_list.categories.activities
+    - about.features_list.categories.assessment
+    - about.features_list.categories.creation
+    - about.features_list.categories.platform
+    - about.features_list.category
+    - about.features_list.color
+    - about.features_list.desc
+    - about.features_list.icon
+    - about.features_list.title
+    - about.icon
+    - adventure.adventure_difficulty
+    - adventure.adventure_free_response
+    - adventure.adventure_input_mode
+    - adventure.adventure_language
+    - adventure.analysis_check_accuracy
+    - adventure.analysis_generate_button
+    - adventure.bingo_card_count_input
+    - adventure.bingo_close_btn
+    - adventure.bingo_exit_caller_btn
+    - adventure.bingo_images_chk
+    - adventure.bingo_launch_caller_btn
+    - adventure.bingo_next_clue
+    - adventure.bingo_prev_clue
+    - adventure.bingo_print_btn
+    - adventure.bingo_regenerate_btn
+    - adventure.bingo_speed_slider
+    - adventure.bingo_toggle_autoplay
+    - adventure.bingo_toggle_history
+    - adventure.brainstorm_card
+    - adventure.brainstorm_custom_instructions
+    - adventure.brainstorm_generate_button
+    - adventure.brainstorm_guide
+    - adventure.brainstorm_panel
+    - adventure.brainstorm_simulation_type
+    - adventure.brainstorm_step_count
+    - adventure.bridge_send_button
+    - adventure.chat_auto_send
+    - adventure.chat_close
+    - adventure.chat_expand
+    - adventure.chat_save_advice_btn
+    - adventure.chat_show_me
+    - adventure.chat_voice_mode
+    - adventure.climax_archetypes.antagonist.label
+    - adventure.climax_archetypes.antagonist.left
+    - adventure.climax_archetypes.antagonist.right
+    - adventure.climax_archetypes.catastrophe.label
+    - adventure.climax_archetypes.catastrophe.left
+    - adventure.climax_archetypes.catastrophe.right
+    - adventure.climax_archetypes.discovery.label
+    - adventure.climax_archetypes.discovery.left
+    - adventure.climax_archetypes.discovery.right
+    - adventure.climax_archetypes.masterpiece.label
+    - adventure.climax_archetypes.masterpiece.left
+    - adventure.climax_archetypes.masterpiece.right
+    - adventure.concept_sort_add_item
+    - adventure.concept_sort_bucket
+    - adventure.concept_sort_categories
+    - adventure.concept_sort_category
+    - adventure.concept_sort_check_answers
+    - adventure.concept_sort_deck
+    - adventure.concept_sort_game
+    - adventure.concept_sort_generate_button
+    - adventure.concept_sort_header
+    - adventure.concept_sort_item
+    - adventure.concept_sort_items
+    - adventure.concept_sort_panel
+    - adventure.concept_sort_reset
+    - adventure.concept_sort_start_button
+    - adventure.confirm_export_images
+    - adventure.crossword_clues_list
+    - adventure.crossword_controls
+    - adventure.crossword_game_container
+    - adventure.crossword_grid
+    - adventure.effects.energy
+    - adventure.effects.gold_boost
+    - adventure.effects.hint
+    - adventure.effects.key_item
+    - adventure.effects.modifier
+    - adventure.effects.xp_boost
+    - adventure.escape_room_cipher_input
+    - adventure.escape_room_cipher_submit
+    - adventure.escape_room_close_btn
+    - adventure.escape_room_fillin_input
+    - adventure.escape_room_fillin_submit
+    - adventure.escape_room_hint_button
+    - adventure.escape_room_leaderboard
+    - adventure.escape_room_lives
+    - adventure.escape_room_matching_container
+    - adventure.escape_room_mcq_option
+    - adventure.escape_room_object
+    - adventure.escape_room_progress
+    - adventure.escape_room_scramble_input
+    - adventure.escape_room_scramble_submit
+    - adventure.escape_room_sequence_container
+    - adventure.escape_room_streak
+    - adventure.escape_room_team
+    - adventure.escape_room_timer
+    ... and 1034 more
+
+======================================================================
+## 3. HARDCODED JSX TEXT (first 80 instances)
+======================================================================
+English text rendered directly in JSX without t() wrapping.
+
+    L2501: "Apply"
+    L2534: "Score"
+    L2538: "Correct"
+    L2543: "Close"
+    L2552: "Label Details"
+    L2568: "Close"
+    L3018: "Image Display Mode"
+    L3037: "Syllable Range"
+    L3220: "Enable Lesson Plan"
+    L3927: "Phonemes"
+    L4010: "Rhyme Time Options"
+    L4073: "Blend Sounds Options"
+    L4149: "No phonemes available"
+    L4189: "Regenerate Image"
+    L4191: "Generate Image"
+    L5835: "Benchmark Probe Results"
+    L5842: "Items Attempted"
+    L5846: "Items Correct"
+    L5850: "Accuracy"
+    L9164: "Tap to hear"
+    L10548: "Word Recap"
+    L10711: "Active"
+    L12504: "Oral Fluency Score Sheet"
+    L12506: "AlloFlow Assessment Record"
+    L12507: "Student"
+    L12510: "Accuracy"
+    L12510: "Substitutions"
+    L12510: "Omissions"
+    L12510: "Insertions"
+    L12510: "Error Rate"
+    L12510: "Reading Level"
+    L12511: "Error Analysis"
+    L12511: "Total Errors"
+    L12511: "SC Rate"
+    L12511: "Total Words"
+    L12512: "Verified WCPM"
+    L12512: "Verified Reading Level"
+    L12513: "Teacher Notes"
+    L12514: "Teacher Signature"
+    L12558: "Substitutions"
+    L12562: "Omissions"
+    L12566: "Insertions"
+    L12623: "Student Progress Report"
+    L12631: "RTI Classification"
+    L13006: "Live Sync"
+    L13251: "Grade K"
+    L13268: "Segmentation"
+    L13270: "Blending"
+    L13272: "Isolation"
+    L13278: "Segmentation"
+    L13280: "Blending"
+    L13282: "Isolation"
+    L13284: "Spelling"
+    L13290: "Segmentation"
+    L13292: "Blending"
+    L13294: "Rhyming"
+    L13296: "Spelling"
+    L13302: "Segmentation"
+    L13304: "Rhyming"
+    L13306: "Spelling"
+    L13511: "RTI Progress Monitor"
+    L13655: "Baseline"
+    L13662: "Target WCPM"
+    L13669: "Target Date"
+    L13732: "Trend Line Comparison"
+    L13751: "NCII recommended"
+    L13789: "Frequency"
+    L13792: "Daily"
+    L13795: "Weekly"
+    L13804: "Group Size"
+    L13811: "Start Date"
+    L13816: "Notes"
+    L13948: "Accuracy"
+    L13954: "Words Completed"
+    L13960: "Best Streak"
+    L13966: "Phonemes Practiced"
+    L14024: "Growth"
+    L14045: "Average"
+    L14049: "Best Score"
+    L14053: "Attempts"
+    ... and 207 more
+
+======================================================================
+## 4. HARDCODED ATTRIBUTES (first 80 instances)
+======================================================================
+aria-label/title attributes with hardcoded English strings.
+
+    L2521: aria-label="Label Challenge Results"
+    L2526: aria-label="Close results"
+    L2914: aria-label="Close Minimize"
+    L2955: aria-label="Word count slider"
+    L2968: aria-label="Session goal slider"
+    L2983: aria-label="Spelling session goal slider"
+    L3006: aria-label="Image theme input"
+    L3021: aria-label="Image Display Mode"
+    L3025: title="Control when word images appear during activities"
+    L3123: aria-label="Quick add word"
+    L3268: aria-label="Toggle enabled"
+    L3286: aria-label="Adjust lesson plan"
+    L3312: aria-label="Toggle all"
+    L3383: title="Phonemes"
+    L3384: title="Image"
+    L3742: title="Regenerate this word"
+    L3751: aria-label="Move up"
+    L3755: title="Move up"
+    L3758: aria-label="Move down"
+    L3762: title="Move down"
+    L3789: title="Delete word"
+    L3827: aria-label="Play phoneme sequence"
+    L3844: title="Play phoneme sequence"
+    L3864: aria-label="Regenerate image"
+    L3871: title="Regenerate image"
+    L3878: aria-label="Generate image for this word"
+    L3889: title="Generate image for this word"
+    L4012: aria-label="Rhyme Time Options"
+    L4020: aria-label="Enter D"
+    L4031: aria-label="Play TTS"
+    L4040: title="Play TTS"
+    L4045: aria-label="Regenerate this option"
+    L4055: title="Regenerate this option"
+    L4080: aria-label="Enter D"
+    L4090: aria-label="Play TTS"
+    L4099: title="Play TTS"
+    L4104: aria-label="Regenerate this option"
+    L4114: title="Regenerate this option"
+    L4207: aria-label="e.g., make it cuter, add a banana"
+    L4958: aria-label="Volume"
+    L4980: aria-label="Play All Sounds"
+    L4988: title="Play All Sounds"
+    L5034: title="Repeat instruction"
+    L5035: aria-label="Repeat instruction"
+    L5076: aria-label="Enter Opt"
+    L5096: aria-label="Volume"
+    L5108: aria-label="Listen"
+    L5114: title="Listen"
+    L5134: aria-label="Volume"
+    L5188: aria-label="Enter Opt"
+    L5196: aria-label="Volume"
+    L5223: aria-label="Volume"
+    L5295: aria-label="Edit Spelling Word"
+    L5302: aria-label="Volume"
+    L5318: aria-label="Volume"
+    L5333: aria-label="Drag letters here..."
+    L5462: aria-label="Family word..."
+    L5492: aria-label="Distractor..."
+    L5529: aria-label="Hear target sound"
+    L5531: title="Hear target sound"
+    L5598: aria-label="Hear all words"
+    L5599: title="Play all remaining words aloud"
+    L5617: title="Hear this word"
+    L5715: aria-label="Enter G"
+    L5727: aria-label="Volume"
+    L5738: aria-label="Volume"
+    L9137: aria-label="Play word"
+    L9173: aria-label="Read instructions"
+    L9189: title="Read instructions"
+    L9309: aria-label="Voice input"
+    L9341: aria-label="Voice input"
+    L9423: aria-label="Text field"
+    L9509: aria-label="Enter P"
+    L9523: aria-label="Volume"
+    L9549: aria-label="Voice input"
+    L9591: aria-label="Enter Word"
+    L9608: aria-label="Volume"
+    L9619: aria-label="Listen to this option"
+    L9626: title="Listen to this option"
+    L9635: aria-label="Voice input"
+    ... and 402 more

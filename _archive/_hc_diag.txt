@@ -1,0 +1,16 @@
+Line 39703 repr:
+"              const def = t.def || t.definition || t.meaning || '';\n"
+
+Line 65439 repr:
+'                                                onClick={() => { handleQuickAddGlossary(gap.term); }}\n'
+
+Match 'definition+meaning' at LINE 39703: "              const def = t.def || t.definition || t.meaning || '';\n"
+Match 'handleQuickAddGlossary(gap' at LINE 65439: '                                                onClick={() => { handleQuickAddGlossary(gap.term); }}\n'
+
+--- Full file search ---
+'t.definition || t.meaning' count: 1
+"t.definition || t.meaning" (smart quotes) count: 0  2
+'t.definition' count: 2
+'t.meaning' count: 1
+'setNewGlossaryTerm(gap.term)' count: 0
+'setNewGlossaryTerm' count: 3

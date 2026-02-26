@@ -1,0 +1,64 @@
+﻿  recordEscapeRoomCompletion: L30956-L30962 (7 lines)
+    START: const recordEscapeRoomCompletion = useCallback((resourceId, data) => {
+    END:   }, []);
+
+  recordFluencyAssessment: L30964-L30970 (7 lines)
+    START: const recordFluencyAssessment = useCallback((resourceId, data) => {
+    END:   }, []);
+
+  recordFlashcardInteraction: L30972-L30986 (15 lines)
+    START: const recordFlashcardInteraction = useCallback((resourceId, action, totalCards) 
+    END:   }, []);
+
+  trackResourceTime: L30988-L31006 (19 lines)
+    START: const trackResourceTime = useCallback((resourceType) => {
+    END:   }, []);
+
+  generatePersonaSuggestions: L47692-L47712 (21 lines)
+    START: const generatePersonaSuggestions = async (history, character) => {
+    END:   };
+
+  handlePersonaWordClick: L48036-L48065 (30 lines)
+    START: const handlePersonaWordClick = async (rawWord, e) => {
+    END:   };
+
+  generateInterviewSummary: L48481-L48525 (45 lines)
+    START: const generateInterviewSummary = async () => {
+    END:   };
+
+  PHONEME_PRONUNCIATIONS: L932-L959 (28 lines)
+    START: const PHONEME_PRONUNCIATIONS = {
+    END:   };
+
+  PHONOLOGICAL_ACTIVITIES: L1005-L1005 (1 lines)
+    START: const PHONOLOGICAL_ACTIVITIES = ['counting', 'isolation', 'segmentation', 'blend
+    END:   const PHONOLOGICAL_ACTIVITIES = ['counting', 'isolation', 'segmentation', 'blend
+
+  ORTHOGRAPHIC_ACTIVITIES: L1006-L1006 (1 lines)
+    START: const ORTHOGRAPHIC_ACTIVITIES = ['mapping']; // 'spelling_bee' will be added lat
+    END:   const ORTHOGRAPHIC_ACTIVITIES = ['mapping']; // 'spelling_bee' will be added lat
+
+  SAFETY_BLACKLIST: L1430-L1439 (10 lines)
+    START: const SAFETY_BLACKLIST = new Set([
+    END:   ]);
+
+  IPA_GRAPHEME_OPTIONS: L2405-L2435 (31 lines)
+    START: const IPA_GRAPHEME_OPTIONS = {
+    END:   };
+
+  AUDIO_BANK_PHONEMES: L4619-L4630 (12 lines)
+    START: const AUDIO_BANK_PHONEMES = new Set([
+    END:   ]);
+
+  PREFETCH_BUFFER_SIZE: L5333-L5333 (1 lines)
+    START: const PREFETCH_BUFFER_SIZE = 10;
+    END:   const PREFETCH_BUFFER_SIZE = 10;
+
+  MAX_CHUNK_SIZE: L19481-L19481 (1 lines)
+    START: const MAX_CHUNK_SIZE = 8000;
+    END:   const MAX_CHUNK_SIZE = 8000;
+
+
+Total dead code: 229 lines
+  That's 0.33% of the file
+  Estimated size: 14.8 KB

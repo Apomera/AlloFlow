@@ -1,0 +1,176 @@
+======================================================================
+  DEEP PERFORMANCE & BUG AUDIT — PASS 2
+======================================================================
+
+======================================================================
+  1. WRITE-ONLY STATE — DETAILED ANALYSIS
+======================================================================
+
+  ⚠️  pulseScale (L17577) — NEVER READ, set 1 times:
+      L17581: setPulseScale(prev => prev === 1 ? 1.02 : 1);
+
+  ⚠️  awardedPoints (L23447) — NEVER READ, set 1 times:
+      L23591: setAwardedPoints(0);
+
+  ⚠️  blueprintSelection (L29678) — NEVER READ, set 4 times:
+      L46434: setBlueprintSelection(initialSelection);
+      L46486: setBlueprintSelection(initialSelection);
+      L46517: setBlueprintSelection(newSelection);
+      L48604: setBlueprintSelection(newSelection);
+
+  ⚠️  isReviewingBlueprint (L29679) — NEVER READ, set 4 times:
+      L46440: setIsReviewingBlueprint(true);
+      L46492: setIsReviewingBlueprint(true);
+      L48614: setIsReviewingBlueprint(false);
+      L56502: setIsReviewingBlueprint(false);
+
+  ⚠️  studyDuration (L29888) — NEVER READ, set 4 times:
+      L69044: setStudyDuration(min * 60);
+      L69071: setStudyDuration(mins * 60);
+      L69095: setStudyDuration(25 * 60);
+      L69110: setStudyDuration(0);
+
+  ⚠️  isDefining (L31297) — NEVER READ, set 4 times:
+      L39840: setIsDefining(true);
+      L39861: setIsDefining(false);
+      L39960: setIsDefining(true);
+      L39982: setIsDefining(false);
+
+  ⚠️  isRevising (L31302) — NEVER READ, set 5 times:
+      L30424: const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
+      L30428: setIsRevisingTimeline(true);
+      L30476: setIsRevisingTimeline(false);
+      L39729: setIsRevising(true);
+      L39824: setIsRevising(false);
+
+  ⚠️  sourceStandards (L35373) — NEVER READ, set 1 times:
+      L30226: setSourceStandards(stdCodes);
+
+======================================================================
+  2. MISSING KEY PROPS IN JSX .map()
+======================================================================
+
+  .map() without key= in nearby JSX: 40
+  (First 20 shown)
+    L4489: setChips(prev => prev.map(c => ({...c, isPlaced: false})));
+    L19572: const rendered = rows.map(row => {
+    L19573: const parts = row.split('&').map(p => p.trim());
+    L19581: const rendered = rows.map(row => {
+    L19582: const parts = row.split('&').map(p => p.trim());
+    L19583: return `<span style="display:flex;gap:4px;justify-content:center;">${parts.map(p
+    L19593: return ch.split('').map(c => bbMap[c] || c).join('');
+    L25292: const maxValue = Math.max(...data.map(d => d.value), 1);
+    L26979: const points = logs.map(l => {
+    L27148: ${analytics.misconceptions.map((m, i) => `
+    L37014: const [targetText, englishText] = str.split(delimiter).map(s => s.trim());
+    L40779: const cells = rawCells.map(c => c.trim());
+    L40893: ${item.data.map(gItem => `
+    L40900: ${hasAnyTranslations ? `<td style="text-align: ${align}">${Object.entries(gItem.
+    L40916: const renderList = (items, items_en, limit = 8) => items.slice(0, limit).map((it
+    L40975: ${branches.map(b => {
+    L40982: ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; a
+    L40989: innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="
+    L40991: innerContent = `<div style="max-width: 800px; margin: 0 auto;"><div style="backg
+    L40996: innerContent = `<div style="display: flex; justify-content: center; align-items:
+
+======================================================================
+  3. LARGE useEffect BODIES (>30 lines)
+======================================================================
+
+  useEffect blocks >30 lines: 33
+    L6805: 261 lines | deps: }, [wordSoundsActivity, currentWordSoundsWord, playInstructi
+    L32749: 187 lines | deps: }, [isHelpMode, theme]);
+    L18057: 162 lines | deps: }, [history, speak, t, isTalking]);
+    L6242: 145 lines | deps: }, [wordSoundsPhonemes, wordSoundsActivity, currentWordSound
+    L34847: 140 lines | deps: }, [activeSessionCode, isTeacherMode, user, activeSessionApp
+    L23461: 133 lines | deps: }, [data, crosswordLang]);
+    L35707: 108 lines | deps: }, [currentUiLanguage]);
+    L8060: 95 lines | deps: }, [letter, resetKey]);
+    L16804: 93 lines | deps: }, [targetLanguage, apiKey, trigger]);
+    L6389: 88 lines | deps: }, [wordSoundsActivity, wordSoundsPhonemes, handleAudio, cur
+    L18222: 83 lines | deps: }, [speak, isDragging, isTalking, customMessage, isIdleDisab
+    L32666: 80 lines | deps: }, [isHelpMode, tourSteps]);
+    L35093: 80 lines | deps: }, [history, isHistoryLoaded, isOnline, isTeacherMode, activ
+    L33478: 73 lines | deps: }, [generatedContent]);
+    L6479: 60 lines | deps: }, [currentWordSoundsWord, isLoadingPhonemes, handleAudio, w
+
+======================================================================
+  4. STALE CLOSURE HAZARD CANDIDATES
+======================================================================
+  (useCallback/useMemo with [] deps that read state)
+
+  Potential stale closures: 3
+  (First 15 shown)
+    L16897: reads [languagePack, isTranslating, progress, statusMessage] | const t = useCallback((keyString, params = {}) => {
+    L17535: reads [particles, position, isHovered, pulseScale] | const particles = React.useMemo(() => Array.from({ length: 24 }).map((_, i) => (
+    L30772: reads [score, score, score, score] | const handleScoreUpdate = useCallback((currentScore, activityName = "General Act
+
+======================================================================
+  5. BUTTONS WITHOUT aria-label
+======================================================================
+
+  Buttons without aria-label: 587
+  (First 20 shown)
+    L471: <button
+    L519: <button
+    L526: <button
+    L1751: <button data-help-key="ws_gen_expand" onClick={() => setIsMinimized(false)} clas
+    L1771: <button
+    L1797: <button data-help-key="ws_gen_minimize" onClick={() => setIsMinimized(true)} cla
+    L1820: <button
+    L2025: <button data-help-key="ws_gen_quick_add_btn"
+    L2086: <button
+    L2195: <button
+    L2204: <button
+    L2677: <button
+    L2710: <button
+    L2716: <button
+    L2725: <button
+    L2751: <button data-help-key="word_sounds_review_play_word"
+    L2785: <button
+    L2823: <button
+    L2836: <button
+    L2886: <button
+
+======================================================================
+  6. HARDCODED ENGLISH IN JSX (i18n gaps)
+======================================================================
+
+  Potential hardcoded English phrases: 2
+  (First 25 shown — many may be intentional)
+    L3103: "No phonemes available"
+    L8368: "Tap to hear"
+
+======================================================================
+  7. ASYNC setState PATTERNS (potential race conditions)
+======================================================================
+  (setState calls inside async functions — may read stale state)
+
+  Non-functional setState in async (reads other state): 28
+  (First 15 shown)
+    L16829: setStatusMessage | setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }
+    L26554: setBossDifficulty | onChange={(e) => setBossDifficulty(e.target.value)}
+    L27889: setIsSearching | } catch (e) { warnLog("Unhandled error:", e); } finally { setIsSearching(false);
+    L34760: setCloudSyncStatus | setCloudSyncStatus('error');
+    L35061: setHistory | setHistory(hydrateHistory(items));
+    L35077: setProfiles | setProfiles(savedProfiles.items);
+    L36164: setGenerationStep | setGenerationStep(t('status.solving'));
+    L37414: setFluencyTimeRemaining | setFluencyTimeRemaining(fluencyTimeLimit);
+    L37932: setGenerationStep | setGenerationStep(`Preparing translation to ${targetTranslationLang}...`);
+    L37946: setGenerationStep | setGenerationStep(`Translating ${i+1}/${itemsToProcess.length}: ${item.title || 
+    L37947: setProcessingProgress | setProcessingProgress({ current: i + 1, total: itemsToProcess.length });
+    L38764: setGenerationStep | setGenerationStep(t('status_steps.searching_resources'));
+    L38819: setGenerationStep | setGenerationStep(t('status_steps.extracting_text'));
+    L38861: setGenerationStep | setGenerationStep(t('status_steps.extracting_text'));
+    L39153: setGenerationStep | setGenerationStep(t('status_steps.generating_source'));
+
+======================================================================
+  SUMMARY
+======================================================================
+  Write-only state vars remaining:     8
+  .map() missing key props:            40
+  Large useEffects (>30 lines):        33
+  Stale closure candidates:            3
+  Buttons without aria-label:          587
+  Hardcoded English phrases:           2
+  Async setState race candidates:      28

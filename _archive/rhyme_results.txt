@@ -1,0 +1,21 @@
+At 27932: Rhyme Time',\n    'word_sounds.activity_orthograph
+At 31677: Rhyme Master',\n    'word_sounds.badge_blend_wizar
+At 1180946: RhymeOptions] = React.useState([]);\n    const [bl
+At 1189168: Rhyme/Orthography)\n\n    const PhonologyView = Re
+At 1199729: RhymeView = ({ data, showLetterHints, onPlayAudio,
+At 1244297: Rhyme Master', icon: '🎤' },\n            { id: 'so
+At 1272230: Rhyme)\n                             const keys = 
+At 1281342: Rhyme = wordSoundsPhonemes.rhymeWord;\n           
+At 1281404: Rhyme) {\n                // Use AI-provided distr
+At 1281583: Rhymes = (word) => {\n                    const en
+At 1283782: Rhymes(currentWordSoundsWord || 'cat');\n         
+At 1283881: Rhyme, ...distractors];\n                // STABIL
+At 1284096: Rhyme)) {\n                    // Already set\n   
+At 1284193: RhymeOptions(options.sort(() => Math.random() - 0.
+At 1284499: Rhymes = ['b' + ending, 'm' + ending, 's' + ending
+At 1284582: RhymeOptions(fakeRhymes.sort(() => Math.random() -
+At 1284599: Rhymes.sort(() => Math.random() - 0.5));\n        
+At 1288847: Rhyme Time to ensure it replays if options change 
+At 1289753: Rhyme Time Specific: Play Options Sequentially\n  
+At 1304383: Rhyme = phonemeData?.rhymeWord;\n                 
+At 1304669: Rhyme \n                        ? [correctRhyme, .

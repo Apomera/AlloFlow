@@ -1,0 +1,4 @@
+L45023:             - 1 Short-term Fix with Long-term Cost (Risk)
+L45919:           FOCUS: Systemic cause-and-effect, long-term consequences, stability, and collective outcomes (not individual heroics).`;
+L46481:                     <div class="primary-text">${cleanText(item.term)}</div>
+L46493:                     <div class="primary-text">${cleanText(item.term)}</div>

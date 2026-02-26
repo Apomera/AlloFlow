@@ -1,0 +1,9 @@
+60174:                 activeView === 'concept-sort' ? <><Filter className="text-amber-600" size={20} /> {t('concept_sort.title')}</> :
+60175:                 activeView === 'timeline' ? <><ListOrdered className="text-rose-600" size={20} /> {t('timeline.title')}</> :
+60176:                 activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
+60177:                 activeView === 'image' ? <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</> :
+60178:                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
+60179:                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
+60180:                 </h3>
+60181:                 {isTeacherMode && generatedContent && (
+60182:                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-1 py-0.5 ml-2">

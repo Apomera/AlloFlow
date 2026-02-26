@@ -1,0 +1,139 @@
+﻿21139: const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, activeSessionCode, targetAppId }) => {
+21167: if (mode === 'team-showdown' && user && activeSessionCode) {
+21177: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+21188: }, [mode, user, teams, activeSessionCode, targetAppId]);
+21190: if (hasAnswered || !user || !activeSessionCode) return;
+21196: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+22660: const generateSessionCode = () => {
+27075: const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound }) => {
+27143: if (escapeState?.isActive && user && activeSessionCode && !userTeam) {
+27151: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+27161: }, [escapeState?.isActive, user, activeSessionCode, userTeam, targetAppId, isCoopMode]);
+27165: if (!userTeam || !activeSessionCode) return;
+27188: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+27218: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+27444: const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+27789: const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }) => {
+27795: if (!escapeState?.isActive || !activeSessionCode || !appId) return;
+27810: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+27829: }, [escapeState?.isActive, escapeState?.isPaused, escapeState?.timeRemaining, activeSessionCode, appId]);
+27851: const sessionRef = doc(db, 'apps', appId, 'liveSessions', activeSessionCode);
+27856: const sessionRef = doc(db, 'apps', appId, 'liveSessions', activeSessionCode);
+27976: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, 
+28051: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28075: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28094: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28103: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28113: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28203: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28215: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28229: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+28240: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+32376: const [studentResponses, setStudentResponses] = useState({});
+32386: await storageDB.set('allo_student_work', studentResponses);
+32394: }, [studentResponses]);
+32396: setStudentResponses(prev => ({
+32407: setStudentResponses(prev => {
+33606: const [activeSessionCode, setActiveSessionCode] = useState(null);
+37259: if (!activeSessionCode) {
+37266: console.log(`Session Sync: Connecting to ${activeSessionCode} as ${isTeacherMode ? 'Teacher' : 'Student'}...`);
+37269: const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+37390: setActiveSessionCode(null);
+37408: }, [activeSessionCode, isTeacherMode, user, activeSessionAppId]);
+37410: if (!isTeacherMode && activeSessionCode && user && globalPoints !== undefined) {
+37417: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+37423: }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
+37425: if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
+37426: const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+37442: }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId]);
+37470: if (!isTeacherMode && activeSessionCode) {
+37473: if (isTeacherMode && activeSessionCode && isHistoryLoaded) {
+37519: }, [activeSessionCode, lzLoaded, isStorageDisabled]);
+37521: if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) return;
+37603: }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded]);
+38146: if (savedWork) setStudentResponses(savedWork);
+44907: const html = generateResourceHTML(item, false, studentResponses);
+44934: ${generateResourceHTML(item, false, studentResponses)}
+44991: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45005: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45016: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45028: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45048: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45064: const code = generateSessionCode();
+45111: setActiveSessionCode(code);
+45121: const code = generateSessionCode();
+45142: setActiveSessionCode(code);
+45152: if (!activeSessionCode || !sessionData) return;
+45155: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45169: if (!activeSessionCode || !isTeacherMode || history.length === 0) return;
+45176: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+45188: }, [history, activeSessionCode, isTeacherMode, appId]);
+45202: setActiveSessionCode(cleanCode);
+45213: setActiveSessionCode(null);
+45220: setActiveSessionCode(null);
+45238: setActiveSessionCode(null);
+45629: const htmlContent = generateFullPackHTML(history, sourceTopic, isWorksheet, studentResponses);
+45752: const responses = studentResponses[generatedContent.id] || {};
+45771: }, [generatedContent, studentResponses]);
+45781: answers: studentResponses
+45810: const studentResps = studentResponses[quiz.id] || {};
+45851: responses: studentResponses,
+45860: responses: studentResponses,
+46171: if (isTeacherMode && activeSessionCode) {
+46173: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+47709: if (activeSessionCode && sessionData?.roster) {
+48140: if (!activeSessionCode || !sessionData) return;
+48143: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+48651: if (!isTeacherMode && activeSessionCode) {
+48656: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+49002: if (isTeacherMode && activeSessionCode && sessionData?.democracy?.isActive) {
+49004: const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+52675: if (!activeSessionCode) {
+52733: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+52776: if (!activeSessionCode) return;
+52778: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+52838: if (activeSessionCode && sessionData?.escapeRoomState?.isActive && user?.uid) {
+52841: const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'sessions', activeSessionCode);
+57108: if (isTeacherMode && activeSessionCode) {
+57110: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+57708: const responses = studentResponses[generatedContent?.id] || {};
+58170: const isSyncMode = !isTeacherMode && activeSessionCode && sessionData?.mode === 'sync';
+58317: {showSessionModal && activeSessionCode && (
+58333: onClick={() => copyToClipboard(activeSessionCode)}
+58337: {activeSessionCode}
+58400: if (activeSessionCode) {
+58402: const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+58411: setActiveSessionCode(null);
+58425: {showGroupModal && activeSessionCode && sessionData && (() => {
+58463: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+59466: onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
+59467: className={`px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border ${activeSessionCode ? 'bg-green-500 te
+59472: {activeSessionCode ? `Live: ${activeSessionCode}` : <span className="hidden lg:inline">{t('session.start')}</span>}
+59477: {activeSessionCode ? (
+59480: <span>{sessionData ? `Synced: ${activeSessionCode}` : `Connecting: ${activeSessionCode}`}</span>
+59485: setActiveSessionCode(null);
+60057: {!isTeacherMode && activeSessionCode && sessionData && (
+60063: activeSessionCode={activeSessionCode}
+60070: {!isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+60075: activeSessionCode={activeSessionCode}
+63746: {!isTeacherMode && !activeSessionCode && (
+63815: {!isTeacherMode && activeSessionCode && sessionData?.roster?.[user?.uid] && (
+63894: !activeSessionCode ? (
+67973: {isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && (
+67977: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+67994: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+68028: if (isTeacherMode && activeSessionCode) {
+68034: if (isTeacherMode && activeSessionCode) {
+68043: title={isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title')}
+68049: : (isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title'))
+68087: {isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+68090: activeSessionCode={activeSessionCode}
+68096: {isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? (
+68101: activeSessionCode={activeSessionCode}
+68116: setActiveSessionCode(null);
+68121: const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+69603: value={studentResponses[generatedContent.id]?.[idx] || ''}
+69636: value={studentResponses[generatedContent.id]?.[`paragraph-${i}`] || ''}
+70094: {activeSessionCode && (
+71713: value={studentResponses[generatedContent.id]?.[pIdx] || ''}
+71791: value={studentResponses[generatedContent.id]?.[pIdx] || ''}

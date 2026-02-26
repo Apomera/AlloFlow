@@ -1,0 +1,88 @@
+=== BEST useMemo CANDIDATES: 326 ===
+(sorted by usage count — higher = more impactful)
+  L49128 [42 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L33690 [41 uses] node = conceptMapNodes.find(...)
+       const node = conceptMapNodes.find(n => n.id === nodeId);
+  L49250 [40 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49260 [35 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L66997 [32 uses] text = generatedContent.data.problems.map(...)
+       const text = generatedContent.data.problems.map((p, i) => `${i+1}. ${p.question}\nAnswer: ${p.answer
+  L49272 [30 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L63917 [28 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === escapeRoomState.selectedObject
+  L36135 [27 uses] profile = profiles.find(...)
+       const profile = profiles.find(p => p.id === profileId);
+  L63883 [27 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.linkedObjectId === obj.id);
+  L49284 [24 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L49329 [17 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L25593 [16 uses] puzzle = puzzles.find(...)
+       const puzzle = puzzles.find(p => p.id === puzzleId);
+  L52712 [13 uses] newData = generatedContent.data.map(...)
+       const newData = generatedContent.data.map(item => ({
+  L10651 [12 uses] students = importedStudents.filter(...)
+       const students = importedStudents.filter(s => s.stats.quizAvg > 0);
+  L35071 [12 uses] target = resourcesToRender.find(...)
+       const target = resourcesToRender.find(r => r.id === targetResourceId);
+  L52345 [12 uses] left = branches.slice(...)
+       const left = branches.slice(0, mid);
+  L24682 [11 uses] items = data.filter(...)
+       const items = data.filter(item => item.term && item.term.length > 2);
+  L6689 [10 uses] preloadedWord = preloadedWords.find(...)
+       const preloadedWord = preloadedWords.find(
+  L7624 [9 uses] preloadedMatch = preloadedWords.find(...)
+       const preloadedMatch = preloadedWords.find(
+  L26060 [9 uses] isMatched = matchingPairs.some(...)
+       const isMatched = matchingPairs.some(p => p.left === item);
+  L28954 [9 uses] pre = currentWord.slice(...)
+       const pre = currentWord.slice(0, centerIdx);
+  L52346 [8 uses] right = branches.slice(...)
+       const right = branches.slice(mid);
+  L34218 [7 uses] target = nodes.find(...)
+       const target = nodes.find(n => n.id === e.toId)?.text || "Unknown";
+  L34674 [7 uses] fromNode = conceptMapNodes.find(...)
+       const fromNode = conceptMapNodes.find(n => n.id === edge.fromId);
+  L36735 [7 uses] targetItem = history.find(...)
+       const targetItem = history.find(h => h.id === resourceId);
+  L49424 [7 uses] puzzle = escapeRoomState.puzzles.find(...)
+       const puzzle = escapeRoomState.puzzles.find(p => p.id === puzzleId);
+  L4895 [6 uses] freshCandidates = candidates.filter(...)
+       let freshCandidates = candidates.filter(c => !playedSet.has(c.word?.toLowerCase()));
+  L6460 [6 uses] isoDistractors = isoAllPhonemes.filter(...)
+       const isoDistractors = isoAllPhonemes.filter(p => p.toLowerCase() !== correctSound?.toLowerCase()).s
+  L7587 [6 uses] distractors = phonemeData.blendingDistractors.slice(...)
+       const distractors = phonemeData.blendingDistractors.slice(0, 5);
+  L10467 [6 uses] chunk = files.slice(...)
+       const chunk = files.slice(i, i + CHUNK_SIZE);
+  L16447 [6 uses] keys = Object.keys(...)
+       const keys = Object.keys(obj);
+  L27058 [6 uses] misconceptions = Object.entries(...)
+       const misconceptions = Object.entries(missedQuestionsFrequency)
+  L34675 [6 uses] toNode = conceptMapNodes.find(...)
+       const toNode = conceptMapNodes.find(n => n.id === edge.toId);
+  L35090 [6 uses] target = resourcesToRender.find(...)
+       const target = resourcesToRender.find(r => r.id === groupResourceId);
+  L44585 [6 uses] students = Object.values(...)
+       const students = Object.values(sessionData.roster);
+  L48966 [6 uses] processedPuzzles = data.puzzles.map(...)
+       const processedPuzzles = data.puzzles.map((p, i) => {
+  L5748 [5 uses] validResults = results.filter(...)
+       const validResults = results.filter(Boolean);
+  L10653 [5 uses] colors = students.map(...)
+       const colors = students.map(s => s.stats.quizAvg >= 80 ? '#10b981' : s.stats.quizAvg >= 60 ? '#f59e0
+  L21867 [5 uses] deck = gameItems.flatMap(...)
+       const deck = gameItems.flatMap((item, index) => {
+  L26488 [5 uses] totalResponses = Object.keys(...)
+       const totalResponses = Object.keys(responses || {}).length;
+  ... and 286 more
+
+TOTAL: 326
+  High usage (5+): 49
+  Medium usage (2-4): 136
+  Low usage (0-1): 141

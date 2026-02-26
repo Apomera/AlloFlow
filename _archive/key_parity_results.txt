@@ -1,0 +1,392 @@
+﻿UI_STRINGS: L11216 to L17296
+Defined UI_STRINGS keys: 4900
+Used t()/ts() keys: 2941
+
+Orphan t() keys (used but NOT in UI_STRINGS): 209
+
+  [] (1 keys):
+    L243: t('.')
+
+  [2d] (1 keys):
+    L8112: t('2d')
+
+  [Auto] (1 keys):
+    L47754: t('Auto')
+
+  [T] (1 keys):
+    L5060: t('T')
+
+  [a] (1 keys):
+    L10582: t('a')
+
+  [about] (1 keys):
+    L56618: t('about.features_list')
+
+  [adventure] (21 keys):
+    L44452: t('adventure')
+    L66595: t('adventure.back_to_resume')
+    L21979: t('adventure.climax_archetypes.default.label')
+    L21980: t('adventure.climax_archetypes.default.left')
+    L21981: t('adventure.climax_archetypes.default.right')
+    L52454: t('adventure.fallback_opening')
+    L46190: t('adventure.generating_options_audio')
+    L67153: t('adventure.interrupted_desc')
+    L67151: t('adventure.interrupted_title')
+    L66573: t('adventure.paused_desc')
+    L66571: t('adventure.paused_title')
+    L45496: t('adventure.results.header')
+    L45506: t('adventure.results.perf_score')
+    L45500: t('adventure.results.roll_calc')
+    L67159: t('adventure.retry_action')
+    L45660: t('adventure.save_reminder')
+    L66605: t('adventure.setup_subtitle')
+    L66586: t('adventure.start_overwrite')
+    L66989: t('adventure.system_simulation')
+    L67068: t('adventure.system_state')
+    L66992: t('adventure.tooltips.stability')
+
+  [allo_adventure_save] (1 keys):
+    L32928: t('allo_adventure_save')
+
+  [allo_draft_content] (1 keys):
+    L36955: t('allo_draft_content')
+
+  [allo_global_points] (1 keys):
+    L31894: t('allo_global_points')
+
+  [allo_offline_history] (1 keys):
+    L36382: t('allo_offline_history')
+
+  [allo_offline_profiles] (1 keys):
+    L36400: t('allo_offline_profiles')
+
+  [allo_offline_units] (1 keys):
+    L36408: t('allo_offline_units')
+
+  [allo_point_history] (1 keys):
+    L31920: t('allo_point_history')
+
+  [allo_student_work] (1 keys):
+    L31750: t('allo_student_work')
+
+  [analysis] (1 keys):
+    L44443: t('analysis')
+
+  [audio_bank_loaded] (1 keys):
+    L48: t('audio_bank_loaded')
+
+  [bingo] (4 keys):
+    L25479: t('bingo.close_generator')
+    L25550: t('bingo.exit_caller_aria')
+    L25540: t('bingo.launch_caller_aria')
+    L25563: t('bingo.pause_duration')
+
+  [bold] (1 keys):
+    L61671: t('bold')
+
+  [button] (1 keys):
+    L85: t('button')
+
+  [cancel] (1 keys):
+    L27576: t('cancel')
+
+  [canvas] (1 keys):
+    L22584: t('canvas')
+
+  [chat_guide] (7 keys):
+    L49754: t('chat_guide.advice_saved')
+    L49770: t('chat_guide.advice_saved_raw')
+    L47596: t('chat_guide.highlight_confirm')
+    L49728: t('chat_guide.history_saved_toast')
+    L37178: t('chat_guide.independent_welcome')
+    L57837: t('chat_guide.save_actionable_btn')
+    L57837: t('chat_guide.save_actionable_loading')
+
+  [codenames] (2 keys):
+    L18445: t('codenames.adjectives')
+    L18446: t('codenames.animals')
+
+  [common] (4 keys):
+    L57214: t('common.continue')
+    L55603: t('common.delete')
+    L10207: t('common.language')
+    L7738: t('common.mic_error')
+
+  [div] (1 keys):
+    L28505: t('div')
+
+  [escape_room] (1 keys):
+    L50386: t('escape_room.xp_earned_streak')
+
+  [export] (70 keys):
+    L52029: t('export.activity_label')
+    L52036: t('export.analysis_source_label')
+    L52026: t('export.answer_label')
+    L43853: t('export.bundle_downloaded')
+    L52023: t('export.categories_label')
+    L42855: t('export.date_label')
+    L43574: t('export.def_col')
+    L52011: t('export.def_label')
+    L42840: t('export.default_lesson_title')
+    L43953: t('export.filenames.assignment')
+    L47412: t('export.filenames.flashcards')
+    L43872: t('export.filenames.html_pack')
+    L37366: t('export.filenames.profiles')
+    L44113: t('export.filenames.project_student')
+    L44107: t('export.filenames.project_teacher')
+    L43737: t('export.filenames.slides_prefix')
+    L43848: t('export.filenames.zip_pack')
+    L42844: t('export.generated_date_label')
+    L42846: t('export.html_page_title')
+    L43157: t('export.ims_resource_pack')
+    L52022: t('export.incomplete_sort')
+    L52034: t('export.interview_figure_label')
+    L52023: t('export.items_label')
+    L52036: t('export.key_concepts_label')
+    L52017: t('export.main_label')
+    L42851: t('export.name_label')
+    L52031: t('export.no_active_scene')
+    L52019: t('export.no_events')
+    L52028: t('export.no_ideas')
+    L52033: t('export.no_personas')
+    L52007: t('export.no_questions')
+    L42842: t('export.no_student_content')
+    L42843: t('export.no_teacher_content')
+    L52010: t('export.no_terms')
+    L43638: t('export.ppt_correct_note')
+    L43505: t('export.ppt_generated')
+    L43505: t('export.ppt_grade_level')
+    L52026: t('export.problem_label')
+    L43025: t('export.qti_default_desc')
+    L43024: t('export.qti_default_title')
+    L43839: t('export.readme_contents')
+    L43837: t('export.readme_generated')
+    L43840: t('export.readme_html_desc')
+    L43841: t('export.readme_json_desc')
+    L43836: t('export.readme_title')
+    L43838: t('export.readme_topic')
+    L52031: t('export.scenario_label')
+    L43491: t('export.slides_master_footer')
+    L43609: t('export.slides_question_title')
+    L43496: t('export.slides_subject')
+    L43495: t('export.slides_title_default')
+    L47140: t('export.storybook.chapter_separator')
+    L47135: t('export.storybook.epilogue_badge')
+    L47136: t('export.storybook.log_header')
+    L47134: t('export.storybook.meta_info')
+    L47132: t('export.storybook.page_title')
+    L47137: t('export.storybook.print_button')
+    L47133: t('export.storybook.subtitle')
+    L47139: t('export.storybook.user_label')
+    L52017: t('export.structure_label')
+    L42839: t('export.student_copy')
+    L42991: t('export.support_dev')
+    L42964: t('export.teacher_copy_divider')
+    L42841: t('export.teacher_copy_intro')
+    L42986: t('export.teacher_key_title')
+    L43573: t('export.term_col')
+    L52011: t('export.term_label')
+    L42845: t('export.topic')
+    L43575: t('export.trans_col')
+    L52036: t('export.unknown_level')
+
+  [glossary] (1 keys):
+    L44446: t('glossary')
+
+  [h1] (1 keys):
+    L61693: t('h1')
+
+  [h2] (1 keys):
+    L61700: t('h2')
+
+  [highlight] (1 keys):
+    L61685: t('highlight')
+
+  [html] (1 keys):
+    L56460: t('html')
+
+  [image] (1 keys):
+    L44447: t('image')
+
+  [input] (1 keys):
+    L84: t('input')
+
+  [italic] (1 keys):
+    L61678: t('italic')
+
+  [language_selector] (4 keys):
+    L17999: t('language_selector.status_checking')
+    L18019: t('language_selector.status_generating')
+    L18033: t('language_selector.status_retrying_chunk')
+    L18026: t('language_selector.status_translating_part')
+
+  [languages_list] (9 keys):
+    L29979: t('languages_list.Arabic')
+    L29975: t('languages_list.French')
+    L29976: t('languages_list.German')
+    L29982: t('languages_list.Japanese')
+    L29978: t('languages_list.Mandarin')
+    L29977: t('languages_list.Portuguese')
+    L29981: t('languages_list.Russian')
+    L29974: t('languages_list.Spanish')
+    L29980: t('languages_list.Vietnamese')
+
+  [link] (1 keys):
+    L11030: t('link')
+
+  [list] (1 keys):
+    L61708: t('list')
+
+  [mastery] (1 keys):
+    L21666: t('mastery.continue')
+
+  [move_down] (1 keys):
+    L24073: t('move_down')
+
+  [move_up] (1 keys):
+    L24072: t('move_up')
+
+  [persona] (1 keys):
+    L57450: t('persona.topic_spark_tooltip')
+
+  [print] (1 keys):
+    L43745: t('print')
+
+  [quick_start] (1 keys):
+    L40090: t('quick_start.found_resources')
+
+  [quiz] (1 keys):
+    L44448: t('quiz')
+
+  [script] (1 keys):
+    L10382: t('script')
+
+  [simplified] (1 keys):
+    L44445: t('simplified')
+
+  [style] (1 keys):
+    L11036: t('style')
+
+  [textarea] (1 keys):
+    L34563: t('textarea')
+
+  [timeline] (1 keys):
+    L44450: t('timeline')
+
+  [toasts] (1 keys):
+    L57890: t('toasts.applied_standard')
+
+  [tour] (1 keys):
+    L47595: t('tour.spotlight_message')
+
+  [visuals] (1 keys):
+    L59163: t('visuals.styles.default')
+
+  [woff] (1 keys):
+    L55811: t('woff')
+
+  [word_sounds] (39 keys):
+    L1939: t('word_sounds.activity_length')
+    L1948: t('word_sounds.activity_length_hint')
+    L4658: t('word_sounds.activity_letter_tracing')
+    L2076: t('word_sounds.add_word')
+    L9659: t('word_sounds.how_many_sounds')
+    L1953: t('word_sounds.image_theme')
+    L2173: t('word_sounds.include_spelling_activities')
+    L4658: t('word_sounds.letter_tracing_desc')
+    L8516: t('word_sounds.loading_phonemes')
+    L9289: t('word_sounds.missing_letter_hear')
+    L9281: t('word_sounds.missing_letter_subtitle')
+    L9280: t('word_sounds.missing_letter_title')
+    L10194: t('word_sounds.mode_phonics')
+    L10194: t('word_sounds.mode_sound')
+    L4095: t('word_sounds.play_all_options')
+    L4080: t('word_sounds.rhyming_q')
+    L8530: t('word_sounds.select_activity')
+    L2048: t('word_sounds.select_family')
+    L10269: t('word_sounds.session_progress')
+    L4456: t('word_sounds.sound_sort_found')
+    L2120: t('word_sounds.source_sight_words')
+    L9069: t('word_sounds.spelling_bee_check')
+    L9086: t('word_sounds.spelling_bee_first_letter')
+    L9004: t('word_sounds.spelling_bee_hear')
+    L9011: t('word_sounds.spelling_bee_slow')
+    L8990: t('word_sounds.spelling_bee_subtitle')
+    L8989: t('word_sounds.spelling_bee_title')
+    L2177: t('word_sounds.spelling_helper')
+    L4076: t('word_sounds.target_word')
+    L1963: t('word_sounds.theme_hint')
+    L1960: t('word_sounds.theme_placeholder')
+    L10355: t('word_sounds.tip')
+    L2108: t('word_sounds.type_words')
+    L4659: t('word_sounds.word_families_desc')
+    L9226: t('word_sounds.word_scramble_check')
+    L9214: t('word_sounds.word_scramble_clear')
+    L9151: t('word_sounds.word_scramble_hint')
+    L9143: t('word_sounds.word_scramble_subtitle')
+    L9142: t('word_sounds.word_scramble_title')
+
+  [worksheet] (1 keys):
+    L56453: t('worksheet')
+
+Unused UI_STRINGS keys (defined but never used): 2168
+  about.category
+  about.color
+  about.desc
+  about.features_list.categories.activities
+  about.features_list.categories.assessment
+  about.features_list.categories.creation
+  about.features_list.categories.platform
+  about.features_list.category
+  about.features_list.color
+  about.features_list.desc
+  about.features_list.icon
+  about.features_list.title
+  about.icon
+  activity_label
+  adventure.adventure_difficulty
+  adventure.adventure_free_response
+  adventure.adventure_input_mode
+  adventure.adventure_language
+  adventure.analysis_check_accuracy
+  adventure.analysis_generate_button
+  adventure.antagonist.label
+  adventure.antagonist.left
+  adventure.antagonist.right
+  adventure.bingo_card_count_input
+  adventure.bingo_close_btn
+  adventure.bingo_exit_caller_btn
+  adventure.bingo_images_chk
+  adventure.bingo_launch_caller_btn
+  adventure.bingo_next_clue
+  adventure.bingo_prev_clue
+  adventure.bingo_print_btn
+  adventure.bingo_regenerate_btn
+  adventure.bingo_speed_slider
+  adventure.bingo_toggle_autoplay
+  adventure.bingo_toggle_history
+  adventure.brainstorm_card
+  adventure.brainstorm_custom_instructions
+  adventure.brainstorm_generate_button
+  adventure.brainstorm_guide
+  adventure.brainstorm_panel
+  adventure.brainstorm_simulation_type
+  adventure.brainstorm_step_count
+  adventure.catastrophe.label
+  adventure.catastrophe.left
+  adventure.catastrophe.right
+  adventure.chat_auto_send
+  adventure.chat_close
+  adventure.chat_expand
+  adventure.chat_save_advice_btn
+  adventure.chat_show_me
+  ... and 2118 more
+
+======================================================================
+SUMMARY
+======================================================================
+UI_STRINGS defined keys: 4900
+t()/ts() used keys:      2941
+ORPHAN keys (BROKEN):    209 ΓåÉ these will show raw key strings!
+Unused keys (dead):      2168
+Match rate:              2732/2941 (92%)

@@ -1,0 +1,401 @@
+﻿
+AlloFlowANTI.txt:3480:
+    const 
+estimateLastPhoneme = 
+(word) => {
+AlloFlowANTI.txt:7776:
+                      
+  targetSound = mode 
+=== 'first' ? estimate
+FirstPhoneme(targetWor
+d) : estimateLastPhone
+me(targetWord);
+AlloFlowANTI.txt:8030:
+        if 
+(!isCorrect && 
+alloBotRef && 
+alloBotRef.current && 
+alloBotRef.current.pla
+yAnimation) alloBotRef
+.current.playAnimation
+('sympathetic-tilt', 
+800);
+AlloFlowANTI.txt:10191
+:                    
+targetPhoneme = mode 
+=== 'first' ? estimate
+FirstPhoneme(targetWor
+d) : estimateLastPhone
+me(targetWord);
+AlloFlowANTI.txt:10212
+:                     
+const pPhoneme = 
+aiMode === 'first' ? e
+stimateFirstPhoneme(wC
+lean) : estimateLastPh
+oneme(wClean);
+AlloFlowANTI.txt:10219
+:                     
+const pPhoneme = 
+aiMode === 'first' ? e
+stimateFirstPhoneme(wC
+lean) : estimateLastPh
+oneme(wClean);
+AlloFlowANTI.txt:11277
+:            if 
+(appendedCount > 0 && 
+alloBotRef.current) {
+AlloFlowANTI.txt:11279
+:                alloB
+otRef.current.speak("P
+rogress snapshots 
+saved for " + 
+appendedCount + " 
+student" + 
+(appendedCount > 1 ? 
+"s" : "") + " in your 
+roster.");
+AlloFlowANTI.txt:11285
+:            if 
+(alloBotRef.current) 
+{ alloBotRef.current.s
+peak("Tip: Create a 
+Class Roster to track 
+student progress over 
+time."); }
+AlloFlowANTI.txt:11291
+:        if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:11294
+:                alloB
+otRef.current.speak(t(
+'bot_events.feedback_s
+afety_flagged'));
+AlloFlowANTI.txt:11296
+:                alloB
+otRef.current.speak(t(
+'bot_events.feedback_s
+afety_clean'));
+AlloFlowANTI.txt:22312
+:const BingoGame = 
+React.memo(({ data, 
+onClose, settings, 
+setSettings, 
+onGenerate, 
+bingoState, 
+setBingoState, 
+onGenerateAudio, 
+selectedVoice, 
+alloBotRef }) => {
+AlloFlowANTI.txt:22476
+:                     
+           if 
+(alloBotRef && 
+alloBotRef.current) {
+AlloFlowANTI.txt:22477
+:                     
+               alloBot
+Ref.current.speak("Pri
+nting your Bingo 
+cards! Have fun 
+playing!", "excited");
+AlloFlowANTI.txt:29478
+:      if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:29479
+:          alloBotRef.
+current.triggerReactio
+n('🎉');
+AlloFlowANTI.txt:29480
+:          alloBotRef.
+current.speak(t('timer
+.time_up_msg') || 
+"Time is up! Great 
+focus.");
+AlloFlowANTI.txt:30816
+:  const alloBotRef = 
+useRef(null);
+AlloFlowANTI.txt:31038
+:      if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:31039
+:          if (type 
+=== 'correct') alloBot
+Ref.current.triggerRea
+ction('🎉');
+AlloFlowANTI.txt:31040
+:          else if 
+(type === 
+'incorrect') alloBotRe
+f.current.triggerReact
+ion('❌');
+AlloFlowANTI.txt:31041
+:          else if 
+(type === 'reveal') al
+loBotRef.current.trigg
+erReaction('👀');
+AlloFlowANTI.txt:31993
+:              if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:32006
+:                  all
+oBotRef.current.moveTo
+(targetX, targetY);
+AlloFlowANTI.txt:32061
+:      if (!elementId 
+|| 
+!alloBotRef.current) 
+return;
+AlloFlowANTI.txt:32076
+:                  if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:32077
+:                     
+ alloBotRef.current.mo
+veTo(targetX, 
+targetY);
+AlloFlowANTI.txt:35068
+:              if 
+(lastMsg.role === 
+'model' && 
+alloBotRef.current && 
+isBotVisible) {
+AlloFlowANTI.txt:35069
+:                   
+try { alloBotRef.curre
+nt.speak(lastMsg.text)
+; } catch(e) { /* TTS 
+error - non-fatal */ }
+AlloFlowANTI.txt:35074
+:                     
+ alloBotRef.current.mo
+veTo(centerX, topY);
+AlloFlowANTI.txt:35084
+:        if 
+(!alloBotRef.current) 
+return;
+AlloFlowANTI.txt:35088
+:            alloBotRe
+f.current.moveTo(safeX
+, safeY);
+AlloFlowANTI.txt:35090
+:            alloBotRe
+f.current.moveTo(20, 
+20);
+AlloFlowANTI.txt:35103
+:              if 
+(isBotVisible && 
+alloBotRef.current) {
+AlloFlowANTI.txt:35104
+:                  all
+oBotRef.current.speak(
+t('common.save_reminde
+r_tts') || "Don't 
+forget to save your 
+work!");
+AlloFlowANTI.txt:37190
+:                     
+ if (hc && hc.summary 
+&& !hc.error && 
+alloBotRef?.current) {
+AlloFlowANTI.txt:37197
+:                     
+         alloBotRef.cu
+rrent.speak(followUp, 
+'teaching');
+AlloFlowANTI.txt:39151
+:      if 
+(isBotVisible && 
+alloBotRef.current) {
+AlloFlowANTI.txt:39152
+:          alloBotRef.
+current.speak(t('bot_e
+vents.feedback_error_a
+pology'), 'confused');
+AlloFlowANTI.txt:39903
+:    if 
+(alloBotRef.current 
+&& alloBotRef.current.
+stopSpeaking) {
+AlloFlowANTI.txt:39904
+:        alloBotRef.cu
+rrent.stopSpeaking();
+AlloFlowANTI.txt:42139
+:        if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:42140
+:             alloBotR
+ef.current.speak(mode 
+=== 'worksheet' ? 
+"Generating a 
+worksheet? I'll make 
+sure it's formatted 
+perfectly for your 
+students!" : 
+"Preparing your 
+document for print. 
+You can select valid 
+pages in the print 
+preview.", 'happy');
+AlloFlowANTI.txt:42180
+:                if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:42181
+:                    a
+lloBotRef.current.spea
+k(t('bot_events.feedba
+ck_export_complete'), 
+'happy');
+AlloFlowANTI.txt:42993
+:        if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:42995
+:             alloBotR
+ef.current.speak(feedb
+ack);
+AlloFlowANTI.txt:43249
+:          if 
+(shouldSpeak && 
+alloBotRef.current) {
+AlloFlowANTI.txt:43250
+:               alloBo
+tRef.current.triggerRe
+action('idea');
+AlloFlowANTI.txt:43251
+:               alloBo
+tRef.current.speak(hin
+t);
+AlloFlowANTI.txt:43344
+:    if 
+(alloBotRef.current 
+&& typeof alloBotRef.c
+urrent.dismissMessage 
+=== 'function') alloBo
+tRef.current.dismissMe
+ssage();
+AlloFlowANTI.txt:44389
+:      if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:44390
+:          alloBotRef.
+current.speak(t('bot_e
+vents.feedback_adventu
+re_start'), 'happy');
+AlloFlowANTI.txt:44567
+:          if 
+(alloBotRef.current) a
+lloBotRef.current.trig
+gerReaction('👀');
+AlloFlowANTI.txt:45961
+:              if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:45970
+:                  all
+oBotRef.current.moveTo
+(targetX, targetY);
+AlloFlowANTI.txt:46670
+:                     
+   if (isBotVisible 
+&& 
+alloBotRef.current) {
+AlloFlowANTI.txt:46671
+:                     
+       alloBotRef.curr
+ent.speak(genMsg);
+AlloFlowANTI.txt:46759
+:      if 
+(!socraticAutoRead || 
+!alloBotRef.current 
+|| socraticMessages.le
+ngth === 0) return;
+AlloFlowANTI.txt:46764
+:          alloBotRef.
+current.speak(lastMsg.
+text);
+AlloFlowANTI.txt:47305
+:          if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:47306
+:              alloBot
+Ref.current.speak(t('b
+ot_events.feedback_per
+sona_start', { name: 
+character.name }), 
+'happy');
+AlloFlowANTI.txt:49122
+:            if 
+(alloBotRef.current) a
+lloBotRef.current.spea
+k(t('bot_events.feedba
+ck_error_apology'), 
+'confused');
+AlloFlowANTI.txt:50252
+:         if 
+(alloBotRef.current) a
+lloBotRef.current.spea
+k(t('bot_events.brains
+torming_start') || 
+"Ooh, let me think of 
+some fun 
+activities!", 
+'thinking');
+AlloFlowANTI.txt:50818
+:            if 
+(alloBotRef.current) a
+lloBotRef.current.spea
+k(t('bot_events.feedba
+ck_error_apology'), 
+'confused');
+AlloFlowANTI.txt:50893
+:           if 
+(alloBotRef.current) a
+lloBotRef.current.spea
+k(t('bot_events.feedba
+ck_error_apology'), 
+'confused');
+AlloFlowANTI.txt:50963
+:      if 
+(isBotVisible && 
+alloBotRef.current) {
+AlloFlowANTI.txt:50965
+:          alloBotRef.
+current.speak(`I ran 
+into a problem 
+${actionName}: 
+${errMsg}.`);
+AlloFlowANTI.txt:52789
+:        if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:52790
+:             alloBotR
+ef.current.speak("I've
+ verified the text 
+complexity using a 
+dual-check process. 
+Review the rubric to 
+see exactly how it 
+aligns!", 'happy');
+AlloFlowANTI.txt:52861
+:    if 
+(alloBotRef.current) {
+AlloFlowANTI.txt:52863
+:         alloBotRef.c
+urrent.speak(contextMs
+g);
+AlloFlowANTI.txt:53306
+:          if 
+(isBotVisible && 
+alloBotRef.current) {
+AlloFlowANTI.txt:53308
+:              alloBot
+Ref.current.speak(spea
+kText);
+AlloFlowANTI.txt:60995
+:                     
+           alloBotRef=
+{alloBotRef}
+AlloFlowANTI.txt:71443
+:            
+ref={alloBotRef}
+
+

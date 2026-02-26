@@ -1,0 +1,97 @@
+WordFamiliesView at L4297
+StudentAnalyticsPanel at L4536
+FONT_OPTIONS at L8476
+
+Searching L4297 to L8476 for t() calls:
+
+L4367: <input aria-label={t('common.family_word')}
+L4371: placeholder={t('common.placeholder_family_word')}
+L4377: aria-label={t('common.remove')}
+L4378: className="p-2 text-red-300 hover:text-red-500 transition-colors" title={t('common.remove')}>
+L4396: <input aria-label={t('common.distractor')}
+L4400: placeholder={t('common.placeholder_distractor')}
+L4406: aria-label={t('common.remove')}
+L4407: className="p-2 text-red-300 hover:text-red-500 transition-colors" title={t('common.remove')}>
+L4431: aria-label={t('common.hear_target_sound')}
+L4433: title={t('common.hear_target_sound')}
+L4495: aria-label={t('common.hear_all_words')}
+L4496: title={t('common.play_all_remaining_words_aloud')}
+L4513: title={t('common.hear_this_word')}
+L4805: alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+L4807: alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+L6089: <div class="metrics"><div class="mcol"><h3>{t('common.ai_calculated_metrics')}</h3><div class="mrow"><span class="lbl">WCPM</span><span class="vl">${result.wcpm
+L6090: <div class="mcol"><h3>{t('common.error_analysis')}</h3><div class="mrow"><span class="lbl">Total Errors</span><span class="vl">${rrm.totalErrors || 0}</span></d
+L6092: <div class="notes"><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">Teacher Notes</label><textarea placeholder={t('c
+L6202: <h1>{t('common.student_progress_report')}</h1>
+L6355: t('class_analytics.student_name'),
+L6356: t('class_analytics.quiz_avg'),
+L6357: t('class_analytics.adventure_xp'),
+L6358: t('class_analytics.escape_completion'),
+L6359: t('class_analytics.fluency_wcpm'),
+L6360: t('class_analytics.interview_xp'),
+L6365: t('class_analytics.safety_flags'),
+L6366: t('class_analytics.total_activities'),
+L6367: t('class_analytics.last_session')
+L6431: datasets: [{ label: t('class_analytics.quiz_avg'), data: students.map(s => s.stats.quizAvg), backgroundColor: colors, borderRadius: 6, maxBarThickness: 40 }]
+L6433: options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: t('class_analytics
+L6450: options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }, title: { displa
+L6465: datasets: [{ label: t('class_analytics.fluency_wcpm'), data: wcpmData, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.3
+L6467: options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: t('class_analytics.fluency_trend')
+L6549: {t('class_analytics.students_loaded', { count: importedStudents.length })}
+L6554: <button aria-label={t('common.text_field')} onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg transition-colors">
+L6577: placeholder={t('class_analytics.search_placeholder') || 'Search students...'}
+L6645: <input aria-label={t('common.upload_json_file')}
+L6656: {t('class_analytics.import_button')}
+L6661: <button aria-label={t('common.download')}
+L6667: {t('class_analytics.export_csv')}
+L6674: placeholder={t('common.placeholder_session_code')}
+L6699: aria-label={t('common.session_code_for_live_sync')}
+L6702: className="text-blue-400 hover:text-blue-600 p-0.5" aria-label={t('common.cancel')}><X size={12} /></button>
+L6706: aria-label={t('common.live_sync')}
+L6723: aria-label={t('common.toggle_safety_flags')}
+L6732: aria-label={t('common.delete')}
+L6738: {t('class_analytics.clear_data')}
+L6757: <div className="text-xs text-slate-600">{t('class_analytics.total_students')}</div>
+L6763: <div className="text-xs text-slate-600">{t('class_analytics.avg_quiz_score')}</div>
+L6771: <div className="text-xs text-slate-600">{t('class_analytics.students_with_flags')}</div>
+L6779: <div className="text-xs text-slate-600">{t('class_analytics.total_activities')}</div>
+L6792: aria-label={t('common.configure_rti_thresholds')}
+L6795: title={t('common.configure_rti_thresholds')}
+L6819: <div className="flex rounded-full overflow-hidden h-3 bg-slate-200" role="img" aria-label={t('common.rti_tier_distribution_bar')}>
+L6865: <button onClick={() => setShowRTISettings(false)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400" aria-label={t('common.close')}><X size={18} /><
+L6936: <select aria-label={t('common.probe_grade')}
+L6952: aria-label={t('common.probe_form')}
+L6962: aria-label={t('common.probe_student')}
+L6976: aria-label={t('common.run_benchmark_probe')}
+L7590: aria-label={t('common.export_rti_progress_report_as_csv')}
+L7601: <p>{t('class_analytics.no_data')}</p>
+L7602: <p className="text-sm mt-1">{t('class_analytics.import_hint')}</p>
+L7610: { key: 'name', label: t('class_analytics.student_name'), align: 'left', round: 'rounded-l-lg' },
+L7612: { key: 'quizAvg', label: t('class_analytics.quiz_avg') },
+L7613: { key: 'adventureXP', label: t('class_analytics.adventure_xp') },
+L7614: { key: 'escapeCompletion', label: t('class_analytics.escape_completion') },
+L7615: { key: 'fluencyWCPM', label: t('class_analytics.fluency_wcpm') },
+L7616: { key: 'interviewXP', label: t('class_analytics.interview_xp') },
+L7617: ...(safetyFlaggingVisible ? [{ key: 'flags', label: t('class_analytics.safety_flags') }] : []),
+L7619: { key: 'totalActivities', label: t('class_analytics.total_activities'), round: 'rounded-r-lg' }
+L7639: {student.isLive && <span title={t('common.live_sync')} style={{ fontSize: '10px', marginRight: '4px', verticalAlign: 'middle' }}>📡</span>}
+L7677: aria-label={t('common.previous')}
+L7690: aria-label={t('common.print_parent_friendly_progress_report')}
+L7977: aria-label={t('common.decision_rule_method')}
+L7990: aria-label={t('common.decision_threshold')}
+L8021: aria-label={t('common.delete_log')}
+L8065: <input type="text" placeholder={t('common.placeholder_optional_notes')} id={`intv-notes-${selectedStudent.name}`}
+L8102: {t('class_analytics.flags_detected', { count: selectedStudent.safetyFlags.length })}
+L8129: {t('class_analytics.running_record') || 'Running Record'}
+L8134: <div className="text-xs text-slate-500">{t('fluency.substitutions') || 'Substitutions'}</div>
+L8138: <div className="text-xs text-slate-500">{t('fluency.omissions') || 'Omissions'}</div>
+L8142: <div className="text-xs text-slate-500">{t('fluency.insertions_label') || 'Insertions'}</div>
+L8146: <div className="text-xs text-slate-500">{t('fluency.self_corrections') || 'Self-Corrections'}</div>
+L8150: <span><strong>{t('fluency.error_rate') || 'Error Rate'}:</strong> 1:{rr.errorRate}</span>
+L8151: <span><strong>{t('fluency.sc_rate') || 'SC Rate'}:</strong> {rr.scRate}</span>
+L8153: {rr.accuracy >= 95 ? (t('fluency.independent') || 'Independent') : rr.accuracy >= 90 ? (t('fluency.instructional') || 'Instructional') : (t('fluency.frustration
+L8172: <span>{t('class_analytics.benchmark_vs') || 'vs. Benchmark'}:</span>
+L8345: {t('class_analytics.view_transcript')}
+L8366: {t('class_analytics.no_transcript')}
+
+Total: 89 t() calls in restored blocks

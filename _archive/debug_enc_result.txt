@@ -1,0 +1,23 @@
+Search 'async function _initAudioBank': index=3334
+  Context repr: "c'][key];\n    return null;\n}\n\nasync function _initAudioBank() {\n    // Canvas serves the "
+
+Search '_initAudioBank': index=3349
+  Context repr: 'eturn null;\n}\n\nasync function _initAudioBank() {\n    // Canvas serves the '
+
+Search 'AUDIO_BANK': index=2946
+  Context repr: 'LIZATION LOGIC START ---\nlet _AUDIO_BANK = null;\nconst _AUDIO_BANK_URL'
+
+Search '_AUDIO_BANK': index=2945
+  Context repr: 'ALIZATION LOGIC START ---\nlet _AUDIO_BANK = null;\nconst _AUDIO_BANK_URL'
+
+Search 'Initializing Audio Bank': index=3772
+  Context repr: 'eturn;\n    }\n    console.log("Initializing Audio Bank from " + _AUDIO_BANK_URL);\n  '
+
+Search 'audio_bank.json': index=2990
+  Context repr: "ull;\nconst _AUDIO_BANK_URL = 'audio_bank.json';\n\n// Global accessor to retr"
+
+Search 'console.error': index=61599
+  Context repr: '} catch (e) {\n                console.error("Auto-sync failed:", e);\n    '
+
+Search 'Failed to load Audio Bank': index=-1
+

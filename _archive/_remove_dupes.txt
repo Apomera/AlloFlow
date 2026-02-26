@@ -1,0 +1,7 @@
+﻿SMART_TEXT_VISIBILITY at lines: [3465, 3483]
+getEffectiveTextMode at lines: [3508, 3516]
+  Will delete second SMART_TEXT_VISIBILITY: L3479-L3496
+  Will delete second getEffectiveTextMode: L3513-L3520
+  Deleted L3513-L3520
+  Deleted L3479-L3496
+Saved. New line count: 75395

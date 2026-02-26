@@ -1,0 +1,15 @@
+L4471:     const [highlightedRhymeIndex, setHighlightedRhymeIndex] = React.useState(null);
+L4825:         highlightedIndex: externalHighlightedIndex
+L4827:         const [playingIndex, setPlayingIndex] = React.useState(null);
+L4861:                                     playingIndex === -1
+L4870:                                         className={`w-full h-full object-cover rounded-full ${playingIndex === -1 ? 'ring-4 ring-violet-300' : ''}`}
+L4873:                                     <Volume2 size={64} className={playingIndex === -1 ? "animate-pulse" : "group-hover:animate-pulse"} />
+L4999:                                         (playingIndex === idx || externalHighlightedIndex === idx)
+L5028:         const [playingIndex, setPlayingIndex] = React.useState(null);
+L5029:         const activeIndex = playingIndex ?? highlightedIndex;
+L5050:                         if (playingIndex !== null || isAudioBusy) return;
+L5061:                     disabled={playingIndex !== null || isAudioBusy}
+L5062:                     className={`mx-auto flex items-center gap-2 px-4 py-2 mb-2 rounded-full font-medium text-sm shadow-sm transition-colors ${playingIndex !== null || isAudioBusy ? 'bg-slate-200 text-
+L5928:     const [playingOptionIndex, setPlayingOptionIndex] = React.useState(null);
+L9574:                                                         className={`relative group transition-all duration-300 ${(playingOptionIndex === idx || highlightedBlendIndex === idx) ? 'scale-105 ring-4 ring-
+L10107:                             highlightedIndex={highlightedRhymeIndex}

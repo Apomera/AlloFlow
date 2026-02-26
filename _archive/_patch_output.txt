@@ -1,0 +1,13 @@
+﻿Loaded 75395 lines
+
+=== PART A: Fix Feedback Audio Trigger ===
+  Replaced feedback trigger: L7918-L7933 -> 16 new lines
+
+=== PART B: Sounds-Only Text Visibility ===
+  Added SMART_TEXT_VISIBILITY after L3461
+  Added getEffectiveTextMode() after L3505
+  Wrapped image word-label with showWordText guard at L8964
+  Fixed 1 word text display locations
+
+=== Writing 4 changes ===
+Saved AlloFlowANTI.txt

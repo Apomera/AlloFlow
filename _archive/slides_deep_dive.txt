@@ -1,0 +1,52 @@
+=== SLIDES/FLASHCARDS DEEP DIVE RESEARCH ===
+
+--- SLIDES STATE & MODES ---
+[currentSlide] Line 38138: let currentSlideObjects = [];
+[flashcardMode] Line 26673: const [flashcardMode, setFlashcardMode] = useState('standard');
+[isFlashcard] Line 26672: const [isFlashcardFlipped, setIsFlashcardFlipped] = useState(false);
+[cardFlipped] Line 26672: const [isFlashcardFlipped, setIsFlashcardFlipped] = useState(false);
+[autoPlay] Line 19251: const autoPlayTimerRef = useRef(null);
+
+--- FLASHCARD FEATURES ---
+[flashcard] Line 7010: prev_flashcard: "Previous Flashcard",
+[flashcard] Line 7011: next_flashcard: "Next Flashcard",
+[flashcard] Line 7199: flashcards_generated: "Flashcards generated!",
+... and 153 more for 'flashcard'
+[Flashcard] Line 7010: prev_flashcard: "Previous Flashcard",
+[Flashcard] Line 7011: next_flashcard: "Next Flashcard",
+[Flashcard] Line 7199: flashcards_generated: "Flashcards generated!",
+... and 99 more for 'Flashcard'
+[flip] Line 7813: flip_hint: "Click card to flip",
+[flip] Line 7915: announcement_mismatch: "Not a match. -5 Points. Cards flipped back.",
+[flip] Line 10044: memory_card_item: "Click to flip the card and find its match.",
+... and 14 more for 'flip'
+[shuffle] Line 2540: // FIX: Only shuffle if wordBank is empty or data changed significantly
+[shuffle] Line 2720: // Track last processed word to prevent unnecessary reshuffles
+[shuffle] Line 2724: // Only reshuffle if the actual WORD changed, not just re-renders
+... and 39 more for 'shuffle'
+
+--- GAMIFICATION FEATURES ---
+[correctCount] Line 3016: const correctCount = recentHistory.filter(h => h.correct).length;
+[mastery] Line 715: // Mastery strings
+[retention] Line 39426: 3. **Remediation / Reinforcement:** A lesson that breaks down the tricky parts of the current topic for better retention.
+[review] Line 572: // Flags potentially concerning content for teacher review
+
+--- STUDY/PRESENTATION MODES ---
+[fullScreen] Line 7662: fullscreen: "Fullscreen",
+[presentation] Line 8360: presentation: "Presentation Mode",
+
+--- INTERACTIVE ELEMENTS ---
+[drag] Line 5000: }, [draggedItem, elkoninBoxes, soundChips, handleAudio]);
+[touch] Line 13330: window.addEventListener('touchmove', handleMouseMove, { passive: false });
+[keyboard] Line 17248: const filtered = prev.filter(c => c.termId !== keyboardSelectedTerm && c.defId !== defId);
+[enter] Line 1268: <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIncludeFamily(!includeFamily)}
+
+--- EXPORT/SHARING ---
+[exportSlides] Line 38077: const handleExportSlides = () => {
+[powerpoint] Line 9177: slides: "PowerPoint Slides",
+[pptx] Line 26842: const [pptxLoaded, setPptxLoaded] = useState(false);
+
+--- ACCESSIBILITY ---
+
+--- CURRENT TOUR DESCRIPTION ---
+No slides tour description found by name

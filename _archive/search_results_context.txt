@@ -1,0 +1,952 @@
+--- Match for 'AlloBot' at line 4475 ---
+4473:         setImportProgress({ current: 0, total: 0 });
+4474: 
+4475:         // AlloBot Safety Check Feedback
+4476:         if (alloBotRef.current) {
+4477:             const totalFlags = allNewStudents.reduce((acc, s) => acc + (s.safetyFlags ? s.safetyFlags.length : 0), 0);
+
+--- Match for 'AlloBot' at line 4476 ---
+4474: 
+4475:         // AlloBot Safety Check Feedback
+4476:         if (alloBotRef.current) {
+4477:             const totalFlags = allNewStudents.reduce((acc, s) => acc + (s.safetyFlags ? s.safetyFlags.length : 0), 0);
+4478:             if (totalFlags > 0) {
+
+--- Match for 'AlloBot' at line 4479 ---
+4477:             const totalFlags = allNewStudents.reduce((acc, s) => acc + (s.safetyFlags ? s.safetyFlags.length : 0), 0);
+4478:             if (totalFlags > 0) {
+4479:                 alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+4480:             } else {
+4481:                 alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+
+--- Match for 'AlloBot' at line 4481 ---
+4479:                 alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+4480:             } else {
+4481:                 alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+4482:             }
+4483:         }
+
+--- Match for 'Quick Start' at line 5634 ---
+5632:   },
+5633:   wizard: {
+5634:     title: "Quick Start",
+5635:     global_context: "Global Context",
+5636:     grade_level: "Target Grade Level",
+
+--- Match for 'intro' at line 6755 ---
+6753:         sidebar_quiz_desc: "Generate quick formative assessments to check for understanding. Create multiple choice, short answer, or interactive quiz formats.",
+6754:         sidebar_brainstorm_title: "Engagement Ideas",
+6755:         sidebar_brainstorm_desc: "Get creative hooks, opening activities, and engagement strategies to introduce your content and maintain student interest.",
+6756:         sidebar_games_title: "Interactive Games",
+6757:         sidebar_games_desc: "Create educational games including flashcard decks, crossword puzzles, bingo cards, and memory matching games using your content vocabulary.",
+
+--- Match for 'intro' at line 7239 ---
+7237:     toast_error: "Could not determine next lesson.",
+7238:     toast_activated: "Next Lesson Configured. Ready to generate.",
+7239:     bot_intro: "I've configured the next lesson topic: \"**{topic}**\".\n\nI've pre-filled the source generation settings based on the curriculum progression.\n\n**Would you like me to generate the source text now?** (You can also adjust the Tone, Length, or Instructions in the panel first)."
+7240:   },
+7241:   bridge: {
+
+--- Match for 'Quick Start' at line 7285 ---
+7283:       essentialQuestion: "The Big Question",
+7284:       objectives: "What You Will Master",
+7285:       hook: "Quick Start",
+7286:       directInstruction: "Core Concept Summary",
+7287:       guidedPractice: "Practice Exercises",
+
+--- Match for 'intro' at line 7398 ---
+7396:     trans_col: "Translation",
+7397:     student_copy: "Student Copy: ",
+7398:     teacher_copy_intro: "Includes Answer Keys, Fact Checks, Analyses, UDL Advice, and Brainstorming Ideas.",
+7399:     udl_strategy_advice: "UDL Strategy / Advice",
+7400:     score_label: "Score",
+
+--- Match for 'intro' at line 7534 ---
+7532:     add_to_panel: "Add to Panel",
+7533:     chat_save: "Save Transcript",
+7534:     intro: "Interview Mode Setup",
+7535:     setup_title: "Interview Mode Setup",
+7536:     identifying: "Identifying...",
+
+--- Match for 'voice settings' at line 8011 ---
+8009:   },
+8010:   bot_events: {
+8011:     intro_greeting: "Click me to adjust my voice settings, like speed and pitch. I'll chime in with helpful tips as you go!",
+8012:     text_generated: "Your adapted text is ready! Try clicking a word to see its definition, or explore the tools on the left.",
+8013:     flashcards_created: "Flashcards created! You can export them to Quizlet, print them, or try the Memory Game.",
+
+--- Match for 'voice settings' at line 8057 ---
+8055:     
+8056:     // Header Help
+8057:     header_settings: "Adjust text size, spacing, fonts, and voice settings for the app.",
+8058:     header_utils: "Access utility tools like the AI Guide, Theme Toggle, and Help Mode.",
+8059:     // Header New Granular Help
+
+--- Match for 'AlloBot' at line 8072 ---
+8070:     
+8071:     hints_recall: "View your history of generated hints and extension ideas.",
+8072:     header_bot_toggle: "Show or hide the AlloBot character.",
+8073:     header_cloud_sync: "Enable or disable syncing your resources to the cloud.",
+8074: 
+
+--- Match for 'AlloBot' at line 8118 ---
+8116:     sidebar_tab_create: "Access all content creation tools (Lesson Plan, Quiz, Visuals, etc.).",
+8117:     sidebar_tab_history: "View and manage your history of generated resources.",
+8118:     chat_input: "Chat with AlloBot to get help, ask questions, or request resources.",
+8119:     chat_send: "Send your message to AlloBot (or toggle 'Show Me' mode).",
+8120:     chat_autofill: "Automatically fills the chat with context-aware prompts based on what you're doing.",
+
+--- Match for 'AlloBot' at line 8119 ---
+8117:     sidebar_tab_history: "View and manage your history of generated resources.",
+8118:     chat_input: "Chat with AlloBot to get help, ask questions, or request resources.",
+8119:     chat_send: "Send your message to AlloBot (or toggle 'Show Me' mode).",
+8120:     chat_autofill: "Automatically fills the chat with context-aware prompts based on what you're doing.",
+8121: 
+
+--- Match for 'AlloBot' at line 8231 ---
+8229:     scaffolds_student_input: "The area where students type their response to the prompt.",
+8230:     scaffolds_paragraph_frame: "A fill-in-the-blank paragraph frame to guide structured writing.",
+8231:     scaffolds_feedback_interface: "The grading interface where Allobot provides feedback on student drafts.",
+8232:     
+8233:     // Role Selection Help
+
+--- Match for 'voice settings' at line 8816 ---
+8814:     sleep_title: "Sleep (Minimize)",
+8815:     sleep_aria: "Minimize Assistant",
+8816:     chat_title: "Voice Settings",
+8817:     chat_aria: "Open voice and TTS settings",
+8818:     mute_on_title: "Mute Voice",
+
+--- Match for 'AlloBot' at line 8828 ---
+8826:     wake_title: "Click to Wake",
+8827:     summon_msg: "I'm here! Click me to open the guide.",
+8828:     aria_sleeping: "AlloBot (Asleep). Press Enter to wake.",
+8829:     aria_active: "AlloBot AI Assistant",
+8830:     sleeping: "Zzz..."
+
+--- Match for 'AlloBot' at line 8829 ---
+8827:     summon_msg: "I'm here! Click me to open the guide.",
+8828:     aria_sleeping: "AlloBot (Asleep). Press Enter to wake.",
+8829:     aria_active: "AlloBot AI Assistant",
+8830:     sleeping: "Zzz..."
+8831:   },
+
+--- Match for 'Quick Start' at line 8898 ---
+8896:     ai_guide_tip: "Use the \"AI UDL & Alignment Guide\" button in the sidebar to chat with an expert pedagogical bot for specific strategy advice.",
+8897:     cast_link_text: "View Full UDL Guidelines (CAST.org)",
+8898:     reset_wizard: "Reset Quick Start Wizard",
+8899:     support_kofi: "Support on Ko-fi",
+8900:     features_list: {
+
+--- Match for 'intro' at line 9214 ---
+9212:   blueprint: {
+9213:     header: "Lesson Blueprint",
+9214:     intro_1: "I've analyzed the text. It looks like a",
+9215:     intro_2: "Here is my recommended strategy:",
+9216:     default_topology: "Custom Lesson",
+
+--- Match for 'intro' at line 9215 ---
+9213:     header: "Lesson Blueprint",
+9214:     intro_1: "I've analyzed the text. It looks like a",
+9215:     intro_2: "Here is my recommended strategy:",
+9216:     default_topology: "Custom Lesson",
+9217:     cancel: "Cancel",
+
+--- Match for 'intro' at line 10785 ---
+10783: const spokenEventIds = new Set();
+10784: const lastGlobalSpeech = { text: '', time: 0 };
+10785: let introFiredGlobal = false; // Module-level flag to prevent duplicate intro (survives StrictMode/re-mounts)
+10786: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voicePitch = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic }, ref) => {
+10787:   const { t } = useContext(LanguageContext);
+
+--- Match for 'AlloBot' at line 10786 ---
+10784: const lastGlobalSpeech = { text: '', time: 0 };
+10785: let introFiredGlobal = false; // Module-level flag to prevent duplicate intro (survives StrictMode/re-mounts)
+10786: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voicePitch = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic }, ref) => {
+10787:   const { t } = useContext(LanguageContext);
+10788:   const [position, setPosition] = useState(() => {
+
+--- Match for 'AlloBot' at line 11089 ---
+11087:       // but if the user complains about "message occurs twice", it implies the full experience.
+11088:       if (!isSilent && safeText === lastGlobalSpeech.text && (now - lastGlobalSpeech.time) < 2000) {
+11089:           console.warn("AlloBot: Suppressing duplicate speech:", safeText);
+11090:           return;
+11091:       }
+
+--- Match for 'AlloBot' at line 11153 ---
+11151:           let cloudSuccess = false;
+11152:           // DEBUG: Trace why Cloud TTS might be skipped
+11153:           console.log("AlloBot Speak Debug:", { 
+11154:               hasOnGenerate: !!onGenerateAudio, 
+11155:               voice: selectedVoice,
+
+--- Match for 'AlloBot' at line 11213 ---
+11211:                  window.speechSynthesis.speak(utterance);
+11212:                  audioStarted = true;
+11213:                  console.log("AlloBot: Falling back to native speech");
+11214:              } catch (nativeErr) {
+11215:                  console.error("Native TTS failed completely", nativeErr);
+
+--- Match for 'intro' at line 11263 ---
+11261:   // First-run greeting effect (uses module-level flag to survive StrictMode)
+11262:   useEffect(() => {
+11263:     if (!hasSeenBotIntro && !isTalking && !customMessage && !introFiredGlobal) {
+11264:       const timer = setTimeout(() => {
+11265:         if (introFiredGlobal) return; // Double-check before speaking
+
+--- Match for 'intro' at line 11265 ---
+11263:     if (!hasSeenBotIntro && !isTalking && !customMessage && !introFiredGlobal) {
+11264:       const timer = setTimeout(() => {
+11265:         if (introFiredGlobal) return; // Double-check before speaking
+11266:         introFiredGlobal = true;
+11267:         speak(t('bot_events.intro_greeting'));
+
+--- Match for 'intro' at line 11266 ---
+11264:       const timer = setTimeout(() => {
+11265:         if (introFiredGlobal) return; // Double-check before speaking
+11266:         introFiredGlobal = true;
+11267:         speak(t('bot_events.intro_greeting'));
+11268:         if (onBotIntroSeen) onBotIntroSeen();
+
+--- Match for 'intro' at line 11267 ---
+11265:         if (introFiredGlobal) return; // Double-check before speaking
+11266:         introFiredGlobal = true;
+11267:         speak(t('bot_events.intro_greeting'));
+11268:         if (onBotIntroSeen) onBotIntroSeen();
+11269:       }, 1500); // Delay to let UI settle
+
+--- Match for 'intro' at line 11268 ---
+11266:         introFiredGlobal = true;
+11267:         speak(t('bot_events.intro_greeting'));
+11268:         if (onBotIntroSeen) onBotIntroSeen();
+11269:       }, 1500); // Delay to let UI settle
+11270:       return () => clearTimeout(timer);
+
+--- Match for 'intro' at line 11272 ---
+11270:       return () => clearTimeout(timer);
+11271:     }
+11272:   }, [hasSeenBotIntro, onBotIntroSeen, speak, isTalking, customMessage, t]);
+11273:   const handleKeyDown = (e) => {
+11274:     if (e.key === 'Enter' || e.key === ' ') {
+
+--- Match for 'AlloBot' at line 11309 ---
+11307:               // OVERLAP PREVENTION: Skip if already talking
+11308:               if (isTalking) {
+11309:                   console.log("AlloBot: Skipping event tip, already talking.");
+11310:                   return;
+11311:               }
+
+--- Match for 'AlloBot' at line 17424 ---
+17422:   );
+17423: });
+17424: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice, alloBotRef }) => {
+17425:   useEffect(() => {
+17426:       if (onGenerate && (!bingoState.cards || bingoState.cards.length === 0)) {
+
+--- Match for 'AlloBot' at line 17598 ---
+17596:                         <button 
+17597:                             onClick={() => {
+17598:                                 if (alloBotRef && alloBotRef.current) {
+17599:                                     alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
+17600:                                 }
+
+--- Match for 'AlloBot' at line 17599 ---
+17597:                             onClick={() => {
+17598:                                 if (alloBotRef && alloBotRef.current) {
+17599:                                     alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
+17600:                                 }
+17601:                                 window.print();
+
+--- Match for 'AlloBot' at line 23176 ---
+23174:       if (typeof playSound === 'function') playSound('bell');
+23175:       
+23176:       // Trigger AlloBot TTS
+23177:       if (alloBotRef.current) {
+23178:           alloBotRef.current.triggerReaction('🎉'); // Keep visual reaction
+
+--- Match for 'AlloBot' at line 23177 ---
+23175:       
+23176:       // Trigger AlloBot TTS
+23177:       if (alloBotRef.current) {
+23178:           alloBotRef.current.triggerReaction('🎉'); // Keep visual reaction
+23179:           alloBotRef.current.speak(t('timer.time_up_msg') || "Time is up! Great focus.");
+
+--- Match for 'AlloBot' at line 23178 ---
+23176:       // Trigger AlloBot TTS
+23177:       if (alloBotRef.current) {
+23178:           alloBotRef.current.triggerReaction('🎉'); // Keep visual reaction
+23179:           alloBotRef.current.speak(t('timer.time_up_msg') || "Time is up! Great focus.");
+23180:       } else {
+
+--- Match for 'AlloBot' at line 23179 ---
+23177:       if (alloBotRef.current) {
+23178:           alloBotRef.current.triggerReaction('🎉'); // Keep visual reaction
+23179:           alloBotRef.current.speak(t('timer.time_up_msg') || "Time is up! Great focus.");
+23180:       } else {
+23181:           // Fallback if bot ref not available
+
+--- Match for 'intro' at line 23273 ---
+23271:   const [showClassAnalytics, setShowClassAnalytics] = useState(false);
+23272:   const [isHelpMode, setIsHelpMode] = useState(false);
+23273:   const [hasSeenBotIntro, setHasSeenBotIntro] = useState(() => {
+23274:       if (typeof window !== 'undefined') {
+23275:           return localStorage.getItem('allo_bot_intro_seen') === 'true';
+
+--- Match for 'intro' at line 23275 ---
+23273:   const [hasSeenBotIntro, setHasSeenBotIntro] = useState(() => {
+23274:       if (typeof window !== 'undefined') {
+23275:           return localStorage.getItem('allo_bot_intro_seen') === 'true';
+23276:       }
+23277:       return false;
+
+--- Match for 'intro' at line 23414 ---
+23412:         CRITICAL OUTPUT RULES:
+23413:         - You are a JSON generator. You are NOT a chatbot.
+23414:         - Do NOT output conversational text, introductions, or explanations (e.g. "Here are the standards...").
+23415:         - Do NOT summarize the search results in plain text.
+23416:         - If no exact standards are found, return an empty JSON array: [].
+
+--- Match for 'AlloBot' at line 24304 ---
+24302:   const textEditorRef = useRef(null); 
+24303:   const adventureInputRef = useRef(null);
+24304:   const alloBotRef = useRef(null);
+24305:   const lastTurnSnapshot = useRef(null);
+24306:   const [isEditingLeveledText, setIsEditingLeveledText] = useState(false);
+
+--- Match for 'AlloBot' at line 24407 ---
+24405:   ]);
+24406:   const playSound = useCallback((type) => {
+24407:       if (alloBotRef.current) {
+24408:           if (type === 'correct') alloBotRef.current.triggerReaction('🎉');
+24409:           else if (type === 'incorrect') alloBotRef.current.triggerReaction('❌');
+
+--- Match for 'AlloBot' at line 24408 ---
+24406:   const playSound = useCallback((type) => {
+24407:       if (alloBotRef.current) {
+24408:           if (type === 'correct') alloBotRef.current.triggerReaction('🎉');
+24409:           else if (type === 'incorrect') alloBotRef.current.triggerReaction('❌');
+24410:           else if (type === 'reveal') alloBotRef.current.triggerReaction('👀');
+
+--- Match for 'AlloBot' at line 24409 ---
+24407:       if (alloBotRef.current) {
+24408:           if (type === 'correct') alloBotRef.current.triggerReaction('🎉');
+24409:           else if (type === 'incorrect') alloBotRef.current.triggerReaction('❌');
+24410:           else if (type === 'reveal') alloBotRef.current.triggerReaction('👀');
+24411:       }
+
+--- Match for 'AlloBot' at line 24410 ---
+24408:           if (type === 'correct') alloBotRef.current.triggerReaction('🎉');
+24409:           else if (type === 'incorrect') alloBotRef.current.triggerReaction('❌');
+24410:           else if (type === 'reveal') alloBotRef.current.triggerReaction('👀');
+24411:       }
+24412: 
+
+--- Match for 'intro' at line 25413 ---
+25411:     'adventure_custom_instructions': "Add specific details for the AI GM, like 'Set in a cyberpunk city' or 'Focus on vocabulary related to food'.",
+25412:     'adventure_free_response': "When OFF: Choose from 4 options per turn (easier). When ON: Type any action freely—the AI adapts! Great for creative writing but may lead to unexpected plot twists.",
+25413:     'adventure_chance_mode': "Introduces D20 dice rolls: risky actions may fail even with good ideas. Teaches probability and risk assessment. Recommended for grades 4+.",
+25414:     'adventure_social_story': "SEL Mode: Generates scenarios with social-emotional challenges (friendship conflicts, teamwork, frustration). Characters model healthy coping and decision-making.",
+25415:     'adventure_system_state': "Gamifies decisions with resource tracking (e.g., Gold, Health, Morale). Actions have consequences—spend resources wisely to reach your goal!",
+
+--- Match for 'AlloBot' at line 25585 ---
+25583:     'header_dashboard': "Open the Teacher Dashboard to view student progress and analytics.",
+25584:     'header_jump_lesson': "Jump directly to a specific lesson.",
+25585:     'header_hints_recall': "Recall helpful hints and tips that AlloBot has shared.",
+25586:     'header_bot_toggle': "Show or hide the AlloBot assistant.",
+25587:     'header_help_toggle': "Toggle Help Mode to see tips for any element you click.",
+
+--- Match for 'AlloBot' at line 25586 ---
+25584:     'header_jump_lesson': "Jump directly to a specific lesson.",
+25585:     'header_hints_recall': "Recall helpful hints and tips that AlloBot has shared.",
+25586:     'header_bot_toggle': "Show or hide the AlloBot assistant.",
+25587:     'header_help_toggle': "Toggle Help Mode to see tips for any element you click.",
+25588:     'header_sync_toggle': "When enabled, work saves automatically with visual status: 🔄 syncing, ✓ saved, ⚠️ error. Disable to work offline—changes won't sync until re-enabled.",
+
+--- Match for 'AlloBot' at line 25590 ---
+25588:     'header_sync_toggle': "When enabled, work saves automatically with visual status: 🔄 syncing, ✓ saved, ⚠️ error. Disable to work offline—changes won't sync until re-enabled.",
+25589: 
+25590:     // === ALLOBOT CHAT CONTROLS ===
+25591:     'chat_input': "Ask AlloBot for teaching suggestions, content explanations, or workflow help. Pro tip: Ask 'What can I make with this?' after pasting content.",
+25592:     'chat_send': "Send your message to AlloBot for a response.",
+
+--- Match for 'AlloBot' at line 25591 ---
+25589: 
+25590:     // === ALLOBOT CHAT CONTROLS ===
+25591:     'chat_input': "Ask AlloBot for teaching suggestions, content explanations, or workflow help. Pro tip: Ask 'What can I make with this?' after pasting content.",
+25592:     'chat_send': "Send your message to AlloBot for a response.",
+25593:     'chat_framework_select': "Select an educational standards framework (e.g., Common Core, NGSS) for curriculum alignment queries.",
+
+--- Match for 'AlloBot' at line 25592 ---
+25590:     // === ALLOBOT CHAT CONTROLS ===
+25591:     'chat_input': "Ask AlloBot for teaching suggestions, content explanations, or workflow help. Pro tip: Ask 'What can I make with this?' after pasting content.",
+25592:     'chat_send': "Send your message to AlloBot for a response.",
+25593:     'chat_framework_select': "Select an educational standards framework (e.g., Common Core, NGSS) for curriculum alignment queries.",
+25594:     'chat_grade_select': "Choose a grade level to filter standards consultation to age-appropriate benchmarks.",
+
+--- Match for 'AlloBot' at line 25596 ---
+25594:     'chat_grade_select': "Choose a grade level to filter standards consultation to age-appropriate benchmarks.",
+25595:     'chat_consult_btn': "Generates a standards alignment report showing which skills and objectives your content addresses—great for lesson plan documentation.",
+25596:     'chat_autofill': "✨ Recommended: When enabled, AlloBot extracts topics, grade levels, and keywords from your source text to pre-configure tools. Leave on for faster workflow.",
+25597: 
+25598:     // === LESSON PLAN - Extended Configuration Help ===
+
+--- Match for 'intro' at line 25750 ---
+25748:     // === WELCOME/ONBOARDING ===
+25749:     'welcome_load_btn': "Restore your last session including source text, generated resources, and progress.",
+25750:     'welcome_skip_btn': "Skip intro and start with a blank canvas. You can access the tutorial anytime from Help → Tour.",
+25751: 
+25752:     // === XP/GAMIFICATION ===
+
+--- Match for 'voice settings' at line 25786 ---
+25784:     'flashcard_prev': "Previous card. Keyboard shortcut: Left Arrow or Swipe Left.",
+25785:     'flashcard_next': "Next card. Keyboard shortcut: Right Arrow or Swipe Right.",
+25786:     'flashcard_play_sequence': "Auto-play all cards with TTS. Speed adjustable in Voice Settings. Click again to stop.",
+25787: 
+25788:     // === GLOSSARY (Additional) ===
+
+--- Match for 'voice settings' at line 25796 ---
+25794: 
+25795:     // === PERSONA (Additional) ===
+25796:     'persona_auto_read': "When ON: Personas speak their responses aloud automatically. Uses current voice settings.",
+25797:     'persona_conclude': "End the interview and generate a reflection summary. Earns bonus XP for completed conversations.",
+25798:     'persona_custom_instructions': "Shape the persona's background (e.g., 'Answer as someone who witnessed the Boston Tea Party').",
+
+--- Match for 'AlloBot' at line 26025 ---
+26023:                   right: rect.right + padding
+26024:               });
+26025:               if (alloBotRef.current) {
+26026:                   let targetX = rect.right + 200;
+26027:                   let targetY = rect.top - 20;
+
+--- Match for 'AlloBot' at line 26034 ---
+26032:                       targetY = rect.bottom + 40;
+26033:                   }
+26034:                   alloBotRef.current.moveTo(targetX, targetY);
+26035:                   setBotSpotlightPos({ x: targetX, y: targetY }); 
+26036:               }
+
+--- Match for 'AlloBot' at line 26083 ---
+26081:   };
+26082:   const flyToElement = (elementId) => {
+26083:       if (!elementId || !alloBotRef.current) return;
+26084:       
+26085:       
+
+--- Match for 'AlloBot' at line 26102 ---
+26100:                   const targetX = rect.left + (rect.width / 2);
+26101:                   const targetY = rect.top + (rect.height / 2);
+26102:                   if (alloBotRef.current) {
+26103:                       alloBotRef.current.moveTo(targetX, targetY);
+26104:                   }
+
+--- Match for 'AlloBot' at line 26103 ---
+26101:                   const targetY = rect.top + (rect.height / 2);
+26102:                   if (alloBotRef.current) {
+26103:                       alloBotRef.current.moveTo(targetX, targetY);
+26104:                   }
+26105:               }, 600); 
+
+--- Match for 'intro' at line 28895 ---
+28893:   const [isShowMeMode, setIsShowMeMode] = useState(false); 
+28894:   const [isBotVisible, setIsBotVisible] = useState(true);
+28895:   const handleBotIntroSeen = useCallback(() => {
+28896:     setHasSeenBotIntro(true);
+28897:     try { localStorage.setItem('allo_bot_intro_seen', 'true'); } catch {}
+
+--- Match for 'intro' at line 28896 ---
+28894:   const [isBotVisible, setIsBotVisible] = useState(true);
+28895:   const handleBotIntroSeen = useCallback(() => {
+28896:     setHasSeenBotIntro(true);
+28897:     try { localStorage.setItem('allo_bot_intro_seen', 'true'); } catch {}
+28898:   }, []);
+
+--- Match for 'intro' at line 28897 ---
+28895:   const handleBotIntroSeen = useCallback(() => {
+28896:     setHasSeenBotIntro(true);
+28897:     try { localStorage.setItem('allo_bot_intro_seen', 'true'); } catch {}
+28898:   }, []);
+28899:   const lastSpokenMessageIndexRef = useRef(-1);
+
+--- Match for 'AlloBot' at line 28911 ---
+28909:           const lastMsg = udlMessages[lastIndex];
+28910:           if (lastIndex > lastSpokenMessageIndexRef.current) {
+28911:               if (lastMsg.role === 'model' && alloBotRef.current && isBotVisible) {
+28912:                   alloBotRef.current.speak(lastMsg.text);
+28913:                   lastSpokenMessageIndexRef.current = lastIndex;
+
+--- Match for 'AlloBot' at line 28912 ---
+28910:           if (lastIndex > lastSpokenMessageIndexRef.current) {
+28911:               if (lastMsg.role === 'model' && alloBotRef.current && isBotVisible) {
+28912:                   alloBotRef.current.speak(lastMsg.text);
+28913:                   lastSpokenMessageIndexRef.current = lastIndex;
+28914:                   if (!showUDLGuide) {
+
+--- Match for 'AlloBot' at line 28917 ---
+28915:                       const centerX = window.innerWidth / 2;
+28916:                       const topY = 150; 
+28917:                       alloBotRef.current.moveTo(centerX, topY);
+28918:                   }
+28919:               } else {
+
+--- Match for 'AlloBot' at line 28938 ---
+28936:               addToast(t(toastKey) || fallbackMsg, "info");
+28937:               
+28938:               // AlloBot TTS reminder if bot is visible
+28939:               if (isBotVisible && alloBotRef.current) {
+28940:                   alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+
+--- Match for 'AlloBot' at line 28939 ---
+28937:               
+28938:               // AlloBot TTS reminder if bot is visible
+28939:               if (isBotVisible && alloBotRef.current) {
+28940:                   alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+28941:               }
+
+--- Match for 'AlloBot' at line 28940 ---
+28938:               // AlloBot TTS reminder if bot is visible
+28939:               if (isBotVisible && alloBotRef.current) {
+28940:                   alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+28941:               }
+28942:               
+
+--- Match for 'intro' at line 29340 ---
+29338:             Original Problem: "${firstProblem}"
+29339:             
+29340:             Return ONLY the raw text of the new problem. No intro/outro.
+29341:           `;
+29342:           const newProblem = await callGemini(prompt);
+
+--- Match for 'intro' at line 32095 ---
+32093:                    1. CITATION REQUIREMENT (section ${i + 1} of ${sections.length}): Include inline citations throughout this section.
+32094:                    2. Every paragraph should have at least one citation. Major facts, statistics, and claims require source attribution.
+32095:                    3. Do not defer citations to later sections - cite facts as you introduce them.
+32096:                    4. Verify claims with web sources before including them.
+32097:                    ` : ''}
+
+--- Match for 'intro' at line 32289 ---
+32287: ` : ''}
+32288: 
+32289: ${effVocabulary ? `Key vocabulary to introduce naturally: ${effVocabulary}` : ''}
+32290: ${effCustomInstructions ? `Special instructions: ${effCustomInstructions}` : ''}
+32291: 
+
+--- Match for 'intro' at line 32326 ---
+32324: ${effGrade === 'Kindergarten' || effGrade === '1st Grade' ? 'Use very simple words. Short sentences. Learner asks basic "what" and "why" questions.' : ''}
+32325: ${effGrade === '2nd Grade' || effGrade === '3rd Grade' ? 'Simple vocabulary. Learner is curious and asks lots of follow-ups. Guide uses kid-friendly comparisons.' : ''}
+32326: ${effGrade === '4th Grade' || effGrade === '5th Grade' ? 'Natural conversation flow. Can introduce vocabulary with immediate explanation in dialogue.' : ''}
+32327: ${effGrade === '6th Grade' || effGrade === '7th Grade' || effGrade === '8th Grade' ? 'More sophisticated dialogue. Learner can push back, express skepticism, ask deeper questions.' : ''}
+32328: ${complexityGuard}
+
+--- Match for 'intro' at line 32387 ---
+32385:         - Ensure factual accuracy and clarity.
+32386:         - ${effTone === 'Persuasive' || effTone === 'Persuasive / Opinion' ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.' : effTone === 'Humorous' || effTone === 'Humorous / Engaging' ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.' : effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural' ? 'Write clear step-by-step instructions with numbered steps and helpful tips.' : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.'}
+32387:         - Do not include any intro/outro conversational text (like "Here is the text"). Just provide the content.
+32388:       `;
+32389: 
+
+--- Match for 'AlloBot' at line 32560 ---
+32558:       setError(errMsg);
+32559:       addToast(errMsg, "error");
+32560:       if (isBotVisible && alloBotRef.current) {
+32561:           alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+32562:       }
+
+--- Match for 'AlloBot' at line 32561 ---
+32559:       addToast(errMsg, "error");
+32560:       if (isBotVisible && alloBotRef.current) {
+32561:           alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+32562:       }
+32563:     } finally {
+
+--- Match for 'intro' at line 34448 ---
+34446:       const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
+34447:       const lessonTopic = topic || t('export.default_lesson_title');
+34448:       const teacherIntro = t('export.teacher_copy_intro');
+34449:       const noStudentMsg = t('export.no_student_content');
+34450:       const noTeacherMsg = t('export.no_teacher_content');
+
+--- Match for 'intro' at line 34611 ---
+34609:         <div class="teacher-view">
+34610:             <h1>${t('export.teacher_key_title')}</h1>
+34611:             <p><em>${teacherIntro}</em></p>
+34612:             ${teacherContent || `<p>${noTeacherMsg}</p>`}
+34613:         </div>
+
+--- Match for 'AlloBot' at line 35452 ---
+35450: 
+35451:     if (mode === 'print' || mode === 'worksheet') {
+35452:         if (alloBotRef.current) {
+35453:              alloBotRef.current.speak(mode === 'worksheet' ? "Generating a worksheet? I'll make sure it's formatted perfectly for your students!" : "Preparing your document for print. You can select valid pages in the print preview.", 'happy');
+35454:         }
+
+--- Match for 'AlloBot' at line 35453 ---
+35451:     if (mode === 'print' || mode === 'worksheet') {
+35452:         if (alloBotRef.current) {
+35453:              alloBotRef.current.speak(mode === 'worksheet' ? "Generating a worksheet? I'll make sure it's formatted perfectly for your students!" : "Preparing your document for print. You can select valid pages in the print preview.", 'happy');
+35454:         }
+35455:         addToast(mode === 'worksheet' ? t('export_status.prep_worksheet') : t('export_status.prep_print'), "info");
+
+--- Match for 'AlloBot' at line 35501 ---
+35499:                 URL.revokeObjectURL(url);
+35500:                 addToast(t('export.bundle_downloaded'), "success");
+35501:                 if (alloBotRef.current) {
+35502:                     alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+35503:                 }
+
+--- Match for 'AlloBot' at line 35502 ---
+35500:                 addToast(t('export.bundle_downloaded'), "success");
+35501:                 if (alloBotRef.current) {
+35502:                     alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+35503:                 }
+35504:             } catch (err) {
+
+--- Match for 'Quick Start' at line 36310 ---
+36308:         1. "objectives": List 2-3 bullet points on "What you will master today".
+36309:         2. "essentialQuestion": The "Big Question" you should be able to answer by the end.
+36310:         3. "hook": A "Quick Start" thought experiment or connection to real life.
+36311:         4. "directInstruction": "Core Concept Summary" - A concise, easy-to-read summary of the main ideas. Use bolding for keywords.
+36312:         5. "guidedPractice": "Practice Exercises" - Specific things to try or solve using the generated tools (e.g. "Use the Flashcards to test your vocab", "Try the Quiz to check understanding").
+
+--- Match for 'AlloBot' at line 36333 ---
+36331:         setIsProcessing(true);
+36332: 
+36333:         if (alloBotRef.current) {
+36334:              const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
+36335:              alloBotRef.current.speak(feedback);
+
+--- Match for 'AlloBot' at line 36335 ---
+36333:         if (alloBotRef.current) {
+36334:              const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
+36335:              alloBotRef.current.speak(feedback);
+36336:         }
+36337: 
+
+--- Match for 'intro' at line 36507 ---
+36505:       
+36506:       setShowUDLGuide(true);
+36507:       const botIntro = t('progression.bot_intro', { topic: option.nextTopic });
+36508:       
+36509:       setUdlMessages(prev => [...prev, { role: 'model', text: botIntro }]);
+
+--- Match for 'intro' at line 36509 ---
+36507:       const botIntro = t('progression.bot_intro', { topic: option.nextTopic });
+36508:       
+36509:       setUdlMessages(prev => [...prev, { role: 'model', text: botIntro }]);
+36510:       setGuidedFlowState({ 
+36511:           currentStage: 'source', 
+
+--- Match for 'AlloBot' at line 36616 ---
+36614:               ...prev
+36615:           ]);
+36616:           if (shouldSpeak && alloBotRef.current) {
+36617:                alloBotRef.current.triggerReaction('idea'); 
+36618:                alloBotRef.current.speak(hint);
+
+--- Match for 'AlloBot' at line 36617 ---
+36615:           ]);
+36616:           if (shouldSpeak && alloBotRef.current) {
+36617:                alloBotRef.current.triggerReaction('idea'); 
+36618:                alloBotRef.current.speak(hint);
+36619:           }
+
+--- Match for 'AlloBot' at line 36618 ---
+36616:           if (shouldSpeak && alloBotRef.current) {
+36617:                alloBotRef.current.triggerReaction('idea'); 
+36618:                alloBotRef.current.speak(hint);
+36619:           }
+36620:       } catch (e) {
+
+--- Match for 'intro' at line 37450 ---
+37448:           TASK: Start a NEW adventure that acts as a direct sequel or thematic follow-up.
+37449:           - It should build upon the skills/concepts learned in the previous one.
+37450:           - It can introduce a new threat or challenge related to the consequences of the previous victory.
+37451:           - Maintain the user's Level (${previousLevel}) context if applicable.
+37452:       `;
+
+--- Match for 'intro' at line 37593 ---
+37591:                - Position B: Strong Negative / Con.
+37592:                - Position C: Nuanced / Middle Ground / Alternative Perspective.
+37593:             2. Write a brief, engaging introduction welcoming the student to the debate arena and stating the topic. 
+37594:             Return ONLY JSON:
+37595:             {
+
+--- Match for 'AlloBot' at line 37806 ---
+37804:   };
+37805:   const handleStartAdventure = () => {
+37806:       if (alloBotRef.current) {
+37807:           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+37808:       }
+
+--- Match for 'AlloBot' at line 37807 ---
+37805:   const handleStartAdventure = () => {
+37806:       if (alloBotRef.current) {
+37807:           alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+37808:       }
+37809:       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+
+--- Match for 'AlloBot' at line 38013 ---
+38011:           setAdventureState(restoredState);
+38012:           addToast(t('adventure.toasts.rewind_success'), "success");
+38013:           if (alloBotRef.current) alloBotRef.current.triggerReaction('👀');
+38014:           playSound('reveal'); 
+38015:           setSelectedInventoryItem(null);
+
+--- Match for 'AlloBot' at line 39468 ---
+39466:               setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.highlight_confirm') }]);
+39467:               const rect = element.getBoundingClientRect();
+39468:               if (alloBotRef.current) {
+39469:                   let targetX = rect.right + 200;
+39470:                   let targetY = rect.top - 20;
+
+--- Match for 'AlloBot' at line 39478 ---
+39476:                   }
+39477: 
+39478:                   alloBotRef.current.moveTo(targetX, targetY);
+39479:                   setBotSpotlightPos({ x: targetX, y: targetY });
+39480:               }
+
+--- Match for 'AlloBot' at line 40271 ---
+40269:                         const genMsg = t('chat.generating_resource');
+40270:                         setUdlMessages(prev => [...prev, { role: 'model', text: genMsg }]);
+40271:                         if (isBotVisible && alloBotRef.current) {
+40272:                             alloBotRef.current.speak(genMsg);
+40273:                         }
+
+--- Match for 'AlloBot' at line 40272 ---
+40270:                         setUdlMessages(prev => [...prev, { role: 'model', text: genMsg }]);
+40271:                         if (isBotVisible && alloBotRef.current) {
+40272:                             alloBotRef.current.speak(genMsg);
+40273:                         }
+40274:                         setTimeout(() => handleGenerate('simplified'), 100);
+
+--- Match for 'AlloBot' at line 40365 ---
+40363:   // Socratic Auto-Read: Speak AI responses when enabled
+40364:   useEffect(() => {
+40365:       if (!socraticAutoRead || !alloBotRef.current || socraticMessages.length === 0) return;
+40366:       const lastIndex = socraticMessages.length - 1;
+40367:       const lastMsg = socraticMessages[lastIndex];
+
+--- Match for 'AlloBot' at line 40370 ---
+40368:       if (lastMsg.role === 'model' && lastIndex > lastReadSocraticIndexRef.current) {
+40369:           lastReadSocraticIndexRef.current = lastIndex;
+40370:           alloBotRef.current.speak(lastMsg.text);
+40371:       }
+40372:   }, [socraticMessages, socraticAutoRead]);
+
+--- Match for 'AlloBot' at line 40981 ---
+40979:   };
+40980:   const handleSelectPersona = async (character) => {
+40981:       if (alloBotRef.current) {
+40982:           alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
+40983:       }
+
+--- Match for 'AlloBot' at line 40982 ---
+40980:   const handleSelectPersona = async (character) => {
+40981:       if (alloBotRef.current) {
+40982:           alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
+40983:       }
+40984:       const existingImage = character.avatarUrl;
+
+--- Match for 'AlloBot' at line 42907 ---
+42905:             console.error(err);
+42906:             setError(t('errors.batch_generation_failed'));
+42907:             if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+42908:         } finally {
+42909:             if (!keepLoading) setIsProcessing(false);
+
+--- Match for 'intro' at line 43114 ---
+43112:             - Use clear, direct language.
+43113:             - Sentences can be slightly longer but avoid dense syntax.
+43114:             - Introduce academic vocabulary with context clues.
+43115:             - COMPLEX TOPIC HANDLING: Focus on clarity. Avoid passive voice. Break down multi-step processes into distinct sentences. Prioritize readability over stylistic flair.
+43116:             `;
+
+--- Match for 'intro' at line 43122 ---
+43120:             - Bridge conversational and academic language.
+43121:             - Use a mix of simple, compound, and complex sentences, but favor clarity for complex topics.
+43122:             - Introduce domain-specific vocabulary with clear context clues.
+43123:             - Focus on explanatory depth while maintaining clarity.
+43124:             - COMPLEX TOPIC HANDLING: Ensure syntax remains straightforward even when discussing advanced concepts. Avoid convoluted sentence structures or nested clauses.
+
+--- Match for 'intro' at line 43214 ---
+43212:             - ${outputLangInstruction}
+43213:             - Use a conversational, energetic, and engaging tone.
+43214:             - Include [Sound Effect] cues where appropriate (e.g., *[Upbeat intro music fades]*).
+43215:             - Have the hosts ask each other questions to break down complex ideas naturally.
+43216:             - Include an Intro (with a catchy podcast name) and an Outro.
+
+--- Match for 'intro' at line 43216 ---
+43214:             - Include [Sound Effect] cues where appropriate (e.g., *[Upbeat intro music fades]*).
+43215:             - Have the hosts ask each other questions to break down complex ideas naturally.
+43216:             - Include an Intro (with a catchy podcast name) and an Outro.
+43217:             `;
+43218:         } else if (textFormat === 'Social Media Thread') {
+
+--- Match for 'AlloBot' at line 43875 ---
+43873: 
+43874:         // Smart Feedback: Speak the analysis result
+43875:         // [MOVED TO ALLOBOT HOOK TO PREVENT DOUBLE-SPEAK]
+43876:         // if (alloBotRef.current && analysisData.readingLevel && analysisData.readingLevel.range) {
+43877:         //      const feedback = t('bot_events.feedback_analysis_result').replace('{level}', analysisData.readingLevel.range);
+
+--- Match for 'AlloBot' at line 43876 ---
+43874:         // Smart Feedback: Speak the analysis result
+43875:         // [MOVED TO ALLOBOT HOOK TO PREVENT DOUBLE-SPEAK]
+43876:         // if (alloBotRef.current && analysisData.readingLevel && analysisData.readingLevel.range) {
+43877:         //      const feedback = t('bot_events.feedback_analysis_result').replace('{level}', analysisData.readingLevel.range);
+43878:         //      alloBotRef.current.speak(feedback);
+
+--- Match for 'AlloBot' at line 43878 ---
+43876:         // if (alloBotRef.current && analysisData.readingLevel && analysisData.readingLevel.range) {
+43877:         //      const feedback = t('bot_events.feedback_analysis_result').replace('{level}', analysisData.readingLevel.range);
+43878:         //      alloBotRef.current.speak(feedback);
+43879:         // }
+43880: 
+
+--- Match for 'AlloBot' at line 43991 ---
+43989:       } else if (type === 'brainstorm') {
+43990:          setGenerationStep(t('status_steps.brainstorming') || "Brainstorming ideas...");
+43991:          if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinking');
+43992: 
+43993:          const audienceDesc = isIndependentMode ? "a single independent learner (self-study)" : `${gradeLevel} students`;
+
+--- Match for 'AlloBot' at line 44648 ---
+44646:         } catch (e) {
+44647:             console.error("Adventure Parse Error", e);
+44648:             if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+44649:             throw new Error("Failed to parse Adventure JSON.");
+44650:         }
+
+--- Match for 'AlloBot' at line 44736 ---
+44734:           } catch (err) {
+44735:               console.error("Persona Generation Error:", err);
+44736:            if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+44737:               throw new Error("Failed to identify historical figures.");
+44738:           } finally {
+
+--- Match for 'AlloBot' at line 44806 ---
+44804:       setError(errMsg);
+44805:       addToast(errMsg, "error");
+44806:       if (isBotVisible && alloBotRef.current) {
+44807:           const actionName = type === 'analysis' ? 'analyzing the source' : 'generating content';
+44808:           alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);
+
+--- Match for 'AlloBot' at line 44808 ---
+44806:       if (isBotVisible && alloBotRef.current) {
+44807:           const actionName = type === 'analysis' ? 'analyzing the source' : 'generating content';
+44808:           alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);
+44809:       }
+44810:     } finally {
+
+--- Match for 'AlloBot' at line 46771 ---
+46769:         addToast(t('toasts.level_analysis_complete'), "success");
+46770: 
+46771:         // Allobot Trigger for Rigor Check
+46772:         if (alloBotRef.current) {
+46773:              alloBotRef.current.speak("I've verified the text complexity using a dual-check process. Review the rubric to see exactly how it aligns!", 'happy');
+
+--- Match for 'AlloBot' at line 46772 ---
+46770: 
+46771:         // Allobot Trigger for Rigor Check
+46772:         if (alloBotRef.current) {
+46773:              alloBotRef.current.speak("I've verified the text complexity using a dual-check process. Review the rubric to see exactly how it aligns!", 'happy');
+46774:         }
+
+--- Match for 'AlloBot' at line 46773 ---
+46771:         // Allobot Trigger for Rigor Check
+46772:         if (alloBotRef.current) {
+46773:              alloBotRef.current.speak("I've verified the text complexity using a dual-check process. Review the rubric to see exactly how it aligns!", 'happy');
+46774:         }
+46775: 
+
+--- Match for 'intro' at line 46808 ---
+46806:             CRITICAL OUTPUT RULES:
+46807:             - You are a JSON generator. You are NOT a chatbot.
+46808:             - Do NOT output conversational text, introductions, or explanations.
+46809:             - If no standards are found, return an empty JSON array: [].
+46810:             - Return ONLY the raw JSON array.
+
+--- Match for 'AlloBot' at line 46854 ---
+46852:     if (!generatedContent || generatedContent.type !== 'simplified') return;
+46853: 
+46854:     if (alloBotRef.current) {
+46855:          // Speak context: "Analyzing against [Standard]..."
+46856:          let contextMsg = t('bot_events.feedback_audit_start').replace('{standard}', targetStandards[0]?.id || "Standard");
+
+--- Match for 'AlloBot' at line 46857 ---
+46855:          // Speak context: "Analyzing against [Standard]..."
+46856:          let contextMsg = t('bot_events.feedback_audit_start').replace('{standard}', targetStandards[0]?.id || "Standard");
+46857:          alloBotRef.current.speak(contextMsg);
+46858:     }
+46859: 
+
+--- Match for 'AlloBot' at line 46901 ---
+46899:         addToast(t('alignment.notifications.check_complete'), "success");
+46900: 
+46901:         // AlloBot Smart Feedback for Rigor Check
+46902:         let feedbackKey = 'bot.rigor_feedback_misaligned';
+46903:         if (analysis.status === 'Aligned') feedbackKey = 'bot.rigor_feedback_aligned';
+
+--- Match for 'intro' at line 47001 ---
+46999:               "${currentText}"
+47000:               
+47001:               Return ONLY the revised text. Do not include introductory or concluding remarks.
+47002:           `;
+47003: 
+
+--- Match for 'AlloBot' at line 47391 ---
+47389:           addToast(t('scaffolds.grading_complete'), "success");
+47390:           
+47391:           if (isBotVisible && alloBotRef.current) {
+47392:               const speakText = t('scaffolds.grading_speech', { score: data.totalScore, glow: data.feedback.glow });
+47393:               alloBotRef.current.speak(speakText);
+
+--- Match for 'AlloBot' at line 47393 ---
+47391:           if (isBotVisible && alloBotRef.current) {
+47392:               const speakText = t('scaffolds.grading_speech', { score: data.totalScore, glow: data.feedback.glow });
+47393:               alloBotRef.current.speak(speakText);
+47394:           }
+47395:           
+
+--- Match for 'AlloBot' at line 55166 ---
+55164:                                 onGenerateAudio={callTTS} 
+55165:                                 selectedVoice={selectedVoice} 
+55166:                                 alloBotRef={alloBotRef}
+55167:                             />
+55168:                         </ErrorBoundary>
+
+--- Match for 'AlloBot' at line 62964 ---
+62962:       )}
+62963:       {isBotVisible && (
+62964:           <AlloBot 
+62965:             ref={alloBotRef} 
+62966:             topic={sourceTopic || inputText || t('common.this_topic')} 
+
+--- Match for 'AlloBot' at line 62965 ---
+62963:       {isBotVisible && (
+62964:           <AlloBot 
+62965:             ref={alloBotRef} 
+62966:             topic={sourceTopic || inputText || t('common.this_topic')} 
+62967:             mood={isProcessing || isChatProcessing ? 'thinking' : 'idle'} 
+
+--- Match for 'AlloBot' at line 62972 ---
+62970:             onReadMore={handleReadMore}
+62971:             onClick={handleBotClick}
+62972:             onVoiceSettingsClick={() => { if (alloBotRef.current && typeof alloBotRef.current.dismissMessage === 'function') alloBotRef.current.dismissMessage(); setShowSocraticChat(false); setShowVoiceSettings(true); }}
+62973:             onMicClick={handleBotMicClick}
+62974:             onToggleMute={handleToggleMute}
+
+--- Match for 'intro' at line 62990 ---
+62988:             history={history} 
+62989:             isParentMode={isParentMode}
+62990:             hasSeenBotIntro={hasSeenBotIntro}
+62991:             onBotIntroSeen={handleBotIntroSeen}
+62992:           />
+
+--- Match for 'intro' at line 62991 ---
+62989:             isParentMode={isParentMode}
+62990:             hasSeenBotIntro={hasSeenBotIntro}
+62991:             onBotIntroSeen={handleBotIntroSeen}
+62992:           />
+62993:       )}
+

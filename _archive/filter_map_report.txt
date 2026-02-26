@@ -1,0 +1,8 @@
+Found 1 .filter().map() chains in JSX return blocks
+
+Most filtered arrays:
+  items: 1x
+    L23100: {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment
+
+All filter-map chains:
+  L23100 : items.filter(i => i.currentContainer === bucket.id).map() ??? {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment

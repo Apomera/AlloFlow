@@ -1,0 +1,2449 @@
+import React, { useState, useEffect, useCallback, useRef, useReducer, useMemo, createContext, useContext } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, arrayUnion, serverTimestamp, increment, runTransaction, collection, getDocs, query, orderBy, limit, writeBatch } from 'firebase/firestore';
+import { 
+  ChevronRight, Users, Play, MessageSquare, Send, LogOut, Info, CheckCircle, 
+  XCircle, RotateCcw, Copy, HelpCircle, Sparkles, Brain, Lightbulb, Award, 
+  TrendingDown, TrendingUp, ListChecks, CheckSquare, Square, Edit3, SendHorizonal, 
+  Lock, Unlock, MapPin, Download, Settings, Sliders, FileText, Eye, Megaphone, Globe, Languages, Clock, Zap, ArrowRightCircle, MoreHorizontal, Volume2, Volume1, VolumeX, Flame, Image as ImageIcon, Link as LinkIcon, Mic, MicOff, Star, Bell, BellOff, Save, FolderOpen, RefreshCw, AlertTriangle, Briefcase, Sun, Moon, Contrast, ChevronDown, GraduationCap, Feather, EyeOff, LayoutDashboard, MonitorPlay, School, ShieldAlert, Key
+} from 'lucide-react';
+
+/* ==========================================================================================
+   SECTION 1: CONFIGURATION & CONSTANTS
+   ========================================================================================== */
+
+// --- Firebase Config ---
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// --- Initialize Firebase Globally (Critical for Hooks) ---
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// --- Gemini Config ---
+const GEMINI_API_KEY = "";
+const GEMINI_API_URL_GENERATE = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL_IMAGE = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL_EDIT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`;
+
+// --- Game Constants ---
+const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default-mediation-app';
+
+const DIFFICULTIES = {
+  easy: { id: 'easy', label: 'Easy', descKey: 'diff_easy_desc' },
+  medium: { id: 'medium', label: 'Medium', descKey: 'diff_medium_desc' },
+  hard: { id: 'hard', label: 'Hard', descKey: 'diff_hard_desc' }
+};
+
+const COACH_STYLES = {
+  supportive: { id: 'supportive', label: 'Supportive', descKey: 'coach_supportive_desc' },
+  critical: { id: 'critical', label: 'Critical', descKey: 'coach_critical_desc' },
+  socratic: { id: 'socratic', label: 'Socratic', descKey: 'coach_socratic_desc' }
+};
+
+const GRADE_LEVELS = {
+  elementary: { id: 'elementary', label: 'Elementary (3rd-5th)', prompt: 'simple language, 3rd-5th grade reading level, relatable childhood/school conflicts' },
+  high_school: { id: 'high_school', label: 'High School', prompt: 'teen vernacular, high school social dynamics, moderate complexity' },
+  adult: { id: 'adult', label: 'Adult/General', prompt: 'standard adult language, everyday life or workplace scenarios' },
+  professional: { id: 'professional', label: 'Professional', prompt: 'formal business language, corporate or legal context, high complexity' },
+  dynamic: { id: 'dynamic', label: '✨ Dynamic (Auto-Match)', prompt: 'match_user_complexity' }
+};
+
+const WRITING_STYLES = {
+  realistic: { id: 'realistic', label: 'Realistic', prompt: 'natural, balanced dialogue with normal pauses and hesitations' },
+  dramatic: { id: 'dramatic', label: 'Dramatic', prompt: 'high emotion, soap-opera style intensity, exaggerated reactions' },
+  formal: { id: 'formal', label: 'Formal', prompt: 'polite, structured sentences, avoiding slang, respectful tone' },
+  casual: { id: 'casual', label: 'Casual', prompt: 'heavy use of slang, relaxed grammar, short sentences' },
+  dynamic: { id: 'dynamic', label: '✨ Dynamic (Auto-Match)', prompt: 'match_user_tone' }
+};
+
+const TIMER_SETTINGS = {
+  none: { id: 'none', label: 'No Limit', seconds: 0 },
+  fast: { id: 'fast', label: '1 Minute', seconds: 60 },
+  normal: { id: 'normal', label: '2 Minutes', seconds: 120 },
+  slow: { id: 'slow', label: '5 Minutes', seconds: 300 }
+};
+
+// --- Safety Rails Configuration ---
+const SAFETY_PATTERNS = [
+    { id: 'email', regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, label: "Email Address Detected" },
+    { id: 'phone', regex: /(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/, label: "Phone Number Detected" },
+    { id: 'ssn', regex: /\b\d{3}-\d{2}-\d{4}\b/, label: "Social Security Number Detected" },
+    { id: 'profanity', regex: /\b(damn|hell|stupid|idiot|hate|kill|die)\b/i, label: "Inappropriate Language Detected" }
+];
+
+const MEDIATION_PHASES = [
+    { id: 'intro', label: 'Introduction', desc: 'Establish ground rules and welcome parties.' },
+    { id: 'storytelling', label: 'Storytelling', desc: 'Each party shares their perspective uninterrupted.' },
+    { id: 'agenda', label: 'Agenda Setting', desc: 'Identify common issues to solve.' },
+    { id: 'negotiation', label: 'Negotiation', desc: 'Brainstorm options and bargain.' },
+    { id: 'agreement', label: 'Resolution', desc: 'Draft the final agreement.' }
+];
+
+const PHASE_INSTRUCTIONS = {
+    intro: "Parties are guarded, skeptical, and waiting for the mediator to lead. Responses should be short and hesitant.",
+    storytelling: "Parties are emotional, focused on 'their truth', and likely to interrupt or blame the other. High verbosity.",
+    agenda: "Parties are calming down, focusing on listing specific issues. Less emotional, more factual.",
+    negotiation: "Parties are bargaining. They concede slowly. They focus on numbers, specific actions, and future behavior.",
+    agreement: "Parties are relieved but cautious. They want to ensure the deal holds. Positive tone."
+};
+
+const COMPLICATIONS = [
+    "checks their phone dismissively, ignoring the conversation.",
+    "suddenly stands up and threatens to leave the room.",
+    "interrupts loudly, accusing the other side of lying.",
+    "becomes visibly emotional and stops speaking.",
+    "crosses their arms and refuses to make eye contact.",
+    "receives a distracting notification on their device."
+];
+
+const QUICK_ACTIONS = {
+    validate: {
+        label: "Validate",
+        phrases: ["I hear that this is very important to you.", "It sounds like you are feeling frustrated.", "I appreciate you sharing your perspective.", "That sounds like a difficult situation."]
+    },
+    clarify: {
+        label: "Clarify",
+        phrases: ["Could you say more about that?", "Help me understand what you mean by...", "What would that look like in practice?", "Can you give me an example?"]
+    },
+    reframe: {
+        label: "Reframe",
+        phrases: ["So, for you, the core issue is...", "You are looking for a solution that addresses...", "It sounds like you value...", "If I understand correctly, your main concern is..."]
+    }
+};
+
+const ADJECTIVES = [
+  "Cosmic", "Brave", "Neon", "Clever", "Swift", "Calm", "Silent", "Noble", 
+  "Lucky", "Bright", "Hidden", "Fierce", "Gentle", "Wild", "Grand", "Happy"
+];
+
+const ANIMALS = [
+  "Fox", "Panda", "Falcon", "Tiger", "Badger", "Owl", "Dolphin", "Wolf", 
+  "Bear", "Eagle", "Hawk", "Raven", "Lion", "Otter", "Shark", "Swan"
+];
+
+/* ==========================================================================================
+   SECTION 2: BASE UI STRINGS (Source of Truth)
+   ========================================================================================== */
+
+const BASE_STRINGS = {
+    loading: "Loading...",
+    processing: "Processing...",
+    error_prefix: "Error: ",
+    auth_failed: "Authentication failed.",
+    set_username_title: "Set Username",
+    set_username_btn: "Start Journey",
+    lobby_title: "Mediation Setup",
+    lobby_game_id: "Game ID:",
+    start_solo: "Start Solo Practice",
+    join_game: "Join Game",
+    join_instructor: "Join as Instructor",
+    waiting_host: "Waiting for host to start...",
+    settings_title: "Game Settings",
+    diff_label: "Difficulty",
+    coach_label: "Coach Persona",
+    timer_label: "Turn Timer",
+    grade_level_label: "Target Audience",
+    writing_style_label: "Scenario Style",
+    cancel_game: "Cancel Game",
+    start_game: "Start Game",
+    language_label: "Interface Language",
+    translate_btn: "Update Language",
+    translating: "Translating UI...",
+    copy_link: "Copy Invite Link",
+    link_copied: "Copied!",
+    load_scenario: "Load from Library",
+    library_title: "Scenario Library",
+    use_scenario: "Use This Scenario",
+    no_scenarios: "No saved scenarios found.",
+    load_json: "Load from JSON",
+    save_game_json: "Save Game to File",
+    
+    diff_easy_desc: "Cooperative parties, willing to resolve.",
+    diff_medium_desc: "Realistic conflict, hidden interests.",
+    diff_hard_desc: "Hostile, stubborn, easily offended.",
+    coach_supportive_desc: "Encouraging, generous scoring.",
+    coach_critical_desc: "Strict grading, highlights risks.",
+    coach_socratic_desc: "Asks questions, balanced scoring.",
+    suggest_scenario_title: "Suggest a Scenario Theme",
+    suggest_placeholder: "e.g. Roommate conflict over dishes",
+    submit_theme: "Submit Theme",
+    generating_scenarios: "Generating Scenarios...",
+    choose_scenario: "Choose a Scenario",
+    vote_btn: "Vote",
+    select_btn: "Select",
+    save_scenario_btn: "Save to Library",
+    scenario_saved: "Scenario Saved!",
+    tension_label: "Room Tension",
+    caucus_label: "CAUCUS",
+    private_session: "Private Session",
+    your_turn: "Your Intervention",
+    private_msg: "Private Message to",
+    type_placeholder: "Type your message... (Ctrl+Enter to send)",
+    end_caucus: "End Caucus",
+    spectator_mode: "Spectator Mode (Instructor)",
+    send_feedback: "Send Coach Tip",
+    feedback_placeholder: "Type a hint or feedback for the student...",
+    time_remaining: "Time Left",
+    time_expired_msg: "Silence is becoming awkward...",
+    typing_indicator: "is typing...",
+    auto_read_label: "Auto-Read",
+    listening: "Listening...",
+    sound_on: "Sound On",
+    sound_off: "Sound Off",
+    phase_intro: "Introduction",
+    phase_storytelling: "Storytelling",
+    phase_agenda: "Agenda",
+    phase_negotiation: "Negotiation",
+    phase_agreement: "Resolution",
+    next_phase_btn: "Next Phase",
+    draft_agreement_btn: "Draft Agreement",
+    agreement_modal_title: "Drafting the Agreement",
+    agreement_placeholder: "Enter the points of agreement here...",
+    save_agreement: "Save Draft",
+    current_phase_label: "Current Phase:",
+    ai_suggestion_title: "AI Suggestions",
+    ai_analysis_title: "Exchange Analysis",
+    streak_label: "Streak!",
+    generating_images: "Generating Character Images...",
+    toolbox_title: "Mediator Toolbox",
+    debrief_title: "Debrief Phase",
+    debrief_submitted: "Reflection Submitted",
+    view_feedback: "View Feedback",
+    download_transcript: "Download Transcript",
+    submit_answer: "Submit Answer",
+    back_lobby: "Back to Lobby",
+    tension_graph_title: "Emotional Journey (Tension Over Time)",
+    report_card_title: "Mediator Report Card",
+    resolution_score_label: "Resolution Probability",
+    strengths_label: "Strengths",
+    weaknesses_label: "Areas for Growth",
+    badges_label: "Badges Earned",
+    hidden_info_title: "Secret Info (Instructor/Solo)",
+    hidden_agenda_label: "Hidden Agenda:",
+    teacher_mode: "Teacher Mode",
+    create_classroom: "Create Classroom",
+    join_classroom: "Join Class",
+    classroom_id: "Class Code:",
+    waiting_for_teacher: "Waiting for Teacher...",
+    students_joined: "Students Joined",
+    start_session: "Start Session",
+    teacher_dashboard: "Teacher Dashboard",
+    active_rooms: "Active Rooms",
+    spectate_btn: "Spectate",
+    back_to_dashboard: "Back to Dashboard",
+    safety_violation_title: "Safety Alert",
+    safety_override_btn: "Teacher Override",
+    safety_override_placeholder: "Enter Teacher Code",
+    safety_cancel_btn: "Cancel Message",
+};
+
+/* ==========================================================================================
+   SECTION 3: DESIGN SYSTEM (Theming)
+   ========================================================================================== */
+
+const COMMON_LAYOUT = {
+    centerScreen: "min-h-screen flex flex-col items-center justify-center p-4 font-['Inter',_sans-serif]",
+    card: "p-8 rounded-2xl shadow-2xl w-full max-w-lg relative overflow-hidden",
+    input: "w-full rounded-xl p-4 text-sm focus:ring-2 outline-none resize-none transition-all",
+    button: "w-full p-3.5 rounded-xl font-bold tracking-wide transition-all active:scale-[0.98] flex items-center justify-center"
+};
+
+const THEMES = {
+  dark: {
+    id: 'dark',
+    colors: {
+      bg: "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0f172a] to-black min-h-screen",
+      surface: "bg-slate-800/40 backdrop-blur-md border border-white/10",
+      surfaceHighlight: "bg-white/5 border border-white/5",
+      textMain: "text-slate-100",
+      textDim: "text-slate-400",
+      primary: "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-indigo-500/30 text-white",
+      secondary: "bg-slate-700/50 hover:bg-slate-700 border border-white/10 hover:border-white/20 text-slate-200",
+      accent: "text-sky-300",
+      danger: "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-rose-900/20 text-white",
+      success: "text-emerald-400",
+      warning: "text-amber-400",
+      instructor: "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 shadow-lg shadow-purple-900/30 text-white",
+      input: "bg-black/20 border border-white/10 text-white placeholder:text-slate-600 focus:ring-sky-500/50",
+      bubbleSystem: "bg-slate-800/60 backdrop-blur-sm border border-slate-600/30 text-slate-300",
+      bubbleMe: "bg-gradient-to-br from-indigo-600 to-blue-700 text-white shadow-lg shadow-indigo-500/20",
+      bubblePartyA: "bg-gradient-to-br from-rose-900/80 to-pink-900/80 border border-rose-500/20 text-rose-50 shadow-lg shadow-rose-900/10",
+      bubblePartyB: "bg-gradient-to-br from-cyan-900/80 to-blue-900/80 border border-cyan-500/20 text-cyan-50 shadow-lg shadow-cyan-900/10",
+      bubbleCaucus: "bg-gradient-to-br from-amber-900/60 to-orange-900/60 border border-amber-500/20 text-amber-100 shadow-lg shadow-amber-900/10",
+      graphLine: "#fbbf24",
+      graphDot: "#fbbf24",
+      graphEnd: "#10b981",
+      graphGrid: "#334155"
+    },
+    layout: COMMON_LAYOUT
+  },
+  light: {
+    id: 'light',
+    colors: {
+      bg: "bg-slate-50 min-h-screen",
+      surface: "bg-white/80 backdrop-blur-md border border-slate-200 shadow-xl",
+      surfaceHighlight: "bg-slate-100 border border-slate-200",
+      textMain: "text-slate-900",
+      textDim: "text-slate-500",
+      primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200",
+      secondary: "bg-white hover:bg-slate-50 border border-slate-200 text-slate-700",
+      accent: "text-indigo-600",
+      danger: "bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-200",
+      success: "text-emerald-600",
+      warning: "text-amber-600",
+      instructor: "bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200",
+      input: "bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-indigo-500/50",
+      bubbleSystem: "bg-slate-100 border border-slate-200 text-slate-600",
+      bubbleMe: "bg-indigo-600 text-white shadow-md shadow-indigo-100",
+      bubblePartyA: "bg-rose-100 border border-rose-200 text-rose-900",
+      bubblePartyB: "bg-cyan-100 border border-cyan-200 text-cyan-900",
+      bubbleCaucus: "bg-amber-50 border border-amber-200 text-amber-900",
+      graphLine: "#f59e0b",
+      graphDot: "#f59e0b",
+      graphEnd: "#059669",
+      graphGrid: "#e2e8f0"
+    },
+    layout: COMMON_LAYOUT
+  },
+  highContrast: {
+    id: 'highContrast',
+    colors: {
+      bg: "bg-white min-h-screen",
+      surface: "bg-white border-4 border-black",
+      surfaceHighlight: "bg-yellow-100 border-4 border-black",
+      textMain: "text-black font-bold",
+      textDim: "text-black font-medium",
+      primary: "bg-blue-800 hover:bg-blue-900 text-white border-2 border-black underline",
+      secondary: "bg-white hover:bg-gray-100 text-black border-2 border-black",
+      accent: "text-blue-900 underline decoration-2",
+      danger: "bg-red-700 text-white border-2 border-black",
+      success: "text-green-800 font-bold",
+      warning: "text-orange-800 font-bold",
+      instructor: "bg-purple-900 text-white border-2 border-black",
+      input: "bg-white border-4 border-black text-black placeholder:text-gray-600 focus:ring-4 focus:ring-black",
+      bubbleSystem: "bg-white border-2 border-black text-black font-bold border-dashed",
+      bubbleMe: "bg-black text-white border-2 border-black",
+      bubblePartyA: "bg-white text-black border-4 border-black",
+      bubblePartyB: "bg-white text-black border-4 border-dotted border-black",
+      bubbleCaucus: "bg-yellow-300 text-black border-4 border-black",
+      graphLine: "#000000",
+      graphDot: "#000000",
+      graphEnd: "#000000",
+      graphGrid: "#000000"
+    },
+    layout: COMMON_LAYOUT
+  }
+};
+
+const ThemeContext = createContext(THEMES.dark);
+const useTheme = () => useContext(ThemeContext);
+
+/* ==========================================================================================
+   SECTION 4: SERVICE LAYER (API & Logic Isolation)
+   ========================================================================================== */
+
+const Services = {
+  // --- Auth Services ---
+  Auth: {
+    db: null, 
+    init: async () => {
+      const appInstance = initializeApp(firebaseConfig);
+      const authInstance = getAuth(appInstance);
+      const dbInstance = getFirestore(appInstance);
+      Services.Auth.db = dbInstance; 
+      
+      const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+      if (token) await signInWithCustomToken(authInstance, token);
+      else await signInAnonymously(authInstance);
+      
+      return { auth: authInstance, db: dbInstance };
+    }
+  },
+
+  // --- AI Services ---
+  AI: {
+    call: async (prompt, schema, loadingSetter) => {
+      if(loadingSetter) loadingSetter(true);
+      const makeRequest = async (retryCount = 0) => {
+        const safePrompt = `${prompt} \n\n[IMPORTANT: Ensure all generated content is appropriate for an educational setting, avoids hate speech, and maintains a professional tone.]`;
+        const payload = {
+          contents: [{ role: "user", parts: [{ text: safePrompt }] }],
+          ...(schema && { generationConfig: { responseMimeType: "application/json", responseSchema: schema } })
+        };
+        try {
+            const response = await fetch(GEMINI_API_URL_GENERATE, { 
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) 
+            });
+            if (!response.ok) {
+                 if ([503, 429].includes(response.status) && retryCount < 3) {
+                     await new Promise(r => setTimeout(r, 1000 * Math.pow(2, retryCount)));
+                     return makeRequest(retryCount + 1);
+                 }
+                 throw new Error(`Gemini Error: ${response.status}`);
+            }
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error("No text response");
+            return schema ? JSON.parse(text) : text;
+        } catch (err) {
+            if (retryCount < 3) {
+                await new Promise(r => setTimeout(r, 1000 * Math.pow(2, retryCount)));
+                return makeRequest(retryCount + 1);
+            }
+            throw err;
+        }
+      };
+      try { return await makeRequest(); } finally { if(loadingSetter) loadingSetter(false); }
+    }
+  },
+
+  Image: {
+      generate: async (prompt) => {
+          try {
+              const response = await fetch(GEMINI_API_URL_IMAGE, {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ instances: [{ prompt: prompt }], parameters: { sampleCount: 1 } })
+              });
+              if (!response.ok) throw new Error(`Imagen Error: ${response.status}`);
+              const result = await response.json();
+              if (result.predictions?.[0]?.bytesBase64Encoded) {
+                  const rawBase64 = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                  return await Services.Utils.compressImage(rawBase64);
+              }
+              return null;
+          } catch (err) { console.error("Image gen failed", err); return null; }
+      },
+      edit: async (base64Image, newState, characterName) => {
+          if (!base64Image) return null;
+          const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|webp);base64,/, "");
+          const prompt = `Update this character portrait of ${characterName}. Change their expression and body language to reflect that they are feeling "${newState}". Maintain the exact same character design, art style, and facial features. Only change the emotion and gesture.`;
+          const payload = {
+              contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: cleanBase64 } }] }],
+              generationConfig: { responseModalities: ["IMAGE"] }
+          };
+          try {
+              const response = await fetch(GEMINI_API_URL_EDIT, {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+              });
+              if (!response.ok) throw new Error(`Nano Banana Error: ${response.status}`);
+              const result = await response.json();
+              const newBase64 = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+              if (newBase64) {
+                  const rawBase64 = `data:image/png;base64,${newBase64}`;
+                  return await Services.Utils.compressImage(rawBase64);
+              }
+              return null;
+          } catch (e) { console.error("Image edit failed", e); return null; }
+      }
+  },
+
+  Classroom: {
+      create: async (teacherId, teacherName) => {
+          const classroomId = Services.Utils.generateId(6);
+          const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/classrooms/${classroomId}`);
+          await setDoc(ref, {
+              classroomId,
+              hostId: teacherId,
+              hostName: teacherName,
+              status: 'lobby', // lobby, active
+              students: [], // { id, username }
+              groups: {}, // userId -> gameId
+              createdAt: serverTimestamp()
+          });
+          return classroomId;
+      },
+      join: async (classroomId, user, username) => {
+          const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/classrooms/${classroomId}`);
+          const snap = await getDoc(ref);
+          if (!snap.exists()) throw new Error("Classroom not found");
+          
+          const data = snap.data();
+          if (!data.students.find(s => s.id === user.uid)) {
+              await updateDoc(ref, {
+                  students: arrayUnion({ id: user.uid, username: username || user.displayName || 'Student' })
+              });
+          }
+          return data;
+      },
+      startSession: async (classroomId, settings, groupsConfig, scenarioOptions) => {
+          const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/classrooms/${classroomId}`);
+          const batch = writeBatch(Services.Auth.db);
+          const studentGameMap = {}; 
+          
+          // groupsConfig is an array of arrays of student objects: [[s1], [s2, s3], ...]
+          for (const groupMembers of groupsConfig) {
+              const gameId = Services.Utils.generateId(8);
+              const gameRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${gameId}`);
+              
+              const playerObjects = groupMembers.map(s => ({ id: s.id, username: s.username, joinedAt: new Date() }));
+              const playerScores = {};
+              groupMembers.forEach(s => playerScores[s.id] = 0);
+
+              const initData = {
+                  gameId: gameId,
+                  hostId: classroomId, 
+                  promptProviderId: "TEACHER",
+                  players: playerObjects,
+                  // Logic: If scenarios are provided, skip generation. 
+                  // If multiplayer (group > 1), go to voting. If solo, go to selecting.
+                  status: scenarioOptions ? (groupMembers.length > 1 ? 'voting_on_scenario' : 'selecting_scenario') : 'collecting_player_prompt',
+                  scenarioOptions: scenarioOptions || null,
+                  createdAt: serverTimestamp(),
+                  currentPlayerIndex: 0,
+                  turnNumber: 0,
+                  mediationLog: [],
+                  isMultiplayer: groupMembers.length > 1,
+                  playerScores: playerScores,
+                  appIdUsedByHost: APP_ID,
+                  caucusMode: null,
+                  phase: 'intro',
+                  settings: settings,
+                  isClassroomGame: true,
+                  classroomId: classroomId
+              };
+              
+              batch.set(gameRef, initData);
+              groupMembers.forEach(s => studentGameMap[s.id] = gameId);
+          }
+          
+          batch.update(ref, { status: 'active', groups: studentGameMap, globalSettings: settings });
+          await batch.commit();
+      },
+      close: async (classroomId) => {
+          const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/classrooms/${classroomId}`);
+          const snap = await getDoc(ref);
+          if (!snap.exists()) return;
+          
+          const data = snap.data();
+          const gameIds = Object.values(data.groups || {});
+          
+          const batch = writeBatch(Services.Auth.db);
+          
+          // Delete all game sessions associated with this class
+          gameIds.forEach(gid => {
+              const gameRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${gid}`);
+              batch.delete(gameRef);
+              const imgRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/game_images/${gid}`);
+              batch.delete(imgRef);
+          });
+          
+          // Delete the classroom document itself
+          batch.delete(ref);
+          
+          await batch.commit();
+      }
+  },
+
+  Utils: {
+    generateId: (len=6) => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let res = '';
+      for (let i=0; i<len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+      return res;
+    },
+    calculateTension: (stateA, stateB) => {
+      let score = 50;
+      const text = (stateA + " " + stateB).toLowerCase();
+      if (text.includes("angry") || text.includes("hostile")) score += 20;
+      if (text.includes("calm") || text.includes("listening")) score -= 15;
+      return Math.max(0, Math.min(100, score));
+    },
+    getEmoji: (stateString) => {
+        if (!stateString) return "😐";
+        const s = stateString.toLowerCase();
+        if (s.includes("angry") || s.includes("hostile")) return "😠";
+        if (s.includes("happy") || s.includes("calm")) return "🙂";
+        if (s.includes("sad")) return "😢";
+        return "😐";
+    },
+    getNextPhase: (currentPhaseId) => {
+        const idx = MEDIATION_PHASES.findIndex(p => p.id === currentPhaseId);
+        if (idx !== -1 && idx < MEDIATION_PHASES.length - 1) return MEDIATION_PHASES[idx + 1].id;
+        return null;
+    },
+    getInitials: (name) => {
+        if (!name) return "?";
+        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    },
+    speak: (text, partyType) => {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voices = window.speechSynthesis.getVoices();
+        let voiceIndex = 0;
+        if (partyType === 'partyA') voiceIndex = voices.findIndex(v => v.name.includes('Female')) || 0;
+        else if (partyType === 'partyB') voiceIndex = voices.findIndex(v => v.name.includes('Male')) || 1;
+        else voiceIndex = 2; 
+        if (voices.length > 0 && voiceIndex !== -1) utterance.voice = voices[voiceIndex];
+        else if (voices.length > 0) utterance.voice = voices[0];
+        utterance.rate = 1.1;
+        window.speechSynthesis.speak(utterance);
+    },
+    getLastExchanges: (log, count = 3) => {
+        if (!log || log.length === 0) return "";
+        const relevant = log.filter(e => e.type === 'intervention' || e.type === 'party_response').slice(-count * 2);
+        return relevant.map(e => {
+            const speaker = e.type === 'intervention' ? "Mediator" : e.partyName;
+            return `${speaker}: "${e.text}"`;
+        }).join("\n");
+    },
+    analyzeTone: (text) => {
+        const lower = text.toLowerCase();
+        const aggressive = ['you must', 'stop', 'calm down', 'wrong', 'lie', 'never', 'always'];
+        const open = ['how', 'what', 'tell me', 'help me understand', 'perspective', 'feel'];
+        if (aggressive.some(w => lower.includes(w))) return 'aggressive';
+        if (open.some(w => lower.includes(w))) return 'open';
+        return 'neutral';
+    },
+    compressImage: (base64Str, maxWidth = 512, quality = 0.7) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = (e) => {
+                console.error("Compression failed", e);
+                resolve(null);
+            };
+        });
+    },
+    downloadJSON: (data, filename) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+    readJSON: (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    resolve(json);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
+    }
+  }
+};
+
+/* ==========================================================================================
+   SECTION 5: SUB-COMPONENTS (Atoms & Molecules)
+   ========================================================================================== */
+
+const Modal = ({ isOpen, onClose, title, children, size = "max-w-lg" }) => {
+  const theme = useTheme();
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className={`${theme.colors.surface} p-6 rounded-2xl shadow-2xl w-full ${size} max-h-[90vh] overflow-y-auto relative`}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className={`text-xl font-bold ${theme.colors.accent}`}>{title}</h2>
+          <button onClick={onClose} className={`${theme.colors.textDim} hover:${theme.colors.textMain} text-2xl leading-none`}>&times;</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const Confetti = () => {
+    const particles = Array.from({ length: 50 });
+    return (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+            {particles.map((_, i) => (
+                <div 
+                    key={i}
+                    className="absolute w-2 h-2 bg-red-500 rounded-full animate-confetti"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `-10px`,
+                        backgroundColor: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'][Math.floor(Math.random() * 5)],
+                        animationDuration: `${Math.random() * 3 + 2}s`,
+                        animationDelay: `${Math.random() * 2}s`
+                    }}
+                />
+            ))}
+            <style jsx>{`@keyframes confetti { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } } .animate-confetti { animation-name: confetti; animation-timing-function: ease-out; animation-iteration-count: 1; }`}</style>
+        </div>
+    );
+};
+
+const StoryConclusionCard = ({ story, t }) => {
+    const theme = useTheme();
+    if (!story) return null;
+    return (
+        <div className={`${theme.colors.surface} p-6 rounded-2xl shadow-xl mb-6 relative overflow-hidden border border-amber-500/20`}>
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Feather size={100} className={theme.colors.textMain} />
+            </div>
+            <h3 className={`text-2xl font-serif italic ${theme.colors.textMain} mb-4 flex items-center relative z-10`}>
+                <span className="mr-3 text-3xl">📜</span> The Aftermath
+            </h3>
+            <div className={`text-sm md:text-base leading-relaxed ${theme.colors.textDim} relative z-10 font-serif`}>
+                {story.split('\n').map((paragraph, i) => (
+                    <p key={i} className="mb-3">{paragraph}</p>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const SettingsPill = ({ icon: Icon, label, value, theme }) => (
+    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium border ${theme.colors.surfaceHighlight} border-white/10 ${theme.colors.textDim}`}>
+        <Icon size={12} />
+        <span className="opacity-70">{label}:</span>
+        <span className={`${theme.colors.textMain} capitalize`}>{value}</span>
+    </div>
+);
+
+const AssessmentCard = ({ assessment, t }) => {
+    const theme = useTheme();
+    if (!assessment) return null;
+    return (
+        <div className={`${theme.colors.surface} p-6 rounded-2xl shadow-xl mb-6`}>
+            <h3 className={`text-xl font-bold ${theme.colors.accent} mb-4 flex items-center`}>
+                <Award size={24} className={`mr-2 ${theme.colors.warning}`}/> {t('report_card_title')}
+            </h3>
+            <div className={`flex items-center justify-between mb-6 ${theme.colors.surfaceHighlight} p-4 rounded-xl`}>
+                <span className={`${theme.colors.textDim} font-semibold`}>{t('resolution_score_label')}</span>
+                <div className="text-right">
+                    <span className={`text-4xl font-bold ${assessment.resolutionScore > 75 ? theme.colors.success : assessment.resolutionScore > 50 ? theme.colors.warning : 'text-rose-400'}`}>
+                        {assessment.resolutionScore}%
+                    </span>
+                </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-emerald-900/20 p-4 rounded-xl border border-emerald-500/20">
+                    <h4 className={`${theme.colors.success} font-bold mb-2 flex items-center`}><TrendingUp size={16} className="mr-1"/> {t('strengths_label')}</h4>
+                    <ul className={`text-xs ${theme.colors.textDim} space-y-1 list-disc list-inside`}>
+                        {assessment.strengths?.map((s, i) => <li key={i}>{s}</li>)}
+                    </ul>
+                </div>
+                <div className="bg-rose-900/20 p-4 rounded-xl border border-rose-500/20">
+                    <h4 className="text-rose-400 font-bold mb-2 flex items-center"><TrendingDown size={16} className="mr-1"/> {t('weaknesses_label')}</h4>
+                    <ul className={`text-xs ${theme.colors.textDim} space-y-1 list-disc list-inside`}>
+                        {assessment.areasForImprovement?.map((w, i) => <li key={i}>{w}</li>)}
+                    </ul>
+                </div>
+            </div>
+            {assessment.badges && assessment.badges.length > 0 && (
+                <div>
+                    <h4 className={`${theme.colors.warning} font-bold mb-2 flex items-center`}><Star size={16} className="mr-1"/> {t('badges_label')}</h4>
+                    <div className="flex flex-wrap gap-2">
+                        {assessment.badges.map((badge, i) => (
+                            <span key={i} className="bg-amber-500/20 text-amber-700 border border-amber-500/50 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                                {badge}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const TensionGraph = ({ log, t }) => {
+    const theme = useTheme();
+    const points = log.reduce((acc, entry) => {
+        if (entry.tensionScore !== undefined) {
+            acc.push(entry.tensionScore);
+        } else if (entry.newState || entry.type === 'intervention') {
+            const last = acc.length > 0 ? acc[acc.length - 1] : 50;
+            acc.push(last); 
+        }
+        return acc;
+    }, []);
+    const safePoints = points.length > 0 ? points : [50];
+    const width = 300;
+    const height = 100;
+    const maxVal = 100;
+    const polyline = safePoints.map((p, i) => {
+        const x = (i / (safePoints.length - 1 || 1)) * width;
+        const y = height - (p / maxVal) * height;
+        return `${x},${y}`;
+    }).join(" ");
+    return (
+        <div className={`${theme.colors.surfaceHighlight} p-4 rounded-xl mb-4 border border-white/5`}>
+            <h3 className={`text-xs ${theme.colors.textDim} font-bold mb-2 uppercase`}>{t('tension_graph_title')}</h3>
+            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+                <line x1="0" y1={height/2} x2={width} y2={height/2} stroke={theme.colors.graphGrid} strokeDasharray="4" strokeWidth="1" />
+                {safePoints.length > 1 && <polyline points={polyline} fill="none" stroke={theme.colors.graphLine} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />}
+                {safePoints.map((p, i) => (
+                    <circle key={i} cx={(i / (safePoints.length - 1 || 1)) * width} cy={height - (p/maxVal)*height} r="3" fill={i===safePoints.length-1 ? theme.colors.graphEnd : theme.colors.graphDot} />
+                ))}
+            </svg>
+            <div className={`flex justify-between text-[10px] ${theme.colors.textDim} mt-1`}><span>Start</span><span>End</span></div>
+        </div>
+    );
+};
+
+const PhaseStepper = React.memo(({ currentPhaseId, onNext, isHost, t }) => {
+    const theme = useTheme();
+    const currentIdx = MEDIATION_PHASES.findIndex(p => p.id === currentPhaseId);
+    return (
+        <div className={`${theme.colors.surface} p-2 rounded-2xl flex items-center justify-between shadow-lg mb-4 backdrop-blur-md`}>
+            <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar">
+                {MEDIATION_PHASES.map((phase, idx) => {
+                    const isActive = idx === currentIdx;
+                    const isPast = idx < currentIdx;
+                    return (
+                        <div key={phase.id} className="flex items-center min-w-max">
+                            <div className={`w-2.5 h-2.5 rounded-full mr-2 transition-all ${isActive ? 'bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.5)] scale-110' : isPast ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                            <span className={`text-xs font-bold tracking-wide ${isActive ? theme.colors.accent : isPast ? theme.colors.textDim : theme.colors.textDim}`}>{t(`phase_${phase.id}`)}</span>
+                            {idx < MEDIATION_PHASES.length - 1 && <div className="w-6 h-[2px] bg-current opacity-10 mx-2 rounded-full" />}
+                        </div>
+                    );
+                })}
+            </div>
+            {isHost && (
+                <button onClick={onNext} disabled={currentIdx >= MEDIATION_PHASES.length - 1} className={`ml-3 ${theme.colors.secondary} p-2 rounded-full transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed`} title={t('next_phase_btn')}>
+                    <ArrowRightCircle size={18} />
+                </button>
+            )}
+        </div>
+    );
+});
+
+const TensionMeter = React.memo(({ tension, label }) => {
+  const theme = useTheme();
+  return (
+  <div id="tension-meter" className={`w-full max-w-md mx-auto ${theme.colors.surfaceHighlight} rounded-full h-4 mt-2 mb-2 border border-black/10 relative overflow-hidden shadow-inner`}>
+    <div className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(0,0,0,0.1)] ${tension > 75 ? 'bg-gradient-to-r from-red-600 to-rose-500' : tension > 40 ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-emerald-500 to-teal-400'}`} style={{ width: `${tension}%` }} />
+    <div className="absolute inset-0 flex items-center justify-center"><span className={`text-[10px] ${theme.colors.textMain} font-bold uppercase tracking-widest drop-shadow-md`}>{label}</span></div>
+  </div>
+  );
+});
+
+const MessageBubble = React.memo(({ entry, partyAName, currentUserId, isInstructor }) => {
+    const theme = useTheme();
+    const isMe = entry.mediatorId === currentUserId;
+    
+    let bubbleClass = "bg-slate-500";
+    let alignClass = "self-start";
+    let partyType = 'system';
+    
+    if (entry.type === 'system' || entry.type === 'evaluation') {
+        bubbleClass = theme.colors.bubbleSystem;
+        alignClass = "self-center";
+    }
+    else if (entry.type === 'complication') {
+        bubbleClass = "bg-amber-950/40 border-l-4 border-amber-500 text-amber-200/90 max-w-[90%] mx-auto my-3";
+        alignClass = "self-center w-full";
+        partyType = 'system';
+    }
+    else if (entry.caucusWith) {
+        bubbleClass = theme.colors.bubbleCaucus;
+        alignClass = entry.type === 'intervention' ? "self-end" : "self-start";
+        partyType = entry.type === 'intervention' ? 'me' : (entry.partyName === partyAName ? 'partyA' : 'partyB');
+    }
+    else if (entry.type === 'intervention') {
+        bubbleClass = isMe ? theme.colors.bubbleMe : "bg-slate-700 text-slate-200";
+        alignClass = isMe ? "self-end" : "self-start";
+        partyType = 'me';
+    }
+    else if (entry.type === 'party_response') {
+        if (entry.partyName === partyAName) {
+            bubbleClass = theme.colors.bubblePartyA;
+            partyType = 'partyA';
+        } else {
+            bubbleClass = theme.colors.bubblePartyB;
+            partyType = 'partyB';
+        }
+        alignClass = "self-start";
+    }
+
+    const initials = entry.type === 'intervention' ? (isMe ? 'ME' : Services.Utils.getInitials(entry.mediatorUsername)) : Services.Utils.getInitials(entry.partyName);
+
+    return (
+        <div className={`flex flex-col p-4 rounded-2xl shadow-sm mb-3 ${bubbleClass} ${alignClass} min-w-[40%] max-w-[85%] relative animate-in fade-in slide-in-from-bottom-2 duration-300 group transition-all hover:scale-[1.01]`}>
+            {entry.type !== 'complication' && (
+                <div className="flex justify-between items-baseline mb-2 border-b border-black/10 pb-2 gap-3">
+                    <div className="flex items-center gap-2">
+                        {entry.type !== 'system' && entry.type !== 'evaluation' && (
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-inner bg-white/20 text-current`}>
+                                {initials}
+                            </div>
+                        )}
+                        <span className="text-xs font-bold opacity-90 truncate tracking-wide">{entry.type === 'intervention' ? (entry.mediatorUsername || 'Mediator') : (entry.partyName || "System")}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {(entry.type === 'party_response' || entry.type === 'intervention' || entry.type === 'system') && (
+                            <button onClick={() => Services.Utils.speak(entry.text || entry.message, partyType)} className="opacity-0 group-hover:opacity-100 transition-opacity text-current/70 hover:text-current p-1 hover:bg-black/10 rounded" title="Read Aloud"><Volume2 size={14} /></button>
+                        )}
+                        {entry.caucusWith && <span className="text-[10px] uppercase tracking-wider font-bold opacity-90 flex items-center px-2 py-0.5 rounded-full border border-current/20"><Lock size={10} className="mr-1" /> Private {isInstructor && <Eye size={10} className="ml-1 opacity-50" />}</span>}
+                    </div>
+                </div>
+            )}
+            
+            <div className="text-sm whitespace-pre-wrap leading-relaxed flex items-start">
+                {entry.type === 'complication' && <AlertTriangle size={20} className="mr-3 text-amber-400 flex-shrink-0 mt-0.5" />}
+                {entry.type === 'evaluation' ? (
+                    <div className="w-full">
+                        <span className="font-bold block mb-2 opacity-90 flex items-center"><Award size={16} className="mr-2"/> Coach Feedback</span>
+                        <p className="italic opacity-90">{entry.feedback}</p>
+                        <div className={`mt-3 text-xs font-bold px-2 py-1 rounded w-fit bg-black/20`}>{entry.points > 0 ? '+' : ''}{entry.points} Points</div>
+                    </div>
+                ) : ( entry.text || entry.message )}
+                {isInstructor && entry.internalThoughts && (
+                    <div className="mt-3 p-3 bg-black/30 rounded-lg border border-purple-500/20 text-xs italic text-purple-200 w-full">
+                        <span className="font-bold not-italic text-purple-300 block mb-1 flex items-center"><Brain size={12} className="mr-1"/> Inner Thought:</span>
+                        {entry.internalThoughts}
+                    </div>
+                )}
+            </div>
+            {entry.newState && (
+                <div className="flex justify-between items-center mt-3 pt-2 border-t border-black/10 gap-2">
+                    <span className="text-[10px] opacity-70 italic truncate flex items-center">
+                        <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5"></span>
+                        State: {entry.newState} {Services.Utils.getEmoji(entry.newState)}
+                    </span>
+                    <span className="text-[9px] opacity-40">{entry.timestamp?.toDate ? entry.timestamp.toDate().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>
+                </div>
+            )}
+        </div>
+    );
+});
+
+const TypingBubble = ({ partyName, isPartyA }) => (
+    <div className={`flex items-center gap-3 p-4 rounded-2xl shadow-sm mb-3 max-w-[140px] self-start animate-pulse ${isPartyA ? "bg-rose-900/30 border border-rose-500/20" : "bg-cyan-900/30 border border-cyan-500/20"}`}>
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-inner ${isPartyA ? 'bg-rose-400 text-rose-950' : 'bg-cyan-400 text-cyan-950'}`}>{Services.Utils.getInitials(partyName)}</div>
+        <div className="flex gap-1.5">
+            <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+            <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+            <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce"></span>
+        </div>
+    </div>
+);
+
+const PartyAvatar = ({ name, state, color, image, isCaucus }) => {
+    const theme = useTheme();
+    return (
+        <div className={`p-4 rounded-2xl shadow-lg border border-white/5 transition-all duration-300 hover:scale-[1.02] ${isCaucus ? 'bg-slate-900/50 opacity-50 grayscale blur-[1px]' : `bg-gradient-to-br from-slate-800 to-${color}-900/30 backdrop-blur-sm`}`}>
+            <div className="flex justify-between items-start mb-3">
+                <span className={`font-bold text-${color}-300 text-base tracking-wide`}>{name}</span>
+                <span className="text-3xl filter drop-shadow-md">{Services.Utils.getEmoji(state)}</span>
+            </div>
+            <div className="w-full aspect-square bg-slate-900/50 rounded-xl mb-3 overflow-hidden flex items-center justify-center border border-white/10 relative shadow-inner group">
+                {image ? <img src={image} alt={name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" /> : <Users size={40} className={`text-${color}-400/50`} />}
+            </div>
+            <p className={`text-sm font-medium ${theme.colors.textMain} mt-1 line-clamp-2 min-h-[2.5em]`}>{state}</p>
+            {isCaucus && <div className="mt-3 text-xs font-bold text-amber-400 flex items-center bg-amber-900/30 p-2 rounded-lg justify-center border border-amber-500/20"><Lock size={12} className="mr-1.5"/> Private Session</div>}
+        </div>
+    );
+};
+
+const DashboardCard = ({ gameId, studentName, t, onSpectate }) => {
+    const theme = useTheme();
+    const [stats, setStats] = useState(null);
+
+    useEffect(() => {
+        if (!gameId) return;
+        const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${gameId}`);
+        const unsub = onSnapshot(ref, (snap) => {
+            if (snap.exists()) {
+                const d = snap.data();
+                setStats({
+                    tension: Services.Utils.calculateTension(d.partyAState || 'Neutral', d.partyBState || 'Neutral'),
+                    phase: d.phase || 'intro',
+                    lastAction: d.lastMediatorAction || "Waiting to start...",
+                    partyA: d.partyAName || "Party A",
+                    partyB: d.partyBName || "Party B",
+                    isSafetyViolation: d.lastEvaluation?.isSafetyViolation, // Check for safety flag
+                    safetyReason: d.lastEvaluation?.safetyReason
+                });
+            }
+        });
+        return () => unsub();
+    }, [gameId]);
+
+    if (!stats) return <div className={`${theme.colors.surface} p-4 rounded-xl animate-pulse h-32`}>Loading...</div>;
+
+    return (
+        <div className={`${theme.colors.surface} p-4 rounded-xl border ${stats.isSafetyViolation ? 'border-red-500 bg-red-900/10' : 'border-white/5'} flex flex-col justify-between hover:border-sky-500/30 transition-all relative overflow-hidden`}>
+            {stats.isSafetyViolation && <div className="absolute top-0 right-0 p-2 text-red-500 animate-pulse" title={stats.safetyReason}><AlertTriangle size={16}/></div>}
+            <div>
+                <div className="flex justify-between items-center mb-2">
+                    <span className={`font-bold ${theme.colors.textMain} truncate`}>{studentName}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${theme.colors.surfaceHighlight} ${theme.colors.accent}`}>{t(`phase_${stats.phase}`)}</span>
+                </div>
+                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden mb-3">
+                    <div 
+                        className={`h-full transition-all duration-500 ${stats.tension > 70 ? 'bg-red-500' : stats.tension > 40 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
+                        style={{ width: `${stats.tension}%` }}
+                    />
+                </div>
+                <p className={`text-[10px] ${theme.colors.textDim} line-clamp-2 italic mb-3`}>"{stats.lastAction}"</p>
+            </div>
+            <button onClick={() => onSpectate(gameId)} className={`w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 ${theme.colors.secondary}`}>
+                <Eye size={12} /> {t('spectate_btn')}
+            </button>
+        </div>
+    );
+};
+
+/* ==========================================================================================
+   SECTION 6: VIEW CONTAINERS (Organisms)
+   ========================================================================================== */
+
+const ClassroomDashboard = ({ classroomData, t, onSpectate, onCloseClass }) => {
+    const theme = useTheme();
+    return (
+        <div className={`${theme.colors.bg} min-h-screen p-6`}>
+            <header className={`${theme.colors.surface} p-6 rounded-2xl shadow-xl border border-white/5 mb-6 flex justify-between items-center`}>
+                <div>
+                    <h1 className={`text-2xl font-bold ${theme.colors.accent} mb-1`}>{t('teacher_dashboard')}</h1>
+                    <p className={`${theme.colors.textDim} text-sm flex items-center`}>
+                        <School size={16} className="mr-2"/> {t('classroom_id')} <span className="font-mono ml-2 text-white bg-white/10 px-2 rounded">{classroomData.classroomId}</span>
+                    </p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={onCloseClass} className={`px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center shadow-lg transition-all`}>
+                        <LogOut size={16} className="mr-2"/> Close Class
+                    </button>
+                    <div className={`${theme.colors.surfaceHighlight} px-4 py-2 rounded-xl flex items-center`}>
+                        <Users size={18} className={`mr-2 ${theme.colors.textDim}`}/>
+                        <span className={`font-bold ${theme.colors.textMain}`}>{classroomData.students?.length || 0}</span>
+                    </div>
+                </div>
+            </header>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {Object.entries(classroomData.groups || {}).map(([studentId, gameId]) => {
+                    const student = classroomData.students.find(s => s.id === studentId);
+                    return (
+                        <DashboardCard 
+                            key={gameId} 
+                            gameId={gameId} 
+                            studentName={student?.username || 'Unknown'} 
+                            t={t}
+                            onSpectate={onSpectate}
+                        />
+                    );
+                })}
+                {(!classroomData.groups || Object.keys(classroomData.groups).length === 0) && (
+                    <div className="col-span-full text-center py-20 opacity-50">
+                        <LayoutDashboard size={48} className="mx-auto mb-4"/>
+                        <p>No active sessions yet.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const ClassroomLobby = ({ t, classroomData, userId, isHost, actions, inputs, theme, lang }) => {
+    const [activeTab, setActiveTab] = useState('roster'); // 'roster', 'curriculum'
+    const [generatedScenarios, setGeneratedScenarios] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [groupingMode, setGroupingMode] = useState('solo'); // 'solo', 'pairs'
+    const [settings, setSettings] = useState({ difficulty: 'medium', gradeLevel: 'adult', writingStyle: 'realistic', coachStyle: 'supportive', timerSetting: 'none', safetyCode: '' });
+
+    // --- Curriculum Logic ---
+    const generateClassScenarios = async () => {
+        if (!inputs.playerPromptInput.trim()) return;
+        setIsGenerating(true);
+        const gradePrompt = GRADE_LEVELS[settings.gradeLevel].prompt;
+        const stylePrompt = WRITING_STYLES[settings.writingStyle].prompt;
+        
+        // Use the same prompt logic as the main game, but called here in the lobby
+        const prompt = `Generate 3 conflict scenarios. Theme: "${inputs.playerPromptInput}". Difficulty: ${settings.difficulty}. Target Audience: ${gradePrompt}. Writing Style: ${stylePrompt}. OUTPUT IN ${lang || 'English'}. JSON Schema: {scenarios: [{conflictScenario, partyAName, partyBName, partyAInitialState, partyBInitialState, mediationGoal, partyAHiddenInterest, partyBHiddenInterest}]}`;
+        const schema = { type: "OBJECT", properties: { scenarios: { type: "ARRAY", items: { type: "OBJECT", properties: { conflictScenario: { type: "STRING" }, partyAName: { type: "STRING" }, partyBName: { type: "STRING" }, partyAInitialState: { type: "STRING" }, partyBInitialState: { type: "STRING" }, mediationGoal: { type: "STRING" }, partyAHiddenInterest: { type: "STRING" }, partyBHiddenInterest: { type: "STRING" } } } } } };
+
+        try {
+            const res = await Services.AI.call(prompt, schema);
+            setGeneratedScenarios(res.scenarios);
+        } catch (e) {
+            console.error(e);
+            alert("Error generating scenarios. Please try again.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    // --- Grouping Logic ---
+    const getGroups = () => {
+        const students = classroomData.students || [];
+        if (groupingMode === 'solo') {
+            return students.map(s => [s]);
+        } else if (groupingMode === 'pairs') {
+            // Simple deterministic pairing based on join order for stability in UI
+            // In a real app, we might want manual drag-and-drop, but this suffices for v1
+            const groups = [];
+            for (let i = 0; i < students.length; i += 2) {
+                if (i + 1 < students.length) groups.push([students[i], students[i+1]]);
+                else groups.push([students[i]]); // Remainder goes solo
+            }
+            return groups;
+        }
+        return [];
+    };
+
+    const currentGroups = getGroups();
+
+    // Wrapper to pass everything to the main action
+    const handleStart = () => {
+        actions.startSession(settings, currentGroups, generatedScenarios);
+    };
+
+    if (!isHost) {
+        return (
+            <div className={`${theme.colors.bg} ${theme.layout.centerScreen}`}>
+                <div className={`${theme.colors.surface} ${theme.layout.card} text-center`}>
+                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                        <School size={32} className="text-white" />
+                    </div>
+                    <h1 className={`text-2xl font-bold ${theme.colors.textMain} mb-2`}>{t('waiting_for_teacher')}</h1>
+                    <div className="inline-block bg-black/20 rounded-lg px-4 py-2 mb-6 border border-white/5">
+                        <span className={`${theme.colors.textDim} text-xs uppercase tracking-widest mr-2`}>{t('classroom_id')}</span>
+                        <span className={`font-mono text-xl font-bold ${theme.colors.accent} tracking-widest`}>{classroomData.classroomId}</span>
+                    </div>
+                    <p className={`${theme.colors.textDim} text-sm`}>The teacher is configuring the session...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className={`${theme.colors.bg} min-h-screen p-4 flex items-center justify-center`}>
+            <div className={`${theme.colors.surface} w-full max-w-4xl rounded-3xl shadow-2xl border border-white/5 overflow-hidden flex flex-col md:flex-row h-[80vh]`}>
+                
+                {/* Sidebar: Roster & Groups */}
+                <div className="w-full md:w-1/3 bg-black/20 border-r border-white/5 p-6 flex flex-col">
+                    <div className="mb-6">
+                        <h2 className={`text-xs font-bold ${theme.colors.textDim} uppercase tracking-widest mb-4 flex items-center`}>
+                            <Users size={14} className="mr-2"/> {t('students_joined')} ({classroomData.students?.length || 0})
+                        </h2>
+                        <div className="flex gap-2 mb-4">
+                            <button onClick={() => setGroupingMode('solo')} className={`flex-1 py-2 text-xs rounded-lg font-bold transition-all ${groupingMode === 'solo' ? theme.colors.primary : 'bg-white/5 hover:bg-white/10 text-slate-400'}`}>Solo</button>
+                            <button onClick={() => setGroupingMode('pairs')} className={`flex-1 py-2 text-xs rounded-lg font-bold transition-all ${groupingMode === 'pairs' ? theme.colors.primary : 'bg-white/5 hover:bg-white/10 text-slate-400'}`}>Pairs</button>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-grow overflow-y-auto custom-scrollbar space-y-2">
+                        {currentGroups.map((group, i) => (
+                            <div key={i} className={`p-3 rounded-xl border border-white/5 ${group.length > 1 ? 'bg-indigo-500/10 border-indigo-500/30' : 'bg-white/5'}`}>
+                                <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Room {i + 1}</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {group.map(s => (
+                                        <span key={s.id} className="flex items-center gap-1.5 text-sm font-bold text-slate-200">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                                            {s.username}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        {(!classroomData.students || classroomData.students.length === 0) && (
+                            <div className="text-center py-10 opacity-30 text-sm">Waiting for students...</div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Main: Settings & Content */}
+                <div className="w-full md:w-2/3 p-6 flex flex-col overflow-y-auto custom-scrollbar">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className={`text-2xl font-bold ${theme.colors.textMain}`}>Classroom Setup</h1>
+                        <div className="px-3 py-1 rounded bg-black/30 border border-white/10 font-mono text-sm text-sky-400">{classroomData.classroomId}</div>
+                    </div>
+
+                    {/* Settings Section */}
+                    <div className="mb-8">
+                        <h3 className={`text-xs font-bold ${theme.colors.textDim} uppercase mb-4`}>1. Global Settings</h3>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 mb-1 block">Difficulty</label>
+                                <select value={settings.difficulty} onChange={e => setSettings({...settings, difficulty: e.target.value})} className={`${theme.colors.input} py-2 text-xs`}>
+                                    {Object.keys(DIFFICULTIES).map(k => <option key={k} value={k}>{DIFFICULTIES[k].label}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 mb-1 block">Audience</label>
+                                <select value={settings.gradeLevel} onChange={e => setSettings({...settings, gradeLevel: e.target.value})} className={`${theme.colors.input} py-2 text-xs`}>
+                                    {Object.keys(GRADE_LEVELS).map(k => <option key={k} value={k}>{GRADE_LEVELS[k].label}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <label className="text-[10px] font-bold text-slate-500 mb-1 block flex items-center"><ShieldAlert size={12} className="mr-1"/> Teacher Safety Override Code</label>
+                            <input 
+                                value={settings.safetyCode || ''} 
+                                onChange={e => setSettings({...settings, safetyCode: e.target.value})} 
+                                className={`${theme.colors.input} py-2 text-xs w-full`}
+                                placeholder="e.g. 1234 (Required to bypass safety blocks)"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Curriculum Section */}
+                    <div className="mb-8 flex-grow">
+                        <h3 className={`text-xs font-bold ${theme.colors.textDim} uppercase mb-4`}>2. Scenario Generation</h3>
+                        {!generatedScenarios ? (
+                            <div className="bg-black/10 rounded-xl p-4 border border-white/5">
+                                <label className="text-xs font-bold text-slate-400 mb-2 block">Lesson Topic / Theme</label>
+                                <textarea 
+                                    value={inputs.playerPromptInput} 
+                                    onChange={e=>inputs.setPlayerPromptInput(e.target.value)} 
+                                    className={`${theme.colors.input} w-full h-24 mb-4 resize-none`} 
+                                    placeholder="e.g. A dispute between two neighbors about a barking dog..."
+                                />
+                                <button onClick={generateClassScenarios} disabled={isGenerating || !inputs.playerPromptInput} className={`${theme.layout.button} ${theme.colors.secondary}`}>
+                                    {isGenerating ? <RotateCcw className="animate-spin mr-2"/> : <Sparkles className="mr-2"/>}
+                                    {isGenerating ? "Generating..." : "Generate Options"}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm text-emerald-400 flex items-center"><CheckCircle size={14} className="mr-2"/> Scenarios Ready</span>
+                                    <button onClick={() => setGeneratedScenarios(null)} className="text-[10px] text-slate-500 hover:text-white underline">Reset</button>
+                                </div>
+                                {generatedScenarios.map((s, i) => (
+                                    <div key={i} className="bg-emerald-900/10 border border-emerald-500/20 p-3 rounded-lg">
+                                        <h4 className="font-bold text-emerald-100 text-sm">{s.conflictScenario}</h4>
+                                        <p className="text-xs text-emerald-400/60 mt-1">{s.partyAName} vs {s.partyBName}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer Action */}
+                    <div className="pt-6 border-t border-white/10">
+                        <button 
+                            onClick={handleStart} 
+                            disabled={!generatedScenarios || classroomData.students.length === 0}
+                            className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl transition-all flex items-center justify-center ${generatedScenarios && classroomData.students.length > 0 ? theme.colors.primary : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+                        >
+                            <Play size={24} className="mr-3"/> {t('start_session')}
+                        </button>
+                        {(!generatedScenarios || classroomData.students.length === 0) && (
+                            <p className="text-xs text-center text-rose-400 mt-2">
+                                {classroomData.students.length === 0 ? "Waiting for students..." : "Please generate scenarios first."}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ActiveGameView = ({ t, gameData, userId, actions, inputs, uiState, tour, isInstructor, loading, gameImages }) => {
+    // ... existing ActiveGameView logic ...
+    const theme = useTheme();
+    // ... (State logic unchanged)
+    const isMyTurn = !isInstructor && (!gameData.isMultiplayer || (gameData.players[gameData.currentPlayerIndex]?.id === userId));
+    const tension = useMemo(() => Services.Utils.calculateTension(gameData.partyAState, gameData.partyBState), [gameData.partyAState, gameData.partyBState]);
+    const [autoRead, setAutoRead] = useState(false);
+    const lastLogRef = useRef(0);
+    const [isListening, setIsListening] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(100);
+    const [totalTime, setTotalTime] = useState(100);
+    const [streak, setStreak] = useState(0);
+    const [isMuted, setIsMuted] = useState(false); 
+    const [inputTone, setInputTone] = useState('neutral');
+    const [showToolbox, setShowToolbox] = useState(false);
+    
+    // Safety States
+    const [safetyBlock, setSafetyBlock] = useState(null); // { label: string, regex: RegExp }
+    const [overrideInput, setOverrideInput] = useState('');
+
+    // Feature 1: Hidden Agendas Visibility State
+    const [showHiddenAgendas, setShowHiddenAgendas] = useState(false);
+    // Only show if Instructor OR Solo (not multiplayer participant)
+    const canSeeHidden = isInstructor || !gameData.isMultiplayer;
+
+    useEffect(() => {
+        const tone = Services.Utils.analyzeTone(inputs.mediatorInput);
+        setInputTone(tone);
+    }, [inputs.mediatorInput]);
+
+    useEffect(() => {
+        if (!autoRead || !gameData.mediationLog) return;
+        if (gameData.mediationLog.length > lastLogRef.current) {
+            const newEntry = gameData.mediationLog[gameData.mediationLog.length - 1];
+            if (newEntry && (newEntry.type === 'party_response' || newEntry.type === 'intervention')) {
+                let type = 'me';
+                if (newEntry.type === 'party_response') {
+                    type = newEntry.partyName === gameData.partyAName ? 'partyA' : 'partyB';
+                    if (!isMuted) Services.Audio.playPop();
+                }
+                Services.Utils.speak(newEntry.text || '', type);
+            } else if (newEntry && newEntry.type === 'complication') {
+                 if (!isMuted) Services.Audio.playEvent();
+            }
+            lastLogRef.current = gameData.mediationLog.length;
+        }
+    }, [gameData.mediationLog, autoRead, gameData.partyAName, isMuted]);
+
+    useEffect(() => {
+        Services.Audio.muted = isMuted;
+        if (!gameData.lastEvaluation) return;
+        if (gameData.lastEvaluation.pointsChange > 0) setStreak(s => s + 1); else setStreak(0);
+    }, [gameData.lastEvaluation, isMuted]);
+
+    useEffect(() => {
+        if (!gameData.turnDeadline || !isMyTurn) return;
+        const deadline = gameData.turnDeadline.toMillis();
+        const duration = (deadline - (gameData.turnStartTime?.toMillis() || Date.now())); 
+        setTotalTime(Math.max(1, duration / 1000));
+        const interval = setInterval(() => {
+            const remaining = Math.max(0, (deadline - Date.now()) / 1000);
+            setTimeLeft(remaining);
+            if (remaining < 10 && remaining > 0 && Math.floor(remaining) !== Math.floor(timeLeft)) Services.Audio.playTick();
+            if (remaining <= 0) { clearInterval(interval); Services.Audio.playAlert(); actions.handleTimeExpired(); }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [gameData.turnDeadline, isMyTurn, actions.handleTimeExpired, timeLeft]);
+
+    const toggleMic = () => {
+        if (isListening) { setIsListening(false); window.speechRecognitionInstance?.stop(); } else {
+            setIsListening(true);
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { alert("Browser does not support Speech Recognition"); setIsListening(false); return; }
+            const recognition = new SpeechRecognition();
+            window.speechRecognitionInstance = recognition;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                inputs.setMediatorInput(prev => prev + (prev ? ' ' : '') + transcript);
+                setIsListening(false);
+            };
+            recognition.onerror = (event) => { console.error("Speech recognition error", event.error); setIsListening(false); };
+            recognition.onend = () => { setIsListening(false); };
+            recognition.start();
+        }
+    };
+    
+    const getToneColor = () => {
+        if (inputTone === 'aggressive') return 'ring-red-500/80 border-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+        if (inputTone === 'open') return 'ring-emerald-500/80 border-emerald-500/80 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+        return 'focus:ring-sky-500/50 focus:border-sky-500/50';
+    };
+
+    const handleSafetyOverride = () => {
+        const correctCode = gameData.settings?.safetyCode || '1234'; 
+        if (overrideInput === correctCode) {
+            actions.submitIntervention(); 
+            setSafetyBlock(null);
+            setOverrideInput('');
+        } else {
+            setOverrideInput(''); // Clear for now
+        }
+    };
+
+    const handleSendClick = () => {
+        if (!inputs.mediatorInput.trim()) return;
+        const violation = SAFETY_PATTERNS.find(p => p.regex.test(inputs.mediatorInput));
+        if (violation) {
+            setSafetyBlock(violation);
+        } else {
+            actions.submitIntervention();
+        }
+    };
+
+    return (
+        <div className={`${theme.colors.bg} min-h-screen flex flex-col p-2 sm:p-4 font-['Inter',_sans-serif] space-y-4 relative overflow-hidden`}>
+            {tour.step > 0 && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className={`${theme.colors.surface} p-8 rounded-2xl border border-sky-500 shadow-[0_0_50px_rgba(14,165,233,0.3)] max-w-md animate-in fade-in zoom-in duration-300 relative`}>
+                        <div className="flex justify-between items-center mb-6"><h3 className={`text-2xl font-bold ${theme.colors.accent}`}>{tour.steps[tour.step-1].title}</h3><span className={`text-xs ${theme.colors.textDim} ${theme.colors.surfaceHighlight} px-2 py-1 rounded-md`}>{tour.step} / {tour.steps.length}</span></div>
+                        <p className={`${theme.colors.textMain} mb-8 leading-relaxed text-lg`}>{tour.steps[tour.step-1].text}</p>
+                        <div className="flex justify-end gap-3"><button onClick={() => tour.setStep(0)} className={`px-5 py-2.5 ${theme.colors.textDim} hover:${theme.colors.textMain} text-sm font-medium transition-colors`}>Skip Tour</button><button onClick={() => tour.setStep(prev => prev < tour.steps.length ? prev + 1 : 0)} className={`px-8 py-2.5 ${theme.colors.primary} rounded-xl font-bold shadow-lg transition-transform active:scale-95`}>{tour.step === tour.steps.length ? "Let's Begin" : "Next Step"}</button></div>
+                    </div>
+                </div>
+            )}
+            <header className={`${theme.colors.surface} p-4 rounded-2xl shadow-xl border border-white/5 sticky top-0 z-20 backdrop-blur-xl`}>
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h1 className={`text-xl sm:text-2xl font-bold ${isInstructor ? theme.colors.instructor.replace('bg-', 'text-') : theme.colors.accent} flex items-center`}>
+                            {isInstructor ? (<span className="flex items-center"><Eye size={24} className="mr-3 text-purple-400"/> {t('spectator_mode')}</span>) : (<>Game ID: <span className={`font-mono ml-2 ${theme.colors.textMain} opacity-90`}>{gameData.gameId}</span></>)}
+                            {gameData.caucusMode && <span className="ml-3 text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/50 px-3 py-1 rounded-full flex items-center animate-pulse"><Lock size={12} className="mr-1.5"/> {t('caucus_label')}</span>}
+                        </h1>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                             {gameData.settings && (
+                                 <>
+                                    <SettingsPill icon={Sliders} label="Difficulty" value={DIFFICULTIES[gameData.settings.difficulty || 'medium'].label} theme={theme} />
+                                    <SettingsPill icon={GraduationCap} label="Audience" value={GRADE_LEVELS[gameData.settings.gradeLevel || 'adult'].label.split(' ')[0]} theme={theme} />
+                                    <SettingsPill icon={Feather} label="Style" value={WRITING_STYLES[gameData.settings.writingStyle || 'realistic'].label} theme={theme} />
+                                 </>
+                             )}
+                        </div>
+                    </div>
+                    {streak > 1 && (<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-orange-500/10 border border-orange-500/40 text-orange-400 px-4 py-1.5 rounded-full text-xs font-bold flex items-center animate-bounce shadow-[0_0_15px_rgba(249,115,22,0.2)]"><Flame size={14} className="mr-1.5 fill-orange-500"/> {streak} {t('streak_label')}</div>)}
+                    <div className="flex gap-2">
+                         {/* Dashboard Back Button */}
+                         {isInstructor && gameData.classroomId && (
+                             <button onClick={actions.exitSpectator} className={`p-2.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-xl transition-all`} title={t('back_to_dashboard')}><LayoutDashboard size={20} /></button>
+                         )}
+                         <button onClick={actions.exportSave} className={`p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-xl transition-all`} title={t('save_game_json')}><Save size={20} /></button>
+                         <button onClick={() => setIsMuted(!isMuted)} className={`p-2.5 rounded-xl transition-all ${!isMuted ? theme.colors.surfaceHighlight + ' ' + theme.colors.textDim : 'bg-red-500/20 text-red-400 border border-red-500/30'}`} title={isMuted ? t('sound_off') : t('sound_on')}>{isMuted ? <BellOff size={20} /> : <Bell size={20} />}</button>
+                         <button onClick={() => setAutoRead(!autoRead)} className={`p-2.5 rounded-xl transition-all ${autoRead ? theme.colors.primary : theme.colors.surfaceHighlight + ' ' + theme.colors.textDim}`} title={t('auto_read_label')}>{autoRead ? <Volume2 size={20} /> : <VolumeX size={20} />}</button>
+                         {!isInstructor && (<><button onClick={() => tour.setStep(1)} className={`p-2.5 ${theme.colors.surfaceHighlight} ${theme.colors.accent} rounded-xl transition-all hover:scale-105`} title="Start Tour"><MapPin size={20}/></button><button onClick={actions.analyzeTurn} className={`p-2.5 ${theme.colors.surfaceHighlight} rounded-xl text-purple-400 transition-all hover:scale-105`} title="Analyze Last Turn"><Brain size={20}/></button></>)}
+                         <button onClick={actions.endGame} className={`p-2.5 ${theme.colors.danger} rounded-xl text-white transition-all`}><LogOut size={20}/></button>
+                    </div>
+                </div>
+                <PhaseStepper currentPhaseId={gameData.phase || 'intro'} onNext={actions.nextPhase} isHost={!isInstructor && (!gameData.isMultiplayer || (gameData.players[gameData.currentPlayerIndex]?.id === userId))} t={t} />
+                <TensionMeter tension={tension} label={t('tension_label')} />
+                
+                {/* Feature 1: Hidden Agendas Toggle (Instructor/Solo Only) */}
+                {canSeeHidden && (gameData.partyAHiddenInterest || gameData.partyBHiddenInterest) && (
+                    <div className="mt-3 border-t border-white/5 pt-3">
+                        <button onClick={() => setShowHiddenAgendas(!showHiddenAgendas)} className={`flex items-center text-[10px] font-bold uppercase tracking-wider ${theme.colors.textDim} hover:${theme.colors.textMain} transition-colors mb-2`}>
+                            {showHiddenAgendas ? <EyeOff size={12} className="mr-1"/> : <Eye size={12} className="mr-1"/>} 
+                            {t('hidden_info_title')}
+                        </button>
+                        {showHiddenAgendas && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
+                                <div className={`p-2 rounded bg-rose-900/20 border border-rose-500/20 text-rose-200 text-xs`}>
+                                    <span className="font-bold text-rose-400 block mb-1">{gameData.partyAName} {t('hidden_agenda_label')}</span>
+                                    {gameData.partyAHiddenInterest}
+                                </div>
+                                <div className={`p-2 rounded bg-cyan-900/20 border border-cyan-500/20 text-cyan-200 text-xs`}>
+                                    <span className="font-bold text-cyan-400 block mb-1">{gameData.partyBName} {t('hidden_agenda_label')}</span>
+                                    {gameData.partyBHiddenInterest}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </header>
+            
+            <div id="party-container" className={`grid grid-cols-1 sm:grid-cols-2 gap-4 transition duration-300 ${tour.step === 2 ? 'ring-4 ring-sky-500 ring-offset-4 ring-offset-slate-900 rounded-2xl' : ''}`}>
+                <PartyAvatar name={gameData.partyAName} state={gameData.partyAState} color="rose" image={gameImages.partyA} isCaucus={gameData.caucusMode && gameData.caucusMode !== 'partyA'} />
+                <PartyAvatar name={gameData.partyBName} state={gameData.partyBState} color="cyan" image={gameImages.partyB} isCaucus={gameData.caucusMode && gameData.caucusMode !== 'partyB'} />
+            </div>
+            
+            <div id="log-container" className={`flex-grow ${theme.colors.surfaceHighlight} p-4 sm:p-6 rounded-3xl overflow-y-auto custom-scrollbar shadow-inner border border-white/5 min-h-[300px] max-h-[50vh] transition duration-300 ${tour.step === 4 ? 'ring-4 ring-sky-500 ring-offset-4 ring-offset-slate-900' : ''}`}>
+                {(gameData.mediationLog || []).map((entry, idx) => (
+                    <MessageBubble key={idx} entry={entry} partyAName={gameData.partyAName} currentUserId={userId} isInstructor={isInstructor} />
+                ))}
+                {loading && (<TypingBubble partyName={gameData.isWaitingForPartyAResponse ? gameData.partyAName : gameData.partyBName} isPartyA={gameData.isWaitingForPartyAResponse} />)}
+                <div ref={uiState.messagesEndRef} />
+            </div>
+            
+            {isInstructor ? (
+                <div className={`${theme.colors.surface} backdrop-blur-xl p-4 rounded-3xl shadow-2xl border-t border-purple-500/30`}>
+                    <div className="flex justify-between mb-3"><div className="text-xs font-bold text-purple-300 uppercase tracking-widest flex items-center"><Megaphone size={14} className="mr-2"/> {t('send_feedback')}</div></div>
+                    <div className="flex gap-3"><textarea value={inputs.mediatorInput} onChange={e => inputs.setMediatorInput(e.target.value)} className={`${theme.colors.input} flex-grow rounded-2xl p-4 text-sm resize-none h-16`} placeholder={t('feedback_placeholder')}/><button onClick={actions.sendFeedback} disabled={!inputs.mediatorInput.trim()} className={`p-4 rounded-2xl text-white shadow-lg shadow-purple-900/20 transition-transform active:scale-95 flex items-center justify-center ${theme.colors.instructor} disabled:opacity-50 disabled:grayscale`}><Send size={24} /></button></div>
+                </div>
+            ) : isMyTurn && (
+                <div id="input-area" className={`${theme.colors.surface} backdrop-blur-xl p-4 rounded-3xl shadow-2xl border-t border-white/10 transition duration-300 ${tour.step === 5 ? 'ring-4 ring-sky-500 ring-offset-4 ring-offset-slate-900' : ''} relative`}>
+                    {gameData.turnDeadline && timeLeft > 0 && (<div className="absolute top-0 left-0 right-0 h-1 bg-slate-800 rounded-t-3xl overflow-hidden"><div className={`h-full transition-all duration-1000 ${timeLeft < 20 ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-amber-500 shadow-[0_0_10px_orange]'}`} style={{ width: `${(timeLeft / totalTime) * 100}%` }} /></div>)}
+                    <div className="flex justify-between mb-3 mt-1 px-1">
+                         <div className={`text-xs font-bold ${theme.colors.textDim} uppercase tracking-widest flex items-center`}>{gameData.caucusMode ? `${t('private_msg')} ${gameData.caucusMode==='partyA'?gameData.partyAName:gameData.partyBName}` : t('your_turn')}<span className={`ml-3 ${theme.colors.surfaceHighlight} px-2 py-0.5 rounded-md text-[10px] ${theme.colors.accent}`}>Phase: {t(`phase_${gameData.phase || 'intro'}`)}</span></div>
+                         {gameData.turnDeadline && timeLeft > 0 && (<div className={`text-xs font-mono font-bold flex items-center ${timeLeft < 20 ? 'text-red-400 animate-pulse' : theme.colors.textDim}`}><Clock size={14} className="mr-1.5"/> {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</div>)}
+                         <div className="flex gap-2">
+                             {!gameData.caucusMode ? (
+                                 <><button onClick={() => actions.toggleCaucus('partyA')} className={`text-[10px] ${theme.colors.surfaceHighlight} hover:bg-white/10 text-rose-300 border border-rose-900/30 px-3 py-1 rounded-lg flex items-center transition-all hover:scale-105`}><Lock size={12} className="mr-1.5"/> {gameData.partyAName.split(' ')[0]}</button><button onClick={() => actions.toggleCaucus('partyB')} className={`text-[10px] ${theme.colors.surfaceHighlight} hover:bg-white/10 text-cyan-300 border border-cyan-900/30 px-3 py-1 rounded-lg flex items-center transition-all hover:scale-105`}><Lock size={12} className="mr-1.5"/> {gameData.partyBName.split(' ')[0]}</button></>
+                             ) : ( <button onClick={() => actions.toggleCaucus(gameData.caucusMode)} className="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-1 rounded-lg flex items-center font-bold transition-all shadow-lg shadow-amber-900/20"><Unlock size={12} className="mr-1.5"/> {t('end_caucus')}</button> )}
+                         </div>
+                    </div>
+                    
+                    {showToolbox && (
+                        <div className={`mb-4 ${theme.colors.surfaceHighlight} p-3 rounded-2xl border border-white/10 animate-in slide-in-from-bottom-2 fade-in`}>
+                            <div className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar">
+                                {Object.entries(QUICK_ACTIONS).map(([key, category]) => (
+                                    <div key={key} className="flex-shrink-0">
+                                        <h4 className={`text-[10px] uppercase ${theme.colors.textDim} font-bold mb-2 tracking-wider`}>{category.label}</h4>
+                                        <div className="flex gap-2">
+                                            {category.phrases.map((phrase, i) => (
+                                                <button 
+                                                    key={i} 
+                                                    onClick={() => inputs.setMediatorInput(phrase)}
+                                                    className={`text-xs ${theme.colors.secondary} px-3 py-2 rounded-lg transition-all whitespace-nowrap shadow-sm`}
+                                                >
+                                                    {phrase.substring(0, 20)}...
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="flex gap-3">
+                        <div className="relative flex-grow group">
+                            <textarea value={inputs.mediatorInput} onChange={e => inputs.setMediatorInput(e.target.value)} onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleSendClick(); }} className={`${theme.colors.input} w-full rounded-2xl p-4 text-sm outline-none resize-none h-20 pr-12 transition-all ${gameData.caucusMode ? 'ring-amber-500/50 border-amber-500/30' : getToneColor()}`} placeholder={isListening ? t('listening') : t('type_placeholder')}/>
+                            {(gameData.settings?.gradeLevel === 'dynamic' || gameData.settings?.writingStyle === 'dynamic') && (
+                                <div className="absolute top-2 right-2 flex items-center pointer-events-none">
+                                    <span className="text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center animate-pulse">
+                                        <Sparkles size={10} className="mr-1"/> AI Matching Tone
+                                    </span>
+                                </div>
+                            )}
+                            <button onClick={toggleMic} className={`absolute bottom-3 right-3 p-2 rounded-full transition-all ${isListening ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50' : `${theme.colors.textDim} hover:${theme.colors.textMain} hover:bg-white/10`}`} title="Toggle Voice Input">{isListening ? <MicOff size={18}/> : <Mic size={18}/>}</button>
+                        </div>
+                        <div className="flex flex-col gap-2 justify-end">
+                            <button onClick={() => setShowToolbox(!showToolbox)} className={`p-3 rounded-xl transition-all ${showToolbox ? theme.colors.primary : `${theme.colors.surfaceHighlight} ${theme.colors.accent} hover:bg-white/10`}`} title={t('toolbox_title')}><Briefcase size={20}/></button>
+                            <button onClick={actions.getSuggestion} className="p-3 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20 rounded-xl transition-all hover:scale-105" title="Get AI Suggestion"><Sparkles size={20}/></button>
+                            {gameData.phase === 'agreement' && (<button onClick={actions.openAgreement} className="p-3 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-all hover:scale-105" title={t('draft_agreement_btn')}><FileText size={20}/></button>)}
+                            <button onClick={handleSendClick} disabled={!inputs.mediatorInput.trim()} className={`p-3 rounded-xl text-white shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center ${gameData.caucusMode ? 'bg-gradient-to-br from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500' : theme.colors.primary} disabled:opacity-50 disabled:grayscale disabled:scale-100`}><Send size={24} /></button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Safety Block Modal */}
+            <Modal isOpen={!!safetyBlock} onClose={() => setSafetyBlock(null)} title={t('safety_violation_title')}>
+                <div className="text-center p-4">
+                    <div className="w-16 h-16 bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ShieldAlert size={32}/>
+                    </div>
+                    <h3 className={`text-lg font-bold ${theme.colors.textMain} mb-2`}>{safetyBlock?.label}</h3>
+                    <p className={`text-sm ${theme.colors.textDim} mb-6`}>
+                        Your message contains content that may violate safety guidelines (e.g., PII or profanity). Please remove it to continue.
+                    </p>
+                    
+                    <div className="bg-black/20 p-4 rounded-xl mb-6 text-left border border-white/5">
+                        <label className="text-[10px] font-bold text-slate-500 mb-2 block uppercase tracking-widest flex items-center">
+                            <Key size={12} className="mr-1"/> Teacher Override
+                        </label>
+                        <div className="flex gap-2">
+                            <input 
+                                type="password"
+                                value={overrideInput}
+                                onChange={(e) => setOverrideInput(e.target.value)}
+                                className={`${theme.colors.input} py-2 text-sm flex-grow`}
+                                placeholder={t('safety_override_placeholder')}
+                            />
+                            <button onClick={handleSafetyOverride} className={`${theme.colors.primary} px-4 py-2 rounded-xl text-sm font-bold`}>
+                                {t('safety_override_btn')}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onClick={() => setSafetyBlock(null)} className={`w-full py-3 rounded-xl ${theme.colors.secondary}`}>
+                        {t('safety_cancel_btn')}
+                    </button>
+                </div>
+            </Modal>
+        </div>
+    );
+};
+
+/* ==========================================================================================
+   SECTION 7: MAIN CONTROLLER (The Brain)
+   ========================================================================================== */
+
+const App = () => {
+  // ... existing App state ...
+  const [currentUser, setCurrentUser] = useState(null);
+  const [gameData, setGameData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [username, setUsername] = useState('');
+  const [isUsernameSet, setIsUsernameSet] = useState(false);
+  
+  // --- Codename Generator State ---
+  const [adjIndex, setAdjIndex] = useState(Math.floor(Math.random() * ADJECTIVES.length));
+  const [animalIndex, setAnimalIndex] = useState(Math.floor(Math.random() * ANIMALS.length));
+
+  useEffect(() => {
+      // Only set if username is empty (first load)
+      if (!username) {
+          setUsername(`${ADJECTIVES[adjIndex]} ${ANIMALS[animalIndex]}`);
+      }
+  }, []); // Run once on mount
+
+  const randomizeName = () => {
+      const a = Math.floor(Math.random() * ADJECTIVES.length);
+      const b = Math.floor(Math.random() * ANIMALS.length);
+      setAdjIndex(a);
+      setAnimalIndex(b);
+      setUsername(`${ADJECTIVES[a]} ${ANIMALS[b]}`);
+  };
+
+  const handleNameConfigChange = (type, index) => {
+      const newIndex = parseInt(index);
+      if (type === 'adj') {
+          setAdjIndex(newIndex);
+          setUsername(`${ADJECTIVES[newIndex]} ${ANIMALS[animalIndex]}`);
+      } else {
+          setAnimalIndex(newIndex);
+          setUsername(`${ADJECTIVES[adjIndex]} ${ANIMALS[newIndex]}`);
+      }
+  };
+
+  const [uiStrings, setUiStrings] = useState(BASE_STRINGS);
+  const [lang, setLang] = useState('English');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [themeMode, setThemeMode] = useState('dark'); 
+
+  const [instructorMode, setInstructorMode] = useState(false);
+  const [isInstructor, setIsInstructor] = useState(false);
+
+  const [gameImages, setGameImages] = useState({ partyA: null, partyB: null });
+
+  const [isDebriefing, setIsDebriefing] = useState(false);
+  const [showDebriefFeedbackModal, setShowDebriefFeedbackModal] = useState(false);
+  const [debriefFeedbackResult, setDebriefFeedbackResult] = useState(null);
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [lastEvaluationResult, setLastEvaluationResult] = useState(null);
+  
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [suggestionContent, setSuggestionContent] = useState({ title: '', text: '' });
+
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [agreementText, setAgreementText] = useState('');
+  const [showCloseConfirmation, setShowCloseConfirmation] = useState(false); // New state for confirmation
+  
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [savedScenarios, setSavedScenarios] = useState([]);
+
+  const [inputGameId, setInputGameId] = useState('');
+  const [playerPromptInput, setPlayerPromptInput] = useState('');
+  const [mediatorInput, setMediatorInput] = useState('');
+  const [currentDebriefAnswerInput, setCurrentDebriefAnswerInput] = useState('');
+
+  // --- Classroom State ---
+  const [classroomData, setClassroomData] = useState(null);
+  const [isTeacher, setIsTeacher] = useState(false);
+
+  const messagesEndRef = useRef(null);
+  const gameDocRef = useRef(null);
+  const classroomDocRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const t = useCallback((key) => {
+      return uiStrings[key] || BASE_STRINGS[key] || `[${key}]`;
+  }, [uiStrings]);
+
+  const handleTranslateUI = async () => {
+        if (!lang.trim() || lang.toLowerCase() === 'english') {
+            setUiStrings(BASE_STRINGS);
+            return;
+        }
+        setIsTranslating(true);
+        const prompt = `Translate the values of the following JSON object into ${lang}. Keep keys identical. Return strictly valid JSON.\n${JSON.stringify(BASE_STRINGS)}`;
+        
+        try {
+            const responseText = await Services.AI.call(prompt, null, setIsTranslating); 
+            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const translatedObj = JSON.parse(cleanJson);
+            setUiStrings(translatedObj);
+        } catch (e) {
+            console.error("Translation Failed", e);
+            setError("Failed to translate UI. Please try again.");
+        } finally {
+            setIsTranslating(false);
+        }
+  };
+
+  const [tourStep, setTourStep] = useState(0); 
+  const tourSteps = [
+    { title: "Welcome Mediator!", text: "This is your control center. Let's take a quick look around the interface.", position: "center" },
+    { title: "Party States", text: "Here you see the parties. Their images and emotional states update as the mediation progresses.", highlightId: "party-container" },
+    { title: "Tension Meter", text: "This bar visualizes the heat in the room. Your goal is to keep it in the green/yellow zone and avoid the red!", highlightId: "tension-meter" },
+    { title: "Interaction Log", text: "This is the chat history. Messages appear here chronologically. Use the speaker icon to hear them aloud.", highlightId: "log-container" },
+    { title: "Your Tools", text: "Type your response here. Use the Magic Wand for AI suggestions, the Brain for analysis, or the Lock to enter a private Caucus.", highlightId: "input-area" }
+  ];
+
+  useEffect(() => {
+    Services.Auth.init().then(({ auth }) => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) setCurrentUser(user);
+        });
+    }).catch(err => setError(t('auth_failed')));
+  }, []);
+
+  // --- Classroom Listener ---
+  useEffect(() => {
+      if (!classroomData?.classroomId) return;
+      
+      const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/classrooms/${classroomData.classroomId}`);
+      classroomDocRef.current = ref;
+      
+      const unsub = onSnapshot(ref, (snap) => {
+          if (snap.exists()) {
+              const d = snap.data();
+              setClassroomData(d);
+              
+              // If I am a student and the session has started (active), and I have been assigned a game...
+              if (!isTeacher && d.status === 'active' && d.groups && d.groups[currentUser.uid]) {
+                  const assignedGameId = d.groups[currentUser.uid];
+                  // If I'm not already in that game, join it
+                  if (!gameData || gameData.gameId !== assignedGameId) {
+                      const gameRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${assignedGameId}`);
+                      getDoc(gameRef).then(gsnap => {
+                          if (gsnap.exists()) setGameData(gsnap.data());
+                      });
+                  }
+              }
+          }
+      });
+      return () => unsub();
+  }, [classroomData?.classroomId, isTeacher, currentUser]);
+
+  // --- Game Listener ---
+  useEffect(() => {
+    if (!currentUser || !gameData?.gameId) return;
+    const ref = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${gameData.gameId}`);
+    gameDocRef.current = ref;
+    
+    const imageRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/game_images/${gameData.gameId}`);
+    const imgUnsub = onSnapshot(imageRef, (snap) => {
+        if(snap.exists()) setGameImages(snap.data());
+    });
+
+    const unsub = onSnapshot(ref, (snap) => {
+        if (snap.exists()) {
+            const data = snap.data();
+            setGameData(prev => ({ ...prev, ...data }));
+            
+            // Only generate scenarios if we are the HOST of this specific game (Teacher or Solo User)
+            // And not just a spectator
+            if (data.hostId === currentUser.uid && !loading && !isInstructor) {
+                if (data.status === 'generating_scenario_options' && !data.scenarioOptions) generateScenarios(data);
+                if (data.status === 'generating_debrief_questions' && !data.debriefQuestions) generateDebrief(data);
+            }
+            
+            if (!isInstructor && data.lastEvaluation?.timestamp?.toMillis() !== lastEvaluationResult?.timestamp?.toMillis() && (data.lastEvaluation?.mediatorId === currentUser.uid || !data.isMultiplayer)) {
+                if (data.lastEvaluation) {
+                    setLastEvaluationResult(data.lastEvaluation); 
+                    setShowEvaluationModal(true);
+                }
+            }
+        }
+    });
+    return () => { unsub(); imgUnsub(); };
+  }, [gameData?.gameId, currentUser, loading, lastEvaluationResult, isInstructor]);
+
+  const generateScenarios = useCallback(async (data) => {
+      setLoading(true);
+      const difficulty = data.settings?.difficulty || 'medium';
+      
+      const gradeSetting = data.settings?.gradeLevel === 'dynamic' ? 'adult' : (data.settings?.gradeLevel || 'adult');
+      const styleSetting = data.settings?.writingStyle === 'dynamic' ? 'realistic' : (data.settings?.writingStyle || 'realistic');
+      
+      const gradePrompt = GRADE_LEVELS[gradeSetting].prompt;
+      const stylePrompt = WRITING_STYLES[styleSetting].prompt;
+      const languageInstruction = lang !== 'English' ? `OUTPUT IN ${lang.toUpperCase()}.` : '';
+      
+      const prompt = `Generate 3 conflict scenarios. Theme: "${data.playerSubmittedPrompt}". Difficulty: ${difficulty}. Target Audience: ${gradePrompt}. Writing Style: ${stylePrompt}. ${languageInstruction} JSON Schema: {scenarios: [{conflictScenario, partyAName, partyBName, partyAInitialState, partyBInitialState, mediationGoal, partyAHiddenInterest, partyBHiddenInterest}]}`;
+      const schema = { type: "OBJECT", properties: { scenarios: { type: "ARRAY", items: { type: "OBJECT", properties: { conflictScenario: { type: "STRING" }, partyAName: { type: "STRING" }, partyBName: { type: "STRING" }, partyAInitialState: { type: "STRING" }, partyBInitialState: { type: "STRING" }, mediationGoal: { type: "STRING" }, partyAHiddenInterest: { type: "STRING" }, partyBHiddenInterest: { type: "STRING" } } } } } };
+      
+      try {
+          const res = await Services.AI.call(prompt, schema);
+          await updateDoc(gameDocRef.current, { 
+              scenarioOptions: res.scenarios.slice(0,3), 
+              status: data.isMultiplayer ? 'voting_on_scenario' : 'selecting_scenario' 
+          });
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  }, [lang]);
+
+  const generateDebrief = useCallback(async (data) => {
+      setLoading(true);
+      const languageInstruction = lang !== 'English' ? `OUTPUT IN ${lang.toUpperCase()}.` : '';
+      const prompt = `Analyze this mediation session log. Conflict: "${data.conflictScenario}". 
+      Task 1: Generate 5 reflection questions for the mediator. 
+      Task 2: Generate a "Mediator Report Card" assessing their performance (0-100 score), listing 3 strengths, 3 weaknesses, and selecting applicable badges from: ['Listener', 'Peacemaker', 'Strategist', 'Neutrality_Keeper', 'Empathy_Master']. 
+      Task 3: Write a narrative epilogue (approx 200 words) titled 'The Aftermath'. Describe what happens to the parties in the weeks following this session. Explicitly reference 1-2 pivotal moments or specific lines from the transcript that defined this outcome.
+      ${languageInstruction} 
+      Return JSON: { debriefItems: [{questionText, questionType}], assessment: { resolutionScore: integer, strengths: [string], areasForImprovement: [string], badges: [string] }, storyConclusion: string }`;
+      
+      const schema = { 
+          type: "OBJECT", 
+          properties: { 
+              debriefItems: { type: "ARRAY", items: { type: "OBJECT", properties: { questionText: { type: "STRING" }, questionType: { type: "STRING" } } } }, 
+              assessment: { type: "OBJECT", properties: { resolutionScore: { type: "INTEGER" }, strengths: { type: "ARRAY", items: { type: "STRING" } }, areasForImprovement: { type: "ARRAY", items: { type: "STRING" } }, badges: { type: "ARRAY", items: { type: "STRING" } } } },
+              storyConclusion: { type: "STRING" }
+          } 
+      };
+      
+      try {
+          const res = await Services.AI.call(prompt, schema);
+          const initDebriefs = {};
+          (data.players || []).forEach(p => {
+              initDebriefs[p.id] = { 
+                  currentQuestionIndex: 0, 
+                  answers: [], 
+                  status: 'pending',
+                  evaluation: { ...res.assessment, storyConclusion: res.storyConclusion, feedback: "Preliminary Assessment Generated." } 
+              }; 
+          });
+          await updateDoc(gameDocRef.current, { debriefQuestions: res.debriefItems.slice(0,5), playerDebriefs: initDebriefs, status: 'awaiting_debrief_answers' });
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  }, [lang]);
+
+  // --- Handlers ---
+
+  const handleCreateGame = useCallback(async (mode) => {
+      if(!currentUser) return;
+      setLoading(true);
+      const newId = Services.Utils.generateId();
+      const initData = {
+          gameId: newId, hostId: currentUser.uid, promptProviderId: currentUser.uid,
+          players: [{ id: currentUser.uid, username, joinedAt: new Date() }],
+          status: 'waiting_for_players',
+          createdAt: serverTimestamp(), currentPlayerIndex: 0, turnNumber: 0, mediationLog: [],
+          isMultiplayer: mode === 'multiplayer_create', playerScores: { [currentUser.uid]: 0 },
+          appIdUsedByHost: APP_ID, caucusMode: null,
+          phase: 'intro',
+          settings: { difficulty: 'medium', coachStyle: 'supportive', timerSetting: 'none', gradeLevel: 'adult', writingStyle: 'realistic' } 
+      };
+      
+      try {
+          await setDoc(doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${newId}`), initData);
+          setGameData(initData);
+          setIsInstructor(false);
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  }, [currentUser, username]);
+
+  const handleJoinGameOrClass = useCallback(async () => {
+      setLoading(true);
+      const inputId = inputGameId.trim().toUpperCase();
+      
+      try {
+          // Check if it is a Classroom
+          const classRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/classrooms/${inputId}`);
+          const classSnap = await getDoc(classRef);
+          
+          if (classSnap.exists()) {
+              const joinedClass = await Services.Classroom.join(inputId, currentUser, username);
+              setClassroomData(joinedClass);
+              setIsTeacher(false); // Joining as student
+              return;
+          }
+
+          // If not classroom, check if it's a Game
+          const gameRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${inputId}`);
+          const gameSnap = await getDoc(gameRef);
+          
+          if (gameSnap.exists()) {
+              const d = gameSnap.data();
+              if (instructorMode) {
+                  setIsInstructor(true);
+              } else if (!d.players.find(p => p.id === currentUser.uid)) {
+                  await updateDoc(gameRef, { players: arrayUnion({ id: currentUser.uid, username, joinedAt: new Date() }), [`playerScores.${currentUser.uid}`]: 0 });
+                  setIsInstructor(false);
+              }
+              setGameData(d);
+          } else {
+              setError("ID not found (checked Game and Class)");
+          }
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  }, [inputGameId, instructorMode, currentUser, username]);
+
+  const handleCreateClassroom = async () => {
+      setLoading(true);
+      try {
+          const id = await Services.Classroom.create(currentUser.uid, username);
+          setClassroomData({ classroomId: id, hostId: currentUser.uid, students: [], status: 'lobby' });
+          setIsTeacher(true);
+      } catch (e) { setError(e.message); } finally { setLoading(false); }
+  };
+
+  const handleStartClassSession = async (settings, groups, scenarios) => {
+      if (!classroomData || !isTeacher) return;
+      setLoading(true);
+      try {
+          await Services.Classroom.startSession(classroomData.classroomId, settings, groups, scenarios);
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  };
+
+  const handleCloseClassroom = () => {
+      setShowCloseConfirmation(true);
+  };
+
+  const confirmCloseClass = async () => {
+      if (!classroomData) return;
+      setLoading(true);
+      try {
+          await Services.Classroom.close(classroomData.classroomId);
+          setClassroomData(null);
+          setIsTeacher(false);
+          setGameData(null);
+          setShowCloseConfirmation(false);
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  };
+
+  const handleSpectateGame = (gameId) => {
+      setGameData({ gameId }); // Just setting ID triggers the useEffect listener
+      setIsInstructor(true);
+  };
+
+  const handleExitSpectator = () => {
+      setGameData(null);
+      setIsInstructor(false);
+      // Should naturally fall back to Dashboard view if classroomData exists
+  };
+
+  // ... (Previous Game Handlers: loadScenario, etc. remain the same) ...
+  const handleLoadScenario = async (scenario) => {
+      if (!gameDocRef.current) return;
+      await updateDoc(gameDocRef.current, { 
+          conflictScenario: scenario.conflictScenario, partyAName: scenario.partyAName, partyBName: scenario.partyBName, partyAInitialState: scenario.partyAInitialState, partyBInitialState: scenario.partyBInitialState, mediationGoal: scenario.mediationGoal, partyAState: scenario.partyAInitialState, partyBState: scenario.partyBInitialState, partyAHiddenInterest: scenario.partyAHiddenInterest, partyBHiddenInterest: scenario.partyBHiddenInterest, status: 'in_progress', scenarioOptions: null, mediationLog: arrayUnion({type:'system', message: 'Loaded Scenario from Library.'}) 
+      });
+      const promptA = `Portrait of ${scenario.partyAName}, feeling ${scenario.partyAInitialState}, digital art style, close up character profile.`;
+      const promptB = `Portrait of ${scenario.partyBName}, feeling ${scenario.partyBInitialState}, digital art style, close up character profile.`;
+      Promise.all([Services.Image.generate(promptA), Services.Image.generate(promptB)]).then(async ([imgA, imgB]) => {
+          const imgRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/game_images/${gameData.gameId}`);
+          await setDoc(imgRef, { partyA: imgA, partyB: imgB });
+      });
+  };
+
+  const handleSelectScenarioOption = async (idx) => { 
+      const chosen = gameData.scenarioOptions[idx];
+      await updateDoc(gameDocRef.current, { conflictScenario: chosen.conflictScenario, partyAName: chosen.partyAName, partyBName: chosen.partyBName, partyAInitialState: chosen.partyAInitialState, partyBInitialState: chosen.partyBInitialState, mediationGoal: chosen.mediationGoal, partyAState: chosen.partyAInitialState, partyBState: chosen.partyBInitialState, partyAHiddenInterest: chosen.partyAHiddenInterest || 'None', partyBHiddenInterest: chosen.partyBHiddenInterest || 'None', status: 'in_progress', scenarioOptions: null, mediationLog: arrayUnion({type:'system', message: 'Scenario Selected.'}) });
+      const promptA = `Portrait of ${chosen.partyAName}, feeling ${chosen.partyAInitialState}, digital art style, close up character profile.`;
+      const promptB = `Portrait of ${chosen.partyBName}, feeling ${chosen.partyBInitialState}, digital art style, close up character profile.`;
+      Promise.all([Services.Image.generate(promptA), Services.Image.generate(promptB)]).then(async ([imgA, imgB]) => {
+          if (imgA || imgB) {
+              const imgRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/game_images/${gameData.gameId}`);
+              await setDoc(imgRef, { partyA: imgA, partyB: imgB });
+          }
+      });
+  };
+
+  const handleUpdateSettings = useCallback(async (key, value) => {
+      // In teacher mode, we store settings in gameData locally before starting session?
+      // Or we can just use a local state for settings if gameData isn't created yet.
+      // For simplicity, let's assume teacher configures a "Template" game object in the lobby.
+      if (!gameData) {
+          setGameData(prev => ({ ...prev, settings: { ...(prev?.settings || {}), [key]: value } }));
+          return;
+      }
+      if (!gameDocRef.current || gameData.hostId !== currentUser.uid) return;
+      try {
+          await updateDoc(gameDocRef.current, { [`settings.${key}`]: value });
+      } catch (e) { console.error("Failed to update settings:", e); }
+  }, [gameData, currentUser]);
+
+  const handleAdvanceState = useCallback(async (newState) => {
+      if (!gameDocRef.current || gameData.hostId !== currentUser.uid) return;
+      try {
+          await updateDoc(gameDocRef.current, { status: newState });
+      } catch (e) { console.error("Failed to advance state:", e); }
+  }, [gameData, currentUser]);
+
+  const handleSubmitPlayerPrompt = useCallback(async () => { 
+      await updateDoc(gameDocRef.current, { playerSubmittedPrompt: playerPromptInput, status: 'generating_scenario_options' }); 
+  }, [playerPromptInput]);
+
+  const handleVoteForScenario = async (idx) => { await updateDoc(gameDocRef.current, { [`playerVotes.${currentUser.uid}`]: idx, [`scenarioVoteCount.${idx}`]: increment(1) }); };
+
+  const handleTimeExpired = useCallback(async () => {
+      if (!gameData || gameData.status !== 'in_progress') return;
+      try {
+          await updateDoc(gameDocRef.current, {
+              turnDeadline: null, 
+              mediationLog: arrayUnion({ type: 'system', message: `⚠️ ${t('time_expired_msg')}`, timestamp: new Date(), tensionScore: Services.Utils.calculateTension(gameData.partyAState, gameData.partyBState) + 10 }), 
+              partyAState: `Impatient / ${gameData.partyAState}`, 
+              partyBState: `Annoyed / ${gameData.partyBState}` 
+          });
+      } catch (e) { console.error("Time expire update failed", e); }
+  }, [gameData, t]);
+
+  const handleSubmitIntervention = useCallback(async () => {
+      if (!mediatorInput.trim() || loading) return;
+      
+      setLoading(true);
+      const text = mediatorInput; setMediatorInput('');
+      const p = gameData.players[gameData.currentPlayerIndex];
+      const caucus = gameData.caucusMode;
+      const isA = caucus === 'partyA' || !caucus;
+      const isB = caucus === 'partyB' || !caucus;
+      
+      let complicationMsg = null;
+      if (Math.random() < 0.15) { 
+          const comp = COMPLICATIONS[Math.floor(Math.random() * COMPLICATIONS.length)];
+          const party = Math.random() > 0.5 ? gameData.partyAName : gameData.partyBName;
+          complicationMsg = `${party} ${comp}`;
+      }
+
+      try {
+        const updatePayload = { 
+            lastMediatorAction: text, 
+            turnDeadline: null, 
+            mediationLog: arrayUnion({ type: 'intervention', mediatorId: p.id, mediatorUsername: p.username, text, timestamp: new Date(), caucusWith: caucus }) 
+        };
+        
+        if (complicationMsg) {
+             updatePayload.mediationLog = arrayUnion(
+                 { type: 'intervention', mediatorId: p.id, mediatorUsername: p.username, text, timestamp: new Date(), caucusWith: caucus },
+                 { type: 'complication', message: complicationMsg, timestamp: new Date() }
+             );
+        }
+        
+        await updateDoc(gameDocRef.current, updatePayload);
+        
+        const schema = { type: "OBJECT", properties: { internalThoughts: { type: "STRING" }, responseText: { type: "STRING" }, newState: { type: "STRING" } }, required: ["responseText", "newState"] };
+        const languageInstruction = lang !== 'English' ? `OUTPUT IN ${lang.toUpperCase()}.` : '';
+        const currentPhase = gameData.phase || 'intro';
+        const phaseInstruction = PHASE_INSTRUCTIONS[currentPhase];
+        
+        // --- DYNAMIC MODE LOGIC ---
+        let gradePrompt = GRADE_LEVELS[gameData.settings?.gradeLevel || 'adult'].prompt;
+        if (gameData.settings?.gradeLevel === 'dynamic') {
+             gradePrompt = "Analyze the Mediator's input language complexity. Dynamically adjust your response to match their reading level and vocabulary sophistication.";
+        }
+        
+        let stylePrompt = WRITING_STYLES[gameData.settings?.writingStyle || 'realistic'].prompt;
+        if (gameData.settings?.writingStyle === 'dynamic') {
+             stylePrompt = "Analyze the Mediator's tone (formal/casual/empathetic). Mirror their communication style in your response.";
+        }
+
+        const diffPrompt = `Difficulty: ${gameData.settings?.difficulty}. Phase: ${currentPhase.toUpperCase()}. 
+        Phase Instruction: "${phaseInstruction}".
+        Speak using ${stylePrompt} suitable for a ${gradePrompt} audience.
+        Recent Event: ${complicationMsg || 'None'}.
+        Context History: ${Services.Utils.getLastExchanges(gameData.mediationLog)}
+        Context: ${caucus?'Private':'Joint'}. ${languageInstruction}`;
+        
+        let rA = {responseText: null, newState: gameData.partyAState}, rB = {responseText: null, newState: gameData.partyBState};
+
+        const triggerImageEdit = (partyName, newState, partyKey, currentImage) => {
+             Services.Image.edit(currentImage, newState, partyName).then(newImg => {
+                 if (newImg) {
+                     const imgRef = doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/game_images/${gameData.gameId}`);
+                     updateDoc(imgRef, { [partyKey]: newImg }).catch(e => console.error("Img update fail", e));
+                 }
+             });
+        };
+
+        if (isA) {
+            const promptA = `Roleplay ${gameData.partyAName}. State: ${gameData.partyAState}. Mediator said: "${text}". 
+            Hidden Interest: "${gameData.partyAHiddenInterest}". (Do not reveal this yet unless the mediator asks specifically or builds significant trust).
+            ${diffPrompt} JSON: {internalThoughts, responseText, newState}`;
+            rA = await Services.AI.call(promptA, schema);
+            const tensionA = Services.Utils.calculateTension(rA.newState, gameData.partyBState);
+            await updateDoc(gameDocRef.current, { 
+                partyAState: rA.newState, 
+                mediationLog: arrayUnion({
+                    type: 'party_response', 
+                    partyName: gameData.partyAName, 
+                    text: rA.responseText, 
+                    newState: rA.newState, 
+                    internalThoughts: rA.internalThoughts,
+                    tensionScore: tensionA, 
+                    timestamp: new Date(), 
+                    caucusWith: caucus
+                }) 
+            });
+            triggerImageEdit(gameData.partyAName, rA.newState, 'partyA', gameImages.partyA);
+        }
+        if (isB) {
+            const promptB = `Roleplay ${gameData.partyBName}. State: ${gameData.partyBState}. Mediator said: "${text}". Party A said: "${rA.responseText||''}". 
+            Hidden Interest: "${gameData.partyBHiddenInterest}". (Do not reveal this yet unless the mediator asks specifically or builds significant trust).
+            ${diffPrompt} JSON: {internalThoughts, responseText, newState}`;
+            rB = await Services.AI.call(promptB, schema);
+            const tensionB = Services.Utils.calculateTension(rA?.newState || gameData.partyAState, rB.newState);
+            await updateDoc(gameDocRef.current, { 
+                partyBState: rB.newState, 
+                mediationLog: arrayUnion({
+                    type: 'party_response', 
+                    partyName: gameData.partyBName, 
+                    text: rB.responseText, 
+                    newState: rB.newState, 
+                    internalThoughts: rB.internalThoughts,
+                    tensionScore: tensionB,
+                    timestamp: new Date(), 
+                    caucusWith: caucus
+                }) 
+            });
+            triggerImageEdit(gameData.partyBName, rB.newState, 'partyB', gameImages.partyB);
+        }
+        
+        if (gameDocRef.current) {
+            const evalPrompt = `Evaluate intervention: "${text}". Scenario: "${gameData.conflictScenario}". Goal: "${gameData.mediationGoal}". 
+            Coach Persona: ${gameData.settings?.coachStyle}. Difficulty: ${gameData.settings?.difficulty}. Phase: ${currentPhase}. ${languageInstruction}
+            CRITICAL SAFETY CHECK: Does this input contain profanity, bullying, PII, or hate speech? Set isSafetyViolation to true.
+            JSON: {pointsChange, feedback, isHarmful, isSafetyViolation, safetyReason}`;
+            const evalSchema = { type: "OBJECT", properties: { pointsChange: { type: "INTEGER" }, feedback: { type: "STRING" }, isHarmful: { type: "BOOLEAN" }, isSafetyViolation: { type: "BOOLEAN" }, safetyReason: { type: "STRING" } } };
+            
+            Services.AI.call(evalPrompt, evalSchema).then(res => {
+                updateDoc(gameDocRef.current, {
+                    [`playerScores.${p.id}`]: increment(res.pointsChange),
+                    lastEvaluation: { mediatorId: p.id, mediatorUsername: p.username, pointsChange: res.pointsChange, feedback: res.feedback, isHarmful: res.isHarmful, isSafetyViolation: res.isSafetyViolation, safetyReason: res.safetyReason, timestamp: serverTimestamp() },
+                    mediationLog: arrayUnion({ type: 'evaluation', mediatorId: p.id, mediatorUsername: p.username, points: res.pointsChange, feedback: res.feedback, isHarmful: res.isHarmful, isSafetyViolation: res.isSafetyViolation, safetyReason: res.safetyReason, timestamp: new Date() })
+                });
+            });
+        }
+
+        const nextPlayerIdx = (gameData.currentPlayerIndex+1)%gameData.players.length;
+        const timerSetting = gameData.settings?.timerSetting || 'none';
+        const secondsToAdd = TIMER_SETTINGS[timerSetting].seconds;
+        let nextDeadline = null;
+        let nextStartTime = null;
+        
+        if (secondsToAdd > 0) {
+            const now = new Date();
+            nextStartTime = serverTimestamp();
+            nextDeadline = new Date(now.getTime() + secondsToAdd * 1000); 
+        }
+
+        await updateDoc(gameDocRef.current, { 
+            currentPlayerIndex: nextPlayerIdx,
+            turnStartTime: nextStartTime,
+            turnDeadline: nextDeadline ? nextDeadline : null 
+        });
+
+      } catch(e) { setError(e.message); } finally { setLoading(false); }
+  }, [mediatorInput, loading, gameData, lang, gameImages]);
+
+  const handleToggleCaucus = async (target) => {
+      const newMode = gameData.caucusMode === target ? null : target;
+      const msg = newMode 
+        ? `Started private caucus with ${target==='partyA'?gameData.partyAName:gameData.partyBName}.` 
+        : `Ended caucus. Returning to joint session.`;
+      try {
+          await updateDoc(gameDocRef.current, { 
+              caucusMode: newMode, 
+              mediationLog: arrayUnion({type: 'system', message: msg, timestamp: new Date()}) 
+          });
+      } catch(e) { console.error("Failed to toggle caucus", e); }
+  };
+
+  const handleEndGame = async () => {
+     try {
+       await updateDoc(gameDocRef.current, { 
+           status: 'generating_debrief_questions', 
+           mediationLog: arrayUnion({type:'system', message:'Session Ended by Mediator.', timestamp: new Date()}) 
+       });
+     } catch(e) { console.error(e); }
+  };
+
+  const handleSendInstructorFeedback = async () => { if (!mediatorInput.trim()) return; const text = mediatorInput; setMediatorInput(''); await updateDoc(gameDocRef.current, { mediationLog: arrayUnion({ type: 'system', message: `[INSTRUCTOR TIP]: ${text}`, timestamp: new Date() }) }); };
+  const handleGetSuggestion = async () => { setLoading(true); try { const s = await Services.AI.call(`Suggest 3 moves. Conflict: "${gameData.conflictScenario}". Phase: ${gameData.phase}. Return plain text bullet points.`); setSuggestionContent({ title: t('ai_suggestion_title'), text: s }); setShowSuggestionModal(true); } catch(e){setError(e.message)} finally {setLoading(false)} };
+  const handleAnalyzeTurn = async () => { setLoading(true); try { const s = await Services.AI.call(`Analyze last exchange. Phase: ${gameData.phase}. Med: "${gameData.lastMediatorAction}". A: "${gameData.lastPartyAResponseText}". B: "${gameData.lastPartyBResponseText}". Return short paragraph.`); setSuggestionContent({ title: t('ai_analysis_title'), text: s }); setShowSuggestionModal(true); } catch(e){setError(e.message)} finally {setLoading(false)} };
+  const handleSubmitDebriefAnswer = async () => { const qIdx = gameData.playerDebriefs[currentUser.uid].currentQuestionIndex; const updatedAnswers = [...(gameData.playerDebriefs[currentUser.uid].answers || [])]; updatedAnswers[qIdx] = { question: gameData.debriefQuestions[qIdx].questionText, answer: currentDebriefAnswerInput }; setCurrentDebriefAnswerInput(''); const updatePayload = { [`playerDebriefs.${currentUser.uid}.answers`]: updatedAnswers }; if (qIdx < gameData.debriefQuestions.length - 1) updatePayload[`playerDebriefs.${currentUser.uid}.currentQuestionIndex`] = qIdx + 1; else updatePayload[`playerDebriefs.${currentUser.uid}.status`] = 'evaluating'; await updateDoc(gameDocRef.current, updatePayload); };
+  const handleNextPhase = async () => { const n = Services.Utils.getNextPhase(gameData.phase || 'intro'); if(n) await updateDoc(gameDocRef.current, { phase: n, mediationLog: arrayUnion({ type: 'system', message: `Moving to phase: ${n.toUpperCase()}`, timestamp: new Date() }) }); };
+  const handleOpenAgreement = () => { setAgreementText(gameData.agreementText || ''); setShowAgreementModal(true); };
+  const handleSaveAgreement = async () => { await updateDoc(gameDocRef.current, { agreementText: agreementText, mediationLog: arrayUnion({ type: 'system', message: `Agreement draft updated.`, timestamp: new Date() }) }); setShowAgreementModal(false); };
+  const handleExportTranscript = () => { if (!gameData) return; const filename = `mediation_transcript_${gameData.gameId}.txt`; Services.Utils.downloadJSON(gameData, filename); };
+  const evaluateDebriefAnswers = useCallback(async (evalUserId, answers, gameData) => { /* Same logic */ }, []);
+  
+  // New Handlers for Save/Load
+  const handleExportSave = useCallback(() => {
+    if (!gameData) return;
+    const filename = `mediation_save_${gameData.gameId}_${new Date().toISOString().split('T')[0]}.json`;
+    Services.Utils.downloadJSON(gameData, filename);
+  }, [gameData]);
+
+  const handleImportSave = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+        const importedData = await Services.Utils.readJSON(file);
+        
+        if (!importedData.status || !importedData.mediationLog) {
+            throw new Error("Invalid save file structure.");
+        }
+
+        const newGameId = Services.Utils.generateId();
+        
+        const restoredGameData = {
+            ...importedData,
+            gameId: newGameId,
+            hostId: currentUser.uid, 
+            players: [{ id: currentUser.uid, username: username || 'Restored User', joinedAt: new Date() }], 
+            importedAt: serverTimestamp()
+        };
+
+        await setDoc(doc(Services.Auth.db, `artifacts/${APP_ID}/public/data/mediation_games/${newGameId}`), restoredGameData);
+        
+        setGameData(restoredGameData); 
+        setInputGameId(newGameId); 
+
+    } catch (err) {
+        console.error("Import failed:", err);
+        setError("Failed to load save file. It might be corrupted.");
+    } finally {
+        setLoading(false);
+        event.target.value = ''; 
+    }
+  }, [currentUser, username]);
+
+  // --- 5. Main Render Router ---
+  if (!isUsernameSet) return (
+      <div className={`${THEMES.dark.colors.bg} ${THEMES.dark.layout.centerScreen}`}>
+          <ThemeContext.Provider value={THEMES[themeMode]}>
+             <div className={`${THEMES[themeMode].layout.card} ${THEMES[themeMode].colors.surface} max-w-md`}>
+                
+                {/* Visual Avatar Preview */}
+                <div className="flex justify-center mb-6">
+                    <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-4xl font-bold text-white shadow-lg shadow-indigo-500/30 border-4 border-white/10`}>
+                        {username ? username[0].toUpperCase() : "?"}
+                    </div>
+                </div>
+
+                <h1 className={`text-2xl mb-2 ${THEMES[themeMode].colors.textMain} font-bold text-center`}>{t('set_username_title')}</h1>
+                <p className={`text-xs ${THEMES[themeMode].colors.textDim} text-center mb-6`}>Choose your codename to enter the simulation.</p>
+
+                {/* Generator Controls */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="relative">
+                        <select 
+                            value={adjIndex}
+                            onChange={(e) => handleNameConfigChange('adj', e.target.value)}
+                            className={`w-full appearance-none bg-black/20 ${THEMES[themeMode].colors.textMain} text-sm p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/50 border border-white/5 cursor-pointer font-bold`}
+                        >
+                            {ADJECTIVES.map((adj, i) => <option key={i} value={i} className="bg-slate-800">{adj}</option>)}
+                        </select>
+                        <ChevronDown size={14} className={`absolute right-3 top-3.5 ${THEMES[themeMode].colors.textDim} pointer-events-none`}/>
+                    </div>
+                    <div className="relative">
+                        <select 
+                            value={animalIndex}
+                            onChange={(e) => handleNameConfigChange('animal', e.target.value)}
+                            className={`w-full appearance-none bg-black/20 ${THEMES[themeMode].colors.textMain} text-sm p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/50 border border-white/5 cursor-pointer font-bold`}
+                        >
+                            {ANIMALS.map((ani, i) => <option key={i} value={i} className="bg-slate-800">{ani}</option>)}
+                        </select>
+                        <ChevronDown size={14} className={`absolute right-3 top-3.5 ${THEMES[themeMode].colors.textDim} pointer-events-none`}/>
+                    </div>
+                </div>
+
+                {/* Randomize & Manual Input */}
+                <div className="flex gap-2 mb-6">
+                    <button 
+                        onClick={randomizeName} 
+                        className={`p-3 rounded-xl bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-all border border-indigo-500/30`} 
+                        title="Randomize"
+                    >
+                        <RefreshCw size={20} />
+                    </button>
+                    {/* ENFORCED ANONYMITY: Read-only display prevents manual entry of PII */}
+                    <div className={`${THEMES[themeMode].colors.input} w-full rounded-xl p-3 text-center font-mono font-bold tracking-wide flex items-center justify-center bg-black/40 text-slate-300 cursor-not-allowed`} title="Identity fixed for privacy">
+                        {username} <Lock size={14} className="ml-2 opacity-50" />
+                    </div>
+                </div>
+
+                <button onClick={()=>setIsUsernameSet(true)} className={`${THEMES[themeMode].layout.button} ${THEMES[themeMode].colors.primary}`}>
+                    {t('set_username_btn')} <ArrowRightCircle size={18} className="ml-2"/>
+                </button>
+             </div>
+          </ThemeContext.Provider>
+      </div>
+  );
+
+  return (
+        <ThemeContext.Provider value={THEMES[themeMode]}>
+            {/* VIEW ROUTER */}
+            
+            {/* 1. Active Game View (Teacher Spectating OR Student Playing) */}
+            {gameData?.status === 'in_progress' ? (
+                 <ActiveGameView 
+                    t={t} 
+                    gameData={gameData} 
+                    userId={currentUser?.uid} 
+                    isInstructor={isInstructor} // Teacher mode passed down
+                    loading={loading} 
+                    gameImages={gameImages} 
+                    actions={{ 
+                        submitIntervention: handleSubmitIntervention, 
+                        toggleCaucus: handleToggleCaucus, 
+                        endGame: handleEndGame,
+                        sendFeedback: handleSendInstructorFeedback,
+                        getSuggestion: handleGetSuggestion, 
+                        analyzeTurn: handleAnalyzeTurn,
+                        handleTimeExpired: handleTimeExpired,
+                        nextPhase: handleNextPhase,
+                        openAgreement: handleOpenAgreement,
+                        exportSave: handleExportSave,
+                        exitSpectator: handleExitSpectator // New action for teachers
+                    }}
+                    inputs={{ mediatorInput, setMediatorInput }}
+                    uiState={{ messagesEndRef }}
+                    tour={{ step: tourStep, setStep: setTourStep, steps: tourSteps }}
+                 />
+                 
+            /* 2. Debrief View (Post-Game) */
+            ) : gameData?.status === 'awaiting_debrief_answers' && gameData.debriefQuestions ? (
+                 isInstructor ? (
+                    <div className={`${THEMES[themeMode].layout.centerScreen} ${THEMES[themeMode].colors.bg}`}>
+                        <div className={`${THEMES[themeMode].layout.card} ${THEMES[themeMode].colors.surface} text-center`}>
+                            <h2 className={`text-2xl font-bold ${THEMES[themeMode].colors.accent} mb-4`}>Session Debrief (Instructor View)</h2>
+                            <p className={`${THEMES[themeMode].colors.textDim} mb-4`}>Players are answering reflection questions...</p>
+                            <button onClick={() => { setGameData(null); setIsInstructor(false); }} className={`mt-6 ${THEMES[themeMode].colors.textDim} hover:${THEMES[themeMode].colors.textMain} text-sm underline`}>{t('back_lobby')}</button>
+                        </div>
+                    </div>
+                 ) : (
+                    (() => {
+                        const debriefState = gameData.playerDebriefs?.[currentUser.uid];
+                        if (!debriefState || debriefState.status === 'complete' || debriefState.status === 'evaluating') {
+                            const assessment = debriefState?.evaluation;
+                            return (
+                                <div className={`${THEMES[themeMode].layout.centerScreen} ${THEMES[themeMode].colors.bg}`}>
+                                    {assessment?.resolutionScore > 70 && <Confetti />}
+                                    <div className={`${THEMES[themeMode].layout.card} ${THEMES[themeMode].colors.surface} text-center max-w-2xl relative z-10`}>
+                                        <h2 className={`text-2xl font-bold ${THEMES[themeMode].colors.accent} mb-4`}>{t('debrief_submitted')}</h2>
+                                        {debriefState?.status === 'evaluating' ? (
+                                            <p className={`animate-pulse ${THEMES[themeMode].colors.accent}`}>AI Coach is grading your answers...</p>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <StoryConclusionCard story={assessment.storyConclusion} t={t} />
+                                                <AssessmentCard assessment={assessment} t={t} />
+                                                <div className={`${THEMES[themeMode].colors.surfaceHighlight} p-4 rounded-lg text-left max-h-40 overflow-y-auto`}>
+                                                    <p className={`text-xs ${THEMES[themeMode].colors.textDim} font-bold mb-1`}>FINAL COACH NOTES</p>
+                                                    <p className={`text-sm ${THEMES[themeMode].colors.textMain} whitespace-pre-wrap`}>{assessment.feedback}</p>
+                                                </div>
+                                                <TensionGraph log={gameData.mediationLog} t={t} />
+                                                <button onClick={handleExportTranscript} className={`${THEMES[themeMode].layout.button} ${THEMES[themeMode].colors.secondary}`}>
+                                                    <Download size={18} className="mr-2"/> {t('download_transcript')}
+                                                </button>
+                                            </div>
+                                        )}
+                                        <button onClick={() => setGameData(null)} className={`mt-6 ${THEMES[themeMode].colors.textDim} hover:${THEMES[themeMode].colors.textMain} text-sm underline`}>{t('back_lobby')}</button>
+                                    </div>
+                                </div>
+                            );
+                        }
+                        const qIdx = debriefState.currentQuestionIndex;
+                        return (
+                          <div className={`${THEMES[themeMode].layout.centerScreen} ${THEMES[themeMode].colors.bg}`}>
+                              <div className={`${THEMES[themeMode].layout.card} ${THEMES[themeMode].colors.surface}`}>
+                                  <h2 className={`text-xl font-bold ${THEMES[themeMode].colors.accent} mb-4`}>Debrief Question {qIdx+1}</h2>
+                                  <p className={`mb-4 ${THEMES[themeMode].colors.textDim} whitespace-pre-wrap`}>{gameData.debriefQuestions[qIdx]?.questionText}</p>
+                                  <textarea 
+                                      value={currentDebriefAnswerInput} 
+                                      onChange={e=>setCurrentDebriefAnswerInput(e.target.value)} 
+                                      className={`${THEMES[themeMode].colors.input} w-full rounded-xl p-4 h-32 mb-4`}
+                                      placeholder="Reflect on your experience..."
+                                  />
+                                  <button onClick={handleSubmitDebriefAnswer} disabled={!currentDebriefAnswerInput.trim()} className={`${THEMES[themeMode].layout.button} ${THEMES[themeMode].colors.primary}`}>{t('submit_answer')}</button>
+                              </div>
+                          </div>
+                        );
+                    })()
+                 )
+            ) : gameData?.status === 'generating_scenario_options' ? (
+                <div className={`${THEMES[themeMode].layout.centerScreen} ${THEMES[themeMode].colors.bg} ${THEMES[themeMode].colors.textMain}`}><RotateCcw className="animate-spin mr-2"/> {t('generating_scenarios')} {t('generating_images')}</div>
+            ) : gameData?.status === 'generating_debrief_questions' ? (
+                <div className={`${THEMES[themeMode].layout.centerScreen} ${THEMES[themeMode].colors.bg} ${THEMES[themeMode].colors.textMain}`}><RotateCcw className="animate-spin mr-2"/> Generating Debrief...</div>
+            
+            /* 3. Teacher Dashboard (Active Class) */
+            ) : isTeacher && classroomData?.status === 'active' ? (
+                <ClassroomDashboard 
+                    classroomData={classroomData}
+                    t={t}
+                    onSpectate={handleSpectateGame}
+                    onCloseClass={handleCloseClassroom} // Pass handler
+                />
+
+            /* 4. Classroom Lobby (Waiting Room) */
+            ) : classroomData ? (
+                <ClassroomLobby
+                    t={t}
+                    classroomData={classroomData}
+                    userId={currentUser?.uid}
+                    isHost={isTeacher}
+                    actions={{
+                        startSession: handleStartClassSession
+                    }}
+                    inputs={{ playerPromptInput, setPlayerPromptInput }}
+                    theme={THEMES[themeMode]}
+                    lang={lang}
+                />
+
+            /* 5. Main Game Lobby (Default Entry) */
+            ) : (
+                <LobbyView 
+                    t={t} 
+                    gameData={gameData} 
+                    userId={currentUser?.uid} 
+                    isHost={gameData?.hostId === currentUser?.uid}
+                    actions={{ 
+                        createGame: handleCreateGame, 
+                        joinGameOrClass: handleJoinGameOrClass, 
+                        resetGame: () => setGameData(null), 
+                        submitPrompt: handleSubmitPlayerPrompt, 
+                        updateSettings: handleUpdateSettings, 
+                        advanceState: handleAdvanceState,
+                        vote: handleVoteForScenario, 
+                        select: handleSelectScenarioOption,
+                        loadScenario: handleLoadScenario,
+                        createClassroom: handleCreateClassroom // New action
+                    }}
+                    inputs={{ inputGameId, setInputGameId, playerPromptInput, setPlayerPromptInput }}
+                    instructorMode={instructorMode}
+                    setInstructorMode={setInstructorMode}
+                    langState={{ lang, setLang, isTranslating, handleTranslateUI }}
+                    savedScenarios={savedScenarios} 
+                    setShowLibrary={setShowLibrary}
+                    showLibrary={showLibrary} 
+                    themeState={{ themeMode, setThemeMode }}
+                    onImport={handleImportSave} 
+                />
+            )}
+
+            <Modal isOpen={showSuggestionModal} onClose={() => setShowSuggestionModal(false)} title={suggestionContent.title}>
+                <div className={`whitespace-pre-wrap text-sm leading-relaxed ${THEMES[themeMode].colors.textDim}`}>{suggestionContent.text}</div>
+                <button onClick={() => setShowSuggestionModal(false)} className={`mt-4 w-full ${THEMES[themeMode].colors.primary} p-2 rounded font-bold`}>Close</button>
+            </Modal>
+
+            <Modal isOpen={showEvaluationModal} onClose={() => setShowEvaluationModal(false)} title="Turn Feedback">
+                <div className={`whitespace-pre-wrap text-sm ${THEMES[themeMode].colors.textDim}`}>{lastEvaluationResult?.feedback}</div>
+                <button onClick={()=>setShowEvaluationModal(false)} className={`mt-4 w-full ${THEMES[themeMode].colors.primary} p-2 rounded font-bold`}>Continue</button>
+            </Modal>
+
+            <Modal isOpen={showAgreementModal} onClose={() => setShowAgreementModal(false)} title={t('agreement_modal_title')} size="max-w-2xl">
+                <textarea 
+                    value={agreementText}
+                    onChange={(e) => setAgreementText(e.target.value)}
+                    className={`${THEMES[themeMode].colors.input} w-full rounded-xl p-4 h-64`}
+                    placeholder={t('agreement_placeholder')}
+                />
+                <div className="flex gap-2 mt-4">
+                    <button onClick={() => setShowAgreementModal(false)} className={`flex-1 ${THEMES[themeMode].colors.secondary} p-2 rounded`}>Cancel</button>
+                    <button onClick={handleSaveAgreement} className={`flex-1 ${THEMES[themeMode].colors.success.replace('text','bg').replace('400','600')} text-white p-2 rounded font-bold`}>{t('save_agreement')}</button>
+                </div>
+            </Modal>
+
+            {/* Close Class Confirmation Modal */}
+            <Modal isOpen={showCloseConfirmation} onClose={() => setShowCloseConfirmation(false)} title="End Session & Delete Data?">
+                <div className="text-center p-2">
+                    <div className="w-16 h-16 bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <LogOut size={32}/>
+                    </div>
+                    <p className={`text-sm ${THEMES[themeMode].colors.textDim} mb-6`}>
+                        This will permanently delete the classroom and all student game logs from the database. This action cannot be undone. This is recommended for privacy compliance.
+                    </p>
+                    <div className="flex gap-3">
+                        <button onClick={() => setShowCloseConfirmation(false)} className={`flex-1 p-3 rounded-xl ${THEMES[themeMode].colors.secondary}`}>Cancel</button>
+                        <button onClick={confirmCloseClass} className={`flex-1 p-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700`}>Delete All Data</button>
+                    </div>
+                </div>
+            </Modal>
+        </ThemeContext.Provider>
+  );
+};
+
+export default App;

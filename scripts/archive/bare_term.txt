@@ -1,0 +1,161 @@
+=== Bare term references (not item.term, .terms, etc.) ===
+L1630:                          term: data.word,
+L1653:                          term: rawWord,
+L4555:     const extractWords = React.useCallback((term) => {
+L4556:         if (!term) return [];
+L4616:         glossaryTerms.forEach(term => {
+L4617:             const fullTerm = term.term || term.word || term;
+L4658:             glossaryTerms.forEach(term => {
+L11242: • **Tier 2/Tier 3 Counts**: Specify academic vs domain-specific term counts.
+L11245: • **Custom Instructions**: Guide term selection or definitions.
+L11444: • **Project-Based Ideas**: Long-term project concepts with driving questions.
+L12718:     add_term_placeholder: "Add a specific term to glossary...",
+L12735:       select_highlight: "Include this term in Leveled Text Highlighting",
+L12738:       generate_icon: "Generate a visual icon for this term",
+L12765:         generating_icon_term: "Generating icon for \"{term}\"...",
+L12766:         defining_term: "Defining \"{term}\"...",
+L12767:         added_term: "Added \"{term}\" to glossary!",
+L12771:         icon_generated: "Icon generated for {term}!",
+L12942:     print_instructions: "Instructions: Draw a line to match each term on the left with its correct definition on the right.",
+L12948:     aria_select_first: "Please select a term from the left column first.",
+L12951:     select_term_aria: "Select term",
+L15085:     glossary_add_term: "Add a custom term to the glossary. Include the word and optionally a definition.",
+L15086:     glossary_edit: "Edit this glossary term including definition, tier, images, and translations.",
+L15088:     glossary_standard_flashcards: "Generate traditional flashcards with term on front and definition on back.",
+L15118:     bingo_prev_clue: "Go back to the previous term to repeat or review the clue.",
+L16090:     generating_icons: "Generating term icons...",
+L16671:         simplified_add_term: "Add a custom vocabulary term from the simplified text to your glossary.",
+L16724:         glossary_image_size: "Set the display size for glossary term images (small, medium, large).",
+L16725:         glossary_image_style: "Choose the art style for generated term images (realistic, cartoon, etc.).",
+L16728:         glossary_regen_image: "Generate a new image for this glossary term if the current one isn't suitable.",
+L21383:             item.data.forEach(term => {
+L21384:                 processField(term, 'image');
+L21421:             item.data.forEach(term => restoreField(term, 'image'));
+L21880:           strategy = item.image ? 'term-image' : 'term-def';
+L21883:           const options = ['term-def', 'term-image', 'image-def'];
+L21886:       if ((strategy === 'term-image' || strategy === 'image-def') && !item.image) {
+L21887:           strategy = 'term-def';
+L21892:           case 'term-def':
+L21900:           case 'term-image':
+L22046:             <option value="term-def">{t('memory.modes.term_def')}</option>
+L22047:             <option value="term-image">{t('memory.modes.term_image')}</option>
+L22184:         term: item.term,
+L23563:         let term = item.term;
+L23570:                     term = trans.substring(0, splitIdx).trim();
+L23573:                     if (trans.length < 20) term = trans;
+L23580:         const cleanWord = term
+L23588:                 original: term
+L24551:                   row.push({ type: 'term', text: shuffled[termIdx] });
+L24697:     const items = useMemo(() => data.filter(item => item.term && item.term.length > 2), [data, term]);
+L31622:       mode: 'term',
+L32187:     'glossary_language_flashcards': "Launch bilingual flashcard practice for language learning. Cards show: term in target language → translation in n
+L32189:     'glossary_export_language': "Export bilingual flashcards with terms in both languages. Each card shows: term in target language (front), translati
+L32194:     'glossary_matching': "Interactive term-definition matching activity. Gameplay: terms appear on left, definitions on right; draw lines or drag to c
+L32195:     'glossary_bingo': "Create printable Bingo cards with your vocabulary terms. Features: randomized card generation (each student gets unique card), 
+L32197:     'glossary_scramble': "Unscramble vocabulary terms from jumbled letters. Gameplay: scrambled letters appear, type the correct term, advance to next
+L32198:     'glossary_edit': "Open the glossary editor to customize vocabulary content. Editor allows: modifying term names and definitions, adding/removing t
+L32199:     'glossary_add_term': "Add a custom vocabulary term to the glossary. Enter a style (e.g., 'cartoon', 'pixel art') and a term to add.",
+L32200:     'glossary_image_style': "Define the art style for AI-generated term images (e.g., 'pixel art', 'cartoon', 'sketch').",
+L32206:     'glossary_search': "Find specific vocabulary terms quickly in your glossary. Type any portion of a word to filter results instantly. Search matche
+L32218:     'tool_glossary': "Create a comprehensive visual vocabulary resource from your source content. AI identifies: key academic vocabulary, context-spec
+L32295:     'bingo_images_chk': "Toggle visual images on Bingo cards. When enabled: each cell shows both the vocabulary term AND its AI-generated image. Benef
+L32298:     'bingo_launch_caller_btn': "Launch the interactive Bingo Caller for whole-class gameplay. Caller displays: current clue (definition read aloud), v
+L32304:     'bingo_next_clue': "Advance to the next vocabulary item. Click when students are ready for the next challenge. In manual mode: full control over p
+L32392:     'glossary_remove_words': "Control whether AI-generated vocabulary images include text overlays. When enabled: images are purely visual with no tex
+L32393:     'glossary_regen_image': "Generate a new AI image for this vocabulary term. Use when: the current image does not accurately represent the concept, 
+L32394:     'glossary_delete_image': "Remove the visual representation for this vocabulary term. Deletion is permanent for this image. The term and definition
+L32395:     'glossary_speak_term': "Click to hear this vocabulary term pronounced by the AI voice. Uses your selected voice and speed settings from Voice Sett
+L32396:     'glossary_download_audio': "Download an MP3 file of this vocabulary term being spoken aloud. Perfect for: creating audio flashcard decks, offline 
+L32400:     'simplified_define_mode': "Activate Define Mode to turn any word into an interactive vocabulary lookup. Click any word to see: dictionary definiti
+L32402:     'simplified_add_term': "Quick-add vocabulary from your reading directly to glossary. Select any word in the simplified text, then click this butto
+L32421:     'concept_sort_item': "Individual sortable item representing a concept, term, or example. Items display: text content, optional image, and current 
+L32474:     'glossary_language_input': "Specify languages for vocabulary translation. Enter languages: Spanish, Mandarin, Arabic, French, Vietnamese, Tagalog,
+L32565:     'escape_room_matching_submit': "Verify your matched pairs are correct. Click after connecting all items from left column to their matches on right
+L32679:     'settings_unlock_xp': "Configure XP required to unlock special features. Default threshold provides achievable but meaningful goal. Higher thresho
+L32689:     'simplified_teacher_tools': "Open advanced editing panel with teacher-specific features. Tools include: batch word replacement, glossary term inje
+L32694:     'memory_card_item': "Interactive memory card. Click to reveal what is underneath. Cards show vocabulary term on one card and definition (or image)
+L32697:     'matching_term_item': "Interactive term card for vocabulary matching. Click to select (card highlights). Then click the corresponding definition t
+L32698:     'matching_def_item': "Interactive definition card for vocabulary matching. After selecting a term, click the matching definition here. Correct mat
+L32763:     'flashcard_play_sequence': "Automatically cycle through all flashcards with spoken audio. Each card: appears, term is spoken, brief pause, definit
+L33763:                  for (const term of termsToWarm) {
+L33764:                       if (typeof callTTS === 'function') { const url = await callTTS(term, selectedVoice, 1, 1).catch(e => { warnLog('Pre-warm TTS ski
+L34992:           if (!text) return { term: "", def: "" };
+L34996:                   term: text.substring(0, splitIdx).trim(),
+L35000:           return { term: "", def: text };
+L35753:                   const term = item.term;
+L35757:                       debugLog("Skipping TTS for bank item:", term);
+L35760:                   if (!term) continue;
+L35762:                   if (glossaryAudioCache.current.has(term)) continue;
+L35764:                       const effectiveText = (!term.includes(' ') && term.length < 100) ? t(term) : term;
+L35777:                       warnLog("Warm-up failed for:", term);
+L37945:           debugLog('[HealthCheck] DIAG: First term keys:', Object.keys(sample));
+L37947:               term: sample.term, def: sample.def, definition: sample.definition, word: sample.word
+L37958:               return { term: name, definition: def, tier };
+L37980:     {"term": "suggested missing term", "reason": "why it should be included (max 15 words)"}
+L38020:       termNames.push(addedTerm); // include just-added term so we don't re-suggest it
+L38022: Suggest exactly 1 NEW important vocabulary term that is missing from this glossary and would strengthen a student's understanding of the source text.
+L38024: Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why it should be included (max 15 words)"}`;
+L38132:               1. Keep the "term" and "def" fields in English.
+L38881:           const cardContent = shuffled.slice(0, termsNeeded).map(item => ({ ...item, type: 'term' }));
+L38885:                   term: 'FREE SPACE',
+L39682:         - VOCABULARY GUARD: If you use a domain-specific term (Tier 3), define it simply in the same sentence.
+L40744:     if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) {
+L40877:             if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) {
+L43022:               cleanItem.data.forEach(term => {
+L49061: 4. "matching" - Match 4 pairs of related items (term↔definition, cause↔effect, etc.)
+L49125:       "question": "Match each term with its definition:",
+L49138:       "question": "Unscramble this key term from the content:",
+L50077:               For each term, provide:
+L50086:               Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lan
+L50097:               For each term, provide:
+L50102:               Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }]
+L50146:                                     warnLog("Auto-remove text failed for term:", item.term, editErr);
+L53176:                 Analyze the input term "${newGlossaryTerm}".
+L53177:                 1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
+L53178:                 2. Provide a simple English definition for the term for a ${gradeLevel} student.
+L53184:                 Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific", 
+L53188:                 Analyze the input term "${newGlossaryTerm}".
+L53189:                 1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
+L53190:                 2. Provide a simple English definition for the term for a ${gradeLevel} student.
+L53193:                 Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }
+L53210:                       warnLog("Auto-remove text failed for new term:", newTermItem.term, editErr);
+L53215:               warnLog("Auto-image generation failed for new term:", newTermItem.term, imgErr);
+L53223:           addToast(t('glossary.actions.added_term', { term: newTermItem.term }), "success");
+L53235:       addToast(t('glossary.actions.defining_term', { term: word }), "info");
+L53240:                 Analyze the input term "${word}".
+L53241:                 1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
+L53242:                 2. Provide a simple English definition for the term for a ${gradeLevel} student.
+L53248:                 Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific", 
+L53252:                 Analyze the input term "${word}".
+L53253:                 1. Detect the language. If it is NOT English, translate it to English. Use this English version as the main "term".
+L53254:                 2. Provide a simple English definition for the term for a ${gradeLevel} student.
+L53257:                 Return ONLY a JSON object (not array): { "term": "English Term", "def": "English Definition", "tier": "Academic" | "Domain-Specific" }
+L53263:               addToast(t('glossary.actions.generating_icon_term', { term: word }), "info");
+L53273:                       warnLog("Auto-remove text failed for quick add term:", newTermItem.term, editErr);
+L53278:               warnLog("Auto-image generation failed for quick add term:", newTermItem.term, imgErr);
+L53311:           addToast(t('glossary.actions.added_term', { term: word }), "success");
+L53338:   const handleGenerateTermImage = async (index, term) => {
+L53343:         const prompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTL
+L53352:                  warnLog("Auto-remove text failed for regenerated term:", term, editErr);
+L53360:         addToast(t('glossary.actions.icon_generated', { term: term }), "success");
+L53368:   const handleGenerateConceptItem = useCallback(async (term, categories) => {
+L53369:       if (!term || !categories || categories.length === 0) return null;
+L53373:             Task: Classify the educational term "${term}" into exactly one of the provided categories.
+L53378:             2. Refine the term text if necessary (e.g. correct spelling or simplify for ${gradeLevel}).
+L53382:                 "content": "Refined term text"
+L61426:                                                         aria-label={`Read term: ${generatedContent.data[flashcardIndex].term}`}
+L61439:                                                                     const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
+L61440:                                                                     if (term) handleSpeak(term, `fc-front-${standardDeckLang}`);
+L61447:                                                                         const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
+L61448:                                                                         if (term) handleSpeak(term, `fc-front-${standardDeckLang}`);
+L61481:                                                         onClick={(e) => { e.stopPropagation(); handleSpeak(generatedContent.data[flashcardIndex].term,
+L61486:                                                                 handleSpeak(generatedContent.data[flashcardIndex].term, 'fc-front-term');
+L61491:                                                         aria-label={`Read term: ${generatedContent.data[flashcardIndex].term}`}
+L61641:                                                                     onClick={(e) => { e.stopPropagation(); handleSpeak(transTerm, 'fc-back-term'); }}
+L61646:                                                                             handleSpeak(transTerm, 'fc-back-term');
+L61651:                                                                     aria-label={`Read ${flashcardLang} term`}
+L61944:                         <button aria-label="Add glossary term"
+L62076:                                                 title="Add this term to glossary"
+L62195:                                                             onChange={(e) => handleGlossaryChange(idx, 'term', e.target.value)}
+L62294:                                                 <button onClick={() => handleSpeak(item.term, `term-${idx}`)} disabled={isGeneratingAudio && playingCo
+L62295:                                                 <button onClick={() => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`)} disabled

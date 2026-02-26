@@ -1,0 +1,123 @@
+const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+      const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
+      const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+      const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+          ? latestAnalysis.data.originalText
+          : inputText;
+      let contextText = "";
+      if (useMathSourceContext) {
+          contextText = availableSource || "";
+      }
+      let mathContextPrompt = "";
+      if (contextText) {
+          mathContextPrompt += `Source Context: "${contextText.substring(0, 1500)}..."\n`;
+      }
+      if (studentInterests.length > 0) {
+          mathContextPrompt += `Interests: ${studentInterests.join(', ')}\n`;
+      }
+      mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
+      if (!problemToSolve.trim()) {
+          console.error('[MATH] Empty input — nothing to generate');
+          addToast('Please enter a topic or problem first', 'error');
+          return;
+      }
+      setIsProcessing(true);
+      setGenerationStep(t('status.solving'));
+      setError(null);
+      if (switchView) {
+          setGeneratedContent(null);
+          setActiveView('math');
+      }
+      setShowMathAnswers(false);
+      try {
+          let prompt = "";
+          if (mathMode === 'Freeform Builder') {
+              prompt = `
+                You are an Expert Math Curriculum Designer creating a CUSTOM problem set.
+                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                Teacher's Request: "${problemToSolve}"
+                ${mathContextPrompt}
+                Subject: ${mathSubject}
+                Grade Level: ${gradeLevel}
+                
+                INSTRUCTIONS:
+                The teacher has described exactly what they want in natural language. Create the requested mix of problems.
+                Optionally, you can enable STEM Lab manipulatives by returning objects in "manipulativeSupport" (to pre-load scaffolding) or "manipulativeResponse" (to grade the student's physical configuration instead of typed text). Supported tools are "coordinate" and "base10". Example state for base10: {"hundreds":1, "tens":5, "ones":0}.
+                You may include ANY type of math problem: computation, word problems, geometry/volume, missing number, algebraic equations, fractions, measurement, data/graphing, etc.
+                Follow the teacher's instructions precisely regarding:
+                - Number and types of problems
+                - Difficulty level
+                - Specific topics or concepts
+                - Any thematic context they requested
+                
+                If the teacher's request is vague (e.g. "5 mixed problems for grade 3"), create a diverse set spanning multiple math domains appropriate for that level.
+                
+                Return ONLY JSON in the following format:
+                {
+                  "title": "Custom Problem Set: [brief description]",
+                  "problems": [
+                    {
+                      "question": "Problem text...",
+                      "expression": "Math expression (e.g. 3 * 4 + 5)",
+                      "answer": "The answer",
+                      "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression for this step" }],
+                      "type": "computation|word_problem|geometry|missing_number|fraction|algebra|measurement",
+                      "realWorld": "Why this matters...",
+                      "manipulativeSupport": null,
+                      "manipulativeResponse": null
+                    }
+                  ],
+                  "graphData": null
+                }
+              `;
+          } else if (mathMode === 'Problem Set Generator') {
+              prompt = `
+                You are an expert Math Curriculum Designer.
+                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                Topic/Skill: "${problemToSolve}"
+                ${mathContextPrompt}
+                Instruction: Create a set of 3-5 distinct word problems.
+                Context Usage: Frame the word problems using characters, settings, or themes from the Source Context. Use names/concepts from the Student Interests.
+                Output Format:
+                Return a JSON object with a "problems" array.
+                Each item in the array must have:
+                - "question": The problem text.
+                - "expression": The math expression that solves this (standard notation: +, -, *, /, ^, parentheses). Example: "15 - (3 * 4)"
+                - "answer": The numeric solution (a number).
+                - "steps": An array of 2-5 step objects { "explanation": "Clear explanation of what to do in this step", "latex": "The math expression for this step", "expression": "The computed sub-expression" }. CRITICAL: Every problem MUST have detailed steps showing the complete solution process. Students see these after attempting the problem. Make explanations clear and educational.
+                Return ONLY JSON in the following format:
+                {
+                  "title": "Problem Set: ${problemToSolve.substring(0, 30)}...",
+                  "problems": [
+                    {
+                      "question": "Problem 1 text...",
+                      "answer": "Answer 1",
+                      "steps": [{ "explanation": "First...", "latex": "x=..." }],
+                      "realWorld": "Connection...",
+                      "manipulativeSupport": null,
+                      "manipulativeResponse": null
+                    }
+                  ],
+                  "graphData": null
+                }
+              `;
+          } else {
+              prompt = `
+                You are an Expert Math & Science Tutor.
+                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                Subject: ${mathSubject}
+                Mode: ${mathMode}
+                Problem: "${problemToSolve}",
+                Context:
+                ${mathContextPrompt}
+                Instructions:
+                Solve the problem or explain the concept based on the selected mode.
+                - If "Step-by-Step": Provide a clear, numbered sequence of steps to reach the solution. Show work for every calculation.
+                - If "Conceptual": Explain the "Why" and "How" behind the concept. Use analogies.
+                - If "Real-World Application": Explain how this specific concept is used in real life (engineering, finance, nature, etc.).
+                ${useMathSourceContext ? 'Relate the explanation to the Source Context concepts.' : ''}
+                ${isMathGraphEnabled ? `
+                    VISUALS REQUIRED:
+                    - If Math/Physics/Economics: Generate a self-contained SVG graph (plots, curves, geometry) in the "graphData" field.
+                    - If Biology/Earth Science: Generate a self-contained SVG diagram (e.g. Punnett Square, Water Cycle Flowchart, Cell Structure) in the "graphData" field.
+                    - If Computer Science: Generate an SVG Flowch

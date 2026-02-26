@@ -1,0 +1,57 @@
+L5184: handleAudio-dep: }, [wordSoundsPhonemes, handleAudio]);
+L6718: handleAudio-dep: }, [wordSoundsLanguage, callGemini, handleAudio]);
+L7247: handleAudio-dep: }, [isPreloading, preloadedWords.length, wordPool, callGemini, handleAudio, wordSoundsLanguage]);
+L7463: handleAudio-dep: }, [preloadedWords, fetchWordData, setWsPreloadedWords, handleAudio]);
+L8029: handleAudio-dep: await handleAudio(isolationState.isoOptions[i]);
+L8059: handleAudio-dep: }, [currentWordSoundsWord, isLoadingPhonemes, handleAudio, wordSoundsActivity, rhymeOptions, playBlending]);
+L8414: handleAudio-dep: await handleAudio(LETTER_NAME_AUDIO[lowLet]);
+L8421: handleAudio-dep: await handleAudio(INSTRUCTION_AUDIO['for']);
+L8500: handleAudio-dep: await handleAudio(INSTRUCTION_AUDIO['inst_rhyming']);
+L8553: handleAudio-dep: await handleAudio(effectiveBlendingOptions[i]);
+L8578: handleAudio-dep: await handleAudio(rhymeOptionsRef.current[i]);
+L8595: handleAudio-dep: await handleAudio(isolationState.isoOptions[i]);
+L9420: handleAudio-dep: }, [elkoninBoxes, soundChips, playSound, handleAudio]);
+L9459: handleAudio-dep: }, [draggedItem, elkoninBoxes, soundChips, handleAudio]);
+L9485: handleAudio-dep: }, [elkoninBoxes, soundChips, handleAudio]);
+L10065: handleAudio-dep: handleAudio(INSTRUCTION_AUDIO[rptKey] || INSTRUCTION_AUDIO[wordSoundsActivity]);
+L10428: handleAudio-dep: await handleAudio(phonemes[i]);
+L10472: handleAudio-dep: await handleAudio(blendingOptions[i]);
+L11276: handleAudio-dep: handleAudio(INSTRUCTION_AUDIO['fb_great_job']);
+L11281: handleAudio-dep: handleAudio(INSTRUCTION_AUDIO['now_try_lowercase']);
+L11288: handleAudio-dep: handleAudio(INSTRUCTION_AUDIO['fb_amazing']);
+L5704: shuffle: const mixed_shuffled = fisherYatesShuffle(mixed);
+L5953: shuffle: setChips(fisherYatesShuffle(labeled));
+L6372: shuffle: selection = fisherYatesShuffle(freshCandidates);
+L6415: shuffle: const shuffledCommon = fisherYatesShuffle(commonPhonemes);
+L6430: shuffle: return fisherYatesShuffle([...correctChips, ...distractors]);
+L6561: shuffle: const opts = fisherYatesShuffle([target, ...validUnique]);
+L6787: shuffle: setBlendingOptions && setBlendingOptions(fisherYatesShuffle(uniqueFinalOptions));
+L6870: shuffle: const difficultyPool = fisherYatesShuffle(wordPool);
+L7705: shuffle: const shuffledCommon = fisherYatesShuffle(commonPhonemes);
+L7723: shuffle: const shuffledChips = fisherYatesShuffle(chips);
+L7764: shuffle: const distractors = fisherYatesShuffle(generated).slice(0, 5);
+L7765: shuffle: setOrthographyOptions(fisherYatesShuffle([targetWord, ...distractors]));
+L7808: shuffle: return fisherYatesShuffle(distractors).slice(0, 5);
+L7839: shuffle: setRhymeOptions(fisherYatesShuffle(options));
+L7873: shuffle: const distractors = fisherYatesShuffle(pool).slice(0, 4);
+L7952: shuffle: const isoOptions = fisherYatesShuffle([...new Set([effectiveCorrect, ...isoDistractors.slice(0, 5)])]);
+L7990: shuffle: isoOptions: fisherYatesShuffle([correct, ...dists.slice(0, 3)])
+L8201: shuffle: setBlendingOptions(fisherYatesShuffle([targetWord, ...distractors]));
+L8209: shuffle: ? fisherYatesShuffle([correctRhyme, ...distractors])
+L9089: shuffle: const distractors = fisherYatesShuffle(pool).slice(0, 5);
+L9090: shuffle: const options = fisherYatesShuffle([targetWord, ...distractors]);
+L9109: shuffle: const distractors = fisherYatesShuffle(distractorPool).slice(0, 5);
+L9111: shuffle: ? fisherYatesShuffle([correctRhyme, ...distractors])
+L9130: shuffle: const options = fisherYatesShuffle([targetWord, ...distractors]);
+L9155: shuffle: const isoOptions = fisherYatesShuffle([correctPhoneme, ...distractors.slice(0, 3)]);
+L9220: shuffle: const options = fisherYatesShuffle([targetWord, ...distractors]);
+L9229: shuffle: ? fisherYatesShuffle([correctRhyme, ...distractors])
+L9256: shuffle: const iso_opts = fisherYatesShuffle([iso_correct, ...iso_dist.slice(0, 3)]);
+L4380: NO_MOUNT_CHECK: await without isMountedRef, then state set at L4381: setRegeneratingOptions(prev => { const n = {...prev}; delete n[key]; return n; });
+L4439: NO_MOUNT_CHECK: await without isMountedRef, then state set at L4440: setRegeneratingOptions(prev => { const n = {...prev}; delete n[key]; return n; });
+L4943: NO_MOUNT_CHECK: await without isMountedRef, then state set at L4945: setTimeout(resolve, 3000); // Fail-safe
+L4968: NO_MOUNT_CHECK: await without isMountedRef, then state set at L4970: setIsPlayingAudio(false);
+L5134: NO_MOUNT_CHECK: await without isMountedRef, then state set at L5136: setIsPlayingAudio(false);
+L5157: NO_MOUNT_CHECK: await without isMountedRef, then state set at L5159: setIsPlayingAudio(false);
+L6914: NO_MOUNT_CHECK: await without isMountedRef, then state set at L6915: setFirstWordReady(true);
+L7064: NO_MOUNT_CHECK: await without isMountedRef, then state set at L7066: setFirstWordReady(true);

@@ -1,0 +1,59 @@
+isPreloading, setIsPreloading] = React.useState(false);
+    const [firstWordReady, setFirstWordReady] = React.useState(false);
+    const preloadedWordCache = React.useRef(new Map());
+    const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false);
+    const hasStartedFromReview = React.useRef(false);
+    const lastPreloadedFirstWord = React.useRef(null);
+    const [masteryStats, setMasteryStats] = React.useState({});
+    const [revisitQueue, setRevisitQueue] = React.useState([]);
+    const sequenceIndexRef = React.useRef(0);
+    const shouldAdvanceActivity = React.useCallback((activityId, lessonPlanConfig) => {
+        if (!lessonPlanConfig || !lessonPlanConfig.activities) return false;
+        const activityConfig = lessonPlanConfig.activities.find(a => a.id === activityId);
+        if (!activityConfig) return false;
+        const stats = masteryStats[activityId] || { attempted: 0, consecutiveStreak: 0 };
+        const minItems = activityConfig.count || 5;
+        const masteryThreshold = lessonPlanConfig.masteryThreshold || 3;
+        return stats.attempted >= minItems && stats.consecutiveStreak >= masteryThreshold;
+    }, [masteryStats]);
+    const updateMasteryStats = React.useCallback((activityId, isCorrect, word) => {
+        setMasteryStats(prev => {
+            const current = prev[activityId] || { attempted: 0, correct: 0, consecutiveStreak: 0, completed: false };
+            return {
+                ...prev,
+                [activityId]: {
+                    attempted: current.attempted + 1,
+                    correct: current.correct + (isCorrect ? 1 : 0),
+                    consecutiveStreak: isCorrect ? current.consecutiveStreak + 1 : 0,
+                    completed: current.completed
+                }
+            };
+        });
+        if (!isCorrect && word) {
+            setRevisitQueue(prev => {
+                if (prev.some(w => w.word === word)) return prev;
+                return [...prev, { word, activityId }];
+            });
+        }
+    }, []);
+
+    React.useEffect(() => {
+
+        if (initialShowReviewPanel && preloadedWords.length > 0) {
+
+            hasStartedFromReview.current = false;
+
+            if (!showReviewPanel) {
+
+                debugLog("📋 initialShowReviewPanel is true - showing Review Panel");
+
+                setShowReviewPanel(true);
+
+            }
+
+        }
+
+    }, [initialShowReviewPanel, preloadedWords.length]);
+
+    React.useEffect(() => {
+        if (preloadedWords.leng

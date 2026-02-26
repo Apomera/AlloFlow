@@ -1,0 +1,76 @@
+=== HEADER HELP MODE TOGGLE ===
+L27668: const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode }) => {
+L27717: setIsHelpMode(false);
+L30025: const [isHelpMode, setIsHelpMode] = useState(false);
+L33355: const handleToggleIsHelpMode = React.useCallback(() => setIsHelpMode(prev => !prev), []);
+L68754: setIsHelpMode={setIsHelpMode}
+
+=== data-help-toggle BUTTON ===
+L32624: // This version ignores clicks on elements with [data-help-toggle]
+  L32621: 
+  L32622: };
+  L32623: // Help mode click handler - links directly to Tour steps OR shows granular help
+  L32624: // This version ignores clicks on elements with [data-help-toggle]
+  L32625: // TOUR SCROLLING FIX
+  L32626: // Ensures the active tool panel is centered in view when the step changes
+  L32627: useEffect(() => {
+  L32628: if (runTour && tourSteps[tourStep]) {
+L32650: const ignoredElement = e.target.closest('[data-help-ignore]') || e.target.closest('[data-help-toggle]');
+  L32647: if (!isHelpMode) return;
+  L32648: const handleHelpClick = (e) => {
+  L32649: // Check if clicking on close button, help toggle, or other control elements
+  L32650: const ignoredElement = e.target.closest('[data-help-ignore]') || e.target.closest('[data-help-toggle]');
+  L32651: if (ignoredElement) {
+  L32652: // Don't block - let React's synthetic event system handle the button click
+  L32653: // In capture phase, returning without stopPropagation lets event bubble to React
+  L32654: return;
+L32855: .help-mode-active [data-help-toggle] {
+  L32852: }
+  L32853: /* ALLOW ignored elements (close button, toggle, etc) to receive clicks */
+  L32854: .help-mode-active [data-help-ignore],
+  L32855: .help-mode-active [data-help-toggle] {
+  L32856: pointer-events: auto !important;
+  L32857: cursor: pointer !important;
+  L32858: }
+  L32859: /* The help-key elements should receive pointer events for the glow effect */
+L68385: data-help-toggle="true"
+  L68382: <div className={`fixed bottom-24 md:bottom-8 z-[10000] flex flex-col items-end gap-4 no-print transition-all duration-300 ${runTour ? 'right-[530px]' : 'right-6'}`}>
+  L68383: {isFabExpanded && (
+  L68384: <div
+  L68385: data-help-toggle="true"
+  L68386: className="flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-200 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto cust
+  L68387: >
+  L68388: {!isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+  L68389: <button
+L68422: data-help-toggle="true"
+  L68419: <Search size={20} />
+  L68420: </button>
+  L68421: <button
+  L68422: data-help-toggle="true"
+  L68423: onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); setIsCompareMode(false); }}
+  L68424: className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-800 ring-2 ring-teal-500' : 'bg-white text-slate-600 hover:bg-slate-100
+  L68425: title={t('simplified.tip_explain')}
+  L68426: aria-label={t('simplified.explain_mode')}
+
+=== HEADER Z-INDEX ===
+L54567: <header aria-label="Main application header" className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-
+L54626: <div id="tour-header-settings" className={`relative z-[60] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-bl
+L54836: <div id="tour-header-tools" className={`relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' 
+L54880: <div id="tour-header-utils" className={`relative z-[100] flex items-center gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-blac
+
+=== WORD SOUNDS + GLOSSARY COUPLING ===
+
+=== GLOSSARY VISIBILITY STATE ===
+  ACTIVE_VIEW L18227: } else if (activeView === 'glossary') {
+  ACTIVE_VIEW L35421: const isGlossaryActive = activeView === 'glossary' || isEditingGlossary;
+  ACTIVE_VIEW L57209: ${activeView === 'glossary' ? 'border-sky-600 shadow-xl shadow-sky-500/20' : 'border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500/10'}
+  ACTIVE_VIEW L59798: activeView === 'glossary' ? <><Globe className="text-blue-600" size={20} /> Glossary</> :
+  ACTIVE_VIEW L60385: {(activeView === 'glossary' || activeView === 'word-sounds') && (
+  ACTIVE_VIEW L61226: {(glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && (
+  ACTIVE_VIEW L67319: {activeView === 'simplified' && interactionMode === 'cloze' && latestGlossary.length > 0 && (
+
+=== WORD SOUNDS ACTIVATION ===
+
+=== LAUNCH WORD SOUNDS LOGIC ===
+
+=== GLOSSARY PANEL RENDER CONDITION ===

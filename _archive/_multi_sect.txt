@@ -1,0 +1,37 @@
+LINE 41421:            let fullDocument = `Title: ${effTopic}\n\n`;
+LINE 41422:            const wordsPerSection = Math.ceil(targetWords / sections.length);
+LINE 41423:            let allGroundingChunks = [];
+LINE 41424:            let currentCitationOffset = 0;
+LINE 41425: 
+LINE 41426:            setInputText(fullDocument);
+LINE 41427: 
+LINE 41428:            for (let i = 0; i < sections.length; i++) {
+LINE 41429:                const sectionTitle = sections[i];
+LINE 41430:                setGenerationStep(t('status_steps.writing_part', { current: i + 1, total: sections.length, title: sectionTitle }));
+---
+LINE 41514:                    sectionText = String(result || "");
+LINE 41515:                }
+LINE 41516:                sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+LINE 41517: 
+LINE 41518:                fullDocument += sectionText + "\n\n";
+LINE 41519:                setInputText(fullDocument);
+LINE 41520:                if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
+LINE 41521:            }
+LINE 41522:            if (effIncludeCitations && allGroundingChunks.length > 0) {
+LINE 41523:                 const masterMetadata = { groundingChunks: allGroundingChunks };
+---
+LINE 41534:                    console.warn("Multi-chunk citation verification: No citation markers found despite setting enabled");
+LINE 41535:                    addToast(t('toasts.citations_unavailable'), "info");
+LINE 41536:                }
+LINE 41537:            }
+LINE 41538: 
+LINE 41539:            setInputText(fullDocument);
+LINE 41540:            setShowSourceGen(false);
+LINE 41541:            addToast(t('input.success_long_form'), "success");
+LINE 41542:            setIsGeneratingSource(false);
+LINE 41543:            flyToElement('tour-source-input');
+---
+
+cleanSourceMetaCommentary at LINE 41302:     const cleanSourceMetaCommentary = (text) => {
+
+cleanSourceMetaCommentary at LINE 41907:       text = cleanSourceMetaCommentary(text);

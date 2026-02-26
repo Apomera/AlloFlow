@@ -1,0 +1,605 @@
+﻿UI_STRINGS defined keys: 5059
+Real t()/ts() keys (filtered): 2902
+Real orphan keys (WILL SHOW RAW STRINGS): 217
+
+[about] (23 keys):
+  L56738: t('about.action_desc')
+        <span><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</span>
+  L56738: t('about.action_title')
+        <span><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</span>
+  L56747: t('about.ai_guide_tip')
+        <p>{t('about.ai_guide_tip')}</p>
+  L56716: t('about.allo_acronym_def')
+        <span>{t('about.allo_acronym_def')}</span>
+  L56715: t('about.allo_acronym_label')
+        <span className="font-bold text-indigo-700 w-16 shrink-0">{t('about.allo_acronym_label')}</span>
+  L56712: t('about.approach_header')
+        <h4 className="font-bold text-indigo-900 mb-2">{t('about.approach_header')}</h4>
+  L56750: t('about.cast_link_text')
+        {t('about.cast_link_text')} <ArrowRight size={10}/>
+  L56742: t('about.engage_desc')
+        <span><strong>{t('about.engage_title')}</strong> {t('about.engage_desc')}</span>
+  L56742: t('about.engage_title')
+        <span><strong>{t('about.engage_title')}</strong> {t('about.engage_desc')}</span>
+  L56799: t('about.features_list')
+        const featuresList = t('about.features_list', { returnObjects: true });
+  L56720: t('about.flow_acronym_def')
+        <span>{t('about.flow_acronym_def')}</span>
+  L56719: t('about.flow_acronym_label')
+        <span className="font-bold text-indigo-700 w-16 shrink-0">{t('about.flow_acronym_label')}</span>
+  L56730: t('about.how_help_desc')
+        <p className="text-sm leading-relaxed mb-2">{t('about.how_help_desc')}</p>
+  L56729: t('about.how_help_header')
+        <h4 className="font-bold text-indigo-900 mb-1">{t('about.how_help_header')}</h4>
+  L56734: t('about.rep_desc')
+        <span><strong>{t('about.rep_title')}</strong> {t('about.rep_desc')}</span>
+  L56734: t('about.rep_title')
+        <span><strong>{t('about.rep_title')}</strong> {t('about.rep_desc')}</span>
+  L56762: t('about.reset_wizard')
+        <RefreshCw size={10} /> {t('about.reset_wizard')}
+  L56772: t('about.support_kofi')
+        {t('about.support_kofi')}
+  L56699: t('about.tab_about')
+        {t('about.tab_about')}
+  L56705: t('about.tab_features')
+        {t('about.tab_features')}
+  L56691: t('about.title')
+        <h3 className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3
+  L56726: t('about.udl_definition')
+        <p className="text-sm leading-relaxed"><strong>{t('about.udl_definition')}</strong></p>
+  L56725: t('about.what_is_udl')
+        <h4 className="font-bold text-indigo-900 mb-1">{t('about.what_is_udl')}</h4>
+
+[adventure] (19 keys):
+  L66776: t('adventure.back_to_resume')
+        title={t('adventure.back_to_resume')}
+  L22160: t('adventure.climax_archetypes.default.label')
+        const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.de
+  L22161: t('adventure.climax_archetypes.default.left')
+        const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes
+  L22162: t('adventure.climax_archetypes.default.right')
+        const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetyp
+  L52635: t('adventure.fallback_opening')
+        if (!content.text) content.text = t('adventure.fallback_opening');
+  L46371: t('adventure.generating_options_audio')
+        addToast(t('adventure.generating_options_audio'), "info");
+  L67334: t('adventure.interrupted_desc')
+        {t('adventure.interrupted_desc')}
+  L67332: t('adventure.interrupted_title')
+        <h3 className="font-bold text-white mb-1">{t('adventure.interrupted_title')}</h3>
+  L66754: t('adventure.paused_desc')
+        {t('adventure.paused_desc')}
+  L66752: t('adventure.paused_title')
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('adventure.paused_title')}</h2>
+  L45677: t('adventure.results.header')
+        feedbackText += `\n\n${t('adventure.results.header')}\n`;
+  L45687: t('adventure.results.perf_score')
+        feedbackText += t('adventure.results.perf_score', { total: total });
+  L45681: t('adventure.results.roll_calc')
+        feedbackText += t('adventure.results.roll_calc', {
+  L67340: t('adventure.retry_action')
+        <RefreshCw size={18} /> {t('adventure.retry_action')}
+  L45841: t('adventure.save_reminder')
+        addToast(t('adventure.save_reminder') || "≡ƒÆ╛ Consider saving your adventure progress!", "info");
+  L66786: t('adventure.setup_subtitle')
+        <p className="text-indigo-200 text-sm font-medium">{t('adventure.setup_subtitle')}</p>
+  L66767: t('adventure.start_overwrite')
+        <RefreshCw size={12}/> {t('adventure.start_overwrite')}
+  L67170: t('adventure.system_simulation')
+        <span>≡ƒÅ¢∩╕Å</span> {t('adventure.system_simulation')}
+  L67249: t('adventure.system_state')
+        <span>≡ƒôè</span> {t('adventure.system_state')}
+
+[bot] (21 keys):
+  L20292: t('bot.aria_active')
+        aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
+  L20292: t('bot.aria_sleeping')
+        aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
+  L20381: t('bot.chat_aria')
+        aria-label={t('bot.chat_aria')}
+  L20380: t('bot.chat_title')
+        title={t('bot.chat_title')}
+  L20412: t('bot.mic_start_aria')
+        aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
+  L20411: t('bot.mic_start_title')
+        title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
+  L20412: t('bot.mic_stop_aria')
+        aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
+  L20411: t('bot.mic_stop_title')
+        title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
+  L19883: t('bot.mood_happy')
+        happy: { gradFrom: '#34D399', gradTo: '#059669', eye: '#FFFFFF', mouth: '#FFFFFF', glow: '#10B981', 
+  L19882: t('bot.mood_idle')
+        idle: { gradFrom: '#818CF8', gradTo: '#4338CA', eye: '#22D3EE', mouth: '#22D3EE', glow: '#6366F1', m
+  L19885: t('bot.mood_sad')
+        sad: { gradFrom: '#64748B', gradTo: '#334155', eye: '#E2E8F0', mouth: '#E2E8F0', glow: '#94A3B8', ms
+  L19884: t('bot.mood_thinking')
+        thinking: { gradFrom: '#FBBF24', gradTo: '#B45309', eye: '#FEF3C7', mouth: '#FEF3C7', glow: '#F59E0B
+  L20396: t('bot.mute_off_aria')
+        aria-label={soundEnabled ? t('bot.mute_on_aria') : t('bot.mute_off_aria')}
+  L20395: t('bot.mute_off_title')
+        title={soundEnabled ? t('bot.mute_on_title') : t('bot.mute_off_title')}
+  L20396: t('bot.mute_on_aria')
+        aria-label={soundEnabled ? t('bot.mute_on_aria') : t('bot.mute_off_aria')}
+  L20395: t('bot.mute_on_title')
+        title={soundEnabled ? t('bot.mute_on_title') : t('bot.mute_off_title')}
+  L20367: t('bot.sleep_aria')
+        aria-label={t('bot.sleep_aria')}
+  L20366: t('bot.sleep_title')
+        title={t('bot.sleep_title')}
+  L20326: t('bot.sleeping')
+        text={isSleeping ? t('bot.sleeping') : (customMessage || colors.msg)}
+  L19536: t('bot.summon_msg')
+        speak(t('bot.summon_msg'));
+  L20432: t('bot.wake_title')
+        title={t('bot.wake_title')}
+
+[chat] (4 keys):
+  L48491: t('chat.generating_resource')
+        const genMsg = t('chat.generating_resource');
+  L48507: t('chat.location_unknown')
+        const msg = t('chat.location_unknown').replace('{target}', targetKey);
+  L47746: t('chat.settings_failed')
+        : t('chat.settings_failed');
+  L47745: t('chat.settings_updated')
+        ? t('chat.settings_updated').replace('{changes}', changes.join('\n- '))
+
+[chat_guide] (60 keys):
+  L49935: t('chat_guide.advice_saved')
+        addToast(t('chat_guide.advice_saved'), "success");
+  L49951: t('chat_guide.advice_saved_raw')
+        addToast(t('chat_guide.advice_saved_raw'), "success");
+  L57958: t('chat_guide.auto_send_off')
+        {autoSendVoice ? t('chat_guide.auto_send_on') : t('chat_guide.auto_send_off')}
+  L57958: t('chat_guide.auto_send_on')
+        {autoSendVoice ? t('chat_guide.auto_send_on') : t('chat_guide.auto_send_off')}
+  L57954: t('chat_guide.auto_send_tooltip')
+        title={t('chat_guide.auto_send_tooltip')}
+  L58154: t('chat_guide.autofill_label')
+        {t('chat_guide.autofill_label')}
+  L47900: t('chat_guide.blueprint.analyzing')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.analyzing') }]);
+  L47817: t('chat_guide.blueprint.auto_fill_stop')
+        sendBotMsg(t('chat_guide.blueprint.auto_fill_stop'));
+  L48005: t('chat_guide.blueprint.change_fail')
+        sendBotMsg(t('chat_guide.blueprint.change_fail'));
+  L48443: t('chat_guide.blueprint.complete')
+        sendBotMsg(t('chat_guide.blueprint.complete'));
+  L47929: t('chat_guide.blueprint.error')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.error') }]);
+  L47923: t('chat_guide.blueprint.presented')
+        text: t('chat_guide.blueprint.presented')
+  L48447: t('chat_guide.blueprint.reset')
+        sendBotMsg(t('chat_guide.blueprint.reset'));
+  L48003: t('chat_guide.blueprint.updated')
+        sendBotMsg(t('chat_guide.blueprint.updated'));
+  L48173: t('chat_guide.flow.adapting_text')
+        sendBotMsg(t('chat_guide.flow.adapting_text', { grade: gradeLevel }));
+  L48074: t('chat_guide.flow.added_lang')
+        sendBotMsg(t('chat_guide.flow.added_lang', { lang }));
+  L48221: t('chat_guide.flow.creating_worksheet')
+        sendBotMsg(t('chat_guide.flow.creating_worksheet'));
+  L48105: t('chat_guide.flow.generating_glossary')
+        sendBotMsg(t('chat_guide.flow.generating_glossary'));
+  L48152: t('chat_guide.flow.generating_text')
+        sendBotMsg(t('chat_guide.flow.generating_text', { grade: gradeLevel }));
+  L48224: t('chat_guide.flow.generating_visual')
+        sendBotMsg(t('chat_guide.flow.generating_visual'));
+  L45223: t('chat_guide.flow.initial_prompt_context')
+        msg = t('chat_guide.flow.initial_prompt_context', {
+  L48137: t('chat_guide.flow.integrating_interest')
+        sendBotMsg(t('chat_guide.flow.integrating_interest', { interest: potentialInterest }));
+  L48168: t('chat_guide.flow.interest_check')
+        sendBotMsg(t('chat_guide.flow.interest_check'));
+  L45228: t('chat_guide.flow.keyword_pack')
+        keyword_pack: t('chat_guide.flow.keyword_pack')
+  L45227: t('chat_guide.flow.keyword_step')
+        keyword_step: t('chat_guide.flow.keyword_step'),
+  L48100: t('chat_guide.flow.no_langs_warning')
+        sendBotMsg(t('chat_guide.flow.no_langs_warning'));
+  L48040: t('chat_guide.flow.offer_analysis')
+        sendBotMsg(t('chat_guide.flow.offer_analysis'));
+  L48123: t('chat_guide.flow.offer_glossary')
+        sendBotMsg(t('chat_guide.flow.offer_glossary'));
+  L48187: t('chat_guide.flow.offer_text')
+        sendBotMsg(t('chat_guide.flow.offer_text', { grade: gradeLevel }));
+  L48239: t('chat_guide.flow.offer_visual')
+        sendBotMsg(t('chat_guide.flow.offer_visual'));
+  L45226: t('chat_guide.flow.option_pack')
+        option_pack: t('chat_guide.flow.option_pack'),
+  L45225: t('chat_guide.flow.option_step')
+        option_step: t('chat_guide.flow.option_step'),
+  L48028: t('chat_guide.flow.running_analysis')
+        sendBotMsg(t('chat_guide.flow.running_analysis'));
+  L48036: t('chat_guide.flow.skipping_analysis')
+        sendBotMsg(t('chat_guide.flow.skipping_analysis'));
+  L48183: t('chat_guide.flow.skipping_text')
+        sendBotMsg(t('chat_guide.flow.skipping_text'));
+  L48235: t('chat_guide.flow.skipping_visual')
+        sendBotMsg(t('chat_guide.flow.skipping_visual'));
+  L48023: t('chat_guide.flow.source_prompt')
+        sendBotMsg(t('chat_guide.flow.source_prompt'));
+  L45231: t('chat_guide.flow.start_scratch')
+        msg = t('chat_guide.flow.start_scratch');
+  L57928: t('chat_guide.header')
+        <HelpCircle size={18} /> {t('chat_guide.header')}
+  L47777: t('chat_guide.highlight_confirm')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.highlight_confirm') }]);
+  L47792: t('chat_guide.highlight_error')
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.highlight_error') }]);
+  L49909: t('chat_guide.history_saved_toast')
+        addToast(t('chat_guide.history_saved_toast'), "success");
+  L37359: t('chat_guide.independent_welcome')
+        text: t('chat_guide.independent_welcome'),
+  L58165: t('chat_guide.input_placeholder_default')
+        placeholder={isShowMeMode ? t('chat_guide.input_placeholder_showme') : t('chat_guide.input_placehold
+  L58165: t('chat_guide.input_placeholder_showme')
+        placeholder={isShowMeMode ? t('chat_guide.input_placeholder_showme') : t('chat_guide.input_placehold
+  L47953: t('chat_guide.pack.comprehensive')
+        const countDisplay = targetCount === 'All' ? t('chat_guide.pack.comprehensive') : targetCount;
+  L47895: t('chat_guide.pack.count_selection')
+        sendBotMsg(t('chat_guide.pack.count_selection'));
+  L47954: t('chat_guide.pack.designing')
+        sendBotMsg(t('chat_guide.pack.designing', { count: countDisplay }));
+  L47981: t('chat_guide.pack.error')
+        sendBotMsg(t('chat_guide.pack.error'));
+  L58018: t('chat_guide.save_actionable_btn')
+        {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
+  L58018: t('chat_guide.save_actionable_loading')
+        {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
+  L57968: t('chat_guide.save_chat')
+        <Save size={12}/> {t('chat_guide.save_chat')}
+  L57976: t('chat_guide.show_me')
+        <Eye size={12}/> {isShowMeMode ? t('chat_guide.show_me_on') : t('chat_guide.show_me')}
+  L57974: t('chat_guide.show_me_disable_tooltip')
+        title={isShowMeMode ? t('chat_guide.show_me_disable_tooltip') : t('chat_guide.show_me_enable_tooltip
+  L57974: t('chat_guide.show_me_enable_tooltip')
+        title={isShowMeMode ? t('chat_guide.show_me_disable_tooltip') : t('chat_guide.show_me_enable_tooltip
+  L57976: t('chat_guide.show_me_on')
+        <Eye size={12}/> {isShowMeMode ? t('chat_guide.show_me_on') : t('chat_guide.show_me')}
+  L57945: t('chat_guide.voice_disable')
+        title={isConversationMode ? t('chat_guide.voice_disable') : t('chat_guide.voice_enable')}
+  L57945: t('chat_guide.voice_enable')
+        title={isConversationMode ? t('chat_guide.voice_disable') : t('chat_guide.voice_enable')}
+  L57947: t('chat_guide.voice_mode')
+        <Headphones size={12}/> {isConversationMode ? t('chat_guide.voice_on') : t('chat_guide.voice_mode')}
+  L57947: t('chat_guide.voice_on')
+        <Headphones size={12}/> {isConversationMode ? t('chat_guide.voice_on') : t('chat_guide.voice_mode')}
+
+[error] (1 keys):
+  L69356: t('error.syntax_scramble')
+        <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
+
+[grades] (15 keys):
+  L29860: t('grades.college')
+        <option value="College">{t('grades.college')}</option>
+  L29848: t('grades.g1')
+        <option value="1st Grade">{t('grades.g1')}</option>
+  L29857: t('grades.g10')
+        <option value="10th Grade">{t('grades.g10')}</option>
+  L29858: t('grades.g11')
+        <option value="11th Grade">{t('grades.g11')}</option>
+  L29859: t('grades.g12')
+        <option value="12th Grade">{t('grades.g12')}</option>
+  L29849: t('grades.g2')
+        <option value="2nd Grade">{t('grades.g2')}</option>
+  L29850: t('grades.g3')
+        <option value="3rd Grade">{t('grades.g3')}</option>
+  L29851: t('grades.g4')
+        <option value="4th Grade">{t('grades.g4')}</option>
+  L29852: t('grades.g5')
+        <option value="5th Grade">{t('grades.g5')}</option>
+  L29853: t('grades.g6')
+        <option value="6th Grade">{t('grades.g6')}</option>
+  L29854: t('grades.g7')
+        <option value="7th Grade">{t('grades.g7')}</option>
+  L29855: t('grades.g8')
+        <option value="8th Grade">{t('grades.g8')}</option>
+  L29856: t('grades.g9')
+        <option value="9th Grade">{t('grades.g9')}</option>
+  L29861: t('grades.grad')
+        <option value="Graduate Level">{t('grades.grad')}</option>
+  L29847: t('grades.k')
+        <option value="Kindergarten">{t('grades.k')}</option>
+
+[grades_short] (14 keys):
+  L29437: t('grades_short.college')
+        { label: t('grades_short.college'), value: 'College' },
+  L29425: t('grades_short.g1')
+        { label: t('grades_short.g1'), value: '1st Grade' },
+  L29434: t('grades_short.g10')
+        { label: t('grades_short.g10'), value: '10th Grade' },
+  L29435: t('grades_short.g11')
+        { label: t('grades_short.g11'), value: '11th Grade' },
+  L29436: t('grades_short.g12')
+        { label: t('grades_short.g12'), value: '12th Grade' },
+  L29426: t('grades_short.g2')
+        { label: t('grades_short.g2'), value: '2nd Grade' },
+  L29427: t('grades_short.g3')
+        { label: t('grades_short.g3'), value: '3rd Grade' },
+  L29428: t('grades_short.g4')
+        { label: t('grades_short.g4'), value: '4th Grade' },
+  L29429: t('grades_short.g5')
+        { label: t('grades_short.g5'), value: '5th Grade' },
+  L29430: t('grades_short.g6')
+        { label: t('grades_short.g6'), value: '6th Grade' },
+  L29431: t('grades_short.g7')
+        { label: t('grades_short.g7'), value: '7th Grade' },
+  L29432: t('grades_short.g8')
+        { label: t('grades_short.g8'), value: '8th Grade' },
+  L29433: t('grades_short.g9')
+        { label: t('grades_short.g9'), value: '9th Grade' },
+  L29424: t('grades_short.k')
+        { label: t('grades_short.k'), value: 'Kindergarten' },
+
+[profiles] (17 keys):
+  L60833: t('profiles.active_profile')
+        {t('profiles.active_profile')}: <span className="font-bold text-indigo-700">{profiles.find(p => p.id
+  L60838: t('profiles.delete_tooltip')
+        title={t('profiles.delete_tooltip')}
+  L37521: t('profiles.deleted')
+        addToast(t('profiles.deleted'), "info");
+  L37551: t('profiles.export_success')
+        addToast(t('profiles.export_success'), "success");
+  L60803: t('profiles.export_tooltip')
+        <button onClick={handleExportProfiles} className="p-1.5 rounded-md hover:bg-indigo-100 text-indigo-6
+  L37601: t('profiles.import_error')
+        addToast(t('profiles.import_error'), "error");
+  L37597: t('profiles.import_success')
+        addToast(t('profiles.import_success', { count: loadedProfiles.length }), "success");
+  L60802: t('profiles.import_tooltip')
+        <button onClick={() => profileInputRef.current.click()} className="p-1.5 rounded-md hover:bg-indigo-
+  L37515: t('profiles.loaded')
+        addToast(t('profiles.loaded', { name: profile.name }), "info");
+  L60847: t('profiles.new_profile_label')
+        <label className="block text-[10px] font-bold text-indigo-900 mb-1">{t('profiles.new_profile_label')
+  L60853: t('profiles.new_profile_placeholder')
+        placeholder={t('profiles.new_profile_placeholder')}
+  L60861: t('profiles.save_helper')
+        <p className="text-[9px] text-indigo-600 mt-1 italic">{t('profiles.save_helper')}</p>
+  L60823: t('profiles.save_tooltip')
+        title={t('profiles.save_tooltip')}
+  L37485: t('profiles.saved')
+        addToast(t('profiles.saved', { name: newProfile.name }), "success");
+  L60815: t('profiles.select_default')
+        <option value="">{t('profiles.select_default')}</option>
+  L60812: t('profiles.select_label')
+        aria-label={t('profiles.select_label')}
+  L56853: t('profiles.title')
+        <strong>{t('tips.pro_tip_label')}</strong> Use the <span className="font-bold"><Users size={12} clas
+
+[project_settings] (21 keys):
+  L70366: t('project_settings.base_xp')
+        <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">{t('project
+  L70379: t('project_settings.base_xp_desc')
+        <p className="text-[10px] text-slate-500 mt-1.5 font-medium ml-1">{t('project_settings.base_xp_desc'
+  L70305: t('project_settings.dictation_desc')
+        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.dictation_de
+  L70304: t('project_settings.enable_dictation')
+        {t('project_settings.enable_dictation')}
+  L70331: t('project_settings.enable_free_response')
+        {t('project_settings.enable_free_response')}
+  L70345: t('project_settings.enable_persona_free')
+        {t('project_settings.enable_persona_free')}
+  L70317: t('project_settings.enable_socratic')
+        {t('project_settings.enable_socratic')}
+  L70332: t('project_settings.free_response_desc')
+        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.free_respons
+  L70427: t('project_settings.perm_custom')
+        <span className="font-bold text-slate-600">{t('project_settings.perm_custom')}</span>
+  L70401: t('project_settings.perm_difficulty')
+        <span className="font-bold text-slate-600">{t('project_settings.perm_difficulty')}</span>
+  L70453: t('project_settings.perm_lock_all')
+        <span className="font-bold text-red-600 flex items-center gap-2"><Lock size={14}/> {t('project_setti
+  L70414: t('project_settings.perm_mode')
+        <span className="font-bold text-slate-600">{t('project_settings.perm_mode')}</span>
+  L70440: t('project_settings.perm_visuals')
+        <span className="font-bold text-slate-600">{t('project_settings.perm_visuals')}</span>
+  L70398: t('project_settings.permissions_header')
+        <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider mb-3">{t('project_settings
+  L70346: t('project_settings.persona_free_desc')
+        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.persona_free
+  L70318: t('project_settings.socratic_desc')
+        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.socratic_des
+  L70382: t('project_settings.storybook_xp')
+        <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">{t('project
+  L70395: t('project_settings.storybook_xp_desc')
+        <p className="text-[10px] text-slate-500 mt-1.5 font-medium ml-1">{t('project_settings.storybook_xp_
+  L70292: t('project_settings.title')
+        <h3 className="font-black text-lg">{t('project_settings.title')}</h3>
+  L70350: t('project_settings.unlock_xp')
+        <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">{t('project
+  L70363: t('project_settings.unlock_xp_desc')
+        <p className="text-[10px] text-slate-500 mt-1.5 font-medium ml-1">{t('project_settings.unlock_xp_des
+
+[prompts] (4 keys):
+  L47670: t('prompts.actual_correct')
+        Then state: "${t('prompts.actual_correct')} [Full text of the correct option(s)]".
+  L47669: t('prompts.correction_warning')
+        Start immediately with: "${t('prompts.correction_warning')} [State clearly if the answer is wrong or
+  L47665: t('prompts.verified_correct')
+        Start immediately with: "${t('prompts.verified_correct')} [Full text of the correct option]".
+  L47667: t('prompts.why_incorrect')
+        Then add a section "${t('prompts.why_incorrect')}" and provide a brief bulleted list explaining the 
+
+[student_dashboard] (4 keys):
+  L56931: t('student_dashboard.level_abbr')
+        {t('student_dashboard.level_abbr')} {globalLevel}
+  L56934: t('student_dashboard.level_progress')
+        <h2 id="xp-modal-title" className="text-2xl font-black text-indigo-900 uppercase tracking-tight" dat
+  L56961: t('student_dashboard.no_activities')
+        <div className="text-center text-slate-500 text-xs italic py-4">{t('student_dashboard.no_activities'
+  L56935: t('student_dashboard.total_xp')
+        <p className="text-slate-500 font-bold text-sm">{t('student_dashboard.total_xp')}: <span className="
+
+[toolbar] (14 keys):
+  L56479: t('toolbar.about_aria')
+        aria-label={t('toolbar.about_aria')}
+  L56478: t('toolbar.about_label')
+        title={t('toolbar.about_label')}
+  L61369: t('toolbar.clear_stickers')
+        <button onClick={clearStickers} className="p-1 text-slate-500 hover:text-red-500 rounded-full" title
+  L70030: t('toolbar.dictation_start')
+        aria-label={isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start')}
+  L70030: t('toolbar.dictation_stop')
+        aria-label={isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start')}
+  L70029: t('toolbar.dictation_toggle')
+        title={t('toolbar.dictation_toggle')}
+  L56435: t('toolbar.hide_bot')
+        title={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
+  L56435: t('toolbar.show_bot')
+        title={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
+  L56468: t('toolbar.start_tour')
+        title={t('toolbar.start_tour')}
+  L56469: t('toolbar.start_tour_aria')
+        aria-label={t('toolbar.start_tour_aria')}
+  L61355: t('toolbar.stickers_label')
+        <Smile size={14} /> {t('toolbar.stickers_label')}
+  L61353: t('toolbar.stickers_tooltip')
+        title={t('toolbar.stickers_tooltip')}
+  L70041: t('toolbar.student_tools_close')
+        aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
+  L70041: t('toolbar.student_tools_open')
+        aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
+
+Unused UI_STRINGS keys (defined but never used): 2374
+
+By category:
+  help_mode: 1184 unused
+  adventure: 257 unused
+  results: 229 unused
+  quiz: 122 unused
+  escape_room: 66 unused
+  toasts: 55 unused
+  games: 43 unused
+  modals: 23 unused
+  class_analytics: 22 unused
+  lesson_headers: 21 unused
+  output: 19 unused
+  persona: 17 unused
+  bot_events: 16 unused
+  export: 16 unused
+  settings: 16 unused
+  tips: 14 unused
+  large_file: 13 unused
+  lesson_plan: 13 unused
+  wizard: 11 unused
+  common: 10 unused
+  concept_map: 10 unused
+  sidebar: 10 unused
+  bridge: 9 unused
+  filenames: 8 unused
+  fluency: 8 unused
+  storybook: 8 unused
+  session: 7 unused
+  glossary: 5 unused
+  immersive: 5 unused
+  math: 5 unused
+  tools: 5 unused
+  groups: 4 unused
+  outline: 4 unused
+  simplified: 4 unused
+  status: 4 unused
+  alignment: 3 unused
+  blueprint: 3 unused
+  dashboard: 3 unused
+  errors: 3 unused
+  scaffolds: 3 unused
+  word_sounds: 3 unused
+  flashcards: 2 unused
+  header: 2 unused
+  student: 2 unused
+  timeline: 2 unused
+  visuals: 2 unused
+  activity_label: 1 unused
+  analysis: 1 unused
+  analysis_source_label: 1 unused
+  answer_label: 1 unused
+  bundle_downloaded: 1 unused
+  cancel: 1 unused
+  categories_label: 1 unused
+  category: 1 unused
+  color: 1 unused
+  date_label: 1 unused
+  def_col: 1 unused
+  def_label: 1 unused
+  default_lesson_title: 1 unused
+  desc: 1 unused
+  district_resource: 1 unused
+  download_complete: 1 unused
+  english_trans_label: 1 unused
+  entry: 1 unused
+  export_menu: 1 unused
+  features_list: 1 unused
+  footer_generated: 1 unused
+  generated_date_label: 1 unused
+  generating_bundle: 1 unused
+  generating_pdf: 1 unused
+  html_page_title: 1 unused
+  icon: 1 unused
+  ims_resource_pack: 1 unused
+  incomplete_sort: 1 unused
+  input: 1 unused
+  interview_figure_label: 1 unused
+  items_label: 1 unused
+  keep_separate_note: 1 unused
+  key_concepts_label: 1 unused
+  language_selector: 1 unused
+  main_label: 1 unused
+  meta: 1 unused
+  move_down: 1 unused
+  move_up: 1 unused
+  name_label: 1 unused
+  no_active_scene: 1 unused
+  no_events: 1 unused
+  no_ideas: 1 unused
+  no_personas: 1 unused
+  no_questions: 1 unused
+  no_student_content: 1 unused
+  no_teacher_content: 1 unused
+  no_terms: 1 unused
+  ppt_correct_note: 1 unused
+  ppt_generated: 1 unused
+  ppt_grade_level: 1 unused
+  problem_label: 1 unused
+  process: 1 unused
+  qti_default_desc: 1 unused
+  qti_default_title: 1 unused
+  readme_contents: 1 unused
+  readme_generated: 1 unused
+  readme_html_desc: 1 unused
+  readme_json_desc: 1 unused
+  readme_title: 1 unused
+  readme_topic: 1 unused
+  review_game: 1 unused
+  scenario_label: 1 unused
+  score_label: 1 unused
+  slides_master_footer: 1 unused
+  slides_question_title: 1 unused
+  slides_subject: 1 unused
+  slides_title_default: 1 unused
+  source_ref_title: 1 unused
+  standards: 1 unused
+  structure_label: 1 unused
+  student_copy: 1 unused
+  support_dev: 1 unused
+  teacher_copy_divider: 1 unused
+  teacher_copy_intro: 1 unused
+  teacher_key_title: 1 unused
+  term_col: 1 unused
+  term_label: 1 unused
+  text_tools: 1 unused
+  title: 1 unused
+  topic: 1 unused
+  trans_col: 1 unused
+  udl_strategy_advice: 1 unused
+  unknown_level: 1 unused
+
+======================================================================
+SUMMARY
+======================================================================
+Defined:     5059
+Used:        2902
+ORPHANS:     217 ΓåÉ BROKEN, will show raw key text!
+Unused:      2374 ΓåÉ dead but harmless
+Match rate:  2685/2902 (92%)

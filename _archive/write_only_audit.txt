@@ -1,0 +1,143 @@
+TOTAL useState DECLARATIONS: 598
+======================================================================
+
+============================================================
+  pulseScale (L17642) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setPulseScale, Writes: 1, Reads: 0
+  SETTER CALLS:
+    L17646: setPulseScale(prev => prev === 1 ? 1.02 : 1);
+
+============================================================
+  isAdding (L22847) — PERF CONCERN: 7 writes, 1 reads
+  Setter: setIsAdding, Writes: 7, Reads: 1
+  SETTER CALLS:
+    L22941: setIsAdding(true);
+    L22956: setIsAdding(false);
+    L30762: const setIsAddingTerm = (v) => glossaryDispatch({ type: 'GLOSS_SET', field: 'isAddingTerm', value: v
+    L52708: setIsAddingTerm(true);
+    L52765: setIsAddingTerm(false);
+    ... and 2 more
+  GETTER READS:
+    L23136: {isAdding ? (
+  CATEGORIES: jsx_render(1)
+
+============================================================
+  awardedPoints (L23520) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setAwardedPoints, Writes: 1, Reads: 0
+  SETTER CALLS:
+    L23664: setAwardedPoints(0);
+
+============================================================
+  blueprintSelection (L29786) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setBlueprintSelection, Writes: 4, Reads: 0
+  SETTER CALLS:
+    L46557: setBlueprintSelection(initialSelection);
+    L46609: setBlueprintSelection(initialSelection);
+    L46640: setBlueprintSelection(newSelection);
+    L48727: setBlueprintSelection(newSelection);
+
+============================================================
+  isReviewingBlueprint (L29787) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setIsReviewingBlueprint, Writes: 4, Reads: 0
+  SETTER CALLS:
+    L46563: setIsReviewingBlueprint(true);
+    L46615: setIsReviewingBlueprint(true);
+    L48737: setIsReviewingBlueprint(false);
+    L56657: setIsReviewingBlueprint(false);
+
+============================================================
+  studyDuration (L29996) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setStudyDuration, Writes: 4, Reads: 0
+  SETTER CALLS:
+    L69365: setStudyDuration(min * 60);
+    L69392: setStudyDuration(mins * 60);
+    L69417: setStudyDuration(25 * 60);
+    L69433: setStudyDuration(0);
+
+============================================================
+  dyslexicFont (L31388) — FULLY DEAD (declaration only, never used)
+  Setter: setDyslexicFont, Writes: 0, Reads: 0
+
+============================================================
+  fontTheme (L31389) — FULLY DEAD (declaration only, never used)
+  Setter: setFontTheme, Writes: 0, Reads: 0
+
+============================================================
+  isDefining (L31407) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setIsDefining, Writes: 4, Reads: 0
+  SETTER CALLS:
+    L39963: setIsDefining(true);
+    L39984: setIsDefining(false);
+    L40083: setIsDefining(true);
+    L40105: setIsDefining(false);
+
+============================================================
+  isRevising (L31412) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setIsRevising, Writes: 5, Reads: 0
+  SETTER CALLS:
+    L30532: const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
+    L30536: setIsRevisingTimeline(true);
+    L30584: setIsRevisingTimeline(false);
+    L39852: setIsRevising(true);
+    L39947: setIsRevising(false);
+
+============================================================
+  isCustomReviseOpen (L31414) — PERF CONCERN: 6 writes, 1 reads
+  Setter: setIsCustomReviseOpen, Writes: 6, Reads: 1
+  SETTER CALLS:
+    L33453: const handleSetIsCustomReviseOpenToFalse = React.useCallback(() => setIsCustomReviseOpen(false), [])
+    L39849: setIsCustomReviseOpen(true);
+    L39854: setIsCustomReviseOpen(false);
+    L40060: setIsCustomReviseOpen(false);
+    L62343: if(e.key === 'Escape') setIsCustomReviseOpen(false);
+    ... and 1 more
+  GETTER READS:
+    L62334: {isCustomReviseOpen ? (
+  CATEGORIES: jsx_render(1)
+
+============================================================
+  pendingFactionResources (L31579) — FULLY DEAD (declaration only, never used)
+  Setter: setPendingFactionResources, Writes: 0, Reads: 0
+
+============================================================
+  isStudentLinkMode (L31592) — PERF CONCERN: 6 writes, 1 reads
+  Setter: setIsStudentLinkMode, Writes: 6, Reads: 1
+  SETTER CALLS:
+    L31667: setIsStudentLinkMode(true);
+    L31675: setIsStudentLinkMode(false);
+    L31682: setIsStudentLinkMode(false);
+    L31691: setIsStudentLinkMode(false);
+    L42962: setIsStudentLinkMode(false);
+    ... and 1 more
+  GETTER READS:
+    L54989: {!isStudentLinkMode && !isIndependentMode && (
+  CATEGORIES: condition(1)
+
+============================================================
+  sourceStandards (L35494) — WRITE-ONLY (SAFE TO REMOVE)
+  Setter: setSourceStandards, Writes: 1, Reads: 0
+  SETTER CALLS:
+    L30334: setSourceStandards(stdCodes);
+
+======================================================================
+SUMMARY
+======================================================================
+Write-only / fully dead: 11
+  - pulseScale (L17642): setPulseScale called 1x, getter NEVER read
+  - awardedPoints (L23520): setAwardedPoints called 1x, getter NEVER read
+  - blueprintSelection (L29786): setBlueprintSelection called 4x, getter NEVER read
+  - isReviewingBlueprint (L29787): setIsReviewingBlueprint called 4x, getter NEVER read
+  - studyDuration (L29996): setStudyDuration called 4x, getter NEVER read
+  - dyslexicFont (L31388): setDyslexicFont called 0x, getter NEVER read
+  - fontTheme (L31389): setFontTheme called 0x, getter NEVER read
+  - isDefining (L31407): setIsDefining called 4x, getter NEVER read
+  - isRevising (L31412): setIsRevising called 5x, getter NEVER read
+  - pendingFactionResources (L31579): setPendingFactionResources called 0x, getter NEVER read
+  - sourceStandards (L35494): setSourceStandards called 1x, getter NEVER read
+
+Debug-only reads: 0
+
+Performance concerns (high write/low read): 3
+  - isAdding (L22847): 7 writes, 1 reads
+  - isCustomReviseOpen (L31414): 6 writes, 1 reads
+  - isStudentLinkMode (L31592): 6 writes, 1 reads

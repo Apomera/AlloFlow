@@ -1,0 +1,72 @@
+===== MATH VIEW: ANSWER/RESULT TRACKING =====
+L59306: ${activeView === 'math' ? 'border-blue-600 shadow-xl shadow-blue-500/20' : 'border-slate-200 hover:b
+L61176: activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
+L68473: {activeView === 'math' && generatedContent && generatedContent?.data && (
+
+===== MATH VIEW: ANSWER INPUTS =====
+studentAnswer: L13437 - const problems = probeData.problems.map(p => ({...p, studentAnswer: null, correct: null}))
+mathAnswer: NOT FOUND
+userAnswer: L4423 - const [userAnswer, setUserAnswer] = React.useState('');
+checkAnswer: L7921 - const checkAnswer = React.useCallback((answer, expectedAnswer) => {
+submitAnswer: NOT FOUND
+gradeAnswer: NOT FOUND
+correctAnswer: L7388 - correctAnswer: correct,
+answerInput: NOT FOUND
+mathResult: NOT FOUND
+problemResult: NOT FOUND
+mathScore: NOT FOUND
+stemScore: NOT FOUND
+stemResult: NOT FOUND
+assessmentResult: NOT FOUND
+problemScore: NOT FOUND
+
+===== MATH CONTENT RENDERING =====
+
+===== SOLVE FUNCTIONALITY =====
+Solve Problem: L73279 - <Sparkles size={16} /> {stemLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Proble
+Freeform Builder: L36555 - if (mathMode === 'Freeform Builder') {
+
+===== ALL STEM LAB STATE =====
+mathInput: L30848
+setMathInput: L30848
+mathMode: L30846
+setMathMode: L30846
+mathQuantity: L30850
+mathSubject: L30845
+stemLabTab: L30874
+stemLabTool: L30875
+stemLabCreateMode: L30878
+showAssessmentBuilder: L30877
+assessmentBlocks: L30876
+mathProbeGrade: L11029
+showStemLab: L30873
+stemLabHistory: NOT FOUND
+mathResults: NOT FOUND
+mathAnswers: NOT FOUND
+showMathFeedback: NOT FOUND
+
+===== MATH IN MAIN CONTENT AREA =====
+L16967: } else if (type === 'math') {
+L38333: } else if (item.type === 'math') {
+L41720: } else if (item.type === 'math') {
+L44288: } else if (type === 'math') {
+L51759: } else if (type === 'math') {
+
+===== INTERACTIVE MATH COMPONENTS =====
+MathProblem: L33316 - const handleMathProblemEdit = (pIdx, field, value, stepIdx = null) => {
+
+===== EXPLORE TOOLS RESULT TRACKING =====
+volumeAnswer: NOT FOUND
+numberLineAnswer: NOT FOUND
+areaAnswer: NOT FOUND
+fractionAnswer: NOT FOUND
+volumeResult: NOT FOUND
+toolResult: NOT FOUND
+explorerResult: NOT FOUND
+volumeScore: NOT FOUND
+explorerScore: NOT FOUND
+
+===== MATH FLUENCY IN STEM LAB =====
+L73327: <option value="fluency">⏱️ Fluency Drill</option>
+L73337: {block.type === 'fluency' && <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-1
+L73374: results: null

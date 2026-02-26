@@ -1,0 +1,40 @@
+=== WORD SOUNDS BUG AUDIT ===
+
+## Callbacks/Effects to Review
+
+## Async State Patterns (setTimeout)
+
+## Potential Null Access
+  L1498: Potential null access: if (newIndex < 0 || newIndex >= preloadedWords.length) retur
+  L1513: Potential null access: <p className="text-sm opacity-80 mt-1">Review and edit prelo
+  L1518: Potential null access: {preloadedWords.length === 0 ? (
+  L1571: Potential null access: disabled={idx === preloadedWords.length - 1}
+  L1572: Potential null access: className={`w-6 h-6 flex items-center justify-center rounded
+  L3703: Potential null access: const currentBufferSize = preloadedWords.length;
+  L3777: Potential null access: if (preloadedWords.length > 0) {
+  L3999: Potential null access: }, [isPreloading, preloadedWords.length, wordPool, callGemin
+  L4008: Potential null access: if (wordPool && wordPool.length > 0 && preloadedWords.length
+  L4012: Potential null access: }, [wordPool, preloadedWords.length, isPreloading, preloadIn
+
+## Race Condition Risks
+  L3940: Possible race: // The existing code used `setPreloadedWords([...preloadedDa
+  L4069: Possible race: setRegeneratingIndex(index);
+  L4169: Possible race: setGeneratingImageIndex(index);
+  L4182: Possible race: setGeneratingImageIndex(null);
+  L4241: Possible race: setGeneratingImageIndex(null);
+
+## Missing Error Handling
+
+## Infinite Loop Risks
+
+## Key Prop Issues
+  L1526: Using index as key - may cause issues if list reorders
+  L3715: Map without visible key prop
+  L3827: Map without visible key prop
+  L3840: Map without visible key prop
+  L3927: Map without visible key prop
+  L4079: Map without visible key prop
+  L4295: Map without visible key prop
+  L29256: Map without visible key prop
+
+## Audio Memory Leaks

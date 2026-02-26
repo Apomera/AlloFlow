@@ -1,0 +1,58 @@
+LINE 32345: const [glossaryHealthCheck, setGlossaryHealthCheck] = useState(null);
+LINE 32346: const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
+LINE 32347: const [showHealthCheckPanel, setShowHealthCheckPanel] = useState(false);
+LINE 39695: const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
+LINE 39696: console.log('🩺 [HealthCheck] runGlossaryHealthCheck called with', terms?.length, 'terms');
+LINE 39697: if (!terms || terms.length === 0) { console.log('🩺 [HealthCheck] ABORTED: No terms'); return null; }
+LINE 39698: setIsRunningHealthCheck(true);
+LINE 39699: setShowHealthCheckPanel(true);
+LINE 39736: console.log('🩺 [HealthCheck] Calling Gemini API...');
+LINE 39738: console.log('🩺 [HealthCheck] Gemini returned:', result ? `${String(result).substring(0, 100)}...` : 'EMPTY/NULL');
+LINE 39752: setGlossaryHealthCheck(parsed);
+LINE 39753: setIsRunningHealthCheck(false);
+LINE 39757: console.error('🩺 [HealthCheck] FAILED:', e.message || e);
+LINE 39758: setGlossaryHealthCheck({ error: true, summary: 'Analysis could not be completed.' });
+LINE 39760: setIsRunningHealthCheck(false);
+LINE 39768: const glossaryHealthCheckIdRef = React.useRef(null);
+LINE 39769: const glossaryHealthCheckTimerRef = React.useRef(null);
+LINE 39772: if (glossaryHealthCheckIdRef.current !== generatedContent.id) {
+LINE 39774: if (glossaryHealthCheckTimerRef.current) {
+LINE 39775: clearTimeout(glossaryHealthCheckTimerRef.current);
+LINE 39776: glossaryHealthCheckTimerRef.current = null;
+LINE 39778: glossaryHealthCheckIdRef.current = generatedContent.id;
+LINE 39779: setGlossaryHealthCheck(null);
+LINE 39780: console.log('🩺 [HealthCheck] Auto-trigger fired! Glossary has', generatedContent.data.length, 'terms. Waiting 12s...');
+LINE 39787: glossaryHealthCheckTimerRef.current = setTimeout(() => {
+LINE 39788: glossaryHealthCheckTimerRef.current = null;
+LINE 39789: console.log('🩺 [HealthCheck] Timer elapsed, calling runGlossaryHealthCheck now...');
+LINE 39792: runGlossaryHealthCheck(currentData, sourceText).then(hc => {
+LINE 39793: console.log('🩺 [HealthCheck] runGlossaryHealthCheck returned:', hc ? 'SUCCESS' : 'NULL', hc?.error ? '(error)' : '', hc?.summary || '');
+LINE 39808: }, [generatedContent, history, runGlossaryHealthCheck]);
+LINE 65337: {(glossaryHealthCheck || isRunningHealthCheck) && activeView === 'glossary' && (
+LINE 65340: onClick={() => setShowHealthCheckPanel(!showHealthCheckPanel)}
+LINE 65347: {isRunningHealthCheck && <RefreshCw size={14} className="animate-spin text-amber-600"/>}
+LINE 65348: {glossaryHealthCheck && !glossaryHealthCheck.error && !isRunningHealthCheck && (
+LINE 65350: {glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : ''} — {glossaryHealthCheck.definitionGradeLevel || 'Analyzed'}
+LINE 65360: runGlossaryHealthCheck(generatedContent.data, latestAnalysis?.data?.originalText || '');
+LINE 65363: disabled={isRunningHealthCheck}
+LINE 65370: onClick={(e) => { e.stopPropagation(); setGlossaryHealthCheck(null); setShowHealthCheckPanel(false); }}
+LINE 65376: <ChevronDown size={16} className={`text-amber-600 transition-transform ${showHealthCheckPanel ? 'rotate-180' : ''}`}/>
+LINE 65380: {showHealthCheckPanel && glossaryHealthCheck && !glossaryHealthCheck.error && (
+LINE 65383: <p className="text-sm text-amber-800 italic pt-2">{glossaryHealthCheck.summary}</p>
+LINE 65386: {glossaryHealthCheck.definitionGradeLevel && (
+LINE 65390: <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${glossaryHealthCheck.gradeAppropriate ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-a
+LINE 65391: {glossaryHealthCheck.definitionGradeLevel}
+LINE 65393: {glossaryHealthCheck.gradeAppropriate ?
+LINE 65402: {glossaryHealthCheck.tierAudit && (
+LINE 65406: {(Array.isArray(glossaryHealthCheck.tierAudit.tier2) ? glossaryHealthCheck.tierAudit.tier2 : []).map((t, i) => (
+LINE 65409: {(Array.isArray(glossaryHealthCheck.tierAudit.tier3) ? glossaryHealthCheck.tierAudit.tier3 : []).map((t, i) => (
+LINE 65413: {Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && (
+LINE 65415: {glossaryHealthCheck.tierAudit.notes.map((note, i) => (
+LINE 65420: {typeof glossaryHealthCheck.tierAudit.notes === 'string' && glossaryHealthCheck.tierAudit.notes.length > 0 && (
+LINE 65422: <p className="text-xs text-slate-500 italic">💡 {glossaryHealthCheck.tierAudit.notes}</p>
+LINE 65429: {Array.isArray(glossaryHealthCheck.coverageGaps) && glossaryHealthCheck.coverageGaps.length > 0 && (
+LINE 65433: {glossaryHealthCheck.coverageGaps.map((gap, i) => (
+LINE 65453: {Array.isArray(glossaryHealthCheck.conceptConnections) && glossaryHealthCheck.conceptConnections.length > 0 && (
+LINE 65457: {glossaryHealthCheck.conceptConnections.map((cc, i) => (
+LINE 65473: {showHealthCheckPanel && glossaryHealthCheck && glossaryHealthCheck.error && (
+LINE 65479: {showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && (

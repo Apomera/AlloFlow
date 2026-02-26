@@ -1,0 +1,17 @@
+Total: 42, Handled: 26, Unhandled: 16
+  L25571: await updateDoc(sessionRef, {
+  L25597: await updateDoc(sessionRef, {
+  L26157: await updateDoc(sessionRef, { 'escapeRoomState.timeRemaining': newTime });
+  L26393: await updateDoc(sessionRef, {
+  L26400: try { await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": false }); } catch(e) { warnLog('Firestore sync f
+  L26417: await updateDoc(sessionRef, { "quizState.bossStats.image": newImage });
+  L26425: try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestio
+  L26506: try { await updateDoc(sessionRef, updatePayload); } catch(e) { warnLog('Firestore sync failed:', e); }
+  L26579: try { await updateDoc(sessionRef, updates); } catch(e) { warnLog('Firestore sync failed:', e); }
+  L35079: updateDoc(sessionRef, {
+  L42094: await updateDoc(sessionRef, updates);
+  L42260: await updateDoc(sessionRef, {
+  L48971: await updateDoc(sessionRef, {
+  L49071: updateDoc(sessionRef, {
+  L63524: try { await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" }); } catch(e) { warnLog('Fire
+  L63543: try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync fa

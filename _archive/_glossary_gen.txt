@@ -1,0 +1,27 @@
+LINE 6210: const handleGenerateWordImage = React.useCallback(async (index, word) => {
+LINE 38195: const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+LINE 38350: const handleGenerateSimilar = async () => {
+LINE 40693: const handleGenerateBingo = () => {
+LINE 41284: const handleGenerateSource = async (overrides = {}, switchView = true) => {
+LINE 45903: const handleGenerateLessonPlan = async (switchView = true) => {
+LINE 45983: const handleGenerateExtensionGuide = async (index) => {
+LINE 46022: const handleGenerateProgression = async () => {
+LINE 46198: const handleGenerateLessonIdeas = async () => {
+LINE 48664: const handleGenerateGuide = async (index) => {
+LINE 49348: const resultItem = await handleGenerate('analysis');
+LINE 49406: const resultItem = await handleGenerate('glossary');
+LINE 49433: const resultItem = await handleGenerate('glossary');
+LINE 49472: const resultItem = await handleGenerate('simplified');
+LINE 50002: const handleGeneratePersonas = useCallback(async () => {
+LINE 51181: const handleGenerateReflectionPrompt = async () => {
+LINE 51778: const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, {
+LINE 52591: const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true) => {
+LINE 54663: const handleGenerateFullPack = async (chatContextOverride = null) => {
+LINE 54690: { type: 'glossary', directive: '' },
+LINE 54805: const resultItem = await handleGenerate(type, null, !isLast, batchSourceText, stepConfig, false);
+LINE 54988: const handleGenerateOutcome = async () => {
+LINE 56266: type: 'glossary',
+LINE 56309: const handleGenerateTermImage = async (index, term) => {
+LINE 56343: const handleGenerateConceptItem = useCallback(async (term, categories) => {
+LINE 57136: const handleGenerateRubric = async () => {
+LINE 61349: onClick={() => handleGenerate('glossary')}

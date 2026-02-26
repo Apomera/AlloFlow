@@ -1,0 +1,158 @@
+Total useMemo: 48
+Valid: 38
+Invalid: 10
+
+❌ L1498 (indent=8): const previewList = React.useMemo(() => {
+  Enclosing: L1437 (indent=4): const includeOrthographic = orthoSessionGoal > 0; // DERIVED from orthoSessionGoal slider
+  Reason: inside regular function
+
+✅ L4178 (indent=4): const WordFamiliesView = React.useMemo(() => ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, showLetterH
+  Enclosing: NONE
+
+✅ L4533 (indent=4): const ACTIVITIES = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L4598 (indent=4): const wordPool = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L4639 (indent=4): const availableLanguages = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L4708 (indent=4): const categorizedPool = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L4762 (indent=4): const easyPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficult
+  Enclosing: NONE
+
+✅ L4763 (indent=4): const mediumPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficu
+  Enclosing: NONE
+
+✅ L4764 (indent=4): const hardPool = React.useMemo(() => wordPool ? wordPool.filter(w => categorizeWordDifficulty && categorizeWordDifficult
+  Enclosing: NONE
+
+❌ L5664 (indent=12): const validResults = useMemo(() => results.filter(Boolean), [results]);
+  Enclosing: L5340 (indent=8): const preloadedData = [];
+  Reason: extremely deep nesting (indent=12)
+
+❌ L5719 (indent=8): const wordsNeedingAudio = useMemo(() => preloadedWords.filter(w => !w.ttsReady && !w._audioRequested), [preloadedWords, 
+  Enclosing: L5298 (indent=4): const preloadInitialBatch = React.useCallback(async () => {
+  Reason: inside useCallback/useEffect
+
+❌ L6380 (indent=12): const isoDistractors = useMemo(() => isoAllPhonemes.filter(p => p.toLowerCase() !== correctSound?.toLowerCase()).slice(0
+  Enclosing: L6356 (indent=8): const isNewWord = lastWordForIsolation.current !== currentWord;
+  Reason: extremely deep nesting (indent=12)
+
+✅ L7936 (indent=8): const samplePathPoints = React.useMemo(() => {
+  Enclosing: L7865 (indent=4): const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
+
+✅ L8414 (indent=4): const scrambledLetters = React.useMemo(() =>
+  Enclosing: NONE
+
+✅ L8420 (indent=4): const hiddenIndex = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L8426 (indent=4): const letterOptions = React.useMemo(() => {
+  Enclosing: NONE
+
+❌ L8536 (indent=16): const availableChips = useMemo(() => soundChips.filter(c => !c.used), [soundChips]);
+  Enclosing: L8446 (indent=8): const handleDragOver = (e) => {
+  Reason: extremely deep nesting (indent=16)
+
+❌ L8912 (indent=16): const correctCount = useMemo(() => letterFeedback.filter(l => l.correct).length, [letterFeedback, correct]);
+  Enclosing: L8446 (indent=8): const handleDragOver = (e) => {
+  Reason: extremely deep nesting (indent=16)
+
+✅ L10364 (indent=4): const sortedAndFiltered = React.useMemo(() => {
+  Enclosing: L10330 (indent=0): const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+✅ L10557 (indent=4): const classSummary = React.useMemo(() => {
+  Enclosing: L10330 (indent=0): const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t }) => {
+
+❌ L10578 (indent=8): const students = useMemo(() => importedStudents.filter(s => s.stats.quizAvg > 0), [importedStudents, quizAvg, stats]);
+  Enclosing: L10557 (indent=4): const classSummary = React.useMemo(() => {
+  Reason: inside regular function
+
+✅ L17541 (indent=2): const particles = React.useMemo(() => Array.from({ length: 24 }).map((_, i) => ({
+  Enclosing: L17533 (indent=0): const BotConfettiBurst = ({ onComplete }) => {
+
+❌ L18119 (indent=18): const complexTerms = useMemo(() => termNames.filter(t => t.length > 8 || t.includes(' ')), [termNames]);
+  Enclosing: L18087 (indent=14): const topicStr = topic ? ` about ${topic}` : "";
+  Reason: extremely deep nesting (indent=18)
+
+✅ L22992 (indent=2): const deckItems = useMemo(() => items.filter(i => i.currentContainer === 'deck'), [items]);
+  Enclosing: L22779 (indent=0): const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGam
+
+✅ L23258 (indent=2): const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
+  Enclosing: L23120 (indent=0): const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+✅ L23259 (indent=2): const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
+  Enclosing: L23120 (indent=0): const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+✅ L23260 (indent=2): const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
+  Enclosing: L23120 (indent=0): const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+✅ L23261 (indent=2): const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  Enclosing: L23120 (indent=0): const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { s
+
+✅ L23466 (indent=2): const availableLangs = React.useMemo(() => {
+  Enclosing: L23454 (indent=0): const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+
+✅ L24614 (indent=4): const items = useMemo(() => data.filter(item => item.term && item.term.length > 2), [data, term]);
+  Enclosing: L24611 (indent=2): const [isGameOver, setIsGameOver] = useState(false);
+
+✅ L26153 (indent=2): const escapedTeams = useMemo(() => allTeams.filter(t => escapeState.teamProgress?.[t]?.isEscaped), [allTeams, escapeStat
+  Enclosing: L26104 (indent=0): const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }
+
+❌ L26288 (indent=8): const count = useMemo(() => Object.values(responses || {}).filter(r => r === idx).length, [Object, responses, values]);
+  Enclosing: L26287 (indent=4): const detailedStats = question.options.map((opt, idx) => {
+  Reason: inside regular function
+
+✅ L26573 (indent=4): const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g]) => g !== null), [groups]);
+  Enclosing: L26277 (indent=0): const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appI
+
+✅ L27120 (indent=2): const analytics = useMemo(() => calculateAnalyticsMetrics(dashboardData), [dashboardData]);
+  Enclosing: L27064 (indent=0): const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+✅ L27122 (indent=2): const misconceptionChartData = useMemo(() => analytics.misconceptions.map((m, idx) => ({
+  Enclosing: L27064 (indent=0): const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+✅ L27126 (indent=2): const selectedStudent = useMemo(() => dashboardData.find(s => s.id === selectedStudentId), [dashboardData, selectedStude
+  Enclosing: L27064 (indent=0): const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+✅ L27316 (indent=2): const quizHistory = useMemo(() => selectedStudent?.history?.filter(h => h.type === 'quiz') || [], [selectedStudent?.hist
+  Enclosing: L27064 (indent=0): const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setS
+
+❌ L28846 (indent=12): const w = useMemo(() => cleaned.split(' ').filter(word => word.length > 0), [cleaned, split, word]);
+  Enclosing: L28827 (indent=4): const colorOptions = [
+  Reason: extremely deep nesting (indent=12)
+
+✅ L29771 (indent=2): const isCanvas = React.useMemo(() => {
+  Enclosing: L29708 (indent=0): const AlloFlowContent = () => {
+
+✅ L29834 (indent=2): const adventureImageDB = React.useMemo(() => ({
+  Enclosing: L29708 (indent=0): const AlloFlowContent = () => {
+
+✅ L34779 (indent=2): const latestLessonPlan = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L35466 (indent=2): const filteredGlossaryData = useMemo(() => {
+  Enclosing: NONE
+
+✅ L36468 (indent=2): const latestGlossary = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L36483 (indent=2): const isClozeComplete = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L36488 (indent=2): const displayLanguages = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L42683 (indent=2): const isScaffoldComplete = React.useMemo(() => {
+  Enclosing: NONE
+
+✅ L54102 (indent=2): const botAccessory = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards]);
+  Enclosing: NONE
+
+✅ L54106 (indent=2): const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingA
+  Enclosing: NONE
+

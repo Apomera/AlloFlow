@@ -1,0 +1,92 @@
+=== SOUND SORT CASE / RENDERING ===
+L4342: <span className="text-xs uppercase font-bold text-slate-500 tracking-wider">{ts('word_sounds.sound_sort_label') || 'Sound Sort'}</span>
+L6837: if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSoundsActivity !== 'rhyming' && wordSoundsActivity !== 'letter_tracing' && 
+L6902: } else if (wordSoundsActivity === 'sound_sort') {
+L7058: if (wordSoundsActivity === 'sound_sort' && currentWordSoundsWord) {
+L7844: } else if (wordSoundsActivity === 'sound_sort') {
+L9384: case 'sound_sort': {
+
+=== SOUND_SORT JSX BLOCK ===
+L6837: if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSoundsActivity !== 'rhyming' && wordSoundsActivity !== 'letter_tracing' && 
+L6902: } else if (wordSoundsActivity === 'sound_sort') {
+L7058: if (wordSoundsActivity === 'sound_sort' && currentWordSoundsWord) {
+L7844: } else if (wordSoundsActivity === 'sound_sort') {
+
+=== LIGHTBULB / TIP / HINT ===
+L21: import { CheckCircle, CheckCircle2, CheckSquare, Check, AlertCircle, AlertTriangle, XCircle, Info, Lightbulb, ShieldCheck, Loader2, Ban, Octagon, X } from 'lucide-react';
+L13168: show_hint: "Show Hint",
+L15179: persona_show_hints: "Display helpful hints for engaging with the persona. Hints include historically relevant questions to ask, topics the character would find interesting, and prompts that lead to de
+L15755: icon: "Lightbulb",
+L17335: case 'brainstorm': return <Lightbulb size={16} />;
+L25643: <Lightbulb size={14} className="text-yellow-400" />
+L25732: <Lightbulb size={14} className="inline mr-2 text-yellow-400" />
+L25760: <Lightbulb size={14} />
+L29551: showHintsModal: false,
+L29657: const { isTeacherToolbarExpanded, showStudyTimerModal, showTimerConfetti, showSubmitModal, showExportMenu, showHealthCheckPanel, isProfileModalOpen, isUnitModalOpen, showFluencyConfetti, selectionMenu
+L29676: const setShowHintsModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showHintsModal', value: v });
+L32181: 'persona_show_hints': "Control whether suggested questions appear during persona conversations. When ON: AI-generated question suggestions appear below the input area. Hints are: contextual (build on 
+L33246: // [PHASE 4 MIGRATED] const [showHintsModal, setShowHintsModal] = useState(false);
+L54901: <Lightbulb size={20} className={hintHistory.length > 0 ? "fill-yellow-500/20" : ""} />
+L55306: 'Layout': Layout, 'ImageIcon': ImageIcon, 'Quote': Quote, 'Lightbulb': Lightbulb,
+L55337: {showHintsModal && (
+L55342: <Lightbulb size={20} className="fill-yellow-500 text-yellow-600"/> {t('hints.title')}
+L55377: <Lightbulb size={12}/> {t('hints.apply_brainstorm')}
+L55627: data-help-key="persona_show_hints"
+L55674: <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse" : ""}/>
+L56110: <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse" : ""}/>
+L57955: <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_brainstorm')}</div>
+L59816: activeView === 'brainstorm' ? <><Lightbulb className="text-yellow-600" size={20} /> Ideas</> :
+L59926: <Lightbulb size={20} className={theme === 'contrast' ? "fill-current" : "text-amber-600 fill-yellow-500 animate-pulse"} />
+L63470: <Lightbulb size={16} className={(escapeRoomState.hintsRemaining || 0) > 0 ? 'text-amber-400' : 'text-slate-500'}/>
+L63663: title={escapeRoomState.hintsUsed?.[puzzle.id] ? t('escape_room.show_hint') : t('escape_room.get_hint')}
+L63665: <Lightbulb size={14}/>
+L63667: ? (t('escape_room.show_hint') || 'Show Hint')
+L64886: <Lightbulb size={18} className="text-yellow-500 fill-current shrink-0"/>
+L64919: <Lightbulb size={18} className="text-yellow-500 fill-current"/> {idea.title}
+L66888: <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"><Lightbulb size={14}/> {t(`lesson_headers.${isIndependentMode ? 'student' : (isParentMode ? 'p
+L67704: if (headerText.includes('Pro Tip') || headerText.includes('Benefit')) HeaderIcon = Lightbulb;
+
+=== SOUND SORT STATE ===
+
+=== INSTRUCTION TEXT ===
+L700: 'word_sounds.rhyming_desc': 'Find words that rhyme with the target',
+L1066: sound_sort: getAudio('instructions', 'word_families'),
+L1073: sound_sort_house: getAudio('instructions', 'word_families'),
+L1131: _LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_sort', getAudio('instructions', 'inst_word_families'));
+L4356: {ts('word_sounds.sound_sort_instruction') || `Find all words that match: ${data.family}`}
+L6308: // Find words that sound SIMILAR but DON'T rhyme (near-misses)
+L6837: if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSoundsActivity !== 'rhyming' && wordSoundsActivity !== 'letter_tracing' && 
+L6923: instructionText = `Find words that start with the ${targetSound} sound`;
+L6931: instructionText = `Find words that end with the ${targetSound} sound`;
+L11746: sound_sort_instruction: "Find all words that match",
+L15110: concept_sort_header: "Activity instructions and category names for sorting.",
+L23404: <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 text-center">{t('concept_sort.instructions')}</div>
+L32079: 'concept_sort_categories_detailed': "Define or let AI determine sorting groups. Leave blank: AI analyzes your topic and creates logical categories (usually 2-4 groups). Specify your own: enter categor
+L32142: 'generator_actions': "Hub for all content generation tools. Available generators include: Quiz (assessment with answer keys), Glossary (visual vocabulary), Simplified Text (leveled reading), FAQ (Q an
+L32332: 'dashboard_stat_activities': "Aggregate count of completed learning activities. Includes: glossary reviews, quiz attempts, adventure chapters, sorting games, and all interactive features. Higher numbe
+
+=== SORT BINS RENDERING ===
+
+=== LETTER HINTS ===
+L3320: const [showLetterHints, setShowLetterHints] = React.useState(false); // Toggle for Pure Sound vs Phonics (Default: Sound Only)
+L3795: showLetterHints,
+L3907: {showLetterHints && (
+L3942: {showLetterHints ? opt : <span className="text-sm text-slate-400 font-normal">Sound {idx + 1}</span>}
+L3966: const RhymeView = React.memo(({ data, showLetterHints, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, highlightedIndex, isAudioBusy }) => {
+L3982: <h3 className="text-4xl font-black text-slate-800">{showLetterHints ? data.word : "???"}</h3>
+L4038: <span className={`text-xl font-bold text-slate-700 ${!showLetterHints && 'blur-sm'}`}>{opt}</span>
+L7205: if (!isCorrect && !showLetterHints && newStreak === 0) {
+L7237: mode: showLetterHints ? 'visual' : 'sound_only',
+L7315: if (showLetterHints && newStreak >= 3) {
+L7323: else if (!showLetterHints && readyToAdvance) {
+L8544: showLetterHints={showLetterHints}
+L8604: {showLetterHints ? chip.phoneme : <Volume2 size={24} className="opacity-50" />}
+L8655: data-help-key="wordsounds_pool_item" aria-label={showLetterHints ? `Phoneme ${chip.phoneme}` : "Mystery Sound"}
+L8664: {showLetterHints ? chip.phoneme : <Volume2 size={20} />}
+L8822: {showLetterHints ? word : <span className="text-slate-500 text-sm font-normal">Option {idx + 1}</span>}
+L8888: showLetterHints={true}
+L9363: showLetterHints={showLetterHints}
+L10159: showLetterHints
+L10163: title={showLetterHints ? (ts('word_sounds.switch_sound_only') || "Switch to Sound Only Mode (Hide Letters)") : (ts('word_sounds.switch_letter_mode') || "Switch to Letter Mode (Show Letters)")}
+L10165: <span>{showLetterHints ? '👁️' : '👂'}</span>
+L10166: <span className="hidden sm:inline">{showLetterHints ? ts('word_sounds.mode_phonics') || 'Phonics' : ts('word_sounds.mode_sound') || 'Sound Only'}</span>

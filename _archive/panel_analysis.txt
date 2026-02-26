@@ -1,0 +1,22 @@
+=== isTeacherMode Global Declarations ===
+L24246:   const [isTeacherMode, setIsTeacherMode] = useState(true);
+
+=== word-sounds-generator View ===
+L36:   'ui-tool-wordsounds': 'word-sounds-generator',
+L30668:         setActiveView('word-sounds-generator');
+L63363:       {activeView === 'word-sounds-generator' && (
+
+=== WordSoundsGenerator Component ===
+L990:     const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, gradeLevel, t: tProp }) 
+L63364:           <WordSoundsGenerator 
+
+=== handleOpenWordSounds Function ===
+L30667:   const handleOpenWordSounds = () => {
+L53543:                             onClick={handleOpenWordSounds}
+
+=== Preview/Review Panel Patterns ===
+
+=== activeView Check for word-sounds ===
+L53522:                 ${activeView === 'ui-tool-wordsounds' ? 'border-pink-600 shadow-xl shadow-pink-500/20' : 'border-slate-200 hover:border-pink-200 shado
+L56242:                 {(activeView === 'glossary' || activeView === 'word-sounds') && (
+L63363:       {activeView === 'word-sounds-generator' && (

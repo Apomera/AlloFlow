@@ -1,0 +1,35 @@
+=== HEADER-UTILS / SETTINGS PANEL ANALYSIS ===
+
+
+=== HEADER SETTINGS HELP KEYS ===
+  data-help-key="header_settings_text_font"
+  data-help-key="header_settings_overlay"
+  data-help-key="header_settings_text_line_height"
+  data-help-key="header_settings_text"
+  data-help-key="header_settings_text_size"
+  data-help-key="header_settings_voice_volume"
+  data-help-key="header_settings_anim"
+  data-help-key="header_settings_text_spacing"
+  data-help-key="header_settings_text_bionic"
+  data-help-key="header_settings_voice"
+  data-help-key="header_settings_voice_select"
+  data-help-key="header_settings_text_reset"
+  data-help-key="header_settings_theme"
+  data-help-key="header_settings_voice_speed"
+
+
+=== THEME/ACCESSIBILITY SETTINGS ===
+
+Contrast: 242 matches
+
+Bionic: 8 matches
+
+Font: 60 matches
+
+Line Height: 11 matches
+
+Color Overlay: 19 matches
+
+
+=== ALLOBOT FEATURES ===
+AlloBot references: 90

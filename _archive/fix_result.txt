@@ -1,0 +1,55 @@
+﻿Tier 2 block: lines 35192 to 35234
+Tier 2 handlers: 40
+  handleHandleAdventureChoice (L35224)
+  handleHandleAdventureTextSubmit (L35223)
+  handleHandleFactCheck (L35222)
+  handleHandleFindStandards (L35218)
+  handleHandleGenerate (L35219)
+  handleHandleGenerateTermImage (L35220)
+  handleSetIsConceptSortGameToTrue (L35227)
+  handleSetIsMinimizedToFalse (L35200)
+  handleSetIsMinimizedToTrue (L35201)
+  handleSetIsPersonaReflectionOpenToFalse (L35217)
+  handleSetIsProjectSettingsOpenToFalse (L35209)
+  handleSetIsSyntaxGameToTrue (L35221)
+  handleSetIsTimelineGameToTrue (L35226)
+  handleSetIsTranslateModalOpenToFalse (L35229)
+  handleSetKeyboardSelectedItemIdToNull (L35210)
+  handleSetSelectedInventoryItemToNull (L35225)
+  handleSetShowAdventureConfirmationToFalse (L35232)
+  handleSetShowClearConfirmToFalse (L35211)
+  handleSetShowCloudWarningToFalse (L35230)
+  handleSetShowGlobalLevelUpToFalse (L35228)
+  handleSetShowGroupModalToFalse (L35206)
+  handleSetShowHintsModalToFalse (L35214)
+  handleSetShowInfoModalToFalse (L35213)
+  handleSetShowLedgerToFalse (L35207)
+  handleSetShowSaveModalToFalse (L35208)
+  handleSetShowSessionModalToFalse (L35205)
+  handleSetShowStorybookExportModalToFalse (L35216)
+  handleSetShowStudyTimerModalToFalse (L35231)
+  handleSetShowSubmitModalToTrue (L35212)
+  handleSetShowXPModalToFalse (L35215)
+  handleSetStandardModeToAi (L35203)
+  handleSetStandardModeToManual (L35204)
+  handleSetStepTo4 (L35202)
+  handleToggleFocusMode (L35196)
+  handleToggleIsEditing (L35193)
+  handleToggleIsFullscreen (L35194)
+  handleToggleIsMapLocked (L35195)
+  handleTogglePersonaAutoSend (L35197)
+  handleToggleShowFlashcardImages (L35199)
+  handleToggleShowPersonaHints (L35198)
+
+Conflicts (Tier 2 vs existing): 0
+
+Searching for handleCopyToClipboard:
+  L45082: const handleCopyToClipboard = async () => {
+
+No conflicts found in Tier 2 block
+
+After fix - handleCopyToClipboard declarations:
+  L45082: const handleCopyToClipboard = async () => {
+
+All useCallback declarations are unique within Tier 2 - OK
+Final lines: 73711

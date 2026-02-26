@@ -1,0 +1,92 @@
+=== preloadInitialBatch callers ===
+  L5571: const preloadInitialBatch = React.useCallback(async () => {
+  L5575: console.log("🛡️ Blocking preloadInitialBatch: words already loaded");
+  L6119: // DISABLED: preloadInitialBatch is blocking and redundant.
+  L6123: preloadInitialBatch();
+  L6126: }, [wordPool, preloadedWords.length, isPreloading, preloadInitialBatch]);
+  L6130: // Ensures audio is available even if we skipped the blocking preloadInitialBatch
+  L7113: // FIX: Also call preloadInitialBatch if not already running
+  L7114: if (typeof preloadInitialBatch === 'function') {
+  L7115: preloadInitialBatch();
+  L7739: // FIX: Extract with correct property names from preloadInitialBatch structure
+
+=== handleWordSoundsStartGame body ===
+  L38127:   const handleWordSoundsStartGame = (generatedTerms) => {
+  L38128:     setWordSoundsAutoReview(true); // Show Pre-Activity Review
+  L38129:       // 1. Create History Item (Persistence)
+  L38130:       const newItem = {
+  L38131:           id: Date.now().toString(),
+  L38132:           type: 'word-sounds', // Uses existing Phonology View
+  L38133:           title: "Word Sounds Activity",
+  L38134:           data: generatedTerms, // The Oracle Data
+  L38135:           timestamp: new Date(),
+  L38136:           meta: `${generatedTerms.length} Words`
+  L38137:       };
+  L38138: 
+  L38139:       // 2. Save to State
+  L38140:       setHistory(prev => [...prev, newItem]);
+  L38141:       setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms); // FIX: Sync preloaded state
+  L38142: 
+  L38143:       // 3. Launch Game
+  L38144:       // Set isWordSoundsMode to true so WordSoundsModal renders
+  L38145:       setIsWordSoundsMode(true);
+  L38146:       setActiveView('word-sounds');
+  L38147: 
+  L38148:       addToast("Word Sounds Ready!", "success");
+  L38149:   };
+  L38150: 
+  L38151:   const handleOpenWordSounds = () => {
+  L38152:         setActiveView('word-sounds-generator');
+  L38153:         // Parse sourceVocabulary string into array
+  L38154:         const rawText = sourceVocabulary || "";
+  L38155:         const derivedTerms = typeof rawText === 'string'
+  L38156:             ? rawText.split(/[\n,]+/).map(t => t.trim()).filter(t => t.length > 0)
+  L38157:             : (Array.isArray(rawText) ? rawText : []);
+  L38158: 
+  L38159:         setWordSoundsCustomTerms(derivedTerms);
+  L38160:     };
+  L38161: 
+  L38162:   const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+  L38163:       const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
+  L38164:       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+  L38165:       const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+  L38166:           ? latestAnalysis.data.originalText
+  L38167:           : inputText;
+  L38168:       let contextText = "";
+  L38169:       if (useMathSourceContext) {
+  L38170:           contextText = availableSource || "";
+  L38171:       }
+  L38172:       let mathContextPrompt = "";
+  L38173:       if (contextText) {
+  L38174:           mathContextPrompt += `Source Context: "${contextText.substring(0, 1500)}..."\n`;
+  L38175:       }
+  L38176:       if (studentInterests.length > 0) {
+  L38177:           mathContextPrompt += `Interests: ${studentInterests.join(', ')}\n`;
+  L38178:       }
+  L38179:       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
+  L38180:       if (!problemToSolve.trim()) {
+  L38181:           return;
+  L38182:       }
+  L38183:       setIsProcessing(true);
+  L38184:       setGenerationStep(t('status.solving'));
+  L38185:       setError(null);
+  L38186:       if (switchView) {
+  L38187:           setGeneratedContent(null);
+  L38188:           setActiveView('math');
+  L38189:       }
+  L38190:       setShowMathAnswers(false);
+  L38191:       try {
+  L38192:           let prompt = "";
+  L38193: 
+  L38194:           if (mathMode === 'Problem Set Generator') {
+  L38195:               prompt = `
+  L38196:                 You are an expert Math Curriculum Designer.
+  L38197:                 Topic/Skill: "${problemToSolve}"
+  L38198:                 ${mathContextPrompt}
+  L38199:                 Instruction: Create a set of 3-5 distinct word problems.
+  L38200:                 Context Usage: Frame the word problems using characters, settings, or themes from the Source Context. Use names/concepts from the Student Interests.
+
+=== onStartGame / onStart references ===
+  L1266: const WordSoundsGenerator = ({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview }) => {
+  L1581: onStartGame(processed, sequence, lessonPlanConfig, configSummary);
+  L71438: onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {

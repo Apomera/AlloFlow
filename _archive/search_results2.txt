@@ -1,0 +1,101 @@
+﻿L6216: const handleGenerateWordImage = React.useCallback(async (index, word) => {
+L38354: const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+L38509: const handleGenerateSimilar = async () => {
+L41537: const handleGenerateSource = async (overrides = {}, switchView = true) => {
+L46158: const handleGenerateLessonPlan = async (switchView = true) => {
+L46238: const handleGenerateExtensionGuide = async (index) => {
+L46277: const handleGenerateProgression = async () => {
+L46453: const handleGenerateLessonIdeas = async () => {
+L48919: const handleGenerateGuide = async (index) => {
+L51436: const handleGenerateReflectionPrompt = async () => {
+L52846: const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, 
+L54918: const handleGenerateFullPack = async (chatContextOverride = null) => {
+L55243: const handleGenerateOutcome = async () => {
+L56564: const handleGenerateTermImage = async (index, term) => {
+L57391: const handleGenerateRubric = async () => {
+
+=== analysis type handling ===
+L18589: case 'analysis': return <Search size={16} />;
+L18937: case 'analysis': return 'magnifying-glass';
+L19459: } else if (type === 'analysis') {
+L19836: case 'analysis':
+L37331: if (activeView === 'analysis' && generatedContent?.type === 'analysis' && generatedContent?.data?.accuracy?.discrepancies) {
+L37349: if (activeView === 'analysis' && generatedContent?.type === 'analysis' && generatedContent?.data?.grammar) {
+L38356: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L39965: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L40125: } else if (item.type === 'analysis') {
+L40258: if (lastItem.type === 'analysis' && lastItem.data) {
+L43446: if (item.type === 'analysis') return '';
+L43681: } else if (item.type === 'analysis') {
+L45881: case 'analysis': return t('analysis.title');
+L46280: const latestAnalysis = history.slice().reverse().find(h => h.type === 'analysis');
+L46383: } else if (type === 'analysis') {
+L47322: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L47407: const analysisItem = history.slice().reverse().find(h => h.type === 'analysis');
+L47674: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L47980: const analysisItem = history.slice().reverse().find(h => h.type === 'analysis');
+L48328: const analysisItem = history.slice().reverse().find(h => h.type === 'analysis');
+L49239: const latestAnalysis = history.slice().reverse().find(h => h.type === 'analysis');
+L49600: case 'analysis':
+L49626: if (history.some(h => h.type === 'analysis')) {
+L49627: const lastItem = history.slice().reverse().find(h => h.type === 'analysis');
+L50189: const latestAnalysis = history.slice().reverse().find(h => h.type === 'analysis');
+L50259: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L52024: const existingAnalysis = history.slice().reverse().find(h => h.type === 'analysis');
+L52039: if (type === 'analysis' && resultItem?.data?.originalText) {
+L52872: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L53692: const analysisItem = history.slice().reverse().find(h => h.type === 'analysis');
+L53809: } else if (type === 'analysis') {
+L54252: case 'analysis':
+L54845: if (type === 'analysis') {
+L54846: const existingCount = history.filter(h => h.type === 'analysis').length;
+L54892: if (type === 'analysis') flyToElement('tour-tool-analysis');
+L54909: const actionName = type === 'analysis' ? 'analyzing the source' : 'generating content';
+L54920: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L54960: const hasAnalysis = history.some(h => h.type === 'analysis');
+L55009: resourcesToGen.sort((a, b) => (a.type === 'analysis' ? -1 : b.type === 'analysis' ? 1 : 0));
+L55065: if (type === 'analysis') {
+L57881: case 'analysis':
+L63224: {(generatedContent?.data?.analysis || history.some(h => h && h.type === 'analysis')) && (
+L65613: const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L66817: const latestAnalysis = history.slice().reverse().find(h => h.type === 'analysis');
+
+=== originalText assignment ===
+L38357: const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L39644: sourceText = generatedContent.data.originalText;
+L40139: newData.originalText = item.data.originalText;
+L43701: <div style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(item.data.originalText)}</div>
+L45951: const text = analysisItem.data.originalText;
+L47323: const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L47675: const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L47982: const sourceText = (analysisItem && analysisItem.data && analysisItem.data.originalText)
+L48330: const sourceText = (analysisItem && analysisItem.data && analysisItem.data.originalText)
+L49240: const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L50190: const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L50260: const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L52026: currentSourceText = existingAnalysis.data.originalText;
+L52040: currentSourceText = resultItem.data.originalText;
+L52874: const rawText = latestAnalysis.data.originalText;
+L54921: let batchSourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L55067: batchSourceText = resultItem.data.originalText;
+L55113: const sourceText = generatedContent.data.originalText || inputText;
+L57079: const currentText = generatedContent.data.originalText || inputText;
+L64496: const originalText = generatedContent.data.originalText;
+L64696: value={generatedContent.data.originalText}
+L66818: const sourceContent = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+
+=== effIncludeCitations in non-multi-section ===
+L41541: const effIncludeCitations = (overrides && typeof overrides.includeCitations === 'boolean') ? overrides.includeCitations : includeSourceCitat
+L41568: if (effIncludeCitations) {
+L41665: ${effIncludeCitations ? `
+L41687: result = await callGemini(sectionPrompt, false, effIncludeCitations);
+L41690: if (attempt < maxGroundingRetries && effIncludeCitations) {
+L41704: if (effIncludeCitations && rawSection) {
+L41734: if (effIncludeCitations && allGroundingChunks.length > 0) {
+L41743: if (effIncludeCitations) {
+L41939: ` : (effIncludeCitations ? `
+L41967: const useSearchForThisCall = effIncludeCitations;
+L41978: if (attempt < maxGroundingRetries && effIncludeCitations) {
+L41981: } else if (effIncludeCitations) {
+L41994: if (effIncludeCitations && rawText) {
+L42104: if (effIncludeCitations && text) {

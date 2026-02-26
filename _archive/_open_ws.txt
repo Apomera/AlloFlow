@@ -1,0 +1,31 @@
+﻿L36029:   const handleOpenWordSounds = () => {
+L36030:         setActiveView('word-sounds-generator');
+L36031:         // Parse sourceVocabulary string into array
+L36032:         const rawText = sourceVocabulary || "";
+L36033:         const derivedTerms = typeof rawText === 'string'
+L36034:             ? rawText.split(/[\n,]+/).map(t => t.trim()).filter(t => t.length > 0)
+L36035:             : (Array.isArray(rawText) ? rawText : []);
+L36036:         setWordSoundsCustomTerms(derivedTerms);
+L36037:     };
+L36038:   const handleGenerateMath = async (inputOverride = null, switchView = true) => {
+L36039:       const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
+L36040:       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+L36041:       const availableSource = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
+L36042:           ? latestAnalysis.data.originalText
+L36043:           : inputText;
+L36044:       let contextText = "";
+L36045:       if (useMathSourceContext) {
+L36046:           contextText = availableSource || "";
+L36047:       }
+L36048:       let mathContextPrompt = "";
+L36049:       if (contextText) {
+L36050:           mathContextPrompt += `Source Context: "${contextText.substring(0, 1500)}..."\n`;
+L36051:       }
+L36052:       if (studentInterests.length > 0) {
+L36053:           mathContextPrompt += `Interests: ${studentInterests.join(', ')}\n`;
+L36054:       }
+L36055:       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
+L36056:       if (!problemToSolve.trim()) {
+L36057:           return;
+L36058:       }
+---

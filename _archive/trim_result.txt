@@ -1,0 +1,16 @@
+﻿Starting: 70138 lines
+help_mode: L14763-L15987 (1225 lines)
+  activate at L14765
+  deactivate at L14766
+  Keeping 4 lines, removing 1221
+  help_mode trimmed: 1225 -> 4 lines
+
+After help_mode trim: 68917 lines (removed 1221)
+
+=== SUMMARY ===
+Original: 70138 lines
+Final: 68917 lines
+Removed: 1221 lines
+
+Validating UI_STRINGS structure...
+  UI_STRINGS closes at L16013 ΓÇö BALANCED Γ£à

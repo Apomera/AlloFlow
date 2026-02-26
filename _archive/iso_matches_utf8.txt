@@ -1,0 +1,50 @@
+﻿
+AlloFlowANTI.txt:51:    
+if (typeof 
+_CACHE_ISOLATION_AUDIO 
+!== 'undefined') 
+_CACHE_ISOLATION_AUDIO = 
+null;
+AlloFlowANTI.txt:648:    '
+word_sounds.activity_isola
+tion': 'Find Sounds',
+AlloFlowANTI.txt:660:    '
+word_sounds.isolation_desc
+': 'Identify a specific 
+sound by position in a 
+word',
+AlloFlowANTI.txt:673:    '
+word_sounds.isolation_firs
+t_prompt': 'What is the 
+FIRST sound in this 
+word?',
+AlloFlowANTI.txt:675:    '
+word_sounds.isolation_prom
+pt': 'What sound is in 
+this word?',
+AlloFlowANTI.txt:676:    '
+word_sounds.isolation_last
+_prompt': 'What is the 
+LAST sound in this word?',
+AlloFlowANTI.txt:1071:let 
+_CACHE_ISOLATION_AUDIO = 
+null;
+AlloFlowANTI.txt:1072:func
+tion _LOAD_ISOLATION_AUDIO
+_RAW() {
+AlloFlowANTI.txt:1074:    
+'1st': 
+getAudio('isolation', 
+'1st'),
+AlloFlowANTI.txt:1075:    
+'2nd': 
+getAudio('isolation', 
+'2nd'),
+AlloFlowANTI.txt:1076:    
+'3rd': 
+getAudio('isolation', 
+'3rd'),
+AlloFlowANTI.txt:1077:    
+'4th': 
+getAudio('isolation', 
+'4th'),

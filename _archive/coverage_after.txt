@@ -1,0 +1,6 @@
+﻿HELP_STRINGS: L31734-L32543 (810 lines)
+HELP_STRINGS keys: 622
+data-help-key attrs: 562
+Covered by HELP_STRINGS: 562
+GAPS (in DOM but not HELP_STRINGS): 0
+Extra (in HELP_STRINGS but not DOM): 60

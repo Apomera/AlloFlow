@@ -1,0 +1,95 @@
+=== SpeechSynthesisUtterance usage ===
+  L3845: const utter = new SpeechSynthesisUtterance(instruction);
+  L17969: const utterance = new SpeechSynthesisUtterance(cleanText);
+  L31126: const utterance = new SpeechSynthesisUtterance(text);
+  L52686: const utterance = new SpeechSynthesisUtterance(sequence[idx]);
+
+=== speechSynthesis.speak calls ===
+  L3847: window.speechSynthesis.speak(utter);
+  L17981: window.speechSynthesis.speak(utterance);
+  L31138: window.speechSynthesis.speak(utterance);
+  L52700: window.speechSynthesis.speak(utterance);
+
+=== AlloBot speak/tip functions ===
+  L10424: alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+  L10426: alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+  L24183: alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
+  L29950: alloBotRef.current.speak(t('timer.time_up_msg') || "Time is up! Great focus.");
+  L35904: try { alloBotRef.current.speak(lastMsg.text); } catch(e) { /* TTS error - non-fatal */ }
+  L35945: alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+  L37796: alloBotRef.current.speak(followUp, 'teaching');
+  L39685: alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L40380: if (alloBotRef.current && alloBotRef.current.stopSpeaking) {
+  L40381: alloBotRef.current.stopSpeaking();
+  L42533: alloBotRef.current.speak(mode === 'worksheet' ? "Generating a worksheet? I'll make sure it's formatted perfectly for your students!" : "Prep
+  L42578: alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+  L43390: alloBotRef.current.speak(feedback);
+  L43640: if (shouldSpeak && alloBotRef.current) {
+  L43642: alloBotRef.current.speak(hint);
+  L44794: alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+  L47039: alloBotRef.current.speak(genMsg);
+  L47132: alloBotRef.current.speak(lastMsg.text);
+  L47699: alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
+  L49604: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L50608: //      alloBotRef.current.speak(feedback);
+  L50738: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinki
+  L51314: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L51389: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L51456: alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);
+  L53196: alloBotRef.current.speak("I've verified the text complexity using a dual-check process. Review the rubric to see exactly how it aligns!", 'h
+  L53270: alloBotRef.current.speak(contextMsg);
+  L53718: alloBotRef.current.speak(speakText);
+
+=== ttsQuotaExhausted set ===
+  L3444: const ttsQuotaExhausted = React.useRef(false); // Fast-skip cloud TTS when quota known exhausted
+  L38249: if (ttsQuotaExhausted.current) {
+  L38315: ttsQuotaExhausted.current = true;
+  L38317: setTimeout(() => { ttsQuotaExhausted.current = false; }, 60000);
+  L38386: ttsQuotaExhausted.current = true;
+  L38388: setTimeout(() => { ttsQuotaExhausted.current = false; ttsFailureCount.current = 0; }, 60000);
+
+=== ttsFailureCount ===
+  L3443: const ttsFailureCount = React.useRef(0); // Track consecutive TTS failures for quota handling
+  L38384: ttsFailureCount.current = (ttsFailureCount.current || 0) + 1;
+  L38385: if (ttsFailureCount.current >= 3) {
+  L38388: setTimeout(() => { ttsQuotaExhausted.current = false; ttsFailureCount.current = 0; }, 60000);
+
+=== isGlobalMuted ===
+  L161: const isGlobalMuted = () => globalMuteEnabled;
+  L165: const [muted, setMuted] = React.useState(isGlobalMuted());
+  L17357: if (soundEnabled && i % 3 === 0 && !isGlobalMuted()) {
+  L17766: if (isFlightActive && soundEnabled && !isGlobalMuted()) {
+  L17966: if (!cloudSuccess && window.speechSynthesis && !isGlobalMuted()) {
+  L31119: if (!('speechSynthesis' in window) || isGlobalMuted()) {
+  L38399: if (isGlobalMuted()) {
+
+=== AlloBot tips/voice ===
+  L10424: alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+  L10426: alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+  L24018: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBingoState, onGenerateAudio, selectedVoice,
+  L24183: alloBotRef.current.speak("Printing your Bingo cards! Have fun playing!", "excited");
+  L29950: alloBotRef.current.speak(t('timer.time_up_msg') || "Time is up! Great focus.");
+  L35904: try { alloBotRef.current.speak(lastMsg.text); } catch(e) { /* TTS error - non-fatal */ }
+  L35945: alloBotRef.current.speak(t('common.save_reminder_tts') || "Don't forget to save your work!");
+  L37796: alloBotRef.current.speak(followUp, 'teaching');
+  L39685: alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L40380: if (alloBotRef.current && alloBotRef.current.stopSpeaking) {
+  L40381: alloBotRef.current.stopSpeaking();
+  L42533: alloBotRef.current.speak(mode === 'worksheet' ? "Generating a worksheet? I'll make sure it's formatted perfectly for your students!" : "Prep
+  L42578: alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+  L43390: alloBotRef.current.speak(feedback);
+  L43640: if (shouldSpeak && alloBotRef.current) {
+  L43642: alloBotRef.current.speak(hint);
+  L44794: alloBotRef.current.speak(t('bot_events.feedback_adventure_start'), 'happy');
+  L47039: alloBotRef.current.speak(genMsg);
+  L47132: alloBotRef.current.speak(lastMsg.text);
+  L47699: alloBotRef.current.speak(t('bot_events.feedback_persona_start', { name: character.name }), 'happy');
+  L49604: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L50608: //      alloBotRef.current.speak(feedback);
+  L50738: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinki
+  L51314: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L51389: if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+  L51456: alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);
+  L53196: alloBotRef.current.speak("I've verified the text complexity using a dual-check process. Review the rubric to see exactly how it aligns!", 'h
+  L53270: alloBotRef.current.speak(contextMsg);
+  L53718: alloBotRef.current.speak(speakText);

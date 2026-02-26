@@ -1,0 +1,6 @@
+L16758:         quiz_group_language_select: "Choose the language for this student group's quiz presentation.",
+L16759:         quiz_group_resource_select: "Select which quiz or resource version to assign to this group.",
+L26709:                                             value={group.resourceId || ""} data-help-key="quiz_group_resource_select"
+L26722:                                             value={group.language || ""} data-help-key="quiz_group_language_select"
+L32164:     'quiz_group_resource_select': "Assign a specific resource to this group (optional).",
+L32165:     'quiz_group_language_select': "Set the translation language for students in this group.",

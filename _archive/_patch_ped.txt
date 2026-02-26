@@ -1,0 +1,18 @@
+﻿Loaded 4653311 chars
+
+=== FIX 1: Corrective Audio ===
+  Added corrective audio replay on first wrong answer
+  Added corrective audio on final wrong answer
+
+=== FIX 2: Scaffolding on Repeated Failure ===
+  Upgraded retry mechanic from 1 to 2 retries with progressive hints
+
+=== FIX 3: Re-enable Hints on Performance Drop ===
+  Added hint re-enable on low accuracy (<40% over last 5)
+
+=== FIX 4: Meaningful Level Progression ===
+  Added level-based difficulty boost to getEffectiveDifficulty
+  Added level-aware messages and celebration audio
+
+=== Writing 6 changes ===
+Saved AlloFlowANTI.txt (4656519 chars, was 4653311)

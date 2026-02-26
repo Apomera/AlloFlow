@@ -1,0 +1,311 @@
+Defined: 513, Used: 576, Unused: 67
+
+
+============================================================
+alignment_generate_button
+REFERENCED:
+  L35016: 'alignment_generate_button': 'alignment-report',
+
+============================================================
+alignment_grade_select
+REFERENCED:
+  L35015: 'alignment_grade_select': 'alignment-report',
+
+============================================================
+alignment_standard_select
+REFERENCED:
+  L35014: 'alignment_standard_select': 'alignment-report',
+
+============================================================
+analysis_depth
+NOT REFERENCED ANYWHERE
+
+============================================================
+analysis_focus
+NOT REFERENCED ANYWHERE
+
+============================================================
+brainstorm_simulation_detailed
+REFERENCED:
+  L34947: 'brainstorm_simulation_detailed': 'brainstorm',
+
+============================================================
+brainstorm_step_count_detailed
+REFERENCED:
+  L34948: 'brainstorm_step_count_detailed': 'brainstorm',
+
+============================================================
+concept_sort_categories_detailed
+REFERENCED:
+  L34980: 'concept_sort_categories_detailed': 'concept-sort',
+
+============================================================
+concept_sort_input
+REFERENCED:
+  L34979: 'concept_sort_input': 'concept-sort',
+
+============================================================
+concept_sort_item_count
+REFERENCED:
+  L34981: 'concept_sort_item_count': 'concept-sort',
+
+============================================================
+dashboard_toggle_graded
+NOT REFERENCED ANYWHERE
+
+============================================================
+escape_room_matching_columns
+NOT REFERENCED ANYWHERE
+
+============================================================
+escape_room_matching_submit
+NOT REFERENCED ANYWHERE
+
+============================================================
+escape_room_sequence_check
+NOT REFERENCED ANYWHERE
+
+============================================================
+escape_room_sequence_list
+NOT REFERENCED ANYWHERE
+
+============================================================
+export_share_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+export_word_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+glossary_word_sounds
+REFERENCED:
+  L34893: 'glossary_word_sounds': 'glossary',
+
+============================================================
+group_karaoke_toggle
+REFERENCED:
+  L19055: group_karaoke_toggle: "When enabled, words highlight in sync with TTS playback to support reading fluency.",
+
+============================================================
+header_actions
+REFERENCED:
+  L15666: header_actions_title: "Header Actions",
+  L15667: header_actions_desc: "Quick access controls for language settings, accessibility options, and user mode switching. Custo
+  L16685: header_actions: "Actions",
+  L30697: <th className="p-4 text-right">{t('dashboard.header_actions')}</th>
+
+============================================================
+header_animation_toggle
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_help_toggle
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_hints_recall
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_overlay_toggle
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_settings
+REFERENCED:
+  L59108: data-help-key="header_settings_text"
+  L59124: <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[10px] text-indigo-500 hover:
+  L59131: data-help-key="header_settings_text_font"
+  L59145: data-help-key="header_settings_text_bionic"
+  L59166: <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
+  L59188: data-help-key="header_settings_text_line_height"
+  L59201: data-help-key="header_settings_text_spacing"
+  L59213: data-help-key="header_settings_voice"
+  L59234: data-help-key="header_settings_voice_select"
+  L59251: data-help-key="header_settings_voice_speed"
+
+============================================================
+header_settings_voice_pitch
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_sync_toggle
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_theme_toggle
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_tools
+REFERENCED:
+  L15670: header_tools_title: "Quick Tools",
+  L15671: header_tools_desc: "Power tools for content creation and AI assistance. Access the writing workshop, chat assistant, and
+
+============================================================
+header_utils
+REFERENCED:
+  L15668: header_utils_title: "Utility Controls",
+  L15669: header_utils_desc: "Essential utilities including project management, help resources, and user mode toggle. Switch betwe
+
+============================================================
+header_view_toggle
+NOT REFERENCED ANYWHERE
+
+============================================================
+header_xp_modal
+NOT REFERENCED ANYWHERE
+
+============================================================
+large_file_dropzone
+NOT REFERENCED ANYWHERE
+
+============================================================
+large_file_transcribe_btn
+NOT REFERENCED ANYWHERE
+
+============================================================
+lesson_plan_assessment
+NOT REFERENCED ANYWHERE
+
+============================================================
+lesson_plan_differentiation
+NOT REFERENCED ANYWHERE
+
+============================================================
+lesson_plan_duration
+NOT REFERENCED ANYWHERE
+
+============================================================
+lesson_plan_generate_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+lesson_plan_objectives
+NOT REFERENCED ANYWHERE
+
+============================================================
+math_difficulty
+REFERENCED:
+  L34964: 'math_difficulty': 'math',
+
+============================================================
+math_problem_count
+REFERENCED:
+  L34965: 'math_problem_count': 'math',
+
+============================================================
+math_show_work
+REFERENCED:
+  L34966: 'math_show_work': 'math',
+
+============================================================
+outline_depth
+NOT REFERENCED ANYWHERE
+
+============================================================
+persona_continue_btn
+NOT REFERENCED ANYWHERE
+
+============================================================
+persona_custom_instructions_detailed
+REFERENCED:
+  L34957: 'persona_custom_instructions_detailed': 'persona',
+
+============================================================
+persona_free_response_detailed
+REFERENCED:
+  L34958: 'persona_free_response_detailed': 'persona',
+
+============================================================
+persona_mode_toggle
+REFERENCED:
+  L34959: 'persona_mode_toggle': 'persona',
+
+============================================================
+persona_selection
+REFERENCED:
+  L34956: 'persona_selection': 'persona',
+
+============================================================
+profiles_export_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+profiles_import_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+profiles_save_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+profiles_select_dropdown
+NOT REFERENCED ANYWHERE
+
+============================================================
+quiz_boss_difficulty
+NOT REFERENCED ANYWHERE
+
+============================================================
+quiz_difficulty_mix
+REFERENCED:
+  L35010: 'quiz_difficulty_mix': 'quiz',
+
+============================================================
+quiz_end_btn
+NOT REFERENCED ANYWHERE
+
+============================================================
+quiz_question_types
+REFERENCED:
+  L35011: 'quiz_question_types': 'quiz',
+
+============================================================
+resource_next_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+resource_prev_button
+NOT REFERENCED ANYWHERE
+
+============================================================
+timeline_count_detailed
+REFERENCED:
+  L34990: 'timeline_count_detailed': 'timeline',
+
+============================================================
+timeline_topic_detailed
+REFERENCED:
+  L34989: 'timeline_topic_detailed': 'timeline',
+
+============================================================
+tool_phonics_mode
+NOT REFERENCED ANYWHERE
+
+============================================================
+visuals_delete
+NOT REFERENCED ANYWHERE
+
+============================================================
+visuals_low_quality
+REFERENCED:
+  L35005: 'visuals_low_quality': 'image',
+
+============================================================
+wizard_file_upload_btn
+NOT REFERENCED ANYWHERE
+
+============================================================
+word_sounds_mic
+REFERENCED:
+  L17445: word_sounds_mic: "Use your microphone to record yourself pronouncing sounds or words.",
+
+============================================================
+word_sounds_play
+NOT REFERENCED ANYWHERE
+
+============================================================
+wordsounds_check_btn
+NOT REFERENCED ANYWHERE

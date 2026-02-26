@@ -1,0 +1,53 @@
+{
+    "mode": "student",
+    "studentNickname": "Zara Patel",
+    "responses": {
+        "quiz-1": {
+            "score": 72
+        },
+        "quiz-2": {
+            "score": 68
+        },
+        "quiz-3": {
+            "score": 75
+        },
+        "quiz-4": {
+            "score": 70
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-2",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-3",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-4",
+            "data": {
+                "questions": []
+            }
+        }
+    ],
+    "globalPoints": 280,
+    "timeOnTask": {
+        "totalSessionMinutes": 35
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

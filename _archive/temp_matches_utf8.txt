@@ -1,0 +1,278 @@
+﻿
+AlloFlowANTI.txt:4922:    
+    onCheckAnswer,
+AlloFlowANTI.txt:5097:    
+                          
+      onClick={() => 
+onCheckAnswer(opt)}
+AlloFlowANTI.txt:5127:    
+const RhymeView = 
+React.memo(({ data, 
+showLetterHints, 
+onPlayAudio, 
+onCheckAnswer, isEditing, 
+onUpdateOption, 
+highlightedIndex, 
+isAudioBusy }) => {
+AlloFlowANTI.txt:5211:    
+                        
+onClick={() => 
+onCheckAnswer(opt)}
+AlloFlowANTI.txt:5215:    
+                          
+      onCheckAnswer(opt);
+AlloFlowANTI.txt:5241:    
+const OrthographyView = 
+React.memo(({ data, 
+onPlayAudio, 
+onCheckAnswer, isEditing, 
+onUpdateOption }) => {
+AlloFlowANTI.txt:5282:    
+            setTimeout(() 
+=> { if 
+(isMountedRef.current) onC
+heckAnswer(userSpelling); 
+}, 500);
+AlloFlowANTI.txt:5284:    
+            onCheckAnswer(
+userSpelling);
+AlloFlowANTI.txt:5394:    
+const WordFamiliesView = 
+React.useMemo(() => ({ 
+data, onPlayAudio, 
+onCheckAnswer, isEditing, 
+onUpdateOption, 
+showLetterHints, 
+soundOnlyMode }) => {
+AlloFlowANTI.txt:5437:    
+                 
+setTimeout(() => { if 
+(isMountedRef.current) 
+onCheckAnswer('correct'); 
+}, 1200);
+AlloFlowANTI.txt:5443:    
+            onCheckAnswer(
+'incorrect');
+AlloFlowANTI.txt:5638:    
+const SoundMappingView = 
+React.memo(({ data, 
+onPlayAudio, 
+onCheckAnswer, isEditing, 
+onUpdateOption }) => {
+AlloFlowANTI.txt:5673:    
+                
+setTimeout(() => { if 
+(isMountedRef.current) 
+onCheckAnswer('correct'); 
+}, 1000);
+AlloFlowANTI.txt:7941:    
+const checkAnswer = React.
+useCallback((answer, 
+expectedAnswer) => {
+AlloFlowANTI.txt:7942:    
+    
+debugLog("TeacherCheck: 
+checkAnswer called", { 
+answer, expectedAnswer, 
+locked: 
+submissionLockRef.current 
+});
+AlloFlowANTI.txt:7948:    
+        warnLog("⚠️ 
+checkAnswer: 
+expectedAnswer is 
+empty/null, skipping 
+check");
+AlloFlowANTI.txt:8526:    
+        
+warnLog("CheckAnswer 
+CRITICAL FAIL", e);
+AlloFlowANTI.txt:8528:    
+        console.error("Che
+ckAnswer error details:", 
+e?.message, e?.stack);
+AlloFlowANTI.txt:8530:    
+        debugLog("⚠️ 
+checkAnswer: Swallowed 
+null-reference error:", 
+e.message);
+AlloFlowANTI.txt:8547:    
+             
+checkAnswer(isCorrect ? 
+'correct' : 'incorrect', 
+'correct');
+AlloFlowANTI.txt:8551:    
+            
+checkAnswer(userAnswer, 
+expected);
+AlloFlowANTI.txt:8554:    
+}, [useMicInput, 
+isListening, userAnswer, 
+wordSoundsActivity, 
+currentWordSoundsWord, 
+wordSoundsPhonemes, 
+checkAnswer]);
+AlloFlowANTI.txt:8592:    
+             
+checkAnswer('correct', 
+'correct');
+AlloFlowANTI.txt:8594:    
+             
+checkAnswer(transcript, 
+expected);
+AlloFlowANTI.txt:8598:    
+}, [wordSoundsLanguage, 
+isListening, 
+currentWordSoundsWord, 
+wordSoundsActivity, 
+wordSoundsPhonemes, 
+checkAnswer, addToast, 
+playSound, ts]);
+AlloFlowANTI.txt:9354:    
+                        
+onCheckAnswer={(ans) => 
+checkAnswer(ans, 
+correctSound)}
+AlloFlowANTI.txt:9501:    
+                          
+           
+checkAnswer('wrong', 
+'right');
+AlloFlowANTI.txt:9505:    
+                          
+           
+checkAnswer(userPhonemes, 
+expectedPhonemes);
+AlloFlowANTI.txt:9632:    
+                          
+                          
+        
+checkAnswer(isCorrect ? 
+'correct' : 'incorrect', 
+'correct');
+AlloFlowANTI.txt:9700:    
+                    
+onCheckAnswer={(ans) => 
+checkAnswer(ans, 
+currentWordSoundsWord)}
+AlloFlowANTI.txt:9719:    
+                    
+onCheckAnswer={(ans) => 
+checkAnswer(ans, 
+'correct')}
+AlloFlowANTI.txt:9748:    
+                        
+checkAnswer('correct', 
+'correct');
+AlloFlowANTI.txt:9756:    
+                    
+checkAnswer('incorrect', 
+'correct');
+AlloFlowANTI.txt:9900:    
+                        
+checkAnswer('correct', 
+'correct');
+AlloFlowANTI.txt:9906:    
+                    
+checkAnswer('incorrect', 
+'correct');
+AlloFlowANTI.txt:10024:   
+                         
+checkAnswer('correct', 
+'correct');
+AlloFlowANTI.txt:10038:   
+                     
+checkAnswer('incorrect', 
+'correct');
+AlloFlowANTI.txt:10165:   
+                         
+onCheckAnswer={(ans) => {
+AlloFlowANTI.txt:10167:   
+                          
+    checkAnswer(isRhyme ? 
+'correct' : 'incorrect', 
+'correct');
+AlloFlowANTI.txt:10267:   
+                     
+onCheckAnswer={(result) 
+=> {
+AlloFlowANTI.txt:10268:   
+                         
+checkAnswer(result, 
+'correct');
+AlloFlowANTI.txt:10321:   
+                          
+                
+checkAnswer('correct', 
+'correct');
+AlloFlowANTI.txt:10331:   
+                          
+        
+checkAnswer('correct', 
+'correct');
+AlloFlowANTI.txt:10349:   
+                  
+checkAnswer(val, count);
+AlloFlowANTI.txt:10355:   
+                      
+checkAnswer(num, count);
+AlloFlowANTI.txt:10399:   
+                          
+        onClick={() => 
+checkAnswer(num, count)}
+AlloFlowANTI.txt:10412:   
+                          
+     onClick={() => 
+checkAnswer(11, count)}
+AlloFlowANTI.txt:10501:   
+                     
+onCheckAnswer={(result) 
+=> checkAnswer(result === 
+'correct' ? 
+currentWordSoundsWord : 
+null, 
+currentWordSoundsWord)}
+AlloFlowANTI.txt:14664:   
+                     
+onCheckAnswer={(result) 
+=> checkAnswer(result === 
+'correct' ? 
+currentWordSoundsWord : 
+null, 
+currentWordSoundsWord)}
+AlloFlowANTI.txt:20524:  
+const checkAnswers = () 
+=> {
+AlloFlowANTI.txt:20725:   
+             
+onClick={checkAnswers}
+AlloFlowANTI.txt:21179:  
+const checkAnswers = () 
+=> {
+AlloFlowANTI.txt:21345:   
+                          
+   onClick={checkAnswers}
+AlloFlowANTI.txt:22214:   
+ const checkAnswer = () 
+=> {
+AlloFlowANTI.txt:22286:   
+                         
+onClick={checkAnswer}
+AlloFlowANTI.txt:36327:   
+                     
+onCheckAnswer={(result) 
+=> checkAnswer(result === 
+'correct' ? 
+currentWordSoundsWord : 
+null, 
+currentWordSoundsWord)}
+AlloFlowANTI.txt:49722:   
+                     
+onCheckAnswer={(result) 
+=> checkAnswer(result === 
+'correct' ? 
+currentWordSoundsWord : 
+null, 
+currentWordSoundsWord)}
+
+

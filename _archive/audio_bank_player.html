@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Audio Bank Player</title>
+    <style>
+        body {
+            font-family: system-ui;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f1f5f9;
+        }
+
+        h1 {
+            color: #1e293b;
+        }
+
+        h2 {
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        .category {
+            margin-bottom: 30px;
+        }
+
+        .key-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+        }
+
+        .key-btn {
+            padding: 10px 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #334155;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .key-btn:hover {
+            border-color: #7c3aed;
+            color: #7c3aed;
+            transform: scale(1.03);
+        }
+
+        .key-btn.playing {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        .key-btn.missing {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #dc2626;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .load-btn {
+            padding: 12px 24px;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .load-btn:hover {
+            background: #6d28d9;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔊 Audio Bank Player</h1>
+    <p>Load your <code>audio_bank.json</code> to hear every entry. Click any key to play it.</p>
+
+    <input type="file" id="fileInput" accept=".json" style="display:none">
+    <button class="load-btn" onclick="document.getElementById('fileInput').click()">📂 Load audio_bank.json</button>
+
+    <div id="stats" class="stats" style="display:none"></div>
+    <div id="content"></div>
+    <div id="status"></div>
+
+    <script>
+        let currentAudio = null;
+        let currentBtn = null;
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    renderBank(data);
+                } catch (err) {
+                    document.getElementById('status').textContent = 'Error parsing JSON: ' + err.message;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function renderBank(data) {
+            const content = document.getElementById('content');
+            const stats = document.getElementById('stats');
+            content.innerHTML = '';
+
+            let totalKeys = 0;
+            let totalWithData = 0;
+            let html = '';
+
+            for (const [category, entries] of Object.entries(data)) {
+                if (typeof entries !== 'object') continue;
+                const keys = Object.keys(entries).sort();
+                totalKeys += keys.length;
+
+                html += `<div class="category"><h2>${category} (${keys.length} keys)</h2><div class="key-grid">`;
+
+                for (const key of keys) {
+                    const val = entries[key];
+                    const hasData = val && typeof val === 'string' && val.startsWith('data:audio');
+                    if (hasData) totalWithData++;
+
+                    html += `<button class="key-btn ${hasData ? '' : 'missing'}" 
+                        onclick="playKey('${category}', '${key}')" 
+                        id="btn-${category}-${key}"
+                        title="${hasData ? 'Click to play' : 'NO AUDIO DATA'}"
+                    >${key} ${hasData ? '' : '❌'}</button>`;
+                }
+
+                html += '</div></div>';
+            }
+
+            content.innerHTML = html;
+            stats.style.display = 'block';
+            stats.innerHTML = `<strong>Total:</strong> ${totalKeys} keys | <strong>With audio:</strong> ${totalWithData} | <strong>Missing:</strong> ${totalKeys - totalWithData}`;
+
+            // Store data globally for playback
+            window._audioBank = data;
+        }
+
+        function playKey(category, key) {
+            const data = window._audioBank?.[category]?.[key];
+            if (!data || !data.startsWith('data:audio')) {
+                document.getElementById('status').textContent = `❌ No audio data for ${category}.${key}`;
+                return;
+            }
+
+            // Stop current
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+            if (currentBtn) { currentBtn.classList.remove('playing'); }
+
+            const btn = document.getElementById(`btn-${category}-${key}`);
+            btn.classList.add('playing');
+            currentBtn = btn;
+
+            const audio = new Audio(data);
+            currentAudio = audio;
+            document.getElementById('status').textContent = `🔊 Playing: ${category} → ${key}`;
+
+            audio.onended = () => {
+                btn.classList.remove('playing');
+                document.getElementById('status').textContent = `✅ Finished: ${category} → ${key}`;
+            };
+            audio.onerror = () => {
+                btn.classList.remove('playing');
+                document.getElementById('status').textContent = `❌ Error playing: ${category} → ${key}`;
+            };
+            audio.play().catch(err => {
+                btn.classList.remove('playing');
+                document.getElementById('status').textContent = `❌ Playback error: ${err.message}`;
+            });
+        }
+    </script>
+</body>
+
+</html>

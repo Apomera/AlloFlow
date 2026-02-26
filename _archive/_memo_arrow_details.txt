@@ -1,0 +1,329 @@
+=== LINE 74814 ===
+      L74813:       )}
+  >>> L74814:       <LargeFileTranscriptionModal
+      L74815:         isOpen={showLargeFileModal}
+      L74816:         file={pendingLargeFile}
+      L74817:         onClose={() => {
+      L74818:             if (!isLargeFileProcessing) {
+      L74819:                 setShowLargeFileModal(false);
+      L74820:                 setPendingLargeFile(null);
+      L74821:                 LargeFileHandler.cancel();
+
+=== LINE 73495 ===
+      L73494:       {activeView === 'word-sounds-generator' && (
+  >>> L73495:           <WordSoundsGenerator
+      L73496:               glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
+      L73497:               t={t}
+      L73498:               gradeLevel={gradeLevel || 'K-2'}
+      L73499:               /* imageVisibilityMode is handled inside WordSoundsGenerator */
+      L73500:               onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+      L73501:                    // Create a resource entry for history with full RTI config
+      L73502:                    const resourceId = `ws-${Date.now()}`;
+
+=== LINE 9953 ===
+      L9952:                       <div className="flex flex-col gap-4">
+  >>> L9953:                         <RhymeView
+      L9954:                             data={{
+      L9955:                                 word: currentWordSoundsWord,
+      L9956:                                 rhymeWord: wordSoundsPhonemes?.rhymeWord,
+      L9957:                                 options: rhymeOptions
+      L9958:                             }}
+      L9959:                             highlightedIndex={highlightedRhymeIndex}
+      L9960:                             showLetterHints={showLetterHints}
+
+=== LINE 9485 ===
+      L9484:                     {renderPrompt()}
+  >>> L9485:                     <OrthographyView
+      L9486:                         activity={wordSoundsActivity}
+      L9487:                         data={{
+      L9488:                             word: currentWordSoundsWord,
+      L9489:                             options: safeOptions,
+      L9490:                             correct: currentWordSoundsWord
+      L9491:                         }}
+      L9492:                         showLetterHints={true}
+
+=== LINE 9506 ===
+      L9505:                     {renderPrompt()}
+  >>> L9506:                     <SoundMappingView
+      L9507:                         key={currentWordSoundsWord}
+      L9508:                         data={{
+      L9509:                              word: currentWordSoundsWord,
+      L9510:                              phonemes: wordSoundsPhonemes?.phonemes || [],
+      L9511:                              graphemes: wordSoundsPhonemes?.graphemes || currentWordSoundsWord?.split('') || []
+      L9512:                         }}
+      L9513:                         onPlayAudio={handleAudio}
+
+=== LINE 10123 ===
+      L10122:                          )}
+  >>> L10123:                          <LetterTraceView
+      L10124:                              key={`trace-${displayLetter}-${tracingPhase}`}
+      L10125:                              letter={displayLetter}
+      L10126:                              word={currentWordSoundsWord}
+      L10127:                              onComplete={(success) => {
+      L10128:                                  if(success) {
+      L10129:                                      playSound('success');
+      L10130:                                      if (!isLowercaseBonus) {
+
+=== LINE 75217 ===
+      L75216:       {isTeacherMode && (
+  >>> L75217:           <StudentAnalyticsPanel
+      L75218:               isOpen={showClassAnalytics}
+      L75219:               onClose={() => setShowClassAnalytics(false)}
+      L75220:               t={t}
+      L75221:           />
+      L75222:       )}
+      L75223: 
+      L75224:       {showAdventureConfirmation && (
+
+=== LINE 74683 ===
+      L74682:       />
+  >>> L74683:       <StudentSubmitModal
+      L74684:           isOpen={showSubmitModal}
+      L74685:           onClose={() => setShowSubmitModal(false)}
+      L74686:           onSubmit={handleSubmitAssignment}
+      L74687:           history={history}
+      L74688:           currentNickname={studentNickname || studentProjectSettings.nickname}
+      L74689:       />
+      L74690:       {showSaveModal && (
+
+=== LINE 60982 ===
+      L60981:       {adventureState.isGameOver && adventureState.climax?.masteryScore >= 80 && !adventureState.missionReportDismissed && (
+  >>> L60982:           <MissionReportCard
+      L60983:               adventureState={adventureState}
+      L60984:               globalLevel={globalLevel}
+      L60985:               isProcessing={isProcessing}
+      L60986:               onExport={() => setShowStorybookExportModal(true)}
+      L60987:               onClose={() => {
+      L60988:                   setAdventureState(prev => ({ ...prev, missionReportDismissed: true }));
+      L60989:               }}
+
+=== LINE 70624 ===
+      L70623:                     {gradingSession.isOpen ? (
+  >>> L70624:                         <DraftFeedbackInterface
+      L70625:                             status={gradingSession.status}
+      L70626:                             draftText={gradingSession.draftText}
+      L70627:                             setDraftText={(val) => setGradingSession(prev => ({ ...prev, draftText: val }))}
+      L70628:                             previousDraft={gradingSession.previousDraft}
+      L70629:                             gradingDetails={gradingSession.feedback}
+      L70630:                             draftCount={gradingSession.draftCount}
+      L70631:                             onSubmit={submitGradingSession}
+
+=== LINE 74662 ===
+      L74661:       )}
+  >>> L74662:       <TeacherGate
+      L74663:         isOpen={isGateOpen}
+      L74664:         onClose={() => setIsGateOpen(false)}
+      L74665:         onUnlock={onGateUnlock}
+      L74666:       />
+      L74667: 
+      L74668:       {showDice && <DiceOverlay result={diceResult} onComplete={handleDiceRollComplete} />}
+      L74669:       {!hasSelectedRole && (
+
+=== LINE 40030 ===
+      L40029:                   return (
+  >>> L40030:                       <ClozeInput
+      L40031:                           key={i}
+      L40032:                           targetWord={item.term}
+      L40033:                           isSolved={clozeInstanceSet.has(uniqueId)}
+      L40034:                           onCorrect={(word) => {
+      L40035:                               if (!clozeInstanceSet.has(uniqueId)) {
+      L40036:                                   setClozeInstanceSet(prev => {
+      L40037:                                       const newSet = new Set(prev);
+
+=== LINE 66802 ===
+      L66801:                         <ErrorBoundary fallbackMessage="Memory Game encountered an error.">
+  >>> L66802:                             <MemoryGame
+      L66803:                                 data={generatedContent.data}
+      L66804:                                 onClose={closeMemory}
+      L66805:                                 onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L66806:                                 onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L66807:                             />
+      L66808:                         </ErrorBoundary>
+      L66809:                     )}
+
+=== LINE 66823 ===
+      L66822:                         <ErrorBoundary fallbackMessage="Matching Game encountered an error.">
+  >>> L66823:                             <MatchingGame
+      L66824:                                 data={generatedContent.data}
+      L66825:                                 onClose={closeMatching}
+      L66826:                                 playSound={playSound}
+      L66827:                                 onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L66828:                                 onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L66829:                             />
+      L66830:                         </ErrorBoundary>
+
+=== LINE 72616 ===
+      L72615:                             <ErrorBoundary fallbackMessage="Sequence Game encountered an error.">
+  >>> L72616:                                 <TimelineGame
+      L72617:                                     data={generatedContent.data}
+      L72618:                                     onClose={closeTimeline}
+      L72619:                                     playSound={playSound}
+      L72620:                                     onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L72621:                                     onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L72622:                                 />
+      L72623:                             </ErrorBoundary>
+
+=== LINE 72688 ===
+      L72687:                             <ErrorBoundary fallbackMessage="Concept Sort Game encountered an error.">
+  >>> L72688:                                 <ConceptSortGame
+      L72689:                                     data={generatedContent.data}
+      L72690:                                     onClose={closeConceptSort}
+      L72691:                                     playSound={playSound}
+      L72692:                                     onGenerateItem={handleGenerateConceptItem}
+      L72693:                                     onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L72694:                                     onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L72695:                                 />
+
+=== LINE 56955 ===
+      L56954:                     <ErrorBoundary fallbackMessage="Venn Game encountered an error.">
+  >>> L56955:                         <VennGame
+      L56956:                             data={vennGameData}
+      L56957:                             onClose={closeVenn}
+      L56958:                             playSound={playSound}
+      L56959:                             titles={{
+      L56960:                                 setA: { text: setA.title, trans: setA.title_en },
+      L56961:                                 setB: { text: setB.title, trans: setB.title_en }
+      L56962:                             }}
+
+=== LINE 66812 ===
+      L66811:                         <ErrorBoundary fallbackMessage="Crossword Puzzle encountered an error.">
+  >>> L66812:                             <CrosswordGame
+      L66813:                                 data={generatedContent.data}
+      L66814:                                 onClose={closeCrossword}
+      L66815:                                 playSound={playSound}
+      L66816:                                 onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L66817:                                 onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L66818:                             />
+      L66819:                         </ErrorBoundary>
+
+=== LINE 73942 ===
+      L73941:         <ErrorBoundary fallbackMessage={t('error.syntax_scramble')}>
+  >>> L73942:             <SyntaxScramble
+      L73943:                 text={typeof generatedContent.data === 'string' ? generatedContent.data : ''}
+      L73944:                 onClose={closeSyntax}
+      L73945:                 playSound={playSound}
+      L73946:                 onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L73947:                 onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L73948:             />
+      L73949:         </ErrorBoundary>
+
+=== LINE 66850 ===
+      L66849:                         <ErrorBoundary fallbackMessage="Bingo Game encountered an error.">
+  >>> L66850:                             <StudentBingoGame
+      L66851:                                 data={generatedContent.data}
+      L66852:                                 onClose={closeStudentBingo}
+      L66853:                                 playSound={playSound}
+      L66854:                                 onGameComplete={(gameType, data) => recordGameCompletion(generatedContent.id, gameType, data)}
+      L66855:                             />
+      L66856:                         </ErrorBoundary>
+      L66857:                     )}
+
+=== LINE 66860 ===
+      L66859:                         <ErrorBoundary fallbackMessage="Word Scramble Game encountered an error.">
+  >>> L66860:                             <WordScrambleGame
+      L66861:                                 data={generatedContent.data}
+      L66862:                                 onClose={() => setIsWordScrambleGame(false)}
+      L66863:                                 playSound={playSound}
+      L66864:                                 onScoreUpdate={(points, activity) => handleScoreUpdate(points, activity, generatedContent.id)}
+      L66865:                             />
+      L66866:                         </ErrorBoundary>
+      L66867:                     )}
+
+=== LINE 74670 ===
+      L74669:       {!hasSelectedRole && (
+  >>> L74670:         <RoleSelectionModal
+      L74671:             onSelect={executeRoleSelect}
+      L74672:             onGateRequired={(role) => {
+      L74673:                 setPendingRole(role);
+      L74674:                 setIsGateOpen(true);
+      L74675:             }}
+      L74676:         />
+      L74677:       )}
+
+=== LINE 74678 ===
+      L74677:       )}
+  >>> L74678:       <StudentEntryModal
+      L74679:         isOpen={showStudentEntry && hasSelectedRole && !isTeacherMode}
+      L74680:         onClose={() => { setShowStudentEntry(false); setHasSelectedRole(false); }}
+      L74681:         onConfirm={handleStudentEntryConfirm}
+      L74682:       />
+      L74683:       <StudentSubmitModal
+      L74684:           isOpen={showSubmitModal}
+      L74685:           onClose={() => setShowSubmitModal(false)}
+
+=== LINE 74878 ===
+      L74877:       />
+  >>> L74878:       <StudentWelcomeModal
+      L74879:         isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
+      L74880:         onClose={() => setShowStudentWelcome(false)}
+      L74881:         onUpload={() => projectFileInputRef.current?.click()}
+      L74882:       />\n      <QuickStartWizard
+      L74883:         isOpen={showWizard && hasSelectedRole && isTeacherMode}
+      L74884:         onClose={() => setShowWizard(false)}
+      L74885:         onComplete={handleWizardComplete}
+
+=== LINE 74650 ===
+      L74649:       {activeView === 'dashboard' && isTeacherMode && (
+  >>> L74650:           <TeacherDashboard
+      L74651:               onClose={() => setActiveView('input')}
+      L74652:               dashboardData={dashboardData}
+      L74653:               setDashboardData={setDashboardData}
+      L74654:               addToast={addToast}
+      L74655:               setSelectedStudentId={setSelectedStudentId}
+      L74656:               selectedStudentId={selectedStudentId}
+      L74657:               setDashboardView={setDashboardView}
+
+=== LINE 67483 ===
+      L67482: 
+  >>> L67483:                             <SpeedReaderOverlay
+      L67484:                                 isOpen={isSpeedReaderActive}
+      L67485:                                 onClose={() => setIsSpeedReaderActive(false)}
+      L67486:                                 text={
+      L67487:                                     // Combine all text for reader (extract text from word objects, filter newlines)
+      L67488:                                     // Strip HTML-like tags (e.g., <d>, </d>) before sending to reader
+      L67489:                                     (generatedContent?.immersiveData
+      L67490:                                         ?.filter(w => w.pos !== 'newline')
+
+=== LINE 67469 ===
+      L67468:                         >
+  >>> L67469:                             <ImmersiveToolbar
+      L67470:                                 settings={immersiveSettings}
+      L67471:                                 setSettings={setImmersiveSettings}
+      L67472:                                 onClose={() => setIsImmersiveReaderActive(false)}
+      L67473:                                 playbackRate={playbackRate}
+      L67474:                                 setPlaybackRate={setPlaybackRate}
+      L67475:                                 lineHeight={lineHeight}
+      L67476:                                 setLineHeight={setLineHeight}
+
+=== LINE 31766 ===
+      L31765:         <div className="flex items-center gap-2 shrink-0">
+  >>> L31766:             <ToggleButton
+      L31767:               active={settings.wideText}
+      L31768:               onClick={() => setSettings(prev => ({...prev, wideText: !prev.wideText}))}
+      L31769:               title={t('immersive.toggle_spacing')}
+      L31770:               data-help-key="immersive_wide_text"
+      L31771:             >
+      L31772:               {t('immersive.wide_text')}
+      L31773:             </ToggleButton>
+
+=== LINE 67566 ===
+      L67565:                                             return (
+  >>> L67566:                                                 <ImmersiveWord
+      L67567:                                                     key={wordData.id || i}
+      L67568:                                                     wordData={wordData}
+      L67569:                                                     settings={immersiveSettings}
+      L67570:                                                     isActive={isPlaying && playbackState.currentIdx === assignedIdx}
+      L67571:                                                     onClick={(e) => {
+      L67572:                                                         e.stopPropagation();
+      L67573: 
+
+=== LINE 62078 ===
+      L62077:                   <div className="w-full max-w-[95%]">
+  >>> L62078:                       <InteractiveBlueprintCard
+      L62079:                           config={activeBlueprint}
+      L62080:                           onUpdate={handleBlueprintUIUpdate}
+      L62081:                           onConfirm={handleExecuteBlueprint}
+      L62082:                           onCancel={() => {
+      L62083:                               setIsReviewingBlueprint(false);
+      L62084:                               setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.cancel_msg') }]);
+      L62085:                               setActiveBlueprint(null);

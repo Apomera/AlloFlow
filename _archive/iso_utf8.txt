@@ -1,0 +1,15 @@
+﻿
+AlloFlowANTI.txt:660:    '
+word_sounds.isolation_desc
+': 'Identify a specific 
+sound by position in a 
+word',
+AlloFlowANTI.txt:5749:    
+    { id: 'isolation', 
+label: ts('word_sounds.act
+ivity_isolation'), icon: 
+'🎯', description: ts('wor
+d_sounds.isolation_desc'),
+ tier: 'phonological' },
+
+

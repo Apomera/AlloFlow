@@ -1,0 +1,5 @@
+LINE 17684: glossary_terms_table: "View all glossary terms in a sortable table format with definitions.",
+LINE 33709: 'glossary_standard_flashcards': "Launch an interactive flashcard study session with your vocabulary terms. Features: click to flip (term → definition), shuffle mode for varied practice, progress track
+LINE 33711: 'glossary_export_standard': "Export your vocabulary flashcards as a printable PDF. Output includes: all terms and definitions, front/back card layout, and cut lines for easy separation. Print options:
+LINE 33729: 'glossary_search': "Find specific vocabulary terms quickly in your glossary. Type any portion of a word to filter results instantly. Search matches: term names, definitions, and translations. Use for:
+LINE 39862: Translate the terms and definitions in this glossary JSON into ${targetLanguage}.

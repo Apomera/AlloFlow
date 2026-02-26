@@ -1,0 +1,14 @@
+L2017: const setPreloadedWords = setWsPreloadedWords || (() => {
+L3754: setPreloadedWords(prev => [...prev, ...newPreloadedWords]);
+L3935: // The existing code used `setPreloadedWords([...preloadedData])` incrementally.
+L3961: setPreloadedWords(validResults);
+L4005: setPreloadedWords(newOrder);
+L4011: setPreloadedWords(prev => {
+L4074: setPreloadedWords(prev => {
+L4103: }, [preloadedWords, fetchWordData, setPreloadedWords]);
+L4128: setPreloadedWords([]);
+L4166: setPreloadedWords(prev => {
+L4181: }, [generatingImageIndex, setPreloadedWords]);
+L4217: setPreloadedWords(prev => {
+L4232: }, [generatingImageIndex, preloadedWords, setPreloadedWords]);
+L4887: setPreloadedWords(prev => prev.slice(1));

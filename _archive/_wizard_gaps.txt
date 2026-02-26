@@ -1,0 +1,54 @@
+﻿HELP_STRINGS: L31829 to L32565 (737 lines)
+
+WIZARD data-help-key COVERAGE:
+  Total wizard keys: 38
+  With HELP_STRINGS entry: 38
+  Missing HELP_STRINGS entry: 0
+
+[OK] Keys WITH help text:
+  wizard_back_results_btn
+  wizard_complete_btn
+  wizard_content_next_btn
+  wizard_dok_select
+  wizard_find_standard_btn
+  wizard_format_select
+  wizard_grade_option
+  wizard_growth_goal_input
+  wizard_instructions_input
+  wizard_interest_add_btn
+  wizard_interest_input
+  wizard_interest_remove_btn
+  wizard_lang_add_btn
+  wizard_lang_common_select
+  wizard_lang_input
+  wizard_lang_remove_btn
+  wizard_length_select
+  wizard_level_select
+  wizard_next_grade_btn
+  wizard_prev_btn
+  wizard_region_input
+  wizard_search_btn
+  wizard_search_input
+  wizard_search_result_link
+  wizard_search_result_select
+  wizard_skip_btn
+  wizard_standard_select
+  wizard_std_manual_add_btn
+  wizard_std_manual_input
+  wizard_std_mode_ai
+  wizard_std_mode_manual
+  wizard_std_remove_btn
+  wizard_tone_select
+  wizard_topic_input
+  wizard_url_fetch_btn
+  wizard_url_input
+  wizard_verify_checkbox
+  wizard_vocab_input
+
+--- LOCALIZATION CHECK ---
+  Wizard keys with help_mode.* in t(): 0
+  Wizard keys without help_mode.* localization: 38
+
+--- WIZARD STEP 3 ANALYSIS ---
+L27664: 3: { title: 'Step 3: Standards & Customization', text: 'Align your content to academic standards (Common Core, NGSS, sta
+L28060: {step === 3 && (

@@ -1,0 +1,16 @@
+1a. Partial match at pos 40723
+  Line 831: ["    'word_sounds.missing_letter_incorrect': 'Not quite! Listen again 🔊',"]
+  829: ["    'word_sounds.missing_letter_hear': 'Hear the word',"]
+  830: ["    'word_sounds.missing_letter_correct': '🎉 Correct letter!',"]
+  831: ["    'word_sounds.missing_letter_incorrect': 'Not quite! Listen again 🔊',"]
+  832: ["    'word_sounds.letter_tracing_success': 'Great tracing! ✍️',"]
+  833: ["    'word_sounds.counting_drop': 'Drop your answer here',"]
+  834: ["    'word_sounds.play_all_options': '🔊 Play All Options',"]
+  835: ["    'word_sounds.use_microphone': 'Use Microphone',"]
+  836: ["    'word_sounds.switch_to_clicking': 'Switch to Clicking',"]
+5. 'Test Sequence' already localized or not found
+6. 'Edit Sounds' already localized or not found
+
+Total changes: 0
+Saved (4689126 chars)
+

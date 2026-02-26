@@ -1,0 +1,68 @@
+
+=== TOUR AUDIT FINAL FINDINGS ===
+
+Summary: Most features claimed in tour descriptions DO exist in the codebase.
+The initial automated scan showed false negatives due to naming differences.
+
+## VERIFIED FEATURES (Features claimed that DO exist):
+
+1. **Scaffolds (Step 9)**: ALL features verified:
+   - Sentence Frames: scaffoldType, frame type
+   - Paragraph Frames: scaffolds_paragraph_frame
+   - Checklists & Rubrics: checklist, rubric (87 matches!)
+   - AI Auto-Grader: handleAutoGrade, quiz_autograder
+   - Live Feedback: instant feedback mentions
+
+2. **Dark Mode (Step 20)**: EXISTS - Uses "theme" system (202 matches)
+
+3. **Persona Features (Step 12)**: 
+   - Hot Seat: interview mode exists (74 matches) - "Hot Seat" is a conceptual term for Q&A
+   - Debate Mode: debate exists (98 matches) - harmony_label = "Debate Synthesis"
+   
+4. **Immersive Reader (Step 4)**: ALL features verified:
+   - Karaoke Mode: read_along (9 matches), highlighting (10 matches)
+   - Focus Reader (RSVP): RSVP exists in title at line 24251
+   - Bionic Reading: bionic (8 matches), bold first
+   - Grammar Highlighting: grammar (100 matches), parts_of_speech
+
+5. **Export Features (Step 22)**: ALL verified:
+   - Print View: print (222 matches), printable (9 matches)  
+   - QTI Export: qti (52 matches)
+   - HTML Export: downloadHtml (3 matches)
+   - Slides Export: pptx (34 matches), PowerPoint (6 matches)
+
+6. **Header Tools (Step 21)**: ALL verified:
+   - Tool Icons: icon (217 matches)
+   - Status Indicators: indicator (12 matches), badge (84 matches)
+   - Keyboard Shortcuts: keyboard (90 matches), shortcut (4 matches)
+   - Note: Numbered hotkeys claim (line 27450) may be aspirational - need to verify actual implementation
+
+7. **Version Control (Step 23)**: Partially exists:
+   - version (47 matches), compare (46 matches)
+   - "Compare different iterations" may be overstated - compare_mode is for text levels, not history iterations
+
+
+## POTENTIAL ISSUES TO ADDRESS:
+
+1. **tour-header-tools (Step 21)**: 
+   CLAIM: "Keyboard Shortcuts: Use numbered hotkeys to jump between tools rapidly"
+   REALITY: Only 1 match for "hotkey" (line 27450, which is the tour description itself)
+   STATUS: **POTENTIALLY MISLEADING** - numbered hotkeys may not exist
+   
+2. **tour-history-panel (Step 23)**:
+   CLAIM: "Version Control: Compare different iterations of the same resource"
+   REALITY: compare_mode exists but for comparing complexity LEVELS, not version history
+   STATUS: **POTENTIALLY MISLEADING** - version comparison may not work as described
+
+3. **tour-tool-persona (Step 12)**:
+   CLAIM: "Hot Seat" and "Debate Mode" as distinct features
+   REALITY: These are conceptual descriptions of general chat functionality
+   STATUS: **ACCEPTABLE** - pedagogical terminology, not UI labels
+
+
+## RECOMMENDED ACTIONS:
+
+1. VERIFY: Check if numbered tool hotkeys actually work (0-9 keys)
+2. CLARIFY: If hotkeys don't exist, update tour-header-tools description
+3. CONSIDER: Update tour-history-panel to describe actual compare functionality
+4. NO ACTION NEEDED: Most other features are accurately described

@@ -1,0 +1,1861 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Play, Download, Loader2, Volume2, Mic, FileAudio, Info, Settings, RefreshCw, User, Globe, CheckCircle, XCircle, AlertTriangle, Zap, Pause, Square, ListChecks, UploadCloud } from 'lucide-react';
+
+// --- Constants & Phoneme Data ---
+
+// English Phonemes (Original - Keep as-is)
+const ENGLISH_PHONEMES = [
+  {
+    category: 'Vowels (Short)',
+    items: [
+      { symbol: 'a', ipa: 'æ', example: 'cat', label: '/æ/', filename: 'a', desc: 'short a' },
+      { symbol: 'e', ipa: 'ɛ', example: 'bed', label: '/ɛ/', filename: 'e', desc: 'short e' },
+      { symbol: 'i', ipa: 'ɪ', example: 'sit', label: '/ɪ/', filename: 'i', desc: 'short i' },
+      { symbol: 'o', ipa: 'ɒ', example: 'hot', label: '/ɒ/', filename: 'o', desc: 'short o' },
+      { symbol: 'u', ipa: 'ʌ', example: 'cup', label: '/ʌ/', filename: 'u', desc: 'short u' },
+      { symbol: 'oo', ipa: 'ʊ', example: 'book', label: '/ʊ/', filename: 'oo_short', desc: 'short oo' },
+    ]
+  },
+  {
+    category: 'Vowels (Long)',
+    items: [
+      { symbol: 'ee', ipa: 'i', example: 'see', label: '/i/', filename: 'ee', desc: 'long e' },
+      { symbol: 'oo', ipa: 'u', example: 'blue', label: '/u/', filename: 'oo', desc: 'long u' },
+      { symbol: 'ue', ipa: 'juː', example: 'cue', label: '/juː/', filename: 'ue', desc: 'ue' },
+      { symbol: 'aw', ipa: 'ɔː', example: 'saw', label: '/ɔː/', filename: 'aw', desc: 'aw' },
+      { symbol: 'ar', ipa: 'ɑr', example: 'car', label: '/ɑr/', filename: 'ar', desc: 'ar as in car/star' },
+      { symbol: 'or', ipa: 'ɔr', example: 'for', label: '/ɔr/', filename: 'or', desc: 'or as in for/corn' },
+      { symbol: 'er', ipa: 'ɜr', example: 'her', label: '/ɜr/', filename: 'er', desc: 'er as in her/bird' },
+      { symbol: 'ir', ipa: 'ɜr', example: 'bird', label: '/ɜr/', filename: 'ir', desc: 'ir as in bird/first' },
+      { symbol: 'ur', ipa: 'ɜr', example: 'turn', label: '/ɜr/', filename: 'ur', desc: 'ur as in turn/burn' },
+      { symbol: 'air', ipa: 'ɛə', example: 'hair', label: '/ɛə/', filename: 'air', desc: 'air' },
+      { symbol: 'ear', ipa: 'ɪə', example: 'hear', label: '/ɪə/', filename: 'ear', desc: 'ear' },
+    ]
+  },
+  {
+    category: 'Diphthongs',
+    items: [
+      { symbol: 'ay', ipa: 'eɪ', example: 'day', label: '/eɪ/', filename: 'ay', desc: 'ay' },
+      { symbol: 'ie', ipa: 'aɪ', example: 'tie', label: '/aɪ/', filename: 'ie', desc: 'ie' },
+      { symbol: 'oe', ipa: 'oʊ', example: 'go', label: '/oʊ/', filename: 'oe', desc: 'oe' },
+      { symbol: 'ow', ipa: 'aʊ', example: 'now', label: '/aʊ/', filename: 'ow', desc: 'ow' },
+      { symbol: 'oy', ipa: 'ɔɪ', example: 'boy', label: '/ɔɪ/', filename: 'oy', desc: 'oy' },
+    ]
+  },
+  {
+    category: 'Consonants (Simple)',
+    items: [
+      { symbol: 'b', ipa: 'b', example: 'bat', label: '/b/', filename: 'b', desc: 'b' },
+      { symbol: 'c', ipa: 'k', example: 'cat', label: '/k/', filename: 'c', desc: 'c' },
+      { symbol: 'd', ipa: 'd', example: 'dog', label: '/d/', filename: 'd', desc: 'd' },
+      { symbol: 'f', ipa: 'f', example: 'fan', label: '/f/', filename: 'f', desc: 'f' },
+      { symbol: 'g', ipa: 'g', example: 'go', label: '/g/', filename: 'g', desc: 'g' },
+      { symbol: 'h', ipa: 'h', example: 'hat', label: '/h/', filename: 'h', desc: 'h' },
+      { symbol: 'j', ipa: 'dʒ', example: 'jam', label: '/dʒ/', filename: 'j', desc: 'j' },
+      { symbol: 'k', ipa: 'k', example: 'kite', label: '/k/', filename: 'k', desc: 'k' },
+      { symbol: 'l', ipa: 'l', example: 'lip', label: '/l/', filename: 'l', desc: 'l' },
+      { symbol: 'm', ipa: 'm', example: 'map', label: '/m/', filename: 'm', desc: 'm' },
+      { symbol: 'n', ipa: 'n', example: 'nap', label: '/n/', filename: 'n', desc: 'n' },
+      { symbol: 'p', ipa: 'p', example: 'pat', label: '/p/', filename: 'p', desc: 'p' },
+      { symbol: 'r', ipa: 'r', example: 'run', label: '/r/', filename: 'r', desc: 'r' },
+      { symbol: 's', ipa: 's', example: 'sun', label: '/s/', filename: 's', desc: 's' },
+      { symbol: 't', ipa: 't', example: 'tap', label: '/t/', filename: 't', desc: 't' },
+      { symbol: 'v', ipa: 'v', example: 'van', label: '/v/', filename: 'v', desc: 'v' },
+      { symbol: 'w', ipa: 'w', example: 'wet', label: '/w/', filename: 'w', desc: 'w' },
+      { symbol: 'y', ipa: 'j', example: 'yes', label: '/j/', filename: 'y', desc: 'y' }, 
+      { symbol: 'z', ipa: 'z', example: 'zip', label: '/z/', filename: 'z', desc: 'z' },
+    ]
+  },
+  {
+    category: 'Digraphs & Complex',
+    items: [
+      { symbol: 'sh', ipa: 'ʃ', example: 'ship', label: '/ʃ/', filename: 'sh', desc: 'sh' },
+      { symbol: 'zh', ipa: 'ʒ', example: 'vision', label: '/ʒ/', filename: 'zh', desc: 'zh' },
+      { symbol: 'ch', ipa: 'tʃ', example: 'chip', label: '/tʃ/', filename: 'ch', desc: 'ch' },
+      { symbol: 'th', ipa: 'θ', example: 'thin', label: '/θ/', filename: 'th', desc: 'unvoiced th' },
+      { symbol: 'th', ipa: 'ð', example: 'this', label: '/ð/', filename: 'th_voiced', desc: 'voiced th' },
+      { symbol: 'wh', ipa: 'w', example: 'when', label: '/w/', filename: 'wh', desc: 'wh' },
+      { symbol: 'ph', ipa: 'f', example: 'phone', label: '/f/', filename: 'ph', desc: 'ph' },
+      { symbol: 'ck', ipa: 'k', example: 'back', label: '/k/', filename: 'ck', desc: 'ck' },
+      { symbol: 'ng', ipa: 'ŋ', example: 'sing', label: '/ŋ/', filename: 'ng', desc: 'ng' },
+      { symbol: 'q', ipa: 'kw', example: 'queen', label: '/kw/', filename: 'q', desc: 'q' },
+      { symbol: 'x', ipa: 'ks', example: 'box', label: '/ks/', filename: 'x', desc: 'x' },
+    ]
+  }
+];
+
+// NEW: Spanish Phonemes (not in English)
+const SPANISH_PHONEMES = [
+  {
+    category: 'Spanish-Specific Consonants',
+    items: [
+      { symbol: 'ñ', ipa: 'ɲ', example: 'niño', label: '/ɲ/', filename: 'es_ny', desc: 'Spanish ñ', lang: 'es' },
+      { symbol: 'rr', ipa: 'r', example: 'perro', label: '/r/', filename: 'es_rr', desc: 'Spanish trilled r', lang: 'es' },
+      { symbol: 'r', ipa: 'ɾ', example: 'pero', label: '/ɾ/', filename: 'es_r', desc: 'Spanish tap r', lang: 'es' },
+      { symbol: 'j', ipa: 'x', example: 'jota', label: '/x/', filename: 'es_j', desc: 'Spanish j/g sound', lang: 'es' },
+      { symbol: 'll', ipa: 'ʎ', example: 'llave', label: '/ʎ/', filename: 'es_ll', desc: 'Spanish ll', lang: 'es' },
+    ]
+  },
+  {
+    category: 'Spanish Vowels (Pure)',
+    items: [
+      { symbol: 'a', ipa: 'a', example: 'casa', label: '/a/', filename: 'es_a', desc: 'Spanish a (open)', lang: 'es' },
+      { symbol: 'e', ipa: 'e', example: 'mesa', label: '/e/', filename: 'es_e', desc: 'Spanish e', lang: 'es' },
+      { symbol: 'i', ipa: 'i', example: 'piso', label: '/i/', filename: 'es_i', desc: 'Spanish i', lang: 'es' },
+      { symbol: 'o', ipa: 'o', example: 'mono', label: '/o/', filename: 'es_o', desc: 'Spanish o', lang: 'es' },
+      { symbol: 'u', ipa: 'u', example: 'luna', label: '/u/', filename: 'es_u', desc: 'Spanish u', lang: 'es' },
+    ]
+  }
+];
+
+// NEW: French Phonemes (not in English)
+const FRENCH_PHONEMES = [
+  {
+    category: 'French-Specific Vowels',
+    items: [
+      { symbol: 'u', ipa: 'y', example: 'tu', label: '/y/', filename: 'fr_u', desc: 'French u (rounded)', lang: 'fr' },
+      { symbol: 'eu', ipa: 'ø', example: 'deux', label: '/ø/', filename: 'fr_eu', desc: 'French eu (closed)', lang: 'fr' },
+      { symbol: 'œ', ipa: 'œ', example: 'cœur', label: '/œ/', filename: 'fr_oe', desc: 'French œu (open)', lang: 'fr' },
+    ]
+  },
+  {
+    category: 'French Nasal Vowels',
+    items: [
+      { symbol: 'in', ipa: 'ɛ̃', example: 'vin', label: '/ɛ̃/', filename: 'fr_in', desc: 'French nasal in', lang: 'fr' },
+      { symbol: 'an', ipa: 'ɑ̃', example: 'blanc', label: '/ɑ̃/', filename: 'fr_an', desc: 'French nasal an', lang: 'fr' },
+      { symbol: 'on', ipa: 'ɔ̃', example: 'bon', label: '/ɔ̃/', filename: 'fr_on', desc: 'French nasal on', lang: 'fr' },
+      { symbol: 'un', ipa: 'œ̃', example: 'brun', label: '/œ̃/', filename: 'fr_un', desc: 'French nasal un', lang: 'fr' },
+    ]
+  },
+  {
+    category: 'French Consonants',
+    items: [
+      { symbol: 'r', ipa: 'ʁ', example: 'rouge', label: '/ʁ/', filename: 'fr_r', desc: 'French uvular r', lang: 'fr' },
+      { symbol: 'gn', ipa: 'ɲ', example: 'montagne', label: '/ɲ/', filename: 'fr_gn', desc: 'French gn', lang: 'fr' },
+    ]
+  }
+];
+
+// NEW: German Phonemes (not in English)
+const GERMAN_PHONEMES = [
+  {
+    category: 'German-Specific Vowels',
+    items: [
+      { symbol: 'ü', ipa: 'y', example: 'über', label: '/y/', filename: 'de_ue', desc: 'German ü', lang: 'de' },
+      { symbol: 'ö', ipa: 'ø', example: 'schön', label: '/ø/', filename: 'de_oe', desc: 'German ö', lang: 'de' },
+    ]
+  },
+  {
+    category: 'German Consonants',
+    items: [
+      { symbol: 'ch', ipa: 'ç', example: 'ich', label: '/ç/', filename: 'de_ich', desc: 'German ich-laut', lang: 'de' },
+      { symbol: 'ch', ipa: 'x', example: 'ach', label: '/x/', filename: 'de_ach', desc: 'German ach-laut', lang: 'de' },
+      { symbol: 'pf', ipa: 'pf', example: 'Pferd', label: '/pf/', filename: 'de_pf', desc: 'German pf', lang: 'de' },
+      { symbol: 'z', ipa: 'ts', example: 'Zeit', label: '/ts/', filename: 'de_z', desc: 'German z/ts', lang: 'de' },
+    ]
+  }
+];
+
+// NEW: Mandarin Tones
+const MANDARIN_TONES = [
+  {
+    category: 'Mandarin Tones (using "ma")',
+    items: [
+      { symbol: 'mā', ipa: 'ma˥', example: '妈 (mother)', label: 'Tone 1', filename: 'zh_ma1', desc: 'high flat', lang: 'zh' },
+      { symbol: 'má', ipa: 'ma˧˥', example: '麻 (hemp)', label: 'Tone 2', filename: 'zh_ma2', desc: 'rising', lang: 'zh' },
+      { symbol: 'mǎ', ipa: 'ma˨˩˦', example: '马 (horse)', label: 'Tone 3', filename: 'zh_ma3', desc: 'dipping', lang: 'zh' },
+      { symbol: 'mà', ipa: 'ma˥˩', example: '骂 (scold)', label: 'Tone 4', filename: 'zh_ma4', desc: 'falling', lang: 'zh' },
+      { symbol: 'ma', ipa: 'ma', example: '吗 (question)', label: 'Tone 5', filename: 'zh_ma5', desc: 'neutral', lang: 'zh' },
+    ]
+  }
+];
+
+// Language Configuration
+const LANGUAGES = [
+  { code: 'en', name: 'English', phonemes: ENGLISH_PHONEMES },
+  { code: 'es', name: 'Spanish', phonemes: SPANISH_PHONEMES },
+  { code: 'fr', name: 'French', phonemes: FRENCH_PHONEMES },
+  { code: 'de', name: 'German', phonemes: GERMAN_PHONEMES },
+  { code: 'zh', name: 'Mandarin', phonemes: MANDARIN_TONES },
+];
+
+// --- Helper Functions ---
+
+const base64ToArrayBuffer = (base64) => {
+  const binaryString = window.atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
+
+// Convert PCM16 to WAV
+const pcmToWav = (pcmData, sampleRate) => {
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = (sampleRate * numChannels * bitsPerSample) / 8;
+  const blockAlign = (numChannels * bitsPerSample) / 8;
+  const dataSize = pcmData.byteLength;
+  const headerSize = 44;
+  const totalSize = headerSize + dataSize;
+
+  const buffer = new ArrayBuffer(totalSize);
+  const view = new DataView(buffer);
+
+  // RIFF chunk
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(view, 8, 'WAVE');
+
+  // fmt sub-chunk
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+
+  // data sub-chunk
+  writeString(view, 36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Write PCM samples
+  const pcmBytes = new Uint8Array(pcmData);
+  const wavBytes = new Uint8Array(buffer, 44);
+  wavBytes.set(pcmBytes);
+
+  return buffer;
+};
+
+const writeString = (view, offset, string) => {
+  for (let i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+};
+
+// --- Components ---
+
+const Header = ({ selectedLanguage, onLanguageChange }) => (
+  <header className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
+    <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="bg-indigo-500 p-2 rounded-lg">
+          <Volume2 className="w-6 h-6" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
+            Phoneme Studio
+          </h1>
+          <p className="text-xs text-slate-400">Gemini-Powered TTS Generator + Self-Validation</p>
+        </div>
+      </div>
+      
+      {/* Language Selector */}
+      <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg">
+        <Globe className="w-4 h-4 text-slate-400" />
+        <select 
+          value={selectedLanguage}
+          onChange={(e) => onLanguageChange(e.target.value)}
+          className="bg-transparent text-white text-sm border-none outline-none cursor-pointer"
+        >
+          {LANGUAGES.map(lang => (
+            <option key={lang.code} value={lang.code} className="bg-slate-800">
+              {lang.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  </header>
+);
+
+const PhonemeCard = ({ item, isSelected, onClick, isPlaying, validationStatus }) => (
+  <button
+    onClick={onClick}
+    className={`
+      relative group flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200 border
+      ${isSelected 
+        ? 'bg-indigo-50 border-indigo-500 shadow-md transform scale-105' 
+        : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-sm'
+      }
+    `}
+  >
+    {/* Validation Badge */}
+    {validationStatus && (
+      <div className="absolute -top-1 -right-1">
+        {validationStatus === 'valid' && <CheckCircle className="w-4 h-4 text-green-500 fill-white" />}
+        {validationStatus === 'invalid' && <XCircle className="w-4 h-4 text-red-500 fill-white" />}
+        {validationStatus === 'pending' && <AlertTriangle className="w-4 h-4 text-yellow-500 fill-white" />}
+      </div>
+    )}
+    
+    <div className="text-3xl font-bold text-slate-800 mb-1">{item.symbol}</div>
+    <div className="text-xs text-indigo-400 font-mono mb-1">/{item.ipa}/</div>
+    <div className="text-xs text-slate-500 font-medium">{item.example}</div>
+    
+    {isPlaying && isSelected && (
+      <div className="absolute top-2 left-2">
+        <span className="flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+        </span>
+      </div>
+    )}
+  </button>
+);
+
+// NEW: Validation Result Component
+const ValidationResult = ({ result }) => {
+  if (!result) return null;
+  
+  return (
+    <div className={`p-4 rounded-lg border ${
+      result.correct 
+        ? 'bg-green-50 border-green-200' 
+        : 'bg-red-50 border-red-200'
+    }`}>
+      <div className="flex items-center gap-2 mb-2">
+        {result.correct ? (
+          <CheckCircle className="w-5 h-5 text-green-600" />
+        ) : (
+          <XCircle className="w-5 h-5 text-red-600" />
+        )}
+        <span className={`font-semibold ${result.correct ? 'text-green-700' : 'text-red-700'}`}>
+          {result.correct ? 'Valid Phoneme' : 'Validation Failed'}
+        </span>
+      </div>
+      <div className="text-sm text-slate-600">
+        <p><strong>Accuracy:</strong> {result.accuracy}/10</p>
+        {result.actualPhoneme && (
+          <p><strong>Detected as:</strong> {result.actualPhoneme}</p>
+        )}
+        {result.feedback && (
+          <p><strong>Feedback:</strong> {result.feedback}</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  const apiKey = "";
+  const [loading, setLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [maxRetries, setMaxRetries] = useState(4);
+  const [error, setError] = useState(null);
+  const [selectedPhoneme, setSelectedPhoneme] = useState(null);
+  const [audioBuffer, setAudioBuffer] = useState(null);
+  const [pcmData, setPcmData] = useState(null);
+  const [sampleRate, setSampleRate] = useState(24000);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [voiceGender, setVoiceGender] = useState('female');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  
+  // NEW: Validation state
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
+  const [validationCache, setValidationCache] = useState({}); // Store validation results per phoneme
+  
+  // NEW: Custom Sentence TTS state
+  const [customText, setCustomText] = useState('');
+  const [customFilename, setCustomFilename] = useState('instruction');
+  const [customAudioBuffer, setCustomAudioBuffer] = useState(null);
+  const [customPcmData, setCustomPcmData] = useState(null);
+  const [isGeneratingCustom, setIsGeneratingCustom] = useState(false);
+  const [isPlayingCustom, setIsPlayingCustom] = useState(false);
+
+  // === BATCH TTS STATE ===
+  const [batchWords, setBatchWords] = useState([]);
+  const [batchInput, setBatchInput] = useState('');
+  const [batchResults, setBatchResults] = useState({}); // { word: { base64, sampleRate, status } }
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, running: false, paused: false });
+  const [batchDelay, setBatchDelay] = useState(2500); // ms between API calls
+  const [batchAutoValidate, setBatchAutoValidate] = useState(false);
+  const [batchReviewFilter, setBatchReviewFilter] = useState('all'); // 'all', 'success', 'failed', 'invalid'
+  const [batchPlayingWord, setBatchPlayingWord] = useState(null);
+  const [saveIndicator, setSaveIndicator] = useState('');
+  const batchAbortRef = useRef(false);
+  const batchPauseRef = useRef(false);
+  const fileInputRef = useRef(null);
+  const STORAGE_KEY = 'phoneme_app_batch_results_v1';
+
+  // Auto-load batchResults from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const count = Object.keys(parsed).length;
+        if (count > 0) {
+          setBatchResults(parsed);
+          setSaveIndicator(`✅ Restored ${count} saved entries`);
+        }
+      }
+    } catch(e) {
+      console.error('Failed to load from localStorage:', e);
+    }
+  }, []);
+
+  // Auto-save batchResults to localStorage whenever it changes
+  useEffect(() => {
+    const keys = Object.keys(batchResults);
+    if (keys.length === 0) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(batchResults));
+      setSaveIndicator(`✅ Auto-saved ${keys.length} entries`);
+    } catch(e) {
+      console.error('Failed to save to localStorage:', e);
+      if (e.name === 'QuotaExceededError') {
+        setSaveIndicator('⚠️ Storage full — use Export instead');
+      }
+    }
+  }, [batchResults]);
+
+  // Import batchResults from a JSON file
+  const importFromFile = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        // Support multiple formats:
+        // 1. Direct { word: { base64, sampleRate } } from downloadBatchJson
+        // 2. Wrapped { audioBank: { ... } } from older exports
+        const bank = data.audioBank || data;
+        if (bank._meta) delete bank._meta;
+        const imported = Object.keys(bank).length;
+        // Normalize entries to have status field
+        const normalized = {};
+        Object.entries(bank).forEach(([word, val]) => {
+          if (typeof val === 'object' && val.base64) {
+            normalized[word] = { ...val, status: val.status || 'success' };
+          } else if (typeof val === 'string') {
+            // Raw base64 string format
+            normalized[word] = { base64: val, sampleRate: 24000, status: 'success' };
+          }
+        });
+        setBatchResults(prev => ({ ...prev, ...normalized }));
+        setSaveIndicator(`📂 Imported ${imported} entries (total: ${Object.keys({...batchResults, ...normalized}).length})`);
+      } catch(err) {
+        setSaveIndicator('❌ Import failed: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset so same file can be re-imported
+  };
+
+  // Clear all saved data
+  const clearSavedData = () => {
+    if (!window.confirm('Clear ALL saved audio data? This cannot be undone.')) return;
+    setBatchResults({});
+    localStorage.removeItem(STORAGE_KEY);
+    setSaveIndicator('🗑️ All saved data cleared');
+  };
+  
+  // Audio Context Ref
+  const audioContextRef = useRef(null);
+
+  // Get current language phonemes
+  const currentPhonemes = LANGUAGES.find(l => l.code === selectedLanguage)?.phonemes || ENGLISH_PHONEMES;
+
+  // Initialize AudioContext
+  useEffect(() => {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioContextRef.current = new AudioContext();
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // Get language name for prompts
+  const getLanguageName = (code) => {
+    return LANGUAGES.find(l => l.code === code)?.name || 'English';
+  };
+
+  // Helper to make the API request
+  const makeTtsRequest = async (prompt, voiceName = "Aoede") => {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
+          ],
+          generationConfig: {
+            responseModalities: ["AUDIO"],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: voiceName } 
+              }
+            }
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`API Error ${response.status}: ${text}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.candidates?.[0]?.finishReason === 'SAFETY') {
+        throw new Error('SAFETY_BLOCK');
+    }
+
+    if (!result.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
+        throw new Error('EMPTY_CONTENT');
+    }
+    
+    return result;
+  };
+
+  // NEW: Gemini Self-Validation Function
+  const validatePhoneme = async (phoneme, audioBase64) => {
+    setIsValidating(true);
+    setValidationResult(null);
+    
+    const languageName = getLanguageName(selectedLanguage);
+    
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  text: `You are a linguistics expert validating phoneme audio for educational software.
+
+I generated audio intended to be the ${languageName} phoneme ${phoneme.label} (IPA: /${phoneme.ipa}/) as heard in "${phoneme.example}".
+
+Listen to this audio and evaluate:
+1. Does this audio correctly represent the target phoneme ${phoneme.label}?
+2. Rate the accuracy from 1-10 (10 = perfect native-speaker quality)
+3. If incorrect, what phoneme does it actually sound like?
+4. Brief feedback for improvement
+
+Return ONLY valid JSON (no markdown):
+{
+  "correct": true or false,
+  "accuracy": 1-10,
+  "actualPhoneme": "the IPA of what you heard, or null if correct",
+  "feedback": "brief feedback"
+}`
+                },
+                {
+                  inlineData: {
+                    mimeType: "audio/wav",
+                    data: audioBase64
+                  }
+                }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 500,
+              responseMimeType: "application/json"
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Validation API failed');
+      }
+
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      // Parse JSON from response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const validation = JSON.parse(jsonMatch[0]);
+        setValidationResult(validation);
+        
+        // Cache the result
+        setValidationCache(prev => ({
+          ...prev,
+          [phoneme.filename]: validation.correct ? 'valid' : 'invalid'
+        }));
+        
+        return validation;
+      }
+    } catch (err) {
+      console.error('Validation error:', err);
+      setValidationResult({
+        correct: null,
+        accuracy: 0,
+        feedback: 'Validation failed: ' + err.message
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const generatePhoneme = async (phoneme) => {
+    setLoading(true);
+    setError(null);
+    setSelectedPhoneme(phoneme);
+    setAudioBuffer(null);
+    setPcmData(null);
+    setRetryCount(0);
+    setValidationResult(null);
+
+    const languageName = getLanguageName(selectedLanguage);
+    
+    // Determine voices based on gender selection
+    const voices = voiceGender === 'female' 
+      ? { primary: 'Aoede', secondary: 'Kore' }
+      : { primary: 'Fenrir', secondary: 'Puck' };
+
+    // Build Strategies Array - now language-aware
+    const strategies = [
+        {
+            name: "Educational Context",
+            voice: voices.primary,
+            prompt: `Act as an educational dictionary for ${languageName}. Pronounce the phoneme ${phoneme.label} (IPA: /${phoneme.ipa}/) exactly as it appears in the ${languageName} word '${phoneme.example}'. Please produce ONLY the isolated sound of the phoneme, NOT the full word.`
+        },
+        {
+            name: "Direct IPA",
+            voice: voices.primary,
+            prompt: `Say the ${languageName} sound /${phoneme.ipa}/ as a native speaker would.`
+        },
+        {
+            name: "Descriptive",
+            voice: voices.secondary,
+            prompt: `Pronounce the ${languageName} sound for the letter or symbol "${phoneme.symbol}" as in "${phoneme.example}".`
+        },
+        {
+            name: "Explicit Instruction",
+            voice: voices.primary,
+            prompt: `Make the sound of the ${languageName} phoneme ${phoneme.symbol} as in ${phoneme.example}.`
+        }
+    ];
+
+    // Add language-specific strategies
+    if (selectedLanguage === 'es') {
+      if (phoneme.symbol === 'rr') {
+        strategies.push({
+          name: "Spanish Trilled R",
+          voice: voices.primary,
+          prompt: `Produce the Spanish trilled 'rr' sound. Roll your tongue rapidly like in "perro". Just the trilled sound, not the word.`
+        });
+      }
+      if (phoneme.symbol === 'ñ') {
+        strategies.push({
+          name: "Spanish Ñ",
+          voice: voices.secondary,
+          prompt: `Say the Spanish 'ny' sound as in "niño". Just the consonant sound.`
+        });
+      }
+    }
+    
+    if (selectedLanguage === 'fr') {
+      if (phoneme.ipa === 'ʁ') {
+        strategies.push({
+          name: "French Uvular R",
+          voice: voices.primary,
+          prompt: `Produce the French 'r' sound from the back of the throat, like gargling gently. As in "rouge".`
+        });
+      }
+    }
+
+    if (selectedLanguage === 'zh') {
+      // For Mandarin tones, specify the tone pattern
+      strategies.unshift({
+        name: "Mandarin Tone Specific",
+        voice: voices.primary,
+        prompt: `Say the Mandarin syllable "ma" with ${phoneme.desc} tone (${phoneme.label}). This is the tone in ${phoneme.example}.`
+      });
+    }
+
+    setMaxRetries(strategies.length);
+    let success = false;
+    let lastAudioBase64 = null;
+
+    for (let i = 0; i < strategies.length; i++) {
+        const strategy = strategies[i];
+        
+        if (i > 0) {
+             setRetryCount(i + 1);
+             await new Promise(r => setTimeout(r, 800));
+        }
+
+        try {
+            const result = await makeTtsRequest(strategy.prompt, strategy.voice);
+            const audioContent = result.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+            
+            if (!audioContent) throw new Error('No audio data');
+
+            const rawPcm = base64ToArrayBuffer(audioContent.data);
+            setPcmData(rawPcm);
+            lastAudioBase64 = audioContent.data;
+
+            let rate = 24000;
+            const mimeType = audioContent.mimeType;
+            if (mimeType && mimeType.includes('rate=')) {
+                const rateMatch = mimeType.match(/rate=(\d+)/);
+                if (rateMatch) rate = parseInt(rateMatch[1], 10);
+            }
+            setSampleRate(rate);
+
+            const ctx = audioContextRef.current;
+            const pcmInt16 = new Int16Array(rawPcm);
+            const float32 = new Float32Array(pcmInt16.length);
+            
+            for (let j = 0; j < pcmInt16.length; j++) {
+                float32[j] = pcmInt16[j] / 32768.0;
+            }
+
+            const buffer = ctx.createBuffer(1, float32.length, rate);
+            buffer.getChannelData(0).set(float32);
+            setAudioBuffer(buffer);
+            playAudio(buffer);
+            
+            success = true;
+            break;
+
+        } catch (err) {
+            console.warn(`Attempt ${i + 1} (${strategy.name}) failed:`, err);
+        }
+    }
+
+    if (!success) {
+         setError('Unable to generate sound. The model is struggling with this specific phoneme. Try again later.');
+    }
+    
+    setLoading(false);
+    
+    // Auto-validate after successful generation (optional)
+    // if (success && lastAudioBase64) {
+    //   validatePhoneme(phoneme, lastAudioBase64);
+    // }
+  };
+
+  // === BATCH TTS GENERATION ===
+  
+  // Helper: filter out non-word entries (JSON structure fragments, numbers, etc.)
+  const isValidWord = (w) => {
+    if (!w || typeof w !== 'string') return false;
+    const trimmed = w.trim().toLowerCase();
+    // Must be 1-30 chars, only letters/apostrophes/hyphens, no JSON syntax
+    return trimmed.length > 0 && trimmed.length <= 30 && /^[a-zA-ZÀ-ÿ][\w'\-]*$/i.test(trimmed);
+  };
+
+  const parseBatchInput = () => {
+    try {
+      // Try JSON parse first
+      const parsed = JSON.parse(batchInput);
+      
+      // Direct array: ["word1", "word2", ...]
+      if (Array.isArray(parsed)) {
+        return parsed.map(w => String(w).trim().toLowerCase()).filter(isValidWord);
+      }
+      
+      // tts_words_needed.json format: { words_short: [...], words_medium: [...], words_long: [...] }
+      if (parsed.words_short || parsed.words_medium || parsed.words_long) {
+        return [
+          ...(parsed.words_short || []),
+          ...(parsed.words_medium || []),
+          ...(parsed.words_long || [])
+        ].map(w => String(w).trim().toLowerCase()).filter(isValidWord);
+      }
+      
+      // Legacy format: { all_words_sorted: [...] }
+      if (parsed.all_words_sorted) {
+        return parsed.all_words_sorted.map(w => String(w).trim().toLowerCase()).filter(isValidWord);
+      }
+      
+      // Legacy format: { short_words: [...], medium_words: [...], long_words: [...] }
+      if (parsed.short_words || parsed.medium_words || parsed.long_words) {
+        return [
+          ...(parsed.letters || []),
+          ...(parsed.short_words || []),
+          ...(parsed.medium_words || []),
+          ...(parsed.long_words || [])
+        ].map(w => String(w).trim().toLowerCase()).filter(isValidWord);
+      }
+      
+      // Generic: try to find any arrays in the object and extract string values
+      const allWords = [];
+      for (const key of Object.keys(parsed)) {
+        const val = parsed[key];
+        if (Array.isArray(val)) {
+          val.forEach(w => { if (typeof w === 'string') allWords.push(w.trim().toLowerCase()); });
+        }
+      }
+      if (allWords.length > 0) return allWords.filter(isValidWord);
+      
+    } catch(e) {
+      // Fall back to comma/newline separated plain text
+      return batchInput.split(/[,\n]+/).map(w => w.trim().toLowerCase()).filter(isValidWord);
+    }
+    return [];
+  };
+
+  const loadBatchWords = () => {
+    const words = parseBatchInput();
+    // Remove duplicates and already-completed words
+    const unique = [...new Set(words)].filter(w => !batchResults[w] || batchResults[w].status === 'failed');
+    setBatchWords(unique);
+    setBatchProgress({ current: 0, total: unique.length, running: false, paused: false });
+  };
+
+  const generateSingleWord = async (word) => {
+    const voices = voiceGender === 'female'
+      ? { primary: 'Aoede', secondary: 'Kore' }
+      : { primary: 'Fenrir', secondary: 'Puck' };
+
+    const strategies = [
+      {
+        voice: voices.primary,
+        prompt: `Say this single word clearly and naturally for an educational reading app: "${word}"`
+      },
+      {
+        voice: voices.secondary,
+        prompt: `Pronounce the word "${word}" clearly, as a teacher would for a student.`
+      },
+      {
+        voice: voices.primary,
+        prompt: `Say: "${word}"`
+      }
+    ];
+
+    for (let i = 0; i < strategies.length; i++) {
+      try {
+        const result = await makeTtsRequest(strategies[i].prompt, strategies[i].voice);
+        const audioContent = result.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+        if (!audioContent) throw new Error('No audio data');
+
+        let rate = 24000;
+        const mimeType = audioContent.mimeType;
+        if (mimeType && mimeType.includes('rate=')) {
+          const rateMatch = mimeType.match(/rate=(\d+)/);
+          if (rateMatch) rate = parseInt(rateMatch[1], 10);
+        }
+
+        return { base64: audioContent.data, sampleRate: rate, status: 'success' };
+      } catch (err) {
+        if (i === strategies.length - 1) {
+          return { base64: null, sampleRate: 0, status: 'failed', error: err.message };
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+    return { base64: null, sampleRate: 0, status: 'failed' };
+  };
+
+  const runBatch = async () => {
+    batchAbortRef.current = false;
+    batchPauseRef.current = false;
+    setBatchProgress(prev => ({ ...prev, running: true, paused: false }));
+
+    for (let i = 0; i < batchWords.length; i++) {
+      if (batchAbortRef.current) break;
+
+      // Pause loop
+      while (batchPauseRef.current && !batchAbortRef.current) {
+        await new Promise(r => setTimeout(r, 500));
+      }
+      if (batchAbortRef.current) break;
+
+      const word = batchWords[i];
+      
+      // Skip if already completed successfully
+      if (batchResults[word]?.status === 'success') {
+        setBatchProgress(prev => ({ ...prev, current: i + 1 }));
+        continue;
+      }
+
+      const result = await generateSingleWord(word);
+      
+      // Auto-validate if enabled
+      if (result.status === 'success' && batchAutoValidate) {
+        const validation = await validateWord(word, result.base64);
+        result.validation = validation;
+        if (validation.correct === false) {
+          result.status = 'invalid';
+        }
+      }
+      
+      setBatchResults(prev => ({ ...prev, [word]: result }));
+      setBatchProgress(prev => ({ ...prev, current: i + 1 }));
+
+      // Rate limit delay (longer if validating since we made 2 API calls)
+      if (i < batchWords.length - 1 && !batchAbortRef.current) {
+        await new Promise(r => setTimeout(r, batchAutoValidate ? batchDelay + 1500 : batchDelay));
+      }
+    }
+
+    setBatchProgress(prev => ({ ...prev, running: false, paused: false }));
+  };
+
+  const pauseBatch = () => {
+    batchPauseRef.current = true;
+    setBatchProgress(prev => ({ ...prev, paused: true }));
+  };
+
+  const resumeBatch = () => {
+    batchPauseRef.current = false;
+    setBatchProgress(prev => ({ ...prev, paused: false }));
+  };
+
+  const stopBatch = () => {
+    batchAbortRef.current = true;
+    batchPauseRef.current = false;
+    setBatchProgress(prev => ({ ...prev, running: false, paused: false }));
+  };
+
+  const downloadBatchJson = () => {
+    const successOnly = {};
+    Object.entries(batchResults).forEach(([word, data]) => {
+      if (data.status === 'success') {
+        successOnly[word] = { base64: data.base64, sampleRate: data.sampleRate };
+      }
+    });
+    const blob = new Blob([JSON.stringify(successOnly, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audio_bank_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // === BATCH VALIDATION ===
+  
+  const validateWord = async (word, audioBase64) => {
+    try {
+      // Convert raw PCM base64 to WAV base64 for validation
+      const pcmBuffer = base64ToArrayBuffer(audioBase64);
+      const wavBuffer = pcmToWav(pcmBuffer, 24000);
+      
+      // Safe base64 conversion to avoid Maximum call stack size exceeded
+      let binary = '';
+      const bytes = new Uint8Array(wavBuffer);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const wavBase64 = btoa(binary);
+      
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  text: `You are validating TTS audio for an educational reading app.
+
+This audio should say the word "${word}".
+
+Listen carefully and evaluate:
+1. Does the audio clearly say "${word}"?
+2. Is the pronunciation clear and natural?
+3. Is there any extra speech, noise, or unwanted content?
+
+Return ONLY valid JSON (no markdown):
+{
+  "correct": true or false,
+  "heardWord": "what you actually heard",
+  "clarity": 1-10,
+  "feedback": "brief note"
+}`
+                },
+                {
+                  inlineData: {
+                    mimeType: "audio/wav",
+                    data: wavBase64
+                  }
+                }
+              ]
+            }],
+            generationConfig: { 
+              temperature: 0.1, 
+              maxOutputTokens: 300,
+              responseMimeType: "application/json"
+            }
+          })
+        }
+      );
+
+      if (!response.ok) throw new Error('Validation API failed');
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        // Normalize field names - Gemini may use different casing/naming
+        return {
+          correct: parsed.correct,
+          heardWord: parsed.heardWord || parsed.heard_word || parsed.heard || parsed.actualWord || parsed.actual_word || null,
+          clarity: parsed.clarity || parsed.quality || parsed.accuracy || 0,
+          feedback: parsed.feedback || parsed.notes || ''
+        };
+      }
+      return { correct: null, heardWord: null, feedback: 'Could not parse validation response' };
+    } catch (err) {
+      return { correct: null, heardWord: null, feedback: `Validation error: ${err.message}. If using Canvas, the validation model (gemini-2.0-flash) may not be available — try disabling Auto-Validate.` };
+    }
+  };
+
+  const playBatchWord = (word) => {
+    const data = batchResults[word];
+    if (!data?.base64 || !audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const rawPcm = base64ToArrayBuffer(data.base64);
+    const pcmInt16 = new Int16Array(rawPcm);
+    const float32 = new Float32Array(pcmInt16.length);
+    for (let j = 0; j < pcmInt16.length; j++) {
+      float32[j] = pcmInt16[j] / 32768.0;
+    }
+
+    const buffer = ctx.createBuffer(1, float32.length, data.sampleRate || 24000);
+    buffer.getChannelData(0).set(float32);
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    setBatchPlayingWord(word);
+    source.onended = () => setBatchPlayingWord(null);
+    source.start(0);
+  };
+
+  const regenerateWord = async (word) => {
+    setBatchResults(prev => ({ ...prev, [word]: { ...prev[word], status: 'regenerating' } }));
+    const result = await generateSingleWord(word);
+    if (result.status === 'success' && batchAutoValidate) {
+      const validation = await validateWord(word, result.base64);
+      result.validation = validation;
+      if (validation.correct === false) result.status = 'invalid';
+    }
+    setBatchResults(prev => ({ ...prev, [word]: result }));
+  };
+
+  const deleteBatchWord = (word) => {
+    setBatchResults(prev => {
+      const next = { ...prev };
+      delete next[word];
+      return next;
+    });
+    setBatchWords(prev => prev.filter(w => w !== word));
+  };
+
+  const deleteByStatus = (status) => {
+    setBatchResults(prev => {
+      const next = { ...prev };
+      Object.entries(next).forEach(([word, data]) => {
+        if (data.status === status) delete next[word];
+      });
+      return next;
+    });
+  };
+
+  const getBatchStats = () => {
+    const entries = Object.values(batchResults);
+    return {
+      success: entries.filter(e => e.status === 'success').length,
+      failed: entries.filter(e => e.status === 'failed').length,
+      invalid: entries.filter(e => e.status === 'invalid').length,
+      total: batchWords.length
+    };
+  };
+
+  const playAudio = useCallback((bufferToPlay = audioBuffer) => {
+    if (!bufferToPlay || !audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const source = ctx.createBufferSource();
+    source.buffer = bufferToPlay;
+    source.connect(ctx.destination);
+    source.onended = () => setIsPlaying(false);
+    
+    setIsPlaying(true);
+    source.start(0);
+  }, [audioBuffer]);
+
+  // Manual validation trigger
+  const handleValidate = async () => {
+    if (!selectedPhoneme || !pcmData) return;
+    
+    // Convert PCM to WAV then to base64
+    const wavBuffer = pcmToWav(pcmData, sampleRate);
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(wavBuffer)));
+    
+    await validatePhoneme(selectedPhoneme, base64);
+  };
+
+  // NEW: Generate custom sentence TTS
+  const generateCustomTts = async () => {
+    if (!customText.trim()) return;
+    
+    setIsGeneratingCustom(true);
+    setCustomAudioBuffer(null);
+    setCustomPcmData(null);
+    
+    const voices = voiceGender === 'female' 
+      ? { primary: 'Aoede', secondary: 'Kore' }
+      : { primary: 'Fenrir', secondary: 'Puck' };
+    
+    try {
+      const result = await makeTtsRequest(
+        `Say this clearly for an educational app: "${customText.trim()}"`,
+        voices.primary
+      );
+      
+      const audioContent = result.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+      if (!audioContent) throw new Error('No audio data');
+      
+      const rawPcm = base64ToArrayBuffer(audioContent.data);
+      setCustomPcmData(rawPcm);
+      
+      let rate = 24000;
+      const mimeType = audioContent.mimeType;
+      if (mimeType && mimeType.includes('rate=')) {
+        const rateMatch = mimeType.match(/rate=(\d+)/);
+        if (rateMatch) rate = parseInt(rateMatch[1], 10);
+      }
+      
+      const ctx = audioContextRef.current;
+      const pcmInt16 = new Int16Array(rawPcm);
+      const float32 = new Float32Array(pcmInt16.length);
+      
+      for (let j = 0; j < pcmInt16.length; j++) {
+        float32[j] = pcmInt16[j] / 32768.0;
+      }
+      
+      const buffer = ctx.createBuffer(1, float32.length, rate);
+      buffer.getChannelData(0).set(float32);
+      setCustomAudioBuffer(buffer);
+      playCustomAudio(buffer);
+      
+    } catch (err) {
+      console.error('Custom TTS failed:', err);
+    } finally {
+      setIsGeneratingCustom(false);
+    }
+  };
+  
+  const playCustomAudio = useCallback((bufferToPlay = customAudioBuffer) => {
+    if (!bufferToPlay || !audioContextRef.current) return;
+    
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+    
+    const source = ctx.createBufferSource();
+    source.buffer = bufferToPlay;
+    source.connect(ctx.destination);
+    source.onended = () => setIsPlayingCustom(false);
+    
+    setIsPlayingCustom(true);
+    source.start(0);
+  }, [customAudioBuffer]);
+  
+  const downloadCustomWav = () => {
+    if (!customPcmData) return;
+    const wavBuffer = pcmToWav(customPcmData, 24000);
+    const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    // Sanitize filename
+    const safeName = customFilename.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'instruction';
+    a.download = `${safeName}.wav`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  
+  // NEW: Download custom TTS as WebM (much smaller, better for base64 embedding)
+  const downloadCustomWebM = () => {
+    if (!customAudioBuffer) return;
+    
+    const ctx = audioContextRef.current;
+    const dest = ctx.createMediaStreamDestination();
+    const source = ctx.createBufferSource();
+    source.buffer = customAudioBuffer;
+    source.connect(dest);
+    
+    const recorder = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus' });
+    const chunks = [];
+    
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeName = customFilename.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'instruction';
+      a.download = `${safeName}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    
+    recorder.start();
+    source.start(0);
+    setTimeout(() => {
+      recorder.stop();
+    }, (customAudioBuffer.duration * 1000) + 100);
+  };
+
+  const getFilename = (ext) => {
+    if (!selectedPhoneme) return `sound.${ext}`;
+    return `${selectedPhoneme.filename}.${ext}`;
+  };
+
+  const downloadWav = () => {
+    if (!pcmData) return;
+    const wavBuffer = pcmToWav(pcmData, sampleRate);
+    const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = getFilename('wav');
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadWebM = () => {
+    if (!audioBuffer) return;
+
+    const ctx = audioContextRef.current;
+    const dest = ctx.createMediaStreamDestination();
+    const source = ctx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(dest);
+
+    const recorder = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus' });
+    const chunks = [];
+
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = getFilename('webm');
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    recorder.start();
+    source.start(0);
+    setTimeout(() => {
+      recorder.stop();
+    }, (audioBuffer.duration * 1000) + 100);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+      <Header 
+        selectedLanguage={selectedLanguage} 
+        onLanguageChange={setSelectedLanguage} 
+      />
+
+      <main className="max-w-6xl mx-auto p-4 md:p-8">
+        
+        {/* Error / Status Messages */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Main Grid of Phonemes */}
+          <div className="lg:col-span-8 space-y-8">
+            {currentPhonemes.map((category, idx) => (
+              <div key={idx}>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 ml-1">
+                  {category.category}
+                </h3>
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                  {category.items.map((item) => (
+                    <PhonemeCard
+                      key={item.filename}
+                      item={item}
+                      isSelected={selectedPhoneme?.filename === item.filename}
+                      isPlaying={isPlaying && selectedPhoneme?.filename === item.filename}
+                      validationStatus={validationCache[item.filename]}
+                      onClick={() => generatePhoneme(item)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Sidebar: Controls & Download */}
+          <div className="lg:col-span-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-24">
+              
+              {/* Voice Toggle */}
+              <div className="flex items-center justify-between bg-slate-50 p-1 rounded-lg mb-6 border border-slate-200">
+                 <button
+                   onClick={() => setVoiceGender('female')}
+                   className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-semibold transition-all duration-200 ${
+                     voiceGender === 'female' 
+                       ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' 
+                       : 'text-slate-500 hover:text-slate-700'
+                   }`}
+                 >
+                   <User className="w-4 h-4" />
+                   Female
+                 </button>
+                 <button
+                   onClick={() => setVoiceGender('male')}
+                   className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-semibold transition-all duration-200 ${
+                     voiceGender === 'male' 
+                       ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' 
+                       : 'text-slate-500 hover:text-slate-700'
+                   }`}
+                 >
+                   <User className="w-4 h-4" />
+                   Male
+                 </button>
+              </div>
+
+              <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <FileAudio className="w-5 h-5 text-indigo-500" />
+                Current Sound
+              </h2>
+
+              {!selectedPhoneme ? (
+                <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                  <Mic className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-slate-400 text-sm">Select a phoneme to generate audio</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Selected Info */}
+                  <div className="text-center pb-4 border-b border-slate-100">
+                    <div className="text-5xl font-bold text-slate-800 mb-1">{selectedPhoneme.symbol}</div>
+                    <div className="text-lg font-mono text-indigo-400 mb-2">/{selectedPhoneme.ipa}/</div>
+                    <div className="text-slate-500 font-medium">
+                        {selectedPhoneme.desc} (as in "{selectedPhoneme.example}")
+                    </div>
+                  </div>
+
+                  {/* Playback Controls */}
+                  <div className="flex flex-col items-center gap-2">
+                    {loading ? (
+                      <button disabled className="flex items-center gap-2 bg-slate-100 text-slate-400 px-6 py-3 rounded-full font-medium cursor-not-allowed">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        {retryCount > 0 ? `Retrying (${retryCount}/${maxRetries})...` : "Generating..."}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => playAudio()}
+                        disabled={!audioBuffer}
+                        className={`
+                          flex items-center gap-2 px-8 py-3 rounded-full font-bold shadow-lg transition-all transform active:scale-95
+                          ${audioBuffer 
+                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200' 
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'}
+                        `}
+                      >
+                        <Play className={`w-5 h-5 ${isPlaying ? 'fill-current' : ''}`} />
+                        {isPlaying ? 'Playing...' : 'Play Sound'}
+                      </button>
+                    )}
+                    
+                    {loading && retryCount > 0 && (
+                        <span className="text-xs text-orange-500 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            Attempting alternative prompt & voice...
+                        </span>
+                    )}
+                  </div>
+
+                  {/* NEW: Validate Button */}
+                  {audioBuffer && (
+                    <button
+                      onClick={handleValidate}
+                      disabled={isValidating}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium border border-emerald-200 transition-colors"
+                    >
+                      {isValidating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Validating with Gemini...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          Validate Phoneme
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Validation Result */}
+                  <ValidationResult result={validationResult} />
+
+                  {/* Downloads */}
+                  {audioBuffer && (
+                    <div className="space-y-3 pt-2">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Download ({selectedPhoneme.filename})</p>
+                      
+                      <button 
+                        onClick={downloadWav}
+                        className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-slate-100 p-2 rounded group-hover:bg-white">
+                            <FileAudio className="w-4 h-4 text-slate-600" />
+                          </div>
+                          <div className="text-left">
+                            <div className="font-semibold text-sm text-slate-700">.wav</div>
+                            <div className="text-xs text-slate-400">High Quality</div>
+                          </div>
+                        </div>
+                        <Download className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+                      </button>
+
+                      <button 
+                        onClick={downloadWebM}
+                        className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="bg-slate-100 p-2 rounded group-hover:bg-white">
+                            <FileAudio className="w-4 h-4 text-slate-600" />
+                          </div>
+                          <div className="text-left">
+                            <div className="font-semibold text-sm text-slate-700">.webm</div>
+                            <div className="text-xs text-slate-400">Compressed</div>
+                          </div>
+                        </div>
+                        <Download className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* NEW: Batch TTS Generator Section */}
+            <div className="mt-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-sm border border-amber-200 p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-500" />
+                Batch TTS Generator
+              </h2>
+              <p className="text-xs text-slate-500 mb-4">Paste a word list (JSON array, comma-separated, or one per line) to generate audio for all words automatically.</p>
+              
+              {/* Word List Input */}
+              <div className="mb-3">
+                <label className="text-xs font-semibold text-slate-500 mb-1 block flex items-center justify-between">
+                  <span>Word List</span>
+                  <span className="text-amber-600">{batchWords.length > 0 ? `${batchWords.length} words loaded` : ''}</span>
+                </label>
+                <textarea
+                  value={batchInput}
+                  onChange={(e) => setBatchInput(e.target.value)}
+                  placeholder={'Paste words here:\n• JSON: ["cat", "dog", "fish"]\n• Comma: cat, dog, fish\n• One per line:\ncat\ndog\nfish\n\nOr paste tts_words_needed.json contents'}
+                  rows={5}
+                  disabled={batchProgress.running}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400 resize-none font-mono"
+                />
+              </div>
+
+              {/* Delay Setting */}
+              <div className="mb-3 flex items-center gap-3">
+                <label className="text-xs font-semibold text-slate-500 whitespace-nowrap">Delay (ms):</label>
+                <input
+                  type="number"
+                  value={batchDelay}
+                  onChange={(e) => setBatchDelay(Math.max(1000, parseInt(e.target.value) || 2500))}
+                  min={1000}
+                  max={10000}
+                  step={500}
+                  disabled={batchProgress.running}
+                  className="w-24 px-2 py-1 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300"
+                />
+                <span className="text-[10px] text-slate-400">Between API calls</span>
+              </div>
+              
+              {/* Load / Start Controls */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={loadBatchWords}
+                  disabled={!batchInput.trim() || batchProgress.running}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-sm transition-all ${
+                    !batchInput.trim() || batchProgress.running
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-white border border-amber-300 text-amber-700 hover:bg-amber-50'
+                  }`}
+                >
+                  <ListChecks className="w-4 h-4" />
+                  Load Words
+                </button>
+                {!batchProgress.running ? (
+                  <button
+                    onClick={runBatch}
+                    disabled={batchWords.length === 0}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-sm transition-all ${
+                      batchWords.length === 0
+                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-200'
+                    }`}
+                  >
+                    <Zap className="w-4 h-4" />
+                    Start Batch
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={batchProgress.paused ? resumeBatch : pauseBatch}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white transition-all"
+                    >
+                      {batchProgress.paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                      {batchProgress.paused ? 'Resume' : 'Pause'}
+                    </button>
+                    <button
+                      onClick={stopBatch}
+                      className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-semibold text-sm bg-red-500 hover:bg-red-600 text-white transition-all"
+                    >
+                      <Square className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Progress Bar */}
+              {batchWords.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-slate-500 mb-1">
+                    <span>
+                      {batchProgress.running 
+                        ? (batchProgress.paused ? '⏸ Paused' : `⚡ Processing: ${batchWords[batchProgress.current] || '...'}`)
+                        : batchProgress.current > 0 ? '✅ Complete' : 'Ready'
+                      }
+                    </span>
+                    <span>{batchProgress.current} / {batchProgress.total}</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        batchProgress.paused ? 'bg-blue-400' :
+                        batchProgress.running ? 'bg-amber-500' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${batchProgress.total > 0 ? (batchProgress.current / batchProgress.total) * 100 : 0}%` }}
+                    />
+                  </div>
+                  
+                  {/* Stats */}
+                  {Object.keys(batchResults).length > 0 && (() => {
+                    const stats = getBatchStats();
+                    return (
+                      <div className="flex gap-4 mt-2 text-xs">
+                        <span className="text-emerald-600 font-bold">✓ {stats.success} success</span>
+                        {stats.failed > 0 && <span className="text-red-500 font-bold">✗ {stats.failed} failed</span>}
+                        <span className="text-slate-400">{stats.total - stats.success - stats.failed} remaining</span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ETA */}
+                  {batchProgress.running && batchProgress.current > 0 && (() => {
+                    const remaining = batchProgress.total - batchProgress.current;
+                    const etaSeconds = Math.round(remaining * (batchDelay / 1000 + 2));
+                    const etaMin = Math.floor(etaSeconds / 60);
+                    const etaSec = etaSeconds % 60;
+                    return (
+                      <div className="text-[10px] text-slate-400 mt-1">
+                        Est. remaining: {etaMin > 0 ? `${etaMin}m ` : ''}{etaSec}s
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Auto-Validate Toggle */}
+              <div className="mb-4 flex items-center justify-between bg-white/80 p-3 rounded-lg border border-amber-200">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block">Auto-Validate</label>
+                  <span className="text-[10px] text-slate-400">Uses Gemini to verify each word (doubles API calls)</span>
+                </div>
+                <button
+                  onClick={() => setBatchAutoValidate(!batchAutoValidate)}
+                  disabled={batchProgress.running}
+                  className={`w-12 h-6 rounded-full transition-all relative ${
+                    batchAutoValidate ? 'bg-emerald-500' : 'bg-slate-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-sm absolute top-0.5 transition-all ${
+                    batchAutoValidate ? 'left-[26px]' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Save/Load/Download Controls */}
+              <div className="space-y-2 mb-4">
+                {getBatchStats().success > 0 && (
+                  <button
+                    onClick={downloadBatchJson}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-200 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Audio Bank JSON ({getBatchStats().success} words)
+                  </button>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white transition-all text-sm"
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    Import From File
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json"
+                    onChange={importFromFile}
+                    className="hidden"
+                  />
+                  {Object.keys(batchResults).length > 0 && (
+                    <button
+                      onClick={clearSavedData}
+                      className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-semibold bg-red-500 hover:bg-red-600 text-white transition-all text-sm"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Clear All
+                    </button>
+                  )}
+                </div>
+                {saveIndicator && (
+                  <p className="text-xs text-center text-slate-500 py-1">{saveIndicator}</p>
+                )}
+              </div>
+
+              {/* Review Panel */}
+              {Object.keys(batchResults).length > 0 && (
+                <div className="mt-4 border-t border-amber-200 pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                      <ListChecks className="w-4 h-4" />
+                      Review Generated Audio
+                    </h3>
+                    <select
+                      value={batchReviewFilter}
+                      onChange={(e) => setBatchReviewFilter(e.target.value)}
+                      className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white"
+                    >
+                      <option value="all">All ({Object.keys(batchResults).length})</option>
+                      <option value="success">✓ Success ({getBatchStats().success})</option>
+                      <option value="failed">✗ Failed ({getBatchStats().failed})</option>
+                      {getBatchStats().invalid > 0 && <option value="invalid">⚠ Invalid ({getBatchStats().invalid})</option>}
+                    </select>
+                  </div>
+                  {/* Bulk Actions */}
+                  <div className="flex gap-2 mb-2">
+                    {getBatchStats().failed > 0 && (
+                      <button
+                        onClick={() => deleteByStatus('failed')}
+                        className="text-[10px] px-2 py-1 rounded bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors"
+                      >
+                        ✗ Delete all failed ({getBatchStats().failed})
+                      </button>
+                    )}
+                    {getBatchStats().invalid > 0 && (
+                      <button
+                        onClick={() => deleteByStatus('invalid')}
+                        className="text-[10px] px-2 py-1 rounded bg-amber-50 border border-amber-200 text-amber-600 hover:bg-amber-100 transition-colors"
+                      >
+                        ⚠ Delete all invalid ({getBatchStats().invalid})
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto space-y-1 custom-scrollbar">
+                    {Object.entries(batchResults)
+                      .filter(([, data]) => batchReviewFilter === 'all' || data.status === batchReviewFilter)
+                      .map(([word, data]) => (
+                        <div key={word} className={`flex items-center justify-between p-2 rounded-lg text-xs group transition-all ${
+                          data.status === 'success' ? 'bg-emerald-50 border border-emerald-100' :
+                          data.status === 'invalid' ? 'bg-amber-50 border border-amber-200' :
+                          data.status === 'regenerating' ? 'bg-blue-50 border border-blue-200 animate-pulse' :
+                          'bg-red-50 border border-red-100'
+                        }`}>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-mono font-bold text-slate-700 truncate">{word}</span>
+                            {data.status === 'success' && <CheckCircle className="w-3 h-3 text-emerald-500 flex-shrink-0" />}
+                            {data.status === 'invalid' && <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />}
+                            {data.status === 'failed' && <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" />}
+                            {data.status === 'regenerating' && <Loader2 className="w-3 h-3 text-blue-500 animate-spin flex-shrink-0" />}
+                            {data.validation && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                                data.validation.correct ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {data.validation.correct === true
+                                  ? `✓ ${data.validation.clarity || '?'}/10`
+                                  : data.validation.correct === false
+                                    ? `heard: "${data.validation.heardWord || data.validation.feedback || '?'}"`
+                                    : `⚠ ${data.validation.feedback || 'check failed'}`
+                                }
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                            {data.base64 && (
+                              <button
+                                onClick={() => playBatchWord(word)}
+                                className={`p-1.5 rounded-md transition-all ${
+                                  batchPlayingWord === word
+                                    ? 'bg-indigo-500 text-white'
+                                    : 'bg-white border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600'
+                                }`}
+                                title="Play"
+                              >
+                                <Play className="w-3 h-3" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => regenerateWord(word)}
+                              disabled={data.status === 'regenerating' || batchProgress.running}
+                              className="p-1.5 rounded-md bg-white border border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600 transition-all disabled:opacity-30"
+                              title="Regenerate"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => deleteBatchWord(word)}
+                              disabled={batchProgress.running}
+                              className="p-1.5 rounded-md bg-white border border-slate-200 text-slate-500 hover:border-red-300 hover:text-red-600 transition-all disabled:opacity-30"
+                              title="Delete"
+                            >
+                              <XCircle className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Custom Sentence TTS Section */}
+            <div className="mt-6 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl shadow-sm border border-violet-200 p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <Volume2 className="w-5 h-5 text-violet-500" />
+                Custom Text TTS
+              </h2>
+              <p className="text-xs text-slate-500 mb-4">Generate TTS for instructions, prompts, or any custom text.</p>
+              
+              {/* Filename Input */}
+              <div className="mb-3">
+                <label className="text-xs font-semibold text-slate-500 mb-1 block">Filename (no extension)</label>
+                <input
+                  type="text"
+                  value={customFilename}
+                  onChange={(e) => setCustomFilename(e.target.value)}
+                  placeholder="e.g., first_sound_prompt"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400"
+                />
+              </div>
+              
+              {/* Text Input */}
+              <div className="mb-4">
+                <label className="text-xs font-semibold text-slate-500 mb-1 block">Text to speak</label>
+                <textarea
+                  value={customText}
+                  onChange={(e) => setCustomText(e.target.value)}
+                  placeholder="e.g., What is the first sound?"
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 resize-none"
+                />
+              </div>
+              
+              {/* Generate Button */}
+              <button
+                onClick={generateCustomTts}
+                disabled={isGeneratingCustom || !customText.trim()}
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-all ${
+                  isGeneratingCustom || !customText.trim()
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-200'
+                }`}
+              >
+                {isGeneratingCustom ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4" />
+                    Generate TTS
+                  </>
+                )}
+              </button>
+              
+              {/* Playback & Download */}
+              {customAudioBuffer && (
+                <div className="mt-4 space-y-3">
+                  <button
+                    onClick={() => playCustomAudio()}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-white border border-violet-200 text-violet-700 font-medium hover:bg-violet-50 transition-colors"
+                  >
+                    <Play className={`w-4 h-4 ${isPlayingCustom ? 'fill-current' : ''}`} />
+                    {isPlayingCustom ? 'Playing...' : 'Play'}
+                  </button>
+                  
+                  <button
+                    onClick={downloadCustomWav}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium hover:bg-emerald-100 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download .wav (high quality)
+                  </button>
+                  
+                  <button
+                    onClick={downloadCustomWebM}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download .webm (smaller, for base64)
+                  </button>
+                </div>
+
+              )}
+            </div>
+
+            {/* Hint */}
+            <div className="mt-6 p-4 bg-slate-100 rounded-xl border border-slate-200">
+              <h4 className="font-semibold text-slate-700 text-sm mb-2">🔬 Self-Validation</h4>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                After generating, click "Validate Phoneme" to have Gemini listen to the audio and verify it matches the target phoneme. This helps catch pronunciation errors without needing a linguist!
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

@@ -1,0 +1,289 @@
+--- DICTIONARY SCAN ---
+
+Found 112 word_sounds key usages/definitions:
+Line 641: 'word_sounds.title': 'Word Sounds',
+Line 642: 'word_sounds.subtitle': 'Phonemic Awareness Practice',
+Line 643: 'word_sounds.activity_counting': 'Count Sounds',
+Line 644: 'word_sounds.activity_isolation': 'Find Sounds',
+Line 645: 'word_sounds.activity_blending': 'Blend Sounds',
+Line 646: 'word_sounds.activity_segmentation': 'Break Apart',
+Line 647: 'word_sounds.activity_rhyming': 'Rhyme Time',
+Line 648: 'word_sounds.activity_orthography': 'Sight & Spell',
+Line 649: 'word_sounds.activity_mapping': 'Sound Mapping',
+Line 650: 'word_sounds.orthography_q': 'Which is the correct spelling?',
+Line 651: 'word_sounds.rhyming_q': 'Which word rhymes with the target?',
+Line 652: 'word_sounds.play_word': 'Play Word',
+Line 653: 'word_sounds.orthography_desc': 'Match sounds to spelling',
+Line 654: 'word_sounds.mapping_desc': 'Connect sounds to letters',
+Line 655: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+Line 656: 'word_sounds.isolation_desc': 'Identify the first or last sound in a word',
+Line 657: 'word_sounds.blending_desc': 'Listen to sounds and blend them into a word',
+Line 658: 'word_sounds.segmentation_desc': 'Break a word into its individual sounds',
+Line 659: 'word_sounds.rhyming_desc': 'Find words that rhyme with the target',
+Line 660: 'word_sounds.how_many_sounds': 'How Many Sounds?', // Added missing key
+Line 661: 'word_sounds.counting_prompt': 'How many sounds do you hear?',
+Line 662: 'word_sounds.first_sound': 'First Sound',
+Line 663: 'word_sounds.last_sound': 'Last Sound',
+Line 664: 'word_sounds.first_sound_question': 'What is the FIRST sound?',
+Line 665: 'word_sounds.last_sound_question': 'What is the LAST sound?',
+Line 666: 'word_sounds.target_word': 'Target Word',
+Line 668: 'word_sounds.click_sound_hint': 'Click a sound to hear it, then select your answer',
+Line 669: 'word_sounds.isolation_first_prompt': 'What is the FIRST sound in this word?',
+Line 670: 'word_sounds.first_sound_q': 'What is the FIRST sound?',
+Line 671: 'word_sounds.isolation_prompt': 'What sound is in this word?',
+Line 672: 'word_sounds.isolation_last_prompt': 'What is the LAST sound in this word?',
+Line 673: 'word_sounds.last_sound_q': 'What is the LAST sound?',
+Line 674: 'word_sounds.find_which_sound': 'Find the {{position}} sound:',
+Line 675: 'word_sounds.blending_prompt': 'Listen to the sounds, then blend them together!',
+Line 676: 'word_sounds.play_sounds': 'Play Sounds',
+Line 677: 'word_sounds.type_word': 'Type the word you hear:',
+Line 678: 'word_sounds.your_answer': 'Your answer...',
+Line 679: 'word_sounds.segmentation_prompt': 'Break this word into sounds using the boxes below:',
+Line 680: 'word_sounds.elkonin_hint': 'Type one sound in each box (Elkonin boxes)',
+Line 681: 'word_sounds.elkonin_hint_dropdown': 'Select one sound per box from the dropdown menus',
+Line 682: 'word_sounds.hint': 'Hint',
+Line 683: 'word_sounds.rhyming_prompt': 'Which word rhymes with this one?',
+Line 684: 'word_sounds.mapping_prompt': 'Tap the letters to hear their sounds!',
+Line 685: 'word_sounds.loading_phonemes': 'Analyzing word sounds...',
+Line 686: 'word_sounds.select_activity': 'Choose an activity above to begin!',
+Line 687: 'word_sounds.streak': 'Streak',
+Line 688: 'word_sounds.accuracy': 'Accuracy',
+Line 689: 'word_sounds.feedback_correct': 'Correct! Great job!',
+Line 690: 'word_sounds.feedback_incorrect': 'Not quite. The answer was: {{answer}}',
+Line 691: 'word_sounds.tip': 'Click on the word to hear it spoken aloud!',
+
+--- TOUR STEPS SCAN ---
+Possible Tour Step ID at Line 2215: { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+  // Wrapper for translation with Word Sounds fallback
+  const ts = React.useCallback((key, params = {}) => getWordSoundsString(t, key, params), [t]);
+  
+  // Activity types
+  const ACTIVITIES = [
+  { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+  { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+Possible Tour Step ID at Line 2216: { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  const ts = React.useCallback((key, params = {}) => getWordSoundsString(t, key, params), [t]);
+  
+  // Activity types
+  const ACTIVITIES = [
+  { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+  { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+Possible Tour Step ID at Line 2217: { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  
+  // Activity types
+  const ACTIVITIES = [
+  { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+  { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+  if (!glossaryTerms || glossaryTerms.length === 0) return [];
+Possible Tour Step ID at Line 2218: { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  // Activity types
+  const ACTIVITIES = [
+  { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+  { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+  if (!glossaryTerms || glossaryTerms.length === 0) return [];
+  
+Possible Tour Step ID at Line 2219: { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  const ACTIVITIES = [
+  { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc') },
+  { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+  if (!glossaryTerms || glossaryTerms.length === 0) return [];
+  
+  const pool = [];
+Possible Tour Step ID at Line 2221: { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'isolation', label: ts('word_sounds.activity_isolation'), icon: '🎯', description: ts('word_sounds.isolation_desc') },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+  if (!glossaryTerms || glossaryTerms.length === 0) return [];
+  
+  const pool = [];
+  glossaryTerms.forEach(term => {
+  const fullTerm = term.term || term.word || term;
+Possible Tour Step ID at Line 2222: { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'blending', label: ts('word_sounds.activity_blending'), icon: '🔗', description: ts('word_sounds.blending_desc') },
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+  if (!glossaryTerms || glossaryTerms.length === 0) return [];
+  
+  const pool = [];
+  glossaryTerms.forEach(term => {
+  const fullTerm = term.term || term.word || term;
+  const words = extractWords(fullTerm);
+Possible Tour Step ID at Line 2223: { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  { id: 'segmentation', label: ts('word_sounds.activity_segmentation'), icon: '📦', description: ts('word_sounds.segmentation_desc') },
+  { id: 'rhyming', label: ts('word_sounds.activity_rhyming'), icon: '🎵', description: ts('word_sounds.rhyming_desc') },
+  // NEW: Orthographic Processing (Sight & Spell)
+  { id: 'orthography', label: ts('word_sounds.activity_orthography') || 'Sight & Spell', icon: '👁️', description: ts('word_sounds.orthography_desc') || 'Match sounds to spelling' },
+  { id: 'mapping', label: ts('word_sounds.activity_mapping') || 'Sound Mapping', icon: '🎹', description: ts('word_sounds.mapping_desc') || 'Connect sounds to letters' },
+  { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds.word_families_desc') || 'Explore related words' }
+  ];
+  
+  // Extract all words from a term (for multi-word terms)
+  const extractWords = React.useCallback((term) => {
+  if (!term) return [];
+  // Split by spaces or hyphens and filter out short words (less than 3 chars)
+  // Keep original casing for display, lowercase for processing will happen later
+  return term.split(/[\s-]+/).filter(w => w.length > 2 && /^[a-zA-Z]+$/.test(w));
+  }, []);
+  
+  // Build expanded word pool from glossary terms
+  const wordPool = React.useMemo(() => {
+  if (!glossaryTerms || glossaryTerms.length === 0) return [];
+  
+  const pool = [];
+  glossaryTerms.forEach(term => {
+  const fullTerm = term.term || term.word || term;
+  const words = extractWords(fullTerm);
+  
+Possible Tour Step ID at Line 25849: id: 'tour-tool-wordsounds',
+  id: 'ui-tool-simplified',
+  title: t('tour.simplified_title'),
+  text: t('tour.simplified_desc')
+  },
+  {
+  id: 'tour-tool-wordsounds',
+  title: t('tour.wordsounds_title'),
+  text: t('tour.wordsounds_desc')
+  },
+  {
+  id: 'tour-tool-outline',
+  title: t('tour.outline_title'),
+  text: t('tour.outline_desc')
+  },
+  {
+  id: 'tour-tool-visual',
+  title: t('tour.visual_title'),
+  text: t('tour.visual_desc')
+  },
+  {
+  id: 'tour-tool-faq',
+  title: t('tour.faq_title'),
+  text: t('tour.faq_desc')
+  },
+  {

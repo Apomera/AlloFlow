@@ -1,0 +1,3 @@
+L2648 isMinimized is in: WordSoundsGenerator (defined at L2592)
+L4385 isMinimized is in: WordSoundsModal (defined at L4315)
+L11048 isMinimized is in: StudentAnalyticsPanel (defined at L11043)

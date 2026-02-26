@@ -1,0 +1,18 @@
+﻿Loaded 75398 lines
+
+=== FIX 1: Auto-Director MIN_PRACTICE ===
+  Added MIN_PRACTICE check after L7812
+  Changed activity cycle condition to readyToAdvance at L7824
+
+=== FIX 2: Missing Prompt Keys ===
+  Added 4 missing prompt keys after L888
+
+=== FIX 3: Guard stray TTS for activities with no instruction audio ===
+  Orthography guard already at L7414 - new prompt keys will fix fallback
+
+=== FIX 4: Welcome instruction for non-lesson-plan mode ===
+  Added word_sounds.welcome key after L794
+  Instruction effect guard at L7413 - welcome needs different hook
+
+=== Writing 4 changes ===
+Saved AlloFlowANTI.txt

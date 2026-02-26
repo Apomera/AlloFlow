@@ -1,0 +1,11 @@
+﻿L41082: <div class="resource-header">${title} (${item.meta})</div>
+L41055: const isDecision = b.title.includes("?") || b.title.toLowerCase().includes("decision");
+L41042: ${shared.title_en ? `<span style="font-weight:normal; opacity:0.8;"> (${shared.title_en})</span>` : ''}
+L41029: ${setB.title_en ? `<div style="font-size:0.9em; color:#1e40af; margin-top:2px;">(${setB.title_en})</div>` : ''}
+L41013: ${setA.title_en ? `<div style="font-size:0.9em; color:#991b1b; margin-top:2px;">(${setA.title_en})</div>` : ''}
+L40994: const shared = branches[2] || { title: 'Shared', items: [] };
+L40993: const setB = branches[1] || { title: 'Set B', items: [] };
+L40992: const setA = branches[0] || { title: 'Set A', items: [] };
+L40963: <div class="resource-header">${title} (${item.meta})</div>
+L40934: <div class="resource-header">${title} (${item.meta})</div>
+L40928: const title = item.title || getDefaultTitle(item.type);

@@ -1,0 +1,38 @@
+L64975:                     {isWordSoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedW
+L64976:                         <ErrorBoundary fallbackMessage="Word Sounds encountered an error.">
+L64977:                             <WordSoundsModal
+L64978:                                 lessonPlanConfig={generatedContent?.lessonPlanConfig}
+L64979:                                 audioCache={glossaryAudioCache}
+L64980:                                 glossaryTerms={generatedContent?.data || []}
+L64981:                                 onClose={() => { setIsWordSoundsMode(false); setActiveView('input'); }}
+L64982:                                 onBackToSetup={() => { setIsWordSoundsMode(false); setActiveView('word-sounds-generator'); }}
+L64983:                                 wsPreloadedWords={wsPreloadedWords}
+L64984:                                 initialActivitySequence={wsActivitySequence}
+L64985:                                 initialShowReviewPanel={wordSoundsAutoReview}
+L64986:                                 setWsPreloadedWords={setWsPreloadedWords}
+---
+
+=== wsPreloadedWords references ===
+L3105:     wsPreloadedWords = [],
+L3211:     const preloadedWords = wsPreloadedWords || [];
+L6265:             console.error("❌ DELETE FAILED: No setter available! Please check wsPreloadedWords prop.");
+L32313:   const [wsPreloadedWords, setWsPreloadedWords] = useState([]);
+L35146:   // Persist wsPreloadedWords to currently active glossary/word-sounds history item
+L35148:       if (!generatedContent || wsPreloadedWords.length === 0) return;
+L35156:           // Only update if wsPreloadedWords has changed
+L35157:           if (JSON.stringify(prev[idx].wsPreloadedWords) === JSON.stringify(wsPreloadedWords)) return prev;
+L35160:           updated[idx] = { ...updated[idx], wsPreloadedWords };
+L35161:           // SILENCED: console.log("💾 Persisted preloaded words to history item:", wsPreloadedWords.length, "words");
+L35164:   }, [wsPreloadedWords, generatedContent]);
+L35170:       if (wsPreloadedWords.length > 0 && prevWsPreloadedWordsLengthRef.current === 0) {
+L35171:           console.log("🚀 Auto-opening Word Sounds mode for", wsPreloadedWords.length, "preloaded words");
+L35175:       prevWsPreloadedWordsLengthRef.current = wsPreloadedWords.length;
+L35176:   }, [wsPreloadedWords.length]);
+L45338:           if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
+L45339:               console.log("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
+L45341:               const wordsWithFreshTtsFlags = item.wsPreloadedWords.map(w => ({
+L64975:                     {isWordSoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedW
+L64983:                                 wsPreloadedWords={wsPreloadedWords}
+L71463:               preloadedWords={wsPreloadedWords || []}
+
+=== setShowWordSoundsModal / showWordSoundsModal ===

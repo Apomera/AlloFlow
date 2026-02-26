@@ -1,0 +1,19 @@
+=== GENUINE STALE CLOSURE RISKS: 3 ===
+
+  fetchTTSBytes (L38229)
+    Missing dep: inputText (2 reads)
+      const fetchGoogleCloudTTS = async (inputText) => {
+      input: { text: inputText },
+
+  updateTourMetrics (L32947)
+    Missing dep: step (6 reads)
+      const step = tourSteps[tourStep];
+      const el = document.getElementById(step.id);
+      const scrollBlock = tallPanels.includes(step.id) ? 'start' : 'center';
+
+  handleGeneratePersonas (L47135)
+    Missing dep: leveledTextLanguage (4 reads)
+      if (leveledTextLanguage !== 'English') {
+      languageInstruction = `Language: ${leveledTextLanguage}.
+      1. The "greeting", "role", and "context" fields MUST be written in ${leveledTextLanguage}.
+

@@ -1,0 +1,72 @@
+﻿=== groups.manage_button in JSX ===
+  L55062: <span className="block">{t('groups.manage_button')}</span>
+  L55063: <span className="block text-[10px] font-normal opacity-80">{t('groups.manage_button_desc')}</span>
+
+=== Config/Profile state & handlers ===
+  'handleSaveProfile' at L36583: const handleSaveProfile = () => {
+
+=== <select> elements ===
+  L22106: <select aria-label="Selection"
+  L23421: <select aria-label="Selection"
+  L23901: <select aria-label="Selection"
+  L25344: <select
+  L25355: <select
+  L25566: <select value={value || ''} onChange={e => handleUpdateGroupProfile(gId, field, e.target.value)}
+  L25732: <select value={newStudentGroup} onChange={e => setNewStudentGroup(e.target.value)}
+  L25751: <select onChange={e => { if (e.target.value) handleMoveStudent(name, e.target.value); }} value=""
+  L27049: <select aria-label="Selection"
+  L27059: <select aria-label="Selection"
+  L27135: <select aria-label="Selection"
+  L27148: <select aria-label="Selection"
+  L27170: <select aria-label="Reading Level"
+  L27191: <select aria-label="Visual Density"
+  L27204: <select aria-label="TTS Speed"
+  L27245: <select aria-label="Selection"
+  L28864: <select
+  L28885: <select
+  L28908: <select
+  L28940: <select
+  L29181: <select aria-label="Selection"
+  L29219: <select aria-label="Selection"
+  L29814: <select aria-label="Selection"
+  L35009: <select aria-label="Selection"
+  L53055: <select aria-label="Selection"
+  L55399: <select aria-label="Selection"
+  L55436: <select aria-label="Selection"
+  L55799: <select aria-label="Selection"
+  L55902: <select aria-label="Selection"
+  L57750: <select
+  L57765: <select aria-label="Selection"
+  L58100: <select
+  L58115: <select
+  L58459: <select aria-label="Selection"
+  L58580: <select aria-label="Selection"
+  L58605: <select aria-label="Selection"
+  L58619: <select aria-label="Selection"
+  L58637: <select aria-label="Selection"
+  L58653: <select aria-label="Selection"
+  L58669: <select aria-label="Selection"
+  L58936: <select aria-label="Selection"
+  L59015: <select aria-label="Selection"
+  L59064: <select aria-label="Selection"
+  L59117: <select aria-label="Selection"
+  L59196: <select aria-label="Selection"
+  L59472: <select aria-label="Selection"
+  L59497: <select aria-label="Selection"
+  L59643: <select aria-label="Selection"
+  L59660: <select aria-label="Selection"
+  L59679: <select aria-label="Selection"
+  L60138: <select aria-label="Selection"
+  L60242: <select aria-label="Selection"
+  L60510: <select
+  L60692: <select
+  L61688: <select aria-label="Selection"
+  L61860: <select aria-label="Selection"
+  L61872: <select aria-label="Selection"
+  L62712: <select aria-label="Selection"
+  L66586: <select aria-label="Selection"
+  L66602: <select aria-label="Selection"
+  L66619: <select aria-label="Selection"
+  L69208: <select aria-label="Selection"
+  L69265: <select aria-label="Grade" value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-
+  L69268: <select aria-label="Season" value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="text-xs fo

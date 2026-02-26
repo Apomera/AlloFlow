@@ -1,0 +1,113 @@
+=== setScreenerSession Context ===
+nerSession.results, orfResult];
+    setIsFluencyMode(false);
+    setFluencyStatus('idle');
+    setActiveView(null);
+    if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {
+      setScreenerSession({ ...screenerSession, results: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });
+    } else {
+      setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });
+    }
+  }, [fluencyStatus, fluencyResult]);
+
+  const handleLaunchORF = (grade, form) => {
+    const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
+    const passage = passages ? passages[form] || passages['A'] : null;
+    if (!passage) {
+      addToast('No ORF passage available for grade ' + grade, 'warning');
+      return;
+    }
+    setProbeGradeLevel(grade);
+    setProbeActivity('orf');
+    setProbeForm(form);
+    setGeneratedContent(prev => ({
+      ...(prev || {}),
+      id: 'orf-screening-' + Date.now(),
+      text: passage,
+      title: 'ORF Screening Passage \u2014 Grade ' + grade + ' Form ' + form,
+      sourceText: passage,
+      isScreeningORF: true
+    }));
+    setIsFluencyMode(true);
+    setFluencyStatus('
+
+creenerSession.subtests.length) {
+      setScreenerSession({ ...screenerSession, results: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });
+    } else {
+      setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });
+    }
+  }, [fluencyStatus, fluencyResult]);
+
+  const handleLaunchORF = (grade, form) => {
+    const passages = typeof ORF_SCREENING_PASSAGES !== 'undefined' && ORF_SCREENING_PASSAGES[grade];
+    const passage = passages ? passages[form] || passages['A'] : null;
+    if (!passage) {
+      addToast('No ORF passage available for grade ' + grade, 'warning');
+      return;
+    }
+    setProbeGradeLevel(grade);
+    setProbeActivity('orf');
+    setProbeForm(form);
+    setGeneratedContent(prev => ({
+      ...(prev || {}),
+      id: 'orf-screening-' + Date.now(),
+      text: passage,
+      title: 'ORF Screening Passage \u2014 Grade ' + grade + ' Form ' + form,
+      sourceText: passage,
+      isScreeningORF: true
+    }));
+    setIsFluencyMode(true);
+    setFluencyStatus('ready');
+    setFluencyResult(null);
+    setActiveView('simplified_read_mode');
+    addToast('ORF passage loaded \u2014 press Record to begin', 'info');
+  };
+
+ 
+
+enerSession.results, fullResult];
+                                            if (screenerSession.currentIndex + 1 < screenerSession.subtests.length) {
+                                                setScreenerSession({ ...screenerSession, results: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });
+                                            } else {
+                                                setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });
+                                            }
+                                        }
+                                }}
+                            />
+                        </ErrorBoundary>
+                    )}
+
+                    {/* === SCREENING INTERSTITIAL OVERLAY === */}
+
+                    {screenerSession && screenerSession.status === 'interstitial' && (
+
+                        <div className="fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100">
+
+        
+
+esults: updatedResults, currentIndex: screenerSession.currentIndex + 1, status: 'interstitial' });
+                                            } else {
+                                                setScreenerSession({ ...screenerSession, results: updatedResults, status: 'complete' });
+                                            }
+                                        }
+                                }}
+                            />
+                        </ErrorBoundary>
+                    )}
+
+                    {/* === SCREENING INTERSTITIAL OVERLAY === */}
+
+                    {screenerSession && screenerSession.status === 'interstitial' && (
+
+                        <div className="fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100">
+
+                                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200">
+
+                                    <CheckCircle size={32} />
+
+       
+

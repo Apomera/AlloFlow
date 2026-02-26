@@ -1,0 +1,88 @@
+{
+    "mode": "student",
+    "studentNickname": "Aiden Brooks",
+    "responses": {
+        "quiz-1": {
+            "score": 30
+        },
+        "quiz-2": {
+            "score": 40
+        },
+        "quiz-3": {
+            "score": 35
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-2",
+            "data": {
+                "questions": []
+            }
+        }
+    ],
+    "wordSoundsState": {
+        "history": [
+            {
+                "word": "cat",
+                "correct": false
+            },
+            {
+                "word": "dog",
+                "correct": false
+            },
+            {
+                "word": "fish",
+                "correct": true
+            },
+            {
+                "word": "bird",
+                "correct": false
+            },
+            {
+                "word": "tree",
+                "correct": false
+            },
+            {
+                "word": "house",
+                "correct": false
+            },
+            {
+                "word": "moon",
+                "correct": true
+            },
+            {
+                "word": "star",
+                "correct": false
+            }
+        ],
+        "sessionScore": {
+            "correct": 2,
+            "total": 8,
+            "streak": 1
+        },
+        "dailyProgress": {
+            "2026-02-14": {
+                "wordsCompleted": 8
+            }
+        }
+    },
+    "labelChallengeResults": [
+        {
+            "score": 20,
+            "timestamp": "2026-02-14T14:00:00Z"
+        }
+    ],
+    "globalPoints": 80,
+    "timeOnTask": {
+        "totalSessionMinutes": 18
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

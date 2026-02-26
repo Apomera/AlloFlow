@@ -1,0 +1,50 @@
+=== INSTRUCTION_AUDIO definition ===
+L1077: const INSTRUCTION_AUDIO = new Proxy({}, {
+L1078:   get: function(target, prop) {
+L1079:     if (prop === 'raw_ref') return null; // Debug hook
+L1080:     if (!_CACHE_INSTRUCTION_AUDIO) {
+L1081:       // console.log("Lazy loading INSTRUCTION_AUDIO...");
+L1082:       _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
+L1083:     }
+L1084:     // Forward the access to the cached real object
+L1085:     return _CACHE_INSTRUCTION_AUDIO[prop];
+L1086:   },
+L1087:   // Essential for "if (key in BANK)" checks
+L1088:   has: function(target, prop) {
+L1089:     if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
+L1090:     return prop in _CACHE_INSTRUCTION_AUDIO;
+L1091:   },
+L1092:   // Essential for "Object.keys(BANK)" or loops
+L1093:   ownKeys: function(target) {
+L1094:     if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
+L1095:     return Reflect.ownKeys(_CACHE_INSTRUCTION_AUDIO);
+L1096:   },
+L1097:   getOwnPropertyDescriptor: function(target, prop) {
+L1098:     if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
+L1099: _LOAD_INSTRUCTION_AUDIO_RAW('fb_amazing', getAudio('instructions', 'fb_amazing'));
+L1100: _LOAD_INSTRUCTION_AUDIO_RAW('fb_excellent', getAudio('instructions', 'fb_excellent'));
+L1101: _LOAD_INSTRUCTION_AUDIO_RAW('fb_great_job', getAudio('instructions', 'fb_great_job'));
+L1102: _LOAD_INSTRUCTION_AUDIO_RAW('fb_nice', getAudio('instructions', 'fb_nice'));
+L1103: _LOAD_INSTRUCTION_AUDIO_RAW('fb_way_to_go', getAudio('instructions', 'fb_way_to_go'));
+L1104: _LOAD_INSTRUCTION_AUDIO_RAW('fb_you_got_it', getAudio('instructions', 'fb_you_got_it'));
+L1105: _LOAD_INSTRUCTION_AUDIO_RAW('fb_perfect', getAudio('instructions', 'fb_perfect'));
+L1106: _LOAD_INSTRUCTION_AUDIO_RAW('fb_correct', getAudio('instructions', 'fb_correct'));
+
+=== ISOLATION_AUDIO definition ===
+L1177: let _CACHE_ISOLATION_AUDIO = null;
+L1178: function _LOAD_ISOLATION_AUDIO_RAW() {
+L1179:   return {
+L1180:     '1st': getAudio('isolation', '1st'),
+L1181:     '2nd': getAudio('isolation', '2nd'),
+L1182:     '3rd': getAudio('isolation', '3rd'),
+L1183:     '4th': getAudio('isolation', '4th'),
+L1184:     '5th': getAudio('isolation', '5th'),
+L1185:     '6th': getAudio('isolation', '6th'),
+L1186:     '7th': getAudio('isolation', '7th'),
+L1187:     '8th': getAudio('isolation', '8th'),
+L1188:     '9th': getAudio('isolation', '9th'),
+L1189:     '10th': getAudio('isolation', '10th'),
+L1190:     'fallback': null // For positions > 10, use TTS
+L1191:   };
+
+=== advanceWord/nextWord function ===

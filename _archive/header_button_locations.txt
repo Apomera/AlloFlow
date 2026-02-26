@@ -1,0 +1,121 @@
+
+============================================================
+KEY: header_settings
+============================================================
+  CANDIDATE L54643: onClick={() => { setShowTextSettings(!showTextSettings); setShowVoiceSettings(false); }}
+  CANDIDATE L54655: <div role="button" tabIndex={0} className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
+  CANDIDATE L54747: onClick={() => { setShowVoiceSettings(!showVoiceSettings); setShowTextSettings(false); }}
+  CANDIDATE L54759: <div role="button" tabIndex={0} className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
+  CANDIDATE L54646: title={t('immersive.settings_label')}
+  CANDIDATE L54647: aria-label={t('immersive.settings_label')}
+  CANDIDATE L54660: <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[10px] text-indigo-500 hover:
+  CANDIDATE L54750: title={t('settings.voice.label')}
+  CANDIDATE L54751: aria-label={t('settings.voice.label')}
+  CANDIDATE L54831: title={`${t('settings.theme')}: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
+  CANDIDATE L54842: title={`${t('settings.overlay')}: ${colorOverlay}`}
+
+============================================================
+KEY: header_tools
+============================================================
+
+============================================================
+KEY: header_help_toggle
+============================================================
+  CANDIDATE L54923: title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+  CANDIDATE L54924: aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
+
+============================================================
+KEY: header_hints_recall
+============================================================
+
+============================================================
+KEY: header_overlay_toggle
+============================================================
+  CANDIDATE L54842: title={`${t('settings.overlay')}: ${colorOverlay}`}
+  CANDIDATE L54843: aria-label={t('a11y.overlay_toggle')}
+
+============================================================
+KEY: header_theme_toggle
+============================================================
+  CANDIDATE L54443: .theme-contrast button { background-color: #000000 !important; border: 2px solid #00ff00 !important; color: #00ff00 !imp
+  CANDIDATE L54444: .theme-contrast button:hover { background-color: #00ff00 !important; color: #000000 !important; }
+  CANDIDATE L54579: <header aria-label="Main application header" className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transiti
+  CANDIDATE L54640: <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/2
+  CANDIDATE L54831: title={`${t('settings.theme')}: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
+  CANDIDATE L54832: aria-label={t('a11y.theme_toggle')}
+
+============================================================
+KEY: header_sync_toggle
+============================================================
+  CANDIDATE L54933: title={isCloudSyncEnabled ? t('header.cloud_sync_active') : t('header.cloud_sync_enable')}
+  CANDIDATE L54934: aria-label={t('header.cloud_sync_toggle')}
+  CANDIDATE L54930: onClick={handleCloudToggleClick}
+  CANDIDATE L54933: title={isCloudSyncEnabled ? t('header.cloud_sync_active') : t('header.cloud_sync_enable')}
+  CANDIDATE L54933: title={isCloudSyncEnabled ? t('header.cloud_sync_active') : t('header.cloud_sync_enable')}
+  CANDIDATE L54934: aria-label={t('header.cloud_sync_toggle')}
+
+============================================================
+KEY: header_animation_toggle
+============================================================
+  CANDIDATE L54112: <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" 
+  CANDIDATE L54113: <div className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative transform scale-100 animate-in zoom-in-95 dur
+  CANDIDATE L54818: title={disableAnimations ? t('a11y.anim_enable') : t('a11y.anim_disable')}
+  CANDIDATE L54819: aria-label={t('a11y.anim_toggle')}
+  CANDIDATE L55164: <div role="button" tabIndex={0} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center just
+  CANDIDATE L55338: <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in f
+  CANDIDATE L55400: <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in f
+  CANDIDATE L55401: <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transform transi
+
+============================================================
+KEY: header_view_toggle
+============================================================
+  CANDIDATE L54861: title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+  CANDIDATE L54862: aria-label={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+
+============================================================
+KEY: header_view_teacher
+============================================================
+  CANDIDATE L54861: title={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+  CANDIDATE L54862: aria-label={isTeacherMode ? t('header.view_student') : t('header.view_teacher')}
+
+============================================================
+KEY: header_view_student
+============================================================
+
+============================================================
+KEY: header_xp_modal
+============================================================
+  CANDIDATE L54616: onClick={handleSetShowXPModalToTrue}
+  CANDIDATE L55400: <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in f
+  CANDIDATE L55402: <button onClick={handleSetShowXPModalToFalse} className="absolute top-3 right-3 text-slate-500 hover:text-slate-600 bg-s
+
+============================================================
+KEY: header_actions
+============================================================
+  CANDIDATE L54911: title={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
+  CANDIDATE L54912: aria-label={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
+  CANDIDATE L54944: title={t('toolbar.start_tour')}
+  CANDIDATE L54945: aria-label={t('toolbar.start_tour_aria')}
+  CANDIDATE L54954: title={t('toolbar.about_label')}
+  CANDIDATE L54955: aria-label={t('toolbar.about_aria')}
+
+============================================================
+KEY: header_utils
+============================================================
+
+============================================================
+KEY: header_settings_type
+============================================================
+  CANDIDATE L54298: <span className="truncate font-medium text-slate-700 text-sm" title={student.name}>{student.name}</span>
+  CANDIDATE L54443: .theme-contrast button { background-color: #000000 !important; border: 2px solid #00ff00 !important; color: #00ff00 !imp
+  CANDIDATE L54640: <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/2
+  CANDIDATE L54660: <button onClick={resetFontSize} data-help-key="header_settings_text_reset" className="text-[10px] text-indigo-500 hover:
+  CANDIDATE L54703: <input aria-label="Adjust slider font size"
+  CANDIDATE L55442: <span className="font-bold text-slate-700 truncate max-w-[200px]" title={entry.activity}>{entry.activity}</span>
+  CANDIDATE L55870: <button aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen
+  CANDIDATE L55896: <button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-sla
+  CANDIDATE L55897: <button aria-label="Submit reflection for grading" onClick={handleSaveReflection} disabled={!personaReflectionInput.trim
+
+============================================================
+KEY: header_settings_voice_pitch
+============================================================

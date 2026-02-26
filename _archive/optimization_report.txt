@@ -1,0 +1,133 @@
+=== Phase 1 Optimizer v2 ===
+Input: 7,603,320 bytes, 73,652 lines
+Existing identifiers: 3685
+
+Toggle patterns found: 0 unique (0 total)
+
+Set-to-constant patterns found: 96 unique (134 total)
+  [4x] onClick={() => setIsMinimized(false)}
+  [3x] onClick={() => setIsMinimized(true)}
+  [3x] onClick={() => setStep(4)}
+  [3x] onClick={() => setStandardMode('ai')}
+  [3x] onClick={() => setStandardMode('manual')}
+  [3x] onClick={() => setShowSessionModal(false)}
+  [3x] onClick={() => setShowGroupModal(false)}
+  [3x] onClick={() => setShowLedger(false)}
+  [3x] onClick={() => setShowSaveModal(false)}
+  [3x] onClick={() => setIsProjectSettingsOpen(false)}
+  [2x] onClick={() => setKeyboardSelectedItemId(null)}
+  [2x] onClick={() => setShowClearConfirm(false)}
+  [2x] onClick={() => setShowSubmitModal(true)}
+  [2x] onClick={() => setShowInfoModal(false)}
+  [2x] onClick={() => setShowHintsModal(false)}
+
+=== Callbacks to create: 96 ===
+  handleSetIsMinimizedToFalse = useCallback(() => setIsMinimized(false), [])  [4x]
+  handleSetIsMinimizedToTrue = useCallback(() => setIsMinimized(true), [])  [3x]
+  handleSetUserSpellingConst = useCallback(() => setUserSpelling(''), [])  [1x]
+  handleSetUserAnswerConst = useCallback(() => setUserAnswer(''), [])  [1x]
+  handleSetShowReviewPanelToTrue = useCallback(() => setShowReviewPanel(true), [])  [1x]
+  handleSetSelectedStudentToNull = useCallback(() => setSelectedStudent(null), [])  [1x]
+  handleSetKeyboardSelectedItemIdToNull = useCallback(() => setKeyboardSelectedItemId(null), [])  [2x]
+  handleSetIsCallerModeToFalse = useCallback(() => setIsCallerMode(false), [])  [1x]
+  handleSetSelectedPuzzleToNull = useCallback(() => setSelectedPuzzle(null), [])  [1x]
+  handleSetShowEndConfirmToTrue = useCallback(() => setShowEndConfirm(true), [])  [1x]
+  handleSetShowEndConfirmToFalse = useCallback(() => setShowEndConfirm(false), [])  [1x]
+  handleSetActiveTabToStudents = useCallback(() => setActiveTab('students'), [])  [1x]
+  handleSetActiveTabToInsights = useCallback(() => setActiveTab('insights'), [])  [1x]
+  handleSetDashboardViewToList = useCallback(() => setDashboardView('list'), [])  [1x]
+  handleSetShowClearConfirmToFalse = useCallback(() => setShowClearConfirm(false), [])  [2x]
+  handleSetStepTo4 = useCallback(() => setStep(4), [])  [3x]
+  handleSetStandardModeToAi = useCallback(() => setStandardMode('ai'), [])  [3x]
+  handleSetStandardModeToManual = useCallback(() => setStandardMode('manual'), [])  [3x]
+  handleSetIsConceptMapReadyToFalse = useCallback(() => setIsConceptMapReady(false), [])  [1x]
+  handleSetIsVennPlayingToTrue = useCallback(() => setIsVennPlaying(true), [])  [1x]
+  handleSetShowSessionModalToFalse = useCallback(() => setShowSessionModal(false), [])  [3x]
+  handleSetShowGroupModalToTrue = useCallback(() => setShowGroupModal(true), [])  [1x]
+  handleSetShowGroupModalToFalse = useCallback(() => setShowGroupModal(false), [])  [3x]
+  handleSetShowXPModalToTrue = useCallback(() => setShowXPModal(true), [])  [1x]
+  handleSetShowTextSettingsToFalse = useCallback(() => setShowTextSettings(false), [])  [1x]
+  handleSetShowVoiceSettingsToFalse = useCallback(() => setShowVoiceSettings(false), [])  [1x]
+  handleSetActiveViewToDashboard = useCallback(() => setActiveView('dashboard'), [])  [1x]
+  handleSetShowHintsModalToTrue = useCallback(() => setShowHintsModal(true), [])  [1x]
+  handleSetShowInfoModalToTrue = useCallback(() => setShowInfoModal(true), [])  [1x]
+  handleSetIsJoinPopoverOpenToFalse = useCallback(() => setIsJoinPopoverOpen(false), [])  [1x]
+  handleSetIsTranslateModalOpenToTrue = useCallback(() => setIsTranslateModalOpen(true), [])  [1x]
+  handleSetShowExportMenuToFalse = useCallback(() => setShowExportMenu(false), [])  [1x]
+  handleSetShowSubmitModalToTrue = useCallback(() => setShowSubmitModal(true), [])  [2x]
+  handleSetShowInfoModalToFalse = useCallback(() => setShowInfoModal(false), [])  [2x]
+  handleSetInfoModalTabToAbout = useCallback(() => setInfoModalTab('about'), [])  [1x]
+  handleSetInfoModalTabToFeatures = useCallback(() => setInfoModalTab('features'), [])  [1x]
+  handleSetShowHintsModalToFalse = useCallback(() => setShowHintsModal(false), [])  [2x]
+  handleSetShowXPModalToFalse = useCallback(() => setShowXPModal(false), [])  [2x]
+  handleSetShowStorybookExportModalToFalse = useCallback(() => setShowStorybookExportModal(false), [])  [2x]
+  handleSetPersonaDefinitionDataToNull = useCallback(() => setPersonaDefinitionData(null), [])  [1x]
+  handleSetIsPersonaReflectionOpenToFalse = useCallback(() => setIsPersonaReflectionOpen(false), [])  [2x]
+  handleSetShowUDLGuideToFalse = useCallback(() => setShowUDLGuide(false), [])  [1x]
+  handleSetActiveSidebarTabToCreate = useCallback(() => setActiveSidebarTab('create'), [])  [1x]
+  handleSetIsUrlSearchModeToFalse = useCallback(() => setIsUrlSearchMode(false), [])  [1x]
+  handleSetIsUrlSearchModeToTrue = useCallback(() => setIsUrlSearchMode(true), [])  [1x]
+  handleSetActiveViewToPersona = useCallback(() => setActiveView('persona'), [])  [1x]
+  handleSetFactionResourceModeToAi = useCallback(() => setFactionResourceMode('ai'), [])  [1x]
+  handleSetFactionResourceModeToManual = useCallback(() => setFactionResourceMode('manual'), [])  [1x]
+  handleSetIsJoinPanelExpandedToFalse = useCallback(() => setIsJoinPanelExpanded(false), [])  [1x]
+  handleSetIsJoinPanelExpandedToTrue = useCallback(() => setIsJoinPanelExpanded(true), [])  [1x]
+  handleSetIsProfileModalOpenToTrue = useCallback(() => setIsProfileModalOpen(true), [])  [1x]
+  handleSetIsProfileModalOpenToFalse = useCallback(() => setIsProfileModalOpen(false), [])  [1x]
+  handleSetIsProjectSettingsOpenToTrue = useCallback(() => setIsProjectSettingsOpen(true), [])  [1x]
+  handleSetIsUnitModalOpenToTrue = useCallback(() => setIsUnitModalOpen(true), [])  [1x]
+  handleSetIsUnitModalOpenToFalse = useCallback(() => setIsUnitModalOpen(false), [])  [1x]
+  handleSetMovingItemIdToNull = useCallback(() => setMovingItemId(null), [])  [1x]
+  handleSetIsZenModeToFalse = useCallback(() => setIsZenMode(false), [])  [1x]
+  handleSetErrorToNull = useCallback(() => setError(null), [])  [1x]
+  handleSetIsMemoryGameToTrue = useCallback(() => setIsMemoryGame(true), [])  [1x]
+  handleSetIsCrosswordGameToTrue = useCallback(() => setIsCrosswordGame(true), [])  [1x]
+  handleSetIsMatchingGameToTrue = useCallback(() => setIsMatchingGame(true), [])  [1x]
+  handleSetIsBingoGameToTrue = useCallback(() => setIsBingoGame(true), [])  [1x]
+  handleSetIsStudentBingoGameToTrue = useCallback(() => setIsStudentBingoGame(true), [])  [1x]
+  handleSetIsWordScrambleGameToTrue = useCallback(() => setIsWordScrambleGame(true), [])  [1x]
+  handleSetGlossaryFilterToAll = useCallback(() => setGlossaryFilter('all'), [])  [1x]
+  handleSetGlossaryFilterToAcademic = useCallback(() => setGlossaryFilter('academic'), [])  [1x]
+  handleSetGlossaryFilterToDomain = useCallback(() => setGlossaryFilter('domain'), [])  [1x]
+  handleSetGlossarySearchTermConst = useCallback(() => setGlossarySearchTerm(''), [])  [1x]
+  handleSetGameModeToNull = useCallback(() => setGameMode(null), [])  [1x]
+  handleSetIsSyntaxGameToTrue = useCallback(() => setIsSyntaxGame(true), [])  [2x]
+  handleSetIsCustomReviseOpenToFalse = useCallback(() => setIsCustomReviseOpen(false), [])  [1x]
+  handleSetIsEscapeTimerRunningToTrue = useCallback(() => setIsEscapeTimerRunning(true), [])  [1x]
+  handleSetGradingResultToNull = useCallback(() => setGradingResult(null), [])  [1x]
+  handleSetShowLedgerToFalse = useCallback(() => setShowLedger(false), [])  [3x]
+  handleSetShowLedgerToTrue = useCallback(() => setShowLedger(true), [])  [1x]
+  handleSetIsZenModeToTrue = useCallback(() => setIsZenMode(true), [])  [1x]
+  handleSetShowNewGameSetupToTrue = useCallback(() => setShowNewGameSetup(true), [])  [1x]
+  handleSetShowNewGameSetupToFalse = useCallback(() => setShowNewGameSetup(false), [])  [1x]
+  handleSetShowStorybookExportModalToTrue = useCallback(() => setShowStorybookExportModal(true), [])  [1x]
+  handleSetIsEditingOptionsToFalse = useCallback(() => setIsEditingOptions(false), [])  [1x]
+  handleSetSelectedInventoryItemToNull = useCallback(() => setSelectedInventoryItem(null), [])  [2x]
+  handleSetIsTimelineGameToTrue = useCallback(() => setIsTimelineGame(true), [])  [2x]
+  handleSetIsConceptSortGameToTrue = useCallback(() => setIsConceptSortGame(true), [])  [2x]
+  handleSetShowMathAnswersToTrue = useCallback(() => setShowMathAnswers(true), [])  [1x]
+  handleSetProgressionDataToNull = useCallback(() => setProgressionData(null), [])  [1x]
+  handleSetInteractionModeToRead = useCallback(() => setInteractionMode('read'), [])  [1x]
+  handleSetRunTourToFalse = useCallback(() => setRunTour(false), [])  [1x]
+  handleSetShowGlobalLevelUpToFalse = useCallback(() => setShowGlobalLevelUp(false), [])  [2x]
+  handleSetShowSocraticChatToFalse = useCallback(() => setShowSocraticChat(false), [])  [1x]
+  handleSetShowStudyTimerModalToTrue = useCallback(() => setShowStudyTimerModal(true), [])  [1x]
+  handleSetShowSaveModalToFalse = useCallback(() => setShowSaveModal(false), [])  [3x]
+  handleSetIsTranslateModalOpenToFalse = useCallback(() => setIsTranslateModalOpen(false), [])  [2x]
+  handleSetShowCloudWarningToFalse = useCallback(() => setShowCloudWarning(false), [])  [2x]
+  handleSetIsProjectSettingsOpenToFalse = useCallback(() => setIsProjectSettingsOpen(false), [])  [3x]
+  handleSetShowStudyTimerModalToFalse = useCallback(() => setShowStudyTimerModal(false), [])  [2x]
+  handleSetShowAdventureConfirmationToFalse = useCallback(() => setShowAdventureConfirmation(false), [])  [2x]
+
+Validation: 0 name conflicts - SAFE TO APPLY
+
+Applied 134 onClick replacements
+Added 96 useCallback declarations
+
+Output: 7,612,668 bytes, 73,749 lines
+
+Post-write verification: NO scope conflicts detected
+Braces: 23695 open, 23703 close, diff=-8
+Total useCallback: 138
+
+=== DONE ===

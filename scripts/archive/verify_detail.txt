@@ -1,0 +1,17 @@
+PASS 1. handleApplyRosterGroup expanded (p.selectedLanguages)
+PASS 1b. handleApplyRosterGroup expanded (p.useEmojis)
+PASS 2a. batch save expanded (selectedLangs)
+PASS 2b. batch apply expanded (profile.selectedLanguages)
+PASS 2c. batch restore expanded (saved.selectedLangs)
+PASS 3. toolbar button removed
+FAIL 4. compact strip present (ui-roster-strip)
+FAIL 5a. localization key strip_title
+FAIL 5b. localization key emojis_label
+FAIL 6. emoji controls in panel (roster.emojis_label)
+FAIL OLD profiles UI gone
+
+  ui-student-profiles still at L21685: "profiles": "ui-student-profiles",
+
+  ui-student-profiles still at L60523: <div id="ui-student-profiles" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-200 overflow-hidd
+
+  setIsRosterKeyOpen in toolbar area L56166: onClick={() => setIsRosterKeyOpen(true)}

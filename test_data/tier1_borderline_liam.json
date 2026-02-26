@@ -1,0 +1,112 @@
+{
+    "mode": "student",
+    "studentNickname": "Liam O'Brien",
+    "responses": {
+        "quiz-1": {
+            "score": 82
+        },
+        "quiz-2": {
+            "score": 78
+        },
+        "quiz-3": {
+            "score": 84
+        }
+    },
+    "history": [
+        {
+            "type": "quiz",
+            "id": "quiz-1",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-2",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "quiz",
+            "id": "quiz-3",
+            "data": {
+                "questions": []
+            }
+        },
+        {
+            "type": "resource",
+            "id": "res-1"
+        },
+        {
+            "type": "resource",
+            "id": "res-2"
+        }
+    ],
+    "fluencyAssessments": [
+        {
+            "wcpm": 58,
+            "timestamp": "2026-02-10T09:00:00Z"
+        },
+        {
+            "wcpm": 62,
+            "timestamp": "2026-02-14T09:00:00Z"
+        }
+    ],
+    "wordSoundsState": {
+        "history": [
+            {
+                "word": "cat",
+                "correct": true
+            },
+            {
+                "word": "dog",
+                "correct": true
+            },
+            {
+                "word": "fish",
+                "correct": true
+            },
+            {
+                "word": "bird",
+                "correct": false
+            },
+            {
+                "word": "tree",
+                "correct": true
+            }
+        ],
+        "sessionScore": {
+            "correct": 4,
+            "total": 5,
+            "streak": 3
+        },
+        "dailyProgress": {
+            "2026-02-10": {
+                "wordsCompleted": 3
+            },
+            "2026-02-14": {
+                "wordsCompleted": 2
+            }
+        }
+    },
+    "gameCompletions": {
+        "matching": [
+            {
+                "score": 85,
+                "timestamp": "2026-02-14T10:00:00Z"
+            }
+        ]
+    },
+    "labelChallengeResults": [
+        {
+            "score": 55,
+            "timestamp": "2026-02-14T14:00:00Z"
+        }
+    ],
+    "globalPoints": 550,
+    "timeOnTask": {
+        "totalSessionMinutes": 42
+    },
+    "timestamp": "2026-02-14T16:00:00Z"
+}

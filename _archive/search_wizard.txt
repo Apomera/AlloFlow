@@ -1,0 +1,54 @@
+--- Match for 'intro_greeting' at line 8011 ---
+8008:     student_profiles_tip: "Use the {icon} Student Profiles feature to save settings (Grade, Language, Interests) for different groups."
+8009:   },
+8010:   bot_events: {
+8011:     intro_greeting: "Click me to adjust my voice settings, like speed and pitch. I'll chime in with helpful tips as you go!",
+8012:     text_generated: "Your adapted text is ready! Try clicking a word to see its definition, or explore the tools on the left.",
+8013:     flashcards_created: "Flashcards created! You can export them to Quizlet, print them, or try the Memory Game.",
+8014:     quiz_generated: "Quiz ready! Use Presentation Mode for the class, or try the Auto-Grader for open responses.",
+
+--- Match for 'welcome_skip_btn' at line 8275 ---
+8272:     large_file_transcribe_btn: "Begin processing the audio file in chunks.",
+8273:     entry_randomize_btn: "Pick a random codename combination.",
+8274:     welcome_load_btn: "Load a saved AlloFlow project file.",
+8275:     welcome_skip_btn: "Start fresh without loading a project.",
+8276:     
+8277:     // Submit Modal Help
+8278:     submit_confirm_btn: "Download your work summary to submit to your teacher (via Google Classroom or LMS).",
+
+--- Match for 'Reset Quick Start' at line 8898 ---
+8895:     engage_desc: "Tapping into interests to challenge and motivate (e.g., Interest-based analogies).",
+8896:     ai_guide_tip: "Use the \"AI UDL & Alignment Guide\" button in the sidebar to chat with an expert pedagogical bot for specific strategy advice.",
+8897:     cast_link_text: "View Full UDL Guidelines (CAST.org)",
+8898:     reset_wizard: "Reset Quick Start Wizard",
+8899:     support_kofi: "Support on Ko-fi",
+8900:     features_list: {
+8901:       categories: {
+
+--- Match for 'intro_greeting' at line 11267 ---
+11264:       const timer = setTimeout(() => {
+11265:         if (introFiredGlobal) return; // Double-check before speaking
+11266:         introFiredGlobal = true;
+11267:         speak(t('bot_events.intro_greeting'));
+11268:         if (onBotIntroSeen) onBotIntroSeen();
+11269:       }, 1500); // Delay to let UI settle
+11270:       return () => clearTimeout(timer);
+
+--- Match for 'welcome_skip_btn' at line 18744 ---
+18741:             <button 
+18742:                 onClick={onClose}
+18743:                 className="w-full p-3 rounded-xl text-slate-500 font-bold hover:bg-slate-100 transition-colors active:scale-95"
+18744:                 data-help-key="welcome_skip_btn"
+18745:             >
+18746:                 {t('welcome.skip')}
+18747:             </button>
+
+--- Match for 'welcome_skip_btn' at line 25750 ---
+25747: 
+25748:     // === WELCOME/ONBOARDING ===
+25749:     'welcome_load_btn': "Restore your last session including source text, generated resources, and progress.",
+25750:     'welcome_skip_btn': "Skip intro and start with a blank canvas. You can access the tutorial anytime from Help → Tour.",
+25751: 
+25752:     // === XP/GAMIFICATION ===
+25753:     'xp_modal_trigger': "View your XP dashboard: Level progress, streak, achievements, and unlock previews.",
+

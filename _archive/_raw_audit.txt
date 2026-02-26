@@ -1,0 +1,35 @@
+﻿Found 81 unique word_sounds.* keys used in ts() calls
+
+Declared localization keys: 186
+ts() referenced keys: 81
+
+MISSING ts() keys (26):
+  Γ¥î word_sounds.activity_missing_letter  (lines: [4550])
+  Γ¥î word_sounds.activity_spelling_bee  (lines: [4548])
+  Γ¥î word_sounds.activity_word_scramble  (lines: [4549])
+  Γ¥î word_sounds.blending_instruction  (lines: [8659])
+  Γ¥î word_sounds.blending_replay_sounds  (lines: [8657])
+  Γ¥î word_sounds.mic_switch_mic  (lines: [8954, 9112, 9224])
+  Γ¥î word_sounds.mic_switch_tapping  (lines: [9224])
+  Γ¥î word_sounds.mic_switch_typing  (lines: [8954, 9112])
+  Γ¥î word_sounds.missing_letter_desc  (lines: [4550])
+  Γ¥î word_sounds.session_msg_good  (lines: [9715])
+  Γ¥î word_sounds.session_msg_great  (lines: [9714])
+  Γ¥î word_sounds.session_msg_nice  (lines: [9716])
+  Γ¥î word_sounds.session_msg_outstanding  (lines: [9713])
+  Γ¥î word_sounds.session_next_activity  (lines: [9780])
+  Γ¥î word_sounds.session_words_practiced  (lines: [9743])
+  Γ¥î word_sounds.session_xp_earned  (lines: [9747])
+  Γ¥î word_sounds.sound_sort_complete  (lines: [4377])
+  Γ¥î word_sounds.sound_sort_instruction  (lines: [4344])
+  Γ¥î word_sounds.sound_sort_label  (lines: [4330])
+  Γ¥î word_sounds.sound_sort_wrong_hint  (lines: [4388])
+  Γ¥î word_sounds.spelling_bee_desc  (lines: [4548])
+  Γ¥î word_sounds.spelling_bee_hint_more  (lines: [8985])
+  Γ¥î word_sounds.spelling_bee_hint_vowels  (lines: [8986])
+  Γ¥î word_sounds.test_sequence  (lines: [8526])
+  Γ¥î word_sounds.tts_speed  (lines: [10135])
+  Γ¥î word_sounds.word_scramble_desc  (lines: [4549])
+
+
+Word Sounds render block: chars 514498-585900

@@ -1,0 +1,1 @@
+LINE 38821: const renderFormattedText = (text, enableGlossary = true, isDarkBg = false) => {

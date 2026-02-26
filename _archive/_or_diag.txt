@@ -1,0 +1,137 @@
+=== PHONEME_AUDIO_BANK definition + or key search ===
+L1139: // LAZY LOAD REFACTOR FOR PHONEME_AUDIO_BANK
+L1140: let _CACHE_PHONEME_AUDIO_BANK = null;
+L1141: function _LOAD_PHONEME_AUDIO_BANK_RAW() {
+L1192: const PHONEME_AUDIO_BANK = new Proxy({}, {
+L1195:     if (!_CACHE_PHONEME_AUDIO_BANK) {
+L1196:       // console.log("Lazy loading PHONEME_AUDIO_BANK...");
+L1197:       _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
+L1200:     return _CACHE_PHONEME_AUDIO_BANK[prop];
+
+=== Keys containing "or" or r-controlled vowels in bank ===
+L1144: key=ear  line='ear': "data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECG
+L1164: key=er  line='er': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGF
+L1181: key=ar  line='ar': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGF
+L1187: key=ir  line='ir': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGF
+L1188: key=ur  line='ur': 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGF
+
+=== handleAudio definition ===
+L3308:     const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+L3308:     const handleAudio = React.useCallback(async (input, playImmediately = true) => {
+L3309: 
+L3310:         if (!input) { console.warn("handleAudio called with null input"); return Promise.resolve(); }
+L3311:         // Access text properly if input is a word object
+L3312:         const textToPlay = (typeof input === 'object' && input.word) ? input.word : input;
+L3313:         // FIX: Check for Data URI (Base64) - Bypass normalization
+L3314:         if (typeof textToPlay === 'string' && textToPlay.startsWith('data:audio')) {
+L3315:              // console.log("⚡ Playing pre-recorded Data URI");
+L3316:              const audio = new Audio(textToPlay);
+L3317:              if (playImmediately) {
+L3318:                   // CRITICAL FIX: Wait for audio to finish before resolving
+L3319:                   return new Promise((resolve) => {
+L3320:                       audio.onended = () => resolve();
+L3321:                       audio.onerror = () => resolve(); // Resolve on error too
+L3322:                       setTimeout(resolve, 5000); // Fail-safe timeout
+L3323:                       audio.play().catch(e => {
+L3324:                           console.warn("Data URI playback failed", e);
+L3325:                           resolve();
+L3326:                       });
+L3327:                   });
+L3328:              }
+L3329:              return Promise.resolve();
+L3330:         }
+L3331: 
+L3332:         const text = (typeof textToPlay === 'string' ? textToPlay.trim() : String(textToPlay).trim()).toLowerCase();
+L3333: 
+L3334:         // INJECTED: Check internal bank for oe/or
+L3335:         if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[text]) {
+L3336:              console.log("⚡ Playing internal bank audio for:", text);
+L3337:              const audio = new Audio(PHONEME_AUDIO_BANK[text]);
+L3338:              if (playImmediately) {
+L3339:                  // CRITICAL FIX: Wait for audio to finish before resolving
+L3340:                  return new Promise((resolve) => {
+L3341:                      audio.onended = () => resolve();
+L3342:                      audio.onerror = () => resolve(); // Resolve on error too
+L3343:                      setTimeout(resolve, 5000); // Fail-safe timeout
+L3344:                      audio.play().catch(e => {
+L3345:                          console.warn("Bank playback failed", e);
+L3346:                          resolve();
+L3347:                      });
+L3348:                  });
+L3349:              }
+L3350:              return Promise.resolve();
+L3351:         }
+L3352: 
+L3353:         if (!text) return Promise.resolve();
+L3354: 
+L3355:         // FIX: Allow interruption/overlap for Review Panel responsiveness
+L3356:         // if (isPlayingAudio) { ... } // REMOVED BLOCKING CHECK
+L3357: 
+L3358:         setIsPlayingAudio(true);
+L3359: 
+L3360:         const playInstance = async (audio) => {
+L3361:             try {
+L3362:                 audio.currentTime = 0;
+L3363:                 audio.playbackRate = ttsSpeed;
+L3364:                 await audio.play();
+L3365:                 await new Promise(resolve => {
+L3366:                     audio.onended = resolve;
+L3367:                     setTimeout(resolve, 3000); // Fail-safe
+L3368:                 });
+L3369:             } catch (e) {
+L3370:                 console.warn("Playback failed", e);
+L3371:             } finally {
+L3372:                 setIsPlayingAudio(false);
+L3373:             }
+L3374:         };
+L3375: 
+L3376:         // Helper to load and cache
+L3377:         const loadAndPlay = async (src) => {
+L3378:             const audio = new Audio(src);
+L3379:             // Pre-load
+L3380:             await new Promise((resolve) => {
+L3381:                 audio.oncanplaythrough = resolve;
+L3382:                 audio.onerror = (e) => {
+L3383:                     console.warn("Audio load error:", audio.src, e);
+L3384:                     resolve(); // Continue gracefully but log issue
+L3385:                 };
+L3386:                 // Fail-safe timeout
+L3387:                 setTimeout(resolve, 1000);
+
+=== PHONEME_NORMALIZE definition ===
+L4438:     const PHONEME_NORMALIZE = {
+L4438:     const PHONEME_NORMALIZE = {
+L4439:         'igh': 'ie', 'tch': 'ch', 'dge': 'j',
+L4440:         'kn': 'n', 'wr': 'r', 'gn': 'n', 'gh': 'g', 'mb': 'm', 'qu': 'k'
+L4441:     };
+L4442: 
+L4443:     const estimatePhonemesBasic = React.useCallback((word) => {
+L4444:         if (!word) return [];
+L4445:         const w = word.toLowerCase();
+L4446:         // ONLY include digraphs that have audio OR will be normalized
+L4447:         const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb'];
+L4448:         const trigraphs = ['igh', 'tch', 'dge'];
+L4449: 
+L4450:         // Exceptions for Soft G (Common words where 'g' + e/i/y is HARD)
+L4451:         const HARD_G_EXCEPTIONS = new Set(['get','gets','getting','got','girl','girls','give','gives','giving','given','gift','gifts','gear'
+L4452: 
+L4453:         let result = [];
+L4454:         let i = 0;
+L4455:         while (i < w.length) {
+L4456:             // 1. Trigraphs
+L4457:             if (i < w.length - 2 && trigraphs.includes(w.slice(i, i + 3))) {
+L4458:                 result.push(w.slice(i, i + 3));
+L4459:                 i += 3;
+L4460:             }
+L4461:             // 2. Digraphs
+L4462:             else if (i < w.length - 1 && digraphs.includes(w.slice(i, i + 2))) {
+L4463:                 result.push(w.slice(i, i + 2));
+L4464:                 i += 2;
+L4465:             }
+L4466:             // 3. Soft C Rule: c + e, i, y -> 's'
+L4467:             else if (w[i] === 'c' && i < w.length - 1 && ['e', 'i', 'y'].includes(w[i+1])) {
+
+=== Phoneme decomposition / word-to-phoneme mapping ===
+L2285: const IPA_GRAPHEME_OPTIONS = {
+L2365:     const GRAPHEME_TO_IPA = {
+L2375:     const ipa = GRAPHEME_TO_IPA[grapheme] || grapheme;

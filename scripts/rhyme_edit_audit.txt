@@ -1,0 +1,6 @@
+=== RhymeView definition ===
+L5331: const RhymeView = React.memo(({ data, showLetterHints, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, highlightedIndex, isAudioBusy }) => {
+L5331: const RhymeView = React.memo(({ data, showLetterHints, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, highlightedIndex, isAudioBusy }) => {
+L5372: isEditing ? (
+L5427: const OrthographyView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+L5482: if (isEditing) {

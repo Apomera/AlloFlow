@@ -1,0 +1,31 @@
+Total: 29
+
+765: 'word_sounds.activity_word_families': 'Word Families',
+766: 'word_sounds.word_families_desc': 'Match words with the same start or end sound',
+800: 'word_sounds.word_families_prompt': 'Which words match the sound?',
+1140: word_families: getAudio('instructions', 'word_families'),
+1147: word_families_house: getAudio('instructions', 'word_families'),
+1205: _LOAD_INSTRUCTION_AUDIO_RAW('inst_word_families', getAudio('instructions', 'inst_word_families'));
+1505: 'word_families':  'progressive',       // Standard scaffolding
+1533: word_families: { enabled: false, count: 5 },
+1538: 'letter_tracing', 'counting', 'mapping', 'word_families', 'word_scramble'
+2167: word_families: { id: 'word_families', label: 'Word Families', icon: Users },
+3271: 'word_families':  'progressive',
+3287: 'word_families':  'afterAnswer',  // Focus on sound patterns; reveal after
+4287: <span className="text-xs uppercase font-bold text-slate-500 tracking-wider">{ts('word_sounds.word_families_label') || 'Sound Match
+4301: {ts('word_sounds.word_families_instruction') || `Find all words that match: ${data.family}`}
+4306: {foundWords.length} / {data.options?.length || 0} {ts('word_sounds.word_families_found') || 'found'}
+4334: {ts('word_sounds.word_families_complete') || 'Family Complete! 🎉'}
+4343: ❌ "{wrongFeedback}" {ts('word_sounds.word_families_wrong_hint') || `doesn't match: ${data.family}`}
+4506: { id: 'word_families', label: ts('word_sounds.activity_word_families') || 'Word Families', icon: '🏠', description: ts('word_sounds
+6726: word_families: 'inst_word_families',
+6730: if (typeof INSTRUCTION_AUDIO !== 'undefined' && (INSTRUCTION_AUDIO[instKey] || INSTRUCTION_AUDIO[wordSoundsActivity]) && wordSound
+6774: } else if (wordSoundsActivity === 'word_families') {
+6898: if (wordSoundsActivity === 'word_families' && currentWordSoundsWord) {
+7649: } else if (wordSoundsActivity === 'word_families') {
+9194: case 'word_families': {
+11425: activity_word_families: "Word Families",
+11426: word_families_desc: "Explore patterns",
+13555: activity_word_families: "Word Families",
+13556: word_families_desc: "Build the word family house! Find words that belong to the family.",
+13557: word_families_prompt: "Which words match the sound?",

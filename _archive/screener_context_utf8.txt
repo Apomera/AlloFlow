@@ -1,0 +1,102 @@
+=== screenerSession Context ===
+
+--- Match at line 11143 ---
+11128:                     {wordSoundsFeedback && (
+11129:                         <div className={`mt-6 p-4 rounded-xl text-center font-bold animate-in slide-in-from-bottom-2 ${
+11130:                             wordSoundsFeedback.isCorrect
+11131:                                 ? 'bg-green-100 text-green-700 border-2 border-green-300'
+11132:                                 : 'bg-red-100 text-red-700 border-2 border-red-300'
+11133:                         }`}>
+11134:                             {wordSoundsFeedback.isCorrect ? '🎉 ' : '💡 '}
+11135:                             {wordSoundsFeedback.message}
+11136:                         </div>
+11137:                     )}
+11138:                 </div>
+11139:             </div>
+11140:         </div>
+11141:     );
+11142: };
+11143: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latestProbeResult, setLatestProbeResult, rosterQueue, setRosterQueue, screenerSession, setScreenerSession, onLaunchORF, probeHistory, interventionLogs, addToast }) => {
+11144: 
+11145:     const [importedStudents, setImportedStudents] = React.useState([]);
+11146:     const [selectedStudent, setSelectedStudent] = React.useState(null);
+11147:     const [isProcessing, setIsProcessing] = React.useState(false);
+11148:     const [isMinimized, setIsMinimized] = React.useState(false);
+11149:     const [importProgress, setImportProgress] = React.useState({ current: 0, total: 0 });
+11150:     const [sortColumn, setSortColumn] = React.useState(null);
+11151:     const [sortDirection, setSortDirection] = React.useState('asc');
+11152:     const [searchQuery, setSearchQuery] = React.useState('');
+11153:     const [showRTISettings, setShowRTISettings] = React.useState(false);
+11154:     const [safetyFlaggingVisible, setSafetyFlaggingVisible] = React.useState(() => {
+11155:         try { return safeGetItem('alloflow_safety_visible') !== 'false'; } catch (e) { return true; }
+11156:     });
+11157:     React.useEffect(() => {
+11158:         try { safeSetItem('alloflow_safety_visible', String(safetyFlaggingVisible)); } catch (e) {}
+11159:     }, [safetyFlaggingVisible]);
+11160:     React.useEffect(() => {
+11161:         if (!latestProbeResult) return;
+11162:         const targetName = latestProbeResult.student;
+11163:         if (!targetName) {
+11164:             setLatestProbeResult(null);
+11165:             return;
+11166:         }
+11167:         setImportedStudents(prev => prev.map(s => {
+11168:             if ((s.nickname || s.name) !== targetName) return s;
+11169:             const history = s.screeningHistory || [];
+11170:             return { ...s, screeningHistory: [...history, latestProbeResult] };
+11171:         }));
+11172:         setLatestProbeResult(null);
+11173:     }, [latestProbeResult]);
+11174:     const [liveProgressData, setLiveProgressData] = React.useState({});
+11175:     const [isLiveListening, setIsLiveListening] = React.useState(false);
+11176:     const [liveSyncCode, setLiveSyncCode] = React.useState('');
+11177:     const [showLiveSyncInput, setShowLiveSyncInput] = React.useState(false);
+11178:     const [rtiThresholds, setRtiThresholds] = React.useState(() => {
+11179:         try {
+11180:             const saved = safeGetItem('alloflow_rti_thresholds');
+11181:             if (saved) return JSON.parse(saved);
+11182:         } catch (e) { /* localStorage unavailable */ }
+
+=== launchBenchmarkProbe Context ===
+
+--- Match at line 12498 ---
+12488:             sourceText: passage,
+12489:             isScreeningORF: true
+12490:         }));
+12491:         setIsFluencyMode(true);
+12492:         setFluencyStatus('ready');
+12493:         setFluencyResult(null);
+12494:         setActiveView('simplified_read_mode');
+12495:         addToast('ORF passage loaded \u2014 press Record to begin', 'info');
+12496:     };
+12497: 
+12498: const launchBenchmarkProbe = (grade, activity, form = 'A') => {
+12499:         const gradeBank = typeof BENCHMARK_PROBE_BANKS !== 'undefined' && BENCHMARK_PROBE_BANKS[grade];
+12500:         const bank = gradeBank ? gradeBank[form] : null;
+12501:         if (activity === 'orf') {
+12502:             if (typeof onLaunchORF === 'function') {
+12503:                 onLaunchORF(grade, form);
+12504:             }
+12505:             return;
+12506:         }
+12507:         if (!bank || !bank[activity]) {
+12508:             addToast('No probe words available for ' + grade + ' / ' + activity, 'warning');
+12509:             return;
+12510:         }
+12511:         const rawWords = bank[activity];
+12512:         const probeWords = rawWords.map((w, idx) => {
+12513:             if (typeof w === 'string') {
+12514:                 return { word: w, targetWord: w, displayWord: w, definition: '', image: null, probeIndex: idx };
+12515:             } else if (w.display && w.answer) {
+12516:                 return { word: w.answer, targetWord: w.answer, displayWord: w.display, definition: '', image: null, probeIndex: idx, blendingDisplay: w.display };
+12517:             } else if (w.target && w.options) {
+12518:                 return { word: w.target, targetWord: w.target, displayWord: w.target, definition: '', image: null, probeIndex: idx, rhymeOptions: w.options };
+12519:             }
+12520:             return { word: String(w), targetWord: String(w), displayWord: String(w), definition: '', image: null, probeIndex: idx };
+12521:         });
+12522:         setIsProbeMode(true);
+12523:         setProbeGradeLevel(grade);
+12524:         setProbeActivity(activity);
+12525:         const activityMap = { spelling: 'spelling_bee' };
+12526:         const wsActivity = activityMap[activity] || activity;
+12527:         setWsPreloadedWords(probeWords);

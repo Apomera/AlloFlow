@@ -1,0 +1,20 @@
+
+--- getWordSoundsString (2 matches) ---
+  L861: const getWordSoundsString = (t, key, params = {}) => {
+  L4538: const ts = React.useCallback((key, params = {}) => getWordSoundsString(t, key, params), [t]);
+
+--- word_sounds.how_many_sounds (2 matches) ---
+  L701: 'word_sounds.how_many_sounds': 'How Many Sounds?', // Added missing key
+  L9530: <h3 className="text-xl font-bold text-violet-700 mb-2">{ts('word_sounds.how_many_sounds')}</h3>
+
+--- word_sounds.blending_prompt (1 matches) ---
+  L717: 'word_sounds.blending_prompt': 'Blend these sounds together!',
+
+--- word_sounds.counting_desc (2 matches) ---
+  L696: 'word_sounds.counting_desc': 'Count how many sounds you hear in a word',
+  L4541: { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc'), tier: 'phonological' 
+
+--- activity_counting (3 matches) ---
+  L684: 'word_sounds.activity_counting': 'Count Sounds',
+  L4541: { id: 'counting', label: ts('word_sounds.activity_counting'), icon: '🔢', description: ts('word_sounds.counting_desc'), tier: 'phonological' 
+  L11610: activity_counting: "Sound Counting",

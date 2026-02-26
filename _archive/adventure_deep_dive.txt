@@ -1,0 +1,184 @@
+=== ADVENTURE MODE DEEP DIVE ===
+
+--- ADVENTURE STATE VARIABLES ---
+[adventure] Line 25110: const [isAdventureCloudEnabled, setIsAdventureCloudEnabled] = useState(false);
+[adventure] Line 25429: const [pendingAdventureUpdate, setPendingAdventureUpdate] = useState(null);
+[adventure] Line 26559: const [adventureState, setAdventureState] = useState({
+[adventure] Line 26603: const [adventureDifficulty, setAdventureDifficulty] = useState('Normal');
+[adventure] Line 26644: const [isResumingAdventure, setIsResumingAdventure] = useState(false);
+[adventure] Line 26645: const [adventureEffects, setAdventureEffects] = useState({ xp: null, energy: null, levelUp: null });
+[adventure] Line 26651: const [adventureInputMode, setAdventureInputMode] = useState('choice');
+[adventure] Line 26652: const [adventureLanguageMode, setAdventureLanguageMode] = useState('English');
+[adventure] Line 26653: const [adventureTextInput, setAdventureTextInput] = useState('');
+[adventure] Line 26654: const [failedAdventureAction, setFailedAdventureAction] = useState(null);
+[adventure] Line 26655: const [isAdventureStoryMode, setIsAdventureStoryMode] = useState(false);
+[adventure] Line 26656: const [adventureFreeResponseEnabled, setAdventureFreeResponseEnabled] = useState(false);
+[adventure] Line 26657: const [adventureAutoRead, setAdventureAutoRead] = useState(false);
+[adventure] Line 26658: const [adventureChanceMode, setAdventureChanceMode] = useState(false);
+[adventure] Line 26671: const [adventureImageSize, setAdventureImageSize] = useState(450);
+[adventure] Line 26688: const [hasSavedAdventure, setHasSavedAdventure] = useState(false);
+[adventure] Line 26689: const [showAdventureConfirmation, setShowAdventureConfirmation] = useState(false);
+[adventure] Line 30636: const [adventureCustomInstructions, setAdventureCustomInstructions] = useState('');
+[storybook] Line 26647: const [showStorybookExportModal, setShowStorybookExportModal] = useState(false);
+[faction] Line 26659: const [enableFactionResources, setEnableFactionResources] = useState(false);
+[faction] Line 26660: const [factionResourceMode, setFactionResourceMode] = useState('ai'); // 'ai' or 'manual'
+[faction] Line 26661: const [pendingFactionResources, setPendingFactionResources] = useState(null); // For AI Decides editing before finalizing
+[resource] Line 26659: const [enableFactionResources, setEnableFactionResources] = useState(false);
+[resource] Line 26660: const [factionResourceMode, setFactionResourceMode] = useState('ai'); // 'ai' or 'manual'
+[resource] Line 26661: const [pendingFactionResources, setPendingFactionResources] = useState(null); // For AI Decides editing before finalizing
+[resource] Line 26691: const [resourceCount, setResourceCount] = useState('Auto');
+[resource] Line 26697: const [draggedResourceId, setDraggedResourceId] = useState(null);
+[resource] Line 26698: const [dragOverResourceId, setDragOverResourceId] = useState(null);
+[resource] Line 50697: const [draggedItem] = resources.splice(draggedIndex, 1);
+[social] Line 25163: const [isSocialStoryMode, setIsSocialStoryMode] = useState(false);
+[social] Line 25164: const [socialStoryFocus, setSocialStoryFocus] = useState('');
+
+--- SIMULATION MODES ---
+[adventureMode] Line 59: adventureMode: true,
+[socialStory] Line 25163: const [isSocialStoryMode, setIsSocialStoryMode] = useState(false);
+[socialStory] Line 25164: const [socialStoryFocus, setSocialStoryFocus] = useState('');
+[socialStory] Line 40294: const socialStoryInstruction = isSocialStoryMode
+... and 14 more matches for 'socialStory'
+[branching] Line 27360: • **Adventure Mode**: Classic choose-your-own-adventure branching narratives.
+[branching] Line 27365: • **Branching Narrative**: Choices affect story outcomes with AI-generated consequences.
+[choose-your-own] Line 8420: sidebar_adventure_desc: "Create interactive choose-your-own-adventure stories based on your content. S
+[choose-your-own] Line 27360: • **Adventure Mode**: Classic choose-your-own-adventure branching narratives.
+
+--- GAMIFICATION/XP/PROGRESS ---
+[xp] Line 6096: adventureXP: 0,
+[energy] Line 26645: const [adventureEffects, setAdventureEffects] = useState({ xp: null, energy: null, levelUp: null });
+[level] Line 9379: adventure_badge: "Adventure Lvl {level}",
+[badge] Line 9379: adventure_badge: "Adventure Lvl {level}",
+[progress] Line 9355: adventure_restored: "Adventure progress restored!",
+[challenge] Line 27685: 'adventure_difficulty': "Adjust the challenge level. 'Story' focuses on narrative; 'Hardcore' adds strict
+
+--- FACTION/RESOURCE SYSTEM ---
+[faction] Line 26659: const [enableFactionResources, setEnableFactionResources] = useState(false);
+[resource] Line 9654: adventure_context: "The more resources you generate, the richer the adventure context becomes.",
+[ally] Line 27906: 'adventure_auto_climax': "Automatically build toward a narrative climax as the adventure progresses.",
+[decision] Line 8420: sidebar_adventure_desc: "Create interactive choose-your-own-adventure stories based on your content. S
+
+--- STORYBOOK/VISUAL FEATURES ---
+[storybook] Line 9785: export_storybook_images: "Export your adventure story with illustrations (HTML format).",
+[illustration] Line 9785: export_storybook_images: "Export your adventure story with illustrations (HTML format).",
+[image] Line 9785: export_storybook_images: "Export your adventure story with illustrations (HTML format).",
+[art] Line 7020: adventure_start_failed: "Failed to start adventure. Please try again.",
+[visual] Line 16062: "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'sour
+[scene] Line 9676: adventure_scene: "What will you do? Every choice shapes your story!",
+[export] Line 9785: export_storybook_images: "Export your adventure story with illustrations (HTML format).",
+
+--- CHOICE/DECISION SYSTEM ---
+[choice] Line 9675: adventure_started: "Your adventure begins! Type your action below, or use the choice buttons to decide wha
+[choice] Line 9676: adventure_scene: "What will you do? Every choice shapes your story!",
+... and 21 more for 'choice'
+[option] Line 27684: 'adventure_input_mode': "Choose how you interact with the adventure: Multiple Choice options, Debate (pers
+[option] Line 27688: 'adventure_free_response': "When OFF: Choose from 4 options per turn (easier). When ON: Type any action fr
+... and 44 more for 'option'
+[decision] Line 8420: sidebar_adventure_desc: "Create interactive choose-your-own-adventure stories based on your content. S
+[decision] Line 10855: adventure_desc: "Immersive 'Choose Your Own Adventure' roleplay. Students make decisions based on the less
+... and 3 more for 'decision'
+[outcome] Line 46909: - **Assessment Alignment:** Does the Quiz or Adventure outcome verify mastery of the standard?
+[consequence] Line 10855: adventure_desc: "Immersive 'Choose Your Own Adventure' roleplay. Students make decisions based on the less
+[consequence] Line 27691: 'adventure_system_state': "Gamifies decisions with resource tracking (e.g., Gold, Health, Morale). Actions
+... and 2 more for 'consequence'
+[branch] Line 27360: • **Adventure Mode**: Classic choose-your-own-adventure branching narratives.
+
+--- ADVENTURE UI LABELS/TRANSLATIONS ---
+Line 7198: tool_adventure: "Adventure Mode",
+Line 7430: helper: "Applies to text-to-speech reading, adventure mode narration, flashcard audio, and the AI Assistant."
+Line 8070: adventure_xp: "Adventure XP",
+Line 8420: sidebar_adventure_desc: "Create interactive choose-your-own-adventure stories based on your content. Students make decisio
+Line 9474: adventure: "Adventure Mode"
+Line 9654: adventure_context: "The more resources you generate, the richer the adventure context becomes.",
+Line 9660: parent_adventure: "Try the Adventure Mode for a fun rainy-day activity.",
+Line 9675: adventure_started: "Your adventure begins! Type your action below, or use the choice buttons to decide what happens next.",
+Line 9676: adventure_scene: "What will you do? Every choice shapes your story!",
+Line 9709: adventure_view: "This is Adventure Mode! Make choices to progress through an interactive story based on your content.",
+Line 9785: export_storybook_images: "Export your adventure story with illustrations (HTML format).",
+Line 9786: export_storybook_text: "Export your adventure story as text only (Markdown format).",
+Line 9954: settings_unlock_xp: "XP required to unlock the next adventure chapter.",
+Line 9956: settings_adventure_xp: "Minimum XP required to start the adventure.",
+Line 10013: title: "Adventure Mode",
+Line 10067: mode_choice: "Standard Adventure Mode",
+Line 10457: unlock_xp: "Global XP to Unlock Adventure",
+Line 10461: storybook_xp: "Adventure XP to Unlock Storybook",
+Line 10462: storybook_xp_desc: "XP earned *inside* the Adventure required to export.",
+Line 10619: title: "Adventure Mode",
+Line 10854: adventure_title: "Adventure Mode",
+Line 10898: adventure: "Adventure Mode",
+Line 14605: {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
+Line 16062: "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'source', 'analysis', 'ou
+Line 26440: case 'debate': return t('adventure.mode_debate_desc');
+Line 26441: case 'system': return t('adventure.mode_system_desc');
+Line 26442: default: return t('adventure.mode_choice_desc');
+Line 26990: 'adventure_story_mode': 'adventure',
+Line 27522: 'tool_adventure': "Enter Adventure Mode to explore topics through interactive stories.",
+Line 27684: 'adventure_input_mode': "Choose how you interact with the adventure: Multiple Choice options, Debate (persuade characters), or
+Line 27685: 'adventure_difficulty': "Adjust the challenge level. 'Story' focuses on narrative; 'Hardcore' adds strict penalties and resour
+Line 27688: 'adventure_free_response': "When OFF: Choose from 4 options per turn (easier). When ON: Type any action freely—the AI adapts!
+Line 27689: 'adventure_chance_mode': "Introduces D20 dice rolls: risky actions may fail even with good ideas. Teaches probability and risk
+Line 27690: 'adventure_social_story': "SEL Mode: Generates scenarios with social-emotional challenges (friendship conflicts, teamwork, fru
+Line 27691: 'adventure_system_state': "Gamifies decisions with resource tracking (e.g., Gold, Health, Morale). Actions have consequences—s
+Line 27905: 'adventure_allow_cloud': "Allow Adventure Mode images to be saved to cloud storage.",
+Line 27912: 'adventure_story_mode': "Enable narrative story mode with descriptive passages and character development.",
+Line 27920: 'export_storybook_images': "Export adventure/storybook images as a downloadable package.",
+Line 27921: 'export_storybook_text': "Export adventure/storybook text as a document.",
+Line 27942: 'settings_adventure_xp': "Bonus XP for adventure completion (default: 50). Higher values motivate engagement with narrative mo
+Line 30413: currentResourceId: 'adventure-sync',
+Line 38907: 4. "Hook" Activity: An engaging opening script (2-3 mins). **Explicitly reference** the "Visual Support" or "Adventure Mod
+Line 39570: Refine this image to look like a ${(isAdventureStoryMode || isSocialMode) ? 'high-quality storybook illustration'
+Line 39576: ${(isAdventureStoryMode || isSocialMode) ? "4. Ensure it looks friendly and inviting." : ""}
+Line 39806: description: aiDescription || (itemType === 'permanent' ? t('adventure.defaults.key_item_desc') : t('adv
+Line 39942: extraInfo.push(t('adventure.feedback.xp_gain', { amount: safeXpDelta }));
+Line 40029: addToast(t('adventure.feedback.energy_restored', { amount: 50 }), "success");
+Line 40255: addToast(adventureInputMode === 'debate' ? t('adventure.status_messages.initiating_debate') : t('adventure.status_messages.sta
+Line 40289: : "TONE: Standard Adventure. Balance exploration with risk and consequences.";
+Line 40443: description: newItemDesc || (itemType === 'permanent' ? t('adventure.defaults.key_item_desc') : t('adventure.def
+Line 40499: meta: `Level 1 - ${adventureInputMode === 'debate' ? 'Debate' : 'Simulation'}`,
+Line 40837: addToast(adventureInputMode === 'debate' ? t('adventure.status_messages.initiating_debate') : t('adventure.status_messages.sta
+Line 41217: const jsonOptionsExample = adventureFreeResponseEnabled ? "[]" : `["Choice 1", "Choice 2", "Choice 3", "Choice 4", "Choice 5
+Line 41332: Continue the "${adventureInputMode === 'system' ? 'System Simulation' : 'Adventure'}" simulation.
+Line 41379: ${adventureInputMode === 'debate' ? '"debateMomentumChange": number, "resetDebate": boolean, "newTopic": "String",' : ''
+Line 41380: ${adventureInputMode === 'system' ? '"systemStateUpdate": { "add": [{ "name": "Variable", "icon": "emoji", "quantity": 5
+Line 41497: setFailedAdventureAction({ type: 'choice', payload: normalizedChoice });
+Line 41674: const strMeta = t('export.storybook.meta_info', { date, level: adventureState.level });
+Line 42925: setGuidedFlowState(prev => ({ ...prev, pendingContext: 'adventure_mode' }));
+Line 44625: "adventureConfig": { "mode": "choice" | "debate", "theme": "string" },
+Line 47324: : "TONE: Standard Adventure. Balance exploration with risk and consequences.";
+Line 55240: {expandedTools.includes('adventure') ? <ChevronUp size={16} className="text-slate-500"/> : <ChevronDown size={16}
+Line 55286: {adventureInputMode === 'choice' ? t('adventure.mode_choice_desc') :
+Line 55287: adventureInputMode === 'debate' ? t('adventure.mode_debate_desc') :
+Line 55390: <label className="block text-[10px] text-pink-700 font-bold mb-1 uppercase opacity-80">{t(
+Line 55421: <label className="text-xs text-amber-700 font-medium">{t('adventure.system_state_m
+Line 55450: : t('adventure.system_state_manual_desc')
+Line 55518: const updated = [...(adventureState.systemResources || []), { name: ''
+Line 55541: <span className="text-[9px] font-normal opacity-70 hidden sm:inline">{t('adventure.story_mode_
+Line 56638: <div className={`p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 ${isZenMode ||
+Line 61903: <div className={`bg-indigo-900 p-4 rounded-lg border border-indigo-800 flex flex-col md:flex-row justify-bet
+Line 61932: <div className={`absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-
+Line 61933: {adventureEffects.xp > 0 ? '+' : ''}{adventureEffects.xp} XP
+Line 61945: title={adventureInputMode === 'system' ? `Stability: ${adventureState.energy}%` : t('adventure
+Line 61977: <div className={`absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg an
+Line 61978: {adventureEffects.energy > 0 ? '+' : ''}{adventureEffects.energy}
+Line 62083: className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border
+Line 62084: title={adventureState.isImmersiveMode ? t('adventure.exit_immersive') : t('adventure.enter_immersi
+Line 62087: <span className="hidden sm:inline">{adventureState.isImmersiveMode ? t('adventure.view_standard')
+Line 62246: <label className={`flex items-center gap-3 p-2 rounded-lg border trans
+Line 62260: <label className={`flex items-center gap-3 p-2 rounded-lg border trans
+Line 62274: <label className={`flex items-center gap-3 p-2 rounded-lg border trans
+Line 62288: <label className={`flex items-center gap-3 p-2 rounded-lg border trans
+Line 62304: <label className={`flex items-center gap-3 p-2 rounded-lg border t
+Line 62325: <div className={`bg-indigo-50 p-3 rounded-lg border border-indigo-100 ${(!
+Line 62527: {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
+Line 62532: <span>{t('adventure.storybook_locked', { needed: studentProjectSettings.adventureMinXP
+Line 62575: <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full bo
+Line 62576: <div className={`p-1 rounded-full ${adventureInputMode === 'system' ? 'bg-amber-500/20
+Line 62577: <Zap size={12} className={`fill-current ${adventureInputMode === 'system' ? 'text-
+Line 62581: className={`h-full transition-all duration-500 ${adventureInputMode === 'syste
+Line 62586: <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-full bo
+Line 62709: {adventureInputMode === 'system' ? 'No policies enacted' : t('adve
+Line 62727: {immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choic
+Line 62987: ) : (!adventureFreeResponseEnabled || (adventureInputMode === 'debate' && adventureState.debat
+Line 63037: title={isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.too
+Line 63046: placeholder={adventureInputMode === 'debate' ? t('adventure.placeholder_debate') :
+Line 63047: aria-label={adventureInputMode === 'debate' ? t('adventure.aria_debate') : t('adve

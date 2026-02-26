@@ -1,0 +1,48 @@
+﻿=== 1. analysisResult STATE ===
+
+=== 2. setAnalysisResult CALLS ===
+  (0 total)
+
+=== 3. analysisResult USAGE in prompts/generation ===
+  (0 total usages)
+
+=== 4. DISABLED BUTTONS gated on source/analysis ===
+  L63542: disabled={!inputText || isProcessing}
+  L63690: disabled={!inputText || isProcessing}
+  L64018: disabled={!inputText || isProcessing}
+  L64105: disabled={!inputText || isProcessing}
+  L64195: disabled={!inputText || isProcessing}
+  L64246: disabled={!inputText || isProcessing}
+  L64298: disabled={!inputText || isProcessing}
+  L64335: disabled={!inputText || isProcessing}
+  L64396: disabled={!inputText || isProcessing}
+  L64469: disabled={!inputText || isGeneratingPersona || isProcessing}
+  L64524: disabled={!inputText || isProcessing}
+  L64598: disabled={!inputText || isProcessing}
+  L65279: disabled={!inputText || isProcessing}
+  L65371: disabled={!inputText || isProcessing}
+  L65413: disabled={!inputText || isProcessing}
+  L65488: disabled={!inputText || isProcessing}
+  L65505: disabled={!inputText || isProcessing || !standardsInput}
+  L65751: disabled={!inputText}
+  L75091: disabled={!inputText}
+  (19 total)
+
+=== 5. CONDITIONAL RENDERING gated on source/analysis ===
+  (0 total)
+
+=== 6. MAIN GENERATE/SIMPLIFY handler source ===
+  Handler at L55415
+    L55450: textToProcess = inputText;
+
+=== 7. CONTEXT VARIABLES used in prompts ===
+  mathContextPrompt defined at L41621: let mathContextPrompt = "";
+  sourceContext defined at L49485: const resourceContext = history.map(h => `- ${getDefaultTitle(h.type)}: ${h.title} (${h.meta})`).join('\n');
+  contextPrompt: NOT FOUND
+  analysisContext defined at L56316: let analysisContext = "";
+  getSourceContext: NOT FOUND
+
+=== 8. INPUT VIEW (paste source text) ===
+  L63060: <div id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow
+
+=== 9. VIEW SWITCH GATES (can user navigate to views without source?) ===

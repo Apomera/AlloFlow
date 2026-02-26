@@ -1,0 +1,30 @@
+﻿L1117: _LOAD_INSTRUCTION_AUDIO_RAW('inst_orthography', getAudio('instructions', 'inst_orthography'));
+L1118: _LOAD_INSTRUCTION_AUDIO_RAW('inst_spelling_bee', getAudio('instructions', 'inst_spelling_bee'));
+L1119: _LOAD_INSTRUCTION_AUDIO_RAW('inst_word_scramble', getAudio('instructions', 'inst_word_scramble'));
+L1120: _LOAD_INSTRUCTION_AUDIO_RAW('inst_missing_letter', getAudio('instructions', 'inst_missing_letter'));
+L1121: _LOAD_INSTRUCTION_AUDIO_RAW('inst_counting', getAudio('instructions', 'inst_counting'));
+L1122: _LOAD_INSTRUCTION_AUDIO_RAW('inst_blending', getAudio('instructions', 'inst_blending'));
+L1123: _LOAD_INSTRUCTION_AUDIO_RAW('inst_segmentation', getAudio('instructions', 'inst_segmentation'));
+L1124: _LOAD_INSTRUCTION_AUDIO_RAW('inst_rhyming', getAudio('instructions', 'inst_rhyming'));
+L1125: _LOAD_INSTRUCTION_AUDIO_RAW('inst_letter_tracing', getAudio('instructions', 'inst_letter_tracing'));
+L1126: _LOAD_INSTRUCTION_AUDIO_RAW('inst_for', getAudio('instructions', 'inst_for'));
+L1127: _LOAD_INSTRUCTION_AUDIO_RAW('inst_which_word', getAudio('instructions', 'inst_which_word'));
+L1128: _LOAD_INSTRUCTION_AUDIO_RAW('inst_find_start_sound', getAudio('instructions', 'inst_find_start_sound'));
+L1129: _LOAD_INSTRUCTION_AUDIO_RAW('inst_find_end_sound', getAudio('instructions', 'inst_find_end_sound'));
+L1130: _LOAD_INSTRUCTION_AUDIO_RAW('inst_tap_letters', getAudio('instructions', 'inst_tap_letters'));
+L1131: _LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_sort', getAudio('instructions', 'inst_word_families'));
+L1132: _LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_scramble', getAudio('instructions', 'inst_sound_scramble'));
+L6805: // Map activity IDs to instruction audio keys (some use inst_ prefix)
+L6807: orthography: 'inst_orthography',
+L6808: spelling_bee: 'inst_spelling_bee',
+L6809: word_scramble: 'inst_word_scramble',
+L6810: missing_letter: 'inst_missing_letter',
+L6811: counting: 'inst_counting',
+L6812: blending: 'inst_blending',
+L6813: segmentation: 'inst_segmentation',
+L6814: rhyming: 'inst_rhyming',
+L6815: letter_tracing: 'inst_letter_tracing',
+L6816: sound_sort: 'inst_word_families',
+L6817: word_families: 'inst_word_families',
+L6931: if (typeof INSTRUCTION_AUDIO !== 'undefined' && INSTRUCTION_AUDIO['inst_rhyming']) {
+L6933: await handleAudio(INSTRUCTION_AUDIO['inst_rhyming']);

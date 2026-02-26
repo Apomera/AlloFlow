@@ -1,0 +1,75 @@
+﻿handleGenerate starts at L50378
+L50389: type='simplified' Grade=Y Lang=Y Int=N Diff=N
+L50390: type='quiz' Grade=Y Lang=Y Int=N Diff=Y
+L50391: type='glossary' Grade=Y Lang=Y Int=N Diff=Y
+L50392: type='sentence-frames' Grade=Y Lang=Y Int=N Diff=Y
+L50393: type='adventure' Grade=Y Lang=Y Int=N Diff=Y
+L50394: type='brainstorm' Grade=Y Lang=Y Int=N Diff=Y
+L50395: type='faq' Grade=Y Lang=Y Int=N Diff=Y
+L50396: type='outline' Grade=Y Lang=Y Int=N Diff=Y
+L50397: type='image' Grade=Y Lang=Y Int=N Diff=Y
+L50398: type='timeline' Grade=Y Lang=Y Int=N Diff=Y
+L50403: type='analysis' Grade=Y Lang=Y Int=N Diff=Y
+L50417: type='simplified' Grade=Y Lang=Y Int=N Diff=Y
+L50440: type='simplified' Grade=N Lang=Y Int=N Diff=Y
+L50452: type='glossary' Grade=N Lang=Y Int=N Diff=N
+L50473: type='simplified' Grade=N Lang=N Int=N Diff=N
+L50474: type='glossary' Grade=N Lang=N Int=N Diff=N
+L50475: type='outline' Grade=N Lang=N Int=N Diff=N
+L50476: type='image' Grade=N Lang=N Int=N Diff=N
+L50523: type='glossary' Grade=N Lang=Y Int=N Diff=Y
+L50662: type='simplified' Grade=Y Lang=N Int=N Diff=N
+L50992: type='outline' Grade=N Lang=N Int=N Diff=N
+L51171: type='image' Grade=N Lang=Y Int=N Diff=N
+L51246: type='quiz' Grade=N Lang=Y Int=N Diff=Y
+L51250: type='analysis' Grade=N Lang=Y Int=N Diff=Y
+L51351: type='analysis' Grade=Y Lang=Y Int=N Diff=N
+L51590: type='faq' Grade=N Lang=Y Int=Y Diff=Y
+L51622: type='brainstorm' Grade=N Lang=Y Int=Y Diff=Y
+L51662: type='sentence-frames' Grade=N Lang=Y Int=Y Diff=Y
+L51709: type='alignment-report' Grade=N Lang=N Int=N Diff=N
+L51832: type='timeline' Grade=N Lang=Y Int=N Diff=Y
+L51926: type='math' Grade=Y Lang=N Int=Y Diff=N
+L52008: type='gemini-bridge' Grade=Y Lang=Y Int=N Diff=N
+L52046: type='concept-sort' Grade=Y Lang=Y Int=N Diff=N
+L52111: type='lesson-plan' Grade=Y Lang=Y Int=Y Diff=N
+L52153: type='adventure' Grade=N Lang=Y Int=Y Diff=N
+L52207: type='persona' Grade=N Lang=N Int=N Diff=N
+L52285: type='analysis' Grade=Y Lang=Y Int=Y Diff=N
+L52286: type='analysis' Grade=Y Lang=Y Int=Y Diff=N
+L52291: type='simplified' Grade=Y Lang=Y Int=Y Diff=N
+L52320: type='simplified' Grade=N Lang=N Int=N Diff=N
+L52324: type='simplified' Grade=N Lang=N Int=N Diff=N
+L52325: type='glossary' Grade=N Lang=N Int=N Diff=N
+L52326: type='quiz' Grade=N Lang=N Int=N Diff=N
+L52327: type='faq' Grade=N Lang=N Int=N Diff=N
+L52328: type='brainstorm' Grade=N Lang=N Int=N Diff=N
+L52329: type='sentence-frames' Grade=N Lang=N Int=N Diff=N
+L52330: type='timeline' Grade=N Lang=N Int=N Diff=N
+L52331: type='concept-sort' Grade=N Lang=N Int=N Diff=N
+L52332: type='alignment-report' Grade=N Lang=N Int=N Diff=N
+L52333: type='gemini-bridge' Grade=N Lang=N Int=N Diff=N
+L52334: type='outline' Grade=N Lang=N Int=N Diff=N
+L52335: type='image' Grade=N Lang=N Int=N Diff=N
+L52336: type='analysis' Grade=N Lang=N Int=N Diff=N
+L52350: type='analysis' Grade=N Lang=N Int=N Diff=N
+L52360: type='analysis' Grade=N Lang=Y Int=N Diff=N
+L52398: type='analysis' Grade=N Lang=Y Int=N Diff=N
+L52439: type='lesson-plan' Grade=N Lang=N Int=N Diff=N
+L52441: type='analysis' Grade=N Lang=N Int=N Diff=N
+L52441: type='analysis' Grade=N Lang=N Int=N Diff=N
+L52450: type='timeline' Grade=N Lang=N Int=N Diff=N
+L52472: type='outline' Grade=N Lang=N Int=N Diff=N
+L52480: type='lesson-plan' Grade=N Lang=N Int=N Diff=N
+L52489: type='analysis' Grade=N Lang=N Int=N Diff=N
+L52497: type='glossary' Grade=N Lang=N Int=N Diff=N
+L52502: type='image' Grade=N Lang=N Int=N Diff=N
+L52505: type='lesson-plan' Grade=N Lang=N Int=N Diff=N
+L52831: type='Flow Chart' Grade=N Lang=Y Int=N Diff=N
+L52831: type='Process Flow / Sequence' Grade=N Lang=Y Int=N Diff=N
+L52859: type='Venn Diagram' Grade=N Lang=Y Int=N Diff=N
+L53093: type='Cause and Effect' Grade=N Lang=N Int=N Diff=N
+L53189: type='Problem Solution' Grade=N Lang=N Int=N Diff=N
+L53274: type='Key Concept Map' Grade=N Lang=N Int=N Diff=N
+L53274: type='Mind Map' Grade=N Lang=N Int=N Diff=N
+L53329: type='Structured Outline' Grade=N Lang=Y Int=N Diff=N

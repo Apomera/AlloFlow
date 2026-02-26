@@ -1,0 +1,163 @@
+UI_STRINGS keys extracted: 3968
+Static t() calls: 2622
+Resolved: 2489
+Unresolved: 133
+Parser false negatives: 120
+Truly missing: 13
+
+=== TRULY MISSING KEYS ===
+
+common (2 keys):
+  common.continue
+  common.delete
+
+languages_list (9 keys):
+  languages_list.Arabic
+  languages_list.French
+  languages_list.German
+  languages_list.Japanese
+  languages_list.Mandarin
+  languages_list.Portuguese
+  languages_list.Russian
+  languages_list.Spanish
+  languages_list.Vietnamese
+
+mastery (1 keys):
+  mastery.continue
+
+visuals (1 keys):
+  visuals.styles.default
+
+=== PARSER FALSE NEGATIVES (key exists but path wasn't traced) ===
+
+adventure (17 keys):
+  adventure.back_to_resume
+  adventure.climax_archetypes.default.label
+  adventure.climax_archetypes.default.left
+  adventure.climax_archetypes.default.right
+  adventure.fallback_opening
+  adventure.generating_options_audio
+  adventure.interrupted_desc
+  adventure.interrupted_title
+  adventure.paused_desc
+  adventure.paused_title
+  adventure.results.header
+  adventure.retry_action
+  adventure.save_reminder
+  adventure.setup_subtitle
+  adventure.start_overwrite
+  adventure.system_simulation
+  adventure.system_state
+
+bingo (3 keys):
+  bingo.close_generator
+  bingo.exit_caller_aria
+  bingo.launch_caller_aria
+
+chat_guide (16 keys):
+  chat_guide.blueprint.analyzing
+  chat_guide.blueprint.auto_fill_stop
+  chat_guide.blueprint.change_fail
+  chat_guide.blueprint.complete
+  chat_guide.blueprint.error
+  chat_guide.blueprint.presented
+  chat_guide.blueprint.reset
+  chat_guide.blueprint.updated
+  chat_guide.flow.keyword_pack
+  chat_guide.flow.keyword_step
+  chat_guide.flow.option_pack
+  chat_guide.flow.option_step
+  chat_guide.flow.start_scratch
+  chat_guide.pack.comprehensive
+  chat_guide.pack.count_selection
+  chat_guide.pack.error
+
+codenames (2 keys):
+  codenames.adjectives
+  codenames.animals
+
+export (65 keys):
+  export.activity_label
+  export.analysis_source_label
+  export.answer_label
+  export.bundle_downloaded
+  export.categories_label
+  export.date_label
+  export.def_col
+  export.def_label
+  export.default_lesson_title
+  export.filenames.assignment
+  export.filenames.flashcards
+  export.filenames.html_pack
+  export.filenames.profiles
+  export.filenames.project_student
+  export.filenames.project_teacher
+  export.filenames.slides_prefix
+  export.filenames.zip_pack
+  export.generated_date_label
+  export.html_page_title
+  export.ims_resource_pack
+  export.incomplete_sort
+  export.interview_figure_label
+  export.items_label
+  export.key_concepts_label
+  export.main_label
+  export.name_label
+  export.no_active_scene
+  export.no_events
+  export.no_ideas
+  export.no_personas
+  export.no_questions
+  export.no_student_content
+  export.no_teacher_content
+  export.no_terms
+  export.ppt_correct_note
+  export.ppt_generated
+  export.ppt_grade_level
+  export.problem_label
+  export.qti_default_desc
+  export.qti_default_title
+  export.readme_contents
+  export.readme_html_desc
+  export.readme_json_desc
+  export.readme_title
+  export.scenario_label
+  export.slides_master_footer
+  export.slides_subject
+  export.slides_title_default
+  export.storybook.chapter_separator
+  export.storybook.epilogue_badge
+  export.storybook.log_header
+  export.storybook.print_button
+  export.storybook.subtitle
+  export.storybook.user_label
+  export.structure_label
+  export.student_copy
+  export.support_dev
+  export.teacher_copy_divider
+  export.teacher_copy_intro
+  export.teacher_key_title
+  export.term_col
+  export.term_label
+  export.topic
+  export.trans_col
+  export.unknown_level
+
+standards (17 keys):
+  standards.frameworks.teks
+  standards.grades.1
+  standards.grades.10
+  standards.grades.11
+  standards.grades.12
+  standards.grades.2
+  standards.grades.3
+  standards.grades.4
+  standards.grades.5
+  standards.grades.6
+  standards.grades.7
+  standards.grades.8
+  standards.grades.9
+  standards.grades.k
+  standards.toast_added
+  standards.toast_duplicate
+  standards.toast_max_limit

@@ -1,0 +1,20 @@
+﻿1335: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords =
+1502: const result = await callGemini(prompt, false);
+1567: const result = await callGemini(prompt, true);
+3162: callGemini,
+5286: }, [wordSoundsLanguage, callGemini, handleAudio]);
+5343: const repairRes = await callGemini(repairPrompt, true);
+5376: }, [wordSoundsActivity, wordSoundsPhonemes, currentWordSoundsWord, callGemini]);
+5591: response = await callGemini(prompt, { temperature: temp });
+5710: const retryResponse = await callGemini(retryPrompt, { temperature: 0.2 + (retryAttempt * 0.1) });
+5875: }, [isPreloading, preloadedWords.length, wordPool, callGemini, handleAudio, wordSoundsLanguage]);
+6152: // Use callGemini if available, or fetchWordData logic?
+6153: // callGemini should be available in this scope.
+6154: if (!callGemini) throw new Error("GenAI not available");
+6156: const newOptionRaw = await callGemini(prompt, "You are a precise literacy generator. Output only the single word requested. No punctuation.");
+6177: }, [preloadedWords, callGemini, setWsPreloadedWords, handleAudio]); // Removed showError dependency if not stable, but it's likely stable
+6249: // Use existing callGeminiImage function if available
+6327: // Use existing callGeminiImageEdit function if available
+6329: if (typeof callGeminiImageEdit === 'function') {
+6330: newImageBase64 = await callGeminiImageEdit(refinementPrompt, rawBase64);
+6332: console.warn("callGeminiImageEdit not available");

@@ -1,0 +1,57 @@
+DEAD_CODE_BLOCK: L6038-L6051 (14 lines of /* */ block)
+DEAD_CODE_BLOCK: L9421-L9916 (496 lines of /* */ block)
+ANTI_PATTERN: L5187: useCallback for component: const PhonologyView = React.useCallback(({
+STATE: L4673: const [isEditing, setIsEditing] = React.useState(false);
+STATE: L4674: const [isMinimized, setIsMinimized] = React.useState(false);
+STATE: L4675: const [activitySequence, setActivitySequence] = React.useState(initialActivitySequence || []); // Ordered sequence of activity IDs
+STATE: L4676: const [sequenceIndex, setSequenceIndex] = React.useState(0); // Track position in sequence
+STATE: L4685: const [isStudentLocked, setIsStudentLocked] = React.useState(false); // Teacher Lock
+STATE: L4687: const [playInstructions, setPlayInstructions] = React.useState(true);
+STATE: L4689: const [tracingPhase, setTracingPhase] = React.useState('upper'); // 'upper' | 'lower' for two-pass tracing
+STATE: L4691: const [isCelebrating, setIsCelebrating] = React.useState(false); // Teacher/Parent Edit Mode
+STATE: L4693: const [isLoadingPhonemes, setIsLoadingPhonemes] = React.useState(false);
+STATE: L4694: const [phonemeError, setPhonemeError] = React.useState(null); // Track API errors for Retry UI
+STATE: L4695: const [isPlayingAudio, setIsPlayingAudio] = React.useState(false); // Global audio Lock/Spinner state
+STATE: L4696: const [userAnswer, setUserAnswer] = React.useState('');
+STATE: L4697: const [showLetterHints, setShowLetterHints] = React.useState(false); // Toggle for Pure Sound vs Phonics (Default: Sound Only)
+STATE: L4699: const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
+STATE: L4700: const [showImageForCurrentWord, setShowImageForCurrentWord] = React.useState(false);
+STATE: L4746: const [elkoninBoxes, setElkoninBoxes] = React.useState([]);
+STATE: L4748: const [nextWordBuffer, setNextWordBuffer] = React.useState(null);
+STATE: L4749: const [isPrefetching, setIsPrefetching] = React.useState(false);
+STATE: L4756: const [attempts, setAttempts] = React.useState(0); // Track wrong attempts for "Second Chance"
+STATE: L4757: const [rhymeOptions, setRhymeOptions] = React.useState([]);
+STATE: L4760: const [highlightedRhymeIndex, setHighlightedRhymeIndex] = React.useState(null); // Track which option is being read
+STATE: L4761: const [highlightedIsoIndex, setHighlightedIsoIndex] = React.useState(null); // Track which isolation option is highlighted
+STATE: L4762: const [highlightedBlendIndex, setHighlightedBlendIndex] = React.useState(null); // Track which blending option is highlighted
+STATE: L4763: const [blendingProgress, setBlendingProgress] = React.useState(0);
+STATE: L4764: const [blendingOptions, setBlendingOptions] = React.useState([]); // Word options for Blend Sounds activity
+STATE: L4767: const [orthographyOptions, setOrthographyOptions] = React.useState([]); // Options for Sight & Spell activity
+STATE: L4768: const [isolationState, setIsolationState] = React.useState(null); // Stable state for Isolation activity
+STATE: L4769: const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0); // Local speed state
+STATE: L4781: const [useMicInput, setUseMicInput] = React.useState(false);
+STATE: L4782: const [isListening, setIsListening] = React.useState(false);
+STATE: L4794: const [currentWordIndex, setCurrentWordIndex] = React.useState(0); // Index of current word in preloadedWords (persists words across activities)
+STATE: L4795: const [preloadProgress, setPreloadProgress] = React.useState(0); // 0-100 progress
+STATE: L4796: const [isPreloading, setIsPreloading] = React.useState(false); // True during initial preload
+STATE: L4797: const [firstWordReady, setFirstWordReady] = React.useState(false); // Eager-start: true when first word is loaded
+STATE: L4799: const [showReviewPanel, setShowReviewPanel] = React.useState(initialShowReviewPanel || false); // Pre-Activity Review Panel visibility
+STATE: L4803: const [masteryStats, setMasteryStats] = React.useState({});
+STATE: L4805: const [revisitQueue, setRevisitQueue] = React.useState([]); // Words that were incorrect, to revisit at end
+STATE: L4876: const [regeneratingIndex, setRegeneratingIndex] = React.useState(null);
+STATE: L4877: const [generatingImageIndex, setGeneratingImageIndex] = React.useState(null); // Track which word is generating image // Track which word is regenerat
+STATE: L4878: const [generatingImageSet, setGeneratingImageSet] = React.useState(new Set()); // Track concurrent image generations (max 5)
+STATE: L4881: const [errorMessage, setErrorMessage] = React.useState(null); // User-facing error display
+STATE: L4882: const [showSessionComplete, setShowSessionComplete] = React.useState(false);
+CONST_IN_RENDER: L5059: const phonemeMatches = {
+CONST_IN_RENDER: L7916: const SIMILAR_SOUNDS = {
+DUPLICATE_FUNC: estimateFirstPhoneme defined at: [3759, 11108]
+DUPLICATE_FUNC: estimateLastPhoneme defined at: [3772, 11124]
+TIMER_LEAK: L4886: setTimeout in effect without cleanup: setTimeout(() => { if (isMountedRef.current) setErrorMessage(null); }, duration);
+TIMER_LEAK: L5710: setTimeout in effect without cleanup: await new Promise(r => setTimeout(r, 500)); // Brief pause for UI to settle
+TIMER_LEAK: L5714: setTimeout in effect without cleanup: await new Promise(r => setTimeout(r, 300));
+TIMER_LEAK: L5983: setTimeout in effect without cleanup: setTimeout(() => { if (isMountedRef.current) onCheckAnswer('correct'); }, 1000);
+TIMER_LEAK: L7976: setTimeout in effect without cleanup: const timer = setTimeout(() => {
+TIMER_LEAK: L8008: setTimeout in effect without cleanup: const timer = setTimeout(async () => {
+TIMER_LEAK: L8025: setTimeout in effect without cleanup: await new Promise(r => setTimeout(r, 600));
+TIMER_LEAK: L8366: setTimeout in effect without cleanup: await new Promise(r => setTimeout(r, 800)); // Initial delay for fade-in

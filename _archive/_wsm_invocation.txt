@@ -1,0 +1,8 @@
+--- At line 61089 ---
+SoundsMode && (generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (
+                        <ErrorBoundary fallbackMessage="Word Sounds encountered an error." onError={(error) => console.error("ErrorBoundary CAUGHT:", error?.message || error)} onRetry={() => { setWordSoundsPhonemes(null); setCurrentWordSoundsWord(null); setWordSoundsFeedback(null); setWordSoundsActivity(null); }}>
+                            <WordSoundsModal alloBotRef={alloBotRef}
+                                lessonPlanConfig={generatedContent?.lessonPlanConfig}
+                                audioCache={glossaryAudioCache}
+                                glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
+                                onClose={() => { setIsWordSoundsMode(false); setCurrentWordSoundsWord(null); setWordSoundsPhonemes(null); setWordSoundsFeedback(null); setWordSoundsA

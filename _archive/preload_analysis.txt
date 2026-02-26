@@ -1,0 +1,17 @@
+=== Preload State Variables ===
+L1507:     const [preloadedWords, setPreloadedWords] = React.useState([]); // Pre-fetched words with phoneme data
+L1509:     const [isPreloading, setIsPreloading] = React.useState(false); // True during initial preload
+L1510:     const [firstWordReady, setFirstWordReady] = React.useState(false); // Eager-start: true when first word is loaded
+
+=== Preload Triggers ===
+L3192:     const preloadInitialBatch = React.useCallback(async () => {
+L3357:         // DISABLED: preloadInitialBatch is blocking and redundant. 
+L3361:             preloadInitialBatch();
+L3364:     }, [wordPool, preloadedWords.length, isPreloading, preloadInitialBatch]);
+
+=== Editing Mode State ===
+L4225:     const [isEditing, setIsEditing] = React.useState(false); // Teacher/Parent Edit Mode
+
+=== Teacher/Parent Mode Detection ===
+
+=== Word Sounds Generator Panel ===

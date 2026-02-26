@@ -1,0 +1,8 @@
+﻿1. Added 26 missing localization keys
+2. Removed orphaned localization declarations from Sound Sort overlay
+3. Removed duplicate speaker emoji from WordFamiliesView
+4. Fixed Word Families checkAnswer to pass 2nd arg for progression
+5. Changed rhyming image to alwaysOn (2 occurrences)
+
+Total fixes: 5
+Saved (4727754 chars)

@@ -1,0 +1,18 @@
+﻿Loaded 4663948 chars
+
+=== FIX 1: Remove duplicate tracing reset ===
+  WARNING: Duplicate tracing reset not found
+
+=== FIX 2: Word Scramble letter depletion ===
+  Added usedScrambleIndices state
+  WARNING: scrambled tile block not found
+  WARNING: Clear button not found
+  WARNING: scramble correct handler not found
+  WARNING: scramble wrong handler context not found
+
+=== FIX 3: Word Families wrong answer scoring ===
+  WARNING: WordFamiliesView wrong click block not found
+  WARNING: Parent callback not found
+
+=== Writing 1 changes ===
+Saved AlloFlowANTI.txt (4664026 chars, was 4663948)

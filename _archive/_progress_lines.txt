@@ -1,0 +1,17 @@
+2618: const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = React.useState(30);
+2985: <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
+2989: data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
+4355: wordSoundsSessionGoal = 10,
+4357: wordSoundsSessionProgress = 0,
+8116: } else if (includeOrthographic && wordSoundsScore.correct >= wordSoundsSessionGoal) {
+8440: if (wordSoundsScore.correct >= (wordSoundsSessionGoal + (orthoSessionGoal || 0))) {
+10952: {wordSoundsSessionProgress > 0 && (
+10956: <span>{Math.min(wordSoundsSessionProgress, SESSION_LENGTH)}/{SESSION_LENGTH}</span>
+10961: style={{ width: `${Math.min((wordSoundsSessionProgress / SESSION_LENGTH) * 100, 100)}%` }}
+29270: wordSoundsSessionGoal: 30,
+29272: wordSoundsSessionProgress: 0,
+30495: const { wsPreloadedWords, wsActivitySequence, wordSoundsDifficulty, wordSoundsAccuracyHistory, wordSoundsStreak, wordSoundsSessionGoal, orthoSessionGo
+30501: const setWordSoundsSessionGoal = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsSessionGoal', value: v });
+30503: const setWordSoundsSessionProgress = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsSessionProgress', value: v });
+61130: wordSoundsSessionGoal={wordSoundsSessionGoal}
+61132: wordSoundsSessionProgress={wordSoundsSessionProgress}

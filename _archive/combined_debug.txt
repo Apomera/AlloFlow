@@ -1,0 +1,313 @@
+=== chunkText definition ===
+Line 38556:   const chunkText = (text, maxLength) => {
+  38556:   const chunkText = (text, maxLength) => {
+  38557:       if (text.length <= maxLength) return [text];
+  38558:       const chunks = [];
+  38559:       let currentChunk = "";
+  38560:       const paragraphs = text.split(/\n{2,}/);
+  38561:       for (const para of paragraphs) {
+  38562:           if (para.length > maxLength) {
+  38563:               const sentences = para.match(/[^.!?]+[.!?]+["']?|[\s\S]+$/g) || [para];
+  38564:               for (const sentence of sentences) {
+  38565:                   if ((currentChunk.length + sentence.length) > maxLength && currentChunk.length > 0) {
+  38566:                       chunks.push(currentChunk.trim());
+  38567:                       currentChunk = "";
+  38568:                   }
+  38569:                   currentChunk += sentence + " ";
+  38570:               }
+  38571:           } else {
+  38572:               if ((currentChunk.length + para.length) > maxLength && currentChunk.length > 0) {
+  38573:                   chunks.push(currentChunk.trim());
+  38574:                   currentChunk = "";
+  38575:               }
+
+Line 38813:       const chunks = chunkText(fullText, 6000);
+  38813:       const chunks = chunkText(fullText, 6000);
+  38814:       let combinedVerificationText = "";
+  38815:       const globalSources = [];
+  38816:       const sourceUrlToIndexMap = new Map();
+  38817:       for (let i = 0; i < chunks.length; i++) {
+  38818:           setGenerationStep(`Step 1/2: Verifying segment ${i + 1} of ${chunks.length}...`);
+  38819:           const verificationPrompt = `
+  38820:               Verify the factual accuracy of the following text segment (${i + 1}/${chunks.length}) using Google Search.
+  38821:               Text Segment:
+  38822:               "${chunks[i]}",
+  38823:               Task:
+  38824:               1. Identify specific factual claims (dates, names, statistics).
+  38825:               2. Cross-reference them with reliable sources via Google Search.
+  38826:               3. ONLY if you find actual errors, myths, or outdated information, include a "**Discrepancies**" section listing each specific error wit
+  38827:               4. List key "**Verified Facts**" - the confirmed accurate facts from the text.
+  38828:               IMPORTANT RULES:
+  38829:               - Do NOT include a Discrepancies section if no genuine errors were found.
+  38830:               - Do NOT write "No discrepancies found" or similar - simply omit the section entirely.
+  38831:               - Only count something as a discrepancy if it is factually incorrect, not just incomplete.
+  38832:               - Focus on the Verified Facts section when the content is accurate.
+
+Line 49902:       const chunks = chunkText(textWithoutRefs, 9000);
+  49902:       const chunks = chunkText(textWithoutRefs, 9000);
+  49903:       if (chunks.length > 1) {
+  49904:             addToast(t('meta.processing_sections', { count: chunks.length }) || `Text is long. Processing ${chunks.length} sections...`, "info");
+  49905:             setProcessingProgress({ current: 0, total: chunks.length });
+  49906:             const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  49907:             const metaInfo = `${effectiveGrade} - ${effectiveLanguage} ${textFormat !== 'Standard Text' ? `(${textFormat})` : ''} (${t('meta.multi_par
+  49908:             const tempItem = {
+  49909:                 id: newId,
+  49910:                 type,
+  49911:                 data: "",
+  49912:                 meta: metaInfo,
+  49913:                 title: getDefaultTitle(type),
+  49914:                 timestamp: new Date(),
+  49915: 
+  49916:                 config: {}
+  49917: 
+  49918:             };
+  49919:             setHistory(prev => [...prev, tempItem]);
+  49920:             if (switchView || !generatedContent) {
+  49921:                 setGeneratedContent(tempItem);
+
+Line 51656:           const chunks = chunkText(sourceText, 8000);
+  51656:           const chunks = chunkText(sourceText, 8000);
+  51657:           let correctedParts = [];
+  51658:           for (let i = 0; i < chunks.length; i++) {
+  51659:               setGenerationStep(`${t('process.correcting')} (${i+1}/${chunks.length})...`);
+  51660:               const chunk = chunks[i];
+  51661:               const fixPrompt = `
+  51662:                 You are an expert educational editor.
+  51663:                 Task: Review the following text segment (${i+1}/${chunks.length}) and correct factual errors based strictly on the list below.
+  51664:                 List of Known Discrepancies to Fix:
+  51665:                 ${discrepanciesToFix.map(d => `- ${d}`).join('\n')}
+  51666:                 Text Segment to Review:
+  51667:                 "${chunk}",
+  51668:                 Instructions:
+  51669:                 1. Check if any of the "Discrepancies" appear in this specific text segment.
+  51670:                 2. If found, rewrite the specific sentence/paragraph to be factually accurate.
+  51671:                 3. If NO discrepancies are found in this segment, return the text EXACTLY as is.
+  51672:                 4. Preserve original markdown formatting, citations [⁽¹⁾](url), and structure.
+  51673:                 5. Do NOT add conversational filler ("Here is the fixed text"). Return ONLY the text content.
+  51674:               `;
+  51675:               const partResult = await callGemini(fixPrompt);
+
+Line 53460:         const chunks = chunkText(textToAnalyze, 3000);
+  53460:         const chunks = chunkText(textToAnalyze, 3000);
+  53461:         const taggedChunks = await Promise.all(chunks.map(async (chunk) => {
+  53462:              const prompt = `
+  53463:                 Analyze the grammatical parts of speech in the following text.
+  53464:                 Task: Reconstruct the text exactly as is, but:
+  53465:                 1. Wrap words with POS tags:
+  53466:                    - Nouns: <n>word</n>
+  53467:                    - Verbs: <v>word</v>
+  53468:                    - Adjectives: <a>word</a>
+  53469:                    - Adverbs: <d>word</d>
+  53470:                 2. Add syllable markers (·) to ALL multi-syllable words:
+  53471:                    - Example: "beautiful" → "beau·ti·ful"
+  53472:                    - Example: "running" → "run·ning"
+  53473:                    - Single-syllable words stay unchanged: "cat" → "cat"
+  53474:                    - Apply to tagged words too: <n>beau·ti·ful</n>
+  53475:                 Rules:
+  53476:                 - Keep all punctuation, spacing, and newlines EXACTLY the same.
+  53477:                 - Do not change any words except to add syllable markers.
+  53478:                 - Only tag the main nouns, verbs, adjectives, and adverbs (content words).
+  53479:                 - Add syllable markers to ALL words with more than one syllable.
+
+
+=== ALL React.memo components and t() availability ===
+  Line 179 [*** MISSING t() ***]: const GlobalMuteButton = React.memo(({ className = '' }) => {
+  Line 380 [*** MISSING t() ***]: const LargeFileTranscriptionModal = React.memo(({
+  Line 1314 [*** MISSING t() ***]: const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, 
+  Line 2596 [*** MISSING t() ***]: const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
+  Line 5098 [*** MISSING t() ***]: const RhymeView = React.memo(({ data, showLetterHints, onPlayAudio, onCheckAnswe
+  Line 5218 [*** MISSING t() ***]: const OrthographyView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditin
+  Line 5623 [*** MISSING t() ***]: const SoundMappingView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditi
+  Line 8789 [*** MISSING t() ***]: const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
+  Line 11137 [*** MISSING t() ***]: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRo
+  Line 15663 [HAS t()]: const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
+  Line 15908 [HAS t()]: const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
+  Line 16131 [HAS t()]: const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
+  Line 18296 [HAS t()]: const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
+  Line 18403 [HAS t()]: const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
+  Line 18733 [*** MISSING t() ***]: const DraftFeedbackInterface = React.memo(({
+  Line 18934 [HAS t()]: const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
+  Line 19233 [HAS t()]: const ClimaxProgressBar = React.memo(({ climaxState }) => {
+  Line 19298 [*** MISSING t() ***]: const AdventureAmbience = React.memo(({ sceneText, soundParams, active, volume =
+  Line 19652 [*** MISSING t() ***]: const InfoTooltip = React.memo(({ text }) => (
+  Line 20172 [*** MISSING t() ***]: const ConfettiExplosion = React.memo(() => (
+  Line 20208 [*** MISSING t() ***]: const ComplexityGauge = React.memo(({ level }) => {
+  Line 20299 [HAS t()]: const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
+  Line 20375 [HAS t()]: const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
+  Line 20681 [HAS t()]: const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
+  Line 21044 [HAS t()]: const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
+  Line 21367 [HAS t()]: const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
+  Line 21707 [HAS t()]: const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
+  Line 22040 [HAS t()]: const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
+  Line 22464 [HAS t()]: const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
+  Line 22620 [*** MISSING t() ***]: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
+  Line 23389 [HAS t()]: const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
+  Line 23555 [HAS t()]: const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
+  Line 23766 [*** MISSING t() ***]: const InventoryGrid = React.memo(({ inventory, onSelect }) => {
+  Line 23821 [HAS t()]: const DiceOverlay = React.memo(({ result, onComplete }) => {
+  Line 23876 [HAS t()]: const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
+  Line 23965 [HAS t()]: const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
+  Line 24098 [HAS t()]: const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
+  Line 24213 [HAS t()]: const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
+  Line 24266 [*** MISSING t() ***]: const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
+  Line 24648 [HAS t()]: const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
+  Line 24779 [*** MISSING t() ***]: const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
+  Line 25424 [*** MISSING t() ***]: const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
+  Line 25594 [HAS t()]: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
+  Line 26385 [HAS t()]: const LongitudinalProgressChart = React.memo(({ logs }) => {
+  Line 26447 [*** MISSING t() ***]: const LearnerProgressView = React.memo(({
+  Line 26971 [HAS t()]: const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
+  Line 27632 [HAS t()]: const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
+  Line 28724 [*** MISSING t() ***]: const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+  Line 28872 [HAS t()]: const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
+  Line 28875 [*** MISSING t() ***]: const ToggleButton = React.memo(({ active, onClick, settingKey, title, children,
+  Line 28997 [HAS t()]: const ImmersiveWord = React.memo(({ wordData, settings, isActive, onClick }) => 
+  Line 29052 [HAS t()]: const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
+  Line 29280 [HAS t()]: const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
+  Line 36880 [*** MISSING t() ***]: const BilingualFieldRenderer = React.memo(({ text, className = "" }) => {
+  Line 36963 [HAS t()]: const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
+  Line 51892 [*** MISSING t() ***]: const BranchItem = React.memo(({ branch, bIdx, minimal = false, colorClass = "bg
+
+=== Components missing t() that USE t() ===
+
+*** PROBLEM: Component at line 179 uses t() but has no useContext! ***
+  Component: const GlobalMuteButton = React.memo(({ className = '' }) => {
+  Line 217:         const ext = file.name.split('.').pop().toLowerCase();
+  Line 352:                 const base64 = dataUrl.split(',')[1];
+
+*** PROBLEM: Component at line 380 uses t() but has no useContext! ***
+  Component: const LargeFileTranscriptionModal = React.memo(({
+  Line 406:                     aria-label={t('common.close')}
+  Line 455:                         aria-label={t('common.close')}
+  Line 598:             self_harm: t('class_analytics.flag_self_harm'),
+  Line 599:             harm_to_others: t('class_analytics.flag_harm_others'),
+  Line 600:             bullying: t('class_analytics.flag_bullying'),
+
+*** PROBLEM: Component at line 1314 uses t() but has no useContext! ***
+  Component: const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onUpdateLabel, onSpeak, t: tProp, i
+  Line 1358:             alert('Image too large (max 10MB). Please use a smaller image.');
+  Line 1427:                             const parts = key.split('-');
+  Line 1433:                         const [panelStr, labelIdxStr] = key.split('-');
+  Line 1570:             setRefineInput('');
+  Line 1704:         const svg = e.target.closest('svg');
+
+*** PROBLEM: Component at line 2596 uses t() but has no useContext! ***
+  Component:     const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callI
+  Line 2732:                 const words = result.replace(/[^a-zA-Z,\s-]/g, '').split(',').map(w => w.trim()).filter(w => w);
+  Line 2803:                          : data.word.toLowerCase().split('');
+  Line 2826:                      const fallbackPhonemes = rawWord.toLowerCase().split('');
+  Line 2894:                                  <span>{t('status.analyzing', 'Processing...')}</span>
+  Line 2908:                                   aria-label={t('common.generate')}
+
+*** PROBLEM: Component at line 5098 uses t() but has no useContext! ***
+  Component:     const RhymeView = React.memo(({ data, showLetterHints, onPlayAudio, onCheckAnswer, isEditing, on
+  Line 5105:                         aria-label={t('common.volume')}
+  Line 5165:                                  <input aria-label={t('common.enter_opt')}
+  Line 5173:                                      aria-label={t('common.volume')}
+  Line 5200:                                     aria-label={t('common.volume')}
+
+*** PROBLEM: Component at line 5218 uses t() but has no useContext! ***
+  Component:     const OrthographyView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOptio
+  Line 5222:         const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
+  Line 5272:                              <input aria-label={t('common.edit_spelling_word')}
+  Line 5279:                                  aria-label={t('common.volume')}
+  Line 5295:                         aria-label={t('common.volume')}
+  Line 5310:                         <input aria-label={t('common.drag_letters_here')}
+
+*** PROBLEM: Component at line 5623 uses t() but has no useContext! ***
+  Component:     const SoundMappingView = React.memo(({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOpti
+  Line 5700:                                 <input aria-label={t('common.enter_g')}
+  Line 5712:                             aria-label={t('common.volume')}
+  Line 5723:                  <button aria-label={t('common.volume')} onClick={() => { debugLog("🔊 Playing Mapping:", data.word); onP
+  Line 5810:             const link = document.createElement('a');
+  Line 5812:             link.download = 'Probe_' + probeGradeLevel + '_' + wordSoundsActivity + '_' + new Date().toISOString().split
+
+*** PROBLEM: Component at line 8789 uses t() but has no useContext! ***
+  Component:     const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
+  Line 8941:             const ctx = canvas.getContext('2d');
+  Line 8942:             const mCtx = mask.getContext('2d');
+  Line 9027:              const uData = canvas.getContext('2d').getImageData(0,0,width,height).data;
+  Line 9028:              const mData = mask.getContext('2d').getImageData(0,0,width,height).data;
+  Line 9072:             const ctx = canvasRef.current.getContext('2d');
+
+*** PROBLEM: Component at line 11137 uses t() but has no useContext! ***
+  Component: const StudentAnalyticsPanel = React.memo(({ isOpen, onClose, t, rosterKey, setRosterKey, latestProbe
+  Line 11204:         const script = document.createElement('script');
+  Line 11293:                             date: new Date().toISOString().split('T')[0],
+  Line 11350:                 alloBotRef.current.speak(t('bot_events.feedback_safety_flagged'));
+  Line 11352:                 alloBotRef.current.speak(t('bot_events.feedback_safety_clean'));
+  Line 11538:         const a = document.createElement('a');
+
+*** PROBLEM: Component at line 18733 uses t() but has no useContext! ***
+  Component: const DraftFeedbackInterface = React.memo(({
+  Line 18750:           <h3 className="font-bold text-slate-700">{t('mastery.feedback')} & {t('mastery.score')}</h3>
+  Line 18752:             {t('mastery.score')}: {gradingDetails.rawScore}/100
+  Line 18761:                     <span className="text-xs font-medium text-slate-500">{t('mastery.achieved_level')}: {grade.score}/{g
+  Line 18765:                         <span className="font-bold mr-1">{t('mastery.feedback')}:</span> {grade.reason}
+  Line 18783:                         <h2 className="font-bold text-lg">{t('mastery.draft_label', { count: draftCount })}</h2>
+
+*** PROBLEM: Component at line 19298 uses t() but has no useContext! ***
+  Component: const AdventureAmbience = React.memo(({ sceneText, soundParams, active, volume = 0.3 }) => {
+  Line 19385:         return parseInt(str.split('').map(c => reverseMap[c]).join(''), 10);
+  Line 19416:         return parseInt(str.split('').map(c => reverseMap[c]).join(''), 10);
+
+*** PROBLEM: Component at line 19652 uses t() but has no useContext! ***
+  Component: const InfoTooltip = React.memo(({ text }) => (
+  Line 19731:           <h2 className="text-xl font-black text-red-800 mb-2">{this.props.title || t('errors.component_title')}</h2>
+  Line 19733:             {this.props.fallbackMessage || t('errors.default_desc')}
+  Line 19737:                   aria-label={t('common.refresh')}
+  Line 19744:                 <RefreshCw size={16} /> {this.props.retryLabel || t('errors.try_again')}
+  Line 19749:                   <summary>{t('common.error_details')}</summary>
+
+*** PROBLEM: Component at line 22620 uses t() but has no useContext! ***
+  Component: const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate, bingoState, setBin
+  Line 22651:               const defPart = trans.includes(':') ? trans.split(':')[1].trim() : trans;
+  Line 22737:                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
+  Line 22743:                     <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_
+  Line 22745:                 <p className="text-slate-500 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_
+  Line 22751:                             <label className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
+
+*** PROBLEM: Component at line 24266 uses t() but has no useContext! ***
+  Component: const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncT
+  Line 24273:   const rosterAdjectives = t('codenames.adjectives') || [];
+  Line 24274:   const rosterAnimals = t('codenames.animals') || [];
+  Line 24318:     const a = document.createElement('a');
+  Line 24418:               <ClipboardList size={20} className="text-indigo-500" /> {isParentMode ? 'Family Learning Profiles' : (isIn
+  Line 24420:             <p className="text-xs text-slate-500 mt-0.5">{isParentMode ? 'Manage family member profiles and track learni
+
+*** PROBLEM: Component at line 24779 uses t() but has no useContext! ***
+  Component: const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t,
+  Line 24885:         setUserInput('');
+  Line 24916:           <p className="text-xl font-bold">{t('escape_room.waiting_host')}</p>
+  Line 24926:           <h2 className="text-5xl font-black mb-4 text-red-400">{t('escape_room.game_over')}</h2>
+  Line 24927:           <p className="text-2xl text-slate-500 mb-6">{t('escape_room.life_lost')}</p>
+  Line 24930:               {t('escape_room.puzzles_remaining')}: {puzzles.length - solvedPuzzlesSet.size}
+
+*** PROBLEM: Component at line 25424 uses t() but has no useContext! ***
+  Component: const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }
+  Line 25434:         addToast?.(t('escape_room.one_minute_warning'), 'warning');
+  Line 25436:         addToast?.(t('escape_room.thirty_seconds_warning'), 'error');
+  Line 25446:           addToast?.(t('escape_room.time_up'), 'error');
+  Line 25495:           <h3 className="font-bold text-purple-900">{escapeState.room?.theme || t('escape_room.title')}</h3>
+  Line 25498:               {t('escape_room.coop_mode')}
+
+*** PROBLEM: Component at line 28724 uses t() but has no useContext! ***
+  Component: const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+  Line 28746:             const w = cleaned.split(' ').filter(word => word.length > 0);
+  Line 28825:                         <input aria-label={t('common.speed')}
+
+*** PROBLEM: Component at line 28875 uses t() but has no useContext! ***
+  Component:   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg
+  Line 28891:             <Settings2 size={14}/> {t('immersive.title')}
+  Line 28897:             <label className="text-xs font-bold text-slate-700">{t('immersive.text_size')}</label>
+  Line 28900:                 <input aria-label={t('common.adjust_settings')}
+  Line 28907:                     title={t('immersive.text_size')}
+  Line 28918:               title={t('immersive.toggle_spacing')}
+
+*** PROBLEM: Component at line 51892 uses t() but has no useContext! ***
+  Component:         const BranchItem = React.memo(({ branch, bIdx, minimal = false, colorClass = "bg-white" }) =
+  Line 51897:                              <input aria-label={t('common.enter_branch')}
+  Line 51903:                                  <input aria-label={t('common.common_placeholder_title_trans')}
+  Line 51907:                                     placeholder={t('common.placeholder_title_trans')}
+  Line 51925:                                         <input aria-label={t('common.enter_item')}
+  Line 51931:                                             <input aria-label={t('common.common_placeholder_item_trans')}

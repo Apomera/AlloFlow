@@ -1,0 +1,13 @@
+=== callGemini ===
+
+const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null) => {
+    const _buildUrl = (model) => { console.log(`[callGemini] ✉ Using model: ${model}`); return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`; };
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+          maxOutputTokens: 8192,
+          ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+        
+
+=== Models Found ===
+{'gemini-bridge', 'gemini-3-flash-preview', 'gemini-2.5-flash-image-preview', 'gemini-2.5-flash-preview-tts', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'}

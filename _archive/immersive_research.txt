@@ -1,0 +1,135 @@
+
+================================================================================
+1. isImmersiveReaderActive refs
+================================================================================
+
+--- Line 31537 ---
+    31534:   const [revisionData, setRevisionData] = useState(null);
+    31535:   const [customReviseInstruction, setCustomReviseInstruction] = useState('');
+    31536:   const [isCustomReviseOpen, setIsCustomReviseOpen] = useState(false);
+>>> 31537:   const [isImmersiveReaderActive, setIsImmersiveReaderActive] = useState(false);
+    31538:   const [immersiveRulerY, setImmersiveRulerY] = useState(0);
+    31539:   const [immersiveSettings, setImmersiveSettings] = useState({
+    31540:       showSyllables: false,
+
+--- Line 53450 ---
+    53447:   const handleAnalyzePOS = async () => {
+    53448:     if (!generatedContent || generatedContent.type !== 'simplified') return;
+    53449:     if (generatedContent.immersiveData) {
+>>> 53450:         setIsImmersiveReaderActive(!isImmersiveReaderActive);
+    53451:         return;
+    53452:     }
+    53453:     setIsAnalyzingPos(true);
+
+--- Line 62216 ---
+    62213:                 )}
+    62214:                 {activeView === 'simplified' && (
+    62215:                   <div className="space-y-6">
+>>> 62216:                     {isImmersiveReaderActive && generatedContent?.immersiveData && (
+    62217:                         <div
+    62218:                             className="fixed inset-0 z-[200] bg-[#fdfbf7] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans"
+    62219:                             onMouseMove={(e) => setImmersiveRulerY(e.clientY)}
+
+================================================================================
+2. immersiveData refs
+================================================================================
+
+--- Line 53449 ---
+    53446:   };
+    53447:   const handleAnalyzePOS = async () => {
+    53448:     if (!generatedContent || generatedContent.type !== 'simplified') return;
+>>> 53449:     if (generatedContent.immersiveData) {
+    53450:         setIsImmersiveReaderActive(!isImmersiveReaderActive);
+    53451:         return;
+    53452:     }
+
+--- Line 53487 ---
+    53484:         }));
+    53485:         const fullTaggedText = taggedChunks.join('');
+    53486:         const parsedData = parseTaggedContent(fullTaggedText);
+>>> 53487:         const updatedContent = { ...generatedContent, immersiveData: parsedData };
+    53488:         setGeneratedContent(updatedContent);
+    53489:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    53490:         setIsImmersiveReaderActive(true);
+
+--- Line 62216 ---
+    62213:                 )}
+    62214:                 {activeView === 'simplified' && (
+    62215:                   <div className="space-y-6">
+>>> 62216:                     {isImmersiveReaderActive && generatedContent?.immersiveData && (
+    62217:                         <div
+    62218:                             className="fixed inset-0 z-[200] bg-[#fdfbf7] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans"
+    62219:                             onMouseMove={(e) => setImmersiveRulerY(e.clientY)}
+
+--- Line 62239 ---
+    62236:                                 isOpen={isSpeedReaderActive}
+    62237:                                 onClose={handleCloseSpeedReader}
+    62238:                                 text={
+>>> 62239:                                     (generatedContent?.immersiveData
+    62240:                                         ?.filter(w => w.pos !== 'newline')
+    62241:                                         ?.map(w => w.text)
+    62242:                                         ?.join(' ') || "")
+
+--- Line 62288 ---
+    62285:                                         let currentSentenceText = sentences[0] || "";
+    62286:                                         let normalizedSentence = currentSentenceText.replace(/\s+/g, '').toLowerCase();
+    62287:                                         let currentTokenBuffer = "";
+>>> 62288:                                         return generatedContent.immersiveData.map((wordData, i) => {
+    62289:                                             if (wordData.pos === 'newline') {
+    62290:                                                 return <div key={wordData.id || i} className="w-full h-4"></div>;
+    62291:                                             }
+
+--- Line 62472 ---
+    62469:                                     aria-label={t('common.refresh')}
+    62470:                                     data-help-key="simplified_immersive_reader"
+    62471:                                     onClick={() => {
+>>> 62472:                                         if (generatedContent.immersiveData) {
+    62473:                                             setIsImmersiveReaderActive(true);
+    62474:                                         } else {
+    62475:                                             handleAnalyzePOS();
+
+================================================================================
+3. handleAnalyzePOS refs
+================================================================================
+
+--- Line 53447 ---
+    53439:   const handleBrainstormChange = (index, field, value) => {
+    53440:     if (!generatedContent || generatedContent.type !== 'brainstorm') return;
+    53441:     const newData = [...generatedContent?.data];
+    53442:     newData[index] = { ...newData[index], [field]: value };
+    53443:     const updatedContent = { ...generatedContent, data: newData };
+    53444:     setGeneratedContent(updatedContent);
+    53445:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    53446:   };
+>>> 53447:   const handleAnalyzePOS = async () => {
+    53448:     if (!generatedContent || generatedContent.type !== 'simplified') return;
+    53449:     if (generatedContent.immersiveData) {
+    53450:         setIsImmersiveReaderActive(!isImmersiveReaderActive);
+    53451:         return;
+    53452:     }
+    53453:     setIsAnalyzingPos(true);
+    53454:     try {
+    53455:         let textToAnalyze = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+
+--- Line 62475 ---
+    62467:                                 <>
+    62468:                                 <button
+    62469:                                     aria-label={t('common.refresh')}
+    62470:                                     data-help-key="simplified_immersive_reader"
+    62471:                                     onClick={() => {
+    62472:                                         if (generatedContent.immersiveData) {
+    62473:                                             setIsImmersiveReaderActive(true);
+    62474:                                         } else {
+>>> 62475:                                             handleAnalyzePOS();
+    62476:                                         }
+    62477:                                     }}
+    62478:                                     disabled={isAnalyzingPos || isEditingLeveledText}
+    62479:                                     className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all shadow-sm disabled:opacity-50"
+    62480:                                     title={t('simplified.tip_immersive_btn')}
+    62481:                                 >
+    62482:                                     {isAnalyzingPos ? <RefreshCw size={14} className="animate-spin"/> : <BookOpen size={14} />}
+    62483:                                     {isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')}
+
+================================================================================
+4. analyzePOS / pos_analysis
+================================================================================

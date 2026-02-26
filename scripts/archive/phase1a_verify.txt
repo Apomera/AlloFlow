@@ -1,0 +1,17 @@
+L14939:       reading_level_label: "Reading Level",
+L14941:       visual_density_label: "Visuals",
+L14946:       tts_speed_label: "TTS Speed",
+L14948:       karaoke_label: "Karaoke Mode",
+L26319: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup }) => {
+L26612:     const handleSetGroupProfile = onSetGroupProfile;
+L26742:                                         <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.reading_level_label') || 'Reading Level'}</span>
+L26745:                                             onChange={(e) => handleSetGroupProfile(gid, 'readingLevel', e.target.value || null)}
+L26763:                                         <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.visual_density_label') || 'Visuals'}</span>
+L26766:                                             onChange={(e) => handleSetGroupProfile(gid, 'visualDensity', e.target.value)}
+L26776:                                         <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.tts_speed_label') || 'TTS Speed'}</span>
+L26779:                                             onChange={(e) => handleSetGroupProfile(gid, 'ttsSpeed', parseFloat(e.target.value))}
+L26792:                                             <input type="checkbox" checked={group.karaokeMode || false} onChange={(e) => handleSetGroupProfile(gid, 'karaokeMode', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
+L26793:                                             {t('groups.karaoke_label') || 'Karaoke Mode'}
+L42184:   const handleSetGroupProfile = async (groupId, field, value) => {
+L63733:                             <TeacherLiveQuizControls
+L63744:                                 onSetGroupProfile={handleSetGroupProfile}

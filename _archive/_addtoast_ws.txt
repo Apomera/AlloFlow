@@ -1,0 +1,23 @@
+﻿L7720: }, [wordSoundsLanguage, isListening, currentWordSoundsWord, wordSoundsActivity, wordSoundsPhonemes, checkAnswer, addToast, playSound, ts]);
+
+=== L3280 context ===
+L3276: wordSoundsDailyProgress = {},
+L3277: setWordSoundsDailyProgress,
+L3278: wordSoundsConfusionPatterns = {},
+L3279: setWordSoundsConfusionPatterns,
+L3280: // Utilities
+L3281: playSound,
+L3282: disableAnimations = false,
+L3283: addToast, // Fix ReferenceError
+L3284: // Lifted state for preloaded words persistence
+L3285: wsPreloadedWords = [],
+L3286: setWsPreloadedWords,
+L3287: // Navigation
+L3288: onBackToSetup, // Navigate back to Word Sounds Generator
+L3289: initialShowReviewPanel = false,
+L3290: initialActivitySequence = [],
+L3291: lessonPlanConfig = null, // Lesson plan configuration from generatedContent
+L3292: }) => {
+L3293: const latestRequestedWord = React.useRef(null);
+L3294: const [isEditing, setIsEditing] = React.useState(false);
+L3295: const [isMinimized, setIsMinimized] = React.useState(false);

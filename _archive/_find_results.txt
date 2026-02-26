@@ -1,0 +1,98 @@
+﻿=== handleAudio with quoted literal strings ===
+L6943: handleAudio('Which word rhymes with')
+
+=== Text headings with 'Word Sounds' ===
+L57556: <span className="text-sm font-bold text-slate-700 block">Word Sounds</span>
+
+=== 'word sounds' in loading/analyzing text ===
+L730: 'word_sounds.loading_phonemes': 'Analyzing word sounds...',
+
+=== handleAudio function continued (L3512+) ===
+L3513:         // INJECTED: Check internal bank for oe/or
+L3514:         if (typeof PHONEME_AUDIO_BANK !== 'undefined' && PHONEME_AUDIO_BANK[text]) {
+L3515:              debugLog("ΓÜí Playing internal bank audio for:", text);
+L3516:              const audio = new Audio(PHONEME_AUDIO_BANK[text]);
+L3517:              if (playImmediately) {
+L3518:                  // CRITICAL FIX: Wait for audio to finish before resolving
+L3519:                  return new Promise((resolve) => {
+L3520:                      audio.onended = () => resolve();
+L3521:                      audio.onerror = () => resolve(); // Resolve on error too
+L3522:                      setTimeout(resolve, 5000); // Fail-safe timeout
+L3523:                      audio.play().catch(e => {
+L3524:                          warnLog("Bank playback failed", e);
+L3525:                          resolve();
+L3526:                      });
+L3527:                  });
+L3528:              }
+L3529:              return Promise.resolve();
+L3530:         }
+L3531:         if (!text) return Promise.resolve();
+L3532:         // FIX: Allow interruption/overlap for Review Panel responsiveness
+L3533:         // if (isPlayingAudio) { ... } // REMOVED BLOCKING CHECK
+L3534:         setIsPlayingAudio(true);
+L3535:         const playInstance = async (audio) => {
+L3536:             try {
+L3537:                 audio.currentTime = 0;
+L3538:                 audio.playbackRate = ttsSpeed;
+L3539:                 await audio.play();
+L3540:                 await new Promise(resolve => {
+L3541:                     audio.onended = resolve;
+L3542:                     setTimeout(resolve, 3000); // Fail-safe
+L3543:                 });
+L3544:             } catch (e) {
+L3545:                 warnLog("Playback failed", e);
+L3546:             } finally {
+L3547:                 setIsPlayingAudio(false);
+L3548:             }
+L3549:         };
+L3550:         // Helper to load and cache
+L3551:         const loadAndPlay = async (src) => {
+L3552:             const audio = new Audio(src);
+L3553:             // Pre-load
+L3554:             await new Promise((resolve) => {
+L3555:                 audio.oncanplaythrough = resolve;
+L3556:                 audio.onerror = (e) => {
+L3557:                     warnLog("Audio load error:", audio.src, e);
+L3558:                     resolve(); // Continue gracefully but log issue
+L3559:                 };
+L3560:                 // Fail-safe timeout
+L3561:                 setTimeout(resolve, 1000);
+L3562:             });
+L3563:             audioInstances.current.set(text, audio); // Cache the OBJECT
+L3564:             if (playImmediately) {
+L3565:                 await playInstance(audio);
+L3566:             } else {
+L3567:                 setIsPlayingAudio(false);
+L3568:             }
+L3569:             return src;
+L3570:         };
+L3571:         // 1. Check Active Object Cache (Fastest - Instant Playback)
+L3572:         if (audioInstances.current.has(text)) {
+L3573:             if (playImmediately) {
+L3574:                 await playInstance(audioInstances.current.get(text));
+L3575:             }
+L3576:             return;
+L3577:         }
+L3578:         // 1b. Check Shared URL Cache (Glossary/Preload)
+L3579:         if (audioCache && audioCache.current && audioCache.current.has(text)) {
+L3580:             const url = audioCache.current.get(text);
+L3581:             debugLog("ΓÜí using shared audio cache for:", text);
+L3582:             return loadAndPlay(url);
+L3583:         }
+L3584:         // 2. Check Static Bank
+L3585:         const lower = text.toLowerCase();
+L3586:         // NORMALIZATION: Map descriptive names (short a) to bank keys (a)
+L3587:         let normalizedKey = lower.trim();
+L3588:         // Map "short x" -> "x" (e.g. "short a" -> "a")
+L3589:         if (normalizedKey.startsWith('short ') && normalizedKey.length === 7) {
+L3590:             normalizedKey = normalizedKey.replace('short ', '');
+L3591:         }
+L3592:         // Map "x_short" or "x short"
+L3593:         else if (normalizedKey.endsWith('_short')) normalizedKey = normalizedKey.replace('_short', '');
+L3594:         else if (normalizedKey.endsWith(' short')) normalizedKey = normalizedKey.replace(' short', '');
+L3595:         // Map special chars
+L3596:         const specialMap = { 'au': 'aw',
+L3597:             // Macron long vowels ΓåÆ audio bank keys
+L3598:             '─ü': 'ay', '─ô': 'ee', '─½': 'ie', '┼ì': 'oa', '┼½': 'oo',
+L3599:             // Breve short vowels (in case AI uses them)
+L3600:             '─â': 'a', '─ò': 'e', '─¡': 'i', '┼Å': 'o', '┼¡': 'u',

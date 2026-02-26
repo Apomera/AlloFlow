@@ -1,0 +1,96 @@
+L1684:                          enabledActivities.push({ id: actId, count: cfg.count, enabled: true });
+L24549:                   row.push({ type: 'free', text: t('bingo.free_space') });
+L24551:                   row.push({ type: 'term', text: shuffled[termIdx] });
+L33719:       setHistory(prev => {
+L33804:                       standardEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
+L33815:                               standardEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
+L34010:       nodes.push({ id: startId, type: 'flow-start', text: t('common.start'), x: 400, y: yOffset });
+L34013:       nodes.push({ id: mainId, type: 'flow-process', text: main, x: 400, y: yOffset });
+L34014:       edges.push({ id: `e-start-main`, fromId: startId, toId: mainId });
+L34029:               edges.push({ id: `e-${previousId}-${branchId}`, fromId: previousId, toId: branchId });
+L34042:                         edges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId, style: 'dashed' });
+L34048:       nodes.push({ id: endId, type: 'flow-end', text: t('common.end'), x: 400, y: yOffset });
+L34049:       edges.push({ id: `e-${previousId}-end`, fromId: previousId, toId: endId });
+L34225:                       newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
+L34236:                               newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
+L34269:                   newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
+L34280:                           newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
+L34467:       setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedOriginal : item));
+L34495:       setHistory(prev => [...prev, newChallengeItem]);
+L34553:               setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L35051:           setHistory(prev => {
+L35838:               diff.push({ type: 'same', value: oldWords[i-1] });
+L35841:               diff.push({ type: 'del', value: oldWords[i-1] });
+L35844:               diff.push({ type: 'add', value: newWords[j-1] });
+L35848:       while (i > 0) { diff.push({ type: 'del', value: oldWords[i-1] }); i--; }
+L35849:       while (j > 0) { diff.push({ type: 'add', value: newWords[j-1] }); j--; }
+L36582:           setHistory(prev => [...prev, newItem]);
+L37513:               result.push({ text: '\n', pos: 'newline', syllables: ['\n'], id: `pos-${idCounter++}` });
+L37519:                  result.push({ text: line, pos: 'none', syllables: [line], id: `pos-${idCounter++}` });
+L37790:                       setHistory(prev => [...prev, fluencyRecordItem]);
+L38270:         setHistory(prev => [...prev, ...newItems]);
+L39004:       setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L43457:               setHistory(prev => prev.map(item => {
+L43483:     setHistory(prev => [...prev, newItem]);
+L43489:     setHistory(prev => prev.filter(item => item.id !== id));
+L43503:         setHistory(prev => prev.map(item =>
+L43842:             setHistory(prev => [...prev, newItem]);
+L43879:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L44195:       setHistory(prev => [...prev, newItem]);
+L45181:       setHistory(prev => [...prev, newAdventureItem]);
+L46150:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L46183:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L46218:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L46379:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L46581:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
+L46598:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L46632:           setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L47672:                    setHistory(prev => prev.map(item => item.id === generatedContent.id ? newItem : item));
+L47675:                    setHistory(prev => [...prev, newItem]);
+L47718:                   setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L47844:                   setHistory(prev => prev.map(item =>
+L48066:               setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L48084:               setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L48136:                   setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L48477:              setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L48496:       setHistory(prev => [...prev, newItem]);
+L48676:           setHistory(prev => [...prev, newItem]);
+L48709:           setHistory(prev => [...prev, newItem]);
+L48742:       setHistory(prev => [...prev, newItem]);
+L48769:          setHistory(prev => [...prev, newItem]);
+L48785:          setHistory(prev => [...prev, newItem]);
+L50390:             setHistory(prev => [...prev, tempItem]);
+L50464:                 setHistory(prev => prev.map(item => item.id === newId ? updatedItem : item));
+L51830:       setHistory(prev => [...prev, newItem]);
+L51951:                         resourcesToGen.push({ type: item, directive: "Essential resource added by default." });
+L52095:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L52107:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L52140:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L52153:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...generatedContent, data: newData } : item));
+L52219:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? generatedContent : item));
+L52233:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L52241:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L52255:       setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
+L53146:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53155:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53166:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53221:           setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53281:           setHistory(prevHistory => {
+L53325:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53335:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53359:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53413:       setHistory(prev => prev.map(item =>
+L53425:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: value } : item));
+L53604:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53714:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53753:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53773:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53812:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53830:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53838:      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53846:     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L53890:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L54074:         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L54257:             setHistory(prev => [...prev, newItem]);
+L54264:             setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+L68242:                    setHistory(prev => [wordSoundsResource, ...prev]);

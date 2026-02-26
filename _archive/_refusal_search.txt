@@ -1,0 +1,4 @@
+LINE 39669: // FIX: Handle Model Refusals gracefully to prevent App Crash (Glossary/Quiz)
+LINE 39680: console.warn("Gemini Model Refusal caught in callGemini (suppressed crash):", err.message);
+LINE 40407: console.warn("Gemini Model Refusal (finishReason: OTHER). Attempting fallbacks...");
+LINE 40443: const err = new Error("Gemini Model Refusal & Fallback Failed");
