@@ -2984,6 +2984,7 @@
         stemLabTab === 'explore' && stemLabTool === 'calculus' && (() => {
           const d = labToolData.calculus;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, calculus: { ...prev.calculus, [key]: val } }));
+          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
           const W = 440, H = 300, pad = 40;
           const evalF = x => d.a * x * x + d.b * x + d.c;
           const xR = { min: -2, max: Math.max(d.xMax + 1, 6) };
@@ -3054,6 +3055,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌊 Wave Simulator"),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Visualize sine waves. Toggle Interference Mode for superposition."),
               React.createElement("label", { className: "ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
                 React.createElement("input", { type: "checkbox", checked: d.wave2, onChange: e => upd('wave2', e.target.checked), className: "accent-cyan-600" }),
                 "Interference Mode"
@@ -3085,7 +3087,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               )
             ),
             React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 text-center text-xs text-slate-500" },
-              `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | v = ${(d.frequency * 2 * Math.PI / d.frequency).toFixed(2)} units/s`
+              `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | A = ${Number(d.amplitude).toFixed(1)}`
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: `A=${d.amplitude} f=${d.frequency}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Wave snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
           )
@@ -3154,7 +3156,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
           const d = labToolData.funcGrapher;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
           const W = 400, H = 300, pad = 40;
-          const xR = d.range, yR = d.range;
+          const xR = { xMin: (d.range && d.range.xMin) || -10, xMax: (d.range && d.range.xMax) || 10 }; const yR = { yMin: (d.range && d.range.yMin) || -10, yMax: (d.range && d.range.yMax) || 10 };
           const toSX = x => pad + ((x - xR.xMin) / (xR.xMax - xR.xMin)) * (W - 2 * pad);
           const toSY = y => (H - pad) - ((y - yR.yMin) / (yR.yMax - yR.yMin)) * (H - 2 * pad);
           const pts = [];
@@ -3236,6 +3238,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
         stemLabTab === 'explore' && stemLabTool === 'chemBalance' && (() => {
           const d = labToolData.chemBalance;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, chemBalance: { ...prev.chemBalance, [key]: val } }));
+          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
           const presets = [
             { name: 'Water', eq: 'H₂ + O₂ → H₂O', coeffs: [2, 1, 2, 0], target: [2, 1, 2, 0], atoms: { H: [2, 0, 2], O: [0, 2, 1] } },
             { name: 'Rust', eq: 'Fe + O₂ → Fe₂O₃', coeffs: [1, 1, 1, 0], target: [4, 3, 2, 0], atoms: { Fe: [1, 0, 2], O: [0, 2, 3] } },
@@ -3275,6 +3278,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
         stemLabTab === 'explore' && stemLabTool === 'punnett' && (() => {
           const d = labToolData.punnett;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, punnett: { ...prev.punnett, [key]: val } }));
+          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
           const grid = [[d.parent1[0] + d.parent2[0], d.parent1[0] + d.parent2[1]], [d.parent1[1] + d.parent2[0], d.parent1[1] + d.parent2[1]]];
           const counts = {};
           grid.flat().forEach(g => { counts[g] = (counts[g] || 0) + 1; });
@@ -3285,6 +3289,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🧬 Punnett Square")
             ),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Predict offspring genotypes. Select alleles for each parent."),
             React.createElement("div", { className: "flex gap-6 mb-4 justify-center" },
               [['Parent 1', 'parent1', 'violet'], ['Parent 2', 'parent2', 'blue']].map(([label, key, color]) =>
                 React.createElement("div", { key, className: "text-center" },
@@ -3322,6 +3327,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
         stemLabTab === 'explore' && stemLabTool === 'circuit' && (() => {
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
+          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
           const totalR = d.components.filter(c => c.type === 'resistor').reduce((s, c) => s + c.value, 0) || 1;
           const current = d.voltage / totalR;
           const power = d.voltage * current;
@@ -3330,6 +3336,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🔌 Circuit Builder")
             ),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Build series circuits. V = IR. See current and power update live."),
             React.createElement("div", { className: "flex gap-2 mb-3" },
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'resistor', value: 100, id: Date.now() }]), className: "px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200" }, "➕ Add Resistor"),
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'bulb', value: 50, id: Date.now() }]), className: "px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200" }, "💡 Add Bulb"),
@@ -3392,6 +3399,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "📊 Data Plotter"),
               React.createElement("span", { className: "text-xs text-slate-400 ml-auto" }, d.points.length + " points")
             ),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Click to plot points. Auto-calculates linear regression and R-squared."),
             React.createElement("svg", {
               viewBox: `0 0 ${W} ${H}`, className: "w-full bg-white rounded-xl border border-teal-200 cursor-crosshair", style: { maxHeight: "320px" },
               onClick: e => {
@@ -3421,6 +3429,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
         stemLabTab === 'explore' && stemLabTool === 'inequality' && (() => {
           const d = labToolData.inequality;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, inequality: { ...prev.inequality, [key]: val } }));
+          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
           const W = 400, H = 100, pad = 30;
           const toSX = x => pad + ((x - d.range.min) / (d.range.max - d.range.min)) * (W - 2 * pad);
           const parseIneq = expr => { const m = expr.match(/([a-z])\s*([<>]=?|[≤≥])\s*(-?\d+\.?\d*)/); return m ? { v: m[1], op: m[2], val: parseFloat(m[3]) } : null; };
@@ -3430,6 +3439,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🎨 Inequality Grapher")
             ),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Type an inequality like x > 3 to visualize it on a number line."),
             React.createElement("div", { className: "flex items-center gap-2 mb-3" },
               React.createElement("input", { type: "text", value: d.expr, onChange: e => upd('expr', e.target.value), className: "px-4 py-2 border-2 border-fuchsia-300 rounded-lg font-mono text-lg text-center w-48 focus:ring-2 focus:ring-fuchsia-400 outline-none", placeholder: "x > 3" }),
               React.createElement("div", { className: "flex gap-1" },
@@ -3467,6 +3477,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🔬 Molecule Builder"),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Explore molecular structures with preset molecules."),
               React.createElement("div", { className: "flex gap-1 ml-auto" }, presets.map(p => React.createElement("button", { key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: `px-2 py-1 rounded-lg text-xs font-bold ${d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600'}` }, p.name)))
             ),
             React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" } },
