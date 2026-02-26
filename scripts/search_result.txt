@@ -1,0 +1,4 @@
+﻿FLAG L10000: let introFiredGlobal = false;
+FLAG L10462: introFiredGlobal = true;
+GATE L19407: const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupRes
+INTRO L24469: const [hasSeenBotIntro, setHasSeenBotIntro] = useState(() => {
