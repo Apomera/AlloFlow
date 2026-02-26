@@ -2976,7 +2976,7 @@
           setFracAnswer('');
         },
         className: "text-xs text-rose-600 font-bold hover:underline"
-      }, t('explore.next_challenge'))),
+      }, t('explore.next_challenge'))))),
         // ═══════════════════════════════════════════════════════
         // TIER 3: Calculus Visualizer, Wave Simulator, Cell Diagram
         // ═══════════════════════════════════════════════════════
@@ -3484,7 +3484,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ml-' + Date.now(), tool: 'molecule', label: d.formula || 'molecule', data: { atoms: d.atoms.map(a => ({ ...a })), bonds: [...d.bonds], formula: d.formula }, timestamp: Date.now() }]); addToast('📸 Molecule snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
           )
         })()
-      )))));
+      )));
     };
   }
 })();
