@@ -3034,7 +3034,7 @@
           )
         })(),
 
-stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
+        stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
           const d = labToolData.wave;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
           const W = 440, H = 250, pad = 30;
@@ -3055,7 +3055,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌊 Wave Simulator"),
-            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Visualize sine waves. Toggle Interference Mode for superposition."),
+              React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Visualize sine waves. Toggle Interference Mode for superposition."),
               React.createElement("label", { className: "ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
                 React.createElement("input", { type: "checkbox", checked: d.wave2, onChange: e => upd('wave2', e.target.checked), className: "accent-cyan-600" }),
                 "Interference Mode"
@@ -3093,7 +3093,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
           )
         })(),
 
-stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
+        stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
           const d = labToolData.cell;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, cell: { ...prev.cell, [key]: val } }));
           const W = 440, H = 380;
@@ -3126,7 +3126,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-green-50 to-white rounded-xl border border-green-200", style: { maxHeight: "380px" } },
               d.type === 'plant' ? React.createElement("rect", { x: 20, y: 20, width: W - 40, height: H - 40, rx: 8, fill: "none", stroke: "#65a30d", strokeWidth: 4 }) : null,
               React.createElement("ellipse", { cx: W / 2, cy: H / 2, rx: W / 2 - 30, ry: H / 2 - 30, fill: "rgba(209,250,229,0.3)", stroke: "#0891b2", strokeWidth: 3 }),
-              organelles.map(o => React.createElement("g", { key: o.id, style: { cursor: 'pointer' }, onClick: () => { if (d.quizMode) { if (o.id === d.quizTarget) { upd('quizFeedback', { correct: true, msg: 'Correct! That is the ' + o.label }); upd('selectedOrganelle', o.id); } else { upd('quizFeedback', { correct: false, msg: 'Try again!' }); }} else { upd('selectedOrganelle', o.id === d.selectedOrganelle ? null : o.id); }} },
+              organelles.map(o => React.createElement("g", { key: o.id, style: { cursor: 'pointer' }, onClick: () => { if (d.quizMode) { if (o.id === d.quizTarget) { upd('quizFeedback', { correct: true, msg: 'Correct! That is the ' + o.label }); upd('selectedOrganelle', o.id); } else { upd('quizFeedback', { correct: false, msg: 'Try again!' }); } } else { upd('selectedOrganelle', o.id === d.selectedOrganelle ? null : o.id); } } },
                 o.id === 'er' ? React.createElement("path", { d: `M${o.x - 25},${o.y - 15} Q${o.x},${o.y - 25} ${o.x + 25},${o.y - 15} Q${o.x + 10},${o.y} ${o.x + 25},${o.y + 15} Q${o.x},${o.y + 25} ${o.x - 25},${o.y + 15} Q${o.x - 10},${o.y} ${o.x - 25},${o.y - 15}`, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5 }) :
                   o.id === 'golgi' ? React.createElement("g", null, [-8, -3, 2, 7, 12].map((off, i) => React.createElement("ellipse", { key: i, cx: o.x, cy: o.y + off, rx: o.r, ry: 4, fill: o.color + '44', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 2 : 1 }))) :
                     o.id === 'mitochondria' ? React.createElement("ellipse", { cx: o.x, cy: o.y, rx: o.r + 8, ry: o.r, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5, transform: `rotate(-20 ${o.x} ${o.y})` }) :
@@ -3146,10 +3146,10 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
                 "Show Labels"
               ),
               React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
-                React.createElement("input", { type: "checkbox", checked: d.quizMode, onChange: e => { upd("quizMode", e.target.checked); if (e.target.checked) { const orgs = organelles; const target = orgs[Math.floor(Math.random() * orgs.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("labels", false); }}, className: "accent-purple-600" }),
+                React.createElement("input", { type: "checkbox", checked: d.quizMode, onChange: e => { upd("quizMode", e.target.checked); if (e.target.checked) { const orgs = organelles; const target = orgs[Math.floor(Math.random() * orgs.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("labels", false); } }, className: "accent-purple-600" }),
                 "Quiz Mode"
               ),
-              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ce-' + Date.now(), tool: 'cell', label: d.type + ' cell' + (d.selectedOrganelle ? ': ' + d.selectedOrganelle : ''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Cell snapshot saved!', 'success'); }, className: "ml-auto px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ce-' + Date.now(), tool: 'cell', label: d.type + ' cell' + (d.selectedOrganelle ? ': ' + d.selectedOrganelle : ''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Cell snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
             )
           )
         })(),
@@ -3361,27 +3361,27 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("line", { x1: 35, y1: 140, x2: 380, y2: 140, stroke: "#1e293b", strokeWidth: 2 }),
               mode === 'series'
                 ? d.components.map((comp, i) => {
-                    const cx = 80 + i * Math.min(70, (280 / Math.max(d.components.length, 1)));
-                    return React.createElement("g", { key: comp.id },
-                      React.createElement("line", { x1: cx - 20, y1: 20, x2: cx - 20, y2: 60, stroke: "#1e293b", strokeWidth: 2 }),
-                      comp.type === 'resistor'
-                        ? React.createElement("rect", { x: cx - 30, y: 60, width: 20, height: 40, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
-                        : React.createElement("circle", { cx: cx - 20, cy: 80, r: 15, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 1.5 }),
-                      React.createElement("text", { x: cx - 20, y: comp.type === 'resistor' ? 83 : 84, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
-                      React.createElement("line", { x1: cx - 20, y1: comp.type === 'resistor' ? 100 : 95, x2: cx - 20, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
-                    );
-                  })
+                  const cx = 80 + i * Math.min(70, (280 / Math.max(d.components.length, 1)));
+                  return React.createElement("g", { key: comp.id },
+                    React.createElement("line", { x1: cx - 20, y1: 20, x2: cx - 20, y2: 60, stroke: "#1e293b", strokeWidth: 2 }),
+                    comp.type === 'resistor'
+                      ? React.createElement("rect", { x: cx - 30, y: 60, width: 20, height: 40, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
+                      : React.createElement("circle", { cx: cx - 20, cy: 80, r: 15, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 1.5 }),
+                    React.createElement("text", { x: cx - 20, y: comp.type === 'resistor' ? 83 : 84, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
+                    React.createElement("line", { x1: cx - 20, y1: comp.type === 'resistor' ? 100 : 95, x2: cx - 20, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
+                  );
+                })
                 : d.components.map((comp, i) => {
-                    const cy = 40 + i * Math.min(30, (80 / Math.max(d.components.length, 1)));
-                    return React.createElement("g", { key: comp.id },
-                      React.createElement("line", { x1: 180, y1: cy, x2: 200, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 }),
-                      comp.type === 'resistor'
-                        ? React.createElement("rect", { x: 200, y: cy - 8, width: 40, height: 16, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
-                        : React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 1.5 }),
-                      React.createElement("text", { x: 220, y: cy + 4, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
-                      React.createElement("line", { x1: 240, y1: cy, x2: 260, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 })
-                    );
-                  }),
+                  const cy = 40 + i * Math.min(30, (80 / Math.max(d.components.length, 1)));
+                  return React.createElement("g", { key: comp.id },
+                    React.createElement("line", { x1: 180, y1: cy, x2: 200, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 }),
+                    comp.type === 'resistor'
+                      ? React.createElement("rect", { x: 200, y: cy - 8, width: 40, height: 16, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
+                      : React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 1.5 }),
+                    React.createElement("text", { x: 220, y: cy + 4, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
+                    React.createElement("line", { x1: 240, y1: cy, x2: 260, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 })
+                  );
+                }),
               d.components.length === 0 && React.createElement("text", { x: W / 2, y: H / 2, textAnchor: "middle", fill: "#94a3b8", style: { fontSize: '12px' } }, "Add components below"),
               React.createElement("circle", { cx: current > 0.01 ? 200 : -10, cy: 15, r: 4, fill: "#3b82f6" }),
               React.createElement("line", { x1: 380, y1: 20, x2: 380, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
@@ -3474,7 +3474,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
                   React.createElement("label", { className: "text-[10px] font-bold text-slate-400 block" }, "Y"),
                   React.createElement("input", { type: "number", step: "0.1", id: "dp-y-input", className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono", placeholder: "0" })
                 ),
-                React.createElement("button", { onClick: () => { const xi = document.getElementById('dp-x-input'); const yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { upd('points', [...d.points, { x: parseFloat(xi.value), y: parseFloat(yi.value) }]); xi.value = ''; yi.value = ''; }}, className: "px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700" }, "+ Add")
+                React.createElement("button", { onClick: () => { const xi = document.getElementById('dp-x-input'); const yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { upd('points', [...d.points, { x: parseFloat(xi.value), y: parseFloat(yi.value) }]); xi.value = ''; yi.value = ''; } }, className: "px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700" }, "+ Add")
               ),
               d.points.length > 0 && React.createElement("div", { className: "max-h-24 overflow-y-auto text-xs font-mono text-slate-500" },
                 d.points.map((p, i) => React.createElement("span", { key: i, className: "inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1" }, "(" + p.x + "," + p.y + ")"))
@@ -3484,6 +3484,20 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("button", { onClick: () => upd('points', d.points.slice(0, -1)), className: "px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm" }, "↩ Undo"),
               React.createElement("button", { onClick: () => upd('points', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm" }, "🗑 Clear"),
               d.points.length >= 2 && React.createElement("span", { className: "text-xs text-slate-500 self-center ml-auto" }, "y = " + slope.toFixed(2) + "x + " + intercept.toFixed(2) + " | r² = " + r2.toFixed(3))
+            ),
+            d.points && d.points.length >= 2 && React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2 text-center" },
+              React.createElement("div", { className: "p-1.5 bg-teal-50 rounded-lg border border-teal-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-teal-600 uppercase" }, "Mean"),
+                React.createElement("p", { className: "text-sm font-bold text-teal-800" }, (d.points.reduce(function (s, p) { return s + p.y }, 0) / d.points.length).toFixed(2))
+              ),
+              React.createElement("div", { className: "p-1.5 bg-teal-50 rounded-lg border border-teal-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-teal-600 uppercase" }, "Median"),
+                React.createElement("p", { className: "text-sm font-bold text-teal-800" }, (function (ps) { var s = ps.map(function (p) { return p.y }).sort(function (a, b) { return a - b }); return s.length % 2 ? s[Math.floor(s.length / 2)] : ((s[s.length / 2 - 1] + s[s.length / 2]) / 2); })(d.points).toFixed(2))
+              ),
+              React.createElement("div", { className: "p-1.5 bg-teal-50 rounded-lg border border-teal-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-teal-600 uppercase" }, "Std Dev"),
+                React.createElement("p", { className: "text-sm font-bold text-teal-800" }, (function (ps) { var m = ps.reduce(function (s, p) { return s + p.y }, 0) / ps.length; return Math.sqrt(ps.reduce(function (s, p) { return s + Math.pow(p.y - m, 2) }, 0) / ps.length); })(d.points).toFixed(2))
+              )
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dp-' + Date.now(), tool: 'dataPlot', label: d.points.length + ' pts r²=' + r2.toFixed(2), data: { points: [...d.points] }, timestamp: Date.now() }]); addToast('📸 Data snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
           )
@@ -3535,15 +3549,17 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             { name: 'CH₄', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH4' },
             { name: 'NaCl', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
             { name: 'O₂', atoms: [{ el: 'O', x: 170, y: 150, color: '#ef4444' }, { el: 'O', x: 230, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O2' },
+            { name: 'NH₃', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH3' },
+            { name: 'C₂H₆', atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'C', x: 240, y: 150, color: '#1e293b' }, { el: 'H', x: 120, y: 100, color: '#60a5fa' }, { el: 'H', x: 120, y: 200, color: '#60a5fa' }, { el: 'H', x: 160, y: 220, color: '#60a5fa' }, { el: 'H', x: 240, y: 220, color: '#60a5fa' }, { el: 'H', x: 280, y: 100, color: '#60a5fa' }, { el: 'H', x: 280, y: 200, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4], [1, 5], [1, 6], [1, 7]], formula: 'C2H6' },
           ];
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🔬 Molecule Builder"),
-            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Explore molecular structures with preset molecules."),
+              React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Explore molecular structures with preset molecules."),
               React.createElement("div", { className: "flex gap-1 ml-auto" }, presets.map(p => React.createElement("button", { key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: `px-2 py-1 rounded-lg text-xs font-bold ${d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600'}` }, p.name)))
             ),
-            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); }}, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
               d.bonds.map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
               d.atoms.map((a, i) => React.createElement("g", { key: i },
                 React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
@@ -3555,7 +3571,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '—'),
               React.createElement("span", { className: "text-xs text-slate-400 ml-4" }, d.atoms.length + " atoms, " + d.bonds.length + " bonds")
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ml-' + Date.now(), tool: 'molecule', label: d.formula || 'molecule', data: { atoms: d.atoms.map(a => ({ ...a })), bonds: [...d.bonds], formula: d.formula }, timestamp: Date.now() }]); addToast('📸 Molecule snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ml-' + Date.now(), tool: 'molecule', label: d.formula || 'molecule', data: { atoms: d.atoms.map(a => ({ ...a })), bonds: [...d.bonds], formula: d.formula }, timestamp: Date.now() }]); addToast('📸 Molecule snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })()
       )));
