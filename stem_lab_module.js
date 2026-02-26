@@ -3126,7 +3126,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-green-50 to-white rounded-xl border border-green-200", style: { maxHeight: "380px" } },
               d.type === 'plant' ? React.createElement("rect", { x: 20, y: 20, width: W - 40, height: H - 40, rx: 8, fill: "none", stroke: "#65a30d", strokeWidth: 4 }) : null,
               React.createElement("ellipse", { cx: W / 2, cy: H / 2, rx: W / 2 - 30, ry: H / 2 - 30, fill: "rgba(209,250,229,0.3)", stroke: "#0891b2", strokeWidth: 3 }),
-              organelles.map(o => React.createElement("g", { key: o.id, style: { cursor: 'pointer' }, onClick: () => upd('selectedOrganelle', o.id === d.selectedOrganelle ? null : o.id) },
+              organelles.map(o => React.createElement("g", { key: o.id, style: { cursor: 'pointer' }, onClick: () => { if (d.quizMode) { if (o.id === d.quizTarget) { upd('quizFeedback', { correct: true, msg: 'Correct! That is the ' + o.label }); upd('selectedOrganelle', o.id); } else { upd('quizFeedback', { correct: false, msg: 'Try again!' }); }} else { upd('selectedOrganelle', o.id === d.selectedOrganelle ? null : o.id); }} },
                 o.id === 'er' ? React.createElement("path", { d: `M${o.x - 25},${o.y - 15} Q${o.x},${o.y - 25} ${o.x + 25},${o.y - 15} Q${o.x + 10},${o.y} ${o.x + 25},${o.y + 15} Q${o.x},${o.y + 25} ${o.x - 25},${o.y + 15} Q${o.x - 10},${o.y} ${o.x - 25},${o.y - 15}`, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5 }) :
                   o.id === 'golgi' ? React.createElement("g", null, [-8, -3, 2, 7, 12].map((off, i) => React.createElement("ellipse", { key: i, cx: o.x, cy: o.y + off, rx: o.r, ry: 4, fill: o.color + '44', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 2 : 1 }))) :
                     o.id === 'mitochondria' ? React.createElement("ellipse", { cx: o.x, cy: o.y, rx: o.r + 8, ry: o.r, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5, transform: `rotate(-20 ${o.x} ${o.y})` }) :
@@ -3138,11 +3138,16 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selected.color } }, selected.label),
               React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selected.desc)
             ),
-            !selected && React.createElement("p", { className: "mt-3 text-center text-xs text-slate-400" }, "Click an organelle to learn about it"),
+            !selected && React.createElement("p", { className: "mt-3 text-center text-xs " + (d.quizMode ? "text-purple-600 font-bold" : "text-slate-400") }, d.quizMode ? ("Find: " + (organelles.find(o => o.id === d.quizTarget) || {}).label) : "Click an organelle to learn about it"),
+            d.quizMode && d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") }, d.quizFeedback.msg, d.quizFeedback.correct && React.createElement("button", { onClick: () => { const target = organelles[Math.floor(Math.random() * organelles.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("selectedOrganelle", null); }, className: "ml-3 px-2 py-0.5 bg-green-600 text-white rounded text-xs" }, "Next")),
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
               React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
                 React.createElement("input", { type: "checkbox", checked: d.labels, onChange: e => upd('labels', e.target.checked), className: "accent-green-600" }),
                 "Show Labels"
+              ),
+              React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
+                React.createElement("input", { type: "checkbox", checked: d.quizMode, onChange: e => { upd("quizMode", e.target.checked); if (e.target.checked) { const orgs = organelles; const target = orgs[Math.floor(Math.random() * orgs.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("labels", false); }}, className: "accent-purple-600" }),
+                "Quiz Mode"
               ),
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ce-' + Date.now(), tool: 'cell', label: d.type + ' cell' + (d.selectedOrganelle ? ': ' + d.selectedOrganelle : ''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Cell snapshot saved!', 'success'); }, className: "ml-auto px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
             )
@@ -3328,46 +3333,88 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
           const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
-          const totalR = d.components.filter(c => c.type === 'resistor').reduce((s, c) => s + c.value, 0) || 1;
+          const mode = d.mode || 'series';
+          const resistors = d.components.filter(c => c.type === 'resistor');
+          const bulbs = d.components.filter(c => c.type === 'bulb');
+          const totalR = mode === 'series'
+            ? d.components.reduce((s, c) => s + c.value, 0) || 1
+            : (d.components.length > 0 ? 1 / d.components.reduce((s, c) => s + 1 / (c.value || 1), 0) : 1);
           const current = d.voltage / totalR;
           const power = d.voltage * current;
+          const W = 420, H = 200;
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🔌 Circuit Builder")
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u{1F50C} Circuit Builder"),
+              React.createElement("div", { className: "flex gap-1 ml-auto" },
+                ["series", "parallel"].map(m => React.createElement("button", { key: m, onClick: () => upd("mode", m), className: `px-3 py-1 rounded-lg text-xs font-bold capitalize ${mode === m ? 'bg-yellow-600 text-white' : 'bg-slate-100 text-slate-600'}` }, m))
+              )
             ),
-            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Build series circuits. V = IR. See current and power update live."),
+            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Build " + mode + " circuits. V = IR. Add components and adjust voltage to see live calculations."),
+            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-yellow-50 to-white rounded-xl border border-yellow-200 mb-3", style: { maxHeight: "220px" } },
+              React.createElement("rect", { x: 20, y: 40, width: 30, height: 60, fill: "#fbbf24", stroke: "#92400e", strokeWidth: 2, rx: 3 }),
+              React.createElement("text", { x: 35, y: 115, textAnchor: "middle", style: { fontSize: '10px', fontWeight: 'bold' }, fill: "#92400e" }, d.voltage + "V"),
+              React.createElement("text", { x: 35, y: 32, textAnchor: "middle", style: { fontSize: '9px' }, fill: "#92400e" }, "\u{1F50B}"),
+              React.createElement("line", { x1: 35, y1: 40, x2: 35, y2: 20, stroke: "#1e293b", strokeWidth: 2 }),
+              React.createElement("line", { x1: 35, y1: 20, x2: 380, y2: 20, stroke: "#1e293b", strokeWidth: 2 }),
+              React.createElement("line", { x1: 35, y1: 100, x2: 35, y2: 140, stroke: "#1e293b", strokeWidth: 2 }),
+              React.createElement("line", { x1: 35, y1: 140, x2: 380, y2: 140, stroke: "#1e293b", strokeWidth: 2 }),
+              mode === 'series'
+                ? d.components.map((comp, i) => {
+                    const cx = 80 + i * Math.min(70, (280 / Math.max(d.components.length, 1)));
+                    return React.createElement("g", { key: comp.id },
+                      React.createElement("line", { x1: cx - 20, y1: 20, x2: cx - 20, y2: 60, stroke: "#1e293b", strokeWidth: 2 }),
+                      comp.type === 'resistor'
+                        ? React.createElement("rect", { x: cx - 30, y: 60, width: 20, height: 40, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
+                        : React.createElement("circle", { cx: cx - 20, cy: 80, r: 15, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 1.5 }),
+                      React.createElement("text", { x: cx - 20, y: comp.type === 'resistor' ? 83 : 84, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
+                      React.createElement("line", { x1: cx - 20, y1: comp.type === 'resistor' ? 100 : 95, x2: cx - 20, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
+                    );
+                  })
+                : d.components.map((comp, i) => {
+                    const cy = 40 + i * Math.min(30, (80 / Math.max(d.components.length, 1)));
+                    return React.createElement("g", { key: comp.id },
+                      React.createElement("line", { x1: 180, y1: cy, x2: 200, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 }),
+                      comp.type === 'resistor'
+                        ? React.createElement("rect", { x: 200, y: cy - 8, width: 40, height: 16, fill: "#fef9c3", stroke: "#ca8a04", strokeWidth: 1.5, rx: 2 })
+                        : React.createElement("circle", { cx: 220, cy: cy, r: 10, fill: "#fef3c7", stroke: "#f59e0b", strokeWidth: 1.5 }),
+                      React.createElement("text", { x: 220, y: cy + 4, textAnchor: "middle", style: { fontSize: '7px', fontWeight: 'bold' }, fill: "#78350f" }, comp.value + "\u03A9"),
+                      React.createElement("line", { x1: 240, y1: cy, x2: 260, y2: cy, stroke: "#1e293b", strokeWidth: 1.5 })
+                    );
+                  }),
+              d.components.length === 0 && React.createElement("text", { x: W / 2, y: H / 2, textAnchor: "middle", fill: "#94a3b8", style: { fontSize: '12px' } }, "Add components below"),
+              React.createElement("circle", { cx: current > 0.01 ? 200 : -10, cy: 15, r: 4, fill: "#3b82f6" }),
+              React.createElement("line", { x1: 380, y1: 20, x2: 380, y2: 140, stroke: "#1e293b", strokeWidth: 2 })
+            ),
             React.createElement("div", { className: "flex gap-2 mb-3" },
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'resistor', value: 100, id: Date.now() }]), className: "px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200" }, "➕ Add Resistor"),
-              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'bulb', value: 50, id: Date.now() }]), className: "px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200" }, "💡 Add Bulb"),
-              React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100" }, "🗑 Clear")
+              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'resistor', value: 100, id: Date.now() }]), className: "px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200" }, "\u2795 Resistor"),
+              React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'bulb', value: 50, id: Date.now() }]), className: "px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200" }, "\u{1F4A1} Bulb"),
+              React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100" }, "\u{1F5D1} Clear")
             ),
-            React.createElement("div", { className: "bg-white rounded-xl border border-yellow-200 p-4" },
-              React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-                React.createElement("span", { className: "text-2xl" }, "🔋"),
-                React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "Battery:"),
+            React.createElement("div", { className: "bg-white rounded-xl border border-yellow-200 p-3" },
+              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                React.createElement("span", { className: "text-xl" }, "\u{1F50B}"),
                 React.createElement("input", { type: "range", min: 1, max: 24, step: 0.5, value: d.voltage, onChange: e => upd('voltage', parseFloat(e.target.value)), className: "flex-1 accent-yellow-600" }),
-                React.createElement("span", { className: "font-bold text-yellow-700" }, d.voltage + "V")
+                React.createElement("span", { className: "font-bold text-yellow-700 w-12 text-right" }, d.voltage + "V")
               ),
-              d.components.length === 0 && React.createElement("p", { className: "text-center text-slate-400 py-8" }, "Add components to build your circuit"),
               React.createElement("div", { className: "flex flex-wrap gap-2" },
                 d.components.map((comp, i) => React.createElement("div", { key: comp.id, className: "flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200" },
-                  React.createElement("span", null, comp.type === 'resistor' ? '⫘' : '💡'),
-                  React.createElement("input", { type: "number", min: 1, max: 10000, value: comp.value, onChange: e => { const nc = [...d.components]; nc[i].value = parseInt(e.target.value) || 1; upd('components', nc); }, className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono" }),
-                  React.createElement("span", { className: "text-xs text-slate-500" }, "Ω"),
-                  React.createElement("button", { onClick: () => upd('components', d.components.filter((_, j) => j !== i)), className: "text-red-400 hover:text-red-600" }, "×")
+                  React.createElement("span", null, comp.type === 'resistor' ? '\u2AE8' : '\u{1F4A1}'),
+                  React.createElement("input", { type: "number", min: 1, max: 10000, value: comp.value, onChange: e => { const nc = [...d.components]; nc[i] = { ...nc[i], value: parseInt(e.target.value) || 1 }; upd('components', nc); }, className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono" }),
+                  React.createElement("span", { className: "text-xs text-slate-500" }, "\u03A9"),
+                  React.createElement("button", { onClick: () => upd('components', d.components.filter((_, j) => j !== i)), className: "text-red-400 hover:text-red-600" }, "\u00D7")
                 ))
               )
             ),
-            React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-3" },
-              [{ label: 'Total Resistance', val: totalR.toFixed(1) + 'Ω', color: 'yellow' }, { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue' }, { label: 'Power', val: power.toFixed(2) + 'W', color: 'red' }].map(m =>
-                React.createElement("div", { key: m.label, className: `text-center p-3 bg-${m.color}-50 rounded-xl border border-${m.color}-200` },
-                  React.createElement("p", { className: `text-xs font-bold text-${m.color}-600 uppercase` }, m.label),
-                  React.createElement("p", { className: `text-lg font-bold text-${m.color}-800` }, m.val)
+            React.createElement("div", { className: "mt-3 grid grid-cols-4 gap-2" },
+              [{ label: 'Mode', val: mode, color: 'slate' }, { label: 'Resistance', val: totalR.toFixed(1) + '\u03A9', color: 'yellow' }, { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue' }, { label: 'Power', val: power.toFixed(2) + 'W', color: 'red' }].map(m =>
+                React.createElement("div", { key: m.label, className: "text-center p-2 bg-" + m.color + "-50 rounded-xl border border-" + m.color + "-200" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-" + m.color + "-600 uppercase" }, m.label),
+                  React.createElement("p", { className: "text-sm font-bold text-" + m.color + "-800" }, m.val)
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V', data: { ...d }, timestamp: Date.now() }]); addToast('📸 Circuit snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "📸 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: { ...d, mode }, timestamp: Date.now() }]); addToast('\u{1F4F8} Circuit snapshot saved!', 'success'); }, className: "mt-3 px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 rounded-full hover:bg-slate-200" }, "\u{1F4F8} Snapshot")
           )
         })(),
 
@@ -3397,7 +3444,7 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "📊 Data Plotter"),
-              React.createElement("span", { className: "text-xs text-slate-400 ml-auto" }, d.points.length + " points")
+              React.createElement("label", { className: "ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" }, React.createElement("input", { type: "checkbox", checked: d.tableMode, onChange: e => upd("tableMode", e.target.checked), className: "accent-teal-600" }), "Table Input"), React.createElement("span", { className: "text-xs text-slate-400 ml-2" }, d.points.length + " pts")
             ),
             React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Click to plot points. Auto-calculates linear regression and R-squared."),
             React.createElement("svg", {
@@ -3416,6 +3463,22 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
               React.createElement("line", { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: "#94a3b8", strokeWidth: 1 }),
               d.points.map((p, i) => React.createElement("circle", { key: i, cx: toSX(p.x), cy: toSY(p.y), r: 5, fill: "#0d9488", stroke: "#fff", strokeWidth: 1.5 })),
               d.points.length >= 2 && React.createElement("line", { x1: toSX(xMin), y1: toSY(slope * xMin + intercept), x2: toSX(xMax), y2: toSY(slope * xMax + intercept), stroke: "#ef4444", strokeWidth: 2, strokeDasharray: "6 3" })
+            ),
+            d.tableMode && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-3" },
+              React.createElement("div", { className: "flex gap-2 items-end mb-2" },
+                React.createElement("div", null,
+                  React.createElement("label", { className: "text-[10px] font-bold text-slate-400 block" }, "X"),
+                  React.createElement("input", { type: "number", step: "0.1", id: "dp-x-input", className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono", placeholder: "0" })
+                ),
+                React.createElement("div", null,
+                  React.createElement("label", { className: "text-[10px] font-bold text-slate-400 block" }, "Y"),
+                  React.createElement("input", { type: "number", step: "0.1", id: "dp-y-input", className: "w-20 px-2 py-1 text-sm border rounded text-center font-mono", placeholder: "0" })
+                ),
+                React.createElement("button", { onClick: () => { const xi = document.getElementById('dp-x-input'); const yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { upd('points', [...d.points, { x: parseFloat(xi.value), y: parseFloat(yi.value) }]); xi.value = ''; yi.value = ''; }}, className: "px-3 py-1 bg-teal-600 text-white font-bold rounded text-sm hover:bg-teal-700" }, "+ Add")
+              ),
+              d.points.length > 0 && React.createElement("div", { className: "max-h-24 overflow-y-auto text-xs font-mono text-slate-500" },
+                d.points.map((p, i) => React.createElement("span", { key: i, className: "inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1" }, "(" + p.x + "," + p.y + ")"))
+              )
             ),
             React.createElement("div", { className: "flex gap-3 mt-3" },
               React.createElement("button", { onClick: () => upd('points', d.points.slice(0, -1)), className: "px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm" }, "↩ Undo"),
@@ -3480,10 +3543,10 @@ stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
             React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Explore molecular structures with preset molecules."),
               React.createElement("div", { className: "flex gap-1 ml-auto" }, presets.map(p => React.createElement("button", { key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: `px-2 py-1 rounded-lg text-xs font-bold ${d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600'}` }, p.name)))
             ),
-            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" } },
+            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); }}, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
               d.bonds.map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
               d.atoms.map((a, i) => React.createElement("g", { key: i },
-                React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' } }),
+                React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
                 React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
               ))
             ),
