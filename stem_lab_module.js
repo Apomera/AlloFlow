@@ -539,7 +539,7 @@
         color: 'amber',
         ready: true
       }, {
-        id: 'fractions',
+        id: 'fractionViz',
         icon: '🍕',
         label: 'Fraction Tiles',
         desc: 'Circle and bar models for comparing, adding, and visualizing fractions.',
@@ -4167,7 +4167,7 @@
         // ═══════════════════════════════════════════════════════
         // FRACTION VISUALIZER
         // ═══════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool === 'fractions' && (() => {
+        stemLabTab === 'explore' && stemLabTool === 'fractionViz' && (() => {
           const d = labToolData.fractions;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, fractions: { ...prev.fractions, [key]: val } }));
           const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
@@ -4600,7 +4600,7 @@ stemLabTab === 'explore' && stemLabTool === 'solarSystem' && (() => {
     // ═══════════════════════════════════════════════════════
     // FRACTION VISUALIZER
     // ═══════════════════════════════════════════════════════
-    stemLabTab === 'explore' && stemLabTool === 'fractions' && (() => {
+    stemLabTab === 'explore' && stemLabTool === 'fractionViz' && (() => {
         const d = labToolData.fractions;
         const upd = (key, val) => setLabToolData(prev => ({ ...prev, fractions: { ...prev.fractions, [key]: val } }));
         const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
