@@ -1,3 +1,13 @@
 node_modules
 
 .git-token*
+
+# Security: Never commit build artifacts (they contain baked-in API keys)
+prismflow-deploy/build/
+prismflow-deploy/.firebase/
+
+# Security: Never commit environment files with secrets
+prismflow-deploy/.env
+prismflow-deploy/.env.local
+prismflow-deploy/.env.production
+*.env.local
