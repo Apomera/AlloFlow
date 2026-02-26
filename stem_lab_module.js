@@ -3263,7 +3263,7 @@
             ),
             React.createElement("div", { className: "bg-white rounded-xl border border-lime-200 p-6 text-center" },
               React.createElement("p", { className: "text-2xl font-bold text-slate-800 mb-4 tracking-wide" },
-                d.coefficients.map((c, i) => (i > 0 && i < preset.target.filter(t => t > 0).length ? (i < preset.eq.split('→')[0].split('+').length ? ' + ' : (i === preset.eq.split('→')[0].split('+').length ? ' → ' : ' + ')) : '') + (c > 1 ? c : '') + preset.eq.split(/[+→]/).map(s => s.trim())[i]).join('')
+                (() => { const parts = preset.eq.split('→'); const left = parts[0].split('+').map(s => s.trim()); const right = parts[1] ? parts[1].split('+').map(s => s.trim()) : []; const fmt = (seg, i) => (d.coefficients[i] > 1 ? d.coefficients[i] : '') + seg; return left.map((s, i) => fmt(s, i)).join(' + ') + ' → ' + right.map((s, i) => fmt(s, left.length + i)).join(' + '); })()
               ),
               React.createElement("div", { className: "flex justify-center gap-4 mb-4" },
                 d.coefficients.slice(0, preset.target.filter(t => t > 0).length).map((c, i) =>
