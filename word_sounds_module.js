@@ -87,6 +87,10 @@ const GRADE_SUBTEST_BATTERIES = {
   '2':   ['segmentation', 'blending', 'rhyming', 'spelling', 'orf'],
   '3-5': ['segmentation', 'rhyming', 'spelling', 'orf'],
 };
+const INSTRUCTION_AUDIO = window.__ALLO_INSTRUCTION_AUDIO || {};
+const ISOLATION_AUDIO = window.__ALLO_ISOLATION_AUDIO || {};
+const PHONEME_AUDIO_BANK = window.__ALLO_PHONEME_AUDIO_BANK || {};
+
 
 
         const fisherYatesShuffle = (arr) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
