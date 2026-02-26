@@ -606,7 +606,7 @@
         desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
         color: 'stone', ready: true
       },
-            { id: 'decomposer', icon: '⚗️', label: 'Decomposer', desc: 'Break materials into elements', ready: true }, {
+      { id: 'decomposer', icon: '⚗️', label: 'Decomposer', desc: 'Break materials into elements', ready: true }, {
         id: 'calculus', icon: '∫', label: 'Calculus Visualizer',
         desc: 'Riemann sums, area under curves, and derivative tangent lines.',
         color: 'red', ready: true
@@ -3265,7 +3265,7 @@
           const filtered = tierFilter === 'all' ? allPresets : allPresets.filter(p => p.tier === tierFilter);
           const preset = filtered.find(p => p.name === d.equation) || filtered[0];
           const numSlots = preset.target.length;
-          const coeffs = (d.coefficients || [1,1,1,1]).slice(0, numSlots);
+          const coeffs = (d.coefficients || [1, 1, 1, 1]).slice(0, numSlots);
           while (coeffs.length < numSlots) coeffs.push(1);
           const showHints = d.showHints || false;
           const streak = d.streak || 0;
@@ -3620,87 +3620,86 @@
 
         stemLabTab === 'explore' && stemLabTool === 'molecule' && (() => {
           const d = labToolData.molecule;
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, [key]: val }
-            decomposer: { material: 'Water', decomposed: false }, }));
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, [key]: val } }));
           const W = 400, H = 300;
           const mode = d.moleculeMode || 'viewer';
           // ── Periodic Table Data (118 elements) ──
           const ELEMENTS = [
-            {n:1,s:'H',name:'Hydrogen',cat:'nonmetal',c:'#60a5fa'},{n:2,s:'He',name:'Helium',cat:'noble',c:'#c084fc'},
-            {n:3,s:'Li',name:'Lithium',cat:'alkali',c:'#f87171'},{n:4,s:'Be',name:'Beryllium',cat:'alkaline',c:'#fbbf24'},
-            {n:5,s:'B',name:'Boron',cat:'metalloid',c:'#34d399'},{n:6,s:'C',name:'Carbon',cat:'nonmetal',c:'#60a5fa'},
-            {n:7,s:'N',name:'Nitrogen',cat:'nonmetal',c:'#60a5fa'},{n:8,s:'O',name:'Oxygen',cat:'nonmetal',c:'#60a5fa'},
-            {n:9,s:'F',name:'Fluorine',cat:'halogen',c:'#2dd4bf'},{n:10,s:'Ne',name:'Neon',cat:'noble',c:'#c084fc'},
-            {n:11,s:'Na',name:'Sodium',cat:'alkali',c:'#f87171'},{n:12,s:'Mg',name:'Magnesium',cat:'alkaline',c:'#fbbf24'},
-            {n:13,s:'Al',name:'Aluminum',cat:'metal',c:'#94a3b8'},{n:14,s:'Si',name:'Silicon',cat:'metalloid',c:'#34d399'},
-            {n:15,s:'P',name:'Phosphorus',cat:'nonmetal',c:'#60a5fa'},{n:16,s:'S',name:'Sulfur',cat:'nonmetal',c:'#60a5fa'},
-            {n:17,s:'Cl',name:'Chlorine',cat:'halogen',c:'#2dd4bf'},{n:18,s:'Ar',name:'Argon',cat:'noble',c:'#c084fc'},
-            {n:19,s:'K',name:'Potassium',cat:'alkali',c:'#f87171'},{n:20,s:'Ca',name:'Calcium',cat:'alkaline',c:'#fbbf24'},
-            {n:21,s:'Sc',name:'Scandium',cat:'transition',c:'#fb923c'},{n:22,s:'Ti',name:'Titanium',cat:'transition',c:'#fb923c'},
-            {n:23,s:'V',name:'Vanadium',cat:'transition',c:'#fb923c'},{n:24,s:'Cr',name:'Chromium',cat:'transition',c:'#fb923c'},
-            {n:25,s:'Mn',name:'Manganese',cat:'transition',c:'#fb923c'},{n:26,s:'Fe',name:'Iron',cat:'transition',c:'#fb923c'},
-            {n:27,s:'Co',name:'Cobalt',cat:'transition',c:'#fb923c'},{n:28,s:'Ni',name:'Nickel',cat:'transition',c:'#fb923c'},
-            {n:29,s:'Cu',name:'Copper',cat:'transition',c:'#fb923c'},{n:30,s:'Zn',name:'Zinc',cat:'transition',c:'#fb923c'},
-            {n:31,s:'Ga',name:'Gallium',cat:'metal',c:'#94a3b8'},{n:32,s:'Ge',name:'Germanium',cat:'metalloid',c:'#34d399'},
-            {n:33,s:'As',name:'Arsenic',cat:'metalloid',c:'#34d399'},{n:34,s:'Se',name:'Selenium',cat:'nonmetal',c:'#60a5fa'},
-            {n:35,s:'Br',name:'Bromine',cat:'halogen',c:'#2dd4bf'},{n:36,s:'Kr',name:'Krypton',cat:'noble',c:'#c084fc'},
-            {n:37,s:'Rb',name:'Rubidium',cat:'alkali',c:'#f87171'},{n:38,s:'Sr',name:'Strontium',cat:'alkaline',c:'#fbbf24'},
-            {n:39,s:'Y',name:'Yttrium',cat:'transition',c:'#fb923c'},{n:40,s:'Zr',name:'Zirconium',cat:'transition',c:'#fb923c'},
-            {n:41,s:'Nb',name:'Niobium',cat:'transition',c:'#fb923c'},{n:42,s:'Mo',name:'Molybdenum',cat:'transition',c:'#fb923c'},
-            {n:43,s:'Tc',name:'Technetium',cat:'transition',c:'#fb923c'},{n:44,s:'Ru',name:'Ruthenium',cat:'transition',c:'#fb923c'},
-            {n:45,s:'Rh',name:'Rhodium',cat:'transition',c:'#fb923c'},{n:46,s:'Pd',name:'Palladium',cat:'transition',c:'#fb923c'},
-            {n:47,s:'Ag',name:'Silver',cat:'transition',c:'#fb923c'},{n:48,s:'Cd',name:'Cadmium',cat:'transition',c:'#fb923c'},
-            {n:49,s:'In',name:'Indium',cat:'metal',c:'#94a3b8'},{n:50,s:'Sn',name:'Tin',cat:'metal',c:'#94a3b8'},
-            {n:51,s:'Sb',name:'Antimony',cat:'metalloid',c:'#34d399'},{n:52,s:'Te',name:'Tellurium',cat:'metalloid',c:'#34d399'},
-            {n:53,s:'I',name:'Iodine',cat:'halogen',c:'#2dd4bf'},{n:54,s:'Xe',name:'Xenon',cat:'noble',c:'#c084fc'},
-            {n:55,s:'Cs',name:'Cesium',cat:'alkali',c:'#f87171'},{n:56,s:'Ba',name:'Barium',cat:'alkaline',c:'#fbbf24'},
-            {n:57,s:'La',name:'Lanthanide',cat:'lanthanide',c:'#a78bfa'},{n:58,s:'Ce',name:'Cerium',cat:'lanthanide',c:'#a78bfa'},
-            {n:59,s:'Pr',name:'Praseodymium',cat:'lanthanide',c:'#a78bfa'},{n:60,s:'Nd',name:'Neodymium',cat:'lanthanide',c:'#a78bfa'},
-            {n:61,s:'Pm',name:'Promethium',cat:'lanthanide',c:'#a78bfa'},{n:62,s:'Sm',name:'Samarium',cat:'lanthanide',c:'#a78bfa'},
-            {n:63,s:'Eu',name:'Europium',cat:'lanthanide',c:'#a78bfa'},{n:64,s:'Gd',name:'Gadolinium',cat:'lanthanide',c:'#a78bfa'},
-            {n:65,s:'Tb',name:'Terbium',cat:'lanthanide',c:'#a78bfa'},{n:66,s:'Dy',name:'Dysprosium',cat:'lanthanide',c:'#a78bfa'},
-            {n:67,s:'Ho',name:'Holmium',cat:'lanthanide',c:'#a78bfa'},{n:68,s:'Er',name:'Erbium',cat:'lanthanide',c:'#a78bfa'},
-            {n:69,s:'Tm',name:'Thulium',cat:'lanthanide',c:'#a78bfa'},{n:70,s:'Yb',name:'Ytterbium',cat:'lanthanide',c:'#a78bfa'},
-            {n:71,s:'Lu',name:'Lutetium',cat:'lanthanide',c:'#a78bfa'},
-            {n:72,s:'Hf',name:'Hafnium',cat:'transition',c:'#fb923c'},{n:73,s:'Ta',name:'Tantalum',cat:'transition',c:'#fb923c'},
-            {n:74,s:'W',name:'Tungsten',cat:'transition',c:'#fb923c'},{n:75,s:'Re',name:'Rhenium',cat:'transition',c:'#fb923c'},
-            {n:76,s:'Os',name:'Osmium',cat:'transition',c:'#fb923c'},{n:77,s:'Ir',name:'Iridium',cat:'transition',c:'#fb923c'},
-            {n:78,s:'Pt',name:'Platinum',cat:'transition',c:'#fb923c'},{n:79,s:'Au',name:'Gold',cat:'transition',c:'#fb923c'},
-            {n:80,s:'Hg',name:'Mercury',cat:'transition',c:'#fb923c'},{n:81,s:'Tl',name:'Thallium',cat:'metal',c:'#94a3b8'},
-            {n:82,s:'Pb',name:'Lead',cat:'metal',c:'#94a3b8'},{n:83,s:'Bi',name:'Bismuth',cat:'metal',c:'#94a3b8'},
-            {n:84,s:'Po',name:'Polonium',cat:'metalloid',c:'#34d399'},{n:85,s:'At',name:'Astatine',cat:'halogen',c:'#2dd4bf'},
-            {n:86,s:'Rn',name:'Radon',cat:'noble',c:'#c084fc'},
-            {n:87,s:'Fr',name:'Francium',cat:'alkali',c:'#f87171'},{n:88,s:'Ra',name:'Radium',cat:'alkaline',c:'#fbbf24'},
-            {n:89,s:'Ac',name:'Actinide',cat:'actinide',c:'#f472b6'},{n:90,s:'Th',name:'Thorium',cat:'actinide',c:'#f472b6'},
-            {n:91,s:'Pa',name:'Protactinium',cat:'actinide',c:'#f472b6'},{n:92,s:'U',name:'Uranium',cat:'actinide',c:'#f472b6'},
-            {n:93,s:'Np',name:'Neptunium',cat:'actinide',c:'#f472b6'},{n:94,s:'Pu',name:'Plutonium',cat:'actinide',c:'#f472b6'},
-            {n:95,s:'Am',name:'Americium',cat:'actinide',c:'#f472b6'},{n:96,s:'Cm',name:'Curium',cat:'actinide',c:'#f472b6'},
-            {n:97,s:'Bk',name:'Berkelium',cat:'actinide',c:'#f472b6'},{n:98,s:'Cf',name:'Californium',cat:'actinide',c:'#f472b6'},
-            {n:99,s:'Es',name:'Einsteinium',cat:'actinide',c:'#f472b6'},{n:100,s:'Fm',name:'Fermium',cat:'actinide',c:'#f472b6'},
-            {n:101,s:'Md',name:'Mendelevium',cat:'actinide',c:'#f472b6'},{n:102,s:'No',name:'Nobelium',cat:'actinide',c:'#f472b6'},
-            {n:103,s:'Lr',name:'Lawrencium',cat:'actinide',c:'#f472b6'},
-            {n:104,s:'Rf',name:'Rutherfordium',cat:'transition',c:'#fb923c'},{n:105,s:'Db',name:'Dubnium',cat:'transition',c:'#fb923c'},
-            {n:106,s:'Sg',name:'Seaborgium',cat:'transition',c:'#fb923c'},{n:107,s:'Bh',name:'Bohrium',cat:'transition',c:'#fb923c'},
-            {n:108,s:'Hs',name:'Hassium',cat:'transition',c:'#fb923c'},{n:109,s:'Mt',name:'Meitnerium',cat:'transition',c:'#fb923c'},
-            {n:110,s:'Ds',name:'Darmstadtium',cat:'transition',c:'#fb923c'},{n:111,s:'Rg',name:'Roentgenium',cat:'transition',c:'#fb923c'},
-            {n:112,s:'Cn',name:'Copernicium',cat:'transition',c:'#fb923c'},{n:113,s:'Nh',name:'Nihonium',cat:'metal',c:'#94a3b8'},
-            {n:114,s:'Fl',name:'Flerovium',cat:'metal',c:'#94a3b8'},{n:115,s:'Mc',name:'Moscovium',cat:'metal',c:'#94a3b8'},
-            {n:116,s:'Lv',name:'Livermorium',cat:'metal',c:'#94a3b8'},{n:117,s:'Ts',name:'Tennessine',cat:'halogen',c:'#2dd4bf'},
-            {n:118,s:'Og',name:'Oganesson',cat:'noble',c:'#c084fc'}
+            { n: 1, s: 'H', name: 'Hydrogen', cat: 'nonmetal', c: '#60a5fa' }, { n: 2, s: 'He', name: 'Helium', cat: 'noble', c: '#c084fc' },
+            { n: 3, s: 'Li', name: 'Lithium', cat: 'alkali', c: '#f87171' }, { n: 4, s: 'Be', name: 'Beryllium', cat: 'alkaline', c: '#fbbf24' },
+            { n: 5, s: 'B', name: 'Boron', cat: 'metalloid', c: '#34d399' }, { n: 6, s: 'C', name: 'Carbon', cat: 'nonmetal', c: '#60a5fa' },
+            { n: 7, s: 'N', name: 'Nitrogen', cat: 'nonmetal', c: '#60a5fa' }, { n: 8, s: 'O', name: 'Oxygen', cat: 'nonmetal', c: '#60a5fa' },
+            { n: 9, s: 'F', name: 'Fluorine', cat: 'halogen', c: '#2dd4bf' }, { n: 10, s: 'Ne', name: 'Neon', cat: 'noble', c: '#c084fc' },
+            { n: 11, s: 'Na', name: 'Sodium', cat: 'alkali', c: '#f87171' }, { n: 12, s: 'Mg', name: 'Magnesium', cat: 'alkaline', c: '#fbbf24' },
+            { n: 13, s: 'Al', name: 'Aluminum', cat: 'metal', c: '#94a3b8' }, { n: 14, s: 'Si', name: 'Silicon', cat: 'metalloid', c: '#34d399' },
+            { n: 15, s: 'P', name: 'Phosphorus', cat: 'nonmetal', c: '#60a5fa' }, { n: 16, s: 'S', name: 'Sulfur', cat: 'nonmetal', c: '#60a5fa' },
+            { n: 17, s: 'Cl', name: 'Chlorine', cat: 'halogen', c: '#2dd4bf' }, { n: 18, s: 'Ar', name: 'Argon', cat: 'noble', c: '#c084fc' },
+            { n: 19, s: 'K', name: 'Potassium', cat: 'alkali', c: '#f87171' }, { n: 20, s: 'Ca', name: 'Calcium', cat: 'alkaline', c: '#fbbf24' },
+            { n: 21, s: 'Sc', name: 'Scandium', cat: 'transition', c: '#fb923c' }, { n: 22, s: 'Ti', name: 'Titanium', cat: 'transition', c: '#fb923c' },
+            { n: 23, s: 'V', name: 'Vanadium', cat: 'transition', c: '#fb923c' }, { n: 24, s: 'Cr', name: 'Chromium', cat: 'transition', c: '#fb923c' },
+            { n: 25, s: 'Mn', name: 'Manganese', cat: 'transition', c: '#fb923c' }, { n: 26, s: 'Fe', name: 'Iron', cat: 'transition', c: '#fb923c' },
+            { n: 27, s: 'Co', name: 'Cobalt', cat: 'transition', c: '#fb923c' }, { n: 28, s: 'Ni', name: 'Nickel', cat: 'transition', c: '#fb923c' },
+            { n: 29, s: 'Cu', name: 'Copper', cat: 'transition', c: '#fb923c' }, { n: 30, s: 'Zn', name: 'Zinc', cat: 'transition', c: '#fb923c' },
+            { n: 31, s: 'Ga', name: 'Gallium', cat: 'metal', c: '#94a3b8' }, { n: 32, s: 'Ge', name: 'Germanium', cat: 'metalloid', c: '#34d399' },
+            { n: 33, s: 'As', name: 'Arsenic', cat: 'metalloid', c: '#34d399' }, { n: 34, s: 'Se', name: 'Selenium', cat: 'nonmetal', c: '#60a5fa' },
+            { n: 35, s: 'Br', name: 'Bromine', cat: 'halogen', c: '#2dd4bf' }, { n: 36, s: 'Kr', name: 'Krypton', cat: 'noble', c: '#c084fc' },
+            { n: 37, s: 'Rb', name: 'Rubidium', cat: 'alkali', c: '#f87171' }, { n: 38, s: 'Sr', name: 'Strontium', cat: 'alkaline', c: '#fbbf24' },
+            { n: 39, s: 'Y', name: 'Yttrium', cat: 'transition', c: '#fb923c' }, { n: 40, s: 'Zr', name: 'Zirconium', cat: 'transition', c: '#fb923c' },
+            { n: 41, s: 'Nb', name: 'Niobium', cat: 'transition', c: '#fb923c' }, { n: 42, s: 'Mo', name: 'Molybdenum', cat: 'transition', c: '#fb923c' },
+            { n: 43, s: 'Tc', name: 'Technetium', cat: 'transition', c: '#fb923c' }, { n: 44, s: 'Ru', name: 'Ruthenium', cat: 'transition', c: '#fb923c' },
+            { n: 45, s: 'Rh', name: 'Rhodium', cat: 'transition', c: '#fb923c' }, { n: 46, s: 'Pd', name: 'Palladium', cat: 'transition', c: '#fb923c' },
+            { n: 47, s: 'Ag', name: 'Silver', cat: 'transition', c: '#fb923c' }, { n: 48, s: 'Cd', name: 'Cadmium', cat: 'transition', c: '#fb923c' },
+            { n: 49, s: 'In', name: 'Indium', cat: 'metal', c: '#94a3b8' }, { n: 50, s: 'Sn', name: 'Tin', cat: 'metal', c: '#94a3b8' },
+            { n: 51, s: 'Sb', name: 'Antimony', cat: 'metalloid', c: '#34d399' }, { n: 52, s: 'Te', name: 'Tellurium', cat: 'metalloid', c: '#34d399' },
+            { n: 53, s: 'I', name: 'Iodine', cat: 'halogen', c: '#2dd4bf' }, { n: 54, s: 'Xe', name: 'Xenon', cat: 'noble', c: '#c084fc' },
+            { n: 55, s: 'Cs', name: 'Cesium', cat: 'alkali', c: '#f87171' }, { n: 56, s: 'Ba', name: 'Barium', cat: 'alkaline', c: '#fbbf24' },
+            { n: 57, s: 'La', name: 'Lanthanide', cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: 'Cerium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 59, s: 'Pr', name: 'Praseodymium', cat: 'lanthanide', c: '#a78bfa' }, { n: 60, s: 'Nd', name: 'Neodymium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 61, s: 'Pm', name: 'Promethium', cat: 'lanthanide', c: '#a78bfa' }, { n: 62, s: 'Sm', name: 'Samarium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 63, s: 'Eu', name: 'Europium', cat: 'lanthanide', c: '#a78bfa' }, { n: 64, s: 'Gd', name: 'Gadolinium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 65, s: 'Tb', name: 'Terbium', cat: 'lanthanide', c: '#a78bfa' }, { n: 66, s: 'Dy', name: 'Dysprosium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 67, s: 'Ho', name: 'Holmium', cat: 'lanthanide', c: '#a78bfa' }, { n: 68, s: 'Er', name: 'Erbium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 69, s: 'Tm', name: 'Thulium', cat: 'lanthanide', c: '#a78bfa' }, { n: 70, s: 'Yb', name: 'Ytterbium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 71, s: 'Lu', name: 'Lutetium', cat: 'lanthanide', c: '#a78bfa' },
+            { n: 72, s: 'Hf', name: 'Hafnium', cat: 'transition', c: '#fb923c' }, { n: 73, s: 'Ta', name: 'Tantalum', cat: 'transition', c: '#fb923c' },
+            { n: 74, s: 'W', name: 'Tungsten', cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: 'Rhenium', cat: 'transition', c: '#fb923c' },
+            { n: 76, s: 'Os', name: 'Osmium', cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: 'Iridium', cat: 'transition', c: '#fb923c' },
+            { n: 78, s: 'Pt', name: 'Platinum', cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: 'Gold', cat: 'transition', c: '#fb923c' },
+            { n: 80, s: 'Hg', name: 'Mercury', cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: 'Thallium', cat: 'metal', c: '#94a3b8' },
+            { n: 82, s: 'Pb', name: 'Lead', cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: 'Bismuth', cat: 'metal', c: '#94a3b8' },
+            { n: 84, s: 'Po', name: 'Polonium', cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: 'Astatine', cat: 'halogen', c: '#2dd4bf' },
+            { n: 86, s: 'Rn', name: 'Radon', cat: 'noble', c: '#c084fc' },
+            { n: 87, s: 'Fr', name: 'Francium', cat: 'alkali', c: '#f87171' }, { n: 88, s: 'Ra', name: 'Radium', cat: 'alkaline', c: '#fbbf24' },
+            { n: 89, s: 'Ac', name: 'Actinide', cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: 'Thorium', cat: 'actinide', c: '#f472b6' },
+            { n: 91, s: 'Pa', name: 'Protactinium', cat: 'actinide', c: '#f472b6' }, { n: 92, s: 'U', name: 'Uranium', cat: 'actinide', c: '#f472b6' },
+            { n: 93, s: 'Np', name: 'Neptunium', cat: 'actinide', c: '#f472b6' }, { n: 94, s: 'Pu', name: 'Plutonium', cat: 'actinide', c: '#f472b6' },
+            { n: 95, s: 'Am', name: 'Americium', cat: 'actinide', c: '#f472b6' }, { n: 96, s: 'Cm', name: 'Curium', cat: 'actinide', c: '#f472b6' },
+            { n: 97, s: 'Bk', name: 'Berkelium', cat: 'actinide', c: '#f472b6' }, { n: 98, s: 'Cf', name: 'Californium', cat: 'actinide', c: '#f472b6' },
+            { n: 99, s: 'Es', name: 'Einsteinium', cat: 'actinide', c: '#f472b6' }, { n: 100, s: 'Fm', name: 'Fermium', cat: 'actinide', c: '#f472b6' },
+            { n: 101, s: 'Md', name: 'Mendelevium', cat: 'actinide', c: '#f472b6' }, { n: 102, s: 'No', name: 'Nobelium', cat: 'actinide', c: '#f472b6' },
+            { n: 103, s: 'Lr', name: 'Lawrencium', cat: 'actinide', c: '#f472b6' },
+            { n: 104, s: 'Rf', name: 'Rutherfordium', cat: 'transition', c: '#fb923c' }, { n: 105, s: 'Db', name: 'Dubnium', cat: 'transition', c: '#fb923c' },
+            { n: 106, s: 'Sg', name: 'Seaborgium', cat: 'transition', c: '#fb923c' }, { n: 107, s: 'Bh', name: 'Bohrium', cat: 'transition', c: '#fb923c' },
+            { n: 108, s: 'Hs', name: 'Hassium', cat: 'transition', c: '#fb923c' }, { n: 109, s: 'Mt', name: 'Meitnerium', cat: 'transition', c: '#fb923c' },
+            { n: 110, s: 'Ds', name: 'Darmstadtium', cat: 'transition', c: '#fb923c' }, { n: 111, s: 'Rg', name: 'Roentgenium', cat: 'transition', c: '#fb923c' },
+            { n: 112, s: 'Cn', name: 'Copernicium', cat: 'transition', c: '#fb923c' }, { n: 113, s: 'Nh', name: 'Nihonium', cat: 'metal', c: '#94a3b8' },
+            { n: 114, s: 'Fl', name: 'Flerovium', cat: 'metal', c: '#94a3b8' }, { n: 115, s: 'Mc', name: 'Moscovium', cat: 'metal', c: '#94a3b8' },
+            { n: 116, s: 'Lv', name: 'Livermorium', cat: 'metal', c: '#94a3b8' }, { n: 117, s: 'Ts', name: 'Tennessine', cat: 'halogen', c: '#2dd4bf' },
+            { n: 118, s: 'Og', name: 'Oganesson', cat: 'noble', c: '#c084fc' }
           ];
           const getEl = (sym) => ELEMENTS.find(e => e.s === sym);
           // ── Periodic Table layout (row, col) ──
           const PT_LAYOUT = [
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
-            [3,4,0,0,0,0,0,0,0,0,0,0,5,6,7,8,9,10],
-            [11,12,0,0,0,0,0,0,0,0,0,0,13,14,15,16,17,18],
-            [19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36],
-            [37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54],
-            [55,56,0,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86],
-            [87,88,0,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+            [3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10],
+            [11, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 14, 15, 16, 17, 18],
+            [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
+            [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54],
+            [55, 56, 0, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86],
+            [87, 88, 0, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118],
             [],
-            [0,0,0,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71],
-            [0,0,0,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103]
+            [0, 0, 0, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71],
+            [0, 0, 0, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103]
           ];
           // ── Compound Recipes ──
           const COMPOUNDS = [
@@ -3786,7 +3785,7 @@
               React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, "Select elements to craft compounds. Like Minecraft\u2019s Compound Creator!"),
               // Element selector grid (common elements)
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
-                ['H','C','N','O','Na','Mg','Al','Si','P','S','Cl','K','Ca','Fe','Cu','Zn','Br','Ag','I','Au'].map(sym => {
+                ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Zn', 'Br', 'Ag', 'I', 'Au'].map(sym => {
                   const el = getEl(sym);
                   return React.createElement("button", { key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
                     React.createElement("span", { className: "text-sm font-black" }, sym),
@@ -3799,13 +3798,13 @@
                 Object.keys(selectedEls).length === 0
                   ? React.createElement("p", { className: "text-slate-400 text-sm italic" }, "Tap elements above to add them...")
                   : Object.entries(selectedEls).map(([sym, count]) => {
-                      const el = getEl(sym);
-                      return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
-                        React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#64748b' } }, sym),
-                        React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
-                        React.createElement("button", { onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-500 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
-                      );
-                    })
+                    const el = getEl(sym);
+                    return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
+                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#64748b' } }, sym),
+                      React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
+                      React.createElement("button", { onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-500 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
+                    );
+                  })
               ),
               // Action buttons
               React.createElement("div", { className: "flex gap-2 mb-4" },
@@ -3815,13 +3814,13 @@
               // Craft result
               d.craftResult && (d.craftResult.success
                 ? React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 text-center animate-in zoom-in" },
-                    React.createElement("p", { className: "text-3xl mb-1" }, d.craftResult.compound.emoji),
-                    React.createElement("p", { className: "text-lg font-black text-emerald-700" }, (d.craftResult.isNew ? '\uD83C\uDF89 NEW! ' : '\u2705 ') + d.craftResult.compound.name),
-                    React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.craftResult.compound.formula),
-                    React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, d.craftResult.compound.desc)
-                  )
+                  React.createElement("p", { className: "text-3xl mb-1" }, d.craftResult.compound.emoji),
+                  React.createElement("p", { className: "text-lg font-black text-emerald-700" }, (d.craftResult.isNew ? '\uD83C\uDF89 NEW! ' : '\u2705 ') + d.craftResult.compound.name),
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.craftResult.compound.formula),
+                  React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, d.craftResult.compound.desc)
+                )
                 : React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-xl p-3 text-center" },
-                    React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\uD83E\uDD14 No known compound matches this combination. Try different elements!"))
+                  React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\uD83E\uDD14 No known compound matches this combination. Try different elements!"))
               ),
               // Discovery log
               discovered.length > 0 && React.createElement("div", { className: "mt-4 bg-slate-50 rounded-xl p-3 border" },
@@ -3863,7 +3862,7 @@
               ),
               // Legend
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3 justify-center" },
-                [['alkali','Alkali'],['alkaline','Alkaline'],['transition','Transition'],['metal','Post-trans.'],['metalloid','Metalloid'],['nonmetal','Nonmetal'],['halogen','Halogen'],['noble','Noble Gas'],['lanthanide','Lanthanide'],['actinide','Actinide']].map(([cat, label]) =>
+                [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', 'Lanthanide'], ['actinide', 'Actinide']].map(([cat, label]) =>
                   React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[9px] font-bold border " + (catColors[cat] || '') }, label)
                 )
               )
@@ -3914,21 +3913,21 @@
               !d.decomposed
                 ? React.createElement("button", { onClick: () => upd('decomposed', true), className: "px-6 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-700 shadow-lg transition-all hover:scale-105 active:scale-95" }, "\uD83D\uDD2C Decompose!")
                 : React.createElement("div", { className: "animate-in slide-in-from-bottom duration-500" },
-                    React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" }, "Element Composition (by atom %)"),
-                    React.createElement("div", { className: "space-y-2" },
-                      Object.entries(mat.elements).sort((a, b) => b[1] - a[1]).map(([el, pct]) =>
-                        React.createElement("div", { key: el, className: "flex items-center gap-2" },
-                          React.createElement("span", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-black shadow-sm", style: { backgroundColor: elColors[el] || '#64748b' } }, el),
-                          React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-6 overflow-hidden" },
-                            React.createElement("div", { className: "h-full rounded-full flex items-center px-2 transition-all duration-1000 ease-out", style: { width: (pct / maxPct * 100) + '%', backgroundColor: (elColors[el] || '#64748b') + '20', borderLeft: '3px solid ' + (elColors[el] || '#64748b') } },
-                              React.createElement("span", { className: "text-xs font-bold", style: { color: elColors[el] || '#64748b' } }, pct.toFixed(1) + "%")
-                            )
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" }, "Element Composition (by atom %)"),
+                  React.createElement("div", { className: "space-y-2" },
+                    Object.entries(mat.elements).sort((a, b) => b[1] - a[1]).map(([el, pct]) =>
+                      React.createElement("div", { key: el, className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-black shadow-sm", style: { backgroundColor: elColors[el] || '#64748b' } }, el),
+                        React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-6 overflow-hidden" },
+                          React.createElement("div", { className: "h-full rounded-full flex items-center px-2 transition-all duration-1000 ease-out", style: { width: (pct / maxPct * 100) + '%', backgroundColor: (elColors[el] || '#64748b') + '20', borderLeft: '3px solid ' + (elColors[el] || '#64748b') } },
+                            React.createElement("span", { className: "text-xs font-bold", style: { color: elColors[el] || '#64748b' } }, pct.toFixed(1) + "%")
                           )
                         )
                       )
-                    ),
-                    React.createElement("button", { onClick: () => upd('decomposed', false), className: "mt-4 px-4 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\uD83D\uDD04 Reassemble")
-                  )
+                    )
+                  ),
+                  React.createElement("button", { onClick: () => upd('decomposed', false), className: "mt-4 px-4 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\uD83D\uDD04 Reassemble")
+                )
             )
           )
         })()
