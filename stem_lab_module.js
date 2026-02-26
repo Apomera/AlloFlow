@@ -2984,7 +2984,7 @@
         stemLabTab === 'explore' && stemLabTool === 'calculus' && (() => {
           const d = labToolData.calculus;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, calculus: { ...prev.calculus, [key]: val } }));
-          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
+          // grade filter removed — all tools visible
           const W = 440, H = 300, pad = 40;
           const evalF = x => d.a * x * x + d.b * x + d.c;
           const xR = { min: -2, max: Math.max(d.xMax + 1, 6) };
@@ -3243,7 +3243,7 @@
         stemLabTab === 'explore' && stemLabTool === 'chemBalance' && (() => {
           const d = labToolData.chemBalance;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, chemBalance: { ...prev.chemBalance, [key]: val } }));
-          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
+          // grade filter removed — all tools visible
           const presets = [
             { name: 'Water', eq: 'H₂ + O₂ → H₂O', coeffs: [2, 1, 2, 0], target: [2, 1, 2, 0], atoms: { H: [2, 0, 2], O: [0, 2, 1] } },
             { name: 'Rust', eq: 'Fe + O₂ → Fe₂O₃', coeffs: [1, 1, 1, 0], target: [4, 3, 2, 0], atoms: { Fe: [1, 0, 2], O: [0, 2, 3] } },
@@ -3283,7 +3283,7 @@
         stemLabTab === 'explore' && stemLabTool === 'punnett' && (() => {
           const d = labToolData.punnett;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, punnett: { ...prev.punnett, [key]: val } }));
-          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
+          // grade filter removed — all tools visible
           const grid = [[d.parent1[0] + d.parent2[0], d.parent1[0] + d.parent2[1]], [d.parent1[1] + d.parent2[0], d.parent1[1] + d.parent2[1]]];
           const counts = {};
           grid.flat().forEach(g => { counts[g] = (counts[g] || 0) + 1; });
@@ -3332,7 +3332,7 @@
         stemLabTab === 'explore' && stemLabTool === 'circuit' && (() => {
           const d = labToolData.circuit;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, circuit: { ...prev.circuit, [key]: val } }));
-          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
+          // grade filter removed — all tools visible
           const mode = d.mode || 'series';
           const resistors = d.components.filter(c => c.type === 'resistor');
           const bulbs = d.components.filter(c => c.type === 'bulb');
@@ -3506,7 +3506,7 @@
         stemLabTab === 'explore' && stemLabTool === 'inequality' && (() => {
           const d = labToolData.inequality;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, inequality: { ...prev.inequality, [key]: val } }));
-          const gl = parseInt(gradeLevel) || 5; if (gl <= 5) return null;
+          // grade filter removed — all tools visible
           const W = 400, H = 100, pad = 30;
           const toSX = x => pad + ((x - d.range.min) / (d.range.max - d.range.min)) * (W - 2 * pad);
           const parseIneq = expr => { const m = expr.match(/([a-z])\s*([<>]=?|[≤≥])\s*(-?\d+\.?\d*)/); return m ? { v: m[1], op: m[2], val: parseFloat(m[3]) } : null; };
