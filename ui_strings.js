@@ -5365,7 +5365,9 @@
     "intervention_logs": "Intervention Logs",
     "recent_probe_results": "Recent Probe Results",
     "external_cbm_scores": "External CBM Scores",
-    "export_apa_title": "Export Research Report (APA-formatted)"
+    "export_apa_title": "Export Research Report (APA-formatted)",
+    "scale": "Scale",
+    "value": "Value"
   },
   "stem": {
     "explore": "Explore",
