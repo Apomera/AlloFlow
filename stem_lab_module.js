@@ -649,7 +649,7 @@
         desc: 'Plot data points, fit trend lines, calculate correlation.',
         color: 'teal', ready: true
       }
-      ]].map(tool => tool.category
+      ].map(tool => tool.category
         ? /*#__PURE__*/React.createElement("div", {
             key: tool.id,
             className: "col-span-2 mt-3 first:mt-0"
