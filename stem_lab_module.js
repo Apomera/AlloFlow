@@ -3127,6 +3127,34 @@
             ),
             React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 text-center text-xs text-slate-500" },
               `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | A = ${Number(d.amplitude).toFixed(1)}`
+            React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" },
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-400 self-center" }, "Presets:"),
+              [
+                { label: '\uD83C\uDFB5 Concert A (440Hz)', amp: 1, freq: 1, phase: 0, tip: 'The standard tuning pitch for musical instruments' },
+                { label: '\uD83C\uDF0A Ocean Wave', amp: 1.5, freq: 0.3, phase: 0, tip: 'Long wavelength, low frequency \u2014 like an ocean swell' },
+                { label: '\u26A1 High Energy', amp: 0.8, freq: 3.5, phase: 0, tip: 'Higher frequency = higher energy (E = hf)' },
+                { label: '\uD83D\uDCA5 Destructive', amp: 1, freq: 1, phase: 3.14, tip: 'Two waves 180\u00B0 out of phase cancel out completely!' },
+              ].map(function(p) {
+                return React.createElement("button", { key: p.label, onClick: function() {
+                  upd('amplitude', p.amp); upd('frequency', p.freq); upd('phase', p.phase);
+                  if (p.label.includes('Destructive')) { upd('wave2', true); upd('amp2', 1); upd('freq2', 1); }
+                  addToast(p.tip, 'success');
+                }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-all" }, p.label);
+              })
+            ),
+            React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1.5 text-center" },
+              [
+                ['\uD83C\uDFB5', 'Note', (function() { var notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']; var f = d.frequency * 110; var n = Math.round(12 * Math.log2(f / 440) + 69); return n >= 0 && n < 128 ? notes[n % 12] + Math.floor(n / 12 - 1) : '\u2014'; })()],
+                ['\uD83C\uDF0A', 'Wavelength', (2 * Math.PI / d.frequency).toFixed(2) + ' units'],
+                ['\u23F1', 'Period', (1 / d.frequency).toFixed(2) + 's'],
+                ['\u26A1', 'Energy', d.amplitude > 1.5 ? 'High' : d.amplitude > 0.8 ? 'Medium' : 'Low'],
+              ].map(function(item) {
+                return React.createElement("div", { key: item[1], className: "p-1 bg-cyan-50/50 rounded-lg border border-cyan-100" },
+                  React.createElement("p", { className: "text-[9px] text-cyan-500 font-bold" }, item[0] + ' ' + item[1]),
+                  React.createElement("p", { className: "text-xs font-bold text-cyan-800" }, item[2])
+                );
+              })
+            ),
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: `A=${d.amplitude} f=${d.frequency}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
@@ -3523,6 +3551,50 @@
               [{ label: 'Mode', val: mode, color: 'slate' }, { label: 'Resistance', val: totalR.toFixed(1) + '\u03A9', color: 'yellow' }, { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue' }, { label: 'Power', val: power.toFixed(2) + 'W', color: 'red' }].map(m =>
                 React.createElement("div", { key: m.label, className: "text-center p-2 bg-" + m.color + "-50 rounded-xl border border-" + m.color + "-200" },
                   React.createElement("p", { className: "text-[10px] font-bold text-" + m.color + "-600 uppercase" }, m.label),
+            d.components.length > 0 && React.createElement("div", { className: "mt-3 bg-yellow-50 rounded-xl border border-yellow-200 p-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-yellow-700 uppercase tracking-wider mb-2" }, "\u26A1 Per-Component Analysis"),
+              React.createElement("div", { className: "space-y-1" },
+                d.components.map(function(comp, i) {
+                  var compR = comp.value || 1;
+                  var compI = mode === 'series' ? current : d.voltage / compR;
+                  var compV = mode === 'series' ? current * compR : d.voltage;
+                  var compP = compV * compI;
+                  return React.createElement("div", { key: comp.id, className: "flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1 border" },
+                    React.createElement("span", { className: "font-bold text-yellow-700 w-16" }, (comp.type === 'resistor' ? '\u2AE8 R' : '\uD83D\uDCA1 B') + (i + 1)),
+                    React.createElement("span", { className: "text-slate-500 w-16" }, comp.value + '\u03A9'),
+                    React.createElement("span", { className: "text-blue-600 w-20 font-mono" }, compV.toFixed(2) + 'V'),
+                    React.createElement("span", { className: "text-emerald-600 w-20 font-mono" }, compI.toFixed(3) + 'A'),
+                    React.createElement("span", { className: "text-red-600 w-20 font-mono font-bold" }, compP.toFixed(2) + 'W'),
+                    comp.type === 'bulb' && React.createElement("span", { className: "text-yellow-500" }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05')
+                  );
+                })
+              ),
+              React.createElement("div", { className: "mt-2 flex items-center gap-2 text-[10px] text-slate-400" },
+                React.createElement("span", null, "\u2696 V = IR"),
+                React.createElement("span", null, "\u2022"),
+                React.createElement("span", null, "P = IV"),
+                React.createElement("span", null, "\u2022"),
+                React.createElement("span", null, mode === 'series' ? 'Series: same current through all' : 'Parallel: same voltage across all')
+              )
+            ),
+            React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Circuit Challenge"),
+              React.createElement("div", { className: "flex gap-2" },
+                [
+                  { label: 'Get 2A current', target: 2, type: 'current' },
+                  { label: 'Get 0.5A current', target: 0.5, type: 'current' },
+                  { label: 'Total R = 200\u03A9', target: 200, type: 'resistance' },
+                ].map(function(ch) {
+                  var actual = ch.type === 'current' ? current : totalR;
+                  var close = Math.abs(actual - ch.target) < ch.target * 0.05;
+                  return React.createElement("button", { key: ch.label, onClick: function() {
+                    if (close) { addToast('\u2705 Challenge complete! You hit ' + actual.toFixed(3) + ' (target: ' + ch.target + ')', 'success'); }
+                    else { addToast('\uD83C\uDFAF Target: ' + ch.target + (ch.type === 'current' ? 'A' : '\u03A9') + ' | Current: ' + actual.toFixed(3) + '. Adjust components!', 'info'); }
+                    upd('challenge', ch);
+                  }, className: "px-2 py-1 rounded-lg text-[10px] font-bold border transition-all " + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50') }, (close ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
+                })
+              )
+            ),
                   React.createElement("p", { className: "text-sm font-bold text-" + m.color + "-800" }, m.val)
                 )
               )
@@ -3560,6 +3632,17 @@
               React.createElement("label", { className: "ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" }, React.createElement("input", { type: "checkbox", checked: d.tableMode, onChange: e => upd("tableMode", e.target.checked), className: "accent-teal-600" }), "Table Input"), React.createElement("span", { className: "text-xs text-slate-400 ml-2" }, d.points.length + " pts")
             ),
             React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Click to plot points. Auto-calculates linear regression and R-squared."),
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-400 self-center" }, "Datasets:"),
+              [
+                { label: '\uD83D\uDCCA Height vs Weight', pts: [{x:150,y:50},{x:155,y:52},{x:160,y:58},{x:165,y:62},{x:170,y:68},{x:175,y:72},{x:180,y:78},{x:185,y:82},{x:190,y:88}] },
+                { label: '\uD83D\uDCDA Study vs Grade', pts: [{x:0,y:55},{x:1,y:62},{x:2,y:68},{x:3,y:72},{x:4,y:78},{x:5,y:85},{x:6,y:88},{x:7,y:92},{x:8,y:95}] },
+                { label: '\uD83C\uDF21 Temp vs Ice Cream', pts: [{x:15,y:20},{x:18,y:35},{x:22,y:45},{x:25,y:60},{x:28,y:70},{x:30,y:85},{x:33,y:90},{x:35,y:95}] },
+                { label: '\uD83C\uDFB2 Random (No Corr)', pts: Array.from({length: 12}, function() { return {x: Math.round(Math.random()*10*10)/10, y: Math.round(Math.random()*10*10)/10}; }) },
+              ].map(function(ds) {
+                return React.createElement("button", { key: ds.label, onClick: function() { upd('points', ds.pts); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all" }, ds.label);
+              })
+            ),
             React.createElement("svg", {
               viewBox: `0 0 ${W} ${H}`, className: "w-full bg-white rounded-xl border border-teal-200 cursor-crosshair", style: { maxHeight: "320px" },
               onClick: e => {
@@ -3597,6 +3680,17 @@
               React.createElement("button", { onClick: () => upd('points', d.points.slice(0, -1)), className: "px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm" }, "↩ Undo"),
               React.createElement("button", { onClick: () => upd('points', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm" }, "🗑 Clear"),
               d.points.length >= 2 && React.createElement("span", { className: "text-xs text-slate-500 self-center ml-auto" }, "y = " + slope.toFixed(2) + "x + " + intercept.toFixed(2) + " | r² = " + r2.toFixed(3))
+            d.points.length >= 2 && React.createElement("div", { className: "mt-2 bg-white rounded-lg border p-2" },
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Correlation Strength"),
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("div", { className: "flex-1 h-3 bg-slate-100 rounded-full overflow-hidden" },
+                  React.createElement("div", { style: { width: (Math.abs(r2) * 100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: Math.abs(r2) > 0.8 ? '#22c55e' : Math.abs(r2) > 0.5 ? '#eab308' : Math.abs(r2) > 0.3 ? '#f97316' : '#ef4444', transition: 'all 0.5s' } })
+                ),
+                React.createElement("span", { className: "text-xs font-bold " + (Math.abs(r2) > 0.8 ? 'text-emerald-600' : Math.abs(r2) > 0.5 ? 'text-yellow-600' : Math.abs(r2) > 0.3 ? 'text-orange-600' : 'text-red-500') }, Math.abs(r2) > 0.9 ? '\u2B50 Very Strong' : Math.abs(r2) > 0.7 ? 'Strong' : Math.abs(r2) > 0.5 ? 'Moderate' : Math.abs(r2) > 0.3 ? 'Weak' : 'Very Weak'),
+                React.createElement("span", { className: "text-[10px] text-slate-400" }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None')
+              ),
+              React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic" }, r2 > 0.9 ? '\uD83D\uDCA1 Almost a perfect linear relationship!' : r2 > 0.7 ? '\uD83D\uDCA1 Strong trend \u2014 a linear model fits well.' : r2 > 0.4 ? '\uD83D\uDCA1 Some relationship, but other factors may be at play.' : '\uD83D\uDCA1 Weak or no linear relationship. Try a different model?')
+            ),
             ),
             d.points && d.points.length >= 2 && React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2 text-center" },
               React.createElement("div", { className: "p-1.5 bg-teal-50 rounded-lg border border-teal-200" },
@@ -4039,6 +4133,75 @@
               ),
               React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100" }, "\uD83D\uDCA1 " + sel.fact)
             ),
+            // ── Quiz Mode ──
+            React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("button", { onClick: () => {
+                  const QUIZ_QS = [
+                    { q: 'Which planet is the hottest?', a: 'Venus', opts: ['Mercury', 'Venus', 'Mars', 'Jupiter'], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!' },
+                    { q: 'Which planet has the most moons?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], tip: 'Saturn has 146 known moons as of 2024!' },
+                    { q: 'Which planet rotates on its side?', a: 'Uranus', opts: ['Neptune', 'Uranus', 'Saturn', 'Pluto'], tip: 'Uranus has an axial tilt of 97.77\u00B0!' },
+                    { q: 'Which is the smallest planet?', a: 'Mercury', opts: ['Mercury', 'Mars', 'Pluto', 'Venus'], tip: 'Mercury is only 4,879 km in diameter.' },
+                    { q: 'Which planet has the longest year?', a: 'Pluto', opts: ['Neptune', 'Pluto', 'Uranus', 'Saturn'], tip: 'Pluto takes 248 Earth years to orbit the Sun!' },
+                    { q: 'Which planet has the shortest day?', a: 'Jupiter', opts: ['Jupiter', 'Saturn', 'Earth', 'Mars'], tip: 'Jupiter rotates in just 10 hours!' },
+                    { q: 'Which planet is known as the Red Planet?', a: 'Mars', opts: ['Venus', 'Mars', 'Mercury', 'Jupiter'], tip: 'Iron oxide (rust) gives Mars its red color.' },
+                    { q: 'Which planet could float in water?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Neptune', 'Uranus'], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!' },
+                    { q: 'Where is the tallest volcano in the solar system?', a: 'Mars', opts: ['Earth', 'Venus', 'Mars', 'Jupiter'], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!' },
+                    { q: 'Which planet has the strongest winds?', a: 'Neptune', opts: ['Jupiter', 'Saturn', 'Neptune', 'Uranus'], tip: 'Neptune\u2019s winds reach 2,100 km/h!' },
+                  ];
+                  const q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+                  upd('quiz', { ...q, answered: false, correct: null, score: d.quiz?.score || 0, streak: d.quiz?.streak || 0 });
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all" }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+                d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak")
+              ),
+              d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200 animate-in slide-in-from-bottom" },
+                React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, d.quiz.q),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                  d.quiz.opts.map(function(opt) {
+                    var isCorrect = opt === d.quiz.a;
+                    var wasChosen = d.quiz.chosen === opt;
+                    var cls = !d.quiz.answered ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50' : isCorrect ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : wasChosen && !isCorrect ? 'bg-red-100 text-red-800 border-red-300' : 'bg-slate-50 text-slate-400 border-slate-200';
+                    return React.createElement("button", { key: opt, disabled: d.quiz.answered, onClick: function() {
+                      var correct = opt === d.quiz.a;
+                      upd('quiz', Object.assign({}, d.quiz, { answered: true, correct: correct, chosen: opt, score: d.quiz.score + (correct ? 1 : 0), streak: correct ? d.quiz.streak + 1 : 0 }));
+                      if (correct) addToast('\u2705 Correct! ' + d.quiz.tip, 'success');
+                      else addToast('\u274C The answer is ' + d.quiz.a + '. ' + d.quiz.tip, 'error');
+                    }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls }, opt);
+                  })
+                ),
+                d.quiz.answered && React.createElement("p", { className: "mt-2 text-xs text-indigo-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
+              ),
+              // ── Planet Comparison ──
+              React.createElement("div", { className: "mt-3" },
+                React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD0D Compare Planets"),
+                React.createElement("div", { className: "flex gap-2 mb-2" },
+                  React.createElement("select", { value: d.compare1 || '', onChange: function(e) { upd('compare1', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
+                    React.createElement("option", { value: "" }, "Select..."),
+                    PLANETS.map(function(p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
+                  ),
+                  React.createElement("span", { className: "text-slate-400 font-bold self-center" }, "vs"),
+                  React.createElement("select", { value: d.compare2 || '', onChange: function(e) { upd('compare2', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
+                    React.createElement("option", { value: "" }, "Select..."),
+                    PLANETS.map(function(p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
+                  )
+                ),
+                d.compare1 && d.compare2 && (function() {
+                  var p1 = PLANETS.find(function(p) { return p.name === d.compare1; });
+                  var p2 = PLANETS.find(function(p) { return p.name === d.compare2; });
+                  if (!p1 || !p2) return null;
+                  var GRAVITY = { Mercury: 0.38, Venus: 0.91, Earth: 1.0, Mars: 0.38, Jupiter: 2.34, Saturn: 1.06, Uranus: 0.92, Neptune: 1.19, Pluto: 0.06 };
+                  return React.createElement("div", { className: "grid grid-cols-3 gap-1 text-center text-xs" },
+                    [['', p1.name, p2.name], ['\uD83C\uDF21 Temp', p1.temp, p2.temp], ['\u2600 Day', p1.dayLen, p2.dayLen], ['\uD83C\uDF0D Year', p1.yearLen, p2.yearLen], ['\uD83D\uDCCF Size', p1.diameter, p2.diameter], ['\uD83C\uDF11 Moons', p1.moons, p2.moons], ['\u2696 Gravity', (GRAVITY[p1.name] || 1).toFixed(2) + 'g', (GRAVITY[p2.name] || 1).toFixed(2) + 'g'], ['\uD83E\uDDD1 70kg on', Math.round(70 * (GRAVITY[p1.name] || 1)) + 'kg', Math.round(70 * (GRAVITY[p2.name] || 1)) + 'kg']].map(function(row, ri) {
+                      return React.createElement(React.Fragment, { key: ri },
+                        row.map(function(cell, ci) {
+                          return React.createElement("div", { key: ci, className: "py-1 " + (ri === 0 ? 'font-black text-slate-700' : ci === 0 ? 'font-bold text-slate-500' : 'font-bold text-slate-700') + (ri > 0 && ri % 2 === 0 ? ' bg-slate-50' : '') }, cell);
+                        })
+                      );
+                    })
+                  );
+                })()
+              )
+            ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
@@ -4178,6 +4341,21 @@
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDC3A Ecosystem Simulator")
             ),
             React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Model predator-prey population dynamics (Lotka-Volterra). Adjust rates and see how populations change."),
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+              [
+                { label: '\uD83D\uDC07\uD83D\uDC3A Balanced', prey0: 80, pred0: 30, preyBirth: 0.1, preyDeath: 0.01, predBirth: 0.01, predDeath: 0.1 },
+                { label: '\uD83D\uDCA5 Extinction Spiral', prey0: 30, pred0: 80, preyBirth: 0.05, preyDeath: 0.02, predBirth: 0.01, predDeath: 0.05 },
+                { label: '\uD83D\uDCC8 Population Boom', prey0: 50, pred0: 10, preyBirth: 0.3, preyDeath: 0.005, predBirth: 0.005, predDeath: 0.15 },
+                { label: '\u2696 Equilibrium', prey0: 100, pred0: 50, preyBirth: 0.1, preyDeath: 0.01, predBirth: 0.005, predDeath: 0.1 },
+              ].map(function(preset) {
+                return React.createElement("button", { key: preset.label, onClick: function() {
+                  upd('prey0', preset.prey0); upd('pred0', preset.pred0);
+                  upd('preyBirth', preset.preyBirth); upd('preyDeath', preset.preyDeath);
+                  upd('predBirth', preset.predBirth); upd('predDeath', preset.predDeath);
+                  upd('data', []); upd('steps', 0);
+                }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, preset.label);
+              })
+            ),
             React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
               [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83D\uDC3A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: 'Prey Birth Rate', min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: 'Pred Death Rate', min: 0.01, max: 0.5, step: 0.01 }].map(s =>
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
@@ -4198,6 +4376,37 @@
             )
           );
         })(),
+            d.data.length > 0 && React.createElement("div", { className: "mt-3" },
+              React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait (Prey vs Predator)"),
+              React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
+                React.createElement("line", { x1: 30, y1: 270, x2: 270, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
+                React.createElement("line", { x1: 30, y1: 30, x2: 30, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
+                React.createElement("text", { x: 150, y: 295, textAnchor: "middle", fill: "#22c55e", style: { fontSize: '10px', fontWeight: 'bold' } }, "Prey Population"),
+                React.createElement("text", { x: 10, y: 150, textAnchor: "middle", fill: "#ef4444", style: { fontSize: '10px', fontWeight: 'bold' }, transform: "rotate(-90,10,150)" }, "Predator Population"),
+                React.createElement("polyline", { points: d.data.map(function(dp) {
+                  return (30 + dp.prey / maxVal * 240) + "," + (270 - dp.pred / maxVal * 240);
+                }).join(" "), fill: "none", stroke: "#6366f1", strokeWidth: 1.5 }),
+                React.createElement("circle", { cx: 30 + d.data[0].prey / maxVal * 240, cy: 270 - d.data[0].pred / maxVal * 240, r: 4, fill: "#22c55e" }),
+                React.createElement("circle", { cx: 30 + d.data[d.data.length-1].prey / maxVal * 240, cy: 270 - d.data[d.data.length-1].pred / maxVal * 240, r: 4, fill: "#ef4444" }),
+                React.createElement("text", { x: 35 + d.data[0].prey / maxVal * 240, y: 270 - d.data[0].pred / maxVal * 240 - 8, fill: "#22c55e", style: { fontSize: '8px', fontWeight: 'bold' } }, "Start"),
+                React.createElement("text", { x: 35 + d.data[d.data.length-1].prey / maxVal * 240, y: 270 - d.data[d.data.length-1].pred / maxVal * 240 - 8, fill: "#ef4444", style: { fontSize: '8px', fontWeight: 'bold' } }, "End")
+              ),
+              React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
+                React.createElement("div", { className: "p-1.5 bg-emerald-50 rounded-lg border border-emerald-200" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function(dp) { return dp.prey; })))
+                ),
+                React.createElement("div", { className: "p-1.5 bg-red-50 rounded-lg border border-red-200" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Predators"),
+                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function(dp) { return dp.pred; })))
+                ),
+                React.createElement("div", { className: "p-1.5 bg-indigo-50 rounded-lg border border-indigo-200" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
+                  React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function() { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i-1].prey > d.data[i-2].prey && d.data[i-1].prey > d.data[i].prey) peaks++; } return peaks; })())
+                )
+              ),
+              React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 The phase portrait shows the classic Lotka-Volterra orbit. Closed loops indicate stable oscillations.")
+            ),
 
         // ═══════════════════════════════════════════════════════
         // FRACTION VISUALIZER
