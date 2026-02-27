@@ -708,7 +708,11 @@
     "udl_lesson_plan": "UDL Lesson Plan",
     "toggle_consistent_characters": "Toggle consistent characters",
     "local_only": "Local only",
-    "haitian_creole": "Haitian Creole"
+    "haitian_creole": "Haitian Creole",
+    "assessment_center": "Assessment Center",
+    "auto_play": "Auto Play",
+    "ims_content": "IMS Content",
+    "randomize": "Randomize"
   },
   "meta": {
     "engagement_ideas": "Engagement Ideas",
@@ -964,7 +968,8 @@
     "resource_assigned": "Resource assigned to group!",
     "storage_disabled": "Local storage is disabled or unavailable.",
     "unsupported_file_type": "Unsupported file type.",
-    "visual_glitch_rewind": "Visual glitch detected. Rewinding state."
+    "visual_glitch_rewind": "Visual glitch detected. Rewinding state.",
+    "applied_standard": "Standard applied!"
   },
   "large_file": {
     "modal_title": "Import Large Audio File",
@@ -1579,7 +1584,10 @@
     "alert_parse_error": "Failed to parse language file.",
     "status_complete": "Translation complete!",
     "status_custom_loaded": "Custom language pack loaded!",
-    "status_retrying_chunk": "Retrying chunk {chunk} (attempt {attempt} of {maxAttempts})..."
+    "status_retrying_chunk": "Retrying chunk {chunk} (attempt {attempt} of {maxAttempts})...",
+    "status_checking": "Checking language pack...",
+    "status_generating": "Generating translation...",
+    "status_translating_part": "Translating part {current} of {total}..."
   },
   "languages": {
     "english": "English",
@@ -1708,7 +1716,11 @@
     "free_space": "FREE SPACE",
     "called_terms": "Called Terms",
     "click_hint": "Click to mark cells",
-    "close_game_aria": "Close Bingo Game"
+    "close_game_aria": "Close Bingo Game",
+    "close_generator": "Close Generator",
+    "exit_caller_aria": "Exit Bingo Caller",
+    "launch_caller_aria": "Launch Bingo Caller",
+    "pause_duration": "Pause Duration"
   },
   "audio_player": {
     "resume": "Resume Audio",
@@ -1978,7 +1990,12 @@
     "sort_desc": "Sort descending",
     "live_sync": "Live Sync",
     "total_sessions": "Total Sessions",
-    "total_probes": "Total Probes"
+    "total_probes": "Total Probes",
+    "best_score": "Best Score",
+    "best_streak": "Best Streak",
+    "no_student_data": "No student data available",
+    "phonemes_practiced": "Phonemes Practiced",
+    "words_completed": "Words Completed"
   },
   "simplified": {
     "title": "Text Adaptation & Engagement",
@@ -2399,7 +2416,11 @@
       "auto_remove_fail": "Could not generate image for term.",
       "enhanced_success": "Visuals enhanced automatically!",
       "enhanced_skipped": "Visual refinement skipped due to error. Showing original."
-    }
+    },
+    "replace_image": "Replace Image",
+    "restore_ai_image": "Restore AI Image",
+    "restore_original": "Restore Original",
+    "upload_image": "Upload Image"
   },
   "visual_director": {
     "multi_panel": "Multi-Panel ({{count}} panels)",
@@ -2764,7 +2785,9 @@
       "step_by_step": "Step-by-Step Solution",
       "conceptual": "Conceptual Explanation",
       "real_world": "Real-World Application",
-      "fluency_probe": "Fluency Probe"
+      "fluency_probe": "Fluency Probe",
+      "freeform_builder": "Freeform Builder",
+      "volume_builder": "Volume Builder"
     },
     "display": {
       "visual_header": "Visual Representation",
@@ -3106,7 +3129,8 @@
     "plan_essential": "Essential Question",
     "plan_hook": "Hook",
     "plan_independent": "Independent Practice",
-    "col_image": "Image"
+    "col_image": "Image",
+    "word_sounds_studio": "Word Sounds Studio"
   },
   "persona": {
     "title": "Interview Mode",
@@ -3551,7 +3575,15 @@
       "markdown": "Formatting",
       "newline": "Break",
       "none": "Text"
-    }
+    },
+    "bg": "Background",
+    "bg_color": "Background Color",
+    "chunk_read": "Chunk Read",
+    "color_presets": "Color Presets",
+    "colors": "Colors",
+    "presets": "Presets",
+    "text": "Text",
+    "text_color": "Text Color"
   },
   "timer": {
     "title": "Task Timer",
@@ -3688,7 +3720,9 @@
       "Turtle",
       "Viper",
       "Wolf"
-    ]
+    ],
+    "pick_adjective": "Pick an Adjective",
+    "pick_animal": "Pick an Animal"
   },
   "welcome": {
     "load": "Load Lesson File",
@@ -3976,7 +4010,8 @@
     "format_standard": "Standard Text",
     "format_bullets": "Bullet Points",
     "format_outline": "Outline",
-    "bridge_mode_btn": "🌐 Bridge Mode"
+    "bridge_mode_btn": "🌐 Bridge Mode",
+    "display_name_placeholder": "Enter display name..."
   },
   "adventure": {
     "title": "Adventure Mode",
@@ -4527,7 +4562,25 @@
     "consistent_characters_desc": "Keep the same character appearances across scenes",
     "custom_art_placeholder": "Describe your preferred art style...",
     "maximize": "Maximize",
-    "low_quality": "Low Quality Visuals"
+    "low_quality": "Low Quality Visuals",
+    "add_character": "Add Character",
+    "begin_adventure": "Begin Adventure",
+    "cast_lobby": "Cast Lobby",
+    "cast_lobby_desc": "Manage your adventure's cast of characters",
+    "char_name_placeholder": "Enter character name...",
+    "create_cast_member": "Create Cast Member",
+    "custom_art_style_placeholder": "e.g., anime, watercolor, realistic...",
+    "edit_appearance": "Edit Appearance",
+    "edit_name": "Edit Name",
+    "edit_nanobanana": "Edit with Nano Banana",
+    "edit_role": "Edit Role",
+    "focus_reader": "Focus Reader",
+    "generate_all": "Generate All",
+    "regen_portrait": "Regenerate Portrait",
+    "remove_character": "Remove Character",
+    "role_placeholder": "e.g., protagonist, antagonist, mentor...",
+    "story_unfolds": "The story unfolds...",
+    "your_choice": "Your Choice"
   },
   "grades": {
     "k": "Kindergarten",
@@ -4635,7 +4688,14 @@
       "designing": "Designing a {count}-resource lesson blueprint... You'll be able to suggest revisions to the plan once I generate it.",
       "error": "I encountered an error designing the blueprint. Let's try Step-by-Step instead.",
       "comprehensive": "comprehensive"
-    }
+    },
+    "advice_saved": "Advice saved!",
+    "advice_saved_raw": "Advice saved to notes",
+    "highlight_confirm": "Highlight confirmed",
+    "history_saved_toast": "Chat history saved!",
+    "independent_welcome": "Welcome! Ask me anything about the content.",
+    "save_actionable_btn": "Save Actionable",
+    "save_actionable_loading": "Saving..."
   },
   "student_dashboard": {
     "level_progress": "Level Progress",
@@ -5179,7 +5239,8 @@
     "error_extract": "Could not extract text. The URL might be invalid or blocking access.",
     "error_no_urls": "Could not find specific URLs. Please try a different topic.",
     "error_read_file": "Failed to read text file.",
-    "search_failed": "Search failed."
+    "search_failed": "Search failed.",
+    "found_resources": "Found {count} resources"
   },
   "stem_lab": {
     "save_to_resources": "Save to Resources",
