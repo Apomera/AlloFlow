@@ -616,6 +616,7 @@
           desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
           color: 'indigo', ready: true
         },
+            { id: 'rocks', icon: '🪨', label: 'Rocks & Minerals', desc: 'Interactive rock cycle, mineral properties & geology', color: '#b45309', cat: 'explore' },
         { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
         { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
         { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
@@ -3667,7 +3668,7 @@
             ),
 
             // Canvas
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '340px' } },
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '520px' } },
               React.createElement("canvas", {
                 "data-cell-sim-canvas": "true",
                 ref: canvasRefCb,
@@ -3719,6 +3720,12 @@
                       cv._onXP = function(xp, label) {
                         upd("xpEarned", (d.xpEarned || 0) + xp);
                         if (typeof addToast === 'function') addToast("+" + xp + " XP: " + label + "!", "success");
+                        var orgDef = ORGANISMS.find(function(o) { return o.activity === label || o.id === d.selectedOrganism; });
+                        if (orgDef) {
+                          var disc = (d.discoveries || []).slice();
+                          var undisc = orgDef.facts.map(function(f,i) { return orgDef.id + '_' + i; }).filter(function(k) { return disc.indexOf(k) === -1; });
+                          if (undisc.length > 0) { disc.push(undisc[Math.floor(Math.random() * undisc.length)]); upd("discoveries", disc); }
+                        }
                       };
                     }
                   },
@@ -3760,7 +3767,10 @@
                       return React.createElement("button", { key: opt, onClick: function() {
                         var correct = opt.toLowerCase() === quizQuestion.a.toLowerCase();
                         upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
-                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          var ansOrg = ORGANISMS.find(function(o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function(f,i) { return ansOrg.id + '_' + i; }).filter(function(k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                        }
                         else { upd("quizStreak", 0); }
                       }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-200 bg-white text-slate-700 hover:border-purple-400") }, opt);
                     })
@@ -3770,7 +3780,10 @@
                       return React.createElement("button", { key: org.id, onClick: function() {
                         var correct = org.id === quizQuestion.a;
                         upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
-                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          var ansOrg = ORGANISMS.find(function(o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function(f,i) { return ansOrg.id + '_' + i; }).filter(function(k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                        }
                         else { upd("quizStreak", 0); }
                       }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-200 bg-white text-slate-700 hover:border-purple-400" }, org.icon + " " + org.label);
                     })
@@ -5350,7 +5363,10 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
                         key: opt, onClick: function () {
                             var correct = opt === quizQ.a;
                             upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
-                            if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                            if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          var ansOrg = ORGANISMS.find(function(o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function(f,i) { return ansOrg.id + '_' + i; }).filter(function(k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                        }
                             else { upd("quizStreak", 0); }
                         }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
                     }, opt);
@@ -5363,6 +5379,660 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         ),
         React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
             React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+        )
+    )
+})(),
+
+
+stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
+    const d = labToolData.rocks || {};
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, rocks: { ...prev.rocks, [key]: val } }));
+    const mode = d.mode || 'landscape';
+
+    // ── Rock type data ──
+    const ROCK_TYPES = {
+        igneous: { label: 'Igneous', icon: '🌋', color: '#ef4444', desc: 'Formed from cooled magma or lava', process: 'Cooling & Crystallization' },
+        sedimentary: { label: 'Sedimentary', icon: '🏖️', color: '#f59e0b', desc: 'Formed from compressed layers of sediment', process: 'Compaction & Cementation' },
+        metamorphic: { label: 'Metamorphic', icon: '⛰️', color: '#8b5cf6', desc: 'Formed when existing rocks change under heat & pressure', process: 'Heat & Pressure' }
+    };
+
+    // ── Rock specimens ──
+    const ROCKS = [
+        { id: 'granite', type: 'igneous', label: 'Granite', hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
+        { id: 'basalt', type: 'igneous', label: 'Basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock — the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
+        { id: 'obsidian', type: 'igneous', label: 'Obsidian', hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
+        { id: 'pumice', type: 'igneous', label: 'Pumice', hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
+        { id: 'sandstone', type: 'sedimentary', label: 'Sandstone', hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
+        { id: 'limestone', type: 'sedimentary', label: 'Limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO₃). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
+        { id: 'shale', type: 'sedimentary', label: 'Shale', hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
+        { id: 'conglom', type: 'sedimentary', label: 'Conglomerate', hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
+        { id: 'marble', type: 'metamorphic', label: 'Marble', hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
+        { id: 'slate', type: 'metamorphic', label: 'Slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation — splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
+        { id: 'quartzite', type: 'metamorphic', label: 'Quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard — even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
+        { id: 'gneiss', type: 'metamorphic', label: 'Gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' }
+    ];
+
+    // ── Mineral data ──
+    const MINERALS = [
+        { id: 'quartz', label: 'Quartz', hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO₂' },
+        { id: 'feldspar', label: 'Feldspar', hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic', color: '#fce7f3', formula: 'KAlSi₃O₈' },
+        { id: 'mica', label: 'Mica', hardness: 2.5, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl₂(Si₃Al)O₁₀(OH)₂' },
+        { id: 'calcite', label: 'Calcite', hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal', color: '#f0fdf4', formula: 'CaCO₃' },
+        { id: 'halite', label: 'Halite', hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic', color: '#ede9fe', formula: 'NaCl' },
+        { id: 'pyrite', label: 'Pyrite', hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic', color: '#fef3c7', formula: 'FeS₂' },
+        { id: 'talc', label: 'Talc', hardness: 1, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg₃Si₄O₁₀(OH)₂' },
+        { id: 'diamond', label: 'Diamond', hardness: 10, streak: 'None', luster: 'Adamantine', crystal: 'Cubic', color: '#f0f9ff', formula: 'C' }
+    ];
+
+    // ── Quiz bank ──
+    const QUIZ_BANK = [
+        { q: 'Which rock type forms from cooled magma?', a: 'Igneous', options: ['Igneous', 'Sedimentary', 'Metamorphic', 'Organic'] },
+        { q: 'What process turns sediment into sedimentary rock?', a: 'Compaction and cementation', options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'] },
+        { q: 'Marble is a metamorphic form of which rock?', a: 'Limestone', options: ['Limestone', 'Sandstone', 'Granite', 'Basalt'] },
+        { q: 'Which mineral is the hardest on the Mohs scale?', a: 'Diamond', options: ['Diamond', 'Quartz', 'Feldspar', 'Topaz'] },
+        { q: 'What is the softest mineral?', a: 'Talc', options: ['Talc', 'Gypsum', 'Calcite', 'Halite'] },
+        { q: 'Obsidian forms when lava cools...', a: 'Very quickly', options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'] },
+        { q: 'Which rock can float on water?', a: 'Pumice', options: ['Pumice', 'Basalt', 'Marble', 'Granite'] },
+        { q: 'What type of rock is shale?', a: 'Sedimentary', options: ['Sedimentary', 'Igneous', 'Metamorphic', 'Mineral'] },
+        { q: 'Pyrite is also known as...', a: "Fool's gold", options: ["Fool's gold", "White gold", "Rose gold", "Black gold"] },
+        { q: 'Which rock shows distinct banding?', a: 'Gneiss', options: ['Gneiss', 'Granite', 'Basalt', 'Slate'] },
+        { q: 'Limestone fizzes when you add...', a: 'Acid', options: ['Acid', 'Water', 'Salt', 'Oil'] },
+        { q: 'Quartzite is metamorphosed...', a: 'Sandstone', options: ['Sandstone', 'Limestone', 'Shale', 'Granite'] }
+    ];
+
+    const selRock = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
+    const selMineral = d.selectedMineral ? MINERALS.find(m => m.id === d.selectedMineral) : null;
+    const quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+
+    // ── Canvas ref for landscape ──
+    const landscapeRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._rocksInit) return;
+        canvasEl._rocksInit = true;
+        const W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
+        const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
+        const ctx = canvasEl.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        let tick = 0;
+        let hoverZone = null;
+
+        const zones = [
+            { id: 'volcano', label: '🌋 Volcano (Igneous)', x: 0.12, y: 0.15, w: 0.22, h: 0.55, type: 'igneous' },
+            { id: 'river', label: '🏖️ River Delta (Sedimentary)', x: 0.5, y: 0.45, w: 0.28, h: 0.35, type: 'sedimentary' },
+            { id: 'mountain', label: '⛰️ Mountain Core (Metamorphic)', x: 0.75, y: 0.08, w: 0.22, h: 0.62, type: 'metamorphic' }
+        ];
+
+        function drawLandscape() {
+            ctx.clearRect(0, 0, W, H);
+            // Sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+            skyGrad.addColorStop(0, '#0c4a6e');
+            skyGrad.addColorStop(1, '#7dd3fc');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H * 0.5);
+
+            // Underground gradient
+            const groundGrad = ctx.createLinearGradient(0, H * 0.5, 0, H);
+            groundGrad.addColorStop(0, '#78350f');
+            groundGrad.addColorStop(0.3, '#92400e');
+            groundGrad.addColorStop(1, '#451a03');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, H * 0.5, W, H * 0.5);
+
+            // Ground surface line
+            ctx.beginPath();
+            ctx.moveTo(0, H * 0.5);
+            for (let x = 0; x <= W; x += 5) {
+                const wave = Math.sin(x * 0.01 + tick * 0.01) * 3 * dpr;
+                ctx.lineTo(x, H * 0.5 + wave);
+            }
+            ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+            ctx.fillStyle = '#65a30d';
+            ctx.fill();
+
+            // ── Volcano (left) ──
+            ctx.beginPath();
+            ctx.moveTo(W * 0.02, H * 0.52);
+            ctx.lineTo(W * 0.15, H * 0.12);
+            ctx.lineTo(W * 0.18, H * 0.08);
+            ctx.lineTo(W * 0.21, H * 0.12);
+            ctx.lineTo(W * 0.34, H * 0.52);
+            ctx.closePath();
+            const volcGrad = ctx.createLinearGradient(W * 0.15, H * 0.08, W * 0.15, H * 0.52);
+            volcGrad.addColorStop(0, '#7f1d1d');
+            volcGrad.addColorStop(0.4, '#991b1b');
+            volcGrad.addColorStop(1, '#57534e');
+            ctx.fillStyle = volcGrad;
+            ctx.fill();
+
+            // Lava flow
+            ctx.beginPath();
+            ctx.moveTo(W * 0.17, H * 0.1);
+            const lavaWave = Math.sin(tick * 0.05) * 5 * dpr;
+            ctx.quadraticCurveTo(W * 0.19 + lavaWave, H * 0.25, W * 0.24, H * 0.42);
+            ctx.lineTo(W * 0.22, H * 0.42);
+            ctx.quadraticCurveTo(W * 0.17 - lavaWave, H * 0.25, W * 0.16, H * 0.1);
+            ctx.closePath();
+            const lavaGrad = ctx.createLinearGradient(W * 0.17, H * 0.1, W * 0.17, H * 0.42);
+            lavaGrad.addColorStop(0, '#fbbf24');
+            lavaGrad.addColorStop(0.5, '#f97316');
+            lavaGrad.addColorStop(1, '#dc2626');
+            ctx.fillStyle = lavaGrad;
+            ctx.fill();
+
+            // Lava particles
+            for (let i = 0; i < 6; i++) {
+                const px = W * 0.17 + Math.sin(tick * 0.08 + i * 1.2) * 12 * dpr;
+                const py = H * 0.06 - Math.abs(Math.sin(tick * 0.06 + i * 0.9)) * 20 * dpr;
+                ctx.beginPath();
+                ctx.arc(px, py, (2 + Math.sin(tick * 0.1 + i)) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = i % 2 === 0 ? '#fbbf24' : '#f97316';
+                ctx.fill();
+            }
+
+            // Magma chamber underground
+            ctx.beginPath();
+            ctx.ellipse(W * 0.18, H * 0.75, W * 0.08, H * 0.12, 0, 0, Math.PI * 2);
+            const magmaGrad = ctx.createRadialGradient(W * 0.18, H * 0.75, 0, W * 0.18, H * 0.75, W * 0.08);
+            magmaGrad.addColorStop(0, '#fbbf24');
+            magmaGrad.addColorStop(0.5, '#ea580c');
+            magmaGrad.addColorStop(1, '#7f1d1d');
+            ctx.fillStyle = magmaGrad;
+            ctx.fill();
+
+            // ── River & sedimentary layers (center) ──
+            // River
+            ctx.beginPath();
+            ctx.moveTo(W * 0.38, H * 0.48);
+            ctx.quadraticCurveTo(W * 0.45, H * 0.46 + Math.sin(tick * 0.02) * 3 * dpr, W * 0.55, H * 0.49);
+            ctx.quadraticCurveTo(W * 0.62, H * 0.5, W * 0.7, H * 0.48);
+            ctx.lineTo(W * 0.7, H * 0.52);
+            ctx.quadraticCurveTo(W * 0.62, H * 0.54, W * 0.55, H * 0.53);
+            ctx.quadraticCurveTo(W * 0.45, H * 0.5, W * 0.38, H * 0.52);
+            ctx.closePath();
+            ctx.fillStyle = '#38bdf8';
+            ctx.fill();
+
+            // Sedimentary layers underground
+            const layerColors = ['#d97706', '#fbbf24', '#92400e', '#b45309', '#78716c'];
+            for (let i = 0; i < 5; i++) {
+                const ly = H * 0.55 + i * H * 0.08;
+                ctx.fillStyle = layerColors[i];
+                ctx.fillRect(W * 0.38, ly, W * 0.32, H * 0.07);
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                ctx.lineWidth = 0.5 * dpr;
+                ctx.strokeRect(W * 0.38, ly, W * 0.32, H * 0.07);
+            }
+
+            // Fossil in layer
+            ctx.font = (14 * dpr) + 'px serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillText('🦴', W * 0.5, H * 0.66);
+            ctx.fillText('🐚', W * 0.58, H * 0.74);
+
+            // ── Mountain (right — metamorphic) ──
+            ctx.beginPath();
+            ctx.moveTo(W * 0.62, H * 0.52);
+            ctx.lineTo(W * 0.78, H * 0.06);
+            ctx.lineTo(W * 0.82, H * 0.02);
+            ctx.lineTo(W * 0.86, H * 0.06);
+            ctx.lineTo(W * 0.98, H * 0.52);
+            ctx.closePath();
+            const mtGrad = ctx.createLinearGradient(W * 0.82, H * 0.02, W * 0.82, H * 0.52);
+            mtGrad.addColorStop(0, '#fafafa');
+            mtGrad.addColorStop(0.2, '#d1d5db');
+            mtGrad.addColorStop(0.5, '#6b7280');
+            mtGrad.addColorStop(1, '#374151');
+            ctx.fillStyle = mtGrad;
+            ctx.fill();
+
+            // Metamorphic layers folded inside mountain underground
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                const baseY = H * 0.6 + i * H * 0.08;
+                ctx.moveTo(W * 0.65, baseY);
+                const fold = Math.sin(i * 0.8 + tick * 0.005) * 8 * dpr;
+                ctx.quadraticCurveTo(W * 0.78, baseY - 10 * dpr + fold, W * 0.92, baseY);
+                ctx.strokeStyle = ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'][i];
+                ctx.lineWidth = 3 * dpr;
+                ctx.stroke();
+            }
+
+            // Pressure arrows
+            const arrowAlpha = 0.3 + Math.sin(tick * 0.04) * 0.15;
+            ctx.fillStyle = `rgba(139,92,246,${arrowAlpha})`;
+            ctx.font = (16 * dpr) + 'px sans-serif';
+            ctx.fillText('→', W * 0.63, H * 0.72);
+            ctx.fillText('←', W * 0.93, H * 0.72);
+            ctx.fillText('↓', W * 0.8, H * 0.56);
+
+            // ── Zone hover highlights ──
+            zones.forEach(z => {
+                if (hoverZone === z.id) {
+                    ctx.strokeStyle = ROCK_TYPES[z.type].color;
+                    ctx.lineWidth = 3 * dpr;
+                    ctx.setLineDash([6 * dpr, 4 * dpr]);
+                    ctx.strokeRect(z.x * W, z.y * H, z.w * W, z.h * H);
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                    ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
+                    ctx.fillText(z.label, z.x * W + 6 * dpr, (z.y + z.h) * H - 6 * dpr);
+                }
+            });
+
+            // Rock cycle arrows overlay
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+            ctx.lineWidth = 2 * dpr;
+            ctx.setLineDash([4 * dpr, 4 * dpr]);
+            // Igneous → (weathering) → Sedimentary
+            ctx.beginPath(); ctx.moveTo(W * 0.32, H * 0.45); ctx.quadraticCurveTo(W * 0.4, H * 0.38, W * 0.48, H * 0.45); ctx.stroke();
+            ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = (8 * dpr) + 'px sans-serif';
+            ctx.fillText('Weathering', W * 0.36, H * 0.38);
+            // Sedimentary → (heat/pressure) → Metamorphic
+            ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.7); ctx.quadraticCurveTo(W * 0.72, H * 0.65, W * 0.76, H * 0.62); ctx.stroke();
+            ctx.fillText('Heat & Pressure', W * 0.66, H * 0.62);
+            // Metamorphic → (melting) → Igneous (magma)
+            ctx.beginPath(); ctx.moveTo(W * 0.65, H * 0.85); ctx.quadraticCurveTo(W * 0.45, H * 0.88, W * 0.28, H * 0.78); ctx.stroke();
+            ctx.fillText('Melting', W * 0.42, H * 0.9);
+            ctx.setLineDash([]);
+
+            // Magnification
+            ctx.font = (10 * dpr) + 'px monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillText('🪨 Cross-Section View', 8 * dpr, H - 8 * dpr);
+        }
+
+        let animId = null;
+        function loop() {
+            tick++;
+            drawLandscape();
+            animId = requestAnimationFrame(loop);
+        }
+        animId = requestAnimationFrame(loop);
+
+        // Mouse hover for zones
+        canvasEl.addEventListener('mousemove', function (e) {
+            const rect = canvasEl.getBoundingClientRect();
+            const mx = (e.clientX - rect.left) / rect.width;
+            const my = (e.clientY - rect.top) / rect.height;
+            hoverZone = null;
+            zones.forEach(z => {
+                if (mx >= z.x && mx <= z.x + z.w && my >= z.y && my <= z.y + z.h) hoverZone = z.id;
+            });
+            canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
+        });
+
+        canvasEl.addEventListener('click', function (e) {
+            const rect = canvasEl.getBoundingClientRect();
+            const mx = (e.clientX - rect.left) / rect.width;
+            const my = (e.clientY - rect.top) / rect.height;
+            zones.forEach(z => {
+                if (mx >= z.x && mx <= z.x + z.w && my >= z.y && my <= z.y + z.h) {
+                    const typeRocks = ROCKS.filter(r => r.type === z.type);
+                    if (typeRocks.length > 0) {
+                        canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+                    }
+                }
+            });
+        });
+
+        canvasEl._rocksCleanup = function () { if (animId) cancelAnimationFrame(animId); };
+        const ro = new ResizeObserver(function () {
+            canvasEl.width = canvasEl.offsetWidth * dpr;
+            canvasEl.height = canvasEl.offsetHeight * dpr;
+        });
+        ro.observe(canvasEl);
+        canvasEl._rocksRO = ro;
+    };
+
+    // ── Rock texture canvas ref ──
+    const textureRef = function (canvasEl) {
+        if (!canvasEl || !selRock || canvasEl._lastRock === selRock.id) return;
+        canvasEl._lastRock = selRock.id;
+        const W = canvasEl.width = 200 * (window.devicePixelRatio || 1);
+        const H = canvasEl.height = 200 * (window.devicePixelRatio || 1);
+        const ctx = canvasEl.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+
+        // Draw rock texture based on type
+        ctx.fillStyle = selRock.grainColors[0];
+        ctx.fillRect(0, 0, W, H);
+
+        if (selRock.texture === 'coarse-grained' || selRock.texture === 'clastic-coarse') {
+            // Large interlocking crystals/grains
+            for (let i = 0; i < 60; i++) {
+                ctx.beginPath();
+                const x = Math.random() * W, y = Math.random() * H;
+                const sz = (8 + Math.random() * 16) * dpr;
+                ctx.moveTo(x, y - sz);
+                for (let a = 0; a < 6; a++) {
+                    const angle = (a / 6) * Math.PI * 2 - Math.PI / 2;
+                    ctx.lineTo(x + Math.cos(angle) * sz * (0.7 + Math.random() * 0.3), y + Math.sin(angle) * sz * (0.7 + Math.random() * 0.3));
+                }
+                ctx.closePath();
+                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.lineWidth = 0.5 * dpr;
+                ctx.stroke();
+            }
+        } else if (selRock.texture === 'fine-grained' || selRock.texture === 'clastic') {
+            // Small speckled grains
+            for (let i = 0; i < 400; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * W, Math.random() * H, (1 + Math.random() * 3) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
+                ctx.fill();
+            }
+        } else if (selRock.texture === 'glassy') {
+            // Smooth dark with conchoidal fracture lines
+            const grad = ctx.createRadialGradient(W * 0.4, H * 0.4, 0, W * 0.5, H * 0.5, W * 0.6);
+            grad.addColorStop(0, '#1a1a2e');
+            grad.addColorStop(1, '#0a0a0a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+            for (let i = 0; i < 8; i++) {
+                ctx.beginPath();
+                ctx.arc(W * 0.3 + i * 8 * dpr, H * 0.5 + Math.sin(i) * 20 * dpr, (15 + i * 5) * dpr, -0.5, 0.5);
+                ctx.strokeStyle = 'rgba(100,130,180,0.15)';
+                ctx.lineWidth = 1 * dpr;
+                ctx.stroke();
+            }
+        } else if (selRock.texture === 'vesicular') {
+            // Light with holes/vesicles
+            ctx.fillStyle = '#d6d3d1';
+            ctx.fillRect(0, 0, W, H);
+            for (let i = 0; i < 50; i++) {
+                ctx.beginPath();
+                ctx.ellipse(Math.random() * W, Math.random() * H, (3 + Math.random() * 8) * dpr, (2 + Math.random() * 5) * dpr, Math.random() * Math.PI, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(120,113,108,0.3)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                ctx.lineWidth = 0.5 * dpr;
+                ctx.stroke();
+            }
+        } else if (selRock.texture === 'fine-layered' || selRock.texture === 'foliated') {
+            // Thin parallel layers
+            for (let y = 0; y < H; y += 4 * dpr) {
+                ctx.fillStyle = selRock.grainColors[Math.floor(y / (4 * dpr)) % selRock.grainColors.length];
+                ctx.fillRect(0, y, W, 3 * dpr);
+                ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                ctx.fillRect(0, y + 3 * dpr, W, 1 * dpr);
+            }
+        } else if (selRock.texture === 'bioclastic') {
+            // Light with shell fragments
+            ctx.fillStyle = '#e5e7eb';
+            ctx.fillRect(0, 0, W, H);
+            for (let i = 0; i < 200; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * W, Math.random() * H, (0.5 + Math.random() * 2) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
+                ctx.fill();
+            }
+            // Shell imprints
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.arc(30 * dpr + Math.random() * (W - 60 * dpr), 30 * dpr + Math.random() * (H - 60 * dpr), (6 + Math.random() * 4) * dpr, 0, Math.PI);
+                ctx.strokeStyle = 'rgba(161,161,170,0.4)';
+                ctx.lineWidth = 1 * dpr;
+                ctx.stroke();
+            }
+        } else if (selRock.texture === 'crystalline' || selRock.texture === 'non-foliated') {
+            // Interlocking crystals
+            for (let i = 0; i < 80; i++) {
+                ctx.beginPath();
+                const x = Math.random() * W, y = Math.random() * H;
+                const sz = (4 + Math.random() * 10) * dpr;
+                ctx.rect(x - sz / 2, y - sz / 2, sz, sz);
+                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 0.5 * dpr;
+                ctx.stroke();
+            }
+        } else if (selRock.texture === 'banded') {
+            // Alternating light/dark bands (wavy)
+            for (let y = 0; y < H; y += 8 * dpr) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                for (let x = 0; x <= W; x += 5) {
+                    ctx.lineTo(x, y + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
+                }
+                ctx.lineTo(W, y + 8 * dpr);
+                for (let x = W; x >= 0; x -= 5) {
+                    ctx.lineTo(x, y + 8 * dpr + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
+                }
+                ctx.closePath();
+                ctx.fillStyle = Math.floor(y / (8 * dpr)) % 2 === 0 ? '#1e1e1e' : '#d4d4d8';
+                ctx.fill();
+            }
+        }
+
+        // Border
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.lineWidth = 2 * dpr;
+        ctx.strokeRect(0, 0, W, H);
+    };
+
+    // Cleanup ref
+    const cleanupRef = function (el) {
+        if (!el) {
+            const old = document.querySelector('[data-rocks-canvas]');
+            if (old && old._rocksCleanup) { old._rocksCleanup(); if (old._rocksRO) old._rocksRO.disconnect(); }
+        }
+    };
+
+    return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+        // Header
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+            React.createElement("div", { className: "flex gap-1 ml-auto" },
+                ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
+                    return React.createElement("button", {
+                        key: m, onClick: function () {
+                            upd("mode", m);
+                            if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizFeedback", null); }
+                            else { upd("quizMode", false); }
+                        }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    },
+                        m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : '🧠 Quiz');
+                })
+            )
+        ),
+
+        // ── Landscape mode ──
+        mode === 'landscape' && React.createElement("div", null,
+            React.createElement("p", { className: "text-xs text-slate-500 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
+                React.createElement("canvas", {
+                    "data-rocks-canvas": "true",
+                    ref: function (el) {
+                        landscapeRef(el);
+                        if (el) {
+                            el._onSelectRock = function (rockId, type) {
+                                upd("selectedRock", rockId);
+                                upd("selectedType", type);
+                                upd("mode", "rocks");
+                            };
+                        }
+                    },
+                    style: { width: '100%', height: '100%' }
+                })
+            ),
+            // Rock cycle legend
+            React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
+                Object.values(ROCK_TYPES).map(function (rt) {
+                    return React.createElement("div", { key: rt.label, className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border text-xs font-bold", style: { borderColor: rt.color, color: rt.color } },
+                        rt.icon, " ", rt.label);
+                })
+            ),
+            React.createElement("div", { className: "mt-2 bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-slate-600" },
+                React.createElement("p", { className: "font-bold text-amber-800 mb-1" }, "🔄 The Rock Cycle"),
+                React.createElement("p", null, "Rocks continuously transform: Igneous rocks weather into sediment → Sediment compacts into Sedimentary rocks → Heat & pressure create Metamorphic rocks → Melting creates magma → Cooling forms new Igneous rocks. The cycle never stops!")
+            )
+        ),
+
+        // ── Rocks mode ──
+        mode === 'rocks' && React.createElement("div", null,
+            // Type filter
+            React.createElement("div", { className: "flex gap-2 mb-3" },
+                ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
+                    return React.createElement("button", {
+                        key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
+                        className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
+                            ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                        style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
+                    }, t === 'all' ? '📋 All' : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
+                })
+            ),
+            // Rock grid
+            React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
+                ROCKS.filter(function (r) { return !d.selectedType || r.type === d.selectedType; }).map(function (rock) {
+                    const rt = ROCK_TYPES[rock.type];
+                    return React.createElement("button", {
+                        key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
+                        className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                            (d.selectedRock === rock.id ? 'bg-white shadow-lg' : 'bg-slate-50 border-slate-200'),
+                        style: d.selectedRock === rock.id ? { borderColor: rt.color, color: rt.color } : {}
+                    },
+                        React.createElement("div", { className: "text-lg mb-0.5" }, rt.icon),
+                        rock.label);
+                })
+            ),
+            // Selected rock detail card
+            selRock && React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: ROCK_TYPES[selRock.type].color } },
+                React.createElement("div", { className: "flex gap-4" },
+                    // Texture canvas
+                    React.createElement("canvas", { ref: textureRef, style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                    React.createElement("div", { className: "flex-1" },
+                        React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
+                        React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
+                        React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc)
+                    )
+                ),
+                // Properties
+                React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-3" },
+                    [
+                        { label: 'Hardness (Mohs)', value: selRock.hardness + '/10', icon: '💪' },
+                        { label: 'Texture', value: selRock.texture, icon: '🔍' },
+                        { label: 'Uses', value: selRock.uses, icon: '🏗️' }
+                    ].map(function (prop) {
+                        return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
+                            React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
+                            React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-0.5" }, prop.value));
+                    })
+                ),
+                // Mohs scale bar
+                React.createElement("div", { className: "mt-3" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Hardness Scale"),
+                    React.createElement("div", { className: "flex gap-0.5 items-end" },
+                        Array.from({ length: 10 }, function (_, i) {
+                            const active = i + 1 <= Math.round(selRock.hardness);
+                            return React.createElement("div", {
+                                key: i, className: "flex-1 rounded-sm transition-all", style: {
+                                    height: (8 + i * 3) + 'px',
+                                    background: active ? ROCK_TYPES[selRock.type].color : '#e5e7eb'
+                                }
+                            });
+                        })
+                    ),
+                    React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
+                        React.createElement("span", null, "1 (Talc)"),
+                        React.createElement("span", null, "10 (Diamond)"))
+                )
+            )
+        ),
+
+        // ── Minerals mode ──
+        mode === 'minerals' && React.createElement("div", null,
+            React.createElement("p", { className: "text-xs text-slate-500 mb-3 italic" }, "Minerals are the building blocks of rocks. Explore their properties below."),
+            React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
+                MINERALS.map(function (min) {
+                    return React.createElement("button", {
+                        key: min.id, onClick: function () { upd("selectedMineral", d.selectedMineral === min.id ? null : min.id); upd("selectedRock", null); },
+                        className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                            (d.selectedMineral === min.id ? 'shadow-lg' : 'border-slate-200 bg-slate-50'),
+                        style: d.selectedMineral === min.id ? { borderColor: '#8b5cf6', background: min.color, color: '#1e1b4b' } : {}
+                    },
+                        React.createElement("div", { className: "text-lg mb-0.5" }, "💎"),
+                        min.label);
+                })
+            ),
+            // Selected mineral detail
+            selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in" },
+                React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "💎 " + selMineral.label),
+                React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-3" }, "Formula: " + selMineral.formula),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    [
+                        { label: 'Hardness', value: selMineral.hardness + ' / 10', icon: '💪' },
+                        { label: 'Streak', value: selMineral.streak, icon: '✏️' },
+                        { label: 'Luster', value: selMineral.luster, icon: '✨' },
+                        { label: 'Crystal System', value: selMineral.crystal, icon: '🔷' }
+                    ].map(function (prop) {
+                        return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
+                            React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
+                            React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
+                    })
+                ),
+                // Mohs bar
+                React.createElement("div", { className: "mt-3" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Position"),
+                    React.createElement("div", { className: "flex gap-0.5 items-end" },
+                        Array.from({ length: 10 }, function (_, i) {
+                            const active = i + 1 <= Math.round(selMineral.hardness);
+                            return React.createElement("div", {
+                                key: i, className: "flex-1 rounded-sm transition-all", style: {
+                                    height: (8 + i * 3) + 'px',
+                                    background: active ? '#8b5cf6' : '#e5e7eb'
+                                }
+                            });
+                        })
+                    ),
+                    React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
+                        React.createElement("span", null, "1 (Talc)"),
+                        React.createElement("span", null, "10 (Diamond)"))
+                )
+            )
+        ),
+
+        // ── Quiz mode ──
+        d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
+            React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                React.createElement("span", { className: "font-bold text-green-600 text-xs" }, "\u2714 " + (d.quizScore || 0))
+            ),
+            React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
+            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                quizQ.options.map(function (opt) {
+                    return React.createElement("button", {
+                        key: opt, onClick: function () {
+                            const correct = opt === quizQ.a;
+                            upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Not quite. The answer is: " + quizQ.a });
+                            if (correct) upd("quizScore", (d.quizScore || 0) + 1);
+                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
+                            (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
+                    }, opt);
+                })
+            ),
+            d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+                d.quizFeedback.msg,
+                React.createElement("button", {
+                    onClick: function () {
+                        const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                        upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                    }, className: "ml-3 px-2 py-0.5 bg-amber-600 text-white rounded text-xs"
+                }, "Next \u2192")
+            )
+        ),
+
+        // Bottom controls
+        React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+            React.createElement("button", {
+                onClick: function () {
+                    setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: 'Rocks' + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
+                    addToast('\uD83D\uDCF8 Rocks snapshot saved!', 'success');
+                }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
+            }, "\uD83D\uDCF8 Snapshot")
         )
     )
 })(),
