@@ -3066,6 +3066,54 @@
                 React.createElement("div", { key: s.k, className: "text-center" },
                   React.createElement("label", { className: "text-xs font-bold text-slate-500" }, s.label + ": " + d[s.k]),
                   React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-red-600" })
+            React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5" },
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-400 self-center" }, "Presets:"),
+              [
+                { label: '\u222B x\u00B2 [0,1]', a: 1, b: 0, c: 0, xMin: 0, xMax: 1, n: 20, tip: 'Exact answer: 1/3 \u2248 0.333' },
+                { label: '\u222B x\u00B2 [0,3]', a: 1, b: 0, c: 0, xMin: 0, xMax: 3, n: 20, tip: 'Exact answer: 9' },
+                { label: '\u222B (x\u00B2+2x+1) [0,2]', a: 1, b: 2, c: 1, xMin: 0, xMax: 2, n: 20, tip: 'Try increasing n to see convergence!' },
+                { label: '\u222B 2x [0,5]', a: 0, b: 2, c: 0, xMin: 0, xMax: 5, n: 10, tip: 'Linear function \u2014 exact even with few rectangles' },
+                { label: '\u222B -x\u00B2+4 [0,2]', a: -1, b: 0, c: 4, xMin: 0, xMax: 2, n: 25, tip: 'A downward parabola \u2014 find the area under the arch' },
+              ].map(function(p) {
+                return React.createElement("button", { key: p.label, onClick: function() {
+                  upd('a', p.a); upd('b', p.b); upd('c', p.c); upd('xMin', p.xMin); upd('xMax', p.xMax); upd('n', p.n);
+                  addToast(p.tip, 'success');
+                }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all" }, p.label);
+              })
+            ),
+            React.createElement("div", { className: "mt-2 bg-red-50 rounded-xl border border-red-200 p-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-red-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Analysis"),
+              React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
+                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Riemann Sum"),
+                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, area.toFixed(4))
+                ),
+                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Exact (\u222B)"),
+                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, (function() {
+                    var exact = (d.a/3)*(Math.pow(d.xMax,3)-Math.pow(d.xMin,3)) + (d.b/2)*(Math.pow(d.xMax,2)-Math.pow(d.xMin,2)) + d.c*(d.xMax-d.xMin);
+                    return exact.toFixed(4);
+                  })())
+                ),
+                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Error"),
+                  React.createElement("p", { className: "text-sm font-bold " + (function() {
+                    var exact = (d.a/3)*(Math.pow(d.xMax,3)-Math.pow(d.xMin,3)) + (d.b/2)*(Math.pow(d.xMax,2)-Math.pow(d.xMin,2)) + d.c*(d.xMax-d.xMin);
+                    var err = Math.abs(area - exact);
+                    return err < 0.01 ? 'text-emerald-600' : err < 0.1 ? 'text-yellow-600' : 'text-red-600';
+                  })() }, (function() {
+                    var exact = (d.a/3)*(Math.pow(d.xMax,3)-Math.pow(d.xMin,3)) + (d.b/2)*(Math.pow(d.xMax,2)-Math.pow(d.xMin,2)) + d.c*(d.xMax-d.xMin);
+                    return Math.abs(area - exact).toFixed(4);
+                  })())
+                )
+              ),
+              React.createElement("p", { className: "mt-2 text-xs text-red-500 italic" },
+                d.n <= 5 ? '\uD83D\uDCA1 Very few rectangles! The approximation is rough. Try increasing n.'
+                : d.n <= 15 ? '\uD83D\uDCA1 Getting closer! More rectangles = better approximation. This is the fundamental idea of integration.'
+                : d.n <= 30 ? '\uD83D\uDCA1 Good approximation! The error shrinks as n increases (proportional to 1/n\u00B2 for midpoint).'
+                : '\uD83D\uDCA1 Excellent! At n=' + d.n + ' rectangles, the Riemann sum closely matches the exact integral. The limit as n\u2192\u221E gives the true area.'
+              )
+            ),
                 )
               )
             ),
@@ -3126,7 +3174,7 @@
               )
             ),
             React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 text-center text-xs text-slate-500" },
-              `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | A = ${Number(d.amplitude).toFixed(1)}`
+              `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | A = ${Number(d.amplitude).toFixed(1)}`),
             React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" },
               React.createElement("span", { className: "text-[10px] font-bold text-slate-400 self-center" }, "Presets:"),
               [
@@ -3216,6 +3264,32 @@
                 React.createElement("input", { type: "checkbox", checked: d.quizMode, onChange: e => { upd("quizMode", e.target.checked); if (e.target.checked) { const orgs = organelles; const target = orgs[Math.floor(Math.random() * orgs.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("labels", false); } }, className: "accent-purple-600" }),
                 "Quiz Mode"
               ),
+            // ── Organelle Quick Reference ──
+            React.createElement("div", { className: "mt-3 bg-green-50 rounded-xl border border-green-200 p-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-green-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCD6 Organelle Functions"),
+              React.createElement("div", { className: "grid grid-cols-2 gap-1" },
+                [
+                  ['\uD83E\uDDEC Nucleus', 'Control center \u2014 houses DNA'],
+                  ['\u26A1 Mitochondria', 'Energy production (ATP)'],
+                  ['\uD83C\uDFED Ribosomes', 'Protein synthesis'],
+                  ['\uD83C\uDF0A ER', 'Protein & lipid transport'],
+                  ['\uD83D\uDCE6 Golgi', 'Package & ship proteins'],
+                  ['\u267B Lysosomes', 'Waste disposal'],
+                  ['\uD83D\uDEE1 Membrane', 'Controls entry/exit'],
+                  ['\uD83D\uDCA7 Cytoplasm', 'Internal cell fluid'],
+                ].concat(d.type === 'plant' ? [
+                  ['\uD83C\uDF31 Chloroplast', 'Photosynthesis'],
+                  ['\uD83E\uDDF1 Cell Wall', 'Rigid protection'],
+                  ['\uD83D\uDCA7 Vacuole', 'Water storage'],
+                ] : []).map(function(item) {
+                  return React.createElement("div", { key: item[0], className: "flex items-center gap-1 text-[10px] py-0.5" },
+                    React.createElement("span", { className: "font-bold text-green-800 w-1/2" }, item[0]),
+                    React.createElement("span", { className: "text-slate-500" }, item[1])
+                  );
+                })
+              ),
+              d.type === 'plant' && React.createElement("p", { className: "mt-1 text-[10px] text-green-600 italic" }, "\uD83C\uDF3F Plant cells have cell walls, chloroplasts, and a large central vacuole that animal cells lack.")
+            ),
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ce-' + Date.now(), tool: 'cell', label: d.type + ' cell' + (d.selectedOrganelle ? ': ' + d.selectedOrganelle : ''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Cell snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
             )
           )
@@ -3465,6 +3539,53 @@
             React.createElement("div", { className: "mt-4 bg-slate-50 rounded-lg p-3 text-center" },
               React.createElement("p", { className: "text-sm font-bold text-slate-600" }, "Genotype Ratios: " + Object.entries(counts).map(([g, c]) => g + ': ' + c + '/4').join(' | ')),
               React.createElement("p", { className: "text-xs text-slate-400 mt-1" }, "Phenotype: " + grid.flat().filter(g => phenotype(g) === 'Dominant').length + "/4 Dominant, " + grid.flat().filter(g => phenotype(g) === 'Recessive').length + "/4 Recessive")
+            ),
+            // ── Trait Presets ──
+            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\uD83E\uDDEC Quick Crosses"),
+              React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                [
+                  { label: '\uD83D\uDFE4 Heterozygous x Hetero (Bb \u00D7 Bb)', p1: ['B','b'], p2: ['B','b'], tip: 'Classic 3:1 ratio \u2014 the Mendelian monohybrid cross' },
+                  { label: '\uD83D\uDFE4 Hetero x Recessive (Bb \u00D7 bb)', p1: ['B','b'], p2: ['b','b'], tip: 'Test cross: 1:1 ratio reveals heterozygosity' },
+                  { label: '\uD83D\uDCA0 Homozygous x Homo (BB \u00D7 bb)', p1: ['B','B'], p2: ['b','b'], tip: 'All offspring are heterozygous (Bb) \u2014 100% dominant' },
+                  { label: '\uD83C\uDF39 Flower Color (Rr \u00D7 Rr)', p1: ['R','r'], p2: ['R','r'], tip: 'Red flowers (RR, Rr) vs white flowers (rr)' },
+                  { label: '\uD83E\uDDB7 Tongue Rolling (Tt \u00D7 Tt)', p1: ['T','t'], p2: ['T','t'], tip: 'Tongue rolling is a dominant trait!' },
+                ].map(function(preset) {
+                  return React.createElement("button", { key: preset.label, onClick: function() {
+                    upd('parent1', preset.p1); upd('parent2', preset.p2);
+                    addToast('\uD83E\uDDEC ' + preset.tip, 'success');
+                  }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 transition-all" }, preset.label);
+                })
+              ),
+              // ── Phenotype Ratio Bar Chart ──
+              React.createElement("div", { className: "mt-3 bg-white rounded-lg border p-3" },
+                React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-2" }, "\uD83D\uDCCA Phenotype Distribution"),
+                (function() {
+                  var domCount = grid.flat().filter(function(g) { return phenotype(g) === 'Dominant'; }).length;
+                  var recCount = 4 - domCount;
+                  return React.createElement("div", { className: "flex items-end gap-4 justify-center h-20" },
+                    React.createElement("div", { className: "flex flex-col items-center" },
+                      React.createElement("div", { className: "w-16 bg-emerald-400 rounded-t-lg transition-all", style: { height: (domCount / 4 * 60) + 'px' } }),
+                      React.createElement("span", { className: "text-xs font-bold text-emerald-700 mt-1" }, "Dom " + (domCount * 25) + "%")
+                    ),
+                    React.createElement("div", { className: "flex flex-col items-center" },
+                      React.createElement("div", { className: "w-16 bg-amber-400 rounded-t-lg transition-all", style: { height: (recCount / 4 * 60) + 'px' } }),
+                      React.createElement("span", { className: "text-xs font-bold text-amber-700 mt-1" }, "Rec " + (recCount * 25) + "%")
+                    )
+                  );
+                })()
+              ),
+              // ── Educational Callout ──
+              React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic" },
+                (function() {
+                  var domC = grid.flat().filter(function(g) { return phenotype(g) === 'Dominant'; }).length;
+                  if (domC === 4) return '\uD83D\uDCA1 100% dominant phenotype. At least one parent must be homozygous dominant (BB).';
+                  if (domC === 3) return '\uD83D\uDCA1 Classic 3:1 ratio! Both parents are heterozygous (Bb) \u2014 this is Mendel\u2019s foundational ratio.';
+                  if (domC === 2) return '\uD83D\uDCA1 1:1 ratio. This is a test cross \u2014 one parent is heterozygous, the other recessive.';
+                  if (domC === 1) return '\uD83D\uDCA1 Only 25% dominant. This is unusual \u2014 check your allele assignments!';
+                  return '\uD83D\uDCA1 100% recessive. Both parents must be homozygous recessive (bb).';
+                })()
+              )
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pn-' + Date.now(), tool: 'punnett', label: d.parent1.join('') + ' × ' + d.parent2.join(''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Punnett snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
@@ -4251,6 +4372,38 @@
               React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, sel.desc)
             )
           ,
+            // ── Water Cycle Quiz ──
+            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+              React.createElement("button", { onClick: function() {
+                var WC_QS = [
+                  { q: 'What process turns liquid water into vapor?', a: 'evaporation', opts: ['evaporation', 'condensation', 'precipitation', 'collection'] },
+                  { q: 'What forms when water vapor cools in the atmosphere?', a: 'condensation', opts: ['precipitation', 'evaporation', 'condensation', 'transpiration'] },
+                  { q: 'Rain, snow, sleet, and hail are all forms of...', a: 'precipitation', opts: ['evaporation', 'transpiration', 'collection', 'precipitation'] },
+                  { q: 'Which process involves plants releasing water?', a: 'transpiration', opts: ['transpiration', 'evaporation', 'condensation', 'collection'] },
+                  { q: 'Where does water collect after precipitation?', a: 'collection', opts: ['evaporation', 'condensation', 'collection', 'transpiration'] },
+                  { q: 'What is the main energy source for the water cycle?', a: 'The Sun', opts: ['Wind', 'The Moon', 'The Sun', 'Gravity'] },
+                  { q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] },
+                ];
+                var q = WC_QS[Math.floor(Math.random() * WC_QS.length)];
+                upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+              }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all" }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+              d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
+              d.wcQuiz && React.createElement("div", { className: "mt-2 bg-sky-50 rounded-lg p-3 border border-sky-200" },
+                React.createElement("p", { className: "text-sm font-bold text-sky-800 mb-2" }, d.wcQuiz.q),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                  d.wcQuiz.opts.map(function(opt) {
+                    var isCorrect = opt === d.wcQuiz.a;
+                    var wasChosen = d.wcQuiz.chosen === opt;
+                    var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    return React.createElement("button", { key: opt, disabled: d.wcQuiz.answered, onClick: function() {
+                      var correct = opt === d.wcQuiz.a;
+                      upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
+                      addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.wcQuiz.a, correct ? 'success' : 'error');
+                    }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all capitalize " + cls }, typeof opt === 'string' ? opt.charAt(0).toUpperCase() + opt.slice(1) : opt);
+                  })
+                )
+              )
+            ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 );
         })(),
@@ -4310,6 +4463,38 @@
               React.createElement("strong", null, d.selectedProcess.label + ": "), d.selectedProcess.desc
             )
           ,
+            // ── Rock Cycle Quiz ──
+            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+              React.createElement("button", { onClick: function() {
+                var RC_QS = [
+                  { q: 'Which rock type forms from cooled magma/lava?', a: 'Igneous', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
+                  { q: 'Which rock type often contains fossils?', a: 'Sedimentary', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
+                  { q: 'Which rock type forms under heat and pressure?', a: 'Metamorphic', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
+                  { q: 'Granite is an example of which rock type?', a: 'Igneous', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
+                  { q: 'Marble forms from which rock?', a: 'Limestone (sedimentary)', opts: ['Granite (igneous)', 'Limestone (sedimentary)', 'Basalt (igneous)'] },
+                  { q: 'What breaks rocks into sediment?', a: 'Weathering & erosion', opts: ['Heat & pressure', 'Weathering & erosion', 'Melting'] },
+                  { q: 'What must happen for metamorphic rock to become igneous?', a: 'It must melt, then cool', opts: ['It must be weathered', 'It must be compressed', 'It must melt, then cool'] },
+                ];
+                var q = RC_QS[Math.floor(Math.random() * RC_QS.length)];
+                upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
+              }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " transition-all" }, d.rcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+              d.rcQuiz && d.rcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.rcQuiz.score + " correct"),
+              d.rcQuiz && React.createElement("div", { className: "mt-2 bg-orange-50 rounded-lg p-3 border border-orange-200" },
+                React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, d.rcQuiz.q),
+                React.createElement("div", { className: "grid grid-cols-1 gap-2" },
+                  d.rcQuiz.opts.map(function(opt) {
+                    var isCorrect = opt === d.rcQuiz.a;
+                    var wasChosen = d.rcQuiz.chosen === opt;
+                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    return React.createElement("button", { key: opt, disabled: d.rcQuiz.answered, onClick: function() {
+                      var correct = opt === d.rcQuiz.a;
+                      upd('rcQuiz', Object.assign({}, d.rcQuiz, { answered: true, chosen: opt, score: d.rcQuiz.score + (correct ? 1 : 0) }));
+                      addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.rcQuiz.a, correct ? 'success' : 'error');
+                    }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls }, opt);
+                  })
+                )
+              )
+            ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : 'Rock Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 );
         })(),
@@ -4587,6 +4772,44 @@
                 })
               ),
               React.createElement("p", { className: "mt-3 text-xs text-slate-400 text-center italic" }, "Black lines show expected probability. With more trials, observed frequencies approach expected values (Law of Large Numbers).")
+            d.trials >= 10 && React.createElement("div", { className: "mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Statistical Analysis"),
+              React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
+                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Total Trials"),
+                  React.createElement("p", { className: "text-lg font-black text-violet-800" }, d.trials)
+                ),
+                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Max Deviation"),
+                  React.createElement("p", { className: "text-lg font-black text-violet-800" }, (function() {
+                    var maxDev = 0;
+                    Object.keys(expected).forEach(function(k) {
+                      var observed = (counts[k] || 0) / d.trials;
+                      var dev = Math.abs(observed - expected[k]);
+                      if (dev > maxDev) maxDev = dev;
+                    });
+                    return (maxDev * 100).toFixed(1) + '%';
+                  })())
+                ),
+                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Fairness"),
+                  React.createElement("p", { className: "text-lg font-black " + (function() {
+                    var maxDev = 0;
+                    Object.keys(expected).forEach(function(k) { var dev = Math.abs((counts[k] || 0) / d.trials - expected[k]); if (dev > maxDev) maxDev = dev; });
+                    return maxDev < 0.05 ? 'text-emerald-600' : maxDev < 0.15 ? 'text-yellow-600' : 'text-red-600';
+                  })() }, (function() {
+                    var maxDev = 0;
+                    Object.keys(expected).forEach(function(k) { var dev = Math.abs((counts[k] || 0) / d.trials - expected[k]); if (dev > maxDev) maxDev = dev; });
+                    return maxDev < 0.05 ? '\u2705 Fair' : maxDev < 0.15 ? '\u26A0 Skewing' : '\u274C Unfair';
+                  })())
+                )
+              ),
+              React.createElement("p", { className: "mt-2 text-xs text-violet-500 italic" },
+                d.trials < 30 ? '\uD83D\uDCA1 Need more trials! With only ' + d.trials + ' trials, randomness dominates. Try 100+ for reliable patterns.'
+                : d.trials < 100 ? '\uD83D\uDCA1 Getting better! At ' + d.trials + ' trials, patterns are emerging but may still deviate significantly.'
+                : '\uD83D\uDCA1 Great sample size! At ' + d.trials + ' trials, the Law of Large Numbers is clearly visible \u2014 observed frequencies converge toward expected values.'
+              )
+            ),
             ),
             d.trials > 0 && React.createElement("div", { className: "mt-2 text-xs text-slate-400 text-center" }, "Last 10: " + d.results.slice(-10).join(', '))
           );
