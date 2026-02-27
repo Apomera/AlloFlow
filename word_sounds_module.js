@@ -966,6 +966,12 @@
       const [preloadProgress, setPreloadProgress] = React.useState(0);
       const [isPreloading, setIsPreloading] = React.useState(false);
       const [firstWordReady, setFirstWordReady] = React.useState(false);
+      React.useEffect(() => {
+        if (isProbeMode && preloadedWords && preloadedWords.length > 0 && !firstWordReady) {
+          debugLog("📊 Probe mode: setting firstWordReady=true for", preloadedWords.length, "preloaded probe words");
+          setFirstWordReady(true);
+        }
+      }, [isProbeMode, preloadedWords, firstWordReady]);
       const preloadedWordCache = React.useRef(new Map());
       const [showReviewPanel, setShowReviewPanel] = React.useState(
         initialShowReviewPanel || false,
