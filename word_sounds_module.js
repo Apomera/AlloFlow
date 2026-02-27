@@ -6154,7 +6154,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setSegmentationErrors([]);
           setNextWordBuffer(null);
           lastPlayedWord.current = null;
-          if (setWordSoundsSessionProgress) setWordSoundsSessionProgress(0);
           if (!forceWord) {
             const effectiveDiff = getEffectiveDifficulty();
             generateSessionQueue(activityId, effectiveDiff);
