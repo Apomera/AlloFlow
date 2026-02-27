@@ -308,9 +308,9 @@
         icon: '🟧',
         label: 'Area Model'
       }, {
-        id: 'fractions',
+        id: 'fractionViz',
         icon: '🍕',
-        label: 'Fractions'
+        label: 'Fraction Lab'
       }].map(tool => /*#__PURE__*/React.createElement("button", {
         key: tool.id,
         onClick: () => {
@@ -546,8 +546,8 @@
         {
           id: 'fractionViz',
           icon: '🍕',
-          label: 'Fraction Tiles',
-          desc: 'Circle and bar models for comparing, adding, and visualizing fractions.',
+          label: 'Fraction Lab',
+          desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
           color: 'rose',
           ready: true
         },
@@ -2747,7 +2747,11 @@
           className: "text-slate-500"
         })), /*#__PURE__*/React.createElement("h3", {
           className: "text-lg font-bold text-rose-800"
-        }, "\uD83C\uDF55 Fraction Tiles")), /*#__PURE__*/React.createElement("div", {
+        }, "\uD83C\uDF55 Fraction Lab"),
+        /*#__PURE__*/React.createElement("div", { className: "flex gap-1 ml-auto" },
+          React.createElement("button", { onClick: () => setStemLabTool('fractionViz'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all" }, "\uD83D\uDD0D Compare"),
+          React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white" }, "\uD83C\uDFC6 Challenge")
+        )), /*#__PURE__*/React.createElement("div", {
           className: "grid grid-cols-2 gap-3"
         }, /*#__PURE__*/React.createElement("div", {
           className: "bg-rose-50 rounded-lg p-3 border border-rose-100"
@@ -4652,7 +4656,11 @@
           return React.createElement("div", { className: "max-w-2xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF55 Fraction Visualizer"),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF55 Fraction Lab"),
+              React.createElement("div", { className: "flex gap-1" },
+                React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-orange-600 text-white" }, "\uD83D\uDD0D Compare"),
+                React.createElement("button", { onClick: () => setStemLabTool('fractions'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all" }, "\uD83C\uDFC6 Challenge")
+              ),
               React.createElement("div", { className: "flex gap-1 ml-auto" },
                 ['bar', 'pie'].map(m => React.createElement("button", { key: m, onClick: () => upd('mode', m), className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-600') }, m))
               )
