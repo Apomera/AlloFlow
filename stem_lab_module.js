@@ -4580,43 +4580,42 @@
               React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.prey / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#22c55e", strokeWidth: 2 }),
               React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.pred / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 2 }),
               React.createElement("text", { x: W - pad + 5, y: pad, fill: "#22c55e", style: { fontSize: '9px', fontWeight: 'bold' } }, "Prey"),
-              React.createElement("text", { x: W - pad + 5, y: pad + 14, fill: "#ef4444", style: { fontSize: '9px', fontWeight: 'bold' } }, "Predators")
+            ),
+            d.data.length > 0 && React.createElement("div", { className: "mt-3" },
+              React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait (Prey vs Predator)"),
+              React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
+                React.createElement("line", { x1: 30, y1: 270, x2: 270, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
+                React.createElement("line", { x1: 30, y1: 30, x2: 30, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
+                React.createElement("text", { x: 150, y: 295, textAnchor: "middle", fill: "#22c55e", style: { fontSize: '10px', fontWeight: 'bold' } }, "Prey Population"),
+                React.createElement("text", { x: 10, y: 150, textAnchor: "middle", fill: "#ef4444", style: { fontSize: '10px', fontWeight: 'bold' }, transform: "rotate(-90,10,150)" }, "Predator Population"),
+                React.createElement("polyline", {
+                  points: d.data.map(function (dp) {
+                    return (30 + dp.prey / maxVal * 240) + "," + (270 - dp.pred / maxVal * 240);
+                  }).join(" "), fill: "none", stroke: "#6366f1", strokeWidth: 1.5
+                }),
+                React.createElement("circle", { cx: 30 + d.data[0].prey / maxVal * 240, cy: 270 - d.data[0].pred / maxVal * 240, r: 4, fill: "#22c55e" }),
+                React.createElement("circle", { cx: 30 + d.data[d.data.length - 1].prey / maxVal * 240, cy: 270 - d.data[d.data.length - 1].pred / maxVal * 240, r: 4, fill: "#ef4444" }),
+                React.createElement("text", { x: 35 + d.data[0].prey / maxVal * 240, y: 270 - d.data[0].pred / maxVal * 240 - 8, fill: "#22c55e", style: { fontSize: '8px', fontWeight: 'bold' } }, "Start"),
+                React.createElement("text", { x: 35 + d.data[d.data.length - 1].prey / maxVal * 240, y: 270 - d.data[d.data.length - 1].pred / maxVal * 240 - 8, fill: "#ef4444", style: { fontSize: '8px', fontWeight: 'bold' } }, "End")
+              ),
+              React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
+                React.createElement("div", { className: "p-1.5 bg-emerald-50 rounded-lg border border-emerald-200" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.prey; })))
+                ),
+                React.createElement("div", { className: "p-1.5 bg-red-50 rounded-lg border border-red-200" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Predators"),
+                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.pred; })))
+                ),
+                React.createElement("div", { className: "p-1.5 bg-indigo-50 rounded-lg border border-indigo-200" },
+                  React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
+                  React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function () { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i - 1].prey > d.data[i - 2].prey && d.data[i - 1].prey > d.data[i].prey) peaks++; } return peaks; })())
+                )
+              ),
+              React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 The phase portrait shows the classic Lotka-Volterra orbit. Closed loops indicate stable oscillations.")
             )
           );
         })(),
-        d.data.length > 0 && React.createElement("div", { className: "mt-3" },
-          React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait (Prey vs Predator)"),
-          React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
-            React.createElement("line", { x1: 30, y1: 270, x2: 270, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
-            React.createElement("line", { x1: 30, y1: 30, x2: 30, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
-            React.createElement("text", { x: 150, y: 295, textAnchor: "middle", fill: "#22c55e", style: { fontSize: '10px', fontWeight: 'bold' } }, "Prey Population"),
-            React.createElement("text", { x: 10, y: 150, textAnchor: "middle", fill: "#ef4444", style: { fontSize: '10px', fontWeight: 'bold' }, transform: "rotate(-90,10,150)" }, "Predator Population"),
-            React.createElement("polyline", {
-              points: d.data.map(function (dp) {
-                return (30 + dp.prey / maxVal * 240) + "," + (270 - dp.pred / maxVal * 240);
-              }).join(" "), fill: "none", stroke: "#6366f1", strokeWidth: 1.5
-            }),
-            React.createElement("circle", { cx: 30 + d.data[0].prey / maxVal * 240, cy: 270 - d.data[0].pred / maxVal * 240, r: 4, fill: "#22c55e" }),
-            React.createElement("circle", { cx: 30 + d.data[d.data.length - 1].prey / maxVal * 240, cy: 270 - d.data[d.data.length - 1].pred / maxVal * 240, r: 4, fill: "#ef4444" }),
-            React.createElement("text", { x: 35 + d.data[0].prey / maxVal * 240, y: 270 - d.data[0].pred / maxVal * 240 - 8, fill: "#22c55e", style: { fontSize: '8px', fontWeight: 'bold' } }, "Start"),
-            React.createElement("text", { x: 35 + d.data[d.data.length - 1].prey / maxVal * 240, y: 270 - d.data[d.data.length - 1].pred / maxVal * 240 - 8, fill: "#ef4444", style: { fontSize: '8px', fontWeight: 'bold' } }, "End")
-          ),
-          React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
-            React.createElement("div", { className: "p-1.5 bg-emerald-50 rounded-lg border border-emerald-200" },
-              React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
-              React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.prey; })))
-            ),
-            React.createElement("div", { className: "p-1.5 bg-red-50 rounded-lg border border-red-200" },
-              React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Predators"),
-              React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.pred; })))
-            ),
-            React.createElement("div", { className: "p-1.5 bg-indigo-50 rounded-lg border border-indigo-200" },
-              React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
-              React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function () { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i - 1].prey > d.data[i - 2].prey && d.data[i - 1].prey > d.data[i].prey) peaks++; } return peaks; })())
-            )
-          ),
-          React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 The phase portrait shows the classic Lotka-Volterra orbit. Closed loops indicate stable oscillations.")
-        ),
 
         // ═══════════════════════════════════════════════════════
         // FRACTION VISUALIZER
