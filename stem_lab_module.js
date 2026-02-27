@@ -3810,17 +3810,17 @@
               React.createElement("button", { onClick: () => upd('points', d.points.slice(0, -1)), className: "px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm" }, "↩ Undo"),
               React.createElement("button", { onClick: () => upd('points', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm" }, "🗑 Clear"),
               d.points.length >= 2 && React.createElement("span", { className: "text-xs text-slate-500 self-center ml-auto" }, "y = " + slope.toFixed(2) + "x + " + intercept.toFixed(2) + " | r² = " + r2.toFixed(3))
+            ),
             d.points.length >= 2 && React.createElement("div", { className: "mt-2 bg-white rounded-lg border p-2" },
-                React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Correlation Strength"),
-                React.createElement("div", { className: "flex items-center gap-2" },
-                  React.createElement("div", { className: "flex-1 h-3 bg-slate-100 rounded-full overflow-hidden" },
-                    React.createElement("div", { style: { width: (Math.abs(r2) * 100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: Math.abs(r2) > 0.8 ? '#22c55e' : Math.abs(r2) > 0.5 ? '#eab308' : Math.abs(r2) > 0.3 ? '#f97316' : '#ef4444', transition: 'all 0.5s' } })
-                  ),
-                  React.createElement("span", { className: "text-xs font-bold " + (Math.abs(r2) > 0.8 ? 'text-emerald-600' : Math.abs(r2) > 0.5 ? 'text-yellow-600' : Math.abs(r2) > 0.3 ? 'text-orange-600' : 'text-red-500') }, Math.abs(r2) > 0.9 ? '\u2B50 Very Strong' : Math.abs(r2) > 0.7 ? 'Strong' : Math.abs(r2) > 0.5 ? 'Moderate' : Math.abs(r2) > 0.3 ? 'Weak' : 'Very Weak'),
-                  React.createElement("span", { className: "text-[10px] text-slate-400" }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None')
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Correlation Strength"),
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("div", { className: "flex-1 h-3 bg-slate-100 rounded-full overflow-hidden" },
+                  React.createElement("div", { style: { width: (Math.abs(r2) * 100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: Math.abs(r2) > 0.8 ? '#22c55e' : Math.abs(r2) > 0.5 ? '#eab308' : Math.abs(r2) > 0.3 ? '#f97316' : '#ef4444', transition: 'all 0.5s' } })
                 ),
-                React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic" }, r2 > 0.9 ? '\uD83D\uDCA1 Almost a perfect linear relationship!' : r2 > 0.7 ? '\uD83D\uDCA1 Strong trend \u2014 a linear model fits well.' : r2 > 0.4 ? '\uD83D\uDCA1 Some relationship, but other factors may be at play.' : '\uD83D\uDCA1 Weak or no linear relationship. Try a different model?')
+                React.createElement("span", { className: "text-xs font-bold " + (Math.abs(r2) > 0.8 ? 'text-emerald-600' : Math.abs(r2) > 0.5 ? 'text-yellow-600' : Math.abs(r2) > 0.3 ? 'text-orange-600' : 'text-red-500') }, Math.abs(r2) > 0.9 ? '\u2B50 Very Strong' : Math.abs(r2) > 0.7 ? 'Strong' : Math.abs(r2) > 0.5 ? 'Moderate' : Math.abs(r2) > 0.3 ? 'Weak' : 'Very Weak'),
+                React.createElement("span", { className: "text-[10px] text-slate-400" }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None')
               ),
+              React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic" }, r2 > 0.9 ? '\uD83D\uDCA1 Almost a perfect linear relationship!' : r2 > 0.7 ? '\uD83D\uDCA1 Strong trend \u2014 a linear model fits well.' : r2 > 0.4 ? '\uD83D\uDCA1 Some relationship, but other factors may be at play.' : '\uD83D\uDCA1 Weak or no linear relationship. Try a different model?')
             ),
             d.points && d.points.length >= 2 && React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2 text-center" },
               React.createElement("div", { className: "p-1.5 bg-teal-50 rounded-lg border border-teal-200" },
@@ -4796,8 +4796,8 @@
                   );
                 })
               ),
-              React.createElement("p", { className: "mt-3 text-xs text-slate-400 text-center italic" }, "Black lines show expected probability. With more trials, observed frequencies approach expected values (Law of Large Numbers).")
-            d.trials >= 10 && React.createElement("div", { className: "mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3" },
+              React.createElement("p", { className: "mt-3 text-xs text-slate-400 text-center italic" }, "Black lines show expected probability. With more trials, observed frequencies approach expected values (Law of Large Numbers)."),
+              d.trials >= 10 && React.createElement("div", { className: "mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3" },
                 React.createElement("p", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Statistical Analysis"),
                 React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
                   React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
