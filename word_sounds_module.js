@@ -3965,7 +3965,7 @@
           };
           if (retryCount === 0) setPhonemeError(null);
           const cached = wordDataCache.current.get(word.toLowerCase());
-          if (cached) {
+          if (cached && !forceRefresh) {
             applyWordDataToState(cached);
             resolveRequest(cached);
             cleanupRequest();
@@ -5223,6 +5223,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           if (preloadedWordCache.current) {
             preloadedWordCache.current.delete(targetWord.toLowerCase());
+          }
+          if (wordDataCache.current) {
+            wordDataCache.current.delete(targetWord.toLowerCase());
           }
           if (typeof removeAudioFromStorage === "function") {
             removeAudioFromStorage(targetWord);
