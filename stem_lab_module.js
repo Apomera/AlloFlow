@@ -4872,9 +4872,7 @@
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
               MATERIALS.map(m => React.createElement("button", {
                 key: m.name, onClick: () => {
-                  upd('material', m.name); upd('decomposed', false,
-                    React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: d.material || 'Material', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-                  );
+                  upd('material', m.name); upd('decomposed', false);
                 }, className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.material === m.name ? 'bg-violet-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-violet-50 border border-slate-200')
               }, m.emoji + " " + m.name))
             ),
@@ -4903,7 +4901,8 @@
                   ),
                   React.createElement("button", { onClick: () => upd('decomposed', false), className: "mt-4 px-4 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\uD83D\uDD04 Reassemble")
                 )
-            )
+            ),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: d.material || 'Material', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
