@@ -604,11 +604,13 @@
         { id: 'unitConvert', icon: '\uD83D\uDCCF', label: 'Unit Converter' },
         { id: '_cat_Life&EarthScience', icon: '', label: 'Life & Earth Science', desc: '', color: 'slate', category: true },
         {
-          id: 'cell', icon: '🧫', label: 'Cell Diagram',
-          desc: 'Interactive labeled cell with organelles. Animal and plant cells.',
+          id: 'cell', icon: '🔬', label: 'Cell Simulator',
+          desc: 'Microscope mode: observe, control, and quiz on living organisms. Earn XP!',
           color: 'green', ready: true
         },
-        { id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System' },
+        { id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System',
+          desc: '3D interactive solar system with orbit, zoom, planet facts and quiz.',
+          color: 'blue', ready: true },
         { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
         { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
         { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
@@ -3218,88 +3220,568 @@
         })(),
 
         stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
-          const d = labToolData.cell;
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, cell: { ...prev.cell, [key]: val } }));
-          const W = 440, H = 380;
-          const organelles = [
-            { id: 'nucleus', label: 'Nucleus', x: 220, y: 190, r: 45, color: '#7c3aed', desc: 'Contains DNA and controls cell activities. Has a double membrane with nuclear pores.' },
-            { id: 'mitochondria', label: 'Mitochondria', x: 130, y: 140, r: 22, color: '#ef4444', desc: 'Powerhouse of the cell. Produces ATP through cellular respiration.' },
-            { id: 'ribosome', label: 'Ribosomes', x: 310, y: 130, r: 10, color: '#1e293b', desc: 'Synthesize proteins from mRNA instructions. Found free or on rough ER.' },
-            { id: 'er', label: 'Endoplasmic Reticulum', x: 310, y: 200, r: 28, color: '#2563eb', desc: 'Rough ER has ribosomes and makes proteins. Smooth ER makes lipids.' },
-            { id: 'golgi', label: 'Golgi Apparatus', x: 140, y: 260, r: 25, color: '#d97706', desc: 'Packages and ships proteins. Modifies, sorts, and delivers cellular products.' },
-            { id: 'lysosome', label: 'Lysosomes', x: 310, y: 280, r: 16, color: '#16a34a', desc: 'Digestive enzymes break down waste, old organelles, and foreign material.' },
-            { id: 'membrane', label: 'Cell Membrane', x: 220, y: 360, r: 20, color: '#0891b2', desc: 'Phospholipid bilayer controls what enters/exits the cell. Semi-permeable.' },
-            { id: 'cytoplasm', label: 'Cytoplasm', x: 100, y: 320, r: 18, color: '#94a3b8', desc: 'Gel-like fluid filling the cell. Site of many chemical reactions.' },
+          var d = labToolData.cell;
+          var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function(){ var o={}; o[key]=val; return o; })()) }); }); };
+
+          // ── Organism definitions ──
+          var ORGANISMS = [
+            { id: 'amoeba', label: 'Amoeba', icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission','Pseudopods are temporary projections of cytoplasm','Amoebas live in freshwater, soil, and as parasites','They have no fixed shape - constantly changing','Food vacuoles digest engulfed particles'] },
+            { id: 'paramecium', label: 'Paramecium', icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves','Has an oral groove for feeding','Contains contractile vacuoles to expel water','Reproduces by binary fission and conjugation','Can reverse ciliary beat to escape danger'] },
+            { id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light','Contains chloroplasts for photosynthesis','Has a flagellum for movement','Can switch between autotroph and heterotroph','No cell wall - has a flexible pellicle'] },
+            { id: 'wbc', label: 'White Blood Cell', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system','Uses chemotaxis to find pathogens','Can squeeze through blood vessel walls','Neutrophils are most common type','Produces antibodies to tag invaders'] },
+            { id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)','Cell wall made of peptidoglycan','Some have flagella for movement','Reproduce every 20 minutes in ideal conditions','Plasmids carry extra DNA for antibiotic resistance'] },
+            { id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose','Large central vacuole stores water','Chloroplasts convert light to energy','Has all organelles found in animal cells plus more','Connected to neighbors via plasmodesmata'] }
           ];
-          if (d.type === 'plant') {
-            organelles.push(
-              { id: 'cellwall', label: 'Cell Wall', x: 220, y: 30, r: 20, color: '#65a30d', desc: 'Rigid outer layer made of cellulose. Provides structure and protection.' },
-              { id: 'chloroplast', label: 'Chloroplast', x: 330, y: 330, r: 22, color: '#22c55e', desc: 'Site of photosynthesis. Contains chlorophyll to capture light energy.' },
-              { id: 'vacuole', label: 'Central Vacuole', x: 180, y: 130, r: 35, color: '#a78bfa', desc: 'Large water-filled sac providing turgor pressure and storing nutrients.' }
-            );
-          }
-          const selected = organelles.find(o => o.id === d.selectedOrganelle);
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-            React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🧫 Cell Diagram"),
+
+          // ── Quiz questions (observation-based) ──
+          var QUIZ_BANK = [
+            { q: 'Which organism moves toward light?', a: 'euglena', hint: 'Look for the one with an eyespot (green, teardrop shape).' },
+            { q: 'What is the amoeba doing to food particles?', a: 'phagocytosis', options: ['phagocytosis','photosynthesis','osmosis','mitosis'], hint: 'Watch how it wraps around food.' },
+            { q: 'Which organism has cilia for movement?', a: 'paramecium', hint: 'Look for the oval one that moves fastest.' },
+            { q: 'What type of cell has no nucleus?', a: 'bacterium', hint: 'The smallest organisms in the dish.' },
+            { q: 'Which cell has a rigid cell wall AND chloroplasts?', a: 'plantcell', hint: 'It does not move \u2014 rectangular shape.' },
+            { q: 'What cell defends against pathogens?', a: 'wbc', hint: 'The red-tinted one that chases bacteria.' },
+            { q: 'How does a bacterium reproduce?', a: 'binary fission', options: ['binary fission','mitosis','meiosis','budding'], hint: 'Watch the small ones split in two.' },
+            { q: 'What structure does Euglena use to detect light?', a: 'eyespot', options: ['eyespot','antenna','lens','cornea'], hint: 'Also called a stigma \u2014 a red dot.' },
+            { q: 'What is the powerhouse organelle in eukaryotic cells?', a: 'mitochondria', options: ['mitochondria','ribosome','golgi','lysosome'], hint: 'Produces ATP.' },
+            { q: 'Which organism can act as BOTH plant and animal?', a: 'euglena', hint: 'Has chloroplasts but can also consume food.' },
+            { q: 'What does phagocytosis mean?', a: 'cell eating', options: ['cell eating','cell drinking','cell dividing','cell dying'], hint: 'Phago = eat, cyto = cell.' },
+            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane','cell wall','nucleus','ribosome'], hint: 'Phospholipid bilayer.' }
+          ];
+
+          // ── Canvas ref callback for simulation ──
+          var canvasRefCb = function(canvasEl) {
+            if (!canvasEl || canvasEl._cellSimInit) return;
+            canvasEl._cellSimInit = true;
+            var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
+            var H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
+            var ctx = canvasEl.getContext('2d');
+            var dpr = window.devicePixelRatio || 1;
+
+            // World state
+            var world = { organisms: [], food: [], lightZones: [], tick: 0 };
+            var cam = { x: 0, y: 0, zoom: 1 };
+            var WORLD_W = 800, WORLD_H = 600;
+            var dragging = false, dragStartX = 0, dragStartY = 0, camStartX = 0, camStartY = 0;
+            var playerKeys = {};
+            var selectedOrg = null;
+            var playAsOrg = null;
+
+            // Populate organisms
+            function spawnWorld() {
+              world.organisms = [];
+              world.food = [];
+              world.lightZones = [];
+              // Spawn 2-3 of each type
+              ORGANISMS.forEach(function(def) {
+                var count = def.id === 'plantcell' ? 2 : 3;
+                for (var i = 0; i < count; i++) {
+                  world.organisms.push({
+                    type: def.id, x: 60 + Math.random() * (WORLD_W - 120), y: 60 + Math.random() * (WORLD_H - 120),
+                    vx: (Math.random() - 0.5) * def.speed, vy: (Math.random() - 0.5) * def.speed,
+                    size: def.size * (0.85 + Math.random() * 0.3), angle: Math.random() * Math.PI * 2,
+                    phase: Math.random() * Math.PI * 2, energy: 50 + Math.random() * 50, def: def
+                  });
+                }
+              });
+              // Food particles
+              for (var i = 0; i < 40; i++) {
+                world.food.push({ x: Math.random() * WORLD_W, y: Math.random() * WORLD_H, size: 2 + Math.random() * 3, eaten: false });
+              }
+              // Light zones (for euglena)
+              world.lightZones.push({ x: WORLD_W * 0.25, y: WORLD_H * 0.3, r: 80 });
+              world.lightZones.push({ x: WORLD_W * 0.7, y: WORLD_H * 0.65, r: 100 });
+            }
+            spawnWorld();
+
+            // Drawing helpers
+            function toScreen(wx, wy) {
+              return { x: (wx - cam.x) * cam.zoom * dpr + W / 2, y: (wy - cam.y) * cam.zoom * dpr + H / 2 };
+            }
+
+            function drawOrganism(o) {
+              var p = toScreen(o.x, o.y);
+              var sz = o.size * cam.zoom * dpr;
+              var def = o.def;
+              ctx.save();
+              ctx.translate(p.x, p.y);
+              ctx.rotate(o.angle);
+              var glow = (selectedOrg === o || playAsOrg === o);
+              if (glow) { ctx.shadowColor = def.color; ctx.shadowBlur = 12 * dpr; }
+
+              if (def.id === 'amoeba') {
+                // Blobby shape with perlin-like wobble
+                ctx.beginPath();
+                for (var a = 0; a < Math.PI * 2; a += 0.15) {
+                  var wobble = sz * (1 + 0.2 * Math.sin(a * 3 + o.phase + world.tick * 0.03) + 0.1 * Math.sin(a * 5 + world.tick * 0.05));
+                  var px = Math.cos(a) * wobble, py = Math.sin(a) * wobble;
+                  a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Nucleus
+                ctx.beginPath(); ctx.arc(0, 0, sz * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(139,92,246,0.5)'; ctx.fill();
+              } else if (def.id === 'paramecium') {
+                // Oval with cilia
+                ctx.beginPath(); ctx.ellipse(0, 0, sz * 1.4, sz * 0.7, 0, 0, Math.PI * 2);
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Cilia
+                for (var ci = 0; ci < 16; ci++) {
+                  var ca = (ci / 16) * Math.PI * 2;
+                  var cx2 = Math.cos(ca) * sz * 1.5, cy2 = Math.sin(ca) * sz * 0.8;
+                  var wave = Math.sin(world.tick * 0.15 + ci) * 3 * dpr;
+                  ctx.beginPath(); ctx.moveTo(cx2, cy2);
+                  ctx.lineTo(cx2 + wave, cy2 + Math.sign(cy2) * 4 * dpr);
+                  ctx.strokeStyle = 'rgba(6,182,212,0.5)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                }
+                // Oral groove
+                ctx.beginPath(); ctx.ellipse(sz * 0.4, 0, sz * 0.3, sz * 0.15, 0.3, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(6,182,212,0.7)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+              } else if (def.id === 'euglena') {
+                // Teardrop
+                ctx.beginPath();
+                ctx.moveTo(sz * 1.5, 0);
+                ctx.quadraticCurveTo(sz * 0.5, -sz * 0.6, -sz, -sz * 0.3);
+                ctx.quadraticCurveTo(-sz * 1.3, 0, -sz, sz * 0.3);
+                ctx.quadraticCurveTo(sz * 0.5, sz * 0.6, sz * 1.5, 0);
+                ctx.closePath();
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Eyespot
+                ctx.beginPath(); ctx.arc(sz * 0.8, -sz * 0.15, sz * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = '#ef4444'; ctx.fill();
+                // Flagellum
+                ctx.beginPath(); ctx.moveTo(sz * 1.5, 0);
+                var fl = Math.sin(world.tick * 0.2 + o.phase) * 8 * dpr;
+                ctx.quadraticCurveTo(sz * 2 + fl, -4 * dpr, sz * 2.5, fl);
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+              } else if (def.id === 'wbc') {
+                // Irregular shape
+                ctx.beginPath();
+                for (var a = 0; a < Math.PI * 2; a += 0.2) {
+                  var wobble = sz * (1 + 0.15 * Math.sin(a * 4 + world.tick * 0.04));
+                  var px = Math.cos(a) * wobble, py = Math.sin(a) * wobble;
+                  a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Lobular nucleus
+                ctx.beginPath(); ctx.ellipse(-sz * 0.2, -sz * 0.1, sz * 0.35, sz * 0.2, 0.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(239,68,68,0.4)'; ctx.fill();
+                ctx.beginPath(); ctx.ellipse(sz * 0.15, sz * 0.1, sz * 0.25, sz * 0.2, -0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(239,68,68,0.4)'; ctx.fill();
+              } else if (def.id === 'bacterium') {
+                // Rod shape
+                var rw = sz * 1.8, rh = sz * 0.8;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rw, rh, 0, 0, Math.PI * 2);
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                // Flagella
+                ctx.beginPath(); ctx.moveTo(-rw, 0);
+                var fl2 = Math.sin(world.tick * 0.25 + o.phase) * 5 * dpr;
+                ctx.bezierCurveTo(-rw - 8 * dpr, fl2, -rw - 14 * dpr, -fl2, -rw - 20 * dpr, fl2);
+                ctx.strokeStyle = 'rgba(245,158,11,0.6)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+              } else if (def.id === 'plantcell') {
+                // Rectangular
+                var hw = sz * 1.6, hh = sz * 1.2;
+                ctx.strokeStyle = '#65a30d'; ctx.lineWidth = 3 * dpr;
+                ctx.strokeRect(-hw, -hh, hw * 2, hh * 2);
+                ctx.fillStyle = 'rgba(209,250,229,0.4)'; ctx.fillRect(-hw, -hh, hw * 2, hh * 2);
+                // Central vacuole
+                ctx.beginPath(); ctx.ellipse(0, 0, hw * 0.6, hh * 0.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(167,139,250,0.25)'; ctx.fill();
+                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                // Chloroplasts
+                [-0.5, 0.3, -0.2].forEach(function(off, i) {
+                  ctx.beginPath(); ctx.ellipse(hw * off, hh * (i * 0.4 - 0.4), sz * 0.25, sz * 0.15, 0.3 * i, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(34,197,94,0.5)'; ctx.fill();
+                });
+                // Nucleus
+                ctx.beginPath(); ctx.arc(hw * 0.3, -hh * 0.3, sz * 0.22, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(124,58,237,0.4)'; ctx.fill();
+              }
+              ctx.restore();
+            }
+
+            function updateOrganism(o) {
+              var def = o.def;
+              if (playAsOrg === o) {
+                // Player-controlled
+                var spd = def.speed * 1.5;
+                o.vx = ((playerKeys['ArrowRight'] || playerKeys['d'] ? 1 : 0) - (playerKeys['ArrowLeft'] || playerKeys['a'] ? 1 : 0)) * spd;
+                o.vy = ((playerKeys['ArrowDown'] || playerKeys['s'] ? 1 : 0) - (playerKeys['ArrowUp'] || playerKeys['w'] ? 1 : 0)) * spd;
+                if (o.vx || o.vy) o.angle = Math.atan2(o.vy, o.vx);
+              } else if (def.speed > 0) {
+                // AI behavior
+                o.phase += 0.02;
+                if (def.id === 'euglena') {
+                  // Phototaxis - move toward nearest light zone
+                  var nearestLight = null, bestDist = Infinity;
+                  world.lightZones.forEach(function(lz) {
+                    var dd = Math.hypot(lz.x - o.x, lz.y - o.y);
+                    if (dd < bestDist) { bestDist = dd; nearestLight = lz; }
+                  });
+                  if (nearestLight && bestDist > nearestLight.r * 0.5) {
+                    var ax = (nearestLight.x - o.x) / bestDist * 0.02;
+                    var ay = (nearestLight.y - o.y) / bestDist * 0.02;
+                    o.vx += ax; o.vy += ay;
+                  }
+                } else if (def.id === 'wbc') {
+                  // Chase nearest bacterium
+                  var nearest = null, bd2 = Infinity;
+                  world.organisms.forEach(function(t) {
+                    if (t.def.id === 'bacterium') {
+                      var dd = Math.hypot(t.x - o.x, t.y - o.y);
+                      if (dd < bd2) { bd2 = dd; nearest = t; }
+                    }
+                  });
+                  if (nearest && bd2 < 200) {
+                    o.vx += (nearest.x - o.x) / bd2 * 0.03;
+                    o.vy += (nearest.y - o.y) / bd2 * 0.03;
+                  }
+                } else {
+                  // Random walk with gentle turns
+                  o.vx += (Math.random() - 0.5) * 0.05;
+                  o.vy += (Math.random() - 0.5) * 0.05;
+                }
+                // Speed limit
+                var spd2 = Math.hypot(o.vx, o.vy);
+                if (spd2 > def.speed) { o.vx = (o.vx / spd2) * def.speed; o.vy = (o.vy / spd2) * def.speed; }
+                if (o.vx || o.vy) o.angle = Math.atan2(o.vy, o.vx);
+              }
+              o.x += o.vx; o.y += o.vy;
+              // Bounce off walls
+              if (o.x < o.size) { o.x = o.size; o.vx = Math.abs(o.vx); }
+              if (o.x > WORLD_W - o.size) { o.x = WORLD_W - o.size; o.vx = -Math.abs(o.vx); }
+              if (o.y < o.size) { o.y = o.size; o.vy = Math.abs(o.vy); }
+              if (o.y > WORLD_H - o.size) { o.y = WORLD_H - o.size; o.vy = -Math.abs(o.vy); }
+
+              // Player food collection (phagocytosis / ciliary sweep)
+              if (playAsOrg === o && (def.id === 'amoeba' || def.id === 'paramecium' || def.id === 'wbc')) {
+                world.food.forEach(function(f) {
+                  if (!f.eaten && Math.hypot(f.x - o.x, f.y - o.y) < o.size + f.size) {
+                    f.eaten = true;
+                    o.energy = Math.min(100, o.energy + 10);
+                    // Dispatch XP event
+                    if (canvasEl._onXP) canvasEl._onXP(def.xp, def.activity);
+                  }
+                });
+              }
+              // Euglena in light zone = photosynthesis
+              if (playAsOrg === o && def.id === 'euglena') {
+                world.lightZones.forEach(function(lz) {
+                  if (Math.hypot(lz.x - o.x, lz.y - o.y) < lz.r) {
+                    if (world.tick % 60 === 0) {
+                      o.energy = Math.min(100, o.energy + 5);
+                      if (canvasEl._onXP) canvasEl._onXP(def.xp, 'Photosynthesis');
+                    }
+                  }
+                });
+              }
+            }
+
+            function render() {
+              ctx.clearRect(0, 0, W, H);
+              // Background - petri dish
+              ctx.fillStyle = '#f0fdf4'; ctx.fillRect(0, 0, W, H);
+              // Dish circle
+              var center = toScreen(WORLD_W / 2, WORLD_H / 2);
+              var dishR = Math.max(WORLD_W, WORLD_H) * 0.55 * cam.zoom * dpr;
+              ctx.beginPath(); ctx.arc(center.x, center.y, dishR, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(209,250,229,0.15)'; ctx.fill();
+              ctx.strokeStyle = 'rgba(16,185,129,0.3)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
+
+              // Grid lines (microscope crosshair)
+              ctx.strokeStyle = 'rgba(148,163,184,0.15)'; ctx.lineWidth = 0.5 * dpr;
+              for (var gx = 0; gx < WORLD_W; gx += 50) {
+                var p1 = toScreen(gx, 0), p2 = toScreen(gx, WORLD_H);
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+              }
+              for (var gy = 0; gy < WORLD_H; gy += 50) {
+                var p1 = toScreen(0, gy), p2 = toScreen(WORLD_W, gy);
+                ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+              }
+
+              // Light zones
+              world.lightZones.forEach(function(lz) {
+                var p = toScreen(lz.x, lz.y);
+                var r = lz.r * cam.zoom * dpr;
+                var grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+                grad.addColorStop(0, 'rgba(250,240,137,0.35)');
+                grad.addColorStop(1, 'rgba(250,240,137,0)');
+                ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = grad; ctx.fill();
+                ctx.strokeStyle = 'rgba(234,179,8,0.2)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+              });
+
+              // Food particles
+              world.food.forEach(function(f) {
+                if (f.eaten) return;
+                var p = toScreen(f.x, f.y);
+                var sz = f.size * cam.zoom * dpr;
+                ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(34,197,94,0.6)'; ctx.fill();
+              });
+
+              // Organisms
+              world.organisms.forEach(function(o) { drawOrganism(o); });
+
+              // Magnification label
+              ctx.font = (10 * dpr) + 'px monospace';
+              ctx.fillStyle = 'rgba(100,116,139,0.7)';
+              var mag = Math.round(40 * cam.zoom);
+              ctx.fillText(mag + 'x', 8 * dpr, H - 8 * dpr);
+
+              // Player energy bar
+              if (playAsOrg) {
+                var bx = 8 * dpr, by = 8 * dpr, bw = 80 * dpr, bh = 8 * dpr;
+                ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(bx, by, bw, bh);
+                ctx.fillStyle = playAsOrg.energy > 30 ? '#22c55e' : '#ef4444';
+                ctx.fillRect(bx, by, bw * (playAsOrg.energy / 100), bh);
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bw, bh);
+                ctx.fillStyle = '#fff'; ctx.font = (7 * dpr) + 'px sans-serif';
+                ctx.fillText('Energy: ' + Math.round(playAsOrg.energy), bx + 2 * dpr, by + 6.5 * dpr);
+              }
+            }
+
+            var animId = null;
+            function loop() {
+              if (canvasEl._cellSimPaused) { animId = requestAnimationFrame(loop); return; }
+              world.tick++;
+              world.organisms.forEach(updateOrganism);
+              // Respawn eaten food
+              if (world.tick % 120 === 0) {
+                world.food.forEach(function(f) {
+                  if (f.eaten) { f.eaten = false; f.x = Math.random() * WORLD_W; f.y = Math.random() * WORLD_H; }
+                });
+              }
+              render();
+              animId = requestAnimationFrame(loop);
+            }
+            animId = requestAnimationFrame(loop);
+
+            // Mouse/touch events
+            canvasEl.addEventListener('mousedown', function(e) {
+              dragging = true;
+              dragStartX = e.clientX; dragStartY = e.clientY;
+              camStartX = cam.x; camStartY = cam.y;
+            });
+            canvasEl.addEventListener('mousemove', function(e) {
+              if (!dragging) return;
+              var dx = (e.clientX - dragStartX) / cam.zoom;
+              var dy = (e.clientY - dragStartY) / cam.zoom;
+              cam.x = camStartX - dx; cam.y = camStartY - dy;
+            });
+            canvasEl.addEventListener('mouseup', function(e) {
+              if (Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
+                // Click - select organism
+                var rect = canvasEl.getBoundingClientRect();
+                var mx = (e.clientX - rect.left) * dpr;
+                var my = (e.clientY - rect.top) * dpr;
+                var clicked = null, bestDist = Infinity;
+                world.organisms.forEach(function(o) {
+                  var p = toScreen(o.x, o.y);
+                  var dd = Math.hypot(p.x - mx, p.y - my);
+                  if (dd < o.size * cam.zoom * dpr * 1.5 && dd < bestDist) { bestDist = dd; clicked = o; }
+                });
+                selectedOrg = clicked;
+                if (canvasEl._onSelect) canvasEl._onSelect(clicked ? clicked.def.id : null);
+              }
+              dragging = false;
+            });
+            canvasEl.addEventListener('wheel', function(e) {
+              e.preventDefault();
+              cam.zoom = Math.max(0.5, Math.min(10, cam.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+              if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom);
+            }, { passive: false });
+
+            // Keyboard for player
+            function onKey(e) { playerKeys[e.key] = e.type === 'keydown'; }
+            window.addEventListener('keydown', onKey);
+            window.addEventListener('keyup', onKey);
+
+            // External API
+            canvasEl._cellSimSetPlayAs = function(orgId) {
+              playAsOrg = orgId ? world.organisms.find(function(o) { return o.def.id === orgId; }) : null;
+              if (playAsOrg) { cam.x = playAsOrg.x; cam.y = playAsOrg.y; cam.zoom = 3; }
+            };
+            canvasEl._cellSimSetZoom = function(z) { cam.zoom = z; };
+            canvasEl._cellSimSetPaused = function(p) { canvasEl._cellSimPaused = p; };
+            canvasEl._cellSimSetSpeed = function(s) { /* speed controlled through tick rate */ };
+            canvasEl._cellSimFocusOrganism = function(orgId) {
+              var target = world.organisms.find(function(o) { return o.def.id === orgId; });
+              if (target) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; selectedOrg = target; }
+            };
+
+            // Cleanup
+            canvasEl._cellSimCleanup = function() {
+              if (animId) cancelAnimationFrame(animId);
+              window.removeEventListener('keydown', onKey);
+              window.removeEventListener('keyup', onKey);
+            };
+
+            // ResizeObserver
+            var ro = new ResizeObserver(function() {
+              W = canvasEl.width = canvasEl.offsetWidth * dpr;
+              H = canvasEl.height = canvasEl.offsetHeight * dpr;
+            });
+            ro.observe(canvasEl);
+            canvasEl._cellSimRO = ro;
+          };
+
+          // ── Cleanup on unmount ──
+          var cleanupRef = function(el) {
+            if (!el) {
+              // Unmount
+              var old = document.querySelector('[data-cell-sim-canvas]');
+              if (old && old._cellSimCleanup) { old._cellSimCleanup(); if (old._cellSimRO) old._cellSimRO.disconnect(); }
+            }
+          };
+
+          var selDef = d.selectedOrganism ? ORGANISMS.find(function(o) { return o.id === d.selectedOrganism; }) : null;
+
+          // ── Quiz logic ──
+          var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+
+          return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function() { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
+              React.createElement("span", { className: "text-xs text-slate-400 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function(o){return o.id===d.playAsOrganism;})||{}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
               React.createElement("div", { className: "flex gap-1 ml-auto" },
-                ["animal", "plant"].map(t2 => React.createElement("button", { key: t2, onClick: () => { upd("type", t2); upd("selectedOrganelle", null); }, className: `px-3 py-1 rounded-lg text-xs font-bold capitalize ${d.type === t2 ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'}` }, t2 + " Cell"))
+                ["observe", "play", "quiz"].map(function(m) {
+                  return React.createElement("button", { key: m, onClick: function() { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
+                })
               )
             ),
-            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-green-50 to-white rounded-xl border border-green-200", style: { maxHeight: "380px" } },
-              d.type === 'plant' ? React.createElement("rect", { x: 20, y: 20, width: W - 40, height: H - 40, rx: 8, fill: "none", stroke: "#65a30d", strokeWidth: 4 }) : null,
-              React.createElement("ellipse", { cx: W / 2, cy: H / 2, rx: W / 2 - 30, ry: H / 2 - 30, fill: "rgba(209,250,229,0.3)", stroke: "#0891b2", strokeWidth: 3 }),
-              organelles.map(o => React.createElement("g", { key: o.id, style: { cursor: 'pointer' }, onClick: () => { if (d.quizMode) { if (o.id === d.quizTarget) { upd('quizFeedback', { correct: true, msg: 'Correct! That is the ' + o.label }); upd('selectedOrganelle', o.id); } else { upd('quizFeedback', { correct: false, msg: 'Try again!' }); } } else { upd('selectedOrganelle', o.id === d.selectedOrganelle ? null : o.id); } } },
-                o.id === 'er' ? React.createElement("path", { d: `M${o.x - 25},${o.y - 15} Q${o.x},${o.y - 25} ${o.x + 25},${o.y - 15} Q${o.x + 10},${o.y} ${o.x + 25},${o.y + 15} Q${o.x},${o.y + 25} ${o.x - 25},${o.y + 15} Q${o.x - 10},${o.y} ${o.x - 25},${o.y - 15}`, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5 }) :
-                  o.id === 'golgi' ? React.createElement("g", null, [-8, -3, 2, 7, 12].map((off, i) => React.createElement("ellipse", { key: i, cx: o.x, cy: o.y + off, rx: o.r, ry: 4, fill: o.color + '44', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 2 : 1 }))) :
-                    o.id === 'mitochondria' ? React.createElement("ellipse", { cx: o.x, cy: o.y, rx: o.r + 8, ry: o.r, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5, transform: `rotate(-20 ${o.x} ${o.y})` }) :
-                      React.createElement("circle", { cx: o.x, cy: o.y, r: o.r, fill: o.color + '33', stroke: o.color, strokeWidth: d.selectedOrganelle === o.id ? 3 : 1.5 }),
-                d.labels && React.createElement("text", { x: o.x, y: o.y - o.r - 6, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold' }, fill: o.color }, o.label)
-              ))
-            ),
-            selected && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selected.color } },
-              React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selected.color } }, selected.label),
-              React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selected.desc)
-            ),
-            !selected && React.createElement("p", { className: "mt-3 text-center text-xs " + (d.quizMode ? "text-purple-600 font-bold" : "text-slate-400") }, d.quizMode ? ("Find: " + (organelles.find(o => o.id === d.quizTarget) || {}).label) : "Click an organelle to learn about it"),
-            d.quizMode && d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") }, d.quizFeedback.msg, d.quizFeedback.correct && React.createElement("button", { onClick: () => { const target = organelles[Math.floor(Math.random() * organelles.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("selectedOrganelle", null); }, className: "ml-3 px-2 py-0.5 bg-green-600 text-white rounded text-xs" }, "Next")),
-            React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
-                React.createElement("input", { type: "checkbox", checked: d.labels, onChange: e => upd('labels', e.target.checked), className: "accent-green-600" }),
-                "Show Labels"
+
+            // Canvas
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '340px' } },
+              React.createElement("canvas", {
+                "data-cell-sim-canvas": "true",
+                ref: canvasRefCb,
+                style: { width: '100%', height: '100%', cursor: dragging ? 'grabbing' : 'grab' }
+              }),
+              // Zoom overlay
+              React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
+                "\uD83D\uDD2C",
+                React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1,
+                  onChange: function(e) { var z = parseFloat(e.target.value); upd("zoom", z); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetZoom) cv._cellSimSetZoom(z); },
+                  className: "w-20 accent-green-600" }),
+                Math.round(40 * (d.zoom || 1)) + "x"
               ),
-              React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
-                React.createElement("input", { type: "checkbox", checked: d.quizMode, onChange: e => { upd("quizMode", e.target.checked); if (e.target.checked) { const orgs = organelles; const target = orgs[Math.floor(Math.random() * orgs.length)]; upd("quizTarget", target.id); upd("quizFeedback", null); upd("labels", false); } }, className: "accent-purple-600" }),
-                "Quiz Mode"
-              ),
-              // ── Organelle Quick Reference ──
-              React.createElement("div", { className: "mt-3 bg-green-50 rounded-xl border border-green-200 p-3" },
-                React.createElement("p", { className: "text-[10px] font-bold text-green-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCD6 Organelle Functions"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1" },
-                  [
-                    ['\uD83E\uDDEC Nucleus', 'Control center \u2014 houses DNA'],
-                    ['\u26A1 Mitochondria', 'Energy production (ATP)'],
-                    ['\uD83C\uDFED Ribosomes', 'Protein synthesis'],
-                    ['\uD83C\uDF0A ER', 'Protein & lipid transport'],
-                    ['\uD83D\uDCE6 Golgi', 'Package & ship proteins'],
-                    ['\u267B Lysosomes', 'Waste disposal'],
-                    ['\uD83D\uDEE1 Membrane', 'Controls entry/exit'],
-                    ['\uD83D\uDCA7 Cytoplasm', 'Internal cell fluid'],
-                  ].concat(d.type === 'plant' ? [
-                    ['\uD83C\uDF31 Chloroplast', 'Photosynthesis'],
-                    ['\uD83E\uDDF1 Cell Wall', 'Rigid protection'],
-                    ['\uD83D\uDCA7 Vacuole', 'Water storage'],
-                  ] : []).map(function (item) {
-                    return React.createElement("div", { key: item[0], className: "flex items-center gap-1 text-[10px] py-0.5" },
-                      React.createElement("span", { className: "font-bold text-green-800 w-1/2" }, item[0]),
-                      React.createElement("span", { className: "text-slate-500" }, item[1])
-                    );
-                  })
+              // Speed controls
+              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg px-2 py-1" },
+                React.createElement("button", { onClick: function() { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPaused) cv._cellSimSetPaused(p); }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-600 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+              )
+            ),
+
+            // Organism selector buttons
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+              ORGANISMS.map(function(org) {
+                return React.createElement("button", {
+                  key: org.id,
+                  onClick: function() {
+                    upd("selectedOrganism", d.selectedOrganism === org.id ? null : org.id);
+                    var cv = document.querySelector('[data-cell-sim-canvas]');
+                    if (cv && cv._cellSimFocusOrganism) cv._cellSimFocusOrganism(org.id);
+                  },
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "border-" + org.color.replace('#','') + " bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
+                  style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color } : {}
+                }, org.icon + " " + org.label);
+              })
+            ),
+
+            // Info card for selected organism
+            selDef && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selDef.color } },
+              React.createElement("div", { className: "flex items-start justify-between" },
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selDef.color } }, selDef.icon + " " + selDef.label),
+                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selDef.desc)
                 ),
-                d.type === 'plant' && React.createElement("p", { className: "mt-1 text-[10px] text-green-600 italic" }, "\uD83C\uDF3F Plant cells have cell walls, chloroplasts, and a large central vacuole that animal cells lack.")
+                d.mode === 'play' && React.createElement("button", {
+                  onClick: function() {
+                    upd("playAsOrganism", selDef.id);
+                    var cv = document.querySelector('[data-cell-sim-canvas]');
+                    if (cv) {
+                      cv._cellSimSetPlayAs(selDef.id);
+                      cv._onXP = function(xp, label) {
+                        upd("xpEarned", (d.xpEarned || 0) + xp);
+                        if (typeof addToast === 'function') addToast("+" + xp + " XP: " + label + "!", "success");
+                      };
+                    }
+                  },
+                  className: "px-3 py-1.5 text-xs font-bold text-white rounded-lg shadow-md hover:shadow-lg transition-all",
+                  style: { background: selDef.color }
+                }, "\uD83C\uDFAE Play As " + selDef.label)
               ),
-              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ce-' + Date.now(), tool: 'cell', label: d.type + ' cell' + (d.selectedOrganelle ? ': ' + d.selectedOrganelle : ''), data: { ...d }, timestamp: Date.now() }]); addToast('📸 Cell snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
+              // Activity description
+              React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 mt-1 text-[11px]" },
+                React.createElement("span", { className: "font-bold text-slate-700" }, "\u{1F3AF} " + selDef.activity + ": "),
+                React.createElement("span", { className: "text-slate-500" }, selDef.activityDesc),
+                React.createElement("span", { className: "ml-2 font-bold", style: { color: selDef.color } }, "+" + selDef.xp + " XP")
+              ),
+              // Facts
+              React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },
+                selDef.facts.map(function(fact, i) {
+                  var discovered = (d.discoveries || []).includes(selDef.id + '_' + i);
+                  return React.createElement("div", { key: i, className: "flex items-center gap-2 text-[10px] py-0.5" },
+                    React.createElement("span", { className: discovered ? "text-green-600" : "text-slate-300" }, discovered ? "\u2713" : "\uD83D\uDD12"),
+                    React.createElement("span", { className: discovered ? "text-slate-600" : "text-slate-300 italic" }, discovered ? fact : "Discover through observation...")
+                  );
+                })
+              )
+            ),
+
+            // Quiz mode panel
+            d.quizMode && quizQuestion && React.createElement("div", { className: "mt-3 bg-purple-50 rounded-xl border-2 border-purple-200 p-4 animate-in fade-in" },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                React.createElement("div", { className: "flex items-center gap-2 text-xs" },
+                  React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+                  React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                )
+              ),
+              React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQuestion.q),
+              quizQuestion.options
+                ? React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    quizQuestion.options.map(function(opt) {
+                      return React.createElement("button", { key: opt, onClick: function() {
+                        var correct = opt.toLowerCase() === quizQuestion.a.toLowerCase();
+                        upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
+                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                        else { upd("quizStreak", 0); }
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-200 bg-white text-slate-700 hover:border-purple-400") }, opt);
+                    })
+                  )
+                : React.createElement("div", { className: "flex flex-wrap gap-2" },
+                    ORGANISMS.map(function(org) {
+                      return React.createElement("button", { key: org.id, onClick: function() {
+                        var correct = org.id === quizQuestion.a;
+                        upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
+                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                        else { upd("quizStreak", 0); }
+                      }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-200 bg-white text-slate-700 hover:border-purple-400" }, org.icon + " " + org.label);
+                    })
+                  ),
+              d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+                d.quizFeedback.msg,
+                React.createElement("button", { onClick: function() {
+                  var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                  upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                }, className: "ml-3 px-2 py-0.5 bg-purple-600 text-white rounded text-xs" }, "Next \u2192")
+              )
+            ),
+
+            // Bottom controls
+            React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+              React.createElement("button", { onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Sim' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Cell Simulator snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           )
         })(),
