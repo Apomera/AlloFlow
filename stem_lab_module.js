@@ -611,6 +611,11 @@
         { id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System',
           desc: '3D interactive solar system with orbit, zoom, planet facts and quiz.',
           color: 'blue', ready: true },
+        {
+          id: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy Explorer',
+          desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
+          color: 'indigo', ready: true
+        },
         { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
         { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
         { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
@@ -5000,7 +5005,7 @@
               React.createElement("canvas", {
                 ref: canvasRef,
                 className: "solar3d-canvas w-full",
-                style: { height: '340px', display: 'block', cursor: 'grab' },
+                style: { height: '520px', display: 'block', cursor: 'grab' },
                 'data-speed': String(simSpeed),
                 'data-paused': String(paused),
                 'data-selected': d.selectedPlanet || ''
@@ -5129,6 +5134,238 @@
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
+
+stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
+    var d = labToolData.galaxy || {};
+    var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
+    var STAR_TYPES = [
+        { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', luminosity: '30,000-1,000,000x Sun' },
+        { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', luminosity: '25-30,000x Sun' },
+        { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', luminosity: '5-25x Sun' },
+        { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', luminosity: '1.5-5x Sun' },
+        { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', luminosity: '0.6-1.5x Sun' },
+        { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', luminosity: '0.08-0.6x Sun' },
+        { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', luminosity: '0.001-0.08x Sun' }
+    ];
+    var NEBULAE = [
+        { name: 'Orion Nebula', x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye.' },
+        { name: 'Eagle Nebula', x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', desc: 'Home of the Pillars of Creation. 7,000 light-years from Earth.' },
+        { name: 'Crab Nebula', x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
+        { name: 'Carina Nebula', x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant star.' }
+    ];
+    var WARP_POINTS = [
+        { label: 'Galactic Core', x: 0, y: 0, z: 0, zoom: 2 },
+        { label: 'Orion Arm (Us)', x: 0.35, y: 0, z: 0.1, zoom: 4 },
+        { label: 'Perseus Arm', x: 0.5, y: 0, z: -0.2, zoom: 3 },
+        { label: 'Sagittarius Arm', x: -0.15, y: 0, z: 0.35, zoom: 3 },
+        { label: 'Overview', x: 0, y: 0.8, z: 0, zoom: 0.8 }
+    ];
+    var QUIZ_BANK = [
+        { q: 'What type of star is our Sun?', a: 'G-type', options: ['O-type', 'A-type', 'G-type', 'M-type'] },
+        { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', 'Nebula'] },
+        { q: 'Which star type is the hottest?', a: 'O-type', options: ['M-type', 'G-type', 'A-type', 'O-type'] },
+        { q: 'Which spiral arm contains our Solar System?', a: 'Orion Arm', options: ['Perseus Arm', 'Orion Arm', 'Sagittarius Arm', 'Norma Arm'] },
+        { q: 'What percentage of stars are M-type red dwarfs?', a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
+        { q: 'What is a nebula?', a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
+        { q: 'How many stars are in the Milky Way?', a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
+        { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: ['Elliptical', 'Irregular', 'Spiral', 'Barred spiral'] },
+        { q: 'Which star is closest to our Sun?', a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
+        { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] }
+    ];
+    var canvasRefCb = function (canvasEl) {
+        if (!canvasEl || canvasEl._galaxyInit) return;
+        canvasEl._galaxyInit = true;
+        var doInit = function () { initGalaxy(canvasEl); };
+        if (window.THREE) { doInit(); } else {
+            var script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            script.onload = doInit;
+            document.head.appendChild(script);
+        }
+    };
+    function initGalaxy(canvasEl) {
+        var THREE = window.THREE;
+        var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
+        camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
+        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+        renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x050510);
+        // Background stars
+        var bgGeo = new THREE.BufferGeometry(), bgCount = 2000, bgPos = new Float32Array(bgCount * 3);
+        for (var i = 0; i < bgCount; i++) { bgPos[i * 3] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 1] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 2] = (Math.random() - 0.5) * 20; }
+        bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+        scene.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })));
+        // Spiral galaxy stars
+        var starCount = 5000, starGeo = new THREE.BufferGeometry();
+        var starPos = new Float32Array(starCount * 3), starColors = new Float32Array(starCount * 3), starData = [];
+        for (var i = 0; i < starCount; i++) {
+            var arm = i % 4, armAngle = (arm / 4) * Math.PI * 2;
+            var dist = Math.pow(Math.random(), 0.6) * 0.8;
+            var angle = armAngle + dist * 2.5 + (Math.random() - 0.5) * 0.4 * (1 - dist * 0.5);
+            var x = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.03;
+            var z = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.03;
+            var y = (Math.random() - 0.5) * 0.04 * (1 - dist);
+            starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
+            var roll = Math.random() * 100;
+            var typeIdx = roll < 0.003 ? 0 : roll < 0.133 ? 1 : roll < 0.733 ? 2 : roll < 3.73 ? 3 : roll < 11.33 ? 4 : roll < 23.43 ? 5 : 6;
+            var st = STAR_TYPES[typeIdx], c = new THREE.Color(st.color);
+            starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b;
+            starData.push({ type: st, x: x, y: y, z: z, idx: i });
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        var starPoints = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+        scene.add(starPoints);
+        // Central bulge
+        var bulgeGeo = new THREE.BufferGeometry(), bulgeCount = 800;
+        var bulgePos = new Float32Array(bulgeCount * 3), bulgeCol = new Float32Array(bulgeCount * 3);
+        for (var i = 0; i < bulgeCount; i++) {
+            var r = Math.pow(Math.random(), 2) * 0.12, th = Math.random() * Math.PI * 2, ph = (Math.random() - 0.5) * Math.PI * 0.4;
+            bulgePos[i * 3] = Math.cos(th) * Math.cos(ph) * r; bulgePos[i * 3 + 1] = Math.sin(ph) * r * 0.5; bulgePos[i * 3 + 2] = Math.sin(th) * Math.cos(ph) * r;
+            var warmth = 0.8 + Math.random() * 0.2; bulgeCol[i * 3] = warmth; bulgeCol[i * 3 + 1] = warmth * 0.85; bulgeCol[i * 3 + 2] = warmth * 0.5;
+        }
+        bulgeGeo.setAttribute('position', new THREE.BufferAttribute(bulgePos, 3));
+        bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
+        scene.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
+        // Black hole + accretion ring
+        scene.add(new THREE.Mesh(new THREE.SphereGeometry(0.008, 16, 16), new THREE.MeshBasicMaterial({ color: 0x000000 })));
+        var ring = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.02, 32), new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
+        ring.rotation.x = Math.PI * 0.5; scene.add(ring);
+        // Nebulae as sprites
+        var nebCanvas = document.createElement('canvas'); nebCanvas.width = 64; nebCanvas.height = 64;
+        var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [];
+        NEBULAE.forEach(function (neb) {
+            nCtx.clearRect(0, 0, 64, 64);
+            var grad = nCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0, neb.color + 'aa'); grad.addColorStop(0.5, neb.color + '44'); grad.addColorStop(1, neb.color + '00');
+            nCtx.fillStyle = grad; nCtx.fillRect(0, 0, 64, 64);
+            var tex = new THREE.CanvasTexture(nebCanvas); tex.needsUpdate = true;
+            var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.clone(), transparent: true, opacity: 0.5 }));
+            sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
+            sprite.userData = neb; scene.add(sprite); nebulaSprites.push(sprite);
+        });
+        // Orbit controls
+        var isDragging = false, prevX = 0, prevY = 0;
+        var spherical = { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: 1.2 };
+        function updateCamera() {
+            camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+            camera.position.y = spherical.r * Math.cos(spherical.phi);
+            camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+            camera.lookAt(0, 0, 0);
+        }
+        updateCamera();
+        canvasEl.addEventListener('mousedown', function (e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+        canvasEl.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+            spherical.theta += (e.clientX - prevX) * 0.005;
+            spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - (e.clientY - prevY) * 0.005));
+            prevX = e.clientX; prevY = e.clientY; updateCamera();
+        });
+        canvasEl.addEventListener('mouseup', function () { isDragging = false; });
+        canvasEl.addEventListener('wheel', function (e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); }, { passive: false });
+        // Raycaster for click selection
+        var raycaster = new THREE.Raycaster(); raycaster.params.Points.threshold = 0.02;
+        var mouse = new THREE.Vector2();
+        canvasEl.addEventListener('click', function (e) {
+            var rect = canvasEl.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            var hits = raycaster.intersectObject(starPoints);
+            if (hits.length > 0 && canvasEl._onSelectStar) canvasEl._onSelectStar(starData[hits[0].index]);
+            var nebHits = raycaster.intersectObjects(nebulaSprites);
+            if (nebHits.length > 0 && canvasEl._onSelectNebula) canvasEl._onSelectNebula(nebHits[0].object.userData);
+        });
+        canvasEl._galaxyWarp = function (wp) {
+            spherical.theta = Math.atan2(wp.x, wp.z) || 0.1;
+            spherical.phi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
+            spherical.r = wp.zoom || 1; updateCamera();
+        };
+        var animId;
+        function animate() {
+            animId = requestAnimationFrame(animate);
+            starPoints.rotation.y += 0.0003;
+            nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.35 + 0.15 * Math.sin(Date.now() * 0.001 + i * 1.5); });
+            renderer.render(scene, camera);
+        }
+        animate();
+        var ro = new ResizeObserver(function () { W = canvasEl.offsetWidth; H = canvasEl.offsetHeight; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); });
+        ro.observe(canvasEl);
+        canvasEl._galaxyCleanup = function () { if (animId) cancelAnimationFrame(animId); ro.disconnect(); renderer.dispose(); };
+    }
+    var selStar = d.selectedStar ? STAR_TYPES.find(function (s) { return s.id === d.selectedStar; }) : null;
+    var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
+    var quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+    return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
+            React.createElement("div", { className: "flex gap-1 ml-auto" },
+                ["explore", "quiz"].map(function (m) {
+                    return React.createElement("button", {
+                        key: m, onClick: function () {
+                            if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); }
+                            else { upd("quizMode", false); }
+                        }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + ((m === 'quiz' ? d.quizMode : !d.quizMode) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    }, m);
+                })
+            )
+        ),
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
+            React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
+            React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+                React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
+                STAR_TYPES.map(function (st) { return React.createElement("div", { key: st.id, className: "flex items-center gap-1 leading-tight" }, React.createElement("span", { style: { color: st.color, fontSize: '10px' } }, "\u2B50"), React.createElement("span", null, st.id + " (" + st.temp + "K)")); })
+            )
+        ),
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+            WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+        ),
+        selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
+            React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
+            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
+            React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
+                React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 text-center" }, React.createElement("div", { className: "font-bold text-slate-500" }, "Temperature"), React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, selStar.temp + " K")),
+                React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 text-center" }, React.createElement("div", { className: "font-bold text-slate-500" }, "% of Stars"), React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, selStar.pct + "%")),
+                React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 text-center" }, React.createElement("div", { className: "font-bold text-slate-500" }, "Luminosity"), React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, selStar.luminosity))
+            )
+        ),
+        selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
+            React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
+            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
+        ),
+        d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
+            React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                React.createElement("div", { className: "flex items-center gap-2 text-xs" },
+                    React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                )
+            ),
+            React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
+            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                quizQ.options.map(function (opt) {
+                    return React.createElement("button", {
+                        key: opt, onClick: function () {
+                            var correct = opt === quizQ.a;
+                            upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
+                            if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                            else { upd("quizStreak", 0); }
+                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                    }, opt);
+                })
+            ),
+            d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+                d.quizFeedback.msg,
+                React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % QUIZ_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
+            )
+        ),
+        React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+            React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+        )
+    )
+})(),
 
         // ═══════════════════════════════════════════════════════
         // WATER CYCLE
