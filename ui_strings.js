@@ -183,7 +183,19 @@
     "phono_activity_length_hint": "Phonological activities complete after this many correct answers",
     "ortho_activity_length": "🔤 Spelling Activities per Session",
     "ortho_activity_hint_on": "Spelling activities begin after sound activities complete",
-    "ortho_activity_hint_off": "Slide right to add spelling practice after phonics activities"
+    "ortho_activity_hint_off": "Slide right to add spelling practice after phonics activities",
+    "label_details": "Label Details",
+    "image_display_mode": "Image Display Mode",
+    "syllable_range": "Syllable Range",
+    "enable_lesson_plan": "Enable Lesson Plan",
+    "phonemes": "Phonemes",
+    "rhyme_options": "Rhyme Time Options",
+    "blend_options": "Blend Sounds Options",
+    "no_phonemes": "No phonemes available",
+    "regen_image": "Regenerate Image",
+    "gen_image": "Generate Image",
+    "recheck_title": "Re-check phonemes with Gemini",
+    "refine_placeholder": "e.g., make it cuter, add a banana"
   },
   "common": {
     "student_analytics": "Student Analytics",
@@ -1383,7 +1395,8 @@
     },
     "fill_blank": {
       "input_label": "Type your answer"
-    }
+    },
+    "crossword_challenge": "Crossword Challenge"
   },
   "glossary": {
     "title": "Glossary & Language Selection",
@@ -2481,7 +2494,8 @@
     "grading_complete": "Grading complete!",
     "grading_failed": "Grading failed.",
     "grading_error": "Failed to grade work.",
-    "grading_speech": "Grading complete. You scored {score}. {glow}"
+    "grading_speech": "Grading complete. You scored {score}. {glow}",
+    "paragraph_frame": "Paragraph Frame"
   },
   "brainstorm": {
     "title": "Brainstorm Activity Ideas",
@@ -2775,7 +2789,13 @@
     "self_grade": "Self-Grade",
     "exit_self_grade": "Exit Self-Grade",
     "submit_assessment": "Submit Assessment",
-    "assessment_submitted": "Assessment submitted: {score}/{total} ({pct}%)"
+    "assessment_submitted": "Assessment submitted: {score}/{total} ({pct}%)",
+    "show_solution_steps": "Show Solution Steps",
+    "edit_with_allobot": "Edit with Allobot",
+    "edit_placeholder": "Describe how to modify these problems",
+    "total_digits": "Total Digits",
+    "timer_visible": "Timer Visible",
+    "timer_hidden": "Timer Hidden"
   },
   "progression": {
     "title": "Curriculum Progression",
@@ -5271,5 +5291,16 @@
     "vocabulary_tiers": "Vocabulary Tiers",
     "suggested_terms": "Suggested Additional Terms",
     "concept_web": "Concept Web"
-  }
+  },
+  "resource_builder": {
+    "question": "Question",
+    "quick_templates": "Quick Templates",
+    "use_current_text": "Use Current Text",
+    "attach_image": "Attach Image",
+    "use_generated": "Use Generated",
+    "generation_mode": "Generation Mode",
+    "target_group": "Target Group",
+    "target_language": "Target Language",
+    "reading_level": "Reading Level"
+  },
 }
