@@ -1,4 +1,4 @@
-{
+﻿{
   "tour": {
     "input_panel_title": "Input Panel",
     "input_panel_text": "Begin your lesson creation journey here. This Input Panel is the foundation for all generated resources. It serves as the central hub where you define the content, context, and parameters.\n### Input Options\n• **Text Paste**: Paste content directly from any article, story, or lesson plan.\n• **File Upload**: Upload PDFs, images, text files, audio (MP3/WAV), or video for automatic extraction.\n• **URL Fetch**: Paste any article URL to automatically extract and import its content.\n• **AI Resource Search**: Describe a topic and let AI find grade-appropriate online resources for you.\n• **Generate Source Text**: Create original content by specifying topic, tone, grade level, and target standards.\n### Generation Features\n• **Tone Selection**: Choose from Informative, Narrative, Persuasive, Humorous, or Step-by-Step styles.\n• **Standards Alignment**: Use AI-powered standard finder or manually input target standards (up to 3).\n• **Fact Verification**: Enable web grounding to verify facts and include citations automatically.\n• **Custom Instructions**: Add specific guidance for more tailored content generation.\n### System Capabilities\n• **Auto-Detection**: Automatically identifies the source language.\n• **Chunked Processing**: Audio and video files over 20MB are intelligently split for reliable transcription.\n### Important\nMost tools in the sidebar require source material before they can be used. Paste or generate your content here first, then explore the other resources.",
@@ -706,7 +706,9 @@
     "tool_simplified": "Text Adaptation",
     "udl_aligned": "UDL Aligned",
     "udl_lesson_plan": "UDL Lesson Plan",
-    "toggle_consistent_characters": "Toggle consistent characters"
+    "toggle_consistent_characters": "Toggle consistent characters",
+    "local_only": "Local only",
+    "haitian_creole": "Haitian Creole"
   },
   "meta": {
     "engagement_ideas": "Engagement Ideas",
@@ -1396,7 +1398,10 @@
     "fill_blank": {
       "input_label": "Type your answer"
     },
-    "crossword_challenge": "Crossword Challenge"
+    "crossword_challenge": "Crossword Challenge",
+    "crossword_title": "Crossword Challenge",
+    "tap_to_pause": "Tap to Pause",
+    "tap_or_space_to_play": "Tap or Space to Play"
   },
   "glossary": {
     "title": "Glossary & Language Selection",
@@ -1970,7 +1975,10 @@
     "benchmark_vs": "vs. Benchmark",
     "sort_asc": "Sort ascending",
     "xp_earned_streak": "+{xp} XP (×{multiplier} streak!)",
-    "sort_desc": "Sort descending"
+    "sort_desc": "Sort descending",
+    "live_sync": "Live Sync",
+    "total_sessions": "Total Sessions",
+    "total_probes": "Total Probes"
   },
   "simplified": {
     "title": "Text Adaptation & Engagement",
@@ -2795,7 +2803,8 @@
     "edit_placeholder": "Describe how to modify these problems",
     "total_digits": "Total Digits",
     "timer_visible": "Timer Visible",
-    "timer_hidden": "Timer Hidden"
+    "timer_hidden": "Timer Hidden",
+    "edit_helper": "Describe how to modify these problems"
   },
   "progression": {
     "title": "Curriculum Progression",
@@ -2829,7 +2838,9 @@
       "physics_desc": "Best for: Moving particles, gravity, and scientific models.",
       "chatbot_label": "AI Character Chatbot (HTML/JS)",
       "chatbot_desc": "Best for: Roleplaying with historical figures."
-    }
+    },
+    "bridge_message": "Bridge Message",
+    "student_reactions": "Student Reactions"
   },
   "lesson_headers": {
     "teacher": {
@@ -5235,7 +5246,11 @@
     "attempted": "Attempted",
     "accuracy": "Accuracy",
     "qd": "Quantity Discrimination Probe",
-    "probe_results": "Probe Results"
+    "probe_results": "Probe Results",
+    "target_wcpm": "Target WCPM",
+    "target_date": "Target Date",
+    "group_size": "Group Size",
+    "start_date": "Start Date"
   },
   "learner": {
     "total_xp": "Total XP",
@@ -5253,7 +5268,21 @@
     "sessions": "Sessions",
     "label_challenges": "Label Challenges",
     "recent_activity": "Recent Activity",
-    "progress_report": "Learning Progress Report"
+    "progress_report": "Learning Progress Report",
+    "my_learning_journey": "My Learning Journey",
+    "sessions_tracked": "sessions tracked",
+    "level": "Level",
+    "activities": "Activities",
+    "quiz_avg": "Quiz Avg",
+    "word_accuracy": "Word Accuracy",
+    "my_badges": "My Badges",
+    "my_strengths": "My Strengths",
+    "my_growth_journey": "My Growth Journey",
+    "session_history": "Session History",
+    "word_sounds": "Word Sounds",
+    "download_progress_report": "Download My Progress Report",
+    "report_downloaded": "Your progress report has been downloaded!",
+    "leave_empty_all_sessions": "Leave empty to include all sessions"
   },
   "research": {
     "construct": "Construct",
@@ -5303,4 +5332,43 @@
     "target_language": "Target Language",
     "reading_level": "Reading Level"
   },
+  "print": {
+    "oral_fluency_title": "Oral Fluency Score Sheet",
+    "student": "Student",
+    "date": "Date",
+    "grade_benchmark": "Grade / Benchmark",
+    "correct_legend": "Correct",
+    "substitution_legend": "Substitution/Stumbled",
+    "omission_legend": "Omission",
+    "self_corrected_legend": "Self-Corrected",
+    "wcpm": "WCPM",
+    "accuracy": "Accuracy",
+    "substitutions": "Substitutions",
+    "omissions": "Omissions",
+    "insertions": "Insertions",
+    "self_corrections": "Self-Corrections",
+    "error_rate": "Error Rate",
+    "reading_level": "Reading Level",
+    "total_errors": "Total Errors",
+    "sc_rate": "SC Rate",
+    "total_words": "Total Words",
+    "teacher_verification": "Teacher Verification (Override AI if needed)",
+    "verified_wcpm": "Verified WCPM",
+    "verified_accuracy": "Verified Accuracy %",
+    "verified_reading_level": "Verified Reading Level",
+    "teacher_notes": "Teacher Notes",
+    "teacher_signature": "Teacher Signature",
+    "print_score_sheet": "Print Score Sheet",
+    "student_progress_report": "Student Progress Report",
+    "assessment_record": "AlloFlow Assessment Record",
+    "generated": "Generated"
+  },
+  "splash": {
+    "tagline": "Adaptive Levels, Layers, & Outputs",
+    "udl_tagline": "Informed by Universal Design for Learning",
+    "initializing": "Initializing...",
+    "loading_resources": "Loading resources...",
+    "preparing_workspace": "Preparing your workspace...",
+    "almost_ready": "Almost ready..."
+  }
 }
