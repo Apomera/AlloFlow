@@ -517,115 +517,146 @@
         className: "text-[10px] text-slate-400 mt-1"
       }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && /*#__PURE__*/React.createElement("div", {
         className: "grid grid-cols-2 gap-4 max-w-3xl mx-auto animate-in fade-in duration-200"
-      }, [{
+      }, [
+      { id: '_cat_MathFundamentals', icon: '', label: 'Math Fundamentals', desc: '', color: 'slate', category: true },
+      {
         id: 'volume',
         icon: '📦',
         label: '3D Volume Explorer',
         desc: 'Build rectangular prisms with unit cubes. Rotate, zoom, explore layers.',
         color: 'emerald',
         ready: true
-      }, {
+      },
+      {
         id: 'numberline',
         icon: '📏',
         label: 'Number Line',
         desc: 'Interactive number line with draggable markers. Great for addition, subtraction, fractions.',
         color: 'blue',
         ready: true
-      }, {
+      },
+      {
         id: 'areamodel',
         icon: '🟧',
         label: 'Area Model',
         desc: 'Visual multiplication and division with color-coded rows and columns.',
         color: 'amber',
         ready: true
-      }, {
+      },
+      {
         id: 'fractionViz',
         icon: '🍕',
         label: 'Fraction Tiles',
         desc: 'Circle and bar models for comparing, adding, and visualizing fractions.',
         color: 'rose',
         ready: true
-      }, {
+      },
+      {
         id: 'base10',
         icon: '🧮',
         label: 'Base-10 Blocks',
         desc: 'Place value with ones, tens, hundreds. Regroup and decompose numbers.',
         color: 'orange',
         ready: true
-      }, {
+      },
+      {
         id: 'coordinate',
         icon: '📍',
         label: 'Coordinate Grid',
         desc: 'Plot points, draw lines, and explore the coordinate plane.',
         color: 'cyan',
         ready: true
-      }, {
+      },
+      {
         id: 'protractor',
         icon: '📐',
         label: 'Angle Explorer',
         desc: 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
         color: 'purple',
         ready: true
-      }, {
+      },
+      {
         id: 'multtable',
         icon: '🔢',
         label: 'Multiplication Table',
         desc: 'Interactive times table grid. Spot patterns, practice facts with challenges.',
         color: 'pink',
         ready: true
-      }, {
+      },
+      { id: '_cat_AdvancedMath', icon: '', label: 'Advanced Math', desc: '', color: 'slate', category: true },
+      {
         id: 'funcGrapher', icon: '📈', label: 'Function Grapher',
         desc: 'Plot linear, quadratic, and trig functions. Adjust coefficients in real-time.',
         color: 'indigo', ready: true
-      }, {
-        id: 'physics', icon: '⚡', label: 'Physics Simulator',
-        desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
-        color: 'sky', ready: true
-      }, {
-        id: 'chemBalance', icon: '⚗️', label: 'Equation Balancer',
-        desc: 'Balance chemical equations with visual atom counting.',
-        color: 'lime', ready: true
-      }, {
-        id: 'punnett', icon: '🧬', label: 'Punnett Square',
-        desc: 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
-        color: 'violet', ready: true
-      }, {
-        id: 'circuit', icon: '🔌', label: 'Circuit Builder',
-        desc: 'Build circuits with resistors and batteries. Calculate voltage and current.',
-        color: 'yellow', ready: true
-      }, {
-        id: 'dataPlot', icon: '📊', label: 'Data Plotter',
-        desc: 'Plot data points, fit trend lines, calculate correlation.',
-        color: 'teal', ready: true
-      }, {
+      },
+      {
         id: 'inequality', icon: '🎨', label: 'Inequality Grapher',
         desc: 'Graph inequalities on number lines and coordinate planes.',
         color: 'fuchsia', ready: true
-      }, {
+      },
+      {
+        id: 'calculus', icon: '∫', label: 'Calculus Visualizer',
+        desc: 'Riemann sums, area under curves, and derivative tangent lines.',
+        color: 'red', ready: true
+      },
+      { id: 'probability', icon: '\uD83C\uDFB2', label: 'Probability' },
+      { id: 'fractions', icon: '\uD83C\uDF55', label: 'Fractions' },
+      { id: 'unitConvert', icon: '\uD83D\uDCCF', label: 'Unit Converter' },
+      { id: '_cat_Life&EarthScience', icon: '', label: 'Life & Earth Science', desc: '', color: 'slate', category: true },
+      {
+        id: 'cell', icon: '🧫', label: 'Cell Diagram',
+        desc: 'Interactive labeled cell with organelles. Animal and plant cells.',
+        color: 'green', ready: true
+      },
+      { id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System' },
+      { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
+      { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
+      { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
+      { id: 'decomposer', icon: '⚗️', label: 'Decomposer', desc: 'Break materials into elements', ready: true },
+      {
         id: 'molecule', icon: '🔬', label: 'Molecule Builder',
         desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
         color: 'stone', ready: true
       },
-      { id: 'decomposer', icon: '⚗️', label: 'Decomposer', desc: 'Break materials into elements', ready: true },
-            { id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System' },
-            { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
-            { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
-            { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
-            { id: 'fractions', icon: '\uD83C\uDF55', label: 'Fractions' },
-            { id: 'unitConvert', icon: '\uD83D\uDCCF', label: 'Unit Converter' },
-            { id: 'probability', icon: '\uD83C\uDFB2', label: 'Probability' }, {
-        id: 'calculus', icon: '∫', label: 'Calculus Visualizer',
-        desc: 'Riemann sums, area under curves, and derivative tangent lines.',
-        color: 'red', ready: true
-      }, {
+      { id: '_cat_Physics&Chemistry', icon: '', label: 'Physics & Chemistry', desc: '', color: 'slate', category: true },
+      {
         id: 'wave', icon: '🌊', label: 'Wave Simulator',
         desc: 'Adjust frequency, amplitude, wavelength. Explore interference patterns.',
         color: 'cyan', ready: true
-      }, {
-        id: 'cell', icon: '🧫', label: 'Cell Diagram',
-        desc: 'Interactive labeled cell with organelles. Animal and plant cells.',
-        color: 'green', ready: true
-      }].map(tool => /*#__PURE__*/React.createElement("button", {
+      },
+      {
+        id: 'circuit', icon: '🔌', label: 'Circuit Builder',
+        desc: 'Build circuits with resistors and batteries. Calculate voltage and current.',
+        color: 'yellow', ready: true
+      },
+      {
+        id: 'chemBalance', icon: '⚗️', label: 'Equation Balancer',
+        desc: 'Balance chemical equations with visual atom counting.',
+        color: 'lime', ready: true
+      },
+      {
+        id: 'punnett', icon: '🧬', label: 'Punnett Square',
+        desc: 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
+        color: 'violet', ready: true
+      },
+      {
+        id: 'physics', icon: '⚡', label: 'Physics Simulator',
+        desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
+        color: 'sky', ready: true
+      },
+      {
+        id: 'dataPlot', icon: '📊', label: 'Data Plotter',
+        desc: 'Plot data points, fit trend lines, calculate correlation.',
+        color: 'teal', ready: true
+      }
+      ]].map(tool => tool.category
+        ? /*#__PURE__*/React.createElement("div", {
+            key: tool.id,
+            className: "col-span-2 mt-3 first:mt-0"
+          }, /*#__PURE__*/React.createElement("h3", {
+            className: "text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
+          }, tool.label))
+        : /*#__PURE__*/React.createElement("button", {
         key: tool.id,
         onClick: () => setStemLabTool(tool.id),
         className: `p-5 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-xl bg-${tool.color}-50 border-${tool.color}-200 hover:border-${tool.color}-400`
@@ -4056,7 +4087,9 @@
               ),
               React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, sel.desc)
             )
-          );
+          ,
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+);
         })(),
 
         // ═══════════════════════════════════════════════════════
@@ -4113,7 +4146,9 @@
             d.selectedProcess && React.createElement("div", { className: "mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-700" },
               React.createElement("strong", null, d.selectedProcess.label + ": "), d.selectedProcess.desc
             )
-          );
+          ,
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : 'Rock Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+);
         })(),
 
         // ═══════════════════════════════════════════════════════
@@ -4225,7 +4260,9 @@
             React.createElement("div", { className: "mt-4 p-3 rounded-xl text-center font-bold text-lg " + (Math.abs(val1 - val2) < 0.001 ? 'bg-green-50 text-green-700 border border-green-200' : val1 > val2 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border border-red-200') },
               Math.abs(val1 - val2) < 0.001 ? d.num1 + "/" + d.den1 + " = " + d.num2 + "/" + d.den2 + " \u2705 Equal!" : val1 > val2 ? d.num1 + "/" + d.den1 + " > " + d.num2 + "/" + d.den2 : d.num1 + "/" + d.den1 + " < " + d.num2 + "/" + d.den2
             )
-          );
+          ,
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+);
         })(),
 
         // ═══════════════════════════════════════════════════════
@@ -4282,7 +4319,9 @@
               ),
               React.createElement("button", { onClick: () => { const tmp = d.fromUnit; upd('fromUnit', d.toUnit); upd('toUnit', tmp); }, className: "block mx-auto mt-3 px-4 py-1 bg-cyan-50 text-cyan-600 rounded-full text-xs font-bold hover:bg-cyan-100" }, "\u21C4 Swap")
             )
-          );
+          ,
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'uc-' + Date.now(), tool: 'unitConvert', label: d.value + ' ' + d.fromUnit + ' to ' + d.toUnit, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+);
         })(),
 
         // ═══════════════════════════════════════════════════════
@@ -4373,7 +4412,9 @@
             React.createElement("p", { className: "text-xs text-slate-500 mb-3 -mt-1" }, "Break everyday materials into their constituent elements. Inspired by Minecraft\u2019s Material Reducer!"),
             // Material selector
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
-              MATERIALS.map(m => React.createElement("button", { key: m.name, onClick: () => { upd('material', m.name); upd('decomposed', false); }, className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.material === m.name ? 'bg-violet-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-violet-50 border border-slate-200') }, m.emoji + " " + m.name))
+              MATERIALS.map(m => React.createElement("button", { key: m.name, onClick: () => { upd('material', m.name); upd('decomposed', false,
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: d.material || 'Material', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+); }, className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.material === m.name ? 'bg-violet-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-violet-50 border border-slate-200') }, m.emoji + " " + m.name))
             ),
             // Material display
             React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-200 p-6 text-center" },
