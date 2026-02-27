@@ -4213,42 +4213,346 @@
 
 
         // ═══════════════════════════════════════════════════════
-        // SOLAR SYSTEM EXPLORER
+        // SOLAR SYSTEM EXPLORER — 3D (Three.js)
         // ═══════════════════════════════════════════════════════
         stemLabTab === 'explore' && stemLabTool === 'solarSystem' && (() => {
           const d = labToolData.solarSystem;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
           const PLANETS = [
-            { name: 'Mercury', emoji: '\u2638', color: '#94a3b8', size: 12, dist: 0.4, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '−180 to 430°C', fact: 'Smallest planet; no atmosphere to retain heat.' },
-            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', size: 16, dist: 0.7, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462°C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!' },
-            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', size: 17, dist: 1.0, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15°C avg.', fact: 'Only known planet with liquid water and life.' },
-            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', size: 14, dist: 1.5, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '−65°C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).' },
-            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', size: 32, dist: 5.2, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '−110°C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!' },
-            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', size: 28, dist: 9.5, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '−140°C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!' },
-            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', size: 22, dist: 19.2, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '−195°C', fact: 'Rotates on its side! An ice giant with methane atmosphere.' },
-            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', size: 21, dist: 30.1, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '−200°C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.' },
-            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', size: 8, dist: 39.5, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '−230°C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.' },
+            { name: 'Mercury', emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.35, dist: 4, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
+            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 6, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!' },
+            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 8, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.' },
+            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.45, dist: 10.5, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).' },
+            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 1.6, dist: 15, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!' },
+            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 1.3, dist: 20, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true },
+            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 0.9, dist: 25, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.' },
+            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 0.85, dist: 30, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.' },
+            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.25, dist: 34, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.' },
           ];
           const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
-          const W = 460, H = 260;
+          const simSpeed = d.simSpeed || 1;
+          const paused = d.paused || false;
+
+          // ── Three.js 3D Canvas ──
+          const canvasRef = function (canvas) {
+            if (!canvas) { // cleanup on unmount
+              const prev = document.querySelector('.solar3d-canvas');
+              if (prev && prev._solarCleanup) { prev._solarCleanup(); prev._solarInit = false; }
+              return;
+            }
+            if (canvas._solarInit) return;
+            canvas._solarInit = true;
+
+            // Load Three.js if needed
+            function initScene(THREE) {
+              const W = canvas.clientWidth || 600;
+              const H = canvas.clientHeight || 340;
+              const scene = new THREE.Scene();
+              const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 1000);
+              camera.position.set(0, 18, 30);
+              camera.lookAt(0, 0, 0);
+              const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              renderer.setSize(W, H);
+
+              // ── Starfield ──
+              const starGeo = new THREE.BufferGeometry();
+              const starPos = new Float32Array(3000);
+              for (let i = 0; i < 3000; i++) { starPos[i] = (Math.random() - 0.5) * 400; }
+              starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.8 })));
+
+              // ── Ambient light ──
+              scene.add(new THREE.AmbientLight(0x222244, 0.3));
+
+              // ── Sun ──
+              const sunGeo = new THREE.SphereGeometry(2, 32, 32);
+              const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+              const sun = new THREE.Mesh(sunGeo, sunMat);
+              scene.add(sun);
+              const sunLight = new THREE.PointLight(0xffffff, 1.5, 200);
+              scene.add(sunLight);
+              // Sun glow sprite
+              const glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
+              const gctx = glowCanvas.getContext('2d');
+              const grad = gctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+              grad.addColorStop(0, 'rgba(255,220,80,0.6)'); grad.addColorStop(0.4, 'rgba(255,180,40,0.2)'); grad.addColorStop(1, 'rgba(255,160,0,0)');
+              gctx.fillStyle = grad; gctx.fillRect(0, 0, 128, 128);
+              const glowTex = new THREE.CanvasTexture(glowCanvas);
+              const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending }));
+              glowSprite.scale.set(8, 8, 1);
+              scene.add(glowSprite);
+
+              // ── Procedural planet texture ──
+              function makePlanetTex(rgb, variation) {
+                const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+                const ctx = c.getContext('2d');
+                const base = rgb;
+                for (let y = 0; y < 64; y++) {
+                  for (let x = 0; x < 128; x++) {
+                    const n = (Math.sin(x * 0.3 + y * 0.1) * 0.5 + Math.sin(y * 0.5) * 0.3 + Math.random() * 0.2) * variation;
+                    const r = Math.min(255, Math.max(0, Math.round((base[0] + n * 0.15) * 255)));
+                    const g = Math.min(255, Math.max(0, Math.round((base[1] + n * 0.1) * 255)));
+                    const b = Math.min(255, Math.max(0, Math.round((base[2] - n * 0.05) * 255)));
+                    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+                    ctx.fillRect(x, y, 1, 1);
+                  }
+                }
+                const tex = new THREE.CanvasTexture(c); tex.needsUpdate = true; return tex;
+              }
+
+              // ── Create planets ──
+              const planetMeshes = [];
+              const orbitLines = [];
+              PLANETS.forEach(function (p, idx) {
+                // Orbit ring
+                const orbitGeo = new THREE.RingGeometry(p.dist - 0.02, p.dist + 0.02, 128);
+                const orbitMat = new THREE.MeshBasicMaterial({ color: 0x334466, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+                const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
+                orbitMesh.rotation.x = -Math.PI / 2;
+                scene.add(orbitMesh);
+                orbitLines.push(orbitMesh);
+
+                // Planet sphere
+                const geo = new THREE.SphereGeometry(p.size, 24, 24);
+                const tex = makePlanetTex(p.rgb, 1.0 + idx * 0.3);
+                const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.1 });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.userData = { name: p.name, idx: idx };
+                // Starting orbital angle — spread planets out
+                mesh._orbitAngle = (idx / PLANETS.length) * Math.PI * 2;
+                mesh._orbitDist = p.dist;
+                mesh._orbitSpeed = p.speed;
+                mesh.position.set(Math.cos(mesh._orbitAngle) * p.dist, 0, Math.sin(mesh._orbitAngle) * p.dist);
+                scene.add(mesh);
+                planetMeshes.push(mesh);
+
+                // Saturn's rings
+                if (p.hasRings) {
+                  const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.2, 64);
+                  const ringCanvas = document.createElement('canvas'); ringCanvas.width = 256; ringCanvas.height = 1;
+                  const rctx = ringCanvas.getContext('2d');
+                  const rGrad = rctx.createLinearGradient(0, 0, 256, 0);
+                  rGrad.addColorStop(0, 'rgba(210,180,120,0.0)'); rGrad.addColorStop(0.15, 'rgba(210,180,120,0.7)');
+                  rGrad.addColorStop(0.4, 'rgba(180,160,100,0.5)'); rGrad.addColorStop(0.5, 'rgba(140,130,80,0.1)');
+                  rGrad.addColorStop(0.6, 'rgba(200,170,110,0.6)'); rGrad.addColorStop(0.85, 'rgba(180,150,90,0.4)');
+                  rGrad.addColorStop(1, 'rgba(160,140,80,0.0)');
+                  rctx.fillStyle = rGrad; rctx.fillRect(0, 0, 256, 1);
+                  const ringTex = new THREE.CanvasTexture(ringCanvas);
+                  const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+                  const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                  ringMesh.rotation.x = -Math.PI / 2 + p.tilt;
+                  mesh.add(ringMesh);
+                }
+              });
+
+              // ── Asteroid belt (between Mars and Jupiter) ──
+              const asteroidCount = 300;
+              const asteroidGeo = new THREE.BufferGeometry();
+              const aPos = new Float32Array(asteroidCount * 3);
+              for (let i = 0; i < asteroidCount; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const r = 12 + Math.random() * 2.5;
+                aPos[i * 3] = Math.cos(ang) * r;
+                aPos[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
+                aPos[i * 3 + 2] = Math.sin(ang) * r;
+              }
+              asteroidGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3));
+              scene.add(new THREE.Points(asteroidGeo, new THREE.PointsMaterial({ color: 0x888888, size: 0.08 })));
+
+              // ── Camera orbit controls (manual) ──
+              let camTheta = 0.5, camPhi = 1.0, camDist = 40;
+              let isDragging = false, lastX = 0, lastY = 0;
+              let targetLookAt = new THREE.Vector3(0, 0, 0);
+
+              function updateCamera() {
+                camera.position.x = targetLookAt.x + camDist * Math.sin(camPhi) * Math.cos(camTheta);
+                camera.position.y = targetLookAt.y + camDist * Math.cos(camPhi);
+                camera.position.z = targetLookAt.z + camDist * Math.sin(camPhi) * Math.sin(camTheta);
+                camera.lookAt(targetLookAt);
+              }
+              updateCamera();
+
+              canvas.addEventListener('pointerdown', function (e) {
+                isDragging = true; lastX = e.clientX; lastY = e.clientY;
+                canvas._clickStartX = e.clientX; canvas._clickStartY = e.clientY;
+                canvas.setPointerCapture(e.pointerId);
+              });
+              canvas.addEventListener('pointermove', function (e) {
+                if (!isDragging) return;
+                const dx = e.clientX - lastX; const dy = e.clientY - lastY;
+                camTheta -= dx * 0.008;
+                camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi - dy * 0.008));
+                lastX = e.clientX; lastY = e.clientY;
+                updateCamera();
+              });
+              canvas.addEventListener('pointerup', function (e) {
+                isDragging = false;
+                canvas.releasePointerCapture(e.pointerId);
+              });
+              canvas.addEventListener('wheel', function (e) {
+                e.preventDefault();
+                camDist = Math.max(8, Math.min(80, camDist + e.deltaY * 0.03));
+                updateCamera();
+              }, { passive: false });
+
+              // ── Raycasting for planet clicks ──
+              const raycaster = new THREE.Raycaster();
+              const mouse = new THREE.Vector2();
+              canvas.addEventListener('click', function (e) {
+                if (Math.abs(e.clientX - (canvas._clickStartX || 0)) > 5 || Math.abs(e.clientY - (canvas._clickStartY || 0)) > 5) return; // was a drag
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const hits = raycaster.intersectObjects(planetMeshes);
+                if (hits.length > 0) {
+                  const name = hits[0].object.userData.name;
+                  upd('selectedPlanet', name);
+                  // Animate camera to focus on planet
+                  const pm = hits[0].object.position;
+                  targetLookAt.set(pm.x, pm.y, pm.z);
+                  camDist = Math.max(8, hits[0].object.geometry.parameters.radius * 8);
+                  updateCamera();
+                }
+              });
+
+              // ── Planet label overlay ──
+              const labelContainer = canvas.parentElement.querySelector('.solar-labels');
+
+              // ── Animation loop ──
+              let animId;
+              let time = 0;
+              function animate() {
+                animId = requestAnimationFrame(animate);
+                const speed = parseFloat(canvas.dataset.speed || '1');
+                const isPaused = canvas.dataset.paused === 'true';
+                if (!isPaused) {
+                  time += 0.008 * speed;
+                }
+
+                // Orbit planets
+                planetMeshes.forEach(function (mesh, i) {
+                  mesh._orbitAngle += 0.008 * mesh._orbitSpeed * speed * (isPaused ? 0 : 1);
+                  mesh.position.x = Math.cos(mesh._orbitAngle) * mesh._orbitDist;
+                  mesh.position.z = Math.sin(mesh._orbitAngle) * mesh._orbitDist;
+                  mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
+                });
+
+                // Slowly rotate asteroids
+                const aArr = asteroidGeo.attributes.position.array;
+                if (!isPaused) {
+                  for (let i = 0; i < asteroidCount; i++) {
+                    const x = aArr[i * 3]; const z = aArr[i * 3 + 2];
+                    const a = Math.atan2(z, x) + 0.0003 * speed;
+                    const r = Math.sqrt(x * x + z * z);
+                    aArr[i * 3] = Math.cos(a) * r;
+                    aArr[i * 3 + 2] = Math.sin(a) * r;
+                  }
+                  asteroidGeo.attributes.position.needsUpdate = true;
+                }
+
+                // Sun pulse
+                const pulse = 1.0 + Math.sin(time * 2) * 0.03;
+                sun.scale.set(pulse, pulse, pulse);
+                glowSprite.scale.set(8 * pulse, 8 * pulse, 1);
+
+                // Update labels
+                if (labelContainer) {
+                  labelContainer.innerHTML = '';
+                  planetMeshes.forEach(function (mesh) {
+                    const pos = mesh.position.clone();
+                    pos.y += mesh.geometry.parameters.radius + 0.4;
+                    pos.project(camera);
+                    if (pos.z < 1 && pos.z > -1) {
+                      const lx = (pos.x * 0.5 + 0.5) * W;
+                      const ly = (-pos.y * 0.5 + 0.5) * H;
+                      const isSelected = canvas.dataset.selected === mesh.userData.name;
+                      const label = document.createElement('div');
+                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:9px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);color:' + (isSelected ? '#fbbf24' : '#94a3b8') + ';white-space:nowrap;transition:color 0.2s;';
+                      label.textContent = mesh.userData.name;
+                      labelContainer.appendChild(label);
+                    }
+                  });
+                }
+
+                renderer.render(scene, camera);
+              }
+              animate();
+
+              // ── Resize handler ──
+              const resizeObserver = new ResizeObserver(function () {
+                const w = canvas.clientWidth; const h = canvas.clientHeight;
+                if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
+              });
+              resizeObserver.observe(canvas);
+
+              // ── Cleanup ──
+              canvas._solarCleanup = function () {
+                cancelAnimationFrame(animId);
+                resizeObserver.disconnect();
+                renderer.dispose();
+                scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+              };
+            }
+
+            // Load Three.js or use existing
+            if (window.THREE) {
+              initScene(window.THREE);
+            } else {
+              const s = document.createElement('script');
+              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+              s.onload = function () { initScene(window.THREE); };
+              document.head.appendChild(s);
+            }
+          };
+
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer")
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, "3D")
             ),
-            React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl border border-indigo-800", style: { maxHeight: "280px" } },
-              React.createElement("circle", { cx: 40, cy: H / 2, r: 24, fill: "#fbbf24", filter: "url(#sunGlow)" }),
-              React.createElement("defs", null, React.createElement("radialGradient", { id: "sunGlow" }, React.createElement("stop", { offset: "0%", stopColor: "#fde68a" }), React.createElement("stop", { offset: "100%", stopColor: "#f59e0b" }))),
-              React.createElement("text", { x: 40, y: H / 2 + 38, textAnchor: "middle", fill: "#fbbf24", style: { fontSize: '8px', fontWeight: 'bold' } }, "Sun"),
-              PLANETS.map((p, i) => {
-                const cx = 80 + (i / (PLANETS.length - 1)) * (W - 110);
-                const isSelected = d.selectedPlanet === p.name;
-                return React.createElement("g", { key: p.name, style: { cursor: 'pointer' }, onClick: () => upd('selectedPlanet', p.name) },
-                  React.createElement("circle", { cx, cy: H / 2, r: p.size / 2, fill: p.color, stroke: isSelected ? '#fff' : 'none', strokeWidth: 2, style: { filter: isSelected ? 'drop-shadow(0 0 8px ' + p.color + ')' : 'none' } }),
-                  React.createElement("text", { x: cx, y: H / 2 + p.size / 2 + 12, textAnchor: "middle", fill: "#94a3b8", style: { fontSize: '7px' } }, p.name)
-                );
-              })
+            // 3D Canvas container
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-800/50 shadow-lg", style: { background: '#0a0e27' } },
+              React.createElement("canvas", {
+                ref: canvasRef,
+                className: "solar3d-canvas w-full",
+                style: { height: '340px', display: 'block', cursor: 'grab' },
+                'data-speed': String(simSpeed),
+                'data-paused': String(paused),
+                'data-selected': d.selectedPlanet || ''
+              }),
+              // Floating planet labels
+              React.createElement("div", { className: "solar-labels", style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' } }),
+              // Controls overlay
+              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
+                React.createElement("button", {
+                  onClick: () => upd('paused', !paused),
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
+                }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
+                React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
+                  React.createElement("span", { className: "text-[9px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
+                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '12px' } }),
+                  React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold min-w-[28px] text-right" }, simSpeed.toFixed(1) + "x")
+                ),
+                React.createElement("button", {
+                  onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c && c._solarInit) { /* reset camera via reinit — crude but works */ c._solarCleanup && c._solarCleanup(); c._solarInit = false; setTimeout(function () { canvasRef(c); }, 50); } },
+                  className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
+                }, "\uD83C\uDFE0 Reset View"),
+                React.createElement("span", { className: "text-[9px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
+              )
             ),
+            // Planet buttons row
+            React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
+              PLANETS.map(p => React.createElement("button", {
+                key: p.name,
+                onClick: () => upd('selectedPlanet', p.name),
+                className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                style: d.selectedPlanet === p.name ? { backgroundColor: p.color } : {}
+              }, p.emoji + " " + p.name))
+            ),
+            // ── Planet Info Card ──
             sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
                 React.createElement("div", { className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl", style: { backgroundColor: sel.color + '20', border: '2px solid ' + sel.color } }, sel.emoji),
