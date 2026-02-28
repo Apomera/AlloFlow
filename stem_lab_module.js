@@ -3813,7 +3813,7 @@
               React.createElement("canvas", {
                 "data-cell-sim-canvas": "true",
                 ref: canvasRefCb,
-                style: { width: '100%', height: '100%', cursor: dragging ? 'grabbing' : 'grab' }
+                style: { width: '100%', height: '100%', cursor: 'grab' }
               }),
               // Zoom overlay
               React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
@@ -7701,1181 +7701,1183 @@
 
         // ═══════════════════════════════════════════════════════
 
-stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
-    const d = labToolData.musicSynth;
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
+        stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
+          const d = labToolData.musicSynth;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
 
-    // --- Tooltip helper ---
-    var Tip = function(props) {
-        var showId = 'tip_' + props.id;
-        var isOpen = d[showId];
-        return React.createElement("span", { className: "relative inline-block ml-1" },
-            React.createElement("button", {
-                onClick: function() { upd(showId, !isOpen); },
+          // --- Tooltip helper ---
+          var Tip = function (props) {
+            var showId = 'tip_' + props.id;
+            var isOpen = d[showId];
+            return React.createElement("span", { className: "relative inline-block ml-1" },
+              React.createElement("button", {
+                onClick: function () { upd(showId, !isOpen); },
                 className: "w-4 h-4 rounded-full text-[9px] font-bold leading-none inline-flex items-center justify-center " + (isOpen ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-500 hover:bg-violet-200"),
                 title: props.text
-            }, "\u24D8"),
-            isOpen && React.createElement("div", { className: "absolute z-50 left-6 top-0 w-64 p-2.5 bg-white border border-violet-200 rounded-lg shadow-xl text-[10px] text-slate-600 leading-relaxed", style: { maxHeight: "200px", overflowY: "auto" } },
+              }, "\u24D8"),
+              isOpen && React.createElement("div", { className: "absolute z-50 left-6 top-0 w-64 p-2.5 bg-white border border-violet-200 rounded-lg shadow-xl text-[10px] text-slate-600 leading-relaxed", style: { maxHeight: "200px", overflowY: "auto" } },
                 React.createElement("div", { className: "font-bold text-violet-700 mb-0.5" }, "\uD83D\uDD2C " + props.title),
                 props.text
-            )
-        );
-    };
+              )
+            );
+          };
 
-    // --- Audio Context singleton ---
-    if (!window._alloSynthCtx) {
-        window._alloSynthCtx = null; window._alloSynthGain = null; window._alloSynthAnalyser = null;
-        window._alloSynthActiveNotes = {}; window._alloSynthSeqInterval = null; window._alloSynthEffects = null;
-        window._alloMetronomeInterval = null; window._alloArpInterval = null;
-    }
-    function makeDistCurve(amount) {
-        var k = Math.max(1, amount); var samples = 44100; var curve = new Float32Array(samples);
-        for (var i = 0; i < samples; i++) { var x = (i * 2) / samples - 1; curve[i] = ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x)); }
-        return curve;
-    }
-    function getCtx() {
-        if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
-            var ac = new (window.AudioContext || window.webkitAudioContext)();
-            var gain = ac.createGain(); gain.gain.value = d.volume || 0.5;
-            var analyser = ac.createAnalyser(); analyser.fftSize = 2048;
-            var delay = ac.createDelay(2); delay.delayTime.value = (d.delayTime || 300) / 1000;
-            var delayFeedback = ac.createGain(); delayFeedback.gain.value = d.delayFeedback || 0.3;
-            var delayWet = ac.createGain(); delayWet.gain.value = d.delayMix || 0;
-            var delayDry = ac.createGain(); delayDry.gain.value = 1;
-            delay.connect(delayFeedback); delayFeedback.connect(delay); delay.connect(delayWet);
-            var distortion = ac.createWaveShaper();
-            distortion.curve = makeDistCurve(d.distAmount || 0); distortion.oversample = '4x';
-            var convolver = ac.createConvolver();
-            var reverbWet = ac.createGain(); reverbWet.gain.value = d.reverbMix || 0;
-            var reverbDry = ac.createGain(); reverbDry.gain.value = 1;
-            var reverbLen = (d.reverbSize || 1.5) * ac.sampleRate;
-            var impulse = ac.createBuffer(2, reverbLen, ac.sampleRate);
-            for (var ch = 0; ch < 2; ch++) { var imp = impulse.getChannelData(ch); for (var si = 0; si < reverbLen; si++) { imp[si] = (Math.random() * 2 - 1) * Math.pow(1 - si / reverbLen, 2); } }
-            convolver.buffer = impulse;
-            var chorusDelay = ac.createDelay(0.1); chorusDelay.delayTime.value = 0.02;
-            var chorusLFO = ac.createOscillator(); var chorusDepth = ac.createGain();
-            chorusLFO.frequency.value = d.chorusRate || 1.5; chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0;
-            chorusLFO.connect(chorusDepth); chorusDepth.connect(chorusDelay.delayTime); chorusLFO.start();
-            var chorusWet = ac.createGain(); chorusWet.gain.value = d.chorusMix || 0;
-            distortion.connect(delayDry); distortion.connect(delay); distortion.connect(reverbDry);
-            distortion.connect(convolver); distortion.connect(chorusDelay);
-            delayDry.connect(gain); delayWet.connect(gain); reverbDry.connect(gain);
-            convolver.connect(reverbWet); reverbWet.connect(gain);
-            chorusDelay.connect(chorusWet); chorusWet.connect(gain);
-            gain.connect(analyser); analyser.connect(ac.destination);
-            window._alloSynthCtx = ac; window._alloSynthGain = gain; window._alloSynthAnalyser = analyser;
-            window._alloSynthEffects = { distortion: distortion, delay: delay, delayFeedback: delayFeedback, delayWet: delayWet, delayDry: delayDry, convolver: convolver, reverbWet: reverbWet, reverbDry: reverbDry, chorusDelay: chorusDelay, chorusLFO: chorusLFO, chorusDepth: chorusDepth, chorusWet: chorusWet };
-        }
-        if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
-        window._alloSynthGain.gain.value = d.volume || 0.5;
-        var fx = window._alloSynthEffects;
-        if (fx) {
-            fx.delay.delayTime.value = (d.delayTime || 300) / 1000; fx.delayFeedback.gain.value = d.delayFeedback || 0.3;
-            fx.delayWet.gain.value = d.delayMix || 0; fx.distortion.curve = makeDistCurve(d.distAmount || 0);
-            fx.reverbWet.gain.value = d.reverbMix || 0; fx.chorusLFO.frequency.value = d.chorusRate || 1.5;
-            fx.chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0; fx.chorusWet.gain.value = d.chorusMix || 0;
-        }
-        return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser, effects: window._alloSynthEffects };
-    }
+          // --- Audio Context singleton ---
+          if (!window._alloSynthCtx) {
+            window._alloSynthCtx = null; window._alloSynthGain = null; window._alloSynthAnalyser = null;
+            window._alloSynthActiveNotes = {}; window._alloSynthSeqInterval = null; window._alloSynthEffects = null;
+            window._alloMetronomeInterval = null; window._alloArpInterval = null;
+          }
+          function makeDistCurve(amount) {
+            var k = Math.max(1, amount); var samples = 44100; var curve = new Float32Array(samples);
+            for (var i = 0; i < samples; i++) { var x = (i * 2) / samples - 1; curve[i] = ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x)); }
+            return curve;
+          }
+          function getCtx() {
+            if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
+              var ac = new (window.AudioContext || window.webkitAudioContext)();
+              var gain = ac.createGain(); gain.gain.value = d.volume || 0.5;
+              var analyser = ac.createAnalyser(); analyser.fftSize = 2048;
+              var delay = ac.createDelay(2); delay.delayTime.value = (d.delayTime || 300) / 1000;
+              var delayFeedback = ac.createGain(); delayFeedback.gain.value = d.delayFeedback || 0.3;
+              var delayWet = ac.createGain(); delayWet.gain.value = d.delayMix || 0;
+              var delayDry = ac.createGain(); delayDry.gain.value = 1;
+              delay.connect(delayFeedback); delayFeedback.connect(delay); delay.connect(delayWet);
+              var distortion = ac.createWaveShaper();
+              distortion.curve = makeDistCurve(d.distAmount || 0); distortion.oversample = '4x';
+              var convolver = ac.createConvolver();
+              var reverbWet = ac.createGain(); reverbWet.gain.value = d.reverbMix || 0;
+              var reverbDry = ac.createGain(); reverbDry.gain.value = 1;
+              var reverbLen = (d.reverbSize || 1.5) * ac.sampleRate;
+              var impulse = ac.createBuffer(2, reverbLen, ac.sampleRate);
+              for (var ch = 0; ch < 2; ch++) { var imp = impulse.getChannelData(ch); for (var si = 0; si < reverbLen; si++) { imp[si] = (Math.random() * 2 - 1) * Math.pow(1 - si / reverbLen, 2); } }
+              convolver.buffer = impulse;
+              var chorusDelay = ac.createDelay(0.1); chorusDelay.delayTime.value = 0.02;
+              var chorusLFO = ac.createOscillator(); var chorusDepth = ac.createGain();
+              chorusLFO.frequency.value = d.chorusRate || 1.5; chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0;
+              chorusLFO.connect(chorusDepth); chorusDepth.connect(chorusDelay.delayTime); chorusLFO.start();
+              var chorusWet = ac.createGain(); chorusWet.gain.value = d.chorusMix || 0;
+              distortion.connect(delayDry); distortion.connect(delay); distortion.connect(reverbDry);
+              distortion.connect(convolver); distortion.connect(chorusDelay);
+              delayDry.connect(gain); delayWet.connect(gain); reverbDry.connect(gain);
+              convolver.connect(reverbWet); reverbWet.connect(gain);
+              chorusDelay.connect(chorusWet); chorusWet.connect(gain);
+              gain.connect(analyser); analyser.connect(ac.destination);
+              window._alloSynthCtx = ac; window._alloSynthGain = gain; window._alloSynthAnalyser = analyser;
+              window._alloSynthEffects = { distortion: distortion, delay: delay, delayFeedback: delayFeedback, delayWet: delayWet, delayDry: delayDry, convolver: convolver, reverbWet: reverbWet, reverbDry: reverbDry, chorusDelay: chorusDelay, chorusLFO: chorusLFO, chorusDepth: chorusDepth, chorusWet: chorusWet };
+            }
+            if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
+            window._alloSynthGain.gain.value = d.volume || 0.5;
+            var fx = window._alloSynthEffects;
+            if (fx) {
+              fx.delay.delayTime.value = (d.delayTime || 300) / 1000; fx.delayFeedback.gain.value = d.delayFeedback || 0.3;
+              fx.delayWet.gain.value = d.delayMix || 0; fx.distortion.curve = makeDistCurve(d.distAmount || 0);
+              fx.reverbWet.gain.value = d.reverbMix || 0; fx.chorusLFO.frequency.value = d.chorusRate || 1.5;
+              fx.chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0; fx.chorusWet.gain.value = d.chorusMix || 0;
+            }
+            return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser, effects: window._alloSynthEffects };
+          }
 
-    // ═══ NOTE & FREQUENCY ═══
-    var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    var NOTE_NAMES_FLAT = ['C', 'D\u266D', 'D', 'E\u266D', 'E', 'F', 'G\u266D', 'G', 'A\u266D', 'A', 'B\u266D', 'B'];
-    function noteFreq(note, octave) {
-        var semitone = NOTE_NAMES.indexOf(note);
-        if (semitone === -1) semitone = NOTE_NAMES_FLAT.indexOf(note);
-        var n = (octave - 4) * 12 + (semitone - 9);
-        return 440 * Math.pow(2, n / 12);
-    }
-    var oct = d.octave || 4;
-    var KEYS = [];
-    for (var o = oct; o <= oct + 1; o++) {
-        for (var ni = 0; ni < 12; ni++) {
-            KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1, semitone: (o - oct) * 12 + ni });
-        }
-    }
+          // ═══ NOTE & FREQUENCY ═══
+          var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+          var NOTE_NAMES_FLAT = ['C', 'D\u266D', 'D', 'E\u266D', 'E', 'F', 'G\u266D', 'G', 'A\u266D', 'A', 'B\u266D', 'B'];
+          function noteFreq(note, octave) {
+            var semitone = NOTE_NAMES.indexOf(note);
+            if (semitone === -1) semitone = NOTE_NAMES_FLAT.indexOf(note);
+            var n = (octave - 4) * 12 + (semitone - 9);
+            return 440 * Math.pow(2, n / 12);
+          }
+          var oct = d.octave || 4;
+          var KEYS = [];
+          for (var o = oct; o <= oct + 1; o++) {
+            for (var ni = 0; ni < 12; ni++) {
+              KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1, semitone: (o - oct) * 12 + ni });
+            }
+          }
 
-    // ═══ PLAY / STOP NOTE ═══
-    function playNote(freq, noteId) {
-        var audio = getCtx();
-        if (window._alloSynthActiveNotes[noteId]) return;
-        var osc = audio.ctx.createOscillator(); var env = audio.ctx.createGain();
-        osc.type = d.waveType || 'sine'; osc.frequency.value = freq;
-        var now = audio.ctx.currentTime;
-        var atk = d.attack || 0.02; var dec = d.decay || 0.1; var sus = d.sustain || 0.7;
-        env.gain.setValueAtTime(0, now); env.gain.linearRampToValueAtTime(1, now + atk);
-        env.gain.linearRampToValueAtTime(sus, now + atk + dec);
-        osc.connect(env); env.connect(audio.effects.distortion); osc.start(now);
-        window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
-    }
-    function stopNote(noteId) {
-        var entry = window._alloSynthActiveNotes[noteId];
-        if (!entry) return;
-        var audio = getCtx(); var now = audio.ctx.currentTime; var rel = d.release || 0.3;
-        entry.env.gain.cancelScheduledValues(now); entry.env.gain.setValueAtTime(entry.env.gain.value, now);
-        entry.env.gain.linearRampToValueAtTime(0, now + rel); entry.osc.stop(now + rel + 0.05);
-        delete window._alloSynthActiveNotes[noteId];
-    }
-    // Play a note for a fixed duration
-    function playNoteFor(freq, noteId, durationMs) {
-        playNote(freq, noteId);
-        setTimeout(function() { stopNote(noteId); }, durationMs);
-    }
+          // ═══ PLAY / STOP NOTE ═══
+          function playNote(freq, noteId) {
+            var audio = getCtx();
+            if (window._alloSynthActiveNotes[noteId]) return;
+            var osc = audio.ctx.createOscillator(); var env = audio.ctx.createGain();
+            osc.type = d.waveType || 'sine'; osc.frequency.value = freq;
+            var now = audio.ctx.currentTime;
+            var atk = d.attack || 0.02; var dec = d.decay || 0.1; var sus = d.sustain || 0.7;
+            env.gain.setValueAtTime(0, now); env.gain.linearRampToValueAtTime(1, now + atk);
+            env.gain.linearRampToValueAtTime(sus, now + atk + dec);
+            osc.connect(env); env.connect(audio.effects.distortion); osc.start(now);
+            window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
+          }
+          function stopNote(noteId) {
+            var entry = window._alloSynthActiveNotes[noteId];
+            if (!entry) return;
+            var audio = getCtx(); var now = audio.ctx.currentTime; var rel = d.release || 0.3;
+            entry.env.gain.cancelScheduledValues(now); entry.env.gain.setValueAtTime(entry.env.gain.value, now);
+            entry.env.gain.linearRampToValueAtTime(0, now + rel); entry.osc.stop(now + rel + 0.05);
+            delete window._alloSynthActiveNotes[noteId];
+          }
+          // Play a note for a fixed duration
+          function playNoteFor(freq, noteId, durationMs) {
+            playNote(freq, noteId);
+            setTimeout(function () { stopNote(noteId); }, durationMs);
+          }
 
-    // ═══ DRUM SYNTHESIS ═══
-    function playDrum(type) {
-        var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
-        var drumGain = ctx.createGain(); drumGain.connect(audio.effects.distortion);
-        if (type === 'kick') {
-            var osc = ctx.createOscillator(); osc.type = 'sine';
-            osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.12);
-            var eg = ctx.createGain(); eg.gain.setValueAtTime(1, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-            osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.8; osc.start(now); osc.stop(now + 0.4);
-        } else if (type === 'snare') {
-            var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
-            var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-            noise.buffer = nBuf;
-            var nFilter = ctx.createBiquadFilter(); nFilter.type = 'highpass'; nFilter.frequency.value = 1000;
-            var nGain = ctx.createGain(); nGain.gain.setValueAtTime(0.7, now); nGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-            noise.connect(nFilter); nFilter.connect(nGain); nGain.connect(drumGain);
-            var body = ctx.createOscillator(); body.type = 'triangle'; body.frequency.value = 180;
-            var bGain = ctx.createGain(); bGain.gain.setValueAtTime(0.5, now); bGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-            body.connect(bGain); bGain.connect(drumGain); drumGain.gain.value = 0.7; noise.start(now); noise.stop(now + 0.15); body.start(now); body.stop(now + 0.08);
-        } else if (type === 'hihat') {
-            var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
-            var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-            noise.buffer = nBuf;
-            var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 7000;
-            var eg = ctx.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-            noise.connect(hpf); hpf.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; noise.start(now); noise.stop(now + 0.05);
-        } else if (type === 'clap') {
-            for (var ci = 0; ci < 3; ci++) {
+          // ═══ DRUM SYNTHESIS ═══
+          function playDrum(type) {
+            var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
+            var drumGain = ctx.createGain(); drumGain.connect(audio.effects.distortion);
+            if (type === 'kick') {
+              var osc = ctx.createOscillator(); osc.type = 'sine';
+              osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(1, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.8; osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'snare') {
+              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var nFilter = ctx.createBiquadFilter(); nFilter.type = 'highpass'; nFilter.frequency.value = 1000;
+              var nGain = ctx.createGain(); nGain.gain.setValueAtTime(0.7, now); nGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+              noise.connect(nFilter); nFilter.connect(nGain); nGain.connect(drumGain);
+              var body = ctx.createOscillator(); body.type = 'triangle'; body.frequency.value = 180;
+              var bGain = ctx.createGain(); bGain.gain.setValueAtTime(0.5, now); bGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+              body.connect(bGain); bGain.connect(drumGain); drumGain.gain.value = 0.7; noise.start(now); noise.stop(now + 0.15); body.start(now); body.stop(now + 0.08);
+            } else if (type === 'hihat') {
+              var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+              var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+              noise.buffer = nBuf;
+              var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 7000;
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+              noise.connect(hpf); hpf.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5; noise.start(now); noise.stop(now + 0.05);
+            } else if (type === 'clap') {
+              for (var ci = 0; ci < 3; ci++) {
                 var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
                 var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
                 noise.buffer = nBuf;
                 var bpf = ctx.createBiquadFilter(); bpf.type = 'bandpass'; bpf.frequency.value = 2500;
                 var eg = ctx.createGain(); eg.gain.setValueAtTime(0.6, now + ci * 0.01); eg.gain.exponentialRampToValueAtTime(0.01, now + ci * 0.01 + 0.04);
                 noise.connect(bpf); bpf.connect(eg); eg.connect(drumGain); noise.start(now + ci * 0.01); noise.stop(now + ci * 0.01 + 0.04);
+              }
+              drumGain.gain.value = 0.5;
+            } else if (type === 'tom') {
+              var osc = ctx.createOscillator(); osc.type = 'sine';
+              osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+              var eg = ctx.createGain(); eg.gain.setValueAtTime(0.7, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+              osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.6; osc.start(now); osc.stop(now + 0.3);
             }
-            drumGain.gain.value = 0.5;
-        } else if (type === 'tom') {
+          }
+          // Metronome click
+          function playClick(accent) {
+            var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
             var osc = ctx.createOscillator(); osc.type = 'sine';
-            osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
-            var eg = ctx.createGain(); eg.gain.setValueAtTime(0.7, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.6; osc.start(now); osc.stop(now + 0.3);
-        }
-    }
-    // Metronome click
-    function playClick(accent) {
-        var audio = getCtx(); var ctx = audio.ctx; var now = ctx.currentTime;
-        var osc = ctx.createOscillator(); osc.type = 'sine';
-        osc.frequency.value = accent ? 1000 : 800;
-        var eg = ctx.createGain(); eg.gain.setValueAtTime(accent ? 0.5 : 0.3, now);
-        eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        osc.connect(eg); eg.connect(audio.gain); osc.start(now); osc.stop(now + 0.05);
-    }
+            osc.frequency.value = accent ? 1000 : 800;
+            var eg = ctx.createGain(); eg.gain.setValueAtTime(accent ? 0.5 : 0.3, now);
+            eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.connect(eg); eg.connect(audio.gain); osc.start(now); osc.stop(now + 0.05);
+          }
 
-    // ═══ KEYBOARD MAPPINGS ═══
-    var KEY_MAP = {
-        'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
-        's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
-        'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
-        '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
-    };
-    var NUM_KEY_MAP = { '1': 'C', '2': 'D', '3': 'E', '4': 'F', '5': 'G', '6': 'A', '7': 'B', '8': 'C', '9': 'D' };
-    var NUM_KEY_OCT = { '8': 1, '9': 1 };
+          // ═══ KEYBOARD MAPPINGS ═══
+          var KEY_MAP = {
+            'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
+            's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
+            'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
+            '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
+          };
+          var NUM_KEY_MAP = { '1': 'C', '2': 'D', '3': 'E', '4': 'F', '5': 'G', '6': 'A', '7': 'B', '8': 'C', '9': 'D' };
+          var NUM_KEY_OCT = { '8': 1, '9': 1 };
 
-    // ═══ SCALE & CHORD DATA ═══
-    var SCALES = {
-        'Major': { intervals: [0,2,4,5,7,9,11], desc: 'Happy, bright. The most common Western scale.', science: 'Built on the pattern W-W-H-W-W-W-H (Whole/Half steps). The Ionian mode. Its brightness comes from the major 3rd (4 semitones) and perfect 5th (7 semitones).' },
-        'Natural Minor': { intervals: [0,2,3,5,7,8,10], desc: 'Sad, dark, introspective.', science: 'Pattern: W-H-W-W-H-W-W. The Aeolian mode. The minor 3rd (3 semitones) creates a darker, more somber quality than major.' },
-        'Harmonic Minor': { intervals: [0,2,3,5,7,8,11], desc: 'Exotic, dramatic, classical.', science: 'Like natural minor but raises the 7th degree. Creates an augmented 2nd interval (3 semitones) between the 6th and 7th, giving it a Middle Eastern flavor.' },
-        'Melodic Minor': { intervals: [0,2,3,5,7,9,11], desc: 'Smooth, jazzy, sophisticated.', science: 'Raises both the 6th and 7th degrees of natural minor. Used ascending in classical; jazz uses it both ways. Foundation of many jazz modes.' },
-        'Pentatonic Major': { intervals: [0,2,4,7,9], desc: 'Universal, folk, rock.', science: 'A 5-note subset of the major scale, removing the 4th and 7th. Found in music worldwide because it avoids semitones, making any combination sound consonant.' },
-        'Pentatonic Minor': { intervals: [0,3,5,7,10], desc: 'Blues, rock, universal.', science: 'The most common scale for improvisation. 5 notes, no semitones. Guitar solos, Asian music, African music all use this scale extensively.' },
-        'Blues': { intervals: [0,3,5,6,7,10], desc: 'Soulful, gritty, expressive.', science: 'Adds the "blue note" (\u266D5/\u266F4) to the minor pentatonic. This tritone creates tension and the characteristic blues sound. Bending notes is central to blues expression.' },
-        'Dorian': { intervals: [0,2,3,5,7,9,10], desc: 'Jazz, funk, sophisticated minor.', science: 'A minor mode with a raised 6th degree. Used heavily in jazz and funk (e.g., "So What" by Miles Davis). Has a "bright minor" quality.' },
-        'Mixolydian': { intervals: [0,2,4,5,7,9,10], desc: 'Rock, folk, dominant feel.', science: 'A major scale with a lowered 7th. The "dominant" sound. Used in rock (Grateful Dead), folk, and creates the V7 chord quality.' },
-        'Phrygian': { intervals: [0,1,3,5,7,8,10], desc: 'Spanish, flamenco, metal.', science: 'A minor mode with \u266D2. The half-step from root creates dramatic, dark tension. Central to flamenco guitar and heavy metal.' },
-        'Lydian': { intervals: [0,2,4,6,7,9,11], desc: 'Dreamy, ethereal, film scores.', science: 'A major scale with \u266F4. The raised 4th creates a "floating" quality. Used extensively in film scores (John Williams) and progressive rock.' },
-        'Whole Tone': { intervals: [0,2,4,6,8,10], desc: 'Mysterious, ambiguous, dreamlike.', science: 'All whole steps, no half steps. No tonal center. Only 2 unique whole-tone scales exist. Used by Debussy and in mystery/dream sequences.' },
-        'Chromatic': { intervals: [0,1,2,3,4,5,6,7,8,9,10,11], desc: 'All 12 notes. Complete but atonal.', science: 'Every semitone in the octave. No tonal hierarchy. The basis of 12-tone serialism (Schoenberg). Each note is equally spaced at 2^(1/12) \u2248 1.0595 frequency ratio.' },
-    };
+          // ═══ SCALE & CHORD DATA ═══
+          var SCALES = {
+            'Major': { intervals: [0, 2, 4, 5, 7, 9, 11], desc: 'Happy, bright. The most common Western scale.', science: 'Built on the pattern W-W-H-W-W-W-H (Whole/Half steps). The Ionian mode. Its brightness comes from the major 3rd (4 semitones) and perfect 5th (7 semitones).' },
+            'Natural Minor': { intervals: [0, 2, 3, 5, 7, 8, 10], desc: 'Sad, dark, introspective.', science: 'Pattern: W-H-W-W-H-W-W. The Aeolian mode. The minor 3rd (3 semitones) creates a darker, more somber quality than major.' },
+            'Harmonic Minor': { intervals: [0, 2, 3, 5, 7, 8, 11], desc: 'Exotic, dramatic, classical.', science: 'Like natural minor but raises the 7th degree. Creates an augmented 2nd interval (3 semitones) between the 6th and 7th, giving it a Middle Eastern flavor.' },
+            'Melodic Minor': { intervals: [0, 2, 3, 5, 7, 9, 11], desc: 'Smooth, jazzy, sophisticated.', science: 'Raises both the 6th and 7th degrees of natural minor. Used ascending in classical; jazz uses it both ways. Foundation of many jazz modes.' },
+            'Pentatonic Major': { intervals: [0, 2, 4, 7, 9], desc: 'Universal, folk, rock.', science: 'A 5-note subset of the major scale, removing the 4th and 7th. Found in music worldwide because it avoids semitones, making any combination sound consonant.' },
+            'Pentatonic Minor': { intervals: [0, 3, 5, 7, 10], desc: 'Blues, rock, universal.', science: 'The most common scale for improvisation. 5 notes, no semitones. Guitar solos, Asian music, African music all use this scale extensively.' },
+            'Blues': { intervals: [0, 3, 5, 6, 7, 10], desc: 'Soulful, gritty, expressive.', science: 'Adds the "blue note" (\u266D5/\u266F4) to the minor pentatonic. This tritone creates tension and the characteristic blues sound. Bending notes is central to blues expression.' },
+            'Dorian': { intervals: [0, 2, 3, 5, 7, 9, 10], desc: 'Jazz, funk, sophisticated minor.', science: 'A minor mode with a raised 6th degree. Used heavily in jazz and funk (e.g., "So What" by Miles Davis). Has a "bright minor" quality.' },
+            'Mixolydian': { intervals: [0, 2, 4, 5, 7, 9, 10], desc: 'Rock, folk, dominant feel.', science: 'A major scale with a lowered 7th. The "dominant" sound. Used in rock (Grateful Dead), folk, and creates the V7 chord quality.' },
+            'Phrygian': { intervals: [0, 1, 3, 5, 7, 8, 10], desc: 'Spanish, flamenco, metal.', science: 'A minor mode with \u266D2. The half-step from root creates dramatic, dark tension. Central to flamenco guitar and heavy metal.' },
+            'Lydian': { intervals: [0, 2, 4, 6, 7, 9, 11], desc: 'Dreamy, ethereal, film scores.', science: 'A major scale with \u266F4. The raised 4th creates a "floating" quality. Used extensively in film scores (John Williams) and progressive rock.' },
+            'Whole Tone': { intervals: [0, 2, 4, 6, 8, 10], desc: 'Mysterious, ambiguous, dreamlike.', science: 'All whole steps, no half steps. No tonal center. Only 2 unique whole-tone scales exist. Used by Debussy and in mystery/dream sequences.' },
+            'Chromatic': { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], desc: 'All 12 notes. Complete but atonal.', science: 'Every semitone in the octave. No tonal hierarchy. The basis of 12-tone serialism (Schoenberg). Each note is equally spaced at 2^(1/12) \u2248 1.0595 frequency ratio.' },
+          };
 
-    var CHORDS = {
-        'Major': { intervals: [0,4,7], symbol: '', desc: 'Happy, stable, resolved.', science: 'Root + Major 3rd (4 semitones) + Perfect 5th (7 semitones). Frequency ratio approximately 4:5:6. The most consonant triad.' },
-        'Minor': { intervals: [0,3,7], symbol: 'm', desc: 'Sad, introspective, dark.', science: 'Root + Minor 3rd (3 semitones) + Perfect 5th. The lowered 3rd creates a more somber quality. Ratio approximately 10:12:15.' },
-        'Diminished': { intervals: [0,3,6], symbol: 'dim', desc: 'Tense, unstable, needs to resolve.', science: 'Two minor 3rds stacked. The tritone (6 semitones) between root and 5th is the most dissonant interval, creating maximum tension.' },
-        'Augmented': { intervals: [0,4,8], symbol: 'aug', desc: 'Mysterious, unresolved, eerie.', science: 'Two major 3rds stacked. Divides the octave into 3 equal parts. Symmetrical \u2014 only 4 unique augmented triads exist.' },
-        'Maj7': { intervals: [0,4,7,11], symbol: 'maj7', desc: 'Smooth, lush, jazzy.', science: 'Major triad + major 7th (11 semitones). The major 7th interval is nearly an octave, creating a sweet, complex resonance.' },
-        'Min7': { intervals: [0,3,7,10], symbol: 'm7', desc: 'Cool, mellow, relaxed.', science: 'Minor triad + minor 7th (10 semitones). Very common in jazz. Less tense than dominant 7th, more complex than minor triad.' },
-        'Dom7': { intervals: [0,4,7,10], symbol: '7', desc: 'Bluesy, restless, wants to resolve.', science: 'Major triad + minor 7th. The tritone between 3rd and \u266D7th creates tension that "pulls" toward resolution to a chord a 5th below (V7\u2192I).' },
-        'Sus2': { intervals: [0,2,7], symbol: 'sus2', desc: 'Open, modern, shimmering.', science: 'Replaces the 3rd with the 2nd. Neither major nor minor \u2014 ambiguous quality. Common in pop and ambient music.' },
-        'Sus4': { intervals: [0,5,7], symbol: 'sus4', desc: 'Suspended, yearning to resolve.', science: 'Replaces the 3rd with the 4th. The 4th wants to "suspend" down to the 3rd. Used since medieval music to create tension-release.' },
-        'Power': { intervals: [0,7,12], symbol: '5', desc: 'Raw, strong, genre-defining.', science: 'Just root + 5th (+ octave). No 3rd means no major/minor quality. Sounds huge with distortion because the simple 3:2 ratio stays clean when clipped.' },
-    };
+          var CHORDS = {
+            'Major': { intervals: [0, 4, 7], symbol: '', desc: 'Happy, stable, resolved.', science: 'Root + Major 3rd (4 semitones) + Perfect 5th (7 semitones). Frequency ratio approximately 4:5:6. The most consonant triad.' },
+            'Minor': { intervals: [0, 3, 7], symbol: 'm', desc: 'Sad, introspective, dark.', science: 'Root + Minor 3rd (3 semitones) + Perfect 5th. The lowered 3rd creates a more somber quality. Ratio approximately 10:12:15.' },
+            'Diminished': { intervals: [0, 3, 6], symbol: 'dim', desc: 'Tense, unstable, needs to resolve.', science: 'Two minor 3rds stacked. The tritone (6 semitones) between root and 5th is the most dissonant interval, creating maximum tension.' },
+            'Augmented': { intervals: [0, 4, 8], symbol: 'aug', desc: 'Mysterious, unresolved, eerie.', science: 'Two major 3rds stacked. Divides the octave into 3 equal parts. Symmetrical \u2014 only 4 unique augmented triads exist.' },
+            'Maj7': { intervals: [0, 4, 7, 11], symbol: 'maj7', desc: 'Smooth, lush, jazzy.', science: 'Major triad + major 7th (11 semitones). The major 7th interval is nearly an octave, creating a sweet, complex resonance.' },
+            'Min7': { intervals: [0, 3, 7, 10], symbol: 'm7', desc: 'Cool, mellow, relaxed.', science: 'Minor triad + minor 7th (10 semitones). Very common in jazz. Less tense than dominant 7th, more complex than minor triad.' },
+            'Dom7': { intervals: [0, 4, 7, 10], symbol: '7', desc: 'Bluesy, restless, wants to resolve.', science: 'Major triad + minor 7th. The tritone between 3rd and \u266D7th creates tension that "pulls" toward resolution to a chord a 5th below (V7\u2192I).' },
+            'Sus2': { intervals: [0, 2, 7], symbol: 'sus2', desc: 'Open, modern, shimmering.', science: 'Replaces the 3rd with the 2nd. Neither major nor minor \u2014 ambiguous quality. Common in pop and ambient music.' },
+            'Sus4': { intervals: [0, 5, 7], symbol: 'sus4', desc: 'Suspended, yearning to resolve.', science: 'Replaces the 3rd with the 4th. The 4th wants to "suspend" down to the 3rd. Used since medieval music to create tension-release.' },
+            'Power': { intervals: [0, 7, 12], symbol: '5', desc: 'Raw, strong, genre-defining.', science: 'Just root + 5th (+ octave). No 3rd means no major/minor quality. Sounds huge with distortion because the simple 3:2 ratio stays clean when clipped.' },
+          };
 
-    var INTERVALS = [
-        { name: 'Unison', semitones: 0, ratio: '1:1', song: 'Same note', quality: 'perfect' },
-        { name: 'Minor 2nd', semitones: 1, ratio: '16:15', song: 'Jaws theme', quality: 'dissonant' },
-        { name: 'Major 2nd', semitones: 2, ratio: '9:8', song: 'Happy Birthday (1st two notes)', quality: 'dissonant' },
-        { name: 'Minor 3rd', semitones: 3, ratio: '6:5', song: 'Greensleeves', quality: 'consonant' },
-        { name: 'Major 3rd', semitones: 4, ratio: '5:4', song: 'Oh When the Saints', quality: 'consonant' },
-        { name: 'Perfect 4th', semitones: 5, ratio: '4:3', song: 'Here Comes the Bride', quality: 'perfect' },
-        { name: 'Tritone', semitones: 6, ratio: '\u221A2:1', song: 'The Simpsons theme', quality: 'dissonant' },
-        { name: 'Perfect 5th', semitones: 7, ratio: '3:2', song: 'Star Wars opening', quality: 'perfect' },
-        { name: 'Minor 6th', semitones: 8, ratio: '8:5', song: 'Love Story theme', quality: 'consonant' },
-        { name: 'Major 6th', semitones: 9, ratio: '5:3', song: 'My Bonnie Lies Over the Ocean', quality: 'consonant' },
-        { name: 'Minor 7th', semitones: 10, ratio: '16:9', song: 'Star Trek theme', quality: 'dissonant' },
-        { name: 'Major 7th', semitones: 11, ratio: '15:8', song: 'Take On Me (chorus)', quality: 'dissonant' },
-        { name: 'Octave', semitones: 12, ratio: '2:1', song: 'Somewhere Over the Rainbow', quality: 'perfect' },
-    ];
+          var INTERVALS = [
+            { name: 'Unison', semitones: 0, ratio: '1:1', song: 'Same note', quality: 'perfect' },
+            { name: 'Minor 2nd', semitones: 1, ratio: '16:15', song: 'Jaws theme', quality: 'dissonant' },
+            { name: 'Major 2nd', semitones: 2, ratio: '9:8', song: 'Happy Birthday (1st two notes)', quality: 'dissonant' },
+            { name: 'Minor 3rd', semitones: 3, ratio: '6:5', song: 'Greensleeves', quality: 'consonant' },
+            { name: 'Major 3rd', semitones: 4, ratio: '5:4', song: 'Oh When the Saints', quality: 'consonant' },
+            { name: 'Perfect 4th', semitones: 5, ratio: '4:3', song: 'Here Comes the Bride', quality: 'perfect' },
+            { name: 'Tritone', semitones: 6, ratio: '\u221A2:1', song: 'The Simpsons theme', quality: 'dissonant' },
+            { name: 'Perfect 5th', semitones: 7, ratio: '3:2', song: 'Star Wars opening', quality: 'perfect' },
+            { name: 'Minor 6th', semitones: 8, ratio: '8:5', song: 'Love Story theme', quality: 'consonant' },
+            { name: 'Major 6th', semitones: 9, ratio: '5:3', song: 'My Bonnie Lies Over the Ocean', quality: 'consonant' },
+            { name: 'Minor 7th', semitones: 10, ratio: '16:9', song: 'Star Trek theme', quality: 'dissonant' },
+            { name: 'Major 7th', semitones: 11, ratio: '15:8', song: 'Take On Me (chorus)', quality: 'dissonant' },
+            { name: 'Octave', semitones: 12, ratio: '2:1', song: 'Somewhere Over the Rainbow', quality: 'perfect' },
+          ];
 
-    var PRESETS = {
-        'Piano': { wave: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.3, release: 0.5, reverbMix: 0.15, reverbSize: 1.2, chorusMix: 0, delayMix: 0, distAmount: 0 },
-        'Organ': { wave: 'square', attack: 0.01, decay: 0.05, sustain: 0.9, release: 0.1, reverbMix: 0.1, chorusMix: 0.3, chorusRate: 3, delayMix: 0, distAmount: 0 },
-        'Strings': { wave: 'sawtooth', attack: 0.4, decay: 0.2, sustain: 0.7, release: 0.8, reverbMix: 0.3, reverbSize: 2.5, chorusMix: 0.4, chorusRate: 2, delayMix: 0, distAmount: 0 },
-        'Bass': { wave: 'square', attack: 0.01, decay: 0.15, sustain: 0.6, release: 0.2, reverbMix: 0, chorusMix: 0, delayMix: 0, distAmount: 0 },
-        'Lead': { wave: 'sawtooth', attack: 0.02, decay: 0.1, sustain: 0.8, release: 0.3, reverbMix: 0.1, chorusMix: 0, delayMix: 0.3, delayTime: 200, delayFeedback: 0.3, distAmount: 15 },
-        'Pad': { wave: 'triangle', attack: 0.8, decay: 0.5, sustain: 0.6, release: 1.5, reverbMix: 0.5, reverbSize: 3, chorusMix: 0.5, chorusRate: 1, delayMix: 0, distAmount: 0 },
-        'Retro': { wave: 'square', attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1, reverbMix: 0, chorusMix: 0, delayMix: 0, distAmount: 0 },
-        'Spooky': { wave: 'sine', attack: 0.3, decay: 0.4, sustain: 0.5, release: 1.0, reverbMix: 0.5, reverbSize: 4, chorusMix: 0, delayMix: 0.4, delayTime: 600, delayFeedback: 0.5, distAmount: 0 },
-    };
+          var PRESETS = {
+            'Piano': { wave: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.3, release: 0.5, reverbMix: 0.15, reverbSize: 1.2, chorusMix: 0, delayMix: 0, distAmount: 0 },
+            'Organ': { wave: 'square', attack: 0.01, decay: 0.05, sustain: 0.9, release: 0.1, reverbMix: 0.1, chorusMix: 0.3, chorusRate: 3, delayMix: 0, distAmount: 0 },
+            'Strings': { wave: 'sawtooth', attack: 0.4, decay: 0.2, sustain: 0.7, release: 0.8, reverbMix: 0.3, reverbSize: 2.5, chorusMix: 0.4, chorusRate: 2, delayMix: 0, distAmount: 0 },
+            'Bass': { wave: 'square', attack: 0.01, decay: 0.15, sustain: 0.6, release: 0.2, reverbMix: 0, chorusMix: 0, delayMix: 0, distAmount: 0 },
+            'Lead': { wave: 'sawtooth', attack: 0.02, decay: 0.1, sustain: 0.8, release: 0.3, reverbMix: 0.1, chorusMix: 0, delayMix: 0.3, delayTime: 200, delayFeedback: 0.3, distAmount: 15 },
+            'Pad': { wave: 'triangle', attack: 0.8, decay: 0.5, sustain: 0.6, release: 1.5, reverbMix: 0.5, reverbSize: 3, chorusMix: 0.5, chorusRate: 1, delayMix: 0, distAmount: 0 },
+            'Retro': { wave: 'square', attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1, reverbMix: 0, chorusMix: 0, delayMix: 0, distAmount: 0 },
+            'Spooky': { wave: 'sine', attack: 0.3, decay: 0.4, sustain: 0.5, release: 1.0, reverbMix: 0.5, reverbSize: 4, chorusMix: 0, delayMix: 0.4, delayTime: 600, delayFeedback: 0.5, distAmount: 0 },
+          };
 
-    // Common chord progressions
-    var PROGRESSIONS = [
-        { name: 'I-IV-V-I (Pop/Rock)', degrees: [0, 5, 7, 0], chordTypes: ['Major','Major','Major','Major'], desc: 'The most common progression in Western music. Used in countless rock, pop, and folk songs.' },
-        { name: 'I-V-vi-IV (Pop Anthem)', degrees: [0, 7, 9, 5], chordTypes: ['Major','Major','Minor','Major'], desc: 'The "4 chords" used in hundreds of hit songs. Creates an emotional, uplifting feel.' },
-        { name: 'ii-V-I (Jazz)', degrees: [2, 7, 0], chordTypes: ['Min7','Dom7','Maj7'], desc: 'The quintessential jazz progression. Found in virtually every jazz standard.' },
-        { name: 'I-vi-IV-V (50s/Doo-wop)', degrees: [0, 9, 5, 7], chordTypes: ['Major','Minor','Major','Major'], desc: 'Classic 1950s sound. "Stand By Me," "Earth Angel." Creates a gentle, nostalgic loop.' },
-        { name: '12-Bar Blues', degrees: [0, 0, 0, 0, 5, 5, 0, 0, 7, 5, 0, 7], chordTypes: ['Dom7','Dom7','Dom7','Dom7','Dom7','Dom7','Dom7','Dom7','Dom7','Dom7','Dom7','Dom7'], desc: 'Foundation of blues, rock, and jazz. 12 measures in a I-IV-V pattern.' },
-        { name: 'vi-IV-I-V (Emo/Alt)', degrees: [9, 5, 0, 7], chordTypes: ['Minor','Major','Major','Major'], desc: 'Minor start gives emotional, introspective quality. Used in alternative and emo genres.' },
-    ];
+          // Common chord progressions
+          var PROGRESSIONS = [
+            { name: 'I-IV-V-I (Pop/Rock)', degrees: [0, 5, 7, 0], chordTypes: ['Major', 'Major', 'Major', 'Major'], desc: 'The most common progression in Western music. Used in countless rock, pop, and folk songs.' },
+            { name: 'I-V-vi-IV (Pop Anthem)', degrees: [0, 7, 9, 5], chordTypes: ['Major', 'Major', 'Minor', 'Major'], desc: 'The "4 chords" used in hundreds of hit songs. Creates an emotional, uplifting feel.' },
+            { name: 'ii-V-I (Jazz)', degrees: [2, 7, 0], chordTypes: ['Min7', 'Dom7', 'Maj7'], desc: 'The quintessential jazz progression. Found in virtually every jazz standard.' },
+            { name: 'I-vi-IV-V (50s/Doo-wop)', degrees: [0, 9, 5, 7], chordTypes: ['Major', 'Minor', 'Major', 'Major'], desc: 'Classic 1950s sound. "Stand By Me," "Earth Angel." Creates a gentle, nostalgic loop.' },
+            { name: '12-Bar Blues', degrees: [0, 0, 0, 0, 5, 5, 0, 0, 7, 5, 0, 7], chordTypes: ['Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7', 'Dom7'], desc: 'Foundation of blues, rock, and jazz. 12 measures in a I-IV-V pattern.' },
+            { name: 'vi-IV-I-V (Emo/Alt)', degrees: [9, 5, 0, 7], chordTypes: ['Minor', 'Major', 'Major', 'Major'], desc: 'Minor start gives emotional, introspective quality. Used in alternative and emo genres.' },
+          ];
 
-    // Circle of Fifths data
-    var CIRCLE_OF_FIFTHS = [
-        { key: 'C', minor: 'Am', sharps: 0, flats: 0 },
-        { key: 'G', minor: 'Em', sharps: 1, flats: 0 },
-        { key: 'D', minor: 'Bm', sharps: 2, flats: 0 },
-        { key: 'A', minor: 'F#m', sharps: 3, flats: 0 },
-        { key: 'E', minor: 'C#m', sharps: 4, flats: 0 },
-        { key: 'B', minor: 'G#m', sharps: 5, flats: 0 },
-        { key: 'F#/G\u266D', minor: 'D#m/E\u266Dm', sharps: 6, flats: 6 },
-        { key: 'D\u266D', minor: 'B\u266Dm', sharps: 0, flats: 5 },
-        { key: 'A\u266D', minor: 'Fm', sharps: 0, flats: 4 },
-        { key: 'E\u266D', minor: 'Cm', sharps: 0, flats: 3 },
-        { key: 'B\u266D', minor: 'Gm', sharps: 0, flats: 2 },
-        { key: 'F', minor: 'Dm', sharps: 0, flats: 1 },
-    ];
+          // Circle of Fifths data
+          var CIRCLE_OF_FIFTHS = [
+            { key: 'C', minor: 'Am', sharps: 0, flats: 0 },
+            { key: 'G', minor: 'Em', sharps: 1, flats: 0 },
+            { key: 'D', minor: 'Bm', sharps: 2, flats: 0 },
+            { key: 'A', minor: 'F#m', sharps: 3, flats: 0 },
+            { key: 'E', minor: 'C#m', sharps: 4, flats: 0 },
+            { key: 'B', minor: 'G#m', sharps: 5, flats: 0 },
+            { key: 'F#/G\u266D', minor: 'D#m/E\u266Dm', sharps: 6, flats: 6 },
+            { key: 'D\u266D', minor: 'B\u266Dm', sharps: 0, flats: 5 },
+            { key: 'A\u266D', minor: 'Fm', sharps: 0, flats: 4 },
+            { key: 'E\u266D', minor: 'Cm', sharps: 0, flats: 3 },
+            { key: 'B\u266D', minor: 'Gm', sharps: 0, flats: 2 },
+            { key: 'F', minor: 'Dm', sharps: 0, flats: 1 },
+          ];
 
-    // Harmonic series info
-    var HARMONICS_INFO = [
-        { n: 1, name: 'Fundamental', interval: 'Unison', ratio: '1x' },
-        { n: 2, name: '1st Overtone', interval: 'Octave', ratio: '2x' },
-        { n: 3, name: '2nd Overtone', interval: 'P5 + Oct', ratio: '3x' },
-        { n: 4, name: '3rd Overtone', interval: '2 Octaves', ratio: '4x' },
-        { n: 5, name: '4th Overtone', interval: 'M3 + 2 Oct', ratio: '5x' },
-        { n: 6, name: '5th Overtone', interval: 'P5 + 2 Oct', ratio: '6x' },
-        { n: 7, name: '6th Overtone', interval: '\u266D7 + 2 Oct', ratio: '7x' },
-        { n: 8, name: '7th Overtone', interval: '3 Octaves', ratio: '8x' },
-    ];
+          // Harmonic series info
+          var HARMONICS_INFO = [
+            { n: 1, name: 'Fundamental', interval: 'Unison', ratio: '1x' },
+            { n: 2, name: '1st Overtone', interval: 'Octave', ratio: '2x' },
+            { n: 3, name: '2nd Overtone', interval: 'P5 + Oct', ratio: '3x' },
+            { n: 4, name: '3rd Overtone', interval: '2 Octaves', ratio: '4x' },
+            { n: 5, name: '4th Overtone', interval: 'M3 + 2 Oct', ratio: '5x' },
+            { n: 6, name: '5th Overtone', interval: 'P5 + 2 Oct', ratio: '6x' },
+            { n: 7, name: '6th Overtone', interval: '\u266D7 + 2 Oct', ratio: '7x' },
+            { n: 8, name: '7th Overtone', interval: '3 Octaves', ratio: '8x' },
+          ];
 
-    // Time sig / sequencer data
-    var TIME_SIGS = { '4/4': { beats: 4 }, '3/4': { beats: 3 }, '6/8': { beats: 6 }, '5/4': { beats: 5 }, '7/8': { beats: 7 } };
-    var timeSig = d.timeSig || '4/4';
-    var loopLen = d.loopLen || 8;
-    var LOOP_LENGTHS = [8, 12, 16, 24, 32];
-    var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5'];
-    var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-    var DRUM_TYPES = ['kick', 'snare', 'hihat', 'clap', 'tom'];
-    var DRUM_LABELS = ['\uD83E\uDD41 Kick', '\uD83E\uDD41 Snare', '\uD83E\uDD41 Hat', '\uD83D\uDC4F Clap', '\uD83E\uDD41 Tom'];
-    var seq = d.sequence || new Array(loopLen).fill(0);
-    while (seq.length < loopLen) seq.push(0); seq = seq.slice(0, loopLen);
-    var drumSeq = d.drumSequence || {};
-    var seqPlaying = d.seqPlaying || false;
-    var looping = d.looping !== undefined ? d.looping : true;
+          // Time sig / sequencer data
+          var TIME_SIGS = { '4/4': { beats: 4 }, '3/4': { beats: 3 }, '6/8': { beats: 6 }, '5/4': { beats: 5 }, '7/8': { beats: 7 } };
+          var timeSig = d.timeSig || '4/4';
+          var loopLen = d.loopLen || 8;
+          var LOOP_LENGTHS = [8, 12, 16, 24, 32];
+          var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5'];
+          var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+          var DRUM_TYPES = ['kick', 'snare', 'hihat', 'clap', 'tom'];
+          var DRUM_LABELS = ['\uD83E\uDD41 Kick', '\uD83E\uDD41 Snare', '\uD83E\uDD41 Hat', '\uD83D\uDC4F Clap', '\uD83E\uDD41 Tom'];
+          var seq = d.sequence || new Array(loopLen).fill(0);
+          while (seq.length < loopLen) seq.push(0); seq = seq.slice(0, loopLen);
+          var drumSeq = d.drumSequence || {};
+          var seqPlaying = d.seqPlaying || false;
+          var looping = d.looping !== undefined ? d.looping : true;
 
-    // Scale-locked mode
-    var scaleLock = d.scaleLock || false;
-    var selectedScale = d.selectedScale || 'Major';
-    var selectedRoot = d.selectedRoot || 'C';
-    var rootIdx = NOTE_NAMES.indexOf(selectedRoot);
-    var scaleIntervals = SCALES[selectedScale] ? SCALES[selectedScale].intervals : [0,2,4,5,7,9,11];
-    var scaleNotes = scaleIntervals.map(function(i) { return (rootIdx + i) % 12; });
-    function isInScale(semitone) { return scaleNotes.indexOf(semitone % 12) !== -1; }
+          // Scale-locked mode
+          var scaleLock = d.scaleLock || false;
+          var selectedScale = d.selectedScale || 'Major';
+          var selectedRoot = d.selectedRoot || 'C';
+          var rootIdx = NOTE_NAMES.indexOf(selectedRoot);
+          var scaleIntervals = SCALES[selectedScale] ? SCALES[selectedScale].intervals : [0, 2, 4, 5, 7, 9, 11];
+          var scaleNotes = scaleIntervals.map(function (i) { return (rootIdx + i) % 12; });
+          function isInScale(semitone) { return scaleNotes.indexOf(semitone % 12) !== -1; }
 
-    // Selected chord
-    var selectedChord = d.selectedChord || 'Major';
-    var chordRoot = d.chordRoot || 'C';
-    var chordInversion = d.chordInversion || 0;
+          // Selected chord
+          var selectedChord = d.selectedChord || 'Major';
+          var chordRoot = d.chordRoot || 'C';
+          var chordInversion = d.chordInversion || 0;
 
-    // Synth sub-tab
-    var synthTab = d.synthTab || 'play';
+          // Synth sub-tab
+          var synthTab = d.synthTab || 'play';
 
-    // Arpeggiator state
-    var arpOn = d.arpOn || false;
-    var arpPattern = d.arpPattern || 'up';
-    var arpOctaves = d.arpOctaves || 1;
+          // Arpeggiator state
+          var arpOn = d.arpOn || false;
+          var arpPattern = d.arpPattern || 'up';
+          var arpOctaves = d.arpOctaves || 1;
 
-    // Metronome state
-    var metroOn = d.metroOn || false;
+          // Metronome state
+          var metroOn = d.metroOn || false;
 
-    // Interval training state
-    var intervalGame = d.intervalGame || null;
+          // Interval training state
+          var intervalGame = d.intervalGame || null;
 
-    // ═══ SEQUENCER FUNCTIONS ═══
-    function toggleSeqStep(idx) { var newSeq = seq.slice(); newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1); upd('sequence', newSeq); }
-    function toggleDrumStep(drumType, idx) {
-        var ds = Object.assign({}, drumSeq);
-        if (!ds[drumType]) ds[drumType] = new Array(loopLen).fill(0);
-        var arr = ds[drumType].slice(); while (arr.length < loopLen) arr.push(0);
-        arr[idx] = arr[idx] ? 0 : 1; ds[drumType] = arr; upd('drumSequence', ds);
-    }
-    function startSequencer() {
-        stopSequencer(); upd('seqPlaying', true); upd('seqStep', 0);
-        var bpm = d.bpm || 120; var interval = (60 / bpm) * 1000 / 2; var step = 0;
-        window._alloSynthSeqInterval = setInterval(function () {
-            var seqEl = document.getElementById('synth-seq-data');
-            var currentSeq = seq; var currentDrums = drumSeq;
-            if (seqEl) { try { currentSeq = JSON.parse(seqEl.dataset.seq); } catch(e){} try { currentDrums = JSON.parse(seqEl.dataset.drums || '{}'); } catch(e){} }
-            var currentLen = parseInt(seqEl && seqEl.dataset.looplen) || loopLen;
-            stopNote('seq');
-            var noteIdx = currentSeq[step];
-            if (noteIdx > 0 && noteIdx <= SEQ_FREQS.length) { playNote(SEQ_FREQS[noteIdx - 1], 'seq'); setTimeout(function(){ stopNote('seq'); }, interval * 0.8); }
-            DRUM_TYPES.forEach(function(dt){ if (currentDrums[dt] && currentDrums[dt][step]) playDrum(dt); });
-            step = (step + 1) % currentLen;
-            if (seqEl) seqEl.dataset.step = step;
-            upd('seqStep', step);
-            if (step === 0 && !looping) { stopSequencer(); }
-        }, interval);
-    }
-    function stopSequencer() {
-        if (window._alloSynthSeqInterval) { clearInterval(window._alloSynthSeqInterval); window._alloSynthSeqInterval = null; }
-        stopNote('seq'); upd('seqPlaying', false); upd('seqStep', -1);
-    }
+          // ═══ SEQUENCER FUNCTIONS ═══
+          function toggleSeqStep(idx) { var newSeq = seq.slice(); newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1); upd('sequence', newSeq); }
+          function toggleDrumStep(drumType, idx) {
+            var ds = Object.assign({}, drumSeq);
+            if (!ds[drumType]) ds[drumType] = new Array(loopLen).fill(0);
+            var arr = ds[drumType].slice(); while (arr.length < loopLen) arr.push(0);
+            arr[idx] = arr[idx] ? 0 : 1; ds[drumType] = arr; upd('drumSequence', ds);
+          }
+          function startSequencer() {
+            stopSequencer(); upd('seqPlaying', true); upd('seqStep', 0);
+            var bpm = d.bpm || 120; var interval = (60 / bpm) * 1000 / 2; var step = 0;
+            window._alloSynthSeqInterval = setInterval(function () {
+              var seqEl = document.getElementById('synth-seq-data');
+              var currentSeq = seq; var currentDrums = drumSeq;
+              if (seqEl) { try { currentSeq = JSON.parse(seqEl.dataset.seq); } catch (e) { } try { currentDrums = JSON.parse(seqEl.dataset.drums || '{}'); } catch (e) { } }
+              var currentLen = parseInt(seqEl && seqEl.dataset.looplen) || loopLen;
+              stopNote('seq');
+              var noteIdx = currentSeq[step];
+              if (noteIdx > 0 && noteIdx <= SEQ_FREQS.length) { playNote(SEQ_FREQS[noteIdx - 1], 'seq'); setTimeout(function () { stopNote('seq'); }, interval * 0.8); }
+              DRUM_TYPES.forEach(function (dt) { if (currentDrums[dt] && currentDrums[dt][step]) playDrum(dt); });
+              step = (step + 1) % currentLen;
+              if (seqEl) seqEl.dataset.step = step;
+              upd('seqStep', step);
+              if (step === 0 && !looping) { stopSequencer(); }
+            }, interval);
+          }
+          function stopSequencer() {
+            if (window._alloSynthSeqInterval) { clearInterval(window._alloSynthSeqInterval); window._alloSynthSeqInterval = null; }
+            stopNote('seq'); upd('seqPlaying', false); upd('seqStep', -1);
+          }
 
-    // ═══ METRONOME ═══
-    function startMetronome() {
-        stopMetronome(); upd('metroOn', true);
-        var bpm = d.bpm || 120; var interval = 60000 / bpm;
-        var beats = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-        var beat = 0;
-        window._alloMetronomeInterval = setInterval(function() {
-            playClick(beat === 0); upd('metroBeat', beat);
-            beat = (beat + 1) % beats;
-        }, interval);
-    }
-    function stopMetronome() {
-        if (window._alloMetronomeInterval) { clearInterval(window._alloMetronomeInterval); window._alloMetronomeInterval = null; }
-        upd('metroOn', false); upd('metroBeat', -1);
-    }
+          // ═══ METRONOME ═══
+          function startMetronome() {
+            stopMetronome(); upd('metroOn', true);
+            var bpm = d.bpm || 120; var interval = 60000 / bpm;
+            var beats = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
+            var beat = 0;
+            window._alloMetronomeInterval = setInterval(function () {
+              playClick(beat === 0); upd('metroBeat', beat);
+              beat = (beat + 1) % beats;
+            }, interval);
+          }
+          function stopMetronome() {
+            if (window._alloMetronomeInterval) { clearInterval(window._alloMetronomeInterval); window._alloMetronomeInterval = null; }
+            upd('metroOn', false); upd('metroBeat', -1);
+          }
 
-    // ═══ ARPEGGIATOR ═══
-    function startArpeggiator() {
-        stopArpeggiator();
-        var chordData = CHORDS[selectedChord];
-        if (!chordData) return;
-        var cRootIdx = NOTE_NAMES.indexOf(chordRoot);
-        // Build arp notes across octaves
-        var arpNotes = [];
-        for (var oi = 0; oi < (d.arpOctaves || 1); oi++) {
-            chordData.intervals.forEach(function(intv) {
+          // ═══ ARPEGGIATOR ═══
+          function startArpeggiator() {
+            stopArpeggiator();
+            var chordData = CHORDS[selectedChord];
+            if (!chordData) return;
+            var cRootIdx = NOTE_NAMES.indexOf(chordRoot);
+            // Build arp notes across octaves
+            var arpNotes = [];
+            for (var oi = 0; oi < (d.arpOctaves || 1); oi++) {
+              chordData.intervals.forEach(function (intv) {
                 var noteIdx = (cRootIdx + intv) % 12;
                 var noteOct = (d.octave || 4) + Math.floor((cRootIdx + intv) / 12) + oi;
                 arpNotes.push({ note: NOTE_NAMES[noteIdx], octave: noteOct, freq: noteFreq(NOTE_NAMES[noteIdx], noteOct) });
-            });
-        }
-        var pattern = d.arpPattern || 'up';
-        var ordered = arpNotes.slice();
-        if (pattern === 'down') ordered.reverse();
-        else if (pattern === 'updown') ordered = arpNotes.concat(arpNotes.slice().reverse().slice(1, -1));
-        else if (pattern === 'random') { for (var ri = ordered.length - 1; ri > 0; ri--) { var rj = Math.floor(Math.random() * (ri + 1)); var tmp = ordered[ri]; ordered[ri] = ordered[rj]; ordered[rj] = tmp; } }
+              });
+            }
+            var pattern = d.arpPattern || 'up';
+            var ordered = arpNotes.slice();
+            if (pattern === 'down') ordered.reverse();
+            else if (pattern === 'updown') ordered = arpNotes.concat(arpNotes.slice().reverse().slice(1, -1));
+            else if (pattern === 'random') { for (var ri = ordered.length - 1; ri > 0; ri--) { var rj = Math.floor(Math.random() * (ri + 1)); var tmp = ordered[ri]; ordered[ri] = ordered[rj]; ordered[rj] = tmp; } }
 
-        var bpm = d.bpm || 120; var interval = (60 / bpm) * 1000 / 2;
-        var step = 0;
-        upd('arpOn', true);
-        window._alloArpInterval = setInterval(function() {
-            stopNote('arp');
-            if (step < ordered.length) {
+            var bpm = d.bpm || 120; var interval = (60 / bpm) * 1000 / 2;
+            var step = 0;
+            upd('arpOn', true);
+            window._alloArpInterval = setInterval(function () {
+              stopNote('arp');
+              if (step < ordered.length) {
                 var n = ordered[step];
                 playNote(n.freq, 'arp');
-                setTimeout(function(){ stopNote('arp'); }, interval * 0.8);
+                setTimeout(function () { stopNote('arp'); }, interval * 0.8);
+              }
+              step = (step + 1) % ordered.length;
+            }, interval);
+          }
+          function stopArpeggiator() {
+            if (window._alloArpInterval) { clearInterval(window._alloArpInterval); window._alloArpInterval = null; }
+            stopNote('arp'); upd('arpOn', false);
+          }
+
+          // ═══ PLAY CHORD ═══
+          function playChord(rootNote, chordType, inv) {
+            var chordData = CHORDS[chordType];
+            if (!chordData) return;
+            var ri = NOTE_NAMES.indexOf(rootNote);
+            var intervals = chordData.intervals.slice();
+            // Apply inversion
+            for (var ii = 0; ii < (inv || 0); ii++) {
+              if (intervals.length > 1) { intervals.push(intervals.shift() + 12); }
             }
-            step = (step + 1) % ordered.length;
-        }, interval);
-    }
-    function stopArpeggiator() {
-        if (window._alloArpInterval) { clearInterval(window._alloArpInterval); window._alloArpInterval = null; }
-        stopNote('arp'); upd('arpOn', false);
-    }
+            intervals.forEach(function (intv, idx) {
+              var nIdx = (ri + intv) % 12;
+              var nOct = (d.octave || 4) + Math.floor((ri + intv) / 12);
+              var freq = noteFreq(NOTE_NAMES[nIdx], nOct);
+              var noteId = 'chord_' + idx;
+              playNoteFor(freq, noteId, 1200);
+            });
+          }
 
-    // ═══ PLAY CHORD ═══
-    function playChord(rootNote, chordType, inv) {
-        var chordData = CHORDS[chordType];
-        if (!chordData) return;
-        var ri = NOTE_NAMES.indexOf(rootNote);
-        var intervals = chordData.intervals.slice();
-        // Apply inversion
-        for (var ii = 0; ii < (inv || 0); ii++) {
-            if (intervals.length > 1) { intervals.push(intervals.shift() + 12); }
-        }
-        intervals.forEach(function(intv, idx) {
-            var nIdx = (ri + intv) % 12;
-            var nOct = (d.octave || 4) + Math.floor((ri + intv) / 12);
-            var freq = noteFreq(NOTE_NAMES[nIdx], nOct);
-            var noteId = 'chord_' + idx;
-            playNoteFor(freq, noteId, 1200);
-        });
-    }
-
-    // ═══ PLAY SCALE ═══
-    function playScale(rootNote, scaleName, descending) {
-        var scaleData = SCALES[scaleName];
-        if (!scaleData) return;
-        var ri = NOTE_NAMES.indexOf(rootNote);
-        var intervals = scaleData.intervals.slice();
-        intervals.push(12); // add octave
-        if (descending) intervals.reverse();
-        intervals.forEach(function(intv, idx) {
-            setTimeout(function() {
+          // ═══ PLAY SCALE ═══
+          function playScale(rootNote, scaleName, descending) {
+            var scaleData = SCALES[scaleName];
+            if (!scaleData) return;
+            var ri = NOTE_NAMES.indexOf(rootNote);
+            var intervals = scaleData.intervals.slice();
+            intervals.push(12); // add octave
+            if (descending) intervals.reverse();
+            intervals.forEach(function (intv, idx) {
+              setTimeout(function () {
                 var nIdx = (ri + intv) % 12;
                 var nOct = (d.octave || 4) + Math.floor((ri + intv) / 12);
                 var freq = noteFreq(NOTE_NAMES[nIdx], nOct);
                 playNoteFor(freq, 'scale_' + idx, 350);
-            }, idx * 300);
-        });
-    }
+              }, idx * 300);
+            });
+          }
 
-    // ═══ PLAY PROGRESSION ═══
-    function playProgression(prog) {
-        var ri = NOTE_NAMES.indexOf(selectedRoot);
-        prog.degrees.forEach(function(deg, idx) {
-            setTimeout(function() {
+          // ═══ PLAY PROGRESSION ═══
+          function playProgression(prog) {
+            var ri = NOTE_NAMES.indexOf(selectedRoot);
+            prog.degrees.forEach(function (deg, idx) {
+              setTimeout(function () {
                 var chordRootIdx = (ri + deg) % 12;
                 playChord(NOTE_NAMES[chordRootIdx], prog.chordTypes[idx], 0);
-            }, idx * 1500);
-        });
-    }
+              }, idx * 1500);
+            });
+          }
 
-    // ═══ INTERVAL TRAINING ═══
-    function startIntervalGame() {
-        var interval = INTERVALS[Math.floor(Math.random() * (INTERVALS.length - 1)) + 1]; // skip unison
-        var baseNote = Math.floor(Math.random() * 7); // C through B
-        var baseOct = (d.octave || 4);
-        var baseFreq = noteFreq(NOTE_NAMES[baseNote], baseOct);
-        var topFreq = noteFreq(NOTE_NAMES[(baseNote + interval.semitones) % 12], baseOct + Math.floor((baseNote + interval.semitones) / 12));
-        // Play the two notes
-        playNoteFor(baseFreq, 'interval_base', 600);
-        setTimeout(function() { playNoteFor(topFreq, 'interval_top', 600); }, 700);
-        upd('intervalGame', { answer: interval.name, semitones: interval.semitones, baseFreq: baseFreq, topFreq: topFreq, answered: false, score: (d.intervalGame && d.intervalGame.score) || 0, streak: (d.intervalGame && d.intervalGame.streak) || 0 });
-    }
-    function replayInterval() {
-        if (!d.intervalGame) return;
-        playNoteFor(d.intervalGame.baseFreq, 'interval_base', 600);
-        setTimeout(function() { playNoteFor(d.intervalGame.topFreq, 'interval_top', 600); }, 700);
-    }
+          // ═══ INTERVAL TRAINING ═══
+          function startIntervalGame() {
+            var interval = INTERVALS[Math.floor(Math.random() * (INTERVALS.length - 1)) + 1]; // skip unison
+            var baseNote = Math.floor(Math.random() * 7); // C through B
+            var baseOct = (d.octave || 4);
+            var baseFreq = noteFreq(NOTE_NAMES[baseNote], baseOct);
+            var topFreq = noteFreq(NOTE_NAMES[(baseNote + interval.semitones) % 12], baseOct + Math.floor((baseNote + interval.semitones) / 12));
+            // Play the two notes
+            playNoteFor(baseFreq, 'interval_base', 600);
+            setTimeout(function () { playNoteFor(topFreq, 'interval_top', 600); }, 700);
+            upd('intervalGame', { answer: interval.name, semitones: interval.semitones, baseFreq: baseFreq, topFreq: topFreq, answered: false, score: (d.intervalGame && d.intervalGame.score) || 0, streak: (d.intervalGame && d.intervalGame.streak) || 0 });
+          }
+          function replayInterval() {
+            if (!d.intervalGame) return;
+            playNoteFor(d.intervalGame.baseFreq, 'interval_base', 600);
+            setTimeout(function () { playNoteFor(d.intervalGame.topFreq, 'interval_top', 600); }, 700);
+          }
 
-    // ═══ HARMONIC SERIES ═══
-    function playHarmonic(n) {
-        var baseFreq = noteFreq(selectedRoot, d.octave || 4);
-        var freq = baseFreq * n;
-        playNoteFor(freq, 'harmonic_' + n, 800);
-    }
+          // ═══ HARMONIC SERIES ═══
+          function playHarmonic(n) {
+            var baseFreq = noteFreq(selectedRoot, d.octave || 4);
+            var freq = baseFreq * n;
+            playNoteFor(freq, 'harmonic_' + n, 800);
+          }
 
-    // ═══ APPLY PRESET ═══
-    function applyPreset(name) {
-        var p = PRESETS[name];
-        if (!p) return;
-        upd('waveType', p.wave); upd('attack', p.attack); upd('decay', p.decay); upd('sustain', p.sustain); upd('release', p.release);
-        upd('reverbMix', p.reverbMix || 0); upd('reverbSize', p.reverbSize || 1.5);
-        upd('chorusMix', p.chorusMix || 0); upd('chorusRate', p.chorusRate || 1.5);
-        upd('delayMix', p.delayMix || 0); upd('delayTime', p.delayTime || 300); upd('delayFeedback', p.delayFeedback || 0.3);
-        upd('distAmount', p.distAmount || 0);
-        upd('activePreset', name);
-        // Force re-create audio context to apply new impulse if reverb size changed
-        if (window._alloSynthCtx) { window._alloSynthCtx.close(); window._alloSynthCtx = null; window._alloSynthEffects = null; }
-        addToast('\uD83C\uDFB9 Loaded "' + name + '" preset', 'success');
-    }
+          // ═══ APPLY PRESET ═══
+          function applyPreset(name) {
+            var p = PRESETS[name];
+            if (!p) return;
+            upd('waveType', p.wave); upd('attack', p.attack); upd('decay', p.decay); upd('sustain', p.sustain); upd('release', p.release);
+            upd('reverbMix', p.reverbMix || 0); upd('reverbSize', p.reverbSize || 1.5);
+            upd('chorusMix', p.chorusMix || 0); upd('chorusRate', p.chorusRate || 1.5);
+            upd('delayMix', p.delayMix || 0); upd('delayTime', p.delayTime || 300); upd('delayFeedback', p.delayFeedback || 0.3);
+            upd('distAmount', p.distAmount || 0);
+            upd('activePreset', name);
+            // Force re-create audio context to apply new impulse if reverb size changed
+            if (window._alloSynthCtx) { window._alloSynthCtx.close(); window._alloSynthCtx = null; window._alloSynthEffects = null; }
+            addToast('\uD83C\uDFB9 Loaded "' + name + '" preset', 'success');
+          }
 
-    // ═══ OSCILLOSCOPE ═══
-    var showFFT = d.showFFT || false;
-    var canvasRef = function(canvasEl) {
-        if (!canvasEl || canvasEl._synthInit) return;
-        canvasEl._synthInit = true;
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2; var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-        var ctx = canvasEl.getContext('2d'); var dpr = 2;
-        function draw() {
-            ctx.clearRect(0, 0, cW, cH);
-            var grad = ctx.createLinearGradient(0, 0, 0, cH);
-            grad.addColorStop(0, '#1e1b4b'); grad.addColorStop(0.5, '#312e81'); grad.addColorStop(1, '#1e1b4b');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, cW, cH);
-            ctx.strokeStyle = 'rgba(139,92,246,0.12)'; ctx.lineWidth = 1;
-            for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
-            for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
-            ctx.strokeStyle = 'rgba(139,92,246,0.25)'; ctx.setLineDash([6, 4]);
-            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke(); ctx.setLineDash([]);
-            if (window._alloSynthAnalyser) {
+          // ═══ OSCILLOSCOPE ═══
+          var showFFT = d.showFFT || false;
+          var canvasRef = function (canvasEl) {
+            if (!canvasEl || canvasEl._synthInit) return;
+            canvasEl._synthInit = true;
+            var cW = canvasEl.width = canvasEl.offsetWidth * 2; var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var ctx = canvasEl.getContext('2d'); var dpr = 2;
+            function draw() {
+              ctx.clearRect(0, 0, cW, cH);
+              var grad = ctx.createLinearGradient(0, 0, 0, cH);
+              grad.addColorStop(0, '#1e1b4b'); grad.addColorStop(0.5, '#312e81'); grad.addColorStop(1, '#1e1b4b');
+              ctx.fillStyle = grad; ctx.fillRect(0, 0, cW, cH);
+              ctx.strokeStyle = 'rgba(139,92,246,0.12)'; ctx.lineWidth = 1;
+              for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
+              for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+              ctx.strokeStyle = 'rgba(139,92,246,0.25)'; ctx.setLineDash([6, 4]);
+              ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke(); ctx.setLineDash([]);
+              if (window._alloSynthAnalyser) {
                 var analyser = window._alloSynthAnalyser;
                 var isFFT = canvasEl.dataset.showFft === 'true';
                 if (isFFT) {
-                    var freqData = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(freqData);
-                    var barW = cW / freqData.length * 2.5;
-                    for (var i = 0; i < freqData.length / 2.5; i++) {
-                        var barH = (freqData[i] / 255) * cH * 0.85;
-                        var hue = (i / (freqData.length / 2.5)) * 270;
-                        ctx.fillStyle = 'hsla(' + hue + ',80%,65%,0.8)';
-                        ctx.fillRect(i * barW, cH - barH, barW - 1, barH);
-                    }
-                    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(4 * dpr, 4 * dpr, 95 * dpr, 14 * dpr);
-                    ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; ctx.fillStyle = '#a78bfa';
-                    ctx.fillText('\uD83D\uDCC8 SPECTRUM', 8 * dpr, 14 * dpr);
+                  var freqData = new Uint8Array(analyser.frequencyBinCount);
+                  analyser.getByteFrequencyData(freqData);
+                  var barW = cW / freqData.length * 2.5;
+                  for (var i = 0; i < freqData.length / 2.5; i++) {
+                    var barH = (freqData[i] / 255) * cH * 0.85;
+                    var hue = (i / (freqData.length / 2.5)) * 270;
+                    ctx.fillStyle = 'hsla(' + hue + ',80%,65%,0.8)';
+                    ctx.fillRect(i * barW, cH - barH, barW - 1, barH);
+                  }
+                  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(4 * dpr, 4 * dpr, 95 * dpr, 14 * dpr);
+                  ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; ctx.fillStyle = '#a78bfa';
+                  ctx.fillText('\uD83D\uDCC8 SPECTRUM', 8 * dpr, 14 * dpr);
                 } else {
-                    var bufLen = analyser.fftSize; var dataArr = new Uint8Array(bufLen);
-                    analyser.getByteTimeDomainData(dataArr);
-                    ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 8;
-                    ctx.lineWidth = 2.5 * dpr; ctx.strokeStyle = '#c4b5fd'; ctx.beginPath();
-                    var sliceW = cW / bufLen;
-                    for (var i = 0; i < bufLen; i++) { var v = dataArr[i] / 128.0; var py = (v * cH) / 2; if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py); }
-                    ctx.stroke(); ctx.shadowBlur = 0;
-                    ctx.lineWidth = 1.5 * dpr; ctx.strokeStyle = '#e9d5ff'; ctx.beginPath();
-                    for (var i2 = 0; i2 < bufLen; i2++) { var v2 = dataArr[i2] / 128.0; var py2 = (v2 * cH) / 2; if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2); }
-                    ctx.stroke();
-                    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
-                    ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; ctx.fillStyle = '#c4b5fd';
-                    ctx.fillText('\uD83C\uDFB5 ' + (canvasEl.dataset.waveType || 'sine').toUpperCase(), 8 * dpr, 14 * dpr);
+                  var bufLen = analyser.fftSize; var dataArr = new Uint8Array(bufLen);
+                  analyser.getByteTimeDomainData(dataArr);
+                  ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 8;
+                  ctx.lineWidth = 2.5 * dpr; ctx.strokeStyle = '#c4b5fd'; ctx.beginPath();
+                  var sliceW = cW / bufLen;
+                  for (var i = 0; i < bufLen; i++) { var v = dataArr[i] / 128.0; var py = (v * cH) / 2; if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py); }
+                  ctx.stroke(); ctx.shadowBlur = 0;
+                  ctx.lineWidth = 1.5 * dpr; ctx.strokeStyle = '#e9d5ff'; ctx.beginPath();
+                  for (var i2 = 0; i2 < bufLen; i2++) { var v2 = dataArr[i2] / 128.0; var py2 = (v2 * cH) / 2; if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2); }
+                  ctx.stroke();
+                  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
+                  ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; ctx.fillStyle = '#c4b5fd';
+                  ctx.fillText('\uD83C\uDFB5 ' + (canvasEl.dataset.waveType || 'sine').toUpperCase(), 8 * dpr, 14 * dpr);
                 }
+              }
+              canvasEl._synthAnim = requestAnimationFrame(draw);
             }
             canvasEl._synthAnim = requestAnimationFrame(draw);
-        }
-        canvasEl._synthAnim = requestAnimationFrame(draw);
-    };
+          };
 
-    // ═══ EXPANDED QUIZ (25+) ═══
-    var MUSIC_QUIZ = [
-        { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
-        { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
-        { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
-        { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
-        { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
-        { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
-        { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
-        { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
-        { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
-        { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
-        { q: 'What acoustic property does reverb simulate?', a: 'Sound reflections in a room', opts: ['Sound pitch', 'Sound reflections in a room', 'Sound speed', 'Sound direction'] },
-        { q: 'How does distortion change a waveform?', a: 'Clips peaks, adding harmonics', opts: ['Removes harmonics', 'Clips peaks, adding harmonics', 'Doubles the frequency', 'Reverses the phase'] },
-        { q: 'The I-IV-V progression uses which scale degrees?', a: '1st, 4th, 5th', opts: ['1st, 2nd, 3rd', '1st, 4th, 5th', '1st, 3rd, 5th', '2nd, 5th, 7th'] },
-        { q: 'A minor chord differs from major by...', a: 'Lowered 3rd', opts: ['Raised 5th', 'Lowered 3rd', 'Added 7th', 'Removed root'] },
-        { q: 'The Blues scale adds which note to minor pentatonic?', a: 'Flat 5th (tritone)', opts: ['Major 3rd', 'Flat 5th (tritone)', 'Sharp 7th', 'Perfect 4th'] },
-        { q: 'Key of G Major has how many sharps?', a: '1 (F#)', opts: ['0', '1 (F#)', '2 (F#, C#)', '3'] },
-        { q: 'What is the interval in "Here Comes the Bride"?', a: 'Perfect 4th', opts: ['Major 3rd', 'Perfect 4th', 'Perfect 5th', 'Major 2nd'] },
-        { q: 'A dominant 7th chord wants to resolve because...', a: 'It contains a tritone', opts: ['It has no 5th', 'It contains a tritone', 'It is too quiet', 'It has 5 notes'] },
-        { q: 'In 3/4 time, how many beats per measure?', a: '3', opts: ['2', '3', '4', '6'] },
-        { q: 'What mode starts on the 2nd degree of major?', a: 'Dorian', opts: ['Phrygian', 'Dorian', 'Mixolydian', 'Lydian'] },
-        { q: 'Power chords work with distortion because...', a: 'Simple 3:2 ratio stays clean when clipped', opts: ['They are very loud', 'Simple 3:2 ratio stays clean when clipped', 'They use all harmonics', 'They have no frequency'] },
-        { q: 'The pentatonic scale has how many notes?', a: '5', opts: ['4', '5', '6', '7'] },
-        { q: 'pp in music notation means...', a: 'Very soft (pianissimo)', opts: ['Very fast', 'Very soft (pianissimo)', 'Very loud', 'Very slow'] },
-        { q: 'What interval is "Star Wars" opening?', a: 'Perfect 5th', opts: ['Major 3rd', 'Octave', 'Perfect 5th', 'Minor 7th'] },
-        { q: 'Equal temperament divides the octave into...', a: '12 equal semitones', opts: ['7 equal tones', '12 equal semitones', '8 equal steps', '5 equal intervals'] },
-        { q: 'The Lydian mode sounds "dreamy" because of its...', a: 'Raised 4th', opts: ['Lowered 7th', 'Raised 4th', 'Flat 3rd', 'Missing 6th'] },
-        { q: 'An arpeggio is...', a: 'Chord notes played one at a time', opts: ['A type of scale', 'Chord notes played one at a time', 'A rhythm pattern', 'Two notes together'] },
-    ];
+          // ═══ EXPANDED QUIZ (25+) ═══
+          var MUSIC_QUIZ = [
+            { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
+            { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
+            { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
+            { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
+            { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
+            { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
+            { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
+            { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
+            { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
+            { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
+            { q: 'What acoustic property does reverb simulate?', a: 'Sound reflections in a room', opts: ['Sound pitch', 'Sound reflections in a room', 'Sound speed', 'Sound direction'] },
+            { q: 'How does distortion change a waveform?', a: 'Clips peaks, adding harmonics', opts: ['Removes harmonics', 'Clips peaks, adding harmonics', 'Doubles the frequency', 'Reverses the phase'] },
+            { q: 'The I-IV-V progression uses which scale degrees?', a: '1st, 4th, 5th', opts: ['1st, 2nd, 3rd', '1st, 4th, 5th', '1st, 3rd, 5th', '2nd, 5th, 7th'] },
+            { q: 'A minor chord differs from major by...', a: 'Lowered 3rd', opts: ['Raised 5th', 'Lowered 3rd', 'Added 7th', 'Removed root'] },
+            { q: 'The Blues scale adds which note to minor pentatonic?', a: 'Flat 5th (tritone)', opts: ['Major 3rd', 'Flat 5th (tritone)', 'Sharp 7th', 'Perfect 4th'] },
+            { q: 'Key of G Major has how many sharps?', a: '1 (F#)', opts: ['0', '1 (F#)', '2 (F#, C#)', '3'] },
+            { q: 'What is the interval in "Here Comes the Bride"?', a: 'Perfect 4th', opts: ['Major 3rd', 'Perfect 4th', 'Perfect 5th', 'Major 2nd'] },
+            { q: 'A dominant 7th chord wants to resolve because...', a: 'It contains a tritone', opts: ['It has no 5th', 'It contains a tritone', 'It is too quiet', 'It has 5 notes'] },
+            { q: 'In 3/4 time, how many beats per measure?', a: '3', opts: ['2', '3', '4', '6'] },
+            { q: 'What mode starts on the 2nd degree of major?', a: 'Dorian', opts: ['Phrygian', 'Dorian', 'Mixolydian', 'Lydian'] },
+            { q: 'Power chords work with distortion because...', a: 'Simple 3:2 ratio stays clean when clipped', opts: ['They are very loud', 'Simple 3:2 ratio stays clean when clipped', 'They use all harmonics', 'They have no frequency'] },
+            { q: 'The pentatonic scale has how many notes?', a: '5', opts: ['4', '5', '6', '7'] },
+            { q: 'pp in music notation means...', a: 'Very soft (pianissimo)', opts: ['Very fast', 'Very soft (pianissimo)', 'Very loud', 'Very slow'] },
+            { q: 'What interval is "Star Wars" opening?', a: 'Perfect 5th', opts: ['Major 3rd', 'Octave', 'Perfect 5th', 'Minor 7th'] },
+            { q: 'Equal temperament divides the octave into...', a: '12 equal semitones', opts: ['7 equal tones', '12 equal semitones', '8 equal steps', '5 equal intervals'] },
+            { q: 'The Lydian mode sounds "dreamy" because of its...', a: 'Raised 4th', opts: ['Lowered 7th', 'Raised 4th', 'Flat 3rd', 'Missing 6th'] },
+            { q: 'An arpeggio is...', a: 'Chord notes played one at a time', opts: ['A type of scale', 'Chord notes played one at a time', 'A rhythm pattern', 'Two notes together'] },
+          ];
 
-    var WAVE_INFO = {
-        sine: { emoji: '\u223F', desc: 'Pure tone \u2014 only the fundamental frequency.', harmonics: 'None (fundamental only)', science: 'y = A\u00B7sin(2\u03C0ft). Produces a single frequency. All periodic waveforms decompose into sines (Fourier theorem).' },
-        square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)', science: 'Fourier: 4/\u03C0 \u00B7 [sin(f) + sin(3f)/3 + sin(5f)/5 + ...]. Only odd harmonics, giving a hollow quality.' },
-        sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, rich. Great for brass/strings.', harmonics: 'All (1, 2, 3, 4, 5...)', science: 'Contains all harmonics: 2/\u03C0 \u00B7 [sin(f) - sin(2f)/2 + sin(3f)/3 - ...]. Rich starting point for subtractive synthesis.' },
-        triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow.', harmonics: 'Odd only, quiet (1/n\u00B2)', science: 'Odd harmonics dropping as 1/n\u00B2. Formula: 8/\u03C0\u00B2 \u00B7 [sin(f) - sin(3f)/9 + sin(5f)/25 - ...]' }
-    };
-    var wInfo = WAVE_INFO[d.waveType || 'sine'];
+          var WAVE_INFO = {
+            sine: { emoji: '\u223F', desc: 'Pure tone \u2014 only the fundamental frequency.', harmonics: 'None (fundamental only)', science: 'y = A\u00B7sin(2\u03C0ft). Produces a single frequency. All periodic waveforms decompose into sines (Fourier theorem).' },
+            square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)', science: 'Fourier: 4/\u03C0 \u00B7 [sin(f) + sin(3f)/3 + sin(5f)/5 + ...]. Only odd harmonics, giving a hollow quality.' },
+            sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, rich. Great for brass/strings.', harmonics: 'All (1, 2, 3, 4, 5...)', science: 'Contains all harmonics: 2/\u03C0 \u00B7 [sin(f) - sin(2f)/2 + sin(3f)/3 - ...]. Rich starting point for subtractive synthesis.' },
+            triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow.', harmonics: 'Odd only, quiet (1/n\u00B2)', science: 'Odd harmonics dropping as 1/n\u00B2. Formula: 8/\u03C0\u00B2 \u00B7 [sin(f) - sin(3f)/9 + sin(5f)/25 - ...]' }
+          };
+          var wInfo = WAVE_INFO[d.waveType || 'sine'];
 
-    var EFFECT_TIPS = {
-        reverb: { title: 'Reverb', text: 'Simulates sound bouncing off walls. Uses convolution with an impulse response \u2014 longer = bigger room.' },
-        delay: { title: 'Delay', text: 'Echo effect. Stores audio and replays after set time. Feedback creates repeated, decaying echoes.' },
-        distortion: { title: 'Distortion', text: 'Clips waveform peaks, adding harmonics. Makes sound "crunchy." Amount controls clipping threshold.' },
-        chorus: { title: 'Chorus', text: 'Duplicates signal with LFO-modulated pitch. Creates thicker sound like multiple instruments playing together.' },
-        adsr: { title: 'ADSR Envelope', text: 'Attack: time to max volume. Decay: drop to sustain. Sustain: held level. Release: fade after key up.' },
-        bpm: { title: 'BPM (Tempo)', text: 'Beats per minute. 120 BPM = 500ms per beat. Faster = more energy.' },
-        timeSig: { title: 'Time Signature', text: 'Top = beats per measure, bottom = beat unit. 4/4 = standard, 3/4 = waltz, 6/8 = compound.' },
-        octave: { title: 'Octave', text: 'Doubling of frequency. A4=440Hz, A5=880Hz. 12 semitones per octave (2^(1/12) per step).' },
-        drums: { title: 'Drum Synthesis', text: 'Kick = sine sweep 150\u219240Hz. Snare = noise + filter. Hi-hat = high-pass noise. No samples needed!' },
-        scales: { title: 'Scales & Modes', text: 'A scale is a set of notes ordered by pitch. Modes are rotations of the major scale. Each has a unique emotional character based on its interval pattern.' },
-        chords: { title: 'Chords', text: 'Three or more notes played together. Built by stacking intervals (3rds). Major = happy, Minor = sad. Inversions reorder the notes.' },
-        intervals: { title: 'Intervals', text: 'The distance between two pitches, measured in semitones. Consonant intervals (3rd, 5th, octave) sound pleasant; dissonant ones (2nd, 7th, tritone) create tension.' },
-        circleOfFifths: { title: 'Circle of Fifths', text: 'Arranges all 12 keys by ascending perfect fifths. Adjacent keys share most notes. Moving clockwise adds a sharp; counterclockwise adds a flat.' },
-        harmonicSeries: { title: 'Harmonic Series', text: 'When a string vibrates, it produces overtones at integer multiples of the fundamental. This is why different instruments (timbre) sound different playing the same note.' },
-        arpeggiator: { title: 'Arpeggiator', text: 'Automatically plays chord notes one at a time in sequence. "Up" plays low to high, "Down" high to low. Speed follows BPM.' },
-    };
+          var EFFECT_TIPS = {
+            reverb: { title: 'Reverb', text: 'Simulates sound bouncing off walls. Uses convolution with an impulse response \u2014 longer = bigger room.' },
+            delay: { title: 'Delay', text: 'Echo effect. Stores audio and replays after set time. Feedback creates repeated, decaying echoes.' },
+            distortion: { title: 'Distortion', text: 'Clips waveform peaks, adding harmonics. Makes sound "crunchy." Amount controls clipping threshold.' },
+            chorus: { title: 'Chorus', text: 'Duplicates signal with LFO-modulated pitch. Creates thicker sound like multiple instruments playing together.' },
+            adsr: { title: 'ADSR Envelope', text: 'Attack: time to max volume. Decay: drop to sustain. Sustain: held level. Release: fade after key up.' },
+            bpm: { title: 'BPM (Tempo)', text: 'Beats per minute. 120 BPM = 500ms per beat. Faster = more energy.' },
+            timeSig: { title: 'Time Signature', text: 'Top = beats per measure, bottom = beat unit. 4/4 = standard, 3/4 = waltz, 6/8 = compound.' },
+            octave: { title: 'Octave', text: 'Doubling of frequency. A4=440Hz, A5=880Hz. 12 semitones per octave (2^(1/12) per step).' },
+            drums: { title: 'Drum Synthesis', text: 'Kick = sine sweep 150\u219240Hz. Snare = noise + filter. Hi-hat = high-pass noise. No samples needed!' },
+            scales: { title: 'Scales & Modes', text: 'A scale is a set of notes ordered by pitch. Modes are rotations of the major scale. Each has a unique emotional character based on its interval pattern.' },
+            chords: { title: 'Chords', text: 'Three or more notes played together. Built by stacking intervals (3rds). Major = happy, Minor = sad. Inversions reorder the notes.' },
+            intervals: { title: 'Intervals', text: 'The distance between two pitches, measured in semitones. Consonant intervals (3rd, 5th, octave) sound pleasant; dissonant ones (2nd, 7th, tritone) create tension.' },
+            circleOfFifths: { title: 'Circle of Fifths', text: 'Arranges all 12 keys by ascending perfect fifths. Adjacent keys share most notes. Moving clockwise adds a sharp; counterclockwise adds a flat.' },
+            harmonicSeries: { title: 'Harmonic Series', text: 'When a string vibrates, it produces overtones at integer multiples of the fundamental. This is why different instruments (timbre) sound different playing the same note.' },
+            arpeggiator: { title: 'Arpeggiator', text: 'Automatically plays chord notes one at a time in sequence. "Up" plays low to high, "Down" high to low. Speed follows BPM.' },
+          };
 
-    // ═══ RENDER ═══
-    return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
-        React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, "data-drums": JSON.stringify(drumSeq), "data-looplen": loopLen, style: { display: "none" } }),
-        // Header
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: function () { stopSequencer(); stopMetronome(); stopArpeggiator(); Object.keys(window._alloSynthActiveNotes || {}).forEach(function (k) { stopNote(k); }); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB9 Music Synthesizer"),
-            React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO"),
-            React.createElement(Tip, { id: "synth_main", title: "Web Audio Synthesizer", text: "Uses the Web Audio API to generate sound in real-time using mathematical waveforms. Each note creates an oscillator at a specific frequency. Effects are applied through a chain of audio processing nodes." })
-        ),
-        // Sub-tabs
-        React.createElement("div", { className: "flex gap-1 mb-3 border-b border-slate-200 pb-1" },
-            [
+          // ═══ RENDER ═══
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, "data-drums": JSON.stringify(drumSeq), "data-looplen": loopLen, style: { display: "none" } }),
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function () { stopSequencer(); stopMetronome(); stopArpeggiator(); Object.keys(window._alloSynthActiveNotes || {}).forEach(function (k) { stopNote(k); }); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB9 Music Synthesizer"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO"),
+              React.createElement(Tip, { id: "synth_main", title: "Web Audio Synthesizer", text: "Uses the Web Audio API to generate sound in real-time using mathematical waveforms. Each note creates an oscillator at a specific frequency. Effects are applied through a chain of audio processing nodes." })
+            ),
+            // Sub-tabs
+            React.createElement("div", { className: "flex gap-1 mb-3 border-b border-slate-200 pb-1" },
+              [
                 { id: 'play', label: '\uD83C\uDFB9 Play', desc: 'Piano & Sequencer' },
                 { id: 'scales', label: '\uD83C\uDFBC Scales', desc: 'Scale Explorer' },
                 { id: 'chords', label: '\uD83C\uDFB6 Chords', desc: 'Chord Builder' },
                 { id: 'theory', label: '\uD83E\uDDE0 Theory', desc: 'Learn & Quiz' },
-            ].map(function(tab) {
+              ].map(function (tab) {
                 return React.createElement("button", {
-                    key: tab.id,
-                    onClick: function() { upd('synthTab', tab.id); },
-                    className: "px-3 py-1.5 rounded-t-lg text-xs font-bold transition-all border-b-2 " + (synthTab === tab.id ? "border-violet-500 text-violet-700 bg-violet-50" : "border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50")
+                  key: tab.id,
+                  onClick: function () { upd('synthTab', tab.id); },
+                  className: "px-3 py-1.5 rounded-t-lg text-xs font-bold transition-all border-b-2 " + (synthTab === tab.id ? "border-violet-500 text-violet-700 bg-violet-50" : "border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50")
                 }, tab.label);
-            })
-        ),
-        // Oscilloscope (always visible)
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "160px" } },
-            React.createElement("canvas", { ref: canvasRef, "data-wave-type": d.waveType || 'sine', "data-show-fft": showFFT ? 'true' : 'false', style: { width: "100%", height: "100%", display: "block" } }),
-            React.createElement("button", { onClick: function() { upd('showFFT', !showFFT); }, className: "absolute top-2 right-2 px-2 py-1 rounded-md text-[10px] font-bold " + (showFFT ? "bg-violet-600 text-white" : "bg-black/40 text-white/80 hover:bg-black/60"), style: { zIndex: 10 } }, showFFT ? "\uD83C\uDFB5 Waveform" : "\uD83D\uDCC8 Spectrum")
-        ),
-        // Waveform + Preset row
-        React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mb-2" },
-            ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
+              })
+            ),
+            // Oscilloscope (always visible)
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "160px" } },
+              React.createElement("canvas", { ref: canvasRef, "data-wave-type": d.waveType || 'sine', "data-show-fft": showFFT ? 'true' : 'false', style: { width: "100%", height: "100%", display: "block" } }),
+              React.createElement("button", { onClick: function () { upd('showFFT', !showFFT); }, className: "absolute top-2 right-2 px-2 py-1 rounded-md text-[10px] font-bold " + (showFFT ? "bg-violet-600 text-white" : "bg-black/40 text-white/80 hover:bg-black/60"), style: { zIndex: 10 } }, showFFT ? "\uD83C\uDFB5 Waveform" : "\uD83D\uDCC8 Spectrum")
+            ),
+            // Waveform + Preset row
+            React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mb-2" },
+              ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
                 var info = WAVE_INFO[wt];
                 return React.createElement("button", { key: wt, onClick: function () { upd('waveType', wt); upd('activePreset', null); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100') }, info.emoji + ' ' + wt.charAt(0).toUpperCase() + wt.slice(1));
-            }),
-            React.createElement("span", { className: "text-slate-300 mx-1" }, "|"),
-            // Presets dropdown-style row
-            Object.keys(PRESETS).map(function(name) {
-                return React.createElement("button", { key: name, onClick: function() { applyPreset(name); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.activePreset === name ? 'bg-indigo-500 text-white' : 'bg-slate-50 text-slate-500 border hover:bg-slate-100') }, name);
-            }),
-            React.createElement(Tip, { id: "waveform", title: "Waveform Types", text: wInfo.science })
-        ),
-        // Waveform info card (compact)
-        React.createElement("div", { className: "bg-violet-50 rounded-lg p-2 border border-violet-200 mb-3 flex gap-4 text-xs" },
-            React.createElement("span", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
-            React.createElement("span", { className: "text-violet-600" }, wInfo.desc),
-            React.createElement("span", { className: "text-violet-500 font-semibold ml-auto" }, "\uD83C\uDFBC " + wInfo.harmonics)
-        ),
+              }),
+              React.createElement("span", { className: "text-slate-300 mx-1" }, "|"),
+              // Presets dropdown-style row
+              Object.keys(PRESETS).map(function (name) {
+                return React.createElement("button", { key: name, onClick: function () { applyPreset(name); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.activePreset === name ? 'bg-indigo-500 text-white' : 'bg-slate-50 text-slate-500 border hover:bg-slate-100') }, name);
+              }),
+              React.createElement(Tip, { id: "waveform", title: "Waveform Types", text: wInfo.science })
+            ),
+            // Waveform info card (compact)
+            React.createElement("div", { className: "bg-violet-50 rounded-lg p-2 border border-violet-200 mb-3 flex gap-4 text-xs" },
+              React.createElement("span", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
+              React.createElement("span", { className: "text-violet-600" }, wInfo.desc),
+              React.createElement("span", { className: "text-violet-500 font-semibold ml-auto" }, "\uD83C\uDFBC " + wInfo.harmonics)
+            ),
 
-        // ═══════════════════ PLAY TAB ═══════════════════
-        synthTab === 'play' && React.createElement("div", null,
-            // Piano keyboard
-            React.createElement("div", { className: "mb-3" },
+            // ═══════════════════ PLAY TAB ═══════════════════
+            synthTab === 'play' && React.createElement("div", null,
+              // Piano keyboard
+              React.createElement("div", { className: "mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                    React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB9 Piano"),
-                    scaleLock && React.createElement("span", { className: "px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded" }, "\uD83D\uDD12 " + selectedRoot + " " + selectedScale),
-                    React.createElement(Tip, { id: "piano", title: "Piano & Keyboard", text: "Click keys or use keyboard: ZXCVBNM = white keys, SDGHJ = sharps. When Scale Lock is on, only scale notes can be played." }),
-                    React.createElement("div", { className: "ml-auto flex items-center gap-1" },
-                        React.createElement("button", { onClick: function() { upd('octave', Math.max(2, (d.octave || 4) - 1)); }, className: "px-2 py-0.5 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200" }, "\u2212"),
-                        React.createElement("span", { className: "text-xs font-bold text-violet-700 px-1" }, "C" + (d.octave || 4)),
-                        React.createElement("button", { onClick: function() { upd('octave', Math.min(7, (d.octave || 4) + 1)); }, className: "px-2 py-0.5 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200" }, "+"),
-                        React.createElement("button", { onClick: function() { upd('scaleLock', !scaleLock); }, className: "ml-2 px-2 py-0.5 rounded text-[10px] font-bold " + (scaleLock ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400") }, scaleLock ? "\uD83D\uDD12 Lock" : "\uD83D\uDD13 Free"),
-                        React.createElement(Tip, { id: "scale_lock", title: "Scale Lock", text: "When enabled, only notes in the selected scale will play. This makes it impossible to hit a 'wrong' note \u2014 great for improvisation! Select a scale in the Scales tab." })
-                    )
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB9 Piano"),
+                  scaleLock && React.createElement("span", { className: "px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded" }, "\uD83D\uDD12 " + selectedRoot + " " + selectedScale),
+                  React.createElement(Tip, { id: "piano", title: "Piano & Keyboard", text: "Click keys or use keyboard: ZXCVBNM = white keys, SDGHJ = sharps. When Scale Lock is on, only scale notes can be played." }),
+                  React.createElement("div", { className: "ml-auto flex items-center gap-1" },
+                    React.createElement("button", { onClick: function () { upd('octave', Math.max(2, (d.octave || 4) - 1)); }, className: "px-2 py-0.5 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200" }, "\u2212"),
+                    React.createElement("span", { className: "text-xs font-bold text-violet-700 px-1" }, "C" + (d.octave || 4)),
+                    React.createElement("button", { onClick: function () { upd('octave', Math.min(7, (d.octave || 4) + 1)); }, className: "px-2 py-0.5 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200" }, "+"),
+                    React.createElement("button", { onClick: function () { upd('scaleLock', !scaleLock); }, className: "ml-2 px-2 py-0.5 rounded text-[10px] font-bold " + (scaleLock ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400") }, scaleLock ? "\uD83D\uDD12 Lock" : "\uD83D\uDD13 Free"),
+                    React.createElement(Tip, { id: "scale_lock", title: "Scale Lock", text: "When enabled, only notes in the selected scale will play. This makes it impossible to hit a 'wrong' note \u2014 great for improvisation! Select a scale in the Scales tab." })
+                  )
                 ),
                 React.createElement("div", { className: "relative", style: { height: "110px" } },
-                    React.createElement("div", { className: "flex h-full" },
-                        KEYS.filter(function (k) { return !k.isBlack; }).map(function (k) {
-                            var noteId = k.note + k.octave;
-                            var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
-                            var inScale = isInScale(k.semitone);
-                            var locked = scaleLock && !inScale;
-                            return React.createElement("button", {
-                                key: noteId, disabled: locked,
-                                onMouseDown: function () { if (locked) return; playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
-                                onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                                onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                                className: "flex-1 border rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (locked ? 'bg-slate-50 border-slate-100 opacity-30 cursor-not-allowed' : isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : scaleLock && inScale ? 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100' : 'bg-white border-slate-200 hover:bg-slate-50'),
-                                style: { minWidth: "24px" }
-                            },
-                                React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : locked ? 'text-slate-200' : 'text-slate-400') }, k.note),
-                                React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
-                            );
-                        })
-                    ),
-                    React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
-                        KEYS.map(function (k, i) {
-                            if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
-                            var noteId = k.note + k.octave;
-                            var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
-                            var inScale = isInScale(k.semitone);
-                            var locked = scaleLock && !inScale;
-                            return React.createElement("button", {
-                                key: noteId, disabled: locked,
-                                onMouseDown: function (e) { e.stopPropagation(); if (locked) return; playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
-                                onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                                onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                                className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (locked ? 'bg-slate-300 opacity-20 cursor-not-allowed' : isActive ? 'bg-violet-700 shadow-inner' : scaleLock && inScale ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-slate-800 hover:bg-slate-700'),
-                                style: { width: "22px", marginLeft: "-11px", marginRight: "-11px", zIndex: 2, pointerEvents: "auto", height: "100%" }
-                            },
-                                React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
-                            );
-                        })
-                    )
+                  React.createElement("div", { className: "flex h-full" },
+                    KEYS.filter(function (k) { return !k.isBlack; }).map(function (k) {
+                      var noteId = k.note + k.octave;
+                      var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+                      var inScale = isInScale(k.semitone);
+                      var locked = scaleLock && !inScale;
+                      return React.createElement("button", {
+                        key: noteId, disabled: locked,
+                        onMouseDown: function () { if (locked) return; playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+                        onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                        onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                        className: "flex-1 border rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (locked ? 'bg-slate-50 border-slate-100 opacity-30 cursor-not-allowed' : isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : scaleLock && inScale ? 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100' : 'bg-white border-slate-200 hover:bg-slate-50'),
+                        style: { minWidth: "24px" }
+                      },
+                        React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : locked ? 'text-slate-200' : 'text-slate-400') }, k.note),
+                        React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
+                    KEYS.map(function (k, i) {
+                      if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
+                      var noteId = k.note + k.octave;
+                      var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+                      var inScale = isInScale(k.semitone);
+                      var locked = scaleLock && !inScale;
+                      return React.createElement("button", {
+                        key: noteId, disabled: locked,
+                        onMouseDown: function (e) { e.stopPropagation(); if (locked) return; playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+                        onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                        onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                        className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (locked ? 'bg-slate-300 opacity-20 cursor-not-allowed' : isActive ? 'bg-violet-700 shadow-inner' : scaleLock && inScale ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-slate-800 hover:bg-slate-700'),
+                        style: { width: "22px", marginLeft: "-11px", marginRight: "-11px", zIndex: 2, pointerEvents: "auto", height: "100%" }
+                      },
+                        React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
+                      );
+                    })
+                  )
                 )
-            ),
-            // Freq display
-            d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+              ),
+              // Freq display
+              d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
                 React.createElement("div", { className: "p-1.5 bg-violet-50 rounded-lg border border-violet-200" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
-                    React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
+                  React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
+                  React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
                 ),
                 React.createElement("div", { className: "p-1.5 bg-violet-50 rounded-lg border border-violet-200" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
-                    React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
+                  React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
+                  React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
                 ),
                 React.createElement("div", { className: "p-1.5 bg-violet-50 rounded-lg border border-violet-200" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
-                    React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "\u2014")
+                  React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
+                  React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "\u2014")
                 )
-            ),
-            // ADSR + Volume
-            React.createElement("div", { className: "mb-3" },
+              ),
+              // ADSR + Volume
+              React.createElement("div", { className: "mb-3" },
                 React.createElement("div", { className: "flex items-center gap-1 mb-1" },
-                    React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83D\uDCC8 ADSR & Volume"),
-                    React.createElement(Tip, { id: "adsr", title: EFFECT_TIPS.adsr.title, text: EFFECT_TIPS.adsr.text })
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83D\uDCC8 ADSR & Volume"),
+                  React.createElement(Tip, { id: "adsr", title: EFFECT_TIPS.adsr.title, text: EFFECT_TIPS.adsr.text })
                 ),
                 React.createElement("div", { className: "grid grid-cols-5 gap-2" },
-                    [
-                        { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
-                        { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
-                        { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
-                        { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
-                        { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
-                    ].map(function (s) {
-                        return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
-                            React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
-                            React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
-                            React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
-                        );
-                    })
+                  [
+                    { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
+                    { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
+                    { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
+                    { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
+                    { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
+                  ].map(function (s) {
+                    return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
+                      React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
+                      React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
+                      React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
+                    );
+                  })
                 )
-            ),
-            // Effects
-            React.createElement("div", { className: "mb-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-2.5 border border-violet-200" },
+              ),
+              // Effects
+              React.createElement("div", { className: "mb-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-2.5 border border-violet-200" },
                 React.createElement("div", { className: "flex items-center gap-1 mb-1.5" },
-                    React.createElement("p", { className: "text-xs font-bold text-violet-700" }, "\u2728 Effects"),
-                    React.createElement(Tip, { id: "fx_chain", title: "Audio Effects Chain", text: "Signal path: Oscillator \u2192 Distortion \u2192 Delay/Reverb/Chorus \u2192 Master Volume. Each effect modifies the signal." })
+                  React.createElement("p", { className: "text-xs font-bold text-violet-700" }, "\u2728 Effects"),
+                  React.createElement(Tip, { id: "fx_chain", title: "Audio Effects Chain", text: "Signal path: Oscillator \u2192 Distortion \u2192 Delay/Reverb/Chorus \u2192 Master Volume. Each effect modifies the signal." })
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2" },
-                    React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
-                        React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, "\uD83C\uDFDB Reverb"),
-                        [{ k: 'reverbMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'reverbSize', label: 'Size', min: 0.1, max: 5, step: 0.1 }].map(function(p) {
-                            return React.createElement("div", { key: p.k, className: "mt-1" },
-                                React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-indigo-600" }, (d[p.k] || 0).toFixed(2))),
-                                React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-indigo-500", style: { height: "12px" } })
-                            );
-                        })
-                    ),
-                    React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
-                        React.createElement("span", { className: "text-[10px] font-bold text-sky-700" }, "\u23F1 Delay"),
-                        [{ k: 'delayMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'delayTime', label: 'Time', min: 50, max: 1000, step: 10 }, { k: 'delayFeedback', label: 'FB', min: 0, max: 0.9, step: 0.05 }].map(function(p) {
-                            return React.createElement("div", { key: p.k, className: "mt-1" },
-                                React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-sky-600" }, p.k === 'delayTime' ? Math.round(d[p.k] || 300) : (d[p.k] || 0).toFixed(2))),
-                                React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'delayTime' ? 300 : 0), onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-500", style: { height: "12px" } })
-                            );
-                        })
-                    ),
-                    React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
-                        React.createElement("span", { className: "text-[10px] font-bold text-orange-700" }, "\uD83D\uDD25 Distortion"),
-                        [{ k: 'distAmount', label: 'Amount', min: 0, max: 100, step: 1 }].map(function(p) {
-                            return React.createElement("div", { key: p.k, className: "mt-1" },
-                                React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-orange-600" }, Math.round(d[p.k] || 0))),
-                                React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-orange-500", style: { height: "12px" } })
-                            );
-                        })
-                    ),
-                    React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
-                        React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\uD83C\uDF0A Chorus"),
-                        [{ k: 'chorusMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'chorusRate', label: 'Rate', min: 0.1, max: 10, step: 0.1 }].map(function(p) {
-                            return React.createElement("div", { key: p.k, className: "mt-1" },
-                                React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-emerald-600" }, (d[p.k] || 0).toFixed(2))),
-                                React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-emerald-500", style: { height: "12px" } })
-                            );
-                        })
-                    )
-                )
-            ),
-            // Metronome
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                React.createElement("button", { onClick: function() { if (metroOn) stopMetronome(); else startMetronome(); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (metroOn ? "bg-amber-500 text-white animate-pulse" : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100") }, metroOn ? "\u23F9 Metronome" : "\uD83E\uDE97 Metronome"),
-                d.metroBeat >= 0 && metroOn && React.createElement("div", { className: "flex gap-1" },
-                    Array.from({ length: TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4 }).map(function(_, bi) {
-                        return React.createElement("div", { key: bi, className: "w-3 h-3 rounded-full transition-all " + (d.metroBeat === bi ? (bi === 0 ? "bg-amber-500 scale-125" : "bg-amber-300 scale-110") : "bg-slate-200") });
+                  React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, "\uD83C\uDFDB Reverb"),
+                    [{ k: 'reverbMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'reverbSize', label: 'Size', min: 0.1, max: 5, step: 0.1 }].map(function (p) {
+                      return React.createElement("div", { key: p.k, className: "mt-1" },
+                        React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-indigo-600" }, (d[p.k] || 0).toFixed(2))),
+                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-indigo-500", style: { height: "12px" } })
+                      );
                     })
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-sky-700" }, "\u23F1 Delay"),
+                    [{ k: 'delayMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'delayTime', label: 'Time', min: 50, max: 1000, step: 10 }, { k: 'delayFeedback', label: 'FB', min: 0, max: 0.9, step: 0.05 }].map(function (p) {
+                      return React.createElement("div", { key: p.k, className: "mt-1" },
+                        React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-sky-600" }, p.k === 'delayTime' ? Math.round(d[p.k] || 300) : (d[p.k] || 0).toFixed(2))),
+                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'delayTime' ? 300 : 0), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-500", style: { height: "12px" } })
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-orange-700" }, "\uD83D\uDD25 Distortion"),
+                    [{ k: 'distAmount', label: 'Amount', min: 0, max: 100, step: 1 }].map(function (p) {
+                      return React.createElement("div", { key: p.k, className: "mt-1" },
+                        React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-orange-600" }, Math.round(d[p.k] || 0))),
+                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-orange-500", style: { height: "12px" } })
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\uD83C\uDF0A Chorus"),
+                    [{ k: 'chorusMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'chorusRate', label: 'Rate', min: 0.1, max: 10, step: 0.1 }].map(function (p) {
+                      return React.createElement("div", { key: p.k, className: "mt-1" },
+                        React.createElement("div", { className: "flex justify-between" }, React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label), React.createElement("span", { className: "text-[8px] font-bold text-emerald-600" }, (d[p.k] || 0).toFixed(2))),
+                        React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-emerald-500", style: { height: "12px" } })
+                      );
+                    })
+                  )
+                )
+              ),
+              // Metronome
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("button", { onClick: function () { if (metroOn) stopMetronome(); else startMetronome(); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (metroOn ? "bg-amber-500 text-white animate-pulse" : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100") }, metroOn ? "\u23F9 Metronome" : "\uD83E\uDE97 Metronome"),
+                d.metroBeat >= 0 && metroOn && React.createElement("div", { className: "flex gap-1" },
+                  Array.from({ length: TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4 }).map(function (_, bi) {
+                    return React.createElement("div", { key: bi, className: "w-3 h-3 rounded-full transition-all " + (d.metroBeat === bi ? (bi === 0 ? "bg-amber-500 scale-125" : "bg-amber-300 scale-110") : "bg-slate-200") });
+                  })
                 ),
                 React.createElement(Tip, { id: "metronome", title: "Metronome", text: "Keeps steady time. Accent on beat 1. Synced to your BPM and time signature. Essential for developing rhythm." })
-            ),
-            // Sequencer
-            React.createElement("div", { className: "mb-3" },
+              ),
+              // Sequencer
+              React.createElement("div", { className: "mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
-                    React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 Sequencer"),
-                    React.createElement(Tip, { id: "sequencer", title: "Step Sequencer", text: "Divides time into steps. Click to cycle notes. Drum rows trigger percussive sounds. Combined, they create beats and melodies." }),
-                    React.createElement("div", { className: "flex items-center gap-1 ml-2" },
-                        React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "Steps:"),
-                        LOOP_LENGTHS.map(function(len) { return React.createElement("button", { key: len, onClick: function() { upd('loopLen', len); var newSeq = seq.slice(); while (newSeq.length < len) newSeq.push(0); upd('sequence', newSeq.slice(0, len)); }, className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (loopLen === len ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200") }, len); })
-                    ),
-                    React.createElement("div", { className: "flex items-center gap-1 ml-2" },
-                        React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "Time:"),
-                        Object.keys(TIME_SIGS).map(function(ts) { return React.createElement("button", { key: ts, onClick: function() { upd('timeSig', ts); }, className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (timeSig === ts ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200") }, ts); }),
-                        React.createElement(Tip, { id: "timeSig", title: EFFECT_TIPS.timeSig.title, text: EFFECT_TIPS.timeSig.text })
-                    ),
-                    React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
-                        React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
-                        React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
-                        React.createElement("button", { onClick: function() { upd('looping', !looping); }, className: "ml-1 px-2 py-1 rounded-lg text-[10px] font-bold " + (looping ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-400") }, looping ? "\uD83D\uDD01" : "\u27A1"),
-                        React.createElement("button", { onClick: function () { if (seqPlaying) stopSequencer(); else startSequencer(); }, className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600') }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
-                    )
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 Sequencer"),
+                  React.createElement(Tip, { id: "sequencer", title: "Step Sequencer", text: "Divides time into steps. Click to cycle notes. Drum rows trigger percussive sounds. Combined, they create beats and melodies." }),
+                  React.createElement("div", { className: "flex items-center gap-1 ml-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "Steps:"),
+                    LOOP_LENGTHS.map(function (len) { return React.createElement("button", { key: len, onClick: function () { upd('loopLen', len); var newSeq = seq.slice(); while (newSeq.length < len) newSeq.push(0); upd('sequence', newSeq.slice(0, len)); }, className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (loopLen === len ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200") }, len); })
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-1 ml-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "Time:"),
+                    Object.keys(TIME_SIGS).map(function (ts) { return React.createElement("button", { key: ts, onClick: function () { upd('timeSig', ts); }, className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (timeSig === ts ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200") }, ts); }),
+                    React.createElement(Tip, { id: "timeSig", title: EFFECT_TIPS.timeSig.title, text: EFFECT_TIPS.timeSig.text })
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
+                    React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
+                    React.createElement("button", { onClick: function () { upd('looping', !looping); }, className: "ml-1 px-2 py-1 rounded-lg text-[10px] font-bold " + (looping ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-400") }, looping ? "\uD83D\uDD01" : "\u27A1"),
+                    React.createElement("button", { onClick: function () { if (seqPlaying) stopSequencer(); else startSequencer(); }, className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600') }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
+                  )
                 ),
                 // Note row
                 React.createElement("div", { className: "mb-1" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "\uD83C\uDFB5 Melody"),
-                    React.createElement("div", { className: "grid gap-0.5", style: { gridTemplateColumns: "repeat(" + loopLen + ", 1fr)" } },
-                        seq.map(function (noteIdx, stepIdx) {
-                            var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
-                            var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
-                            var beatsPerMeasure = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-                            var isDownbeat = stepIdx % beatsPerMeasure === 0;
-                            return React.createElement("button", { key: stepIdx, onClick: function () { toggleSeqStep(stepIdx); }, className: "p-1 rounded border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : isDownbeat ? 'border-violet-300' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50') },
-                                React.createElement("span", { className: "text-[10px] font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName)
-                            );
-                        })
-                    )
+                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "\uD83C\uDFB5 Melody"),
+                  React.createElement("div", { className: "grid gap-0.5", style: { gridTemplateColumns: "repeat(" + loopLen + ", 1fr)" } },
+                    seq.map(function (noteIdx, stepIdx) {
+                      var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
+                      var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
+                      var beatsPerMeasure = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
+                      var isDownbeat = stepIdx % beatsPerMeasure === 0;
+                      return React.createElement("button", { key: stepIdx, onClick: function () { toggleSeqStep(stepIdx); }, className: "p-1 rounded border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : isDownbeat ? 'border-violet-300' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50') },
+                        React.createElement("span", { className: "text-[10px] font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName)
+                      );
+                    })
+                  )
                 ),
                 // Drum rows
                 React.createElement("div", { className: "mt-1" },
-                    React.createElement("div", { className: "flex items-center gap-1 mb-0.5" },
-                        React.createElement("p", { className: "text-[9px] font-bold text-slate-400" }, "\uD83E\uDD41 Drums"),
-                        React.createElement(Tip, { id: "drums", title: EFFECT_TIPS.drums.title, text: EFFECT_TIPS.drums.text })
-                    ),
-                    DRUM_TYPES.map(function(dt, di) {
-                        var row = drumSeq[dt] || new Array(loopLen).fill(0);
-                        var drumColors = ['bg-rose-100 border-rose-300', 'bg-amber-100 border-amber-300', 'bg-cyan-100 border-cyan-300', 'bg-pink-100 border-pink-300', 'bg-orange-100 border-orange-300'];
-                        var activeColors = ['bg-rose-300', 'bg-amber-300', 'bg-cyan-300', 'bg-pink-300', 'bg-orange-300'];
-                        return React.createElement("div", { key: dt, className: "flex items-center gap-1 mb-0.5" },
-                            React.createElement("button", { onClick: function() { playDrum(dt); }, className: "w-14 text-[9px] font-bold text-slate-600 text-left hover:text-violet-700 shrink-0", title: "Preview " + dt }, DRUM_LABELS[di]),
-                            React.createElement("div", { className: "grid gap-0.5 flex-1", style: { gridTemplateColumns: "repeat(" + loopLen + ", 1fr)" } },
-                                Array.from({ length: loopLen }).map(function(_, stepIdx) {
-                                    var isHit = row[stepIdx];
-                                    var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
-                                    var beatsPerMeasure = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
-                                    var isDownbeat = stepIdx % beatsPerMeasure === 0;
-                                    return React.createElement("button", { key: stepIdx, onClick: function() { toggleDrumStep(dt, stepIdx); }, className: "h-5 rounded border transition-all " + (isActive ? 'ring-1 ring-amber-400 scale-105 ' : '') + (isHit ? drumColors[di] + ' ' + activeColors[di] : isDownbeat ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200') });
-                                })
-                            )
-                        );
-                    })
+                  React.createElement("div", { className: "flex items-center gap-1 mb-0.5" },
+                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400" }, "\uD83E\uDD41 Drums"),
+                    React.createElement(Tip, { id: "drums", title: EFFECT_TIPS.drums.title, text: EFFECT_TIPS.drums.text })
+                  ),
+                  DRUM_TYPES.map(function (dt, di) {
+                    var row = drumSeq[dt] || new Array(loopLen).fill(0);
+                    var drumColors = ['bg-rose-100 border-rose-300', 'bg-amber-100 border-amber-300', 'bg-cyan-100 border-cyan-300', 'bg-pink-100 border-pink-300', 'bg-orange-100 border-orange-300'];
+                    var activeColors = ['bg-rose-300', 'bg-amber-300', 'bg-cyan-300', 'bg-pink-300', 'bg-orange-300'];
+                    return React.createElement("div", { key: dt, className: "flex items-center gap-1 mb-0.5" },
+                      React.createElement("button", { onClick: function () { playDrum(dt); }, className: "w-14 text-[9px] font-bold text-slate-600 text-left hover:text-violet-700 shrink-0", title: "Preview " + dt }, DRUM_LABELS[di]),
+                      React.createElement("div", { className: "grid gap-0.5 flex-1", style: { gridTemplateColumns: "repeat(" + loopLen + ", 1fr)" } },
+                        Array.from({ length: loopLen }).map(function (_, stepIdx) {
+                          var isHit = row[stepIdx];
+                          var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
+                          var beatsPerMeasure = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
+                          var isDownbeat = stepIdx % beatsPerMeasure === 0;
+                          return React.createElement("button", { key: stepIdx, onClick: function () { toggleDrumStep(dt, stepIdx); }, className: "h-5 rounded border transition-all " + (isActive ? 'ring-1 ring-amber-400 scale-105 ' : '') + (isHit ? drumColors[di] + ' ' + activeColors[di] : isDownbeat ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200') });
+                        })
+                      )
+                    );
+                  })
                 )
-            )
-        ),
+              )
+            ),
 
-        // ═══════════════════ SCALES TAB ═══════════════════
-        synthTab === 'scales' && React.createElement("div", null,
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            // ═══════════════════ SCALES TAB ═══════════════════
+            synthTab === 'scales' && React.createElement("div", null,
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("p", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDFBC Scale & Mode Explorer"),
                 React.createElement(Tip, { id: "scales_tab", title: EFFECT_TIPS.scales.title, text: EFFECT_TIPS.scales.text })
-            ),
-            // Root + Scale selectors
-            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+              ),
+              // Root + Scale selectors
+              React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                 React.createElement("div", null,
-                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "ROOT NOTE"),
-                    React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
-                        NOTE_NAMES.map(function(n) {
-                            return React.createElement("button", { key: n, onClick: function() { upd('selectedRoot', n); }, className: "px-2 py-1 rounded text-[10px] font-bold " + (selectedRoot === n ? "bg-violet-600 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, n);
-                        })
-                    )
+                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "ROOT NOTE"),
+                  React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
+                    NOTE_NAMES.map(function (n) {
+                      return React.createElement("button", { key: n, onClick: function () { upd('selectedRoot', n); }, className: "px-2 py-1 rounded text-[10px] font-bold " + (selectedRoot === n ? "bg-violet-600 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, n);
+                    })
+                  )
                 ),
                 React.createElement("div", { className: "flex-1" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "SCALE / MODE"),
-                    React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
-                        Object.keys(SCALES).map(function(name) {
-                            return React.createElement("button", { key: name, onClick: function() { upd('selectedScale', name); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (selectedScale === name ? "bg-emerald-500 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, name);
-                        })
-                    )
+                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "SCALE / MODE"),
+                  React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
+                    Object.keys(SCALES).map(function (name) {
+                      return React.createElement("button", { key: name, onClick: function () { upd('selectedScale', name); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (selectedScale === name ? "bg-emerald-500 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, name);
+                    })
+                  )
                 )
-            ),
-            // Scale info card
-            SCALES[selectedScale] && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-3 border border-emerald-200 mb-3" },
+              ),
+              // Scale info card
+              SCALES[selectedScale] && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-3 border border-emerald-200 mb-3" },
                 React.createElement("div", { className: "flex items-start justify-between" },
-                    React.createElement("div", null,
-                        React.createElement("p", { className: "font-bold text-emerald-800 text-sm" }, selectedRoot + " " + selectedScale),
-                        React.createElement("p", { className: "text-emerald-600 text-xs mt-0.5" }, SCALES[selectedScale].desc)
-                    ),
-                    React.createElement("div", { className: "flex gap-1" },
-                        React.createElement("button", { onClick: function() { playScale(selectedRoot, selectedScale, false); }, className: "px-2 py-1 bg-emerald-500 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-600" }, "\u25B6 Ascending"),
-                        React.createElement("button", { onClick: function() { playScale(selectedRoot, selectedScale, true); }, className: "px-2 py-1 bg-emerald-400 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-500" }, "\u25BC Descending")
-                    )
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "font-bold text-emerald-800 text-sm" }, selectedRoot + " " + selectedScale),
+                    React.createElement("p", { className: "text-emerald-600 text-xs mt-0.5" }, SCALES[selectedScale].desc)
+                  ),
+                  React.createElement("div", { className: "flex gap-1" },
+                    React.createElement("button", { onClick: function () { playScale(selectedRoot, selectedScale, false); }, className: "px-2 py-1 bg-emerald-500 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-600" }, "\u25B6 Ascending"),
+                    React.createElement("button", { onClick: function () { playScale(selectedRoot, selectedScale, true); }, className: "px-2 py-1 bg-emerald-400 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-500" }, "\u25BC Descending")
+                  )
                 ),
                 React.createElement("p", { className: "text-emerald-700 text-[10px] mt-2 bg-emerald-100 rounded p-1.5" }, "\uD83D\uDD2C " + SCALES[selectedScale].science),
                 // Scale notes display
                 React.createElement("div", { className: "flex gap-1 mt-2" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 mr-1" }, "Notes:"),
-                    scaleIntervals.map(function(intv, idx) {
-                        var noteIdx = (rootIdx + intv) % 12;
-                        return React.createElement("span", { key: idx, className: "px-1.5 py-0.5 bg-white rounded text-[10px] font-bold text-emerald-700 border border-emerald-200" }, NOTE_NAMES[noteIdx]);
-                    })
+                  React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 mr-1" }, "Notes:"),
+                  scaleIntervals.map(function (intv, idx) {
+                    var noteIdx = (rootIdx + intv) % 12;
+                    return React.createElement("span", { key: idx, className: "px-1.5 py-0.5 bg-white rounded text-[10px] font-bold text-emerald-700 border border-emerald-200" }, NOTE_NAMES[noteIdx]);
+                  })
                 ),
                 // Scale degrees
                 React.createElement("div", { className: "flex gap-1 mt-1" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 mr-1" }, "Degrees:"),
-                    ['1', '2', '3', '4', '5', '6', '7'].slice(0, scaleIntervals.length).map(function(deg, idx) {
-                        return React.createElement("span", { key: idx, className: "px-1.5 py-0.5 bg-emerald-100 rounded text-[10px] font-bold text-emerald-600" }, deg);
-                    })
+                  React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 mr-1" }, "Degrees:"),
+                  ['1', '2', '3', '4', '5', '6', '7'].slice(0, scaleIntervals.length).map(function (deg, idx) {
+                    return React.createElement("span", { key: idx, className: "px-1.5 py-0.5 bg-emerald-100 rounded text-[10px] font-bold text-emerald-600" }, deg);
+                  })
                 ),
                 // Interval pattern
                 React.createElement("div", { className: "flex gap-1 mt-1 items-center" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 mr-1" }, "Pattern:"),
-                    scaleIntervals.map(function(intv, idx) {
-                        if (idx === 0) return null;
-                        var gap = intv - scaleIntervals[idx - 1];
-                        var label = gap === 1 ? 'H' : gap === 2 ? 'W' : gap === 3 ? 'W+H' : gap + '';
-                        return React.createElement("span", { key: idx, className: "px-1 py-0.5 rounded text-[9px] font-bold " + (gap === 1 ? "bg-rose-100 text-rose-600" : gap === 2 ? "bg-sky-100 text-sky-600" : "bg-amber-100 text-amber-600") }, label);
-                    })
+                  React.createElement("span", { className: "text-[9px] font-bold text-emerald-600 mr-1" }, "Pattern:"),
+                  scaleIntervals.map(function (intv, idx) {
+                    if (idx === 0) return null;
+                    var gap = intv - scaleIntervals[idx - 1];
+                    var label = gap === 1 ? 'H' : gap === 2 ? 'W' : gap === 3 ? 'W+H' : gap + '';
+                    return React.createElement("span", { key: idx, className: "px-1 py-0.5 rounded text-[9px] font-bold " + (gap === 1 ? "bg-rose-100 text-rose-600" : gap === 2 ? "bg-sky-100 text-sky-600" : "bg-amber-100 text-amber-600") }, label);
+                  })
                 )
-            ),
-            // Scale Lock toggle
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                React.createElement("button", { onClick: function() { upd('scaleLock', !scaleLock); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (scaleLock ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-700 border border-emerald-200") }, scaleLock ? "\uD83D\uDD12 Scale Lock ON" : "\uD83D\uDD13 Enable Scale Lock"),
+              ),
+              // Scale Lock toggle
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("button", { onClick: function () { upd('scaleLock', !scaleLock); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (scaleLock ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-700 border border-emerald-200") }, scaleLock ? "\uD83D\uDD12 Scale Lock ON" : "\uD83D\uDD13 Enable Scale Lock"),
                 React.createElement("span", { className: "text-[10px] text-slate-400" }, "Only scale notes will play on the piano")
-            )
-        ),
+              )
+            ),
 
-        // ═══════════════════ CHORDS TAB ═══════════════════
-        synthTab === 'chords' && React.createElement("div", null,
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            // ═══════════════════ CHORDS TAB ═══════════════════
+            synthTab === 'chords' && React.createElement("div", null,
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("p", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDFB6 Chord Builder"),
                 React.createElement(Tip, { id: "chords_tab", title: EFFECT_TIPS.chords.title, text: EFFECT_TIPS.chords.text })
-            ),
-            // Root + Chord selectors
-            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+              ),
+              // Root + Chord selectors
+              React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                 React.createElement("div", null,
-                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "ROOT"),
-                    React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
-                        NOTE_NAMES.map(function(n) {
-                            return React.createElement("button", { key: n, onClick: function() { upd('chordRoot', n); }, className: "px-2 py-1 rounded text-[10px] font-bold " + (chordRoot === n ? "bg-indigo-600 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, n);
-                        })
-                    )
+                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "ROOT"),
+                  React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
+                    NOTE_NAMES.map(function (n) {
+                      return React.createElement("button", { key: n, onClick: function () { upd('chordRoot', n); }, className: "px-2 py-1 rounded text-[10px] font-bold " + (chordRoot === n ? "bg-indigo-600 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, n);
+                    })
+                  )
                 ),
                 React.createElement("div", { className: "flex-1" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "CHORD TYPE"),
-                    React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
-                        Object.keys(CHORDS).map(function(name) {
-                            return React.createElement("button", { key: name, onClick: function() { upd('selectedChord', name); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (selectedChord === name ? "bg-indigo-500 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, name);
-                        })
-                    )
+                  React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "CHORD TYPE"),
+                  React.createElement("div", { className: "flex gap-0.5 flex-wrap" },
+                    Object.keys(CHORDS).map(function (name) {
+                      return React.createElement("button", { key: name, onClick: function () { upd('selectedChord', name); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (selectedChord === name ? "bg-indigo-500 text-white" : "bg-slate-50 text-slate-600 border hover:bg-slate-100") }, name);
+                    })
+                  )
                 )
-            ),
-            // Chord info card
-            CHORDS[selectedChord] && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200 mb-3" },
+              ),
+              // Chord info card
+              CHORDS[selectedChord] && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200 mb-3" },
                 React.createElement("div", { className: "flex items-start justify-between" },
-                    React.createElement("div", null,
-                        React.createElement("p", { className: "font-bold text-indigo-800 text-sm" }, chordRoot + (CHORDS[selectedChord].symbol ? CHORDS[selectedChord].symbol : ' ' + selectedChord)),
-                        React.createElement("p", { className: "text-indigo-600 text-xs mt-0.5" }, CHORDS[selectedChord].desc)
-                    ),
-                    React.createElement("div", { className: "flex gap-1" },
-                        React.createElement("button", { onClick: function() { playChord(chordRoot, selectedChord, chordInversion); }, className: "px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-[10px] font-bold hover:bg-indigo-600" }, "\uD83D\uDD0A Play Chord")
-                    )
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "font-bold text-indigo-800 text-sm" }, chordRoot + (CHORDS[selectedChord].symbol ? CHORDS[selectedChord].symbol : ' ' + selectedChord)),
+                    React.createElement("p", { className: "text-indigo-600 text-xs mt-0.5" }, CHORDS[selectedChord].desc)
+                  ),
+                  React.createElement("div", { className: "flex gap-1" },
+                    React.createElement("button", { onClick: function () { playChord(chordRoot, selectedChord, chordInversion); }, className: "px-3 py-1.5 bg-indigo-500 text-white rounded-lg text-[10px] font-bold hover:bg-indigo-600" }, "\uD83D\uDD0A Play Chord")
+                  )
                 ),
                 React.createElement("p", { className: "text-indigo-700 text-[10px] mt-2 bg-indigo-100 rounded p-1.5" }, "\uD83D\uDD2C " + CHORDS[selectedChord].science),
                 // Chord notes
                 React.createElement("div", { className: "flex gap-1 mt-2 items-center" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-indigo-600 mr-1" }, "Notes:"),
-                    CHORDS[selectedChord].intervals.map(function(intv, idx) {
-                        var cri = NOTE_NAMES.indexOf(chordRoot);
-                        var noteIdx = (cri + intv) % 12;
-                        return React.createElement("span", { key: idx, className: "px-1.5 py-0.5 bg-white rounded text-[10px] font-bold text-indigo-700 border border-indigo-200" }, NOTE_NAMES[noteIdx]);
-                    }),
-                    React.createElement("span", { className: "text-[9px] text-indigo-400 ml-2" }, "Semitones: [" + CHORDS[selectedChord].intervals.join(', ') + "]")
+                  React.createElement("span", { className: "text-[9px] font-bold text-indigo-600 mr-1" }, "Notes:"),
+                  CHORDS[selectedChord].intervals.map(function (intv, idx) {
+                    var cri = NOTE_NAMES.indexOf(chordRoot);
+                    var noteIdx = (cri + intv) % 12;
+                    return React.createElement("span", { key: idx, className: "px-1.5 py-0.5 bg-white rounded text-[10px] font-bold text-indigo-700 border border-indigo-200" }, NOTE_NAMES[noteIdx]);
+                  }),
+                  React.createElement("span", { className: "text-[9px] text-indigo-400 ml-2" }, "Semitones: [" + CHORDS[selectedChord].intervals.join(', ') + "]")
                 ),
                 // Inversions
                 React.createElement("div", { className: "flex gap-1 mt-2 items-center" },
-                    React.createElement("span", { className: "text-[9px] font-bold text-indigo-600 mr-1" }, "Inversion:"),
-                    ['Root', '1st', '2nd'].concat(CHORDS[selectedChord].intervals.length > 3 ? ['3rd'] : []).map(function(inv, idx) {
-                        return React.createElement("button", { key: idx, onClick: function() { upd('chordInversion', idx); playChord(chordRoot, selectedChord, idx); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (chordInversion === idx ? "bg-indigo-500 text-white" : "bg-indigo-100 text-indigo-600 hover:bg-indigo-200") }, inv);
-                    })
+                  React.createElement("span", { className: "text-[9px] font-bold text-indigo-600 mr-1" }, "Inversion:"),
+                  ['Root', '1st', '2nd'].concat(CHORDS[selectedChord].intervals.length > 3 ? ['3rd'] : []).map(function (inv, idx) {
+                    return React.createElement("button", { key: idx, onClick: function () { upd('chordInversion', idx); playChord(chordRoot, selectedChord, idx); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (chordInversion === idx ? "bg-indigo-500 text-white" : "bg-indigo-100 text-indigo-600 hover:bg-indigo-200") }, inv);
+                  })
                 )
-            ),
-            // Arpeggiator
-            React.createElement("div", { className: "bg-purple-50 rounded-lg p-2.5 border border-purple-200 mb-3" },
+              ),
+              // Arpeggiator
+              React.createElement("div", { className: "bg-purple-50 rounded-lg p-2.5 border border-purple-200 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                    React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83C\uDFB5 Arpeggiator"),
-                    React.createElement(Tip, { id: "arp", title: EFFECT_TIPS.arpeggiator.title, text: EFFECT_TIPS.arpeggiator.text })
+                  React.createElement("p", { className: "text-xs font-bold text-purple-700" }, "\uD83C\uDFB5 Arpeggiator"),
+                  React.createElement(Tip, { id: "arp", title: EFFECT_TIPS.arpeggiator.title, text: EFFECT_TIPS.arpeggiator.text })
                 ),
                 React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                    React.createElement("div", { className: "flex gap-1" },
-                        React.createElement("span", { className: "text-[9px] font-bold text-purple-500" }, "Pattern:"),
-                        ['up', 'down', 'updown', 'random'].map(function(p) {
-                            return React.createElement("button", { key: p, onClick: function() { upd('arpPattern', p); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (arpPattern === p ? "bg-purple-500 text-white" : "bg-white text-purple-600 border hover:bg-purple-100") }, p === 'updown' ? '\u2195' : p.charAt(0).toUpperCase() + p.slice(1));
-                        })
-                    ),
-                    React.createElement("div", { className: "flex items-center gap-1" },
-                        React.createElement("span", { className: "text-[9px] font-bold text-purple-500" }, "Octaves:"),
-                        [1, 2, 3].map(function(o) {
-                            return React.createElement("button", { key: o, onClick: function() { upd('arpOctaves', o); }, className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + ((d.arpOctaves || 1) === o ? "bg-purple-500 text-white" : "bg-white text-purple-600 border") }, o);
-                        })
-                    ),
-                    React.createElement("button", { onClick: function() { if (arpOn) stopArpeggiator(); else startArpeggiator(); }, className: "px-3 py-1 rounded-lg text-xs font-bold ml-auto " + (arpOn ? "bg-red-500 text-white" : "bg-purple-500 text-white hover:bg-purple-600") }, arpOn ? "\u23F9 Stop" : "\u25B6 Arp")
+                  React.createElement("div", { className: "flex gap-1" },
+                    React.createElement("span", { className: "text-[9px] font-bold text-purple-500" }, "Pattern:"),
+                    ['up', 'down', 'updown', 'random'].map(function (p) {
+                      return React.createElement("button", { key: p, onClick: function () { upd('arpPattern', p); }, className: "px-2 py-0.5 rounded text-[10px] font-bold " + (arpPattern === p ? "bg-purple-500 text-white" : "bg-white text-purple-600 border hover:bg-purple-100") }, p === 'updown' ? '\u2195' : p.charAt(0).toUpperCase() + p.slice(1));
+                    })
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-1" },
+                    React.createElement("span", { className: "text-[9px] font-bold text-purple-500" }, "Octaves:"),
+                    [1, 2, 3].map(function (o) {
+                      return React.createElement("button", { key: o, onClick: function () { upd('arpOctaves', o); }, className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + ((d.arpOctaves || 1) === o ? "bg-purple-500 text-white" : "bg-white text-purple-600 border") }, o);
+                    })
+                  ),
+                  React.createElement("button", { onClick: function () { if (arpOn) stopArpeggiator(); else startArpeggiator(); }, className: "px-3 py-1 rounded-lg text-xs font-bold ml-auto " + (arpOn ? "bg-red-500 text-white" : "bg-purple-500 text-white hover:bg-purple-600") }, arpOn ? "\u23F9 Stop" : "\u25B6 Arp")
                 )
-            ),
-            // Chord Progressions
-            React.createElement("div", { className: "mb-2" },
+              ),
+              // Chord Progressions
+              React.createElement("div", { className: "mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1.5" }, "\uD83C\uDFB6 Common Progressions"),
                 React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
-                    PROGRESSIONS.map(function(prog) {
-                        return React.createElement("div", { key: prog.name, className: "bg-white rounded-lg p-2 border hover:border-indigo-300 transition-colors" },
-                            React.createElement("div", { className: "flex items-center justify-between" },
-                                React.createElement("p", { className: "text-[11px] font-bold text-indigo-700" }, prog.name),
-                                React.createElement("button", { onClick: function() { playProgression(prog); }, className: "px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-200" }, "\u25B6 Play in " + selectedRoot)
-                            ),
-                            React.createElement("p", { className: "text-[9px] text-slate-500 mt-0.5" }, prog.desc)
-                        );
-                    })
+                  PROGRESSIONS.map(function (prog) {
+                    return React.createElement("div", { key: prog.name, className: "bg-white rounded-lg p-2 border hover:border-indigo-300 transition-colors" },
+                      React.createElement("div", { className: "flex items-center justify-between" },
+                        React.createElement("p", { className: "text-[11px] font-bold text-indigo-700" }, prog.name),
+                        React.createElement("button", { onClick: function () { playProgression(prog); }, className: "px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded text-[10px] font-bold hover:bg-indigo-200" }, "\u25B6 Play in " + selectedRoot)
+                      ),
+                      React.createElement("p", { className: "text-[9px] text-slate-500 mt-0.5" }, prog.desc)
+                    );
+                  })
                 )
-            )
-        ),
-
-        // ═══════════════════ THEORY TAB ═══════════════════
-        synthTab === 'theory' && React.createElement("div", null,
-            React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, "\uD83E\uDDE0 Music Theory & Ear Training")
+              )
             ),
 
-            // Circle of Fifths
-            React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200 mb-3" },
+            // ═══════════════════ THEORY TAB ═══════════════════
+            synthTab === 'theory' && React.createElement("div", null,
+              React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, "\uD83E\uDDE0 Music Theory & Ear Training")
+              ),
+
+              // Circle of Fifths
+              React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-1 mb-2" },
-                    React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "\u2B55 Circle of Fifths"),
-                    React.createElement(Tip, { id: "circle", title: EFFECT_TIPS.circleOfFifths.title, text: EFFECT_TIPS.circleOfFifths.text })
+                  React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "\u2B55 Circle of Fifths"),
+                  React.createElement(Tip, { id: "circle", title: EFFECT_TIPS.circleOfFifths.title, text: EFFECT_TIPS.circleOfFifths.text })
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1.5 justify-center" },
-                    CIRCLE_OF_FIFTHS.map(function(entry, idx) {
-                        var isSelected = entry.key.charAt(0) === selectedRoot || entry.key === selectedRoot;
-                        return React.createElement("button", { key: idx, onClick: function() { upd('selectedRoot', entry.key.length > 2 ? entry.key.charAt(0) : entry.key); upd('synthTab', 'scales'); }, className: "flex flex-col items-center px-2 py-1.5 rounded-lg border transition-all " + (isSelected ? "bg-amber-500 text-white border-amber-600 shadow-md" : "bg-white border-amber-200 hover:bg-amber-100") },
-                            React.createElement("span", { className: "text-[11px] font-bold" }, entry.key),
-                            React.createElement("span", { className: "text-[8px] " + (isSelected ? "text-amber-100" : "text-amber-500") }, entry.minor),
-                            React.createElement("span", { className: "text-[7px] " + (isSelected ? "text-amber-200" : "text-slate-400") }, entry.sharps > 0 ? entry.sharps + '\u266F' : entry.flats > 0 ? entry.flats + '\u266D' : '\u2014')
-                        );
-                    })
+                  CIRCLE_OF_FIFTHS.map(function (entry, idx) {
+                    var isSelected = entry.key.charAt(0) === selectedRoot || entry.key === selectedRoot;
+                    return React.createElement("button", { key: idx, onClick: function () { upd('selectedRoot', entry.key.length > 2 ? entry.key.charAt(0) : entry.key); upd('synthTab', 'scales'); }, className: "flex flex-col items-center px-2 py-1.5 rounded-lg border transition-all " + (isSelected ? "bg-amber-500 text-white border-amber-600 shadow-md" : "bg-white border-amber-200 hover:bg-amber-100") },
+                      React.createElement("span", { className: "text-[11px] font-bold" }, entry.key),
+                      React.createElement("span", { className: "text-[8px] " + (isSelected ? "text-amber-100" : "text-amber-500") }, entry.minor),
+                      React.createElement("span", { className: "text-[7px] " + (isSelected ? "text-amber-200" : "text-slate-400") }, entry.sharps > 0 ? entry.sharps + '\u266F' : entry.flats > 0 ? entry.flats + '\u266D' : '\u2014')
+                    );
+                  })
                 ),
                 React.createElement("p", { className: "text-[9px] text-amber-600 text-center mt-2" }, "Click a key to explore its scale. Adjacent keys share the most notes.")
-            ),
+              ),
 
-            // Harmonic Series
-            React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 mb-3" },
+              // Harmonic Series
+              React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-1 mb-2" },
-                    React.createElement("p", { className: "text-xs font-bold text-cyan-800" }, "\uD83C\uDFB5 Harmonic Series"),
-                    React.createElement(Tip, { id: "harmonics", title: EFFECT_TIPS.harmonicSeries.title, text: EFFECT_TIPS.harmonicSeries.text })
+                  React.createElement("p", { className: "text-xs font-bold text-cyan-800" }, "\uD83C\uDFB5 Harmonic Series"),
+                  React.createElement(Tip, { id: "harmonics", title: EFFECT_TIPS.harmonicSeries.title, text: EFFECT_TIPS.harmonicSeries.text })
                 ),
                 React.createElement("p", { className: "text-[10px] text-cyan-600 mb-1.5" }, "Fundamental: " + selectedRoot + (d.octave || 4) + " = " + noteFreq(selectedRoot, d.octave || 4).toFixed(1) + " Hz. Click to hear each harmonic:"),
                 React.createElement("div", { className: "grid grid-cols-4 md:grid-cols-8 gap-1.5" },
-                    HARMONICS_INFO.map(function(h) {
-                        var freq = noteFreq(selectedRoot, d.octave || 4) * h.n;
-                        var waveHas = (d.waveType || 'sine') === 'sine' ? h.n === 1 : (d.waveType || 'sine') === 'square' ? h.n % 2 === 1 : true;
-                        return React.createElement("button", { key: h.n, onClick: function() { playHarmonic(h.n); }, className: "p-1.5 rounded-lg border text-center transition-all hover:scale-105 " + (waveHas ? "bg-white border-cyan-300 hover:bg-cyan-50" : "bg-slate-50 border-slate-200 opacity-50") },
-                            React.createElement("span", { className: "text-xs font-bold text-cyan-700 block" }, h.ratio),
-                            React.createElement("span", { className: "text-[8px] text-cyan-500 block" }, h.interval),
-                            React.createElement("span", { className: "text-[7px] text-slate-400 block" }, Math.round(freq) + "Hz")
-                        );
-                    })
+                  HARMONICS_INFO.map(function (h) {
+                    var freq = noteFreq(selectedRoot, d.octave || 4) * h.n;
+                    var waveHas = (d.waveType || 'sine') === 'sine' ? h.n === 1 : (d.waveType || 'sine') === 'square' ? h.n % 2 === 1 : true;
+                    return React.createElement("button", { key: h.n, onClick: function () { playHarmonic(h.n); }, className: "p-1.5 rounded-lg border text-center transition-all hover:scale-105 " + (waveHas ? "bg-white border-cyan-300 hover:bg-cyan-50" : "bg-slate-50 border-slate-200 opacity-50") },
+                      React.createElement("span", { className: "text-xs font-bold text-cyan-700 block" }, h.ratio),
+                      React.createElement("span", { className: "text-[8px] text-cyan-500 block" }, h.interval),
+                      React.createElement("span", { className: "text-[7px] text-slate-400 block" }, Math.round(freq) + "Hz")
+                    );
+                  })
                 ),
                 React.createElement("p", { className: "text-[9px] text-cyan-500 mt-1.5" }, "\uD83D\uDD2C Current waveform (" + (d.waveType || 'sine') + ") " + ((d.waveType || 'sine') === 'sine' ? 'has only the fundamental.' : (d.waveType || 'sine') === 'square' ? 'has odd harmonics (1, 3, 5, 7). Dimmed = missing.' : (d.waveType || 'sine') === 'sawtooth' ? 'has ALL harmonics.' : 'has odd harmonics, amplitude drops as 1/n\u00B2.'))
-            ),
+              ),
 
-            // Interval Reference
-            React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-3 border border-rose-200 mb-3" },
+              // Interval Reference
+              React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-3 border border-rose-200 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-1 mb-2" },
-                    React.createElement("p", { className: "text-xs font-bold text-rose-800" }, "\uD83C\uDFA7 Intervals & Ear Training"),
-                    React.createElement(Tip, { id: "intervals", title: EFFECT_TIPS.intervals.title, text: EFFECT_TIPS.intervals.text })
+                  React.createElement("p", { className: "text-xs font-bold text-rose-800" }, "\uD83C\uDFA7 Intervals & Ear Training"),
+                  React.createElement(Tip, { id: "intervals", title: EFFECT_TIPS.intervals.title, text: EFFECT_TIPS.intervals.text })
                 ),
                 // Interval reference table
                 React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-1 mb-2" },
-                    INTERVALS.map(function(intv) {
-                        var qualColor = intv.quality === 'perfect' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : intv.quality === 'consonant' ? 'bg-sky-50 border-sky-200 text-sky-700' : 'bg-rose-50 border-rose-200 text-rose-700';
-                        return React.createElement("button", { key: intv.name, onClick: function() {
-                            var baseFreq = noteFreq(selectedRoot, d.octave || 4);
-                            var topFreq = noteFreq(selectedRoot, d.octave || 4) * Math.pow(2, intv.semitones / 12);
-                            playNoteFor(baseFreq, 'ref_base', 500);
-                            setTimeout(function() { playNoteFor(topFreq, 'ref_top', 500); }, 600);
-                        }, className: "p-1.5 rounded-lg border text-left transition-all hover:scale-[1.02] " + qualColor },
-                            React.createElement("div", { className: "flex justify-between" },
-                                React.createElement("span", { className: "text-[10px] font-bold" }, intv.name),
-                                React.createElement("span", { className: "text-[8px] opacity-60" }, intv.semitones + " st")
-                            ),
-                            React.createElement("span", { className: "text-[8px] opacity-70 block" }, "\uD83C\uDFB5 " + intv.song),
-                            React.createElement("span", { className: "text-[7px] opacity-50" }, "Ratio: " + intv.ratio)
-                        );
-                    })
+                  INTERVALS.map(function (intv) {
+                    var qualColor = intv.quality === 'perfect' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : intv.quality === 'consonant' ? 'bg-sky-50 border-sky-200 text-sky-700' : 'bg-rose-50 border-rose-200 text-rose-700';
+                    return React.createElement("button", {
+                      key: intv.name, onClick: function () {
+                        var baseFreq = noteFreq(selectedRoot, d.octave || 4);
+                        var topFreq = noteFreq(selectedRoot, d.octave || 4) * Math.pow(2, intv.semitones / 12);
+                        playNoteFor(baseFreq, 'ref_base', 500);
+                        setTimeout(function () { playNoteFor(topFreq, 'ref_top', 500); }, 600);
+                      }, className: "p-1.5 rounded-lg border text-left transition-all hover:scale-[1.02] " + qualColor
+                    },
+                      React.createElement("div", { className: "flex justify-between" },
+                        React.createElement("span", { className: "text-[10px] font-bold" }, intv.name),
+                        React.createElement("span", { className: "text-[8px] opacity-60" }, intv.semitones + " st")
+                      ),
+                      React.createElement("span", { className: "text-[8px] opacity-70 block" }, "\uD83C\uDFB5 " + intv.song),
+                      React.createElement("span", { className: "text-[7px] opacity-50" }, "Ratio: " + intv.ratio)
+                    );
+                  })
                 ),
                 // Ear training game
                 React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-rose-200" },
-                    React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                        React.createElement("p", { className: "text-[11px] font-bold text-rose-700" }, "\uD83C\uDFA7 Interval Ear Training"),
-                        intervalGame && intervalGame.score > 0 && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, "\u2B50 " + intervalGame.score + " correct" + (intervalGame.streak > 1 ? " (\uD83D\uDD25 " + intervalGame.streak + " streak)" : "")),
-                        React.createElement("button", { onClick: function() { startIntervalGame(); }, className: "ml-auto px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500 text-white hover:bg-rose-600" }, intervalGame ? "\uD83D\uDD04 New" : "\u25B6 Start"),
-                        intervalGame && !intervalGame.answered && React.createElement("button", { onClick: function() { replayInterval(); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-600 hover:bg-rose-200" }, "\uD83D\uDD01 Replay")
+                  React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+                    React.createElement("p", { className: "text-[11px] font-bold text-rose-700" }, "\uD83C\uDFA7 Interval Ear Training"),
+                    intervalGame && intervalGame.score > 0 && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600" }, "\u2B50 " + intervalGame.score + " correct" + (intervalGame.streak > 1 ? " (\uD83D\uDD25 " + intervalGame.streak + " streak)" : "")),
+                    React.createElement("button", { onClick: function () { startIntervalGame(); }, className: "ml-auto px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500 text-white hover:bg-rose-600" }, intervalGame ? "\uD83D\uDD04 New" : "\u25B6 Start"),
+                    intervalGame && !intervalGame.answered && React.createElement("button", { onClick: function () { replayInterval(); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-100 text-rose-600 hover:bg-rose-200" }, "\uD83D\uDD01 Replay")
+                  ),
+                  intervalGame && React.createElement("div", null,
+                    React.createElement("p", { className: "text-xs text-slate-600 mb-1.5" }, "What interval did you hear?"),
+                    React.createElement("div", { className: "grid grid-cols-3 md:grid-cols-4 gap-1" },
+                      INTERVALS.slice(1).map(function (intv) {
+                        var isCorrect = intv.name === intervalGame.answer;
+                        var wasChosen = intervalGame.chosen === intv.name;
+                        var cls = !intervalGame.answered ? 'bg-white border-slate-200 hover:border-rose-400 hover:bg-rose-50' : isCorrect ? 'bg-emerald-100 border-emerald-400 font-bold' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-100 opacity-40';
+                        return React.createElement("button", {
+                          key: intv.name, disabled: intervalGame.answered,
+                          onClick: function () {
+                            var correct = intv.name === intervalGame.answer;
+                            var newStreak = correct ? (intervalGame.streak || 0) + 1 : 0;
+                            upd('intervalGame', Object.assign({}, intervalGame, { answered: true, chosen: intv.name, score: intervalGame.score + (correct ? 1 : 0), streak: newStreak }));
+                            addToast(correct ? '\u2705 Correct! ' + intv.name : '\u274C It was: ' + intervalGame.answer, correct ? 'success' : 'error');
+                          },
+                          className: "px-2 py-1 rounded border text-[10px] font-bold transition-all " + cls
+                        }, intv.name);
+                      })
                     ),
-                    intervalGame && React.createElement("div", null,
-                        React.createElement("p", { className: "text-xs text-slate-600 mb-1.5" }, "What interval did you hear?"),
-                        React.createElement("div", { className: "grid grid-cols-3 md:grid-cols-4 gap-1" },
-                            INTERVALS.slice(1).map(function(intv) {
-                                var isCorrect = intv.name === intervalGame.answer;
-                                var wasChosen = intervalGame.chosen === intv.name;
-                                var cls = !intervalGame.answered ? 'bg-white border-slate-200 hover:border-rose-400 hover:bg-rose-50' : isCorrect ? 'bg-emerald-100 border-emerald-400 font-bold' : wasChosen ? 'bg-red-100 border-red-400' : 'bg-slate-50 border-slate-100 opacity-40';
-                                return React.createElement("button", {
-                                    key: intv.name, disabled: intervalGame.answered,
-                                    onClick: function() {
-                                        var correct = intv.name === intervalGame.answer;
-                                        var newStreak = correct ? (intervalGame.streak || 0) + 1 : 0;
-                                        upd('intervalGame', Object.assign({}, intervalGame, { answered: true, chosen: intv.name, score: intervalGame.score + (correct ? 1 : 0), streak: newStreak }));
-                                        addToast(correct ? '\u2705 Correct! ' + intv.name : '\u274C It was: ' + intervalGame.answer, correct ? 'success' : 'error');
-                                    },
-                                    className: "px-2 py-1 rounded border text-[10px] font-bold transition-all " + cls
-                                }, intv.name);
-                            })
-                        ),
-                        intervalGame.answered && React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5" }, "\uD83C\uDFB5 " + INTERVALS.find(function(i) { return i.name === intervalGame.answer; }).song + " \u2014 " + INTERVALS.find(function(i) { return i.name === intervalGame.answer; }).ratio + " ratio")
-                    )
+                    intervalGame.answered && React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5" }, "\uD83C\uDFB5 " + INTERVALS.find(function (i) { return i.name === intervalGame.answer; }).song + " \u2014 " + INTERVALS.find(function (i) { return i.name === intervalGame.answer; }).ratio + " ratio")
+                  )
                 )
-            ),
+              ),
 
-            // Quiz
-            React.createElement("div", { className: "mb-3" },
+              // Quiz
+              React.createElement("div", { className: "mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                    React.createElement("button", {
-                        onClick: function () {
-                            var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
-                            upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
-                        },
-                        className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
-                    }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
-                    d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+                  React.createElement("button", {
+                    onClick: function () {
+                      var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
+                      upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                    },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
+                  }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
+                  d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
                 ),
                 d.quiz && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200" },
-                    React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
-                    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                        d.quiz.opts.map(function (opt) {
-                            var isCorrect = opt === d.quiz.a;
-                            var wasChosen = d.quiz.chosen === opt;
-                            var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
-                            return React.createElement("button", {
-                                key: opt, disabled: d.quiz.answered,
-                                onClick: function () {
-                                    var correct = opt === d.quiz.a;
-                                    upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
-                                    addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
-                                },
-                                className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
-                            }, opt);
-                        })
-                    )
+                  React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    d.quiz.opts.map(function (opt) {
+                      var isCorrect = opt === d.quiz.a;
+                      var wasChosen = d.quiz.chosen === opt;
+                      var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                      return React.createElement("button", {
+                        key: opt, disabled: d.quiz.answered,
+                        onClick: function () {
+                          var correct = opt === d.quiz.a;
+                          upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                          addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
+                        },
+                        className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                      }, opt);
+                    })
+                  )
                 )
-            )
-        ),
+              )
+            ),
 
-        // ═══ SNAPSHOT ═══
-        React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ms-' + Date.now(), tool: 'musicSynth', label: (d.waveType || 'sine') + ' synth', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synth snapshot saved!', 'success'); }, className: "mt-2 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-    )
-})(),
+            // ═══ SNAPSHOT ═══
+            React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ms-' + Date.now(), tool: 'musicSynth', label: (d.waveType || 'sine') + ' synth', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synth snapshot saved!', 'success'); }, className: "mt-2 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          )
+        })(),
 
 
 
