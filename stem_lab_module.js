@@ -4431,7 +4431,7 @@
             { n: 74, s: 'W', name: 'Tungsten', cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: 'Rhenium', cat: 'transition', c: '#fb923c' },
             { n: 76, s: 'Os', name: 'Osmium', cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: 'Iridium', cat: 'transition', c: '#fb923c' },
             { n: 78, s: 'Pt', name: 'Platinum', cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: 'Gold', cat: 'transition', c: '#fb923c' },
-            { n: 80, s: 'Hg', name: 'Mercury', cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: 'Thallium', cat: 'metal', c: '#94a3b8' },
+            { n: 80, s: 'Hg', name: 'Mercury', cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: 'Thallium', cat: 'metal', c: '#94a3b8' , gravity: '0.38g', atmosphere: 'None \u2014 no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
             { n: 82, s: 'Pb', name: 'Lead', cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: 'Bismuth', cat: 'metal', c: '#94a3b8' },
             { n: 84, s: 'Po', name: 'Polonium', cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: 'Astatine', cat: 'halogen', c: '#2dd4bf' },
             { n: 86, s: 'Rn', name: 'Radon', cat: 'noble', c: '#c084fc' },
@@ -4720,14 +4720,14 @@
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
           const PLANETS = [
             { name: 'Mercury', emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.35, dist: 4, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
-            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 6, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!' },
-            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 8, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.' },
-            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.45, dist: 10.5, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).' },
-            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 1.6, dist: 15, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!' },
-            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 1.3, dist: 20, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true },
-            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 0.9, dist: 25, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.' },
-            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 0.85, dist: 30, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.' },
-            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.25, dist: 34, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.' },
+            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 6, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!' , gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
+            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 8, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.' , gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
+            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.45, dist: 10.5, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).' , gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
+            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 1.6, dist: 15, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!' , gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 1.3, dist: 20, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true , gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
+            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 0.9, dist: 25, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.' , gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 0.85, dist: 30, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.' , gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
+            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.25, dist: 34, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.' , gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
           ];
           const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
           const simSpeed = d.simSpeed || 1;
@@ -5052,24 +5052,385 @@
                 style: d.selectedPlanet === p.name ? { backgroundColor: p.color } : {}
               }, p.emoji + " " + p.name))
             ),
-            // ── Planet Info Card ──
+            // ── Planet Info Card (Enhanced with Close-Up & Drone) ──
             sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
+              // Planet header
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
                 React.createElement("div", { className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl", style: { backgroundColor: sel.color + '20', border: '2px solid ' + sel.color } }, sel.emoji),
-                React.createElement("div", null,
+                React.createElement("div", { className: "flex-1" },
                   React.createElement("h4", { className: "text-lg font-black text-slate-800" }, sel.name),
-                  React.createElement("p", { className: "text-xs text-slate-500" }, sel.diameter + " \u2022 " + sel.moons + " moon" + (sel.moons !== 1 ? 's' : ''))
+                  React.createElement("p", { className: "text-xs text-slate-500" }, sel.diameter + " \u2022 " + sel.moons + " moon" + (sel.moons !== 1 ? 's' : '') + " \u2022 " + (sel.gravity || '?'))
+                ),
+                // Mode tabs
+                React.createElement("div", { className: "flex gap-1" },
+                  ['overview', 'surface', 'drone'].map(function(tab) {
+                    return React.createElement("button", { key: tab, onClick: function() { upd('viewTab', tab); },
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " + 
+                        ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
+                    }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : '\uD83D\uDEF8 Drone');
+                  })
                 )
               ),
-              React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-                [['\uD83C\uDF21', 'Temp', sel.temp], ['\u2600', 'Day', sel.dayLen], ['\uD83C\uDF0D', 'Year', sel.yearLen], ['\uD83D\uDCCF', 'Size', sel.diameter]].map(([ico, label, val]) =>
-                  React.createElement("div", { key: label, className: "bg-white rounded-lg p-2 text-center border" },
-                    React.createElement("p", { className: "text-xs text-slate-400 font-bold" }, ico + ' ' + label),
-                    React.createElement("p", { className: "text-sm font-bold text-slate-700" }, val)
+
+              // ── OVERVIEW TAB ──
+              (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
+                React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+                  [['\uD83C\uDF21', 'Temp', sel.temp], ['\u2600', 'Day', sel.dayLen], ['\uD83C\uDF0D', 'Year', sel.yearLen], ['\uD83D\uDCCF', 'Size', sel.diameter],
+                   ['\u2696\uFE0F', 'Gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', (sel.atmosphere || 'Unknown').substring(0, 30)], ['\uD83D\uDCA0', 'Type', sel.terrainType === 'gasgiant' ? 'Gas Giant' : sel.terrainType === 'icegiant' ? 'Ice Giant' : 'Rocky']
+                  ].map(function(item) {
+                    return React.createElement("div", { key: item[1], className: "bg-white rounded-lg p-2 text-center border" },
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-700" }, item[2])
+                    );
+                  })
+                ),
+                React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100 mb-2" }, "\uD83D\uDCA1 " + sel.fact),
+                // Notable features
+                sel.notableFeatures && React.createElement("div", { className: "bg-white rounded-lg p-3 border" },
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1.5" }, "\u2B50 Notable Features"),
+                  React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                    sel.notableFeatures.map(function(feat, i) {
+                      return React.createElement("span", { key: i, className: "px-2 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-100" }, feat);
+                    })
                   )
                 )
               ),
-              React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100" }, "\uD83D\uDCA1 " + sel.fact)
+
+              // ── SURFACE TAB ──
+              (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4 text-white" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0D"),
+                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Surface Conditions")
+                  ),
+                  React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3" }, sel.surfaceDesc || 'Surface data unavailable.'),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                    [
+                      ['\u2696\uFE0F Gravity', sel.gravity || '?'],
+                      ['\uD83C\uDF21 Temperature', sel.temp],
+                      ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' —')[0]]
+                    ].map(function(item) {
+                      return React.createElement("div", { key: item[0], className: "bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm" },
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, item[0]),
+                        React.createElement("p", { className: "text-xs font-bold" }, item[1])
+                      );
+                    })
+                  )
+                ),
+                React.createElement("button", { onClick: function() { upd('viewTab', 'drone'); },
+                  className: "w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.01]"
+                }, "\uD83D\uDEF8 Launch Drone on " + sel.name)
+              ),
+
+              // ── DRONE TAB ──
+              (d.viewTab) === 'drone' && React.createElement("div", null,
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '400px' } },
+                  React.createElement("canvas", {
+                    "data-drone-canvas": "true",
+                    ref: function(canvasEl) {
+                      if (!canvasEl || canvasEl._droneInit === sel.name) return;
+                      canvasEl._droneInit = sel.name;
+                      var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
+                      var H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
+                      var ctx = canvasEl.getContext('2d');
+                      var dpr = window.devicePixelRatio || 1;
+
+                      // Drone state
+                      var drone = { x: W/(2*dpr), y: H*0.6/dpr, altitude: 50, vx: 0, vy: 0, speed: 0, heading: 0 };
+                      var tick = 0;
+                      var keys = {};
+                      var terrainSeed = [];
+                      var skyColor = sel.skyColor || '#000000';
+                      var terrainColor = sel.terrainColor || '#888888';
+                      var terrainType = sel.terrainType || 'cratered';
+
+                      // Generate terrain heightmap
+                      for (var i = 0; i < 200; i++) {
+                        var h = 0;
+                        if (terrainType === 'cratered') h = Math.random() * 40 + Math.sin(i * 0.15) * 20;
+                        else if (terrainType === 'volcanic') h = Math.abs(Math.sin(i * 0.08)) * 60 + Math.random() * 15;
+                        else if (terrainType === 'earthlike') h = Math.sin(i * 0.05) * 30 + Math.sin(i * 0.15) * 15 + Math.random() * 10;
+                        else if (terrainType === 'desert') h = Math.sin(i * 0.1) * 25 + Math.random() * 8;
+                        else if (terrainType === 'gasgiant') h = Math.sin(i * 0.03) * 10 + Math.sin(i * 0.1) * 5;
+                        else if (terrainType === 'icegiant') h = Math.sin(i * 0.06) * 20 + Math.random() * 12;
+                        else if (terrainType === 'iceworld') h = Math.sin(i * 0.04) * 15 + Math.random() * 6;
+                        terrainSeed.push(h);
+                      }
+
+                      function getTerrainH(worldX) {
+                        var idx = ((worldX / 5) % terrainSeed.length + terrainSeed.length) % terrainSeed.length;
+                        var i0 = Math.floor(idx), i1 = (i0 + 1) % terrainSeed.length;
+                        var frac = idx - i0;
+                        return terrainSeed[i0] * (1 - frac) + terrainSeed[i1] * frac;
+                      }
+
+                      function drawScene() {
+                        ctx.clearRect(0, 0, W, H);
+                        tick++;
+
+                        // ── Sky ──
+                        var skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+                        skyGrad.addColorStop(0, skyColor);
+                        var lighterSky = skyColor;
+                        // Lighten sky near horizon
+                        skyGrad.addColorStop(1, terrainType === 'cratered' ? '#111' : terrainType === 'volcanic' ? '#d4923a' : terrainType === 'earthlike' ? '#87ceeb' : terrainType === 'desert' ? '#d4a574' : terrainType === 'iceworld' ? '#2a2a3a' : skyColor);
+                        ctx.fillStyle = skyGrad;
+                        ctx.fillRect(0, 0, W, H * 0.55);
+
+                        // Stars for dark-sky worlds
+                        if (terrainType === 'cratered' || terrainType === 'iceworld') {
+                          for (var s = 0; s < 100; s++) {
+                            var sx = (Math.sin(s * 127.1 + 311.7) * 0.5 + 0.5) * W;
+                            var sy = (Math.sin(s * 269.5 + 183.3) * 0.5 + 0.5) * H * 0.45;
+                            var ss = (1 + Math.sin(tick * 0.02 + s)) * 0.5 * dpr;
+                            ctx.beginPath(); ctx.arc(sx, sy, ss, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.4) + ')';
+                            ctx.fill();
+                          }
+                        }
+
+                        // Clouds for atmospheric worlds
+                        if (terrainType === 'earthlike' || terrainType === 'volcanic' || terrainType === 'gasgiant') {
+                          for (var c = 0; c < 6; c++) {
+                            var cx = ((c * 150 * dpr - tick * 0.3 + drone.x * 0.1) % (W + 200 * dpr)) - 100 * dpr;
+                            var cy = (50 + c * 25 + Math.sin(c * 2.1) * 15) * dpr;
+                            ctx.beginPath();
+                            ctx.ellipse(cx, cy, (60 + c * 10) * dpr, (15 + c * 3) * dpr, 0, 0, Math.PI * 2);
+                            var cloudColor = terrainType === 'volcanic' ? 'rgba(200,160,60,0.25)' : terrainType === 'gasgiant' ? 'rgba(200,170,100,0.3)' : 'rgba(255,255,255,0.4)';
+                            ctx.fillStyle = cloudColor;
+                            ctx.fill();
+                          }
+                        }
+
+                        // Sun (size varies by planet distance)
+                        var sunSize = terrainType === 'cratered' ? 40 : terrainType === 'iceworld' ? 4 : terrainType === 'icegiant' ? 6 : 15;
+                        var sunX = W * 0.8, sunY = H * 0.15;
+                        var sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * dpr);
+                        sunGrad.addColorStop(0, '#fffde0');
+                        sunGrad.addColorStop(0.5, '#ffd54f');
+                        sunGrad.addColorStop(1, 'rgba(255,213,79,0)');
+                        ctx.beginPath(); ctx.arc(sunX, sunY, sunSize * dpr * 1.5, 0, Math.PI * 2);
+                        ctx.fillStyle = sunGrad; ctx.fill();
+
+                        // Saturn: show rings in sky
+                        if (sel.name === 'Saturn') {
+                          ctx.strokeStyle = 'rgba(210,180,120,0.3)';
+                          ctx.lineWidth = 12 * dpr;
+                          ctx.beginPath();
+                          ctx.ellipse(W * 0.3, H * 0.15, W * 0.35, H * 0.04, 0.1, 0, Math.PI * 2);
+                          ctx.stroke();
+                          ctx.lineWidth = 6 * dpr;
+                          ctx.beginPath();
+                          ctx.ellipse(W * 0.3, H * 0.15, W * 0.42, H * 0.05, 0.1, 0, Math.PI * 2);
+                          ctx.stroke();
+                        }
+
+                        // ── Terrain ──
+                        var horizonY = H * 0.55;
+                        ctx.beginPath();
+                        ctx.moveTo(0, horizonY);
+                        for (var tx = 0; tx <= W; tx += 3 * dpr) {
+                          var worldX = tx / dpr + drone.x;
+                          var th = getTerrainH(worldX);
+                          ctx.lineTo(tx, horizonY - th * dpr * 0.8);
+                        }
+                        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+                        var tGrad = ctx.createLinearGradient(0, horizonY - 50 * dpr, 0, H);
+                        tGrad.addColorStop(0, terrainColor);
+                        // Darken terrain below
+                        tGrad.addColorStop(1, '#' + terrainColor.replace('#','').match(/.{2}/g).map(function(h) { return Math.max(0, parseInt(h, 16) - 60).toString(16).padStart(2,'0'); }).join(''));
+                        ctx.fillStyle = tGrad;
+                        ctx.fill();
+
+                        // Surface details
+                        if (terrainType === 'cratered') {
+                          for (var cr = 0; cr < 12; cr++) {
+                            var crX = ((cr * 87 + 31 - drone.x * 0.5) % (W/dpr)) * dpr;
+                            var crY = horizonY + (20 + cr * 8) * dpr;
+                            var crR = (5 + cr % 5 * 3) * dpr;
+                            ctx.beginPath(); ctx.arc(crX, crY, crR, 0, Math.PI * 2);
+                            ctx.strokeStyle = 'rgba(100,100,100,0.3)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                          }
+                        } else if (terrainType === 'volcanic') {
+                          // Lava flows
+                          for (var lf = 0; lf < 5; lf++) {
+                            var lfX = ((lf * 120 + 50 - drone.x * 0.3) % (W/dpr)) * dpr;
+                            ctx.beginPath();
+                            ctx.moveTo(lfX, horizonY + 10 * dpr);
+                            var lfWave = Math.sin(tick * 0.03 + lf) * 5 * dpr;
+                            ctx.quadraticCurveTo(lfX + 30 * dpr + lfWave, horizonY + 40 * dpr, lfX + 60 * dpr, horizonY + 80 * dpr);
+                            ctx.strokeStyle = 'rgba(255,160,0,0.4)'; ctx.lineWidth = 3 * dpr; ctx.stroke();
+                          }
+                        } else if (terrainType === 'earthlike') {
+                          // Trees
+                          for (var tr = 0; tr < 15; tr++) {
+                            var trX = ((tr * 65 + 20 - drone.x * 0.4) % (W/dpr)) * dpr;
+                            var trY = horizonY + (5 + tr % 4 * 12) * dpr;
+                            ctx.fillStyle = '#2d5a2d';
+                            ctx.beginPath(); ctx.moveTo(trX, trY - 12 * dpr);
+                            ctx.lineTo(trX - 6 * dpr, trY); ctx.lineTo(trX + 6 * dpr, trY); ctx.closePath(); ctx.fill();
+                            ctx.fillStyle = '#4a3728'; ctx.fillRect(trX - 1 * dpr, trY, 2 * dpr, 4 * dpr);
+                          }
+                        } else if (terrainType === 'desert') {
+                          // Dust devils
+                          for (var dd = 0; dd < 3; dd++) {
+                            var ddX = ((dd * 200 + tick * 0.5 - drone.x * 0.2) % (W/dpr)) * dpr;
+                            var ddY = horizonY + 30 * dpr;
+                            ctx.beginPath();
+                            for (var ddy = 0; ddy < 40 * dpr; ddy += 2 * dpr) {
+                              var ddWobble = Math.sin(ddy * 0.1 + tick * 0.05 + dd) * (3 + ddy * 0.08) * dpr;
+                              ctx.lineTo(ddX + ddWobble, ddY - ddy);
+                            }
+                            ctx.strokeStyle = 'rgba(180,130,80,0.25)'; ctx.lineWidth = 4 * dpr; ctx.stroke();
+                          }
+                        } else if (terrainType === 'gasgiant') {
+                          // Cloud bands
+                          for (var band = 0; band < 8; band++) {
+                            var bY = horizonY + band * H * 0.05;
+                            ctx.fillStyle = band % 2 === 0 ? 'rgba(200,160,80,0.2)' : 'rgba(180,120,60,0.15)';
+                            ctx.fillRect(0, bY, W, H * 0.04);
+                          }
+                          // Lightning
+                          if (tick % 120 < 5) {
+                            var lx = (tick * 7) % W;
+                            ctx.strokeStyle = 'rgba(255,255,200,0.7)'; ctx.lineWidth = 2 * dpr;
+                            ctx.beginPath(); ctx.moveTo(lx, horizonY);
+                            ctx.lineTo(lx + 10 * dpr, horizonY + 30 * dpr);
+                            ctx.lineTo(lx - 5 * dpr, horizonY + 50 * dpr);
+                            ctx.stroke();
+                          }
+                        } else if (terrainType === 'icegiant') {
+                          // Diamond rain particles
+                          for (var dr = 0; dr < 20; dr++) {
+                            var drX = ((dr * 47 + tick * 1.2) % (W/dpr)) * dpr;
+                            var drY = ((dr * 31 + tick * 2.5) % (H/dpr)) * dpr;
+                            ctx.beginPath();
+                            ctx.moveTo(drX, drY - 3 * dpr);
+                            ctx.lineTo(drX + 2 * dpr, drY);
+                            ctx.lineTo(drX, drY + 3 * dpr);
+                            ctx.lineTo(drX - 2 * dpr, drY);
+                            ctx.closePath();
+                            ctx.fillStyle = 'rgba(200,230,255,' + (0.2 + Math.random() * 0.3) + ')';
+                            ctx.fill();
+                          }
+                        } else if (terrainType === 'iceworld') {
+                          // Nitrogen ice crystal sparkles
+                          for (var ic = 0; ic < 30; ic++) {
+                            if (Math.random() > 0.7) {
+                              var icX = Math.random() * W;
+                              var icY = horizonY + Math.random() * (H - horizonY);
+                              ctx.beginPath(); ctx.arc(icX, icY, 1.5 * dpr, 0, Math.PI * 2);
+                              ctx.fillStyle = 'rgba(200,220,255,0.5)'; ctx.fill();
+                            }
+                          }
+                        }
+
+                        // ── Drone sprite ──
+                        var droneScreenX = W / 2;
+                        var droneScreenY = H * 0.45 - drone.altitude * 0.5 * dpr;
+                        // Shadow
+                        ctx.beginPath();
+                        ctx.ellipse(droneScreenX, horizonY + 5 * dpr, 15 * dpr, 3 * dpr, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fill();
+                        // Body
+                        ctx.save(); ctx.translate(droneScreenX, droneScreenY);
+                        ctx.fillStyle = '#475569';
+                        ctx.fillRect(-8 * dpr, -2 * dpr, 16 * dpr, 4 * dpr);
+                        // Propellers (spinning)
+                        var propAngle = tick * 0.5;
+                        [-10, 10].forEach(function(off) {
+                          ctx.save();
+                          ctx.translate(off * dpr, -3 * dpr);
+                          ctx.rotate(propAngle);
+                          ctx.fillStyle = '#94a3b8';
+                          ctx.fillRect(-6 * dpr, -0.5 * dpr, 12 * dpr, 1 * dpr);
+                          ctx.restore();
+                        });
+                        // Camera lens
+                        ctx.beginPath(); ctx.arc(0, 3 * dpr, 2 * dpr, 0, Math.PI * 2);
+                        ctx.fillStyle = '#3b82f6'; ctx.fill();
+                        // Thruster glow
+                        if (keys['ArrowUp'] || keys['w']) {
+                          ctx.beginPath(); ctx.arc(0, 5 * dpr, 3 * dpr, 0, Math.PI);
+                          ctx.fillStyle = 'rgba(56,189,248,0.4)'; ctx.fill();
+                        }
+                        ctx.restore();
+
+                        // ── HUD overlay ──
+                        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                        ctx.fillRect(8 * dpr, 8 * dpr, 160 * dpr, 80 * dpr);
+                        ctx.strokeStyle = 'rgba(56,189,248,0.5)'; ctx.lineWidth = 1 * dpr;
+                        ctx.strokeRect(8 * dpr, 8 * dpr, 160 * dpr, 80 * dpr);
+                        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold ' + (9 * dpr) + 'px monospace';
+                        ctx.fillText('\uD83D\uDEF8 DRONE TELEMETRY', 14 * dpr, 22 * dpr);
+                        ctx.fillStyle = '#e2e8f0'; ctx.font = (8 * dpr) + 'px monospace';
+                        ctx.fillText('ALT: ' + Math.round(drone.altitude) + ' m', 14 * dpr, 36 * dpr);
+                        ctx.fillText('POS: ' + Math.round(drone.x) + ', ' + Math.round(drone.y), 14 * dpr, 48 * dpr);
+                        ctx.fillText('SPD: ' + Math.abs(Math.round(drone.speed * 10)) + ' m/s', 14 * dpr, 60 * dpr);
+                        ctx.fillText('GRAV: ' + (sel.gravity || '?'), 14 * dpr, 72 * dpr);
+                        ctx.fillText('TEMP: ' + sel.temp, 14 * dpr, 84 * dpr);
+
+                        // Planet name overlay
+                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                        ctx.font = 'bold ' + (12 * dpr) + 'px sans-serif';
+                        ctx.fillText(sel.emoji + ' ' + sel.name + ' Surface', W - 180 * dpr, 22 * dpr);
+
+                        // Controls hint
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.font = (7 * dpr) + 'px sans-serif';
+                        ctx.fillText('WASD / Arrows to fly \u2022 Q/E altitude', W / 2 - 80 * dpr, H - 10 * dpr);
+                      }
+
+                      // Key handlers
+                      function onKeyDown(e) { keys[e.key] = true; e.preventDefault(); }
+                      function onKeyUp(e) { keys[e.key] = false; }
+                      canvasEl.tabIndex = 0;
+                      canvasEl.addEventListener('keydown', onKeyDown);
+                      canvasEl.addEventListener('keyup', onKeyUp);
+                      canvasEl.focus();
+
+                      var animId;
+                      function loop() {
+                        // Movement
+                        var accel = 0.15;
+                        if (keys['ArrowLeft'] || keys['a']) drone.x -= 2;
+                        if (keys['ArrowRight'] || keys['d']) drone.x += 2;
+                        if (keys['ArrowUp'] || keys['w']) drone.altitude = Math.min(200, drone.altitude + 1.5);
+                        if (keys['ArrowDown'] || keys['s']) drone.altitude = Math.max(5, drone.altitude - 1.5);
+                        if (keys['q']) drone.altitude = Math.min(200, drone.altitude + 2);
+                        if (keys['e']) drone.altitude = Math.max(5, drone.altitude - 2);
+                        drone.speed = (keys['ArrowLeft'] || keys['a']) ? -2 : (keys['ArrowRight'] || keys['d']) ? 2 : drone.speed * 0.95;
+
+                        drawScene();
+                        animId = requestAnimationFrame(loop);
+                      }
+                      animId = requestAnimationFrame(loop);
+
+                      // Cleanup
+                      canvasEl._droneCleanup = function() {
+                        cancelAnimationFrame(animId);
+                        canvasEl.removeEventListener('keydown', onKeyDown);
+                        canvasEl.removeEventListener('keyup', onKeyUp);
+                      };
+                      var ro = new ResizeObserver(function() {
+                        W = canvasEl.width = canvasEl.offsetWidth * dpr;
+                        H = canvasEl.height = canvasEl.offsetHeight * dpr;
+                      });
+                      ro.observe(canvasEl);
+                      canvasEl._droneRO = ro;
+                    },
+                    style: { width: '100%', height: '100%', cursor: 'crosshair', outline: 'none' }
+                  }),
+                  // Overlay gradient top
+                  React.createElement("div", { style: { position: 'absolute', top: 0, left: 0, right: 0, height: '40px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), transparent)', pointerEvents: 'none', borderRadius: '12px 12px 0 0' } })
+                ),
+                React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic text-center" }, "Click the canvas and use WASD/Arrows to fly \u2022 Q/E for altitude \u2022 Explore " + sel.name + "'s surface!"),
+                React.createElement("button", { onClick: function() {
+                  var cv = document.querySelector('[data-drone-canvas]');
+                  if (cv && cv._droneCleanup) { cv._droneCleanup(); if (cv._droneRO) cv._droneRO.disconnect(); cv._droneInit = null; }
+                  upd('viewTab', 'overview');
+                }, className: "mt-2 px-4 py-1.5 text-xs font-bold bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all" }, "\u2190 Back to Overview")
+              )
             ),
             // ── Quiz Mode ──
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
