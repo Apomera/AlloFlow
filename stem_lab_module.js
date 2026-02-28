@@ -7812,9 +7812,12 @@
           function noteColor(note) { return NOTE_COLORS[NOTE_NAMES.indexOf(note)] || '#6366f1'; }
           var oct = d.octave || 4;
           var KEYS = [];
+          var whiteKeyIdx = 0;
           for (var o = oct; o <= oct + 1; o++) {
             for (var ni = 0; ni < 12; ni++) {
-              KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1, semitone: (o - oct) * 12 + ni });
+              var isBlack = [1, 3, 6, 8, 10].indexOf(ni) !== -1;
+              KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: isBlack, semitone: (o - oct) * 12 + ni, position: isBlack ? whiteKeyIdx - 1 : whiteKeyIdx });
+              if (!isBlack) whiteKeyIdx++;
             }
           }
 
@@ -8658,7 +8661,7 @@
                         key: inv,
                         onClick: function () { upd('chordInversion', inv); },
                         className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (chordInversion === inv ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500')
-                      }, inv === 0 ? 'Root' : inv + 'st Inv');
+                      }, inv === 0 ? 'Root' : inv === 1 ? '1st Inv' : '2nd Inv');
                     })
                   ),
                   React.createElement("button", {
@@ -8803,8 +8806,8 @@
                   { k: 'reverbMix', label: '\uD83C\uDFDB Reverb', min: 0, max: 1, step: 0.01 }].map(function (p) {
                     return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                       React.createElement("span", { className: "text-[9px] font-bold text-slate-500 w-16" }, p.label),
-                      React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0.5, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
-                      React.createElement("span", { className: "text-[9px] text-slate-400 w-8 text-right" }, ((d[p.k] || 0.5) * 100).toFixed(0) + '%')
+                      React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
+                      React.createElement("span", { className: "text-[9px] text-slate-400 w-8 text-right" }, ((d[p.k] != null ? d[p.k] : (p.k === 'volume' ? 0.5 : 0)) * 100).toFixed(0) + '%')
                     );
                   }),
                   // Filter
@@ -8925,7 +8928,7 @@
                   LOOP_LENGTHS.map(function (ll) {
                     return React.createElement("button", {
                       key: ll,
-                      onClick: function () { upd('loopLen', ll); var newSeq = new Array(ll).fill(0); for (var i = 0; i < Math.min(seq.length, ll); i++) newSeq[i] = seq[i]; upd('sequence', newSeq); },
+                      onClick: function () { upd('loopLen', ll); var newSeq = new Array(ll).fill(0); for (var i = 0; i < Math.min(seq.length, ll); i++) newSeq[i] = seq[i]; upd('sequence', newSeq); var newDrums = Object.assign({}, drumSeq); DRUM_TYPES.forEach(function (dt) { if (newDrums[dt]) { var nd = new Array(ll).fill(0); for (var j = 0; j < Math.min(newDrums[dt].length, ll); j++) nd[j] = newDrums[dt][j]; newDrums[dt] = nd; } }); upd('drumSequence', newDrums); },
                       className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (loopLen === ll ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500')
                     }, ll);
                   })
@@ -9032,17 +9035,24 @@
                   [0, 1, 2, 3, 4].map(function (li) {
                     return React.createElement("line", { key: li, x1: 30, y1: 25 + li * 10, x2: loopLen * 30 + 40, y2: 25 + li * 10, stroke: '#d4d0c8', strokeWidth: 0.8 });
                   }),
-                  // Clef symbol
-                  React.createElement("text", { x: 8, y: 55, className: "text-2xl", fill: "#8b7355", style: { fontSize: '28px' } }, "\uD83C\uDFBC"),
+                  // Treble clef (SVG path)
+                  React.createElement("text", { x: 12, y: 60, fill: "#8b7355", style: { fontSize: '42px', fontFamily: 'serif' } }, "\uD834\uDD1E"),
                   // Time signature
-                  React.createElement("text", { x: 35, y: 40, fill: "#8b7355", style: { fontSize: '12px', fontWeight: 'bold' } }, timeSig.split('/')[0]),
-                  React.createElement("text", { x: 35, y: 55, fill: "#8b7355", style: { fontSize: '12px', fontWeight: 'bold' } }, timeSig.split('/')[1]),
+                  React.createElement("text", { x: 38, y: 40, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, timeSig.split('/')[0]),
+                  React.createElement("text", { x: 38, y: 57, fill: "#8b7355", style: { fontSize: '14px', fontWeight: 'bold', fontFamily: 'serif' } }, timeSig.split('/')[1]),
                   // Notes
                   seqToNotation(seq).map(function (note, idx) {
-                    if (note.rest) return null;
-                    var x = 55 + idx * 30; var stave = note.staffPos || 0;
-                    var y = 65 - stave * 5;
+                    var x = 55 + idx * 30;
                     var isCurrentStep = seqPlaying && (d.seqStep || 0) === idx;
+                    if (note.rest) {
+                      // Draw rest symbol (quarter rest)
+                      return React.createElement("g", { key: idx },
+                        React.createElement("text", { x: x, y: 50, textAnchor: "middle", fill: isCurrentStep ? '#7c3aed' : '#999', style: { fontSize: '16px', fontFamily: 'serif' } }, "\uD834\uDD3D"),
+                        isCurrentStep && React.createElement("line", { x1: x, y1: 20, x2: x, y2: 75, stroke: '#7c3aed', strokeWidth: 1, opacity: 0.3 })
+                      );
+                    }
+                    var stave = note.staffPos || 0;
+                    var y = 65 - stave * 5;
                     return React.createElement("g", { key: idx },
                       React.createElement("ellipse", { cx: x, cy: y, rx: 5, ry: 3.5, fill: isCurrentStep ? '#7c3aed' : '#333', transform: "rotate(-10 " + x + " " + y + ")" }),
                       React.createElement("line", { x1: x + 4.5, y1: y, x2: x + 4.5, y2: y - 22, stroke: isCurrentStep ? '#7c3aed' : '#333', strokeWidth: 1.2 }),
@@ -9239,8 +9249,9 @@
                     var outerY = 150 + 120 * Math.sin(angle);
                     var innerX = 150 + 85 * Math.cos(angle);
                     var innerY = 150 + 85 * Math.sin(angle);
-                    var isSelected = entry.key === selectedRoot;
-                    return React.createElement("g", { key: entry.key, className: "cursor-pointer", onClick: function () { upd('selectedRoot', entry.key); playChord(entry.key, 'Major', 0); } },
+                    var circleKey = entry.key.indexOf('/') !== -1 ? entry.key.split('/')[0] : entry.key;
+                    var isSelected = circleKey === selectedRoot || entry.key === selectedRoot;
+                    return React.createElement("g", { key: entry.key, className: "cursor-pointer", onClick: function () { upd('selectedRoot', circleKey); playChord(circleKey, 'Major', 0); } },
                       React.createElement("circle", { cx: outerX, cy: outerY, r: isSelected ? 18 : 15, fill: isSelected ? '#7c3aed' : '#f8fafc', stroke: isSelected ? '#5b21b6' : '#cbd5e1', strokeWidth: isSelected ? 2 : 1 }),
                       React.createElement("text", { x: outerX, y: outerY + 4, textAnchor: "middle", fill: isSelected ? '#fff' : '#334155', style: { fontSize: '11px', fontWeight: 'bold' } }, entry.key),
                       React.createElement("text", { x: innerX, y: innerY + 3, textAnchor: "middle", fill: '#94a3b8', style: { fontSize: '8px' } }, entry.minor)
