@@ -656,7 +656,13 @@
           id: 'dataPlot', icon: '📊', label: 'Data Plotter',
           desc: 'Plot data points, fit trend lines, calculate correlation.',
           color: 'teal', ready: true
-        }
+        },
+        { id: '_cat_Arts&Music', icon: '', label: 'Arts & Music', desc: '', color: 'slate', category: true },
+        {
+          id: 'musicSynth', icon: '🎹', label: 'Music Synthesizer',
+          desc: 'Play a piano, build beats, and learn the science of sound with real-time waveform visualization.',
+          color: 'violet', ready: true
+        },
       ].map(tool => tool.category
         ? /*#__PURE__*/React.createElement("div", {
           key: tool.id,
@@ -7427,6 +7433,415 @@ stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: d.material || 'Material', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
+
+// ═══════════════════════════════════════════════════════
+// MUSIC SYNTHESIZER — Web Audio API + Canvas2D Oscilloscope
+// ═══════════════════════════════════════════════════════
+stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
+    const d = labToolData.musicSynth;
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
+
+    // --- Audio Context singleton ---
+    if (!window._alloSynthCtx) {
+        window._alloSynthCtx = null;
+        window._alloSynthGain = null;
+        window._alloSynthAnalyser = null;
+        window._alloSynthActiveNotes = {};
+        window._alloSynthSeqInterval = null;
+    }
+    function getCtx() {
+        if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
+            var ac = new (window.AudioContext || window.webkitAudioContext)();
+            var gain = ac.createGain();
+            gain.gain.value = d.volume || 0.5;
+            var analyser = ac.createAnalyser();
+            analyser.fftSize = 2048;
+            gain.connect(analyser);
+            analyser.connect(ac.destination);
+            window._alloSynthCtx = ac;
+            window._alloSynthGain = gain;
+            window._alloSynthAnalyser = analyser;
+        }
+        if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
+        window._alloSynthGain.gain.value = d.volume || 0.5;
+        return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser };
+    }
+
+    // Note frequency map (equal temperament, A4 = 440 Hz)
+    var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    function noteFreq(note, octave) {
+        var semitone = NOTE_NAMES.indexOf(note);
+        var n = (octave - 4) * 12 + (semitone - 9); // semitones from A4
+        return 440 * Math.pow(2, n / 12);
+    }
+    // Build 2-octave scale
+    var oct = d.octave || 4;
+    var KEYS = [];
+    for (var o = oct; o <= oct + 1; o++) {
+        for (var ni = 0; ni < 12; ni++) {
+            KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1 });
+        }
+    }
+
+    // Play / stop note
+    function playNote(freq, noteId) {
+        var audio = getCtx();
+        if (window._alloSynthActiveNotes[noteId]) return;
+        var osc = audio.ctx.createOscillator();
+        var env = audio.ctx.createGain();
+        osc.type = d.waveType || 'sine';
+        osc.frequency.value = freq;
+        var now = audio.ctx.currentTime;
+        var atk = d.attack || 0.02;
+        var dec = d.decay || 0.1;
+        var sus = d.sustain || 0.7;
+        env.gain.setValueAtTime(0, now);
+        env.gain.linearRampToValueAtTime(1, now + atk);
+        env.gain.linearRampToValueAtTime(sus, now + atk + dec);
+        osc.connect(env);
+        env.connect(audio.gain);
+        osc.start(now);
+        window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
+    }
+    function stopNote(noteId) {
+        var entry = window._alloSynthActiveNotes[noteId];
+        if (!entry) return;
+        var audio = getCtx();
+        var now = audio.ctx.currentTime;
+        var rel = d.release || 0.3;
+        entry.env.gain.cancelScheduledValues(now);
+        entry.env.gain.setValueAtTime(entry.env.gain.value, now);
+        entry.env.gain.linearRampToValueAtTime(0, now + rel);
+        entry.osc.stop(now + rel + 0.05);
+        delete window._alloSynthActiveNotes[noteId];
+    }
+
+    // Keyboard mapping (bottom row = white keys C-B, top row = sharps)
+    var KEY_MAP = {
+        'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
+        's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
+        'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
+        '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
+    };
+
+    // Canvas oscilloscope
+    var canvasRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._synthInit) return;
+        canvasEl._synthInit = true;
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+        var ctx = canvasEl.getContext('2d');
+        var dpr = 2;
+        function draw() {
+            ctx.clearRect(0, 0, cW, cH);
+            // Dark background
+            var grad = ctx.createLinearGradient(0, 0, 0, cH);
+            grad.addColorStop(0, '#1e1b4b');
+            grad.addColorStop(0.5, '#312e81');
+            grad.addColorStop(1, '#1e1b4b');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, cW, cH);
+            // Grid
+            ctx.strokeStyle = 'rgba(139,92,246,0.12)';
+            ctx.lineWidth = 1;
+            for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
+            for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+            // Center line
+            ctx.strokeStyle = 'rgba(139,92,246,0.25)';
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
+            ctx.setLineDash([]);
+            // Draw waveform from analyser
+            if (window._alloSynthAnalyser) {
+                var analyser = window._alloSynthAnalyser;
+                var bufLen = analyser.fftSize;
+                var dataArr = new Uint8Array(bufLen);
+                analyser.getByteTimeDomainData(dataArr);
+                // Glow effect
+                ctx.shadowColor = '#a78bfa';
+                ctx.shadowBlur = 8;
+                ctx.lineWidth = 2.5 * dpr;
+                ctx.strokeStyle = '#c4b5fd';
+                ctx.beginPath();
+                var sliceW = cW / bufLen;
+                for (var i = 0; i < bufLen; i++) {
+                    var v = dataArr[i] / 128.0;
+                    var py = (v * cH) / 2;
+                    if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                // Second pass for brighter core
+                ctx.lineWidth = 1.5 * dpr;
+                ctx.strokeStyle = '#e9d5ff';
+                ctx.beginPath();
+                for (var i2 = 0; i2 < bufLen; i2++) {
+                    var v2 = dataArr[i2] / 128.0;
+                    var py2 = (v2 * cH) / 2;
+                    if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2);
+                }
+                ctx.stroke();
+            }
+            // Label
+            var wt = canvasEl.dataset.waveType || 'sine';
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
+            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+            ctx.fillStyle = '#c4b5fd';
+            ctx.fillText('\uD83C\uDFB5 ' + wt.toUpperCase(), 8 * dpr, 14 * dpr);
+            canvasEl._synthAnim = requestAnimationFrame(draw);
+        }
+        canvasEl._synthAnim = requestAnimationFrame(draw);
+    };
+
+    // Sequencer
+    var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5'];
+    var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+    var seq = d.sequence || [0, 0, 0, 0, 0, 0, 0, 0];
+    var seqPlaying = d.seqPlaying || false;
+
+    function toggleSeqStep(idx) {
+        var newSeq = seq.slice();
+        newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1); // 0 = off, 1-8 = note
+        upd('sequence', newSeq);
+    }
+
+    function startSequencer() {
+        stopSequencer();
+        upd('seqPlaying', true);
+        upd('seqStep', 0);
+        var bpm = d.bpm || 120;
+        var interval = (60 / bpm) * 1000 / 2; // eighth notes
+        var step = 0;
+        window._alloSynthSeqInterval = setInterval(function () {
+            // Read latest sequence from DOM data attribute
+            var seqEl = document.getElementById('synth-seq-data');
+            var currentSeq = seq;
+            if (seqEl && seqEl.dataset.seq) {
+                try { currentSeq = JSON.parse(seqEl.dataset.seq); } catch (e) { }
+            }
+            // Stop previous note
+            stopNote('seq');
+            var noteIdx = currentSeq[step];
+            if (noteIdx > 0 && noteIdx <= SEQ_FREQS.length) {
+                playNote(SEQ_FREQS[noteIdx - 1], 'seq');
+                setTimeout(function () { stopNote('seq'); }, interval * 0.8);
+            }
+            step = (step + 1) % 8;
+            // Update visual step indicator via dataset
+            if (seqEl) seqEl.dataset.step = step;
+            upd('seqStep', step);
+        }, interval);
+    }
+
+    function stopSequencer() {
+        if (window._alloSynthSeqInterval) {
+            clearInterval(window._alloSynthSeqInterval);
+            window._alloSynthSeqInterval = null;
+        }
+        stopNote('seq');
+        upd('seqPlaying', false);
+        upd('seqStep', -1);
+    }
+
+    // Quiz bank
+    var MUSIC_QUIZ = [
+        { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
+        { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
+        { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
+        { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
+        { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
+        { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
+        { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
+        { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
+        { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
+        { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
+    ];
+
+    // Waveform descriptions
+    var WAVE_INFO = {
+        sine: { emoji: '\u223F', desc: 'Pure tone — only the fundamental frequency. No harmonics. Used in tuning forks and test signals.', harmonics: 'None (fundamental only)' },
+        square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Contains only odd harmonics (1st, 3rd, 5th...). Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)' },
+        sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, and rich. Contains ALL harmonics. Great for brass and string sounds.', harmonics: 'All (1, 2, 3, 4, 5...)' },
+        triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow. Contains odd harmonics but they fall off quickly.', harmonics: 'Odd only, quiet (1/n\u00B2)' }
+    };
+    var wInfo = WAVE_INFO[d.waveType || 'sine'];
+
+    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+        // Hidden data element for sequencer
+        React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, style: { display: "none" } }),
+        // Header
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: function () { stopSequencer(); Object.keys(window._alloSynthActiveNotes || {}).forEach(function (k) { stopNote(k); }); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB9 Music Synthesizer"),
+            React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO")
+        ),
+        // Oscilloscope
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "140px" } },
+            React.createElement("canvas", {
+                ref: canvasRef,
+                "data-wave-type": d.waveType || 'sine',
+                style: { width: "100%", height: "100%", display: "block" }
+            })
+        ),
+        // Waveform selector
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+            ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
+                var info = WAVE_INFO[wt];
+                return React.createElement("button", {
+                    key: wt,
+                    onClick: function () { upd('waveType', wt); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100')
+                }, info.emoji + ' ' + wt.charAt(0).toUpperCase() + wt.slice(1));
+            })
+        ),
+        // Waveform info card
+        React.createElement("div", { className: "bg-violet-50 rounded-lg p-2.5 border border-violet-200 mb-3 text-xs" },
+            React.createElement("p", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
+            React.createElement("p", { className: "text-violet-600 mt-0.5" }, wInfo.desc),
+            React.createElement("p", { className: "text-violet-500 mt-0.5 font-semibold" }, "\uD83C\uDFBC Harmonics: " + wInfo.harmonics)
+        ),
+        // Piano keyboard
+        React.createElement("div", { className: "mb-3" },
+            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83C\uDFB9 Piano — click keys or press Z-M (white) S,D,G,H,J (black)"),
+            React.createElement("div", { className: "relative", style: { height: "120px" } },
+                // White keys
+                React.createElement("div", { className: "flex h-full" },
+                    KEYS.filter(function (k) { return !k.isBlack; }).map(function (k, i) {
+                        var noteId = k.note + k.octave;
+                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+                        return React.createElement("button", {
+                            key: noteId,
+                            onMouseDown: function () { playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            className: "flex-1 border border-slate-200 rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : 'bg-white hover:bg-slate-50'),
+                            style: { minWidth: "28px" }
+                        },
+                            React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : 'text-slate-400') }, k.note),
+                            React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
+                        );
+                    })
+                ),
+                // Black keys overlay
+                React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
+                    KEYS.map(function (k, i) {
+                        if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
+                        var noteId = k.note + k.octave;
+                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+                        return React.createElement("button", {
+                            key: noteId,
+                            onMouseDown: function (e) { e.stopPropagation(); playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (isActive ? 'bg-violet-700 shadow-inner' : 'bg-slate-800 hover:bg-slate-700'),
+                            style: { width: "24px", marginLeft: "-12px", marginRight: "-12px", zIndex: 2, pointerEvents: "auto", height: "100%" }
+                        },
+                            React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
+                        );
+                    })
+                )
+            )
+        ),
+        // Frequency display
+        d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
+            ),
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
+            ),
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "—")
+            )
+        ),
+        // ADSR Envelope + Volume
+        React.createElement("div", { className: "mb-3" },
+            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDCC8 ADSR Envelope & Volume"),
+            React.createElement("div", { className: "grid grid-cols-5 gap-2" },
+                [
+                    { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
+                    { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
+                    { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
+                    { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
+                    { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
+                ].map(function (s) {
+                    return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
+                        React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
+                        React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
+                    );
+                })
+            )
+        ),
+        // 8-step Sequencer
+        React.createElement("div", { className: "mb-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 8-Step Sequencer"),
+                React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
+                    React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
+                    React.createElement("button", {
+                        onClick: function () { if (seqPlaying) { stopSequencer(); } else { startSequencer(); } },
+                        className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600')
+                    }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
+                )
+            ),
+            React.createElement("div", { className: "grid grid-cols-8 gap-1" },
+                seq.map(function (noteIdx, stepIdx) {
+                    var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
+                    var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
+                    var bgColor = noteIdx > 0 ? 'bg-violet-' + (200 + noteIdx * 50) : 'bg-slate-100';
+                    return React.createElement("button", {
+                        key: stepIdx,
+                        onClick: function () { toggleSeqStep(stepIdx); },
+                        className: "p-2 rounded-lg border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50')
+                    },
+                        React.createElement("span", { className: "text-sm font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName),
+                        React.createElement("span", { className: "text-[8px] text-slate-400" }, stepIdx + 1)
+                    );
+                })
+            ),
+            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 text-center" }, "Click steps to cycle through notes (C D E F G A B C5). Click again to clear.")
+        ),
+        // Quiz
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("button", {
+                onClick: function () {
+                    var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
+                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
+            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
+            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+        ),
+        d.quiz && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200 mb-3" },
+            React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
+            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                d.quiz.opts.map(function (opt) {
+                    var isCorrect = opt === d.quiz.a;
+                    var wasChosen = d.quiz.chosen === opt;
+                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    return React.createElement("button", {
+                        key: opt, disabled: d.quiz.answered,
+                        onClick: function () {
+                            var correct = opt === d.quiz.a;
+                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
+                        },
+                        className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                    }, opt);
+                })
+            )
+        ),
+        // Snapshot
+        React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ms-' + Date.now(), tool: 'musicSynth', label: (d.waveType || 'sine') + ' synth', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synth snapshot saved!', 'success'); }, className: "mt-2 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+    )
+})(),
+
 
         // ═══════════════════════════════════════════════════════
         // SOLAR SYSTEM EXPLORER
