@@ -3137,93 +3137,219 @@
           )
         })(),
 
-        stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
-          const d = labToolData.wave;
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
-          const W = 440, H = 250, pad = 30;
-          const toSX = x => pad + (x / (4 * Math.PI)) * (W - 2 * pad);
-          const toSY = y => H / 2 - y * (H / 2 - pad);
-          const wave1Pts = [], wave2Pts = [], sumPts = [];
-          for (let px = 0; px <= W - 2 * pad; px += 2) {
-            const x = (px / (W - 2 * pad)) * 4 * Math.PI;
-            const y1 = d.amplitude * Math.sin(d.frequency * x + d.phase);
-            wave1Pts.push(`${toSX(x)},${toSY(y1)}`);
-            if (d.wave2) {
-              const y2 = d.amp2 * Math.sin(d.freq2 * x);
-              wave2Pts.push(`${toSX(x)},${toSY(y2)}`);
-              sumPts.push(`${toSX(x)},${toSY(y1 + y2)}`);
+stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
+    const d = labToolData.wave;
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
+
+    // Canvas-based animated wave
+    const canvasRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._waveInit) return;
+        canvasEl._waveInit = true;
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+        var ctx = canvasEl.getContext('2d');
+        var dpr = 2;
+        var tick = 0;
+        function draw() {
+            tick++;
+            ctx.clearRect(0, 0, cW, cH);
+            // Background gradient
+            var grad = ctx.createLinearGradient(0, 0, 0, cH);
+            grad.addColorStop(0, '#0c4a6e');
+            grad.addColorStop(1, '#0ea5e9');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, cW, cH);
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 1;
+            for (var gx = 0; gx < cW; gx += 30 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
+            for (var gy = 0; gy < cH; gy += 30 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+            // Center line
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
+            ctx.setLineDash([]);
+            // Read current params from the canvas data attributes
+            var amp = parseFloat(canvasEl.dataset.amp || '50');
+            var freq = parseFloat(canvasEl.dataset.freq || '2');
+            var waveType = canvasEl.dataset.waveType || 'sine';
+            var showSecond = canvasEl.dataset.showSecond === 'true';
+            var amp2 = parseFloat(canvasEl.dataset.amp2 || '30');
+            var freq2 = parseFloat(canvasEl.dataset.freq2 || '3');
+            var speed = parseFloat(canvasEl.dataset.speed || '1');
+            // Draw main wave
+            ctx.lineWidth = 3 * dpr;
+            ctx.strokeStyle = '#22d3ee';
+            ctx.shadowColor = '#22d3ee';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            for (var x = 0; x < cW; x++) {
+                var t = x / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
+                var y;
+                if (waveType === 'sine') y = Math.sin(t);
+                else if (waveType === 'square') y = Math.sign(Math.sin(t));
+                else if (waveType === 'triangle') y = Math.asin(Math.sin(t)) * 2 / Math.PI;
+                else y = (t % (Math.PI * 2)) / Math.PI - 1;
+                var py = cH / 2 - y * amp * dpr;
+                if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
             }
-          }
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-            React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌊 Wave Simulator"),
-              React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Visualize sine waves. Toggle Interference Mode for superposition."),
-              React.createElement("label", { className: "ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" },
-                React.createElement("input", { type: "checkbox", checked: d.wave2, onChange: e => upd('wave2', e.target.checked), className: "accent-cyan-600" }),
-                "Interference Mode"
-              )
-            ),
-            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-cyan-50 to-white rounded-xl border border-cyan-200", style: { maxHeight: "260px" } },
-              React.createElement("line", { x1: pad, y1: H / 2, x2: W - pad, y2: H / 2, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "4 2" }),
-              wave1Pts.length > 1 && React.createElement("polyline", { points: wave1Pts.join(" "), fill: "none", stroke: "#0891b2", strokeWidth: 2.5 }),
-              wave2Pts.length > 1 && React.createElement("polyline", { points: wave2Pts.join(" "), fill: "none", stroke: "#f59e0b", strokeWidth: 2, strokeDasharray: "6 3" }),
-              sumPts.length > 1 && React.createElement("polyline", { points: sumPts.join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 3 }),
-              React.createElement("text", { x: W - pad - 5, y: H / 2 - 5, textAnchor: "end", style: { fontSize: '9px' }, fill: "#0891b2" }, "Wave 1"),
-              d.wave2 && React.createElement("text", { x: W - pad - 5, y: H / 2 + 15, textAnchor: "end", style: { fontSize: '9px' }, fill: "#f59e0b" }, "Wave 2"),
-              d.wave2 && React.createElement("text", { x: W - pad - 5, y: H / 2 + 30, textAnchor: "end", style: { fontSize: '9px' }, fill: "#ef4444" }, "Superposition")
-            ),
-            React.createElement("div", { className: "grid grid-cols-3 gap-3 mt-3" },
-              [{ k: 'amplitude', label: 'Amplitude', min: 0.1, max: 2, step: 0.1 }, { k: 'frequency', label: 'Frequency', min: 0.1, max: 4, step: 0.1 }, { k: 'phase', label: 'Phase', min: 0, max: 6.28, step: 0.1 }].map(s =>
-                React.createElement("div", { key: s.k, className: "text-center" },
-                  React.createElement("label", { className: "text-xs font-bold text-cyan-600" }, s.label + ": " + Number(d[s.k]).toFixed(1)),
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-cyan-600" })
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            // Draw second wave if enabled
+            if (showSecond) {
+                ctx.lineWidth = 2 * dpr;
+                ctx.strokeStyle = '#f472b6';
+                ctx.shadowColor = '#f472b6';
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                for (var x2 = 0; x2 < cW; x2++) {
+                    var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
+                    var y2 = Math.sin(t2);
+                    var py2 = cH / 2 - y2 * amp2 * dpr;
+                    if (x2 === 0) ctx.moveTo(x2, py2); else ctx.lineTo(x2, py2);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                // Superposition
+                ctx.lineWidth = 2 * dpr;
+                ctx.strokeStyle = '#a78bfa';
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                for (var xs = 0; xs < cW; xs++) {
+                    var ts1 = xs / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
+                    var ts2 = xs / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
+                    var ys1 = (waveType === 'sine' ? Math.sin(ts1) : waveType === 'square' ? Math.sign(Math.sin(ts1)) : waveType === 'triangle' ? Math.asin(Math.sin(ts1)) * 2 / Math.PI : (ts1 % (Math.PI * 2)) / Math.PI - 1) * amp;
+                    var ys2 = Math.sin(ts2) * amp2;
+                    var pys = cH / 2 - (ys1 + ys2) * dpr;
+                    if (xs === 0) ctx.moveTo(xs, pys); else ctx.lineTo(xs, pys);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            // Labels
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillRect(4 * dpr, 4 * dpr, 115 * dpr, (showSecond ? 36 : 20) * dpr);
+            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+            ctx.fillStyle = '#22d3ee';
+            ctx.fillText('\uD83C\uDF0A Main: A=' + amp + ' f=' + freq, 8 * dpr, 16 * dpr);
+            if (showSecond) {
+                ctx.fillStyle = '#f472b6';
+                ctx.fillText('\u223F Second: A=' + amp2 + ' f=' + freq2, 8 * dpr, 28 * dpr);
+                ctx.fillStyle = '#a78bfa';
+                ctx.fillText('--- Superposition', 8 * dpr, 38 * dpr);
+            }
+            canvasEl._waveAnim = requestAnimationFrame(draw);
+        }
+        canvasEl._waveAnim = requestAnimationFrame(draw);
+    };
+
+    // Quiz bank
+    var WAVE_QUIZ = [
+        { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'] },
+        { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'] },
+        { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'] },
+        { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'] },
+        { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'] },
+    ];
+
+    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
+            React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+        ),
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "220px" } },
+            React.createElement("canvas", {
+                ref: canvasRef,
+                "data-amp": d.amplitude, "data-freq": d.frequency, "data-wave-type": d.waveType || 'sine',
+                "data-show-second": d.showSecond ? 'true' : 'false',
+                "data-amp2": d.amplitude2 || 30, "data-freq2": d.frequency2 || 3,
+                "data-speed": d.speed || 1,
+                style: { width: "100%", height: "100%", display: "block" }
+            })
+        ),
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+            ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
+                React.createElement("button", {
+                    key: wt, onClick: () => upd('waveType', wt),
+                    className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-600 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
+                }, wt.charAt(0).toUpperCase() + wt.slice(1))
+            )
+        ),
+        React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+            [
+                { k: 'amplitude', label: '\uD83D\uDCC8 Amplitude', min: 10, max: 100, step: 1 },
+                { k: 'frequency', label: '\uD83C\uDFB5 Frequency', min: 0.5, max: 10, step: 0.5 },
+                { k: 'speed', label: '\u23E9 Speed', min: 0.1, max: 5, step: 0.1 },
+            ].map(s =>
+                React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                    React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : d[s.k])),
+                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : 0), onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-cyan-600" })
                 )
-              )
+            )
+        ),
+        React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-pink-50 rounded-lg border border-pink-200" },
+            React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
+                React.createElement("input", { type: "checkbox", checked: !!d.showSecond, onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
+                "\u223F Show Second Wave (Interference)"
             ),
-            d.wave2 && React.createElement("div", { className: "grid grid-cols-2 gap-3 mt-2" },
-              [{ k: 'amp2', label: 'Wave 2 Amp', min: 0.1, max: 2, step: 0.1 }, { k: 'freq2', label: 'Wave 2 Freq', min: 0.1, max: 4, step: 0.1 }].map(s =>
-                React.createElement("div", { key: s.k, className: "text-center" },
-                  React.createElement("label", { className: "text-xs font-bold text-amber-600" }, s.label + ": " + Number(d[s.k]).toFixed(1)),
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-amber-500" })
+            d.showSecond && React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "flex items-center gap-1" },
+                    React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "A2:"),
+                    React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                    React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.amplitude2 || 30)
+                ),
+                React.createElement("div", { className: "flex items-center gap-1" },
+                    React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "f2:"),
+                    React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                    React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
                 )
-              )
+            )
+        ),
+        React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+            React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wavelength"),
+                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(2) + " m")
             ),
-            React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-2 text-center text-xs text-slate-500" },
-              `λ = ${(2 * Math.PI / d.frequency).toFixed(2)} | T = ${(1 / d.frequency).toFixed(2)}s | A = ${Number(d.amplitude).toFixed(1)}`),
-            React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-400 self-center" }, "Presets:"),
-              [
-                { label: '\uD83C\uDFB5 Concert A (440Hz)', amp: 1, freq: 1, phase: 0, tip: 'The standard tuning pitch for musical instruments' },
-                { label: '\uD83C\uDF0A Ocean Wave', amp: 1.5, freq: 0.3, phase: 0, tip: 'Long wavelength, low frequency \u2014 like an ocean swell' },
-                { label: '\u26A1 High Energy', amp: 0.8, freq: 3.5, phase: 0, tip: 'Higher frequency = higher energy (E = hf)' },
-                { label: '\uD83D\uDCA5 Destructive', amp: 1, freq: 1, phase: 3.14, tip: 'Two waves 180\u00B0 out of phase cancel out completely!' },
-              ].map(function (p) {
-                return React.createElement("button", {
-                  key: p.label, onClick: function () {
-                    upd('amplitude', p.amp); upd('frequency', p.freq); upd('phase', p.phase);
-                    if (p.label.includes('Destructive')) { upd('wave2', true); upd('amp2', 1); upd('freq2', 1); }
-                    addToast(p.tip, 'success');
-                  }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-all"
-                }, p.label);
-              })
+            React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Period"),
+                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(3) + " s")
             ),
-            React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1.5 text-center" },
-              [
-                ['\uD83C\uDFB5', 'Note', (function () { var notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']; var f = d.frequency * 110; var n = Math.round(12 * Math.log2(f / 440) + 69); return n >= 0 && n < 128 ? notes[n % 12] + Math.floor(n / 12 - 1) : '\u2014'; })()],
-                ['\uD83C\uDF0A', 'Wavelength', (2 * Math.PI / d.frequency).toFixed(2) + ' units'],
-                ['\u23F1', 'Period', (1 / d.frequency).toFixed(2) + 's'],
-                ['\u26A1', 'Energy', d.amplitude > 1.5 ? 'High' : d.amplitude > 0.8 ? 'Medium' : 'Low'],
-              ].map(function (item) {
-                return React.createElement("div", { key: item[1], className: "p-1 bg-cyan-50/50 rounded-lg border border-cyan-100" },
-                  React.createElement("p", { className: "text-[9px] text-cyan-500 font-bold" }, item[0] + ' ' + item[1]),
-                  React.createElement("p", { className: "text-xs font-bold text-cyan-800" }, item[2])
-                );
-              })
-            ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: `A=${d.amplitude} f=${d.frequency}`, data: { ...d }, timestamp: Date.now() }]); addToast('📸 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
-          )
-        })(),
+            React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wave Type"),
+                React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (d.waveType || 'sine').charAt(0).toUpperCase() + (d.waveType || 'sine').slice(1))
+            )
+        ),
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("button", {
+                onClick: function () {
+                    var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
+                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " transition-all"
+            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+        ),
+        d.quiz && React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200 mb-3" },
+            React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, d.quiz.q),
+            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                d.quiz.opts.map(function (opt) {
+                    var isCorrect = opt === d.quiz.a;
+                    var wasChosen = d.quiz.chosen === opt;
+                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    return React.createElement("button", {
+                        key: opt, disabled: d.quiz.answered, onClick: function () {
+                            var correct = opt === d.quiz.a;
+                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.quiz.a, correct ? 'success' : 'error');
+                        }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                    }, opt);
+                })
+            )
+        ),
+        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+    )
+})(),
 
         stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
           var d = labToolData.cell;
@@ -3849,46 +3975,181 @@
           )
         })(),
 
-        stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
-          const d = labToolData.physics;
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
-          const W = 440, H = 280, pad = 30;
-          const rad = d.angle * Math.PI / 180;
-          const vx = d.velocity * Math.cos(rad), vy = d.velocity * Math.sin(rad);
-          const tFlight = 2 * vy / d.gravity;
-          const range = vx * tFlight;
-          const maxH = (vy * vy) / (2 * d.gravity);
-          const scale = Math.min((W - 2 * pad) / Math.max(range, 1), (H - 2 * pad) / Math.max(maxH, 1)) * 0.85;
-          const trajPts = [];
-          for (let i = 0; i <= 50; i++) {
-            const tt = (i / 50) * tFlight;
-            const px = pad + vx * tt * scale;
-            const py = (H - pad) - (vy * tt - 0.5 * d.gravity * tt * tt) * scale;
-            if (px >= pad && px <= W - pad && py >= pad && py <= H - pad) trajPts.push(`${px},${py}`);
-          }
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-            React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "⚡ Physics Simulator")
+stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
+    const d = labToolData.physics;
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
+
+    // Canvas animated projectile
+    const canvasRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._physInit) return;
+        canvasEl._physInit = true;
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+        var ctx = canvasEl.getContext('2d');
+        var dpr = 2;
+        var tick = 0;
+        var trails = [];
+        var ball = null;
+        var launched = false;
+        function launch() {
+            var angle = parseFloat(canvasEl.dataset.angle || '45');
+            var vel = parseFloat(canvasEl.dataset.velocity || '25');
+            var grav = parseFloat(canvasEl.dataset.gravity || '9.8');
+            var rad = angle * Math.PI / 180;
+            ball = { x: 40, y: cH / dpr - 40, vx: vel * Math.cos(rad) * 2, vy: -vel * Math.sin(rad) * 2, g: grav * 0.15 };
+            trails.push([]);
+            launched = true;
+        }
+        canvasEl._launch = launch;
+        function draw() {
+            tick++;
+            ctx.clearRect(0, 0, cW, cH);
+            // Sky
+            var skyGrad = ctx.createLinearGradient(0, 0, 0, cH);
+            skyGrad.addColorStop(0, '#1e3a5f');
+            skyGrad.addColorStop(0.6, '#87ceeb');
+            skyGrad.addColorStop(1, '#228B22');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, cW, cH);
+            // Ground
+            ctx.fillStyle = '#2d6a1e';
+            ctx.fillRect(0, cH - 40 * dpr, cW, 40 * dpr);
+            ctx.fillStyle = '#3a8a2e';
+            ctx.fillRect(0, cH - 40 * dpr, cW, 3 * dpr);
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+            ctx.lineWidth = 1;
+            for (var gx = 0; gx < cW; gx += 40 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH - 40 * dpr); ctx.stroke(); }
+            for (var gy = 0; gy < cH - 40 * dpr; gy += 40 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+            // Draw all trails
+            trails.forEach(function (trail, idx) {
+                if (trail.length < 2) return;
+                var alpha = idx === trails.length - 1 ? 1 : 0.3;
+                ctx.strokeStyle = 'rgba(239,68,68,' + alpha + ')';
+                ctx.lineWidth = 2 * dpr;
+                ctx.setLineDash([4, 3]);
+                ctx.beginPath();
+                trail.forEach(function (p, i) { if (i === 0) ctx.moveTo(p.x * dpr, p.y * dpr); else ctx.lineTo(p.x * dpr, p.y * dpr); });
+                ctx.stroke();
+                ctx.setLineDash([]);
+            });
+            // Animate ball
+            if (ball && launched) {
+                ball.vy += ball.g * 0.06;
+                ball.x += ball.vx * 0.06;
+                ball.y += ball.vy * 0.06;
+                if (trails.length > 0) trails[trails.length - 1].push({ x: ball.x, y: ball.y });
+                // Draw ball with glow
+                ctx.beginPath(); ctx.arc(ball.x * dpr, ball.y * dpr, 6 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Velocity vector
+                ctx.strokeStyle = '#60a5fa';
+                ctx.lineWidth = 2 * dpr;
+                ctx.beginPath(); ctx.moveTo(ball.x * dpr, ball.y * dpr);
+                ctx.lineTo((ball.x + ball.vx * 1.5) * dpr, (ball.y + ball.vy * 1.5) * dpr); ctx.stroke();
+                // Check ground collision
+                if (ball.y >= cH / dpr - 40) {
+                    ball.y = cH / dpr - 40;
+                    launched = false;
+                    // Store result
+                    var range = ball.x - 40;
+                    canvasEl.dataset.lastRange = range.toFixed(1);
+                    canvasEl.dataset.lastMaxH = '0';
+                    if (trails.length > 0) {
+                        var maxY = Math.min.apply(null, trails[trails.length - 1].map(function (p) { return p.y; }));
+                        canvasEl.dataset.lastMaxH = ((cH / dpr - 40 - maxY)).toFixed(1);
+                    }
+                }
+            }
+            // Launcher
+            var angle = parseFloat(canvasEl.dataset.angle || '45');
+            var rad = angle * Math.PI / 180;
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 4 * dpr;
+            ctx.beginPath(); ctx.moveTo(40 * dpr, (cH / dpr - 40) * dpr);
+            ctx.lineTo((40 + Math.cos(rad) * 35) * dpr, (cH / dpr - 40 - Math.sin(rad) * 35) * dpr); ctx.stroke();
+            // HUD
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(4 * dpr, 4 * dpr, 130 * dpr, 32 * dpr);
+            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText('\u26A1 ' + angle + '\u00B0  v=' + (canvasEl.dataset.velocity || '25') + 'm/s', 8 * dpr, 16 * dpr);
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('g=' + (canvasEl.dataset.gravity || '9.8') + 'm/s\u00B2', 8 * dpr, 28 * dpr);
+            canvasEl._physAnim = requestAnimationFrame(draw);
+        }
+        canvasEl._physAnim = requestAnimationFrame(draw);
+    };
+
+    var PRESETS = [
+        { label: '\uD83C\uDF0D Earth', gravity: 9.8 },
+        { label: '\uD83C\uDF11 Moon', gravity: 1.6 },
+        { label: '\u2642 Mars', gravity: 3.7 },
+        { label: '\u2643 Jupiter', gravity: 24.8 },
+    ];
+
+    // Challenge mode
+    var CHALLENGES = [
+        { target: 100, label: 'Hit the 100m mark!' },
+        { target: 200, label: 'Reach 200m range!' },
+        { target: 50, label: 'Precision: land at 50m' },
+    ];
+
+    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
+            React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+        ),
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "240px" } },
+            React.createElement("canvas", {
+                ref: canvasRef,
+                id: "physicsCanvas",
+                "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
+                style: { width: "100%", height: "100%", display: "block" }
+            })
+        ),
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+            React.createElement("button", {
+                onClick: function () {
+                    var cv = document.getElementById('physicsCanvas');
+                    if (cv && cv._launch) cv._launch();
+                }, className: "px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 shadow-md transition-all"
+            }, "\uD83D\uDE80 Launch!"),
+            PRESETS.map(function (p) {
+                return React.createElement("button", {
+                    key: p.label, onClick: function () { upd('gravity', p.gravity); },
+                    className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
+                }, p.label);
+            })
+        ),
+        React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
+            [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
+                return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                    React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
+                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-600" })
+                );
+            })
+        ),
+        React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+            React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Range"),
+                React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var r = d.angle * Math.PI / 180; return ((d.velocity * d.velocity * Math.sin(2 * r)) / d.gravity).toFixed(1); })() + " m")
             ),
-            React.createElement("svg", { viewBox: `0 0 ${W} ${H}`, className: "w-full bg-gradient-to-b from-sky-50 to-white rounded-xl border border-sky-200", style: { maxHeight: "300px" } },
-              React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: "#65a30d", strokeWidth: 2 }),
-              trajPts.length > 1 && React.createElement("polyline", { points: trajPts.join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 2.5, strokeDasharray: "4 2" }),
-              React.createElement("line", { x1: pad, y1: H - pad, x2: pad + Math.cos(rad) * 60, y2: H - pad - Math.sin(rad) * 60, stroke: "#3b82f6", strokeWidth: 3, markerEnd: "url(#arrow)" }),
-              React.createElement("defs", null, React.createElement("marker", { id: "arrow", viewBox: "0 0 10 10", refX: 5, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto" }, React.createElement("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#3b82f6" }))),
-              React.createElement("text", { x: W / 2, y: 20, textAnchor: "middle", className: "text-xs", fill: "#64748b" }, `Range: ${range.toFixed(1)}m | Max Height: ${maxH.toFixed(1)}m | Time: ${tFlight.toFixed(2)}s`)
+            React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Max Height"),
+                React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (vy * vy / (2 * d.gravity)).toFixed(1); })() + " m")
             ),
-            React.createElement("div", { className: "grid grid-cols-3 gap-3 mt-3" },
-              [{ k: 'angle', label: 'Angle (°)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s²)', min: 1, max: 20, step: 0.1 }].map(s =>
-                React.createElement("div", { key: s.k, className: "text-center" },
-                  React.createElement("label", { className: "text-xs font-bold text-slate-500" }, s.label + ": " + d[s.k]),
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-sky-600" })
-                )
-              )
-            ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '° ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('📸 Physics snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
-          )
-        })(),
+            React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Flight Time"),
+                React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (2 * vy / d.gravity).toFixed(2); })() + " s")
+            )
+        ),
+        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Physics snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+    )
+})(),
 
         stemLabTab === 'explore' && stemLabTool === 'chemBalance' && (() => {
           const d = labToolData.chemBalance;
@@ -6398,90 +6659,187 @@ stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
     )
 })(),
 
-        // ═══════════════════════════════════════════════════════
-        // WATER CYCLE
-        // ═══════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool === 'waterCycle' && (() => {
-          const d = labToolData.waterCycle;
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
-          const STAGES = [
-            { id: 'evaporation', label: 'Evaporation', emoji: '\u2600', color: '#f59e0b', x: 100, y: 240, desc: 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water.' },
-            { id: 'condensation', label: 'Condensation', emoji: '\u2601', color: '#94a3b8', x: 200, y: 60, desc: 'As water vapor rises and cools, it condenses into tiny water droplets that form clouds. This is the reverse of evaporation.' },
-            { id: 'precipitation', label: 'Precipitation', emoji: '\uD83C\uDF27', color: '#3b82f6', x: 340, y: 120, desc: 'When clouds become heavy with water droplets, they fall as rain, snow, sleet, or hail. This returns water to Earth\u2019s surface.' },
-            { id: 'collection', label: 'Collection', emoji: '\uD83C\uDF0A', color: '#0ea5e9', x: 360, y: 240, desc: 'Water collects in oceans, rivers, lakes, and underground aquifers. Some seeps into soil as groundwater. The cycle then repeats.' },
-            { id: 'transpiration', label: 'Transpiration', emoji: '\uD83C\uDF3F', color: '#22c55e', x: 30, y: 160, desc: 'Plants release water vapor through their leaves into the atmosphere. A single tree can transpire hundreds of liters per day.' },
-          ];
-          const sel = d.selectedStage ? STAGES.find(s => s.id === d.selectedStage) : null;
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle")
-            ),
-            React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Click each stage to learn how water moves through Earth\u2019s systems."),
-            React.createElement("svg", { viewBox: "0 0 460 300", className: "w-full bg-gradient-to-b from-sky-100 via-sky-50 to-blue-100 rounded-xl border border-sky-200", style: { maxHeight: "300px" } },
-              React.createElement("path", { d: "M100,240 Q150,60 200,60", fill: "none", stroke: "#f59e0b80", strokeWidth: 2, strokeDasharray: "6 4" }),
-              React.createElement("path", { d: "M200,60 Q300,40 340,120", fill: "none", stroke: "#94a3b880", strokeWidth: 2, strokeDasharray: "6 4" }),
-              React.createElement("path", { d: "M340,120 L360,240", fill: "none", stroke: "#3b82f680", strokeWidth: 2, strokeDasharray: "6 4" }),
-              React.createElement("path", { d: "M360,240 Q230,280 100,240", fill: "none", stroke: "#0ea5e980", strokeWidth: 2, strokeDasharray: "6 4" }),
-              React.createElement("path", { d: "M30,160 Q60,80 200,60", fill: "none", stroke: "#22c55e80", strokeWidth: 2, strokeDasharray: "6 4" }),
-              React.createElement("rect", { x: 0, y: 250, width: 460, height: 50, fill: "#3b82f620", rx: 0 }),
-              React.createElement("text", { x: 230, y: 280, textAnchor: "middle", fill: "#3b82f6", style: { fontSize: '10px', fontWeight: 'bold' } }, "Oceans, Rivers & Lakes"),
-              STAGES.map(st => {
-                const isSel = d.selectedStage === st.id;
-                return React.createElement("g", { key: st.id, style: { cursor: 'pointer' }, onClick: () => upd('selectedStage', st.id) },
-                  React.createElement("circle", { cx: st.x, cy: st.y, r: isSel ? 28 : 22, fill: st.color + '20', stroke: st.color, strokeWidth: isSel ? 3 : 1.5 }),
-                  React.createElement("text", { x: st.x, y: st.y + 5, textAnchor: "middle", style: { fontSize: '18px' } }, st.emoji),
-                  React.createElement("text", { x: st.x, y: st.y + (isSel ? 42 : 36), textAnchor: "middle", fill: st.color, style: { fontSize: '8px', fontWeight: 'bold' } }, st.label)
-                );
-              })
-            ),
-            sel && React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 animate-in slide-in-from-bottom", style: { borderColor: sel.color, backgroundColor: sel.color + '10' } },
-              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+// ═══════════════════════════════════════════════════════
+// WATER CYCLE — Canvas2D Animated Particle System
+// ═══════════════════════════════════════════════════════
+stemLabTab === 'explore' && stemLabTool === 'waterCycle' && (() => {
+    const d = labToolData.waterCycle;
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
+
+    const STAGES = [
+        { id: 'evaporation', label: 'Evaporation', emoji: '\u2600', color: '#f59e0b', desc: 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water.' },
+        { id: 'condensation', label: 'Condensation', emoji: '\u2601', color: '#64748b', desc: 'Water vapor cools as it rises, forming tiny droplets around particles of dust, creating clouds.' },
+        { id: 'precipitation', label: 'Precipitation', emoji: '\uD83C\uDF27', color: '#3b82f6', desc: 'When cloud droplets combine and grow heavy enough, they fall as rain, snow, sleet, or hail.' },
+        { id: 'collection', label: 'Collection', emoji: '\uD83C\uDF0A', color: '#0ea5e9', desc: 'Water gathers in oceans, rivers, lakes, and underground aquifers. The cycle begins again.' },
+        { id: 'transpiration', label: 'Transpiration', emoji: '\uD83C\uDF3F', color: '#22c55e', desc: 'Plants absorb water through roots and release vapor from leaves, contributing to atmospheric moisture.' },
+        { id: 'infiltration', label: 'Infiltration', emoji: '\uD83E\uDEB4', color: '#92400e', desc: 'Water soaks into soil and rock, replenishing groundwater supplies that feed wells and springs.' },
+    ];
+    const sel = STAGES.find(s => s.id === (d.activeStage || 'evaporation'));
+
+    // Canvas animation
+    const canvasRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._wcInit) return;
+        canvasEl._wcInit = true;
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+        var ctx = canvasEl.getContext('2d');
+        var dpr = 2;
+        var tick = 0;
+        var particles = [];
+        for (var i = 0; i < 80; i++) {
+            particles.push({
+                x: Math.random() * cW / dpr,
+                y: Math.random() * cH / dpr,
+                size: 1.5 + Math.random() * 2,
+                speed: 0.3 + Math.random() * 0.7,
+                phase: Math.random() * Math.PI * 2,
+                type: ['evap', 'rain', 'cloud'][Math.floor(Math.random() * 3)]
+            });
+        }
+        function draw() {
+            tick++;
+            ctx.clearRect(0, 0, cW, cH);
+            // Sky gradient with day/night hint
+            var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
+            var g = ctx.createLinearGradient(0, 0, 0, cH);
+            g.addColorStop(0, 'hsl(210,' + (60 + dayPhase * 20) + '%,' + (50 + dayPhase * 25) + '%)');
+            g.addColorStop(0.4, 'hsl(200,70%,' + (65 + dayPhase * 15) + '%)');
+            g.addColorStop(0.65, '#4ade80');
+            g.addColorStop(0.7, '#166534');
+            g.addColorStop(1, '#1a1a2e');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, cW, cH);
+            // Sun
+            var sunY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.04;
+            ctx.beginPath(); ctx.arc(cW * 0.8, sunY, 16 * dpr, 0, Math.PI * 2);
+            ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 20; ctx.fill(); ctx.shadowBlur = 0;
+            // Sun rays
+            for (var r = 0; r < 8; r++) {
+                var ra = r * Math.PI / 4 + tick * 0.01;
+                ctx.beginPath();
+                ctx.moveTo(cW * 0.8 + Math.cos(ra) * 20 * dpr, sunY + Math.sin(ra) * 20 * dpr);
+                ctx.lineTo(cW * 0.8 + Math.cos(ra) * 28 * dpr, sunY + Math.sin(ra) * 28 * dpr);
+                ctx.strokeStyle = 'rgba(251,191,36,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+            }
+            // Clouds
+            function drawCloud(cx, cy, sz) {
+                ctx.fillStyle = 'rgba(226,232,240,0.8)';
+                ctx.beginPath(); ctx.arc(cx, cy, sz, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx - sz * 0.7, cy + sz * 0.2, sz * 0.7, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + sz * 0.7, cy + sz * 0.2, sz * 0.8, 0, Math.PI * 2); ctx.fill();
+            }
+            drawCloud(cW * 0.25 + Math.sin(tick * 0.004) * 10, cH * 0.15, 14 * dpr);
+            drawCloud(cW * 0.55 + Math.cos(tick * 0.003) * 8, cH * 0.12, 18 * dpr);
+            drawCloud(cW * 0.4 + Math.sin(tick * 0.005) * 12, cH * 0.2, 12 * dpr);
+            // Water body
+            ctx.fillStyle = 'rgba(14,165,233,0.6)';
+            ctx.beginPath();
+            ctx.moveTo(0, cH * 0.7);
+            for (var wx = 0; wx <= cW; wx += 5) {
+                ctx.lineTo(wx, cH * 0.7 + Math.sin(wx * 0.02 + tick * 0.05) * 3 * dpr);
+            }
+            ctx.lineTo(cW, cH * 0.65); ctx.lineTo(0, cH * 0.65); ctx.closePath(); ctx.fill();
+            // Mountains
+            ctx.fillStyle = '#374151';
+            ctx.beginPath(); ctx.moveTo(cW * 0.6, cH * 0.65); ctx.lineTo(cW * 0.7, cH * 0.35); ctx.lineTo(cW * 0.8, cH * 0.65); ctx.fill();
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath(); ctx.moveTo(cW * 0.68, cH * 0.37); ctx.lineTo(cW * 0.7, cH * 0.35); ctx.lineTo(cW * 0.72, cH * 0.37); ctx.lineTo(cW * 0.705, cH * 0.39); ctx.lineTo(cW * 0.695, cH * 0.38); ctx.fill();
+            // Particles
+            particles.forEach(function (p) {
+                p.phase += 0.02;
+                if (p.type === 'evap') {
+                    p.y -= p.speed * 0.5;
+                    p.x += Math.sin(p.phase) * 0.3;
+                    if (p.y < cH * 0.1 / dpr) { p.y = cH * 0.65 / dpr; p.x = Math.random() * cW * 0.5 / dpr; }
+                    ctx.beginPath(); ctx.arc(p.x * dpr, p.y * dpr, p.size * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(p.phase) * 0.2) + ')'; ctx.fill();
+                } else if (p.type === 'rain') {
+                    p.y += p.speed * 1.5;
+                    p.x += (Math.random() - 0.5) * 0.2;
+                    if (p.y > cH * 0.7 / dpr) { p.y = cH * 0.15 / dpr; p.x = cW * 0.15 / dpr + Math.random() * cW * 0.4 / dpr; }
+                    ctx.strokeStyle = 'rgba(59,130,246,' + (0.4 + Math.sin(p.phase) * 0.2) + ')';
+                    ctx.lineWidth = 1.5 * dpr;
+                    ctx.beginPath(); ctx.moveTo(p.x * dpr, p.y * dpr); ctx.lineTo(p.x * dpr, (p.y + 4) * dpr); ctx.stroke();
+                } else {
+                    p.x += Math.sin(p.phase) * 0.2;
+                    p.y += Math.cos(p.phase * 0.5) * 0.1;
+                    if (p.x > cW / dpr) p.x = 0;
+                    ctx.beginPath(); ctx.arc(p.x * dpr, Math.min(p.y, cH * 0.25 / dpr) * dpr, p.size * 0.8 * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(226,232,240,' + (0.2 + Math.sin(p.phase) * 0.15) + ')'; ctx.fill();
+                }
+            });
+            // Labels on diagram
+            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+            ctx.fillStyle = '#fbbf24'; ctx.fillText('\u2191 Evaporation', 10 * dpr, cH * 0.55);
+            ctx.fillStyle = '#64748b'; ctx.fillText('\u2601 Condensation', cW * 0.3, cH * 0.08);
+            ctx.fillStyle = '#3b82f6'; ctx.fillText('\u2193 Precipitation', cW * 0.12, cH * 0.3);
+            ctx.fillStyle = '#22c55e'; ctx.fillText('\uD83C\uDF3F Transpiration', cW * 0.55, cH * 0.55);
+            canvasEl._wcAnim = requestAnimationFrame(draw);
+        }
+        canvasEl._wcAnim = requestAnimationFrame(draw);
+    };
+
+    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
+            React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+        ),
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "240px" } },
+            React.createElement("canvas", { ref: canvasRef, style: { width: "100%", height: "100%", display: "block" } })
+        ),
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+            STAGES.map(function (stage) {
+                return React.createElement("button", {
+                    key: stage.id, onClick: function () { upd('activeStage', stage.id); },
+                    className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
+                    style: { backgroundColor: (d.activeStage || 'evaporation') === stage.id ? stage.color : stage.color + '15', borderColor: stage.color, color: (d.activeStage || 'evaporation') === stage.id ? 'white' : stage.color }
+                }, stage.emoji + " " + stage.label);
+            })
+        ),
+        sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-2xl" }, sel.emoji),
-                React.createElement("h4", { className: "text-lg font-bold", style: { color: sel.color } }, sel.label)
-              ),
-              React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, sel.desc)
-            )
-            ,
-            // ── Water Cycle Quiz ──
-            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
-              React.createElement("button", {
+                React.createElement("h4", { className: "text-base font-bold", style: { color: sel.color } }, sel.label)
+            ),
+            React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, sel.desc)
+        ),
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("button", {
                 onClick: function () {
-                  var WC_QS = [
-                    { q: 'What process turns liquid water into vapor?', a: 'evaporation', opts: ['evaporation', 'condensation', 'precipitation', 'collection'] },
-                    { q: 'What forms when water vapor cools in the atmosphere?', a: 'condensation', opts: ['precipitation', 'evaporation', 'condensation', 'transpiration'] },
-                    { q: 'Rain, snow, sleet, and hail are all forms of...', a: 'precipitation', opts: ['evaporation', 'transpiration', 'collection', 'precipitation'] },
-                    { q: 'Which process involves plants releasing water?', a: 'transpiration', opts: ['transpiration', 'evaporation', 'condensation', 'collection'] },
-                    { q: 'Where does water collect after precipitation?', a: 'collection', opts: ['evaporation', 'condensation', 'collection', 'transpiration'] },
-                    { q: 'What is the main energy source for the water cycle?', a: 'The Sun', opts: ['Wind', 'The Moon', 'The Sun', 'Gravity'] },
-                    { q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] },
-                  ];
-                  var q = WC_QS[Math.floor(Math.random() * WC_QS.length)];
-                  upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+                    var WC_QS = [
+                        { q: 'What drives evaporation?', a: 'Solar energy', opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'] },
+                        { q: 'What forms clouds?', a: 'Condensation', opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'] },
+                        { q: 'Where does most evaporation occur?', a: 'Oceans', opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'] },
+                        { q: 'What is transpiration?', a: 'Water release from plants', opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'] },
+                        { q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] },
+                    ];
+                    var q = WC_QS[Math.floor(Math.random() * WC_QS.length)];
+                    upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all"
-              }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
-              d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && React.createElement("div", { className: "mt-2 bg-sky-50 rounded-lg p-3 border border-sky-200" },
+            }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+            d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
+            d.wcQuiz && React.createElement("div", { className: "mt-2 bg-sky-50 rounded-lg p-3 border border-sky-200" },
                 React.createElement("p", { className: "text-sm font-bold text-sky-800 mb-2" }, d.wcQuiz.q),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                  d.wcQuiz.opts.map(function (opt) {
-                    var isCorrect = opt === d.wcQuiz.a;
-                    var wasChosen = d.wcQuiz.chosen === opt;
-                    var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
-                    return React.createElement("button", {
-                      key: opt, disabled: d.wcQuiz.answered, onClick: function () {
-                        var correct = opt === d.wcQuiz.a;
-                        upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
-                        addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.wcQuiz.a, correct ? 'success' : 'error');
-                      }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all capitalize " + cls
-                    }, typeof opt === 'string' ? opt.charAt(0).toUpperCase() + opt.slice(1) : opt);
-                  })
+                    d.wcQuiz.opts.map(function (opt) {
+                        var isCorrect = opt === d.wcQuiz.a;
+                        var wasChosen = d.wcQuiz.chosen === opt;
+                        var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                        return React.createElement("button", {
+                            key: opt, disabled: d.wcQuiz.answered, onClick: function () {
+                                var correct = opt === d.wcQuiz.a;
+                                upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
+                                addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.wcQuiz.a, correct ? 'success' : 'error');
+                            }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                        }, opt);
+                    })
                 )
-              )
-            ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-          );
-        })(),
+            )
+        ),
+        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+    );
+})(),
 
         // ═══════════════════════════════════════════════════════
         // ROCK CYCLE
@@ -6578,102 +6936,204 @@ stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
           );
         })(),
 
-        // ═══════════════════════════════════════════════════════
-        // ECOSYSTEM SIMULATOR
-        // ═══════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
-          const d = labToolData.ecosystem;
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, ecosystem: { ...prev.ecosystem, [key]: val } }));
-          const simulate = () => {
-            let prey = d.prey0, pred = d.pred0;
-            const data = [{ step: 0, prey, pred }];
-            for (let i = 1; i <= 100; i++) {
-              const newPrey = Math.max(1, prey + d.preyBirth * prey - d.preyDeath * prey * pred);
-              const newPred = Math.max(1, pred + d.predBirth * prey * pred - d.predDeath * pred);
-              prey = Math.min(500, Math.round(newPrey));
-              pred = Math.min(500, Math.round(newPred));
-              data.push({ step: i, prey, pred });
+// ═══════════════════════════════════════════════════════
+// ECOSYSTEM SIMULATOR — Canvas2D Animated Population
+// ═══════════════════════════════════════════════════════
+stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
+    const d = labToolData.ecosystem;
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, ecosystem: { ...prev.ecosystem, [key]: val } }));
+    const simulate = () => {
+        let prey = d.prey0, pred = d.pred0;
+        const data = [{ step: 0, prey, pred }];
+        for (let i = 1; i <= 100; i++) {
+            const newPrey = Math.max(1, prey + d.preyBirth * prey - d.preyDeath * prey * pred);
+            const newPred = Math.max(1, pred + d.predBirth * prey * pred - d.predDeath * pred);
+            prey = Math.min(500, Math.round(newPrey));
+            pred = Math.min(500, Math.round(newPred));
+            data.push({ step: i, prey, pred });
+        }
+        upd('data', data);
+        upd('steps', 100);
+    };
+    const W = 440, H = 250, pad = 40;
+    const maxVal = d.data.length > 0 ? Math.max(...d.data.map(dp => Math.max(dp.prey, dp.pred)), 10) : 100;
+
+    // Canvas animation ref
+    const canvasRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._ecoInit) return;
+        canvasEl._ecoInit = true;
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+        var ctx = canvasEl.getContext('2d');
+        var dpr = 2;
+        var tick = 0;
+        var preyList = [];
+        var predList = [];
+        for (var i = 0; i < 60; i++) preyList.push({ x: Math.random() * cW / dpr, y: cH * 0.35 / dpr + Math.random() * cH * 0.65 / dpr, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2, alive: i < 30 });
+        for (var i = 0; i < 20; i++) predList.push({ x: Math.random() * cW / dpr, y: cH * 0.35 / dpr + Math.random() * cH * 0.65 / dpr, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, alive: i < 10 });
+        function draw() {
+            tick++;
+            ctx.clearRect(0, 0, cW, cH);
+            var dayPhase = (Math.sin(tick * 0.005) + 1) / 2;
+            var skyR = Math.round(135 + dayPhase * 80);
+            var skyG = Math.round(180 + dayPhase * 60);
+            var skyB = Math.round(100 + dayPhase * 50);
+            ctx.fillStyle = 'rgb(' + skyR + ',' + skyG + ',' + skyB + ')';
+            ctx.fillRect(0, 0, cW, cH * 0.35);
+            var groundGrad = ctx.createLinearGradient(0, cH * 0.35, 0, cH);
+            groundGrad.addColorStop(0, '#4ade80');
+            groundGrad.addColorStop(0.5, '#22c55e');
+            groundGrad.addColorStop(1, '#166534');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, cH * 0.35, cW, cH * 0.65);
+            if (dayPhase > 0.4) {
+                ctx.beginPath(); ctx.arc(cW * 0.8, cH * 0.12, 14 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#fbbf24'; ctx.fill();
+            } else {
+                ctx.beginPath(); ctx.arc(cW * 0.7, cH * 0.1, 10 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#e2e8f0'; ctx.fill();
             }
-            upd('data', data);
-            upd('steps', 100);
-          };
-          const W = 440, H = 250, pad = 40;
-          const maxVal = d.data.length > 0 ? Math.max(...d.data.map(dp => Math.max(dp.prey, dp.pred)), 10) : 100;
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDC3A Ecosystem Simulator")
-            ),
-            React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Model predator-prey population dynamics (Lotka-Volterra). Adjust rates and see how populations change."),
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-              [
+            var alivePreyCount = 0, alivePredCount = 0;
+            preyList.forEach(function (p) {
+                if (!p.alive) return;
+                alivePreyCount++;
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > cW / dpr) p.vx *= -1;
+                if (p.y < cH * 0.35 / dpr || p.y > cH / dpr) p.vy *= -1;
+                p.x = Math.max(0, Math.min(cW / dpr, p.x));
+                p.y = Math.max(cH * 0.35 / dpr, Math.min(cH / dpr, p.y));
+                p.vx += (Math.random() - 0.5) * 0.1; p.vy += (Math.random() - 0.5) * 0.1;
+                p.vx = Math.max(-1.5, Math.min(1.5, p.vx)); p.vy = Math.max(-1.5, Math.min(1.5, p.vy));
+                ctx.beginPath(); ctx.arc(p.x * dpr, p.y * dpr, 4 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#86efac'; ctx.fill();
+                ctx.strokeStyle = '#166534'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+            });
+            predList.forEach(function (pr) {
+                if (!pr.alive) return;
+                alivePredCount++;
+                var nearest = null, nearDist = Infinity;
+                preyList.forEach(function (p) {
+                    if (!p.alive) return;
+                    var dx = p.x - pr.x, dy = p.y - pr.y;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < nearDist) { nearDist = dist; nearest = p; }
+                });
+                if (nearest && nearDist < 120) {
+                    var dx = nearest.x - pr.x, dy = nearest.y - pr.y;
+                    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                    pr.vx += (dx / len) * 0.08; pr.vy += (dy / len) * 0.08;
+                }
+                if (nearest && nearDist < 5) nearest.alive = false;
+                pr.x += pr.vx; pr.y += pr.vy;
+                if (pr.x < 0 || pr.x > cW / dpr) pr.vx *= -1;
+                if (pr.y < cH * 0.35 / dpr || pr.y > cH / dpr) pr.vy *= -1;
+                pr.x = Math.max(0, Math.min(cW / dpr, pr.x));
+                pr.y = Math.max(cH * 0.35 / dpr, Math.min(cH / dpr, pr.y));
+                pr.vx *= 0.99; pr.vy *= 0.99;
+                ctx.beginPath();
+                ctx.moveTo(pr.x * dpr, (pr.y - 5) * dpr);
+                ctx.lineTo((pr.x - 4) * dpr, (pr.y + 4) * dpr);
+                ctx.lineTo((pr.x + 4) * dpr, (pr.y + 4) * dpr);
+                ctx.closePath();
+                ctx.fillStyle = '#fca5a5'; ctx.fill();
+                ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+            });
+            if (tick % 90 === 0) {
+                var n = Math.floor(alivePreyCount * 0.15);
+                for (var nn = 0; nn < n && nn < 5; nn++) { var dead = preyList.find(function (p) { return !p.alive; }); var par = preyList.find(function (p) { return p.alive; }); if (dead && par) { dead.x = par.x + (Math.random() - 0.5) * 20; dead.y = par.y + (Math.random() - 0.5) * 20; dead.alive = true; } }
+                if (alivePredCount > 2 && Math.random() < 0.2) { var dp = predList.find(function (p) { return p.alive; }); if (dp) dp.alive = false; }
+                if (alivePreyCount > 20 && Math.random() < 0.3) { var dp2 = predList.find(function (p) { return !p.alive; }); var pp = predList.find(function (p) { return p.alive; }); if (dp2 && pp) { dp2.x = pp.x; dp2.y = pp.y; dp2.alive = true; } }
+            }
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(6 * dpr, 6 * dpr, 120 * dpr, 42 * dpr);
+            ctx.fillStyle = '#86efac'; ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+            ctx.fillText('\uD83D\uDC07 Prey: ' + alivePreyCount, 12 * dpr, 22 * dpr);
+            ctx.fillStyle = '#fca5a5';
+            ctx.fillText('\uD83D\uDC3A Pred: ' + alivePredCount, 12 * dpr, 38 * dpr);
+            ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = (7 * dpr) + 'px sans-serif';
+            ctx.fillText(dayPhase > 0.4 ? '\u2600 Day' : '\uD83C\uDF19 Night', (cW / dpr - 40) * dpr, 18 * dpr);
+            canvasEl._ecoAnim = requestAnimationFrame(draw);
+        }
+        canvasEl._ecoAnim = requestAnimationFrame(draw);
+    };
+
+    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDC3A Ecosystem Simulator"),
+            React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full" }, "LIVE")
+        ),
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-300 shadow-lg mb-3", style: { height: '220px' } },
+            React.createElement("canvas", { ref: canvasRef, style: { width: '100%', height: '100%', display: 'block' } }),
+            React.createElement("div", { className: "absolute bottom-2 left-2 right-2 flex items-center gap-1 pointer-events-none" },
+                React.createElement("span", { className: "text-[9px] text-white/60 bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-sm" }, "\uD83D\uDC07 Green = prey  \u2022  \uD83D\uDC3A Red = predators")
+            )
+        ),
+        React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Model predator-prey dynamics (Lotka-Volterra). Adjust rates and run the graph below."),
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+            [
                 { label: '\uD83D\uDC07\uD83D\uDC3A Balanced', prey0: 80, pred0: 30, preyBirth: 0.1, preyDeath: 0.01, predBirth: 0.01, predDeath: 0.1 },
-                { label: '\uD83D\uDCA5 Extinction Spiral', prey0: 30, pred0: 80, preyBirth: 0.05, preyDeath: 0.02, predBirth: 0.01, predDeath: 0.05 },
-                { label: '\uD83D\uDCC8 Population Boom', prey0: 50, pred0: 10, preyBirth: 0.3, preyDeath: 0.005, predBirth: 0.005, predDeath: 0.15 },
+                { label: '\uD83D\uDCA5 Extinction', prey0: 30, pred0: 80, preyBirth: 0.05, preyDeath: 0.02, predBirth: 0.01, predDeath: 0.05 },
+                { label: '\uD83D\uDCC8 Boom', prey0: 50, pred0: 10, preyBirth: 0.3, preyDeath: 0.005, predBirth: 0.005, predDeath: 0.15 },
                 { label: '\u2696 Equilibrium', prey0: 100, pred0: 50, preyBirth: 0.1, preyDeath: 0.01, predBirth: 0.005, predDeath: 0.1 },
-              ].map(function (preset) {
+            ].map(function (preset) {
                 return React.createElement("button", {
-                  key: preset.label, onClick: function () {
-                    upd('prey0', preset.prey0); upd('pred0', preset.pred0);
-                    upd('preyBirth', preset.preyBirth); upd('preyDeath', preset.preyDeath);
-                    upd('predBirth', preset.predBirth); upd('predDeath', preset.predDeath);
-                    upd('data', []); upd('steps', 0);
-                  }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
+                    key: preset.label, onClick: function () {
+                        upd('prey0', preset.prey0); upd('pred0', preset.pred0);
+                        upd('preyBirth', preset.preyBirth); upd('preyDeath', preset.preyDeath);
+                        upd('predBirth', preset.predBirth); upd('predDeath', preset.predDeath);
+                        upd('data', []); upd('steps', 0);
+                    }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
                 }, preset.label);
-              })
-            ),
-            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-              [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83D\uDC3A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: 'Prey Birth Rate', min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: 'Pred Death Rate', min: 0.01, max: 0.5, step: 0.01 }].map(s =>
+            })
+        ),
+        React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+            [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83D\uDC3A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: 'Prey Birth', min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: 'Pred Death', min: 0.01, max: 0.5, step: 0.01 }].map(s =>
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
-                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-emerald-600" })
+                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                    React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
+                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-emerald-600" })
                 )
-              )
-            ),
-            React.createElement("button", { onClick: simulate, className: "mb-3 px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all" }, "\u25B6 Run Simulation"),
-            d.data.length > 0 && React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "270px" } },
-              React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
-              React.createElement("line", { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
-              React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.prey / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#22c55e", strokeWidth: 2 }),
-              React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.pred / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 2 }),
-              React.createElement("text", { x: W - pad + 5, y: pad, fill: "#22c55e", style: { fontSize: '9px', fontWeight: 'bold' } }, "Prey"),
-            ),
-            d.data.length > 0 && React.createElement("div", { className: "mt-3" },
-              React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait (Prey vs Predator)"),
-              React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
+            )
+        ),
+        React.createElement("button", { onClick: simulate, className: "mb-3 px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all" }, "\u25B6 Run Graph Simulation"),
+        d.data.length > 0 && React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "270px" } },
+            React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
+            React.createElement("line", { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
+            React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.prey / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#22c55e", strokeWidth: 2 }),
+            React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.pred / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 2 }),
+            React.createElement("text", { x: W - pad + 5, y: pad, fill: "#22c55e", style: { fontSize: '9px', fontWeight: 'bold' } }, "Prey")
+        ),
+        d.data.length > 0 && React.createElement("div", { className: "mt-3" },
+            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait"),
+            React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
                 React.createElement("line", { x1: 30, y1: 270, x2: 270, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
                 React.createElement("line", { x1: 30, y1: 30, x2: 30, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
-                React.createElement("text", { x: 150, y: 295, textAnchor: "middle", fill: "#22c55e", style: { fontSize: '10px', fontWeight: 'bold' } }, "Prey Population"),
-                React.createElement("text", { x: 10, y: 150, textAnchor: "middle", fill: "#ef4444", style: { fontSize: '10px', fontWeight: 'bold' }, transform: "rotate(-90,10,150)" }, "Predator Population"),
-                React.createElement("polyline", {
-                  points: d.data.map(function (dp) {
-                    return (30 + dp.prey / maxVal * 240) + "," + (270 - dp.pred / maxVal * 240);
-                  }).join(" "), fill: "none", stroke: "#6366f1", strokeWidth: 1.5
-                }),
+                React.createElement("text", { x: 150, y: 295, textAnchor: "middle", fill: "#22c55e", style: { fontSize: '10px', fontWeight: 'bold' } }, "Prey"),
+                React.createElement("text", { x: 10, y: 150, textAnchor: "middle", fill: "#ef4444", style: { fontSize: '10px', fontWeight: 'bold' }, transform: "rotate(-90,10,150)" }, "Predator"),
+                React.createElement("polyline", { points: d.data.map(function (dp) { return (30 + dp.prey / maxVal * 240) + "," + (270 - dp.pred / maxVal * 240); }).join(" "), fill: "none", stroke: "#6366f1", strokeWidth: 1.5 }),
                 React.createElement("circle", { cx: 30 + d.data[0].prey / maxVal * 240, cy: 270 - d.data[0].pred / maxVal * 240, r: 4, fill: "#22c55e" }),
-                React.createElement("circle", { cx: 30 + d.data[d.data.length - 1].prey / maxVal * 240, cy: 270 - d.data[d.data.length - 1].pred / maxVal * 240, r: 4, fill: "#ef4444" }),
-                React.createElement("text", { x: 35 + d.data[0].prey / maxVal * 240, y: 270 - d.data[0].pred / maxVal * 240 - 8, fill: "#22c55e", style: { fontSize: '8px', fontWeight: 'bold' } }, "Start"),
-                React.createElement("text", { x: 35 + d.data[d.data.length - 1].prey / maxVal * 240, y: 270 - d.data[d.data.length - 1].pred / maxVal * 240 - 8, fill: "#ef4444", style: { fontSize: '8px', fontWeight: 'bold' } }, "End")
-              ),
-              React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
+                React.createElement("circle", { cx: 30 + d.data[d.data.length - 1].prey / maxVal * 240, cy: 270 - d.data[d.data.length - 1].pred / maxVal * 240, r: 4, fill: "#ef4444" })
+            ),
+            React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
                 React.createElement("div", { className: "p-1.5 bg-emerald-50 rounded-lg border border-emerald-200" },
-                  React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
-                  React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.prey; })))
+                    React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.prey; })))
                 ),
                 React.createElement("div", { className: "p-1.5 bg-red-50 rounded-lg border border-red-200" },
-                  React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Predators"),
-                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.pred; })))
+                    React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Pred"),
+                    React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.pred; })))
                 ),
                 React.createElement("div", { className: "p-1.5 bg-indigo-50 rounded-lg border border-indigo-200" },
-                  React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
-                  React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function () { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i - 1].prey > d.data[i - 2].prey && d.data[i - 1].prey > d.data[i].prey) peaks++; } return peaks; })())
+                    React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
+                    React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function () { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i - 1].prey > d.data[i - 2].prey && d.data[i - 1].prey > d.data[i].prey) peaks++; } return peaks; })())
                 )
-              ),
-              React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 The phase portrait shows the classic Lotka-Volterra orbit. Closed loops indicate stable oscillations.")
-            )
-          );
-        })(),
+            ),
+            React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 Closed loops = stable Lotka-Volterra oscillations.")
+        ),
+        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'eco-' + Date.now(), tool: 'ecosystem', label: 'Ecosystem', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+    );
+})(),
 
         // ═══════════════════════════════════════════════════════
         // FRACTION VISUALIZER
