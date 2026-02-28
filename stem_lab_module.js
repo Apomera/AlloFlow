@@ -7990,41 +7990,41 @@
 
           // ═══ SCALE & CHORD DATA ═══
           var SCALES = {
-            'Major': { intervals: [0, 2, 4, 5, 7, 9, 11], desc: 'Happy, bright. The most common Western scale.', science: 'Built on W-W-H-W-W-W-H. The Ionian mode.' },
-            'Natural Minor': { intervals: [0, 2, 3, 5, 7, 8, 10], desc: 'Sad, dark, introspective.', science: 'W-H-W-W-H-W-W. The Aeolian mode.' },
-            'Harmonic Minor': { intervals: [0, 2, 3, 5, 7, 8, 11], desc: 'Exotic, dramatic, classical.', science: 'Raises the 7th, creating an augmented 2nd interval.' },
-            'Melodic Minor': { intervals: [0, 2, 3, 5, 7, 9, 11], desc: 'Smooth, jazzy, sophisticated.', science: 'Raises 6th and 7th of natural minor. Foundation of jazz modes.' },
-            'Pentatonic Major': { intervals: [0, 2, 4, 7, 9], desc: 'Universal, folk, rock.', science: '5-note subset, no semitones. Always sounds consonant.' },
-            'Pentatonic Minor': { intervals: [0, 3, 5, 7, 10], desc: 'Blues, rock, universal.', science: 'Most common for improvisation. No semitones.' },
-            'Blues': { intervals: [0, 3, 5, 6, 7, 10], desc: 'Soulful, gritty, expressive.', science: 'Minor pentatonic + blue note (\u266D5). The tritone creates tension.' },
-            'Dorian': { intervals: [0, 2, 3, 5, 7, 9, 10], desc: 'Jazz, funk, bright minor.', science: 'Minor mode with raised 6th. "So What" by Miles Davis.' },
-            'Mixolydian': { intervals: [0, 2, 4, 5, 7, 9, 10], desc: 'Rock, folk, dominant feel.', science: 'Major with \u266D7. The dominant sound.' },
-            'Phrygian': { intervals: [0, 1, 3, 5, 7, 8, 10], desc: 'Spanish, flamenco, metal.', science: 'Minor with \u266D2. Half-step creates dramatic tension.' },
-            'Lydian': { intervals: [0, 2, 4, 6, 7, 9, 11], desc: 'Dreamy, ethereal, film scores.', science: 'Major with \u266F4. Used in film scores (John Williams).' },
-            'Whole Tone': { intervals: [0, 2, 4, 6, 8, 10], desc: 'Mysterious, ambiguous.', science: 'All whole steps. No tonal center. Only 2 unique exist.' },
-            'Chromatic': { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], desc: 'All 12 notes.', science: 'Every semitone. Each at 2^(1/12) ratio.' },
+            'Major': { intervals: [0, 2, 4, 5, 7, 9, 11], desc: 'Happy, bright. The most common Western scale.', science: 'Built on the pattern W-W-H-W-W-W-H (Whole/Half steps). The Ionian mode. Its brightness comes from the major 3rd (4 semitones) and perfect 5th (7 semitones).' },
+            'Natural Minor': { intervals: [0, 2, 3, 5, 7, 8, 10], desc: 'Sad, dark, introspective.', science: 'Pattern: W-H-W-W-H-W-W. The Aeolian mode. The minor 3rd (3 semitones) creates a darker, more somber quality than major.' },
+            'Harmonic Minor': { intervals: [0, 2, 3, 5, 7, 8, 11], desc: 'Exotic, dramatic, classical.', science: 'Like natural minor but raises the 7th degree. Creates an augmented 2nd interval (3 semitones) between the 6th and 7th, giving it a Middle Eastern flavor.' },
+            'Melodic Minor': { intervals: [0, 2, 3, 5, 7, 9, 11], desc: 'Smooth, jazzy, sophisticated.', science: 'Raises both the 6th and 7th degrees of natural minor. Used ascending in classical; jazz uses it both ways. Foundation of many jazz modes.' },
+            'Pentatonic Major': { intervals: [0, 2, 4, 7, 9], desc: 'Universal, folk, rock.', science: 'A 5-note subset of the major scale, removing the 4th and 7th. Found in music worldwide because it avoids semitones, making any combination sound consonant.' },
+            'Pentatonic Minor': { intervals: [0, 3, 5, 7, 10], desc: 'Blues, rock, universal.', science: 'The most common scale for improvisation. 5 notes, no semitones. Guitar solos, Asian music, African music all use this scale extensively.' },
+            'Blues': { intervals: [0, 3, 5, 6, 7, 10], desc: 'Soulful, gritty, expressive.', science: 'Adds the "blue note" (\u266D5/\u266F4) to the minor pentatonic. This tritone creates tension and the characteristic blues sound. Bending notes is central to blues expression.' },
+            'Dorian': { intervals: [0, 2, 3, 5, 7, 9, 10], desc: 'Jazz, funk, sophisticated minor.', science: 'A minor mode with a raised 6th degree. Used heavily in jazz and funk (e.g., "So What" by Miles Davis). Has a "bright minor" quality.' },
+            'Mixolydian': { intervals: [0, 2, 4, 5, 7, 9, 10], desc: 'Rock, folk, dominant feel.', science: 'A major scale with a lowered 7th. The "dominant" sound. Used in rock (Grateful Dead), folk, and creates the V7 chord quality.' },
+            'Phrygian': { intervals: [0, 1, 3, 5, 7, 8, 10], desc: 'Spanish, flamenco, metal.', science: 'A minor mode with \u266D2. The half-step from root creates dramatic, dark tension. Central to flamenco guitar and heavy metal.' },
+            'Lydian': { intervals: [0, 2, 4, 6, 7, 9, 11], desc: 'Dreamy, ethereal, film scores.', science: 'A major scale with \u266F4. The raised 4th creates a "floating" quality. Used extensively in film scores (John Williams) and progressive rock.' },
+            'Whole Tone': { intervals: [0, 2, 4, 6, 8, 10], desc: 'Mysterious, ambiguous, dreamlike.', science: 'All whole steps, no half steps. No tonal center. Only 2 unique whole-tone scales exist. Used by Debussy and in mystery/dream sequences.' },
+            'Chromatic': { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], desc: 'All 12 notes. Complete but atonal.', science: 'Every semitone in the octave. No tonal hierarchy. The basis of 12-tone serialism (Schoenberg). Each note is equally spaced at 2^(1/12) \u2248 1.0595 frequency ratio.' },
           };
 
           var CHORDS = {
-            'Major': { intervals: [0, 4, 7], symbol: '', desc: 'Happy, stable.', science: 'Root + M3 + P5. Ratio ~4:5:6.' },
-            'Minor': { intervals: [0, 3, 7], symbol: 'm', desc: 'Sad, introspective.', science: 'Root + m3 + P5. Ratio ~10:12:15.' },
-            'Diminished': { intervals: [0, 3, 6], symbol: 'dim', desc: 'Tense, unstable.', science: 'Two minor 3rds. Tritone creates maximum tension.' },
-            'Augmented': { intervals: [0, 4, 8], symbol: 'aug', desc: 'Mysterious, unresolved.', science: 'Two major 3rds. Divides octave into 3 equal parts.' },
-            'Maj7': { intervals: [0, 4, 7, 11], symbol: 'maj7', desc: 'Smooth, lush, jazzy.', science: 'Major triad + major 7th. Sweet, complex resonance.' },
-            'Min7': { intervals: [0, 3, 7, 10], symbol: 'm7', desc: 'Cool, mellow, relaxed.', science: 'Minor triad + minor 7th. Common in jazz.' },
-            'Dom7': { intervals: [0, 4, 7, 10], symbol: '7', desc: 'Bluesy, wants to resolve.', science: 'Major + m7. Tritone between 3rd and \u266D7 pulls to resolution.' },
-            'Sus2': { intervals: [0, 2, 7], symbol: 'sus2', desc: 'Open, modern.', science: 'Replaces 3rd with 2nd. Ambiguous quality.' },
-            'Sus4': { intervals: [0, 5, 7], symbol: 'sus4', desc: 'Suspended, yearning.', science: 'Replaces 3rd with 4th. Wants to resolve to major.' },
-            'Power': { intervals: [0, 7, 12], symbol: '5', desc: 'Raw, strong.', science: 'Root + P5 + Oct. No 3rd = no major/minor quality.' },
+            'Major': { intervals: [0, 4, 7], symbol: '', desc: 'Happy, stable, resolved.', science: 'Root + Major 3rd (4 semitones) + Perfect 5th (7 semitones). Frequency ratio approximately 4:5:6. The most consonant triad.' },
+            'Minor': { intervals: [0, 3, 7], symbol: 'm', desc: 'Sad, introspective, dark.', science: 'Root + Minor 3rd (3 semitones) + Perfect 5th. The lowered 3rd creates a more somber quality. Ratio approximately 10:12:15.' },
+            'Diminished': { intervals: [0, 3, 6], symbol: 'dim', desc: 'Tense, unstable, needs to resolve.', science: 'Two minor 3rds stacked. The tritone (6 semitones) between root and 5th is the most dissonant interval, creating maximum tension.' },
+            'Augmented': { intervals: [0, 4, 8], symbol: 'aug', desc: 'Mysterious, unresolved, eerie.', science: 'Two major 3rds stacked. Divides the octave into 3 equal parts. Symmetrical \u2014 only 4 unique augmented triads exist.' },
+            'Maj7': { intervals: [0, 4, 7, 11], symbol: 'maj7', desc: 'Smooth, lush, jazzy.', science: 'Major triad + major 7th (11 semitones). The major 7th interval is nearly an octave, creating a sweet, complex resonance.' },
+            'Min7': { intervals: [0, 3, 7, 10], symbol: 'm7', desc: 'Cool, mellow, relaxed.', science: 'Minor triad + minor 7th (10 semitones). Very common in jazz. Less tense than dominant 7th, more complex than minor triad.' },
+            'Dom7': { intervals: [0, 4, 7, 10], symbol: '7', desc: 'Bluesy, restless, wants to resolve.', science: 'Major triad + minor 7th. The tritone between 3rd and \u266D7th creates tension that "pulls" toward resolution to a chord a 5th below (V7\u2192I).' },
+            'Sus2': { intervals: [0, 2, 7], symbol: 'sus2', desc: 'Open, modern, shimmering.', science: 'Replaces the 3rd with the 2nd. Neither major nor minor \u2014 ambiguous quality. Common in pop and ambient music.' },
+            'Sus4': { intervals: [0, 5, 7], symbol: 'sus4', desc: 'Suspended, yearning to resolve.', science: 'Replaces the 3rd with the 4th. The 4th wants to "suspend" down to the 3rd. Used since medieval music to create tension-release.' },
+            'Power': { intervals: [0, 7, 12], symbol: '5', desc: 'Raw, strong, genre-defining.', science: 'Just root + 5th (+ octave). No 3rd means no major/minor quality. Sounds huge with distortion because the simple 3:2 ratio stays clean when clipped.' },
             // Extended voicings (MiniChord-inspired)
-            '6': { intervals: [0, 4, 7, 9], symbol: '6', desc: 'Warm, jazzy, classic.', science: 'Major triad + major 6th. Central to Barry Harris harmony. Sweet alternative to maj7.' },
-            'min6': { intervals: [0, 3, 7, 9], symbol: 'm6', desc: 'Sophisticated minor.', science: 'Minor triad + major 6th. Key chord in Barry Harris minor system.' },
-            'add9': { intervals: [0, 2, 4, 7], symbol: 'add9', desc: 'Bright, open, modern pop.', science: 'Major triad + 9th (2nd up an octave). No 7th. Clean, shimmering sound.' },
-            '9': { intervals: [0, 4, 7, 10, 14], symbol: '9', desc: 'Rich, funky, bluesy.', science: 'Dominant 7th + 9th. Full, complex sound. Essential in funk and R&B.' },
-            'Maj9': { intervals: [0, 4, 7, 11, 14], symbol: 'maj9', desc: 'Dreamy, lush.', science: 'Major 7th + 9th. Maximum smoothness. Neo-soul and jazz ballads.' },
-            'Min9': { intervals: [0, 3, 7, 10, 14], symbol: 'm9', desc: 'Cool, sophisticated.', science: 'Minor 7th + 9th. The quintessential modern jazz minor chord.' },
-            '13': { intervals: [0, 4, 7, 10, 14, 21], symbol: '13', desc: 'Full, orchestral, complex.', science: 'Dominant with 9th + 13th. Six notes! Used in jazz endings and gospel.' },
-            'dim7': { intervals: [0, 3, 6, 9], symbol: 'dim7', desc: 'Symmetrical, passing.', science: 'All minor 3rds. Only 3 unique dim7 chords exist. Used as passing chords in Barry Harris.' },
+            '6': { intervals: [0, 4, 7, 9], symbol: '6', desc: 'Warm, jazzy, classic.', science: 'Major triad + major 6th. Central to Barry Harris harmony. A sweet, sophisticated alternative to maj7.' },
+            'min6': { intervals: [0, 3, 7, 9], symbol: 'm6', desc: 'Sophisticated minor.', science: 'Minor triad + major 6th. Key chord in Barry Harris minor system. Creates smooth voice leading with dim7 passing chords.' },
+            'add9': { intervals: [0, 2, 4, 7], symbol: 'add9', desc: 'Bright, open, modern pop.', science: 'Major triad + 9th (2nd up an octave). No 7th. Clean, shimmering sound popular in contemporary pop and worship music.' },
+            '9': { intervals: [0, 4, 7, 10, 14], symbol: '9', desc: 'Rich, funky, bluesy.', science: 'Dominant 7th + 9th. Full, complex sound. Essential in funk, R&B, and blues. Hendrix made the 7\u266F9 famous.' },
+            'Maj9': { intervals: [0, 4, 7, 11, 14], symbol: 'maj9', desc: 'Dreamy, lush.', science: 'Major 7th + 9th. Maximum smoothness and warmth. Neo-soul and jazz ballads. The quintessential "beautiful" chord.' },
+            'Min9': { intervals: [0, 3, 7, 10, 14], symbol: 'm9', desc: 'Cool, sophisticated.', science: 'Minor 7th + 9th. The quintessential modern jazz minor chord. Creates a contemplative, introspective mood.' },
+            '13': { intervals: [0, 4, 7, 10, 14, 21], symbol: '13', desc: 'Full, orchestral, complex.', science: 'Dominant with 9th + 13th. Six notes! Used in jazz endings, gospel turnarounds, and orchestral voicings.' },
+            'dim7': { intervals: [0, 3, 6, 9], symbol: 'dim7', desc: 'Symmetrical, passing.', science: 'All minor 3rds stacked. Only 3 unique dim7 chords exist (due to symmetry). Used as passing chords in Barry Harris harmony for smooth voice leading.' },
           };
 
           // Barry Harris harmony transformations
@@ -8069,19 +8069,19 @@
 
           // ═══ INTERVALS ═══
           var INTERVALS = [
-            { name: 'Unison', semitones: 0, ratio: '1:1', quality: 'perfect', song: 'Same note' },
-            { name: 'Minor 2nd', semitones: 1, ratio: '16:15', quality: 'dissonant', song: '\uD83C\uDFB5 Jaws theme' },
-            { name: 'Major 2nd', semitones: 2, ratio: '9:8', quality: 'dissonant', song: '\uD83C\uDFB5 Happy Birthday' },
-            { name: 'Minor 3rd', semitones: 3, ratio: '6:5', quality: 'consonant', song: '\uD83C\uDFB5 Greensleeves' },
-            { name: 'Major 3rd', semitones: 4, ratio: '5:4', quality: 'consonant', song: '\uD83C\uDFB5 When the Saints' },
-            { name: 'Perfect 4th', semitones: 5, ratio: '4:3', quality: 'perfect', song: '\uD83C\uDFB5 Here Comes the Bride' },
-            { name: 'Tritone', semitones: 6, ratio: '45:32', quality: 'dissonant', song: '\uD83C\uDFB5 The Simpsons' },
-            { name: 'Perfect 5th', semitones: 7, ratio: '3:2', quality: 'perfect', song: '\uD83C\uDFB5 Star Wars' },
-            { name: 'Minor 6th', semitones: 8, ratio: '8:5', quality: 'consonant', song: '\uD83C\uDFB5 The Entertainer' },
-            { name: 'Major 6th', semitones: 9, ratio: '5:3', quality: 'consonant', song: '\uD83C\uDFB5 My Bonnie' },
-            { name: 'Minor 7th', semitones: 10, ratio: '16:9', quality: 'dissonant', song: '\uD83C\uDFB5 Somewhere (West Side)' },
-            { name: 'Major 7th', semitones: 11, ratio: '15:8', quality: 'dissonant', song: '\uD83C\uDFB5 Take On Me' },
-            { name: 'Octave', semitones: 12, ratio: '2:1', quality: 'perfect', song: '\uD83C\uDFB5 Somewhere Over the Rainbow' }
+            { name: 'Unison', semitones: 0, ratio: '1:1', song: 'Same note', quality: 'perfect' },
+            { name: 'Minor 2nd', semitones: 1, ratio: '16:15', song: 'Jaws theme', quality: 'dissonant' },
+            { name: 'Major 2nd', semitones: 2, ratio: '9:8', song: 'Happy Birthday (1st two notes)', quality: 'dissonant' },
+            { name: 'Minor 3rd', semitones: 3, ratio: '6:5', song: 'Greensleeves', quality: 'consonant' },
+            { name: 'Major 3rd', semitones: 4, ratio: '5:4', song: 'Oh When the Saints', quality: 'consonant' },
+            { name: 'Perfect 4th', semitones: 5, ratio: '4:3', song: 'Here Comes the Bride', quality: 'perfect' },
+            { name: 'Tritone', semitones: 6, ratio: '\u221A2:1', song: 'The Simpsons theme', quality: 'dissonant' },
+            { name: 'Perfect 5th', semitones: 7, ratio: '3:2', song: 'Star Wars opening', quality: 'perfect' },
+            { name: 'Minor 6th', semitones: 8, ratio: '8:5', song: 'Love Story theme', quality: 'consonant' },
+            { name: 'Major 6th', semitones: 9, ratio: '5:3', song: 'My Bonnie Lies Over the Ocean', quality: 'consonant' },
+            { name: 'Minor 7th', semitones: 10, ratio: '16:9', song: 'Star Trek theme', quality: 'dissonant' },
+            { name: 'Major 7th', semitones: 11, ratio: '15:8', song: 'Take On Me (chorus)', quality: 'dissonant' },
+            { name: 'Octave', semitones: 12, ratio: '2:1', song: 'Somewhere Over the Rainbow', quality: 'perfect' },
           ];
 
           // ═══ PRESETS (incl Plucked for K-S) ═══
@@ -8115,20 +8115,30 @@
 
           // ═══ CIRCLE OF FIFTHS ═══
           var CIRCLE_OF_FIFTHS = [
-            { key: 'C', minor: 'Am', sharps: 0, flats: 0 }, { key: 'G', minor: 'Em', sharps: 1, flats: 0 },
-            { key: 'D', minor: 'Bm', sharps: 2, flats: 0 }, { key: 'A', minor: 'F#m', sharps: 3, flats: 0 },
-            { key: 'E', minor: 'C#m', sharps: 4, flats: 0 }, { key: 'B', minor: 'G#m', sharps: 5, flats: 0 },
-            { key: 'F#', minor: 'D#m', sharps: 6, flats: 0 }, { key: 'Db', minor: 'Bbm', sharps: 0, flats: 5 },
-            { key: 'Ab', minor: 'Fm', sharps: 0, flats: 4 }, { key: 'Eb', minor: 'Cm', sharps: 0, flats: 3 },
-            { key: 'Bb', minor: 'Gm', sharps: 0, flats: 2 }, { key: 'F', minor: 'Dm', sharps: 0, flats: 1 }
+            { key: 'C', minor: 'Am', sharps: 0, flats: 0 },
+            { key: 'G', minor: 'Em', sharps: 1, flats: 0 },
+            { key: 'D', minor: 'Bm', sharps: 2, flats: 0 },
+            { key: 'A', minor: 'F#m', sharps: 3, flats: 0 },
+            { key: 'E', minor: 'C#m', sharps: 4, flats: 0 },
+            { key: 'B', minor: 'G#m', sharps: 5, flats: 0 },
+            { key: 'F#/G\u266D', minor: 'D#m/E\u266Dm', sharps: 6, flats: 6 },
+            { key: 'D\u266D', minor: 'B\u266Dm', sharps: 0, flats: 5 },
+            { key: 'A\u266D', minor: 'Fm', sharps: 0, flats: 4 },
+            { key: 'E\u266D', minor: 'Cm', sharps: 0, flats: 3 },
+            { key: 'B\u266D', minor: 'Gm', sharps: 0, flats: 2 },
+            { key: 'F', minor: 'Dm', sharps: 0, flats: 1 },
           ];
 
           // ═══ HARMONIC SERIES ═══
           var HARMONICS_INFO = [
-            { n: 1, ratio: '1:1', interval: 'Fundamental' }, { n: 2, ratio: '2:1', interval: 'Octave' },
-            { n: 3, ratio: '3:1', interval: 'P5 + Oct' }, { n: 4, ratio: '4:1', interval: '2 Octaves' },
-            { n: 5, ratio: '5:1', interval: 'M3 + 2Oct' }, { n: 6, ratio: '6:1', interval: 'P5 + 2Oct' },
-            { n: 7, ratio: '7:1', interval: '\u266Dm7 + 2Oct' }, { n: 8, ratio: '8:1', interval: '3 Octaves' }
+            { n: 1, name: 'Fundamental', interval: 'Unison', ratio: '1x' },
+            { n: 2, name: '1st Overtone', interval: 'Octave', ratio: '2x' },
+            { n: 3, name: '2nd Overtone', interval: 'P5 + Oct', ratio: '3x' },
+            { n: 4, name: '3rd Overtone', interval: '2 Octaves', ratio: '4x' },
+            { n: 5, name: '4th Overtone', interval: 'M3 + 2 Oct', ratio: '5x' },
+            { n: 6, name: '5th Overtone', interval: 'P5 + 2 Oct', ratio: '6x' },
+            { n: 7, name: '6th Overtone', interval: '\u266D7 + 2 Oct', ratio: '7x' },
+            { n: 8, name: '7th Overtone', interval: '3 Octaves', ratio: '8x' },
           ];
           function playHarmonic(harmNum) {
             var baseFreq = noteFreq(selectedRoot, d.octave || 4);
@@ -8209,7 +8219,7 @@
           var timeSig = d.timeSig || '4/4';
           var loopLen = d.loopLen || 16;
           var seq = d.sequence || new Array(loopLen).fill(0);
-          var drumSeq = d.drumSeq || {};
+          var drumSeq = d.drumSequence || d.drumSeq || {};
           var intervalGame = d.intervalGame;
           var jazzMode = d.jazzMode || false;
           var synthEngine = d.synthEngine || 'standard';
@@ -8258,13 +8268,13 @@
             var ds = Object.assign({}, drumSeq);
             if (!ds[type]) ds[type] = new Array(loopLen).fill(0);
             ds[type] = ds[type].slice(); ds[type][idx] = ds[type][idx] ? 0 : 1;
-            upd('drumSeq', ds);
+            upd('drumSequence', ds);
           }
           function startSequencer() {
             stopSequencer(); upd('seqPlaying', true); upd('seqStep', 0);
             var step = 0; var bpm = d.bpm || 120; var msPerStep = (60000 / bpm) / 2;
             window._alloSynthSeqInterval = setInterval(function () {
-              var currentSeq = d.sequence || seq; var currentDrums = d.drumSeq || drumSeq;
+              var currentSeq = d.sequence || seq; var currentDrums = d.drumSequence || d.drumSeq || drumSeq;
               var noteIdx = currentSeq[step];
               if (noteIdx > 0 && noteIdx <= SEQ_NOTES.length) {
                 var freq = SEQ_FREQS[noteIdx - 1];
@@ -8495,7 +8505,7 @@
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
               React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ id: 'play', icon: '\uD83C\uDFB9', label: 'Play' }, { id: 'compose', icon: '\uD83C\uDFBC', label: 'Compose' }, { id: 'theory', icon: '\uD83D\uDCDA', label: 'Theory' }, { id: 'lab', icon: '\u2699\uFE0F', label: 'Sound Lab' }, { id: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (tab) {
+                [{ id: 'play', icon: '\uD83C\uDFB9', label: 'Play' }, { id: 'scales', icon: '\uD83C\uDFB5', label: 'Scales' }, { id: 'chords', icon: '\uD83C\uDFB6', label: 'Chords' }, { id: 'theory', icon: '\uD83D\uDCDA', label: 'Theory' }].map(function (tab) {
                   return React.createElement("button", {
                     key: tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
@@ -8657,18 +8667,18 @@
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
-                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'HalfDim7', 'Dim7', 'Min9', 'Maj9', 'Dom9', 'Dom13', 'M6', 'm6'] : ['Major', 'Minor', 'Diminished', 'Augmented', 'Sus2', 'Sus4', 'Power', 'Dom7', 'Maj7', 'Min7']).map(function (chType) {
+                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6'] : ['Major', 'Minor', 'Diminished', 'Augmented', 'Sus2', 'Sus4', 'Power', 'Dom7', 'Maj7', 'Min7']).map(function (chType) {
                     var chord = CHORDS[chType]; if (!chord) return null;
                     return React.createElement("button", {
                       key: chType,
                       onClick: function () { upd('selectedChord', chType); playChord(chordRoot, chType, chordInversion); },
                       className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (selectedChord === chType ? 'bg-purple-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-600')
-                    }, chordRoot + chord.suffix);
+                    }, chordRoot + chord.symbol);
                   })
                 ),
                 // Chord info badge
                 selectedChord && CHORDS[selectedChord] && React.createElement("div", { className: "mt-1 px-2.5 py-1 bg-purple-50 rounded-lg text-[10px] text-purple-700" },
-                  React.createElement("span", { className: "font-bold" }, chordRoot + CHORDS[selectedChord].suffix + ": "),
+                  React.createElement("span", { className: "font-bold" }, chordRoot + CHORDS[selectedChord].symbol + ": "),
                   React.createElement("span", null, CHORDS[selectedChord].intervals.map(function (i) { return NOTE_NAMES[(NOTE_NAMES.indexOf(chordRoot) + i) % 12]; }).join(' \u2022 ')),
                   React.createElement("span", { className: "ml-2 text-purple-400 italic" }, CHORDS[selectedChord].desc || '')
                 )
@@ -8885,8 +8895,8 @@
               )
             ),
 
-            // ═══════════ TAB: COMPOSE ═══════════
-            synthTab === 'compose' && React.createElement("div", null,
+            // ═══════════ COMPOSE SECTION (in Play tab) ═══════════
+            synthTab === 'play' && React.createElement("div", { className: "mt-3" },
               // Transport bar
               React.createElement("div", { className: "flex items-center gap-2 mb-3 bg-slate-50 rounded-xl border p-2" },
                 React.createElement("button", {
@@ -8985,7 +8995,7 @@
                   React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83E\uDD41 Drums"),
                   React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.drums.text }, "\u2753"),
                   React.createElement("button", {
-                    onClick: function () { upd('drumSeq', {}); },
+                    onClick: function () { upd('drumSequence', {}); },
                     className: "ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500"
                   }, "\uD83D\uDDD1 Clear")
                 ),
@@ -9058,8 +9068,8 @@
               React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: 'Composition', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Composition saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Save Composition")
             ),
 
-            // ═══════════ TAB: THEORY ═══════════
-            synthTab === 'theory' && React.createElement("div", null,
+            // ═══════════ TAB: SCALES ═══════════
+            synthTab === 'scales' && React.createElement("div", null,
               // Scales & Modes
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
@@ -9102,6 +9112,113 @@
                       );
                     })
                   )
+                ),
+                // Science box
+                selectedScale && SCALES[selectedScale] && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-lg p-3 border" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDD2C The Science"),
+                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, SCALES[selectedScale].science)
+                )
+              ),
+
+              // Waveform Science (moved from Sound Lab)
+              React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
+                React.createElement("span", { className: "text-sm font-bold text-slate-800 block mb-3" }, "\u223F Waveform Science"),
+                React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                  Object.keys(WAVE_INFO).map(function (wType) {
+                    var wi = WAVE_INFO[wType];
+                    var isActive = (d.waveType || 'sine') === wType;
+                    return React.createElement("div", {
+                      key: wType,
+                      onClick: function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); },
+                      className: "p-3 rounded-xl border-2 cursor-pointer transition-all " + (isActive ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200')
+                    },
+                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                        React.createElement("span", { className: "text-lg" }, wi.emoji),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-800 capitalize" }, wType)
+                      ),
+                      React.createElement("p", { className: "text-[10px] text-slate-600 mb-1" }, wi.desc),
+                      React.createElement("p", { className: "text-[9px] text-purple-600 font-bold" }, "Harmonics: " + wi.harmonics),
+                      React.createElement("p", { className: "text-[9px] text-slate-400 leading-snug mt-1" }, wi.science)
+                    );
+                  })
+                )
+              )
+            ),
+
+            // ═══════════ TAB: CHORDS ═══════════
+            synthTab === 'chords' && React.createElement("div", null,
+              // Chord Explorer
+              React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                  React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDFB6 Chord Explorer"),
+                  React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.chords.text }, "\u2753"),
+                  React.createElement("button", {
+                    onClick: function () { upd('jazzMode', !jazzMode); },
+                    className: "px-2 py-0.5 rounded text-[10px] font-bold ml-auto " + (jazzMode ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500')
+                  }, "\uD83C\uDFB7 Jazz Mode")
+                ),
+                React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
+                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6', 'add9'] : Object.keys(CHORDS).filter(function (k) { return ['Major', 'Minor', 'Diminished', 'Augmented', 'Maj7', 'Min7', 'Dom7', 'Sus2', 'Sus4', 'Power'].indexOf(k) !== -1; })).map(function (chType) {
+                    var chord = CHORDS[chType]; if (!chord) return null;
+                    return React.createElement("button", {
+                      key: chType,
+                      onClick: function () { upd('selectedChord', chType); upd('chordRoot', selectedRoot); playChord(selectedRoot, chType, chordInversion); },
+                      className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (selectedChord === chType ? 'bg-purple-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-600')
+                    }, selectedRoot + chord.symbol);
+                  })
+                ),
+                // Inversion selector
+                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Inversion"),
+                  [0, 1, 2].map(function (inv) {
+                    return React.createElement("button", {
+                      key: inv,
+                      onClick: function () { upd('chordInversion', inv); if (selectedChord) playChord(selectedRoot, selectedChord, inv); },
+                      className: "px-2 py-0.5 rounded text-[10px] font-bold " + (chordInversion === inv ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-500')
+                    }, inv === 0 ? 'Root' : inv === 1 ? '1st Inv' : '2nd Inv');
+                  }),
+                  React.createElement("button", {
+                    onClick: function () { if (selectedChord) strumChord(selectedRoot, selectedChord, chordInversion, 40, 'up'); },
+                    className: "ml-auto px-3 py-1 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  }, "\uD83C\uDFB8 Strum")
+                ),
+                // Chord info panel
+                selectedChord && CHORDS[selectedChord] && React.createElement("div", { className: "bg-purple-50 rounded-lg p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                    React.createElement("span", { className: "text-sm font-bold text-purple-700" }, selectedRoot + CHORDS[selectedChord].symbol),
+                    React.createElement("span", { className: "text-xs text-purple-500" }, CHORDS[selectedChord].desc)
+                  ),
+                  React.createElement("div", { className: "flex gap-1 mb-2" },
+                    CHORDS[selectedChord].intervals.map(function (intv, i) {
+                      var nIdx = (NOTE_NAMES.indexOf(selectedRoot) + intv) % 12;
+                      return React.createElement("div", {
+                        key: i,
+                        onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'chord_note_' + i, 500); },
+                        className: "flex-1 py-2 rounded-lg text-center cursor-pointer bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-all"
+                      },
+                        React.createElement("span", { className: "text-xs font-bold text-purple-700" }, NOTE_NAMES[nIdx]),
+                        React.createElement("span", { className: "text-[8px] text-purple-400 block" }, i === 0 ? 'Root' : intv + ' semi')
+                      );
+                    })
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-slate-500 leading-relaxed" }, "\uD83D\uDD2C " + CHORDS[selectedChord].science)
+                )
+              ),
+
+              // Chord Progressions
+              React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
+                React.createElement("span", { className: "text-sm font-bold text-slate-800 block mb-3" }, "\uD83C\uDFB6 Chord Progressions"),
+                React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
+                  PROGRESSIONS.map(function (prog) {
+                    return React.createElement("button", {
+                      key: prog.name,
+                      onClick: function () { playProgression(prog); },
+                      className: "text-left px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                    },
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
+                      React.createElement("span", { className: "text-[9px] text-slate-400" }, prog.desc)
+                    );
+                  })
                 )
               ),
 
@@ -9132,6 +9249,44 @@
                 )
               ),
 
+              // Barry Harris Harmony
+              React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-sm font-bold text-amber-800" }, "\uD83C\uDFB7 Barry Harris Harmony"),
+                  React.createElement("span", { className: "text-[9px] text-amber-500" }, "(1929-2021)")
+                ),
+                React.createElement("p", { className: "text-[10px] text-amber-700 mb-3 leading-relaxed" }, BARRY_HARRIS.desc),
+                React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "Major 6th Diminished Scale"),
+                    React.createElement("div", { className: "flex flex-wrap gap-1" },
+                      BARRY_HARRIS.majorScale(rootIdx).map(function (chord, i) {
+                        return React.createElement("button", {
+                          key: i,
+                          onClick: function () { playChord(NOTE_NAMES[(rootIdx + chord.degree) % 12], chord.type, 0); },
+                          className: "px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200')
+                        }, chord.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "Minor 6th Diminished Scale"),
+                    React.createElement("div", { className: "flex flex-wrap gap-1" },
+                      BARRY_HARRIS.minorScale(rootIdx).map(function (chord, i) {
+                        return React.createElement("button", {
+                          key: i,
+                          onClick: function () { playChord(NOTE_NAMES[(rootIdx + chord.degree) % 12], chord.type, 0); },
+                          className: "px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200')
+                        }, chord.label);
+                      })
+                    )
+                  )
+                )
+              )
+            ),
+
+            // ═══════════ TAB: THEORY ═══════════
+            synthTab === 'theory' && React.createElement("div", null,
               // Intervals
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
@@ -9213,36 +9368,9 @@
                     })
                   )
                 )
-              )
-            ),
-
-            // ═══════════ TAB: SOUND LAB ═══════════
-            synthTab === 'lab' && React.createElement("div", null,
-              // Waveform Science
-              React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
-                React.createElement("span", { className: "text-sm font-bold text-slate-800 block mb-3" }, "\u223F Waveform Science"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-3" },
-                  Object.keys(WAVE_INFO).map(function (wType) {
-                    var wi = WAVE_INFO[wType];
-                    var isActive = (d.waveType || 'sine') === wType;
-                    return React.createElement("div", {
-                      key: wType,
-                      onClick: function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); },
-                      className: "p-3 rounded-xl border-2 cursor-pointer transition-all " + (isActive ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200')
-                    },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-lg" }, wi.emoji),
-                        React.createElement("span", { className: "text-xs font-bold text-slate-800 capitalize" }, wType)
-                      ),
-                      React.createElement("p", { className: "text-[10px] text-slate-600 mb-1" }, wi.desc),
-                      React.createElement("p", { className: "text-[9px] text-purple-600 font-bold" }, "Harmonics: " + wi.harmonics),
-                      React.createElement("p", { className: "text-[9px] text-slate-400 leading-snug mt-1" }, wi.science)
-                    );
-                  })
-                )
               ),
 
-              // Filter Visualization
+              // Filter Lab
               React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83C\uDF0A Filter Lab"),
@@ -9251,7 +9379,6 @@
                 React.createElement("svg", { viewBox: "0 0 300 100", className: "w-full bg-slate-50 rounded-lg mb-2", style: { maxHeight: '100px' } },
                   React.createElement("line", { x1: 20, y1: 80, x2: 280, y2: 80, stroke: "#e2e8f0", strokeWidth: 1 }),
                   React.createElement("line", { x1: 20, y1: 20, x2: 20, y2: 80, stroke: "#e2e8f0", strokeWidth: 1 }),
-                  // Filter response curve
                   (function () {
                     var cutoff = (d.filterCutoff || 8000) / 12000;
                     var q = (d.filterQ || 1) / 20;
@@ -9324,12 +9451,10 @@
                   onClick: function () { playPlucked(noteFreq(selectedRoot, d.octave || 4), 'ks_test', d.ksBrightness || 0.8, d.ksDamping || 0.996); },
                   className: "mt-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all w-full"
                 }, "\uD83C\uDFB8 Pluck " + selectedRoot + (d.octave || 4))
-              )
-            ),
+              ),
 
-            // ═══════════ TAB: QUIZ ═══════════
-            synthTab === 'quiz' && React.createElement("div", null,
-              React.createElement("div", { className: "bg-white rounded-xl border p-4" },
+              // Music Theory Quiz (moved from Quiz tab)
+              React.createElement("div", { className: "bg-white rounded-xl border p-4 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                   React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "\uD83E\uDDE0 Music Theory Quiz"),
                   d.quizScore2 > 0 && React.createElement("span", { className: "text-xs font-bold text-green-600 ml-auto" }, "\u2B50 " + d.quizScore2 + "/" + (d.quizTotal2 || 0)),
@@ -9371,6 +9496,8 @@
                 })()
               )
             ),
+
+
 
             // ── Snapshot button (bottom) ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
