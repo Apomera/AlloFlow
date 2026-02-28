@@ -5440,33 +5440,33 @@
               }
               updateCamera();
 
-              canvas.addEventListener('pointerdown', function (e) {
+              function onSolarDown(e) {
                 isDragging = true; lastX = e.clientX; lastY = e.clientY;
                 canvas._clickStartX = e.clientX; canvas._clickStartY = e.clientY;
                 canvas.setPointerCapture(e.pointerId);
-              });
-              canvas.addEventListener('pointermove', function (e) {
+              }
+              function onSolarMove(e) {
                 if (!isDragging) return;
                 const dx = e.clientX - lastX; const dy = e.clientY - lastY;
                 camTheta -= dx * 0.008;
                 camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi - dy * 0.008));
                 lastX = e.clientX; lastY = e.clientY;
                 updateCamera();
-              });
-              canvas.addEventListener('pointerup', function (e) {
+              }
+              function onSolarUp(e) {
                 isDragging = false;
                 canvas.releasePointerCapture(e.pointerId);
-              });
-              canvas.addEventListener('wheel', function (e) {
+              }
+              function onSolarWheel(e) {
                 e.preventDefault();
                 camDist = Math.max(8, Math.min(80, camDist + e.deltaY * 0.03));
                 updateCamera();
-              }, { passive: false });
+              }
 
               // ── Raycasting for planet clicks ──
               const raycaster = new THREE.Raycaster();
               const mouse = new THREE.Vector2();
-              canvas.addEventListener('click', function (e) {
+              function onSolarClick(e) {
                 if (Math.abs(e.clientX - (canvas._clickStartX || 0)) > 5 || Math.abs(e.clientY - (canvas._clickStartY || 0)) > 5) return; // was a drag
                 const rect = canvas.getBoundingClientRect();
                 mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -5476,13 +5476,17 @@
                 if (hits.length > 0) {
                   const name = hits[0].object.userData.name;
                   upd('selectedPlanet', name);
-                  // Animate camera to focus on planet
                   const pm = hits[0].object.position;
                   targetLookAt.set(pm.x, pm.y, pm.z);
                   camDist = Math.max(8, hits[0].object.geometry.parameters.radius * 8);
                   updateCamera();
                 }
-              });
+              }
+              canvas.addEventListener('pointerdown', onSolarDown);
+              canvas.addEventListener('pointermove', onSolarMove);
+              canvas.addEventListener('pointerup', onSolarUp);
+              canvas.addEventListener('wheel', onSolarWheel, { passive: false });
+              canvas.addEventListener('click', onSolarClick);
 
               // ── Planet label overlay ──
               const labelContainer = canvas.parentElement.querySelector('.solar-labels');
@@ -5557,6 +5561,11 @@
               // ── Cleanup ──
               canvas._solarCleanup = function () {
                 cancelAnimationFrame(animId);
+                canvas.removeEventListener('pointerdown', onSolarDown);
+                canvas.removeEventListener('pointermove', onSolarMove);
+                canvas.removeEventListener('pointerup', onSolarUp);
+                canvas.removeEventListener('wheel', onSolarWheel);
+                canvas.removeEventListener('click', onSolarClick);
                 resizeObserver.disconnect();
                 renderer.dispose();
                 scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
@@ -6161,7 +6170,12 @@
 
           // ── Three.js init with layer groups ──
           var canvasRefCb = function (canvasEl) {
-            if (!canvasEl || canvasEl._galaxyInit) return;
+            if (!canvasEl) {
+              var prev = document.querySelector('[data-galaxy-canvas]');
+              if (prev && prev._galaxyCleanup) { prev._galaxyCleanup(); prev._galaxyInit = false; }
+              return;
+            }
+            if (canvasEl._galaxyInit) return;
             canvasEl._galaxyInit = true;
             var doInit = function () { initGalaxy(canvasEl); };
             if (window.THREE) { doInit(); } else {
@@ -6326,20 +6340,24 @@
               camera.lookAt(0, 0, 0);
             }
             updateCamera();
-            canvasEl.addEventListener('mousedown', function (e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
-            canvasEl.addEventListener('mousemove', function (e) {
+            function onGalDown(e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; }
+            function onGalMove(e) {
               if (!isDragging) return;
               spherical.theta += (e.clientX - prevX) * 0.005;
               spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - (e.clientY - prevY) * 0.005));
               prevX = e.clientX; prevY = e.clientY; updateCamera();
-            });
-            canvasEl.addEventListener('mouseup', function () { isDragging = false; });
-            canvasEl.addEventListener('wheel', function (e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); }, { passive: false });
+            }
+            function onGalUp() { isDragging = false; }
+            function onGalWheel(e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); }
+            canvasEl.addEventListener('mousedown', onGalDown);
+            canvasEl.addEventListener('mousemove', onGalMove);
+            canvasEl.addEventListener('mouseup', onGalUp);
+            canvasEl.addEventListener('wheel', onGalWheel, { passive: false });
 
             // Raycaster for click selection
             var raycaster = new THREE.Raycaster(); raycaster.params.Points.threshold = 0.02;
             var mouse = new THREE.Vector2();
-            canvasEl.addEventListener('click', function (e) {
+            function onGalClick(e) {
               var rect = canvasEl.getBoundingClientRect();
               mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
               mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -6348,7 +6366,8 @@
               if (hits.length > 0 && canvasEl._onSelectStar) canvasEl._onSelectStar(starData[hits[0].index]);
               var nebHits = raycaster.intersectObjects(nebulaSprites);
               if (nebHits.length > 0 && canvasEl._onSelectNebula) canvasEl._onSelectNebula(nebHits[0].object.userData);
-            });
+            }
+            canvasEl.addEventListener('click', onGalClick);
             canvasEl._galaxyWarp = function (wp) {
               spherical.theta = Math.atan2(wp.x, wp.z) || 0.1;
               spherical.phi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
@@ -6365,7 +6384,15 @@
             animate();
             var ro = new ResizeObserver(function () { W = canvasEl.offsetWidth; H = canvasEl.offsetHeight; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); });
             ro.observe(canvasEl);
-            canvasEl._galaxyCleanup = function () { if (animId) cancelAnimationFrame(animId); ro.disconnect(); renderer.dispose(); };
+            canvasEl._galaxyCleanup = function () {
+              if (animId) cancelAnimationFrame(animId);
+              canvasEl.removeEventListener('mousedown', onGalDown);
+              canvasEl.removeEventListener('mousemove', onGalMove);
+              canvasEl.removeEventListener('mouseup', onGalUp);
+              canvasEl.removeEventListener('wheel', onGalWheel);
+              canvasEl.removeEventListener('click', onGalClick);
+              ro.disconnect(); renderer.dispose();
+            };
           }
 
           var selStar = d.selectedStar ? STAR_TYPES.find(function (s) { return s.id === d.selectedStar; }) : null;
@@ -6614,8 +6641,15 @@
           const quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
 
           // ── Canvas ref for landscape ──
+          var _lastRocksCanvas = null;
           const landscapeRef = function (canvasEl) {
-            if (!canvasEl || canvasEl._rocksInit) return;
+            if (!canvasEl) {
+              if (_lastRocksCanvas && _lastRocksCanvas._rocksCleanup) { _lastRocksCanvas._rocksCleanup(); _lastRocksCanvas._rocksInit = false; }
+              _lastRocksCanvas = null;
+              return;
+            }
+            _lastRocksCanvas = canvasEl;
+            if (canvasEl._rocksInit) return;
             canvasEl._rocksInit = true;
             const W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
             const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
@@ -6819,7 +6853,7 @@
             animId = requestAnimationFrame(loop);
 
             // Mouse hover for zones
-            canvasEl.addEventListener('mousemove', function (e) {
+            function onRockMove(e) {
               const rect = canvasEl.getBoundingClientRect();
               const mx = (e.clientX - rect.left) / rect.width;
               const my = (e.clientY - rect.top) / rect.height;
@@ -6828,9 +6862,9 @@
                 if (mx >= z.x && mx <= z.x + z.w && my >= z.y && my <= z.y + z.h) hoverZone = z.id;
               });
               canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
-            });
+            }
 
-            canvasEl.addEventListener('click', function (e) {
+            function onRockClick(e) {
               const rect = canvasEl.getBoundingClientRect();
               const mx = (e.clientX - rect.left) / rect.width;
               const my = (e.clientY - rect.top) / rect.height;
@@ -6842,15 +6876,22 @@
                   }
                 }
               });
-            });
+            }
+            canvasEl.addEventListener('mousemove', onRockMove);
+            canvasEl.addEventListener('click', onRockClick);
 
-            canvasEl._rocksCleanup = function () { if (animId) cancelAnimationFrame(animId); };
             const ro = new ResizeObserver(function () {
               canvasEl.width = canvasEl.offsetWidth * dpr;
               canvasEl.height = canvasEl.offsetHeight * dpr;
             });
             ro.observe(canvasEl);
             canvasEl._rocksRO = ro;
+            canvasEl._rocksCleanup = function () {
+              if (animId) cancelAnimationFrame(animId);
+              canvasEl.removeEventListener('mousemove', onRockMove);
+              canvasEl.removeEventListener('click', onRockClick);
+              ro.disconnect();
+            };
           };
 
           // ── Rock texture canvas ref ──
@@ -7224,8 +7265,15 @@
           const sel = STAGES.find(s => s.id === (d.activeStage || 'evaporation'));
 
           // Canvas animation
+          var _lastWcCanvas = null;
           const canvasRef = function (canvasEl) {
-            if (!canvasEl || canvasEl._wcInit) return;
+            if (!canvasEl) {
+              if (_lastWcCanvas && _lastWcCanvas._wcCleanup) { _lastWcCanvas._wcCleanup(); _lastWcCanvas._wcInit = false; }
+              _lastWcCanvas = null;
+              return;
+            }
+            _lastWcCanvas = canvasEl;
+            if (canvasEl._wcInit) return;
             canvasEl._wcInit = true;
             var cW = canvasEl.width = canvasEl.offsetWidth * 2;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
@@ -7324,6 +7372,9 @@
               canvasEl._wcAnim = requestAnimationFrame(draw);
             }
             canvasEl._wcAnim = requestAnimationFrame(draw);
+            canvasEl._wcCleanup = function () {
+              if (canvasEl._wcAnim) cancelAnimationFrame(canvasEl._wcAnim);
+            };
           };
 
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
@@ -10168,117 +10219,117 @@
         // HUMAN ANATOMY EXPLORER
         stemLabTab === 'explore' && stemLabTool === 'anatomy' && (() => {
           var d = labToolData.anatomy || {};
-          var upd = function(k, v) { setLabToolData(function(p) { return Object.assign({}, p, { anatomy: Object.assign({}, p.anatomy, (function(){ var o={}; o[k]=v; return o; })()) }); }); };
+          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { anatomy: Object.assign({}, p.anatomy, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
 
           var SYSTEMS = {
             skeletal: {
               name: 'Skeletal', icon: '\uD83E\uDDB4', color: '#fef3c7', accent: '#b45309',
               desc: '206 bones \u2014 support, protection, movement, mineral storage, hematopoiesis.',
               structures: [
-                { id:'skull', name:'Skull (Cranium)', x:0.50, y:0.06, v:'b', fn:'Protects the brain. 22 fused bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical:'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and birth canal passage.', detail:'Houses meninges, brain, and cranial nerve foramina. Sutures (coronal, sagittal, lambdoid) fuse by age 2.' },
-                { id:'mandible', name:'Mandible', x:0.50, y:0.10, v:'a', fn:'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical:'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
-                { id:'clavicle', name:'Clavicle', x:0.40, y:0.155, v:'a', fn:'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical:'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
-                { id:'sternum', name:'Sternum', x:0.50, y:0.22, v:'a', fn:'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical:'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
-                { id:'ribs', name:'Ribs (1\u201312)', x:0.58, y:0.25, v:'b', fn:'12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical:'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
-                { id:'scapula', name:'Scapula', x:0.38, y:0.22, v:'p', fn:'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical:'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
-                { id:'humerus', name:'Humerus', x:0.26, y:0.27, v:'a', fn:'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical:'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
-                { id:'radius', name:'Radius', x:0.21, y:0.36, v:'a', fn:'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical:'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
-                { id:'ulna', name:'Ulna', x:0.24, y:0.36, v:'a', fn:'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical:'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
-                { id:'carpals', name:'Carpals', x:0.17, y:0.44, v:'a', fn:'8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical:'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
-                { id:'vertebral', name:'Vertebral Column', x:0.50, y:0.30, v:'p', fn:'33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical:'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.' },
-                { id:'pelvis', name:'Pelvis', x:0.50, y:0.42, v:'b', fn:'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical:'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.' },
-                { id:'femur', name:'Femur', x:0.42, y:0.57, v:'a', fn:'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical:'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.' },
-                { id:'patella', name:'Patella', x:0.43, y:0.66, v:'a', fn:'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical:'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
-                { id:'tibia', name:'Tibia', x:0.42, y:0.76, v:'a', fn:'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical:'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
-                { id:'fibula', name:'Fibula', x:0.46, y:0.76, v:'a', fn:'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical:'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
-                { id:'tarsals', name:'Tarsals', x:0.42, y:0.89, v:'a', fn:'7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical:'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
-                { id:'sacrum', name:'Sacrum & Coccyx', x:0.50, y:0.44, v:'p', fn:'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical:'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' }
+                { id: 'skull', name: 'Skull (Cranium)', x: 0.50, y: 0.06, v: 'b', fn: 'Protects the brain. 22 fused bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical: 'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and birth canal passage.', detail: 'Houses meninges, brain, and cranial nerve foramina. Sutures (coronal, sagittal, lambdoid) fuse by age 2.' },
+                { id: 'mandible', name: 'Mandible', x: 0.50, y: 0.10, v: 'a', fn: 'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical: 'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
+                { id: 'clavicle', name: 'Clavicle', x: 0.40, y: 0.155, v: 'a', fn: 'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical: 'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
+                { id: 'sternum', name: 'Sternum', x: 0.50, y: 0.22, v: 'a', fn: 'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical: 'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
+                { id: 'ribs', name: 'Ribs (1\u201312)', x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
+                { id: 'scapula', name: 'Scapula', x: 0.38, y: 0.22, v: 'p', fn: 'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical: 'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
+                { id: 'humerus', name: 'Humerus', x: 0.26, y: 0.27, v: 'a', fn: 'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical: 'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
+                { id: 'radius', name: 'Radius', x: 0.21, y: 0.36, v: 'a', fn: 'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical: 'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
+                { id: 'ulna', name: 'Ulna', x: 0.24, y: 0.36, v: 'a', fn: 'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical: 'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
+                { id: 'carpals', name: 'Carpals', x: 0.17, y: 0.44, v: 'a', fn: '8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical: 'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
+                { id: 'vertebral', name: 'Vertebral Column', x: 0.50, y: 0.30, v: 'p', fn: '33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical: 'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.' },
+                { id: 'pelvis', name: 'Pelvis', x: 0.50, y: 0.42, v: 'b', fn: 'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical: 'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.' },
+                { id: 'femur', name: 'Femur', x: 0.42, y: 0.57, v: 'a', fn: 'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical: 'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.' },
+                { id: 'patella', name: 'Patella', x: 0.43, y: 0.66, v: 'a', fn: 'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical: 'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
+                { id: 'tibia', name: 'Tibia', x: 0.42, y: 0.76, v: 'a', fn: 'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical: 'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
+                { id: 'fibula', name: 'Fibula', x: 0.46, y: 0.76, v: 'a', fn: 'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical: 'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
+                { id: 'tarsals', name: 'Tarsals', x: 0.42, y: 0.89, v: 'a', fn: '7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical: 'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
+                { id: 'sacrum', name: 'Sacrum & Coccyx', x: 0.50, y: 0.44, v: 'p', fn: 'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical: 'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' }
               ]
             },
             muscular: {
               name: 'Muscular', icon: '\uD83D\uDCAA', color: '#fce7f3', accent: '#be185d',
               desc: '600+ muscles \u2014 movement, posture, heat production, joint stabilization.',
               structures: [
-                { id:'deltoid', name:'Deltoid', x:0.30, y:0.18, v:'a', fn:'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin:'Lateral third of clavicle, acromion, scapular spine', insertion:'Deltoid tuberosity of humerus', clinical:'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).' },
-                { id:'pectoralis', name:'Pectoralis Major', x:0.42, y:0.22, v:'a', fn:'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin:'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion:'Lateral lip of bicipital groove (humerus)', clinical:'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
-                { id:'biceps', name:'Biceps Brachii', x:0.24, y:0.29, v:'a', fn:'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin:'Short head: coracoid process; Long head: supraglenoid tubercle', insertion:'Radial tuberosity and bicipital aponeurosis', clinical:'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.' },
-                { id:'triceps', name:'Triceps Brachii', x:0.73, y:0.29, v:'p', fn:'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin:'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion:'Olecranon process of ulna', clinical:'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
-                { id:'rectus_ab', name:'Rectus Abdominis', x:0.50, y:0.34, v:'a', fn:'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin:'Pubic crest and symphysis', insertion:'Xiphoid process, costal cartilages 5\u20137', clinical:'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
-                { id:'obliques', name:'External Obliques', x:0.58, y:0.34, v:'a', fn:'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin:'External surfaces of ribs 5\u201312', insertion:'Linea alba, pubic tubercle, iliac crest', clinical:'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
-                { id:'quads', name:'Quadriceps Femoris', x:0.42, y:0.55, v:'a', fn:'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin:'Rectus femoris: AIIS; Vasti: femoral shaft', insertion:'Tibial tuberosity via patellar tendon', clinical:'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.' },
-                { id:'hamstrings', name:'Hamstrings', x:0.58, y:0.58, v:'p', fn:'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin:'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion:'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical:'"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.' },
-                { id:'gastrocnemius', name:'Gastrocnemius', x:0.58, y:0.74, v:'p', fn:'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin:'Medial and lateral femoral condyles', insertion:'Calcaneus via Achilles tendon', clinical:'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.' },
-                { id:'trapezius', name:'Trapezius', x:0.50, y:0.20, v:'p', fn:'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin:'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion:'Lateral third of clavicle, acromion, scapular spine', clinical:'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
-                { id:'lats', name:'Latissimus Dorsi', x:0.62, y:0.32, v:'p', fn:'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin:'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion:'Floor of bicipital (intertubercular) groove', clinical:'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
-                { id:'glutes', name:'Gluteus Maximus', x:0.50, y:0.44, v:'p', fn:'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin:'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion:'IT band and gluteal tuberosity of femur', clinical:'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
-                { id:'sartorius', name:'Sartorius', x:0.38, y:0.52, v:'a', fn:'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin:'Anterior superior iliac spine (ASIS)', insertion:'Pes anserinus (medial proximal tibia)', clinical:'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
-                { id:'tibialis', name:'Tibialis Anterior', x:0.40, y:0.76, v:'a', fn:'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin:'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion:'Medial cuneiform, base of 1st metatarsal', clinical:'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
-                { id:'soleus', name:'Soleus', x:0.58, y:0.78, v:'p', fn:'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin:'Soleal line and posterior proximal fibula', insertion:'Calcaneus via Achilles tendon', clinical:'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' }
+                { id: 'deltoid', name: 'Deltoid', x: 0.30, y: 0.18, v: 'a', fn: 'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin: 'Lateral third of clavicle, acromion, scapular spine', insertion: 'Deltoid tuberosity of humerus', clinical: 'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).' },
+                { id: 'pectoralis', name: 'Pectoralis Major', x: 0.42, y: 0.22, v: 'a', fn: 'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin: 'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion: 'Lateral lip of bicipital groove (humerus)', clinical: 'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
+                { id: 'biceps', name: 'Biceps Brachii', x: 0.24, y: 0.29, v: 'a', fn: 'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin: 'Short head: coracoid process; Long head: supraglenoid tubercle', insertion: 'Radial tuberosity and bicipital aponeurosis', clinical: 'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.' },
+                { id: 'triceps', name: 'Triceps Brachii', x: 0.73, y: 0.29, v: 'p', fn: 'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin: 'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion: 'Olecranon process of ulna', clinical: 'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
+                { id: 'rectus_ab', name: 'Rectus Abdominis', x: 0.50, y: 0.34, v: 'a', fn: 'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin: 'Pubic crest and symphysis', insertion: 'Xiphoid process, costal cartilages 5\u20137', clinical: 'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
+                { id: 'obliques', name: 'External Obliques', x: 0.58, y: 0.34, v: 'a', fn: 'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin: 'External surfaces of ribs 5\u201312', insertion: 'Linea alba, pubic tubercle, iliac crest', clinical: 'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
+                { id: 'quads', name: 'Quadriceps Femoris', x: 0.42, y: 0.55, v: 'a', fn: 'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin: 'Rectus femoris: AIIS; Vasti: femoral shaft', insertion: 'Tibial tuberosity via patellar tendon', clinical: 'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.' },
+                { id: 'hamstrings', name: 'Hamstrings', x: 0.58, y: 0.58, v: 'p', fn: 'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin: 'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion: 'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical: '"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.' },
+                { id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.58, y: 0.74, v: 'p', fn: 'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin: 'Medial and lateral femoral condyles', insertion: 'Calcaneus via Achilles tendon', clinical: 'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.' },
+                { id: 'trapezius', name: 'Trapezius', x: 0.50, y: 0.20, v: 'p', fn: 'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin: 'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion: 'Lateral third of clavicle, acromion, scapular spine', clinical: 'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
+                { id: 'lats', name: 'Latissimus Dorsi', x: 0.62, y: 0.32, v: 'p', fn: 'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin: 'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion: 'Floor of bicipital (intertubercular) groove', clinical: 'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
+                { id: 'glutes', name: 'Gluteus Maximus', x: 0.50, y: 0.44, v: 'p', fn: 'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin: 'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion: 'IT band and gluteal tuberosity of femur', clinical: 'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
+                { id: 'sartorius', name: 'Sartorius', x: 0.38, y: 0.52, v: 'a', fn: 'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin: 'Anterior superior iliac spine (ASIS)', insertion: 'Pes anserinus (medial proximal tibia)', clinical: 'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
+                { id: 'tibialis', name: 'Tibialis Anterior', x: 0.40, y: 0.76, v: 'a', fn: 'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin: 'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion: 'Medial cuneiform, base of 1st metatarsal', clinical: 'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
+                { id: 'soleus', name: 'Soleus', x: 0.58, y: 0.78, v: 'p', fn: 'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin: 'Soleal line and posterior proximal fibula', insertion: 'Calcaneus via Achilles tendon', clinical: 'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' }
               ]
             },
             circulatory: {
               name: 'Circulatory', icon: '\u2764\uFE0F', color: '#fee2e2', accent: '#dc2626',
               desc: 'Heart, 60,000 miles of vessels, 5L of blood \u2014 delivers O\u2082, nutrients, hormones; removes waste.',
               structures: [
-                { id:'heart', name:'Heart', x:0.48, y:0.24, v:'a', fn:'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical:'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.' },
-                { id:'aorta', name:'Aorta', x:0.52, y:0.22, v:'a', fn:'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical:'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.' },
-                { id:'sup_vena', name:'Superior Vena Cava', x:0.54, y:0.20, v:'a', fn:'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical:'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
-                { id:'inf_vena', name:'Inferior Vena Cava', x:0.52, y:0.36, v:'a', fn:'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical:'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
-                { id:'pulm_art', name:'Pulmonary Arteries', x:0.46, y:0.22, v:'a', fn:'Carry deoxygenated blood from RV to lungs. Only arteries that carry deoxygenated blood. Bifurcates at T5.', clinical:'Pulmonary embolism (PE): clot from DVT lodges in pulmonary arteries. Saddle PE is life-threatening.' },
-                { id:'carotid', name:'Carotid Arteries', x:0.44, y:0.12, v:'a', fn:'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical:'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.' },
-                { id:'jugular', name:'Jugular Veins', x:0.56, y:0.12, v:'a', fn:'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical:'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
-                { id:'coronary', name:'Coronary Arteries', x:0.46, y:0.25, v:'a', fn:'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical:'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
-                { id:'femoral_a', name:'Femoral Artery', x:0.44, y:0.48, v:'a', fn:'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical:'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
-                { id:'brachial', name:'Brachial Artery', x:0.28, y:0.30, v:'a', fn:'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical:'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
-                { id:'portal', name:'Hepatic Portal Vein', x:0.52, y:0.32, v:'a', fn:'Carries nutrient-rich blood from GI tract and spleen to liver for processing. Formed by superior mesenteric and splenic veins. Portal circulation is unique.', clinical:'Portal hypertension in cirrhosis \u2192 esophageal varices, caput medusae, hemorrhoids, splenomegaly.' }
+                { id: 'heart', name: 'Heart', x: 0.48, y: 0.24, v: 'a', fn: 'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical: 'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.' },
+                { id: 'aorta', name: 'Aorta', x: 0.52, y: 0.22, v: 'a', fn: 'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical: 'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.' },
+                { id: 'sup_vena', name: 'Superior Vena Cava', x: 0.54, y: 0.20, v: 'a', fn: 'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical: 'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
+                { id: 'inf_vena', name: 'Inferior Vena Cava', x: 0.52, y: 0.36, v: 'a', fn: 'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical: 'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
+                { id: 'pulm_art', name: 'Pulmonary Arteries', x: 0.46, y: 0.22, v: 'a', fn: 'Carry deoxygenated blood from RV to lungs. Only arteries that carry deoxygenated blood. Bifurcates at T5.', clinical: 'Pulmonary embolism (PE): clot from DVT lodges in pulmonary arteries. Saddle PE is life-threatening.' },
+                { id: 'carotid', name: 'Carotid Arteries', x: 0.44, y: 0.12, v: 'a', fn: 'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical: 'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.' },
+                { id: 'jugular', name: 'Jugular Veins', x: 0.56, y: 0.12, v: 'a', fn: 'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical: 'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
+                { id: 'coronary', name: 'Coronary Arteries', x: 0.46, y: 0.25, v: 'a', fn: 'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical: 'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
+                { id: 'femoral_a', name: 'Femoral Artery', x: 0.44, y: 0.48, v: 'a', fn: 'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical: 'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
+                { id: 'brachial', name: 'Brachial Artery', x: 0.28, y: 0.30, v: 'a', fn: 'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical: 'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
+                { id: 'portal', name: 'Hepatic Portal Vein', x: 0.52, y: 0.32, v: 'a', fn: 'Carries nutrient-rich blood from GI tract and spleen to liver for processing. Formed by superior mesenteric and splenic veins. Portal circulation is unique.', clinical: 'Portal hypertension in cirrhosis \u2192 esophageal varices, caput medusae, hemorrhoids, splenomegaly.' }
               ]
             },
             nervous: {
               name: 'Nervous', icon: '\u26A1', color: '#ede9fe', accent: '#7c3aed',
               desc: 'CNS (brain + spinal cord) and PNS (31 spinal nerve pairs, 12 cranial nerve pairs, autonomic NS).',
               structures: [
-                { id:'brain', name:'Brain', x:0.50, y:0.05, v:'b', fn:'~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082.', clinical:'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy.' },
-                { id:'spinal_cord', name:'Spinal Cord', x:0.50, y:0.30, v:'p', fn:'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical:'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.' },
-                { id:'vagus', name:'Vagus Nerve (CN X)', x:0.44, y:0.14, v:'a', fn:'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical:'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
-                { id:'sciatic', name:'Sciatic Nerve', x:0.55, y:0.50, v:'p', fn:'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical:'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.' },
-                { id:'brachial_plexus', name:'Brachial Plexus', x:0.34, y:0.16, v:'a', fn:'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical:'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
-                { id:'median', name:'Median Nerve', x:0.22, y:0.38, v:'a', fn:'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical:'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
-                { id:'ulnar_n', name:'Ulnar Nerve', x:0.78, y:0.34, v:'a', fn:'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical:'"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
-                { id:'femoral_n', name:'Femoral Nerve', x:0.40, y:0.48, v:'a', fn:'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical:'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
-                { id:'sympathetic', name:'Sympathetic Chain', x:0.54, y:0.30, v:'p', fn:'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical:'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
-                { id:'cranial_n', name:'Cranial Nerves (I\u2013XII)', x:0.50, y:0.08, v:'a', fn:'12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical:'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
+                { id: 'brain', name: 'Brain', x: 0.50, y: 0.05, v: 'b', fn: '~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082.', clinical: 'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy.' },
+                { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.30, v: 'p', fn: 'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical: 'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.' },
+                { id: 'vagus', name: 'Vagus Nerve (CN X)', x: 0.44, y: 0.14, v: 'a', fn: 'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical: 'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
+                { id: 'sciatic', name: 'Sciatic Nerve', x: 0.55, y: 0.50, v: 'p', fn: 'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical: 'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.' },
+                { id: 'brachial_plexus', name: 'Brachial Plexus', x: 0.34, y: 0.16, v: 'a', fn: 'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical: 'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
+                { id: 'median', name: 'Median Nerve', x: 0.22, y: 0.38, v: 'a', fn: 'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical: 'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
+                { id: 'ulnar_n', name: 'Ulnar Nerve', x: 0.78, y: 0.34, v: 'a', fn: 'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical: '"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
+                { id: 'femoral_n', name: 'Femoral Nerve', x: 0.40, y: 0.48, v: 'a', fn: 'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical: 'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
+                { id: 'sympathetic', name: 'Sympathetic Chain', x: 0.54, y: 0.30, v: 'p', fn: 'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical: 'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
+                { id: 'cranial_n', name: 'Cranial Nerves (I\u2013XII)', x: 0.50, y: 0.08, v: 'a', fn: '12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical: 'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
               ]
             },
             lymphatic: {
               name: 'Lymphatic', icon: '\uD83D\uDFE2', color: '#dcfce7', accent: '#16a34a',
               desc: 'Returns interstitial fluid, absorbs dietary fat, immune surveillance \u2014 600\u2013700 lymph nodes, thymus, spleen.',
               structures: [
-                { id:'thymus', name:'Thymus', x:0.50, y:0.19, v:'a', fn:'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical:'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.' },
-                { id:'spleen', name:'Spleen', x:0.58, y:0.30, v:'a', fn:'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical:'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.' },
-                { id:'tonsils', name:'Tonsils (Waldeyer Ring)', x:0.50, y:0.11, v:'a', fn:'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical:'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
-                { id:'cervical_ln', name:'Cervical Lymph Nodes', x:0.56, y:0.13, v:'a', fn:'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical:'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
-                { id:'axillary_ln', name:'Axillary Lymph Nodes', x:0.32, y:0.22, v:'a', fn:'5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical:'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
-                { id:'inguinal_ln', name:'Inguinal Lymph Nodes', x:0.44, y:0.44, v:'a', fn:'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical:'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
-                { id:'thoracic_duct', name:'Thoracic Duct', x:0.48, y:0.26, v:'p', fn:'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical:'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
-                { id:'bone_marrow', name:'Bone Marrow', x:0.42, y:0.57, v:'a', fn:'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical:'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
+                { id: 'thymus', name: 'Thymus', x: 0.50, y: 0.19, v: 'a', fn: 'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical: 'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.' },
+                { id: 'spleen', name: 'Spleen', x: 0.58, y: 0.30, v: 'a', fn: 'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical: 'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.' },
+                { id: 'tonsils', name: 'Tonsils (Waldeyer Ring)', x: 0.50, y: 0.11, v: 'a', fn: 'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical: 'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
+                { id: 'cervical_ln', name: 'Cervical Lymph Nodes', x: 0.56, y: 0.13, v: 'a', fn: 'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical: 'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
+                { id: 'axillary_ln', name: 'Axillary Lymph Nodes', x: 0.32, y: 0.22, v: 'a', fn: '5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical: 'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
+                { id: 'inguinal_ln', name: 'Inguinal Lymph Nodes', x: 0.44, y: 0.44, v: 'a', fn: 'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical: 'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
+                { id: 'thoracic_duct', name: 'Thoracic Duct', x: 0.48, y: 0.26, v: 'p', fn: 'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical: 'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
+                { id: 'bone_marrow', name: 'Bone Marrow', x: 0.42, y: 0.57, v: 'a', fn: 'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical: 'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
               ]
             },
             organs: {
               name: 'Organ Systems', icon: '\uD83C\uDFE5', color: '#e0f2fe', accent: '#0284c7',
               desc: 'Major visceral organs \u2014 respiration, digestion, filtration, endocrine regulation.',
               structures: [
-                { id:'lungs', name:'Lungs', x:0.42, y:0.24, v:'a', fn:'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical:'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.' },
-                { id:'liver', name:'Liver', x:0.56, y:0.30, v:'a', fn:'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical:'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.' },
-                { id:'stomach', name:'Stomach', x:0.55, y:0.33, v:'a', fn:'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical:'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.' },
-                { id:'kidneys', name:'Kidneys', x:0.58, y:0.36, v:'p', fn:'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical:'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.' },
-                { id:'sm_intestine', name:'Small Intestine', x:0.50, y:0.38, v:'a', fn:'6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical:'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
-                { id:'lg_intestine', name:'Large Intestine', x:0.50, y:0.40, v:'a', fn:'1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical:'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
-                { id:'pancreas', name:'Pancreas', x:0.52, y:0.34, v:'a', fn:'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical:'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
-                { id:'gallbladder', name:'Gallbladder', x:0.55, y:0.31, v:'a', fn:'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical:'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
-                { id:'bladder', name:'Urinary Bladder', x:0.50, y:0.44, v:'a', fn:'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical:'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
-                { id:'diaphragm', name:'Diaphragm', x:0.50, y:0.27, v:'a', fn:'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical:'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."' },
-                { id:'thyroid', name:'Thyroid Gland', x:0.50, y:0.135, v:'a', fn:'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical:'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
-                { id:'adrenals', name:'Adrenal Glands', x:0.56, y:0.34, v:'p', fn:'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical:'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
+                { id: 'lungs', name: 'Lungs', x: 0.42, y: 0.24, v: 'a', fn: 'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical: 'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.' },
+                { id: 'liver', name: 'Liver', x: 0.56, y: 0.30, v: 'a', fn: 'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical: 'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.' },
+                { id: 'stomach', name: 'Stomach', x: 0.55, y: 0.33, v: 'a', fn: 'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical: 'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.' },
+                { id: 'kidneys', name: 'Kidneys', x: 0.58, y: 0.36, v: 'p', fn: 'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical: 'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.' },
+                { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.38, v: 'a', fn: '6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical: 'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
+                { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.40, v: 'a', fn: '1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical: 'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
+                { id: 'pancreas', name: 'Pancreas', x: 0.52, y: 0.34, v: 'a', fn: 'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical: 'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
+                { id: 'gallbladder', name: 'Gallbladder', x: 0.55, y: 0.31, v: 'a', fn: 'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical: 'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
+                { id: 'bladder', name: 'Urinary Bladder', x: 0.50, y: 0.44, v: 'a', fn: 'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical: 'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
+                { id: 'diaphragm', name: 'Diaphragm', x: 0.50, y: 0.27, v: 'a', fn: 'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical: 'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."' },
+                { id: 'thyroid', name: 'Thyroid Gland', x: 0.50, y: 0.135, v: 'a', fn: 'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical: 'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
+                { id: 'adrenals', name: 'Adrenal Glands', x: 0.56, y: 0.34, v: 'p', fn: 'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical: 'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
               ]
             }
           };
@@ -10288,22 +10339,24 @@
           var view = d.view || 'anterior';
           var searchTerm = (d.search || '').toLowerCase();
           var allStructures = sys.structures;
-          var viewFiltered = allStructures.filter(function(s) { return s.v === 'b' || s.v === (view === 'anterior' ? 'a' : 'p'); });
-          var filtered = searchTerm ? viewFiltered.filter(function(s) { return s.name.toLowerCase().indexOf(searchTerm) >= 0 || s.fn.toLowerCase().indexOf(searchTerm) >= 0; }) : viewFiltered;
-          var sel = d.selectedStructure ? allStructures.find(function(s) { return s.id === d.selectedStructure; }) : null;
+          var viewFiltered = allStructures.filter(function (s) { return s.v === 'b' || s.v === (view === 'anterior' ? 'a' : 'p'); });
+          var filtered = searchTerm ? viewFiltered.filter(function (s) { return s.name.toLowerCase().indexOf(searchTerm) >= 0 || s.fn.toLowerCase().indexOf(searchTerm) >= 0; }) : viewFiltered;
+          var sel = d.selectedStructure ? allStructures.find(function (s) { return s.id === d.selectedStructure; }) : null;
 
-          // Quiz logic
-          var quizPool = allStructures.filter(function(s) { return s.fn; });
+          // Quiz logic — options memoized in state to prevent re-shuffle on render
+          var quizPool = allStructures.filter(function (s) { return s.fn; });
           var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
-          var quizOptions = [];
-          if (quizQ) {
-            var wrong = quizPool.filter(function(s) { return s.id !== quizQ.id; });
-            var shuffled = wrong.sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-            quizOptions = shuffled.concat([quizQ]).sort(function() { return Math.random() - 0.5; });
+          var quizOptions = d._quizOpts || [];
+          if (quizQ && d._quizOptsFor !== (sysKey + '|' + d.quizIdx)) {
+            var wrong = quizPool.filter(function (s) { return s.id !== quizQ.id; });
+            var shuffled = wrong.sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+            quizOptions = shuffled.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
+            upd('_quizOpts', quizOptions);
+            upd('_quizOptsFor', sysKey + '|' + d.quizIdx);
           }
 
           // Body drawing on canvas
-          var canvasRef = function(canvas) {
+          var canvasRef = function (canvas) {
             if (!canvas) return;
             if (canvas._anatomyDrawn === sysKey + view + d.selectedStructure + searchTerm) return;
             canvas._anatomyDrawn = sysKey + view + d.selectedStructure + searchTerm;
@@ -10319,51 +10372,51 @@
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             // Head
-            ctx.beginPath(); ctx.ellipse(W*0.5, H*0.065, W*0.055, H*0.045, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(W * 0.5, H * 0.065, W * 0.055, H * 0.045, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             // Neck
-            ctx.beginPath(); ctx.rect(W*0.47, H*0.1, W*0.06, H*0.03); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.rect(W * 0.47, H * 0.1, W * 0.06, H * 0.03); ctx.fill(); ctx.stroke();
             // Torso
             ctx.beginPath();
-            ctx.moveTo(W*0.32, H*0.135); ctx.lineTo(W*0.68, H*0.135);
-            ctx.quadraticCurveTo(W*0.70, H*0.22, W*0.64, H*0.40);
-            ctx.lineTo(W*0.57, H*0.43); ctx.lineTo(W*0.43, H*0.43);
-            ctx.lineTo(W*0.36, H*0.40);
-            ctx.quadraticCurveTo(W*0.30, H*0.22, W*0.32, H*0.135);
+            ctx.moveTo(W * 0.32, H * 0.135); ctx.lineTo(W * 0.68, H * 0.135);
+            ctx.quadraticCurveTo(W * 0.70, H * 0.22, W * 0.64, H * 0.40);
+            ctx.lineTo(W * 0.57, H * 0.43); ctx.lineTo(W * 0.43, H * 0.43);
+            ctx.lineTo(W * 0.36, H * 0.40);
+            ctx.quadraticCurveTo(W * 0.30, H * 0.22, W * 0.32, H * 0.135);
             ctx.fill(); ctx.stroke();
             // Left arm
             ctx.beginPath();
-            ctx.moveTo(W*0.32, H*0.14); ctx.quadraticCurveTo(W*0.22, H*0.20, W*0.19, H*0.30);
-            ctx.quadraticCurveTo(W*0.16, H*0.38, W*0.14, H*0.45);
-            ctx.lineTo(W*0.18, H*0.45); ctx.quadraticCurveTo(W*0.20, H*0.38, W*0.23, H*0.30);
-            ctx.quadraticCurveTo(W*0.26, H*0.22, W*0.35, H*0.14);
+            ctx.moveTo(W * 0.32, H * 0.14); ctx.quadraticCurveTo(W * 0.22, H * 0.20, W * 0.19, H * 0.30);
+            ctx.quadraticCurveTo(W * 0.16, H * 0.38, W * 0.14, H * 0.45);
+            ctx.lineTo(W * 0.18, H * 0.45); ctx.quadraticCurveTo(W * 0.20, H * 0.38, W * 0.23, H * 0.30);
+            ctx.quadraticCurveTo(W * 0.26, H * 0.22, W * 0.35, H * 0.14);
             ctx.fill(); ctx.stroke();
             // Right arm
             ctx.beginPath();
-            ctx.moveTo(W*0.68, H*0.14); ctx.quadraticCurveTo(W*0.78, H*0.20, W*0.81, H*0.30);
-            ctx.quadraticCurveTo(W*0.84, H*0.38, W*0.86, H*0.45);
-            ctx.lineTo(W*0.82, H*0.45); ctx.quadraticCurveTo(W*0.80, H*0.38, W*0.77, H*0.30);
-            ctx.quadraticCurveTo(W*0.74, H*0.22, W*0.65, H*0.14);
+            ctx.moveTo(W * 0.68, H * 0.14); ctx.quadraticCurveTo(W * 0.78, H * 0.20, W * 0.81, H * 0.30);
+            ctx.quadraticCurveTo(W * 0.84, H * 0.38, W * 0.86, H * 0.45);
+            ctx.lineTo(W * 0.82, H * 0.45); ctx.quadraticCurveTo(W * 0.80, H * 0.38, W * 0.77, H * 0.30);
+            ctx.quadraticCurveTo(W * 0.74, H * 0.22, W * 0.65, H * 0.14);
             ctx.fill(); ctx.stroke();
             // Left leg
             ctx.beginPath();
-            ctx.moveTo(W*0.43, H*0.43); ctx.quadraticCurveTo(W*0.38, H*0.56, W*0.36, H*0.68);
-            ctx.quadraticCurveTo(W*0.35, H*0.78, W*0.34, H*0.88);
-            ctx.lineTo(W*0.30, H*0.93); ctx.lineTo(W*0.40, H*0.93);
-            ctx.lineTo(W*0.42, H*0.88); ctx.quadraticCurveTo(W*0.43, H*0.78, W*0.44, H*0.68);
-            ctx.quadraticCurveTo(W*0.46, H*0.56, W*0.50, H*0.43);
+            ctx.moveTo(W * 0.43, H * 0.43); ctx.quadraticCurveTo(W * 0.38, H * 0.56, W * 0.36, H * 0.68);
+            ctx.quadraticCurveTo(W * 0.35, H * 0.78, W * 0.34, H * 0.88);
+            ctx.lineTo(W * 0.30, H * 0.93); ctx.lineTo(W * 0.40, H * 0.93);
+            ctx.lineTo(W * 0.42, H * 0.88); ctx.quadraticCurveTo(W * 0.43, H * 0.78, W * 0.44, H * 0.68);
+            ctx.quadraticCurveTo(W * 0.46, H * 0.56, W * 0.50, H * 0.43);
             ctx.fill(); ctx.stroke();
             // Right leg
             ctx.beginPath();
-            ctx.moveTo(W*0.57, H*0.43); ctx.quadraticCurveTo(W*0.62, H*0.56, W*0.64, H*0.68);
-            ctx.quadraticCurveTo(W*0.65, H*0.78, W*0.66, H*0.88);
-            ctx.lineTo(W*0.70, H*0.93); ctx.lineTo(W*0.60, H*0.93);
-            ctx.lineTo(W*0.58, H*0.88); ctx.quadraticCurveTo(W*0.57, H*0.78, W*0.56, H*0.68);
-            ctx.quadraticCurveTo(W*0.54, H*0.56, W*0.50, H*0.43);
+            ctx.moveTo(W * 0.57, H * 0.43); ctx.quadraticCurveTo(W * 0.62, H * 0.56, W * 0.64, H * 0.68);
+            ctx.quadraticCurveTo(W * 0.65, H * 0.78, W * 0.66, H * 0.88);
+            ctx.lineTo(W * 0.70, H * 0.93); ctx.lineTo(W * 0.60, H * 0.93);
+            ctx.lineTo(W * 0.58, H * 0.88); ctx.quadraticCurveTo(W * 0.57, H * 0.78, W * 0.56, H * 0.68);
+            ctx.quadraticCurveTo(W * 0.54, H * 0.56, W * 0.50, H * 0.43);
             ctx.fill(); ctx.stroke();
             ctx.restore();
 
             // Draw structure markers
-            filtered.forEach(function(st) {
+            filtered.forEach(function (st) {
               var px = st.x * W, py = st.y * H;
               var isSel = sel && sel.id === st.id;
               var r = isSel ? 9 : 5;
@@ -10403,12 +10456,12 @@
           };
 
           // Canvas click handler
-          var handleClick = function(e) {
+          var handleClick = function (e) {
             var rect = e.target.getBoundingClientRect();
             var cx = (e.clientX - rect.left) / rect.width;
             var cy = (e.clientY - rect.top) / rect.height;
             var closest = null, minD = 0.06;
-            filtered.forEach(function(st) {
+            filtered.forEach(function (st) {
               var dist = Math.sqrt(Math.pow(st.x - cx, 2) + Math.pow(st.y - cy, 2));
               if (dist < minD) { minD = dist; closest = st; }
             });
@@ -10418,7 +10471,7 @@
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             // Header
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function() { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("div", null,
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEC0 Human Anatomy Explorer"),
                 React.createElement("p", { className: "text-xs text-slate-400" }, sys.desc)
@@ -10426,11 +10479,11 @@
             ),
             // System tabs
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-              Object.keys(SYSTEMS).map(function(key) {
+              Object.keys(SYSTEMS).map(function (key) {
                 var s = SYSTEMS[key];
                 return React.createElement("button", {
                   key: key,
-                  onClick: function() { upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', ''); },
+                  onClick: function () { upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', ''); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'),
                   style: sysKey === key ? { background: s.accent } : {}
                 }, s.icon + ' ' + s.name);
@@ -10439,10 +10492,10 @@
             // Controls: view toggle, search, quiz
             React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
               React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
-                ['anterior', 'posterior'].map(function(v) {
+                ['anterior', 'posterior'].map(function (v) {
                   return React.createElement("button", {
                     key: v,
-                    onClick: function() { upd('view', v); upd('selectedStructure', null); },
+                    onClick: function () { upd('view', v); upd('selectedStructure', null); },
                     className: "px-3 py-1 text-xs font-bold transition-all " + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
                   }, v.charAt(0).toUpperCase() + v.slice(1));
                 })
@@ -10450,11 +10503,11 @@
               React.createElement("input", {
                 type: "text", placeholder: "\uD83D\uDD0D Search structures...",
                 value: d.search || '',
-                onChange: function(e) { upd('search', e.target.value); },
+                onChange: function (e) { upd('search', e.target.value); },
                 className: "flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
               }),
               React.createElement("button", {
-                onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, filtered.length + ' structures')
@@ -10482,7 +10535,7 @@
                     React.createElement("p", { className: "text-sm text-slate-800 font-bold leading-relaxed" }, "Which structure has this function?"),
                     React.createElement("p", { className: "text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic" }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : '')),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
-                      quizOptions.map(function(opt) {
+                      quizOptions.map(function (opt) {
                         var fb = d.quizFeedback;
                         var isCorrect = opt.id === quizQ.id;
                         var wasChosen = fb && fb.chosen === opt.id;
@@ -10490,20 +10543,20 @@
                         return React.createElement("button", {
                           key: opt.id,
                           disabled: showResult,
-                          onClick: function() {
+                          onClick: function () {
                             var correct = opt.id === quizQ.id;
                             upd('quizFeedback', { chosen: opt.id, correct: correct });
                             if (correct) upd('quizScore', (d.quizScore || 0) + 1);
                           },
                           className: "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 " +
                             (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                             showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                             'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
+                              showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                                'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                       })
                     ),
                     d.quizFeedback && React.createElement("button", {
-                      onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                      onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
                       className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-all"
                     }, "Next Question \u2192")
                   ) : React.createElement("p", { className: "text-sm text-slate-500 italic" }, "No quiz questions available.")
@@ -10513,7 +10566,7 @@
                     React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 space-y-3", style: { borderColor: sys.accent + '40' } },
                       React.createElement("div", { className: "flex items-start justify-between" },
                         React.createElement("h4", { className: "text-base font-black", style: { color: sys.accent } }, sel.name),
-                        React.createElement("button", { onClick: function() { upd('selectedStructure', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                        React.createElement("button", { onClick: function () { upd('selectedStructure', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
                       ),
                       React.createElement("div", { className: "space-y-2.5" },
                         React.createElement("div", null,
@@ -10544,10 +10597,10 @@
                     // Structure list
                     React.createElement("div", { className: "space-y-1 max-h-[460px] overflow-y-auto pr-1" },
                       filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No structures match your search."),
-                      filtered.map(function(st) {
+                      filtered.map(function (st) {
                         return React.createElement("button", {
                           key: st.id,
-                          onClick: function() { upd('selectedStructure', st.id); },
+                          onClick: function () { upd('selectedStructure', st.id); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
                             (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-200'),
                           style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
@@ -10568,55 +10621,55 @@
         // BRAIN ATLAS EXPLORER
         stemLabTab === 'explore' && stemLabTool === 'brainAtlas' && (() => {
           var d = labToolData.brainAtlas || {};
-          var upd = function(k, v) { setLabToolData(function(p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function(){ var o={}; o[k]=v; return o; })()) }); }); };
+          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
 
           var VIEWS = {
             lateral: {
               name: 'Lateral', desc: 'Side view showing all four lobes, cerebellum, and brainstem',
               regions: [
-                { id:'frontal', name:'Frontal Lobe', x:0.28, y:0.32, w:0.22, fn:'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann:'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood:'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions:'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage:'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
-                { id:'prefrontal', name:'Prefrontal Cortex', x:0.18, y:0.35, w:0.12, fn:'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann:'BA 9, 10, 11, 12, 46, 47', blood:'Anterior cerebral artery, middle cerebral artery', conditions:'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage:'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
-                { id:'motor_cortex', name:'Primary Motor Cortex', x:0.42, y:0.18, w:0.08, fn:'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann:'BA 4', blood:'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions:'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage:'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
-                { id:'parietal', name:'Parietal Lobe', x:0.52, y:0.22, w:0.18, fn:'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann:'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood:'Middle cerebral artery, posterior cerebral artery', conditions:'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage:'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
-                { id:'temporal', name:'Temporal Lobe', x:0.38, y:0.58, w:0.20, fn:'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann:'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood:'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions:'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage:'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
-                { id:'occipital', name:'Occipital Lobe', x:0.78, y:0.32, w:0.14, fn:'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann:'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood:'Posterior cerebral artery', conditions:'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage:'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
-                { id:'cerebellum', name:'Cerebellum', x:0.78, y:0.62, w:0.14, fn:'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann:'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood:'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions:'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage:'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
-                { id:'brainstem', name:'Brainstem', x:0.62, y:0.68, w:0.10, fn:'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann:'N/A', blood:'Basilar artery, vertebral arteries, PICA, AICA', conditions:'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage:'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
-                { id:'brocas', name:'Broca\u2019s Area', x:0.25, y:0.48, w:0.08, fn:'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann:'BA 44, 45', blood:'Middle cerebral artery (superior division)', conditions:'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage:'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
-                { id:'wernickes', name:'Wernicke\u2019s Area', x:0.55, y:0.50, w:0.10, fn:'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann:'BA 22 (posterior part)', blood:'Middle cerebral artery (inferior division)', conditions:'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage:'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' }
+                { id: 'frontal', name: 'Frontal Lobe', x: 0.28, y: 0.32, w: 0.22, fn: 'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann: 'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage: 'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
+                { id: 'prefrontal', name: 'Prefrontal Cortex', x: 0.18, y: 0.35, w: 0.12, fn: 'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann: 'BA 9, 10, 11, 12, 46, 47', blood: 'Anterior cerebral artery, middle cerebral artery', conditions: 'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage: 'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
+                { id: 'motor_cortex', name: 'Primary Motor Cortex', x: 0.42, y: 0.18, w: 0.08, fn: 'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann: 'BA 4', blood: 'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions: 'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage: 'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
+                { id: 'parietal', name: 'Parietal Lobe', x: 0.52, y: 0.22, w: 0.18, fn: 'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann: 'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage: 'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
+                { id: 'temporal', name: 'Temporal Lobe', x: 0.38, y: 0.58, w: 0.20, fn: 'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann: 'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood: 'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions: 'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage: 'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
+                { id: 'occipital', name: 'Occipital Lobe', x: 0.78, y: 0.32, w: 0.14, fn: 'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann: 'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood: 'Posterior cerebral artery', conditions: 'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage: 'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
+                { id: 'cerebellum', name: 'Cerebellum', x: 0.78, y: 0.62, w: 0.14, fn: 'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann: 'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood: 'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions: 'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage: 'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
+                { id: 'brainstem', name: 'Brainstem', x: 0.62, y: 0.68, w: 0.10, fn: 'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann: 'N/A', blood: 'Basilar artery, vertebral arteries, PICA, AICA', conditions: 'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage: 'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
+                { id: 'brocas', name: 'Broca\u2019s Area', x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
+                { id: 'wernickes', name: 'Wernicke\u2019s Area', x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' }
               ]
             },
             medial: {
               name: 'Medial (Sagittal)', desc: 'Midline cut revealing deep structures',
               regions: [
-                { id:'corpus_callosum', name:'Corpus Callosum', x:0.48, y:0.30, w:0.20, fn:'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann:'N/A (white matter tract)', blood:'Anterior cerebral artery (pericallosal branches)', conditions:'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage:'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
-                { id:'thalamus', name:'Thalamus', x:0.52, y:0.42, w:0.10, fn:'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann:'N/A (diencephalon)', blood:'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions:'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage:'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
-                { id:'hypothalamus', name:'Hypothalamus', x:0.42, y:0.52, w:0.08, fn:'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann:'N/A (diencephalon)', blood:'Circle of Willis branches, superior hypophyseal artery', conditions:'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage:'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
-                { id:'cingulate', name:'Cingulate Gyrus', x:0.42, y:0.22, w:0.18, fn:'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann:'BA 23, 24, 25, 31, 32, 33', blood:'Anterior cerebral artery (callosomarginal branches)', conditions:'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage:'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
-                { id:'hippocampus', name:'Hippocampus', x:0.58, y:0.55, w:0.10, fn:'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann:'Archicortex (3-layered, not neocortical)', blood:'Posterior cerebral artery (hippocampal branches)', conditions:'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage:'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
-                { id:'amygdala', name:'Amygdala', x:0.38, y:0.58, w:0.08, fn:'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann:'N/A (subcortical)', blood:'Anterior choroidal artery, middle cerebral artery branches', conditions:'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage:'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
-                { id:'basal_ganglia', name:'Basal Ganglia', x:0.50, y:0.38, w:0.10, fn:'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann:'N/A (subcortical nuclei)', blood:'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions:'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage:'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
-                { id:'ventricles', name:'Ventricular System', x:0.50, y:0.45, w:0.10, fn:'CSF-filled cavities: 2 lateral ventricles \u2192 interventricular foramina (Monro) \u2192 3rd ventricle \u2192 cerebral aqueduct (Sylvius) \u2192 4th ventricle. Choroid plexus produces ~500mL CSF/day. CSF cushions brain.', brodmann:'N/A', blood:'Choroid plexus supplied by choroidal arteries', conditions:'Hydrocephalus: obstructive (non-communicating, e.g. aqueductal stenosis) or communicating (impaired absorption at arachnoid granulations). Normal pressure hydrocephalus: triad of dementia, gait ataxia, urinary incontinence ("wet, wacky, wobbly").', damage:'Increased ICP from CSF obstruction \u2192 headache, nausea, papilledema, herniation if untreated.' }
+                { id: 'corpus_callosum', name: 'Corpus Callosum', x: 0.48, y: 0.30, w: 0.20, fn: 'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann: 'N/A (white matter tract)', blood: 'Anterior cerebral artery (pericallosal branches)', conditions: 'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage: 'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
+                { id: 'thalamus', name: 'Thalamus', x: 0.52, y: 0.42, w: 0.10, fn: 'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann: 'N/A (diencephalon)', blood: 'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions: 'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage: 'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
+                { id: 'hypothalamus', name: 'Hypothalamus', x: 0.42, y: 0.52, w: 0.08, fn: 'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann: 'N/A (diencephalon)', blood: 'Circle of Willis branches, superior hypophyseal artery', conditions: 'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage: 'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
+                { id: 'cingulate', name: 'Cingulate Gyrus', x: 0.42, y: 0.22, w: 0.18, fn: 'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann: 'BA 23, 24, 25, 31, 32, 33', blood: 'Anterior cerebral artery (callosomarginal branches)', conditions: 'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage: 'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
+                { id: 'hippocampus', name: 'Hippocampus', x: 0.58, y: 0.55, w: 0.10, fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann: 'Archicortex (3-layered, not neocortical)', blood: 'Posterior cerebral artery (hippocampal branches)', conditions: 'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage: 'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
+                { id: 'amygdala', name: 'Amygdala', x: 0.38, y: 0.58, w: 0.08, fn: 'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann: 'N/A (subcortical)', blood: 'Anterior choroidal artery, middle cerebral artery branches', conditions: 'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage: 'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
+                { id: 'basal_ganglia', name: 'Basal Ganglia', x: 0.50, y: 0.38, w: 0.10, fn: 'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann: 'N/A (subcortical nuclei)', blood: 'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions: 'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage: 'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
+                { id: 'ventricles', name: 'Ventricular System', x: 0.50, y: 0.45, w: 0.10, fn: 'CSF-filled cavities: 2 lateral ventricles \u2192 interventricular foramina (Monro) \u2192 3rd ventricle \u2192 cerebral aqueduct (Sylvius) \u2192 4th ventricle. Choroid plexus produces ~500mL CSF/day. CSF cushions brain.', brodmann: 'N/A', blood: 'Choroid plexus supplied by choroidal arteries', conditions: 'Hydrocephalus: obstructive (non-communicating, e.g. aqueductal stenosis) or communicating (impaired absorption at arachnoid granulations). Normal pressure hydrocephalus: triad of dementia, gait ataxia, urinary incontinence ("wet, wacky, wobbly").', damage: 'Increased ICP from CSF obstruction \u2192 headache, nausea, papilledema, herniation if untreated.' }
               ]
             },
             superior: {
               name: 'Superior (Top)', desc: 'View from above showing hemispheres and sulci',
               regions: [
-                { id:'longitudinal', name:'Longitudinal Fissure', x:0.50, y:0.50, w:0.04, fn:'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann:'N/A (anatomical landmark)', blood:'Superior sagittal sinus runs along its superior border', conditions:'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage:'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
-                { id:'central_sulcus', name:'Central Sulcus (Rolandic)', x:0.50, y:0.38, w:0.30, fn:'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann:'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood:'Middle cerebral artery branches', conditions:'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage:'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
-                { id:'frontal_sup', name:'Frontal Lobes (Superior View)', x:0.35, y:0.25, w:0.15, fn:'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann:'BA 4, 6, 8, 9, 10, 46', blood:'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions:'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage:'Executive dysfunction, personality changes, contralateral motor weakness.' },
-                { id:'parietal_sup', name:'Parietal Lobes (Superior View)', x:0.55, y:0.55, w:0.15, fn:'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann:'BA 1,2,3,5,7,39,40', blood:'Middle cerebral artery, posterior cerebral artery', conditions:'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage:'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' }
+                { id: 'longitudinal', name: 'Longitudinal Fissure', x: 0.50, y: 0.50, w: 0.04, fn: 'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann: 'N/A (anatomical landmark)', blood: 'Superior sagittal sinus runs along its superior border', conditions: 'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage: 'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
+                { id: 'central_sulcus', name: 'Central Sulcus (Rolandic)', x: 0.50, y: 0.38, w: 0.30, fn: 'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann: 'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood: 'Middle cerebral artery branches', conditions: 'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage: 'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
+                { id: 'frontal_sup', name: 'Frontal Lobes (Superior View)', x: 0.35, y: 0.25, w: 0.15, fn: 'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann: 'BA 4, 6, 8, 9, 10, 46', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage: 'Executive dysfunction, personality changes, contralateral motor weakness.' },
+                { id: 'parietal_sup', name: 'Parietal Lobes (Superior View)', x: 0.55, y: 0.55, w: 0.15, fn: 'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann: 'BA 1,2,3,5,7,39,40', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage: 'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' }
               ]
             },
             inferior: {
               name: 'Inferior (Bottom)', desc: 'View from below showing cranial nerves and base',
               regions: [
-                { id:'olfactory', name:'Olfactory Bulbs/Tracts (CN I)', x:0.50, y:0.20, w:0.10, fn:'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann:'N/A', blood:'Anterior cerebral artery (olfactory branches)', conditions:'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage:'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
-                { id:'optic_chiasm', name:'Optic Chiasm (CN II)', x:0.50, y:0.32, w:0.10, fn:'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann:'N/A', blood:'Superior hypophyseal artery, ophthalmic artery', conditions:'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage:'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
-                { id:'temporal_inf', name:'Temporal Lobes (Inferior)', x:0.40, y:0.50, w:0.15, fn:'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann:'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood:'Posterior cerebral artery', conditions:'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage:'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
-                { id:'cerebellum_inf', name:'Cerebellum (Inferior)', x:0.50, y:0.72, w:0.18, fn:'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann:'N/A', blood:'PICA (posterior inferior cerebellar artery)', conditions:'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage:'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
-                { id:'medulla_inf', name:'Medulla Oblongata (Inferior)', x:0.50, y:0.60, w:0.08, fn:'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann:'N/A', blood:'Vertebral arteries, PICA', conditions:'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage:'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
-                { id:'cn_nerves', name:'Cranial Nerves (II\u2013XII)', x:0.50, y:0.45, w:0.12, fn:'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann:'N/A', blood:'Various branches of basilar and vertebral arteries', conditions:'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage:'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' }
+                { id: 'olfactory', name: 'Olfactory Bulbs/Tracts (CN I)', x: 0.50, y: 0.20, w: 0.10, fn: 'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann: 'N/A', blood: 'Anterior cerebral artery (olfactory branches)', conditions: 'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage: 'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
+                { id: 'optic_chiasm', name: 'Optic Chiasm (CN II)', x: 0.50, y: 0.32, w: 0.10, fn: 'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann: 'N/A', blood: 'Superior hypophyseal artery, ophthalmic artery', conditions: 'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage: 'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
+                { id: 'temporal_inf', name: 'Temporal Lobes (Inferior)', x: 0.40, y: 0.50, w: 0.15, fn: 'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann: 'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood: 'Posterior cerebral artery', conditions: 'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage: 'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
+                { id: 'cerebellum_inf', name: 'Cerebellum (Inferior)', x: 0.50, y: 0.72, w: 0.18, fn: 'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann: 'N/A', blood: 'PICA (posterior inferior cerebellar artery)', conditions: 'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage: 'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
+                { id: 'medulla_inf', name: 'Medulla Oblongata (Inferior)', x: 0.50, y: 0.60, w: 0.08, fn: 'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann: 'N/A', blood: 'Vertebral arteries, PICA', conditions: 'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage: 'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
+                { id: 'cn_nerves', name: 'Cranial Nerves (II\u2013XII)', x: 0.50, y: 0.45, w: 0.12, fn: 'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann: 'N/A', blood: 'Various branches of basilar and vertebral arteries', conditions: 'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage: 'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' }
               ]
             }
           };
@@ -10625,16 +10678,23 @@
           var currentView = VIEWS[viewKey];
           var regions = currentView.regions;
           var searchTerm = (d.search || '').toLowerCase();
-          var filtered = searchTerm ? regions.filter(function(r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
-          var sel = d.selectedRegion ? regions.find(function(r) { return r.id === d.selectedRegion; }) : null;
+          var filtered = searchTerm ? regions.filter(function (r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
+          var sel = d.selectedRegion ? regions.find(function (r) { return r.id === d.selectedRegion; }) : null;
 
-          // Quiz logic
-          var allRegions = []; Object.values(VIEWS).forEach(function(v) { v.regions.forEach(function(r) { if (!allRegions.find(function(a) { return a.id === r.id; })) allRegions.push(r); }); });
-          var quizPool = allRegions.filter(function(r) { return r.damage; });
+          // Quiz logic — options memoized in state to prevent re-shuffle on render
+          var allRegions = []; Object.values(VIEWS).forEach(function (v) { v.regions.forEach(function (r) { if (!allRegions.find(function (a) { return a.id === r.id; })) allRegions.push(r); }); });
+          var quizPool = allRegions.filter(function (r) { return r.damage; });
           var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
+          var brainQuizOpts = d._brainQuizOpts || [];
+          if (quizQ && d._brainQuizOptsFor !== d.quizIdx) {
+            var wrong = quizPool.filter(function (r) { return r.id !== quizQ.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+            brainQuizOpts = wrong.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
+            upd('_brainQuizOpts', brainQuizOpts);
+            upd('_brainQuizOptsFor', d.quizIdx);
+          }
 
           // Brain canvas
-          var canvasRef = function(canvas) {
+          var canvasRef = function (canvas) {
             if (!canvas) return;
             if (canvas._brainDrawn === viewKey + d.selectedRegion + searchTerm) return;
             canvas._brainDrawn = viewKey + d.selectedRegion + searchTerm;
@@ -10652,101 +10712,101 @@
             if (viewKey === 'lateral') {
               // Side view brain shape
               ctx.beginPath();
-              ctx.moveTo(W*0.15, H*0.45);
-              ctx.quadraticCurveTo(W*0.12, H*0.20, W*0.35, H*0.12);
-              ctx.quadraticCurveTo(W*0.55, H*0.08, W*0.72, H*0.15);
-              ctx.quadraticCurveTo(W*0.88, H*0.25, W*0.90, H*0.42);
-              ctx.quadraticCurveTo(W*0.88, H*0.55, W*0.78, H*0.60);
-              ctx.quadraticCurveTo(W*0.70, H*0.72, W*0.62, H*0.76);
-              ctx.quadraticCurveTo(W*0.50, H*0.78, W*0.42, H*0.72);
-              ctx.quadraticCurveTo(W*0.30, H*0.62, W*0.20, H*0.55);
-              ctx.quadraticCurveTo(W*0.14, H*0.50, W*0.15, H*0.45);
+              ctx.moveTo(W * 0.15, H * 0.45);
+              ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
+              ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
+              ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
+              ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
+              ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
+              ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
+              ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
+              ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
               ctx.fill(); ctx.stroke();
               // Central sulcus (divides frontal/parietal)
-              ctx.beginPath(); ctx.setLineDash([4,3]);
-              ctx.moveTo(W*0.50, H*0.12); ctx.lineTo(W*0.42, H*0.55);
+              ctx.beginPath(); ctx.setLineDash([4, 3]);
+              ctx.moveTo(W * 0.50, H * 0.12); ctx.lineTo(W * 0.42, H * 0.55);
               ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
               // Lateral sulcus (Sylvian fissure)
               ctx.beginPath();
-              ctx.moveTo(W*0.35, H*0.50); ctx.quadraticCurveTo(W*0.50, H*0.48, W*0.65, H*0.42);
+              ctx.moveTo(W * 0.35, H * 0.50); ctx.quadraticCurveTo(W * 0.50, H * 0.48, W * 0.65, H * 0.42);
               ctx.stroke();
               ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
               // Cerebellum (separate shape)
               ctx.beginPath();
-              ctx.ellipse(W*0.80, H*0.65, W*0.10, H*0.08, 0, 0, Math.PI*2);
+              ctx.ellipse(W * 0.80, H * 0.65, W * 0.10, H * 0.08, 0, 0, Math.PI * 2);
               ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
               // Brainstem
               ctx.beginPath();
-              ctx.moveTo(W*0.62, H*0.62); ctx.lineTo(W*0.65, H*0.78);
-              ctx.lineTo(W*0.58, H*0.78); ctx.lineTo(W*0.55, H*0.62);
+              ctx.moveTo(W * 0.62, H * 0.62); ctx.lineTo(W * 0.65, H * 0.78);
+              ctx.lineTo(W * 0.58, H * 0.78); ctx.lineTo(W * 0.55, H * 0.62);
               ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
             } else if (viewKey === 'medial') {
               // Sagittal brain
               ctx.beginPath();
-              ctx.moveTo(W*0.20, H*0.50);
-              ctx.quadraticCurveTo(W*0.15, H*0.22, W*0.40, H*0.12);
-              ctx.quadraticCurveTo(W*0.60, H*0.08, W*0.78, H*0.18);
-              ctx.quadraticCurveTo(W*0.88, H*0.32, W*0.85, H*0.50);
-              ctx.quadraticCurveTo(W*0.82, H*0.60, W*0.72, H*0.62);
-              ctx.lineTo(W*0.60, H*0.60);
-              ctx.quadraticCurveTo(W*0.50, H*0.58, W*0.40, H*0.60);
-              ctx.quadraticCurveTo(W*0.25, H*0.58, W*0.20, H*0.50);
+              ctx.moveTo(W * 0.20, H * 0.50);
+              ctx.quadraticCurveTo(W * 0.15, H * 0.22, W * 0.40, H * 0.12);
+              ctx.quadraticCurveTo(W * 0.60, H * 0.08, W * 0.78, H * 0.18);
+              ctx.quadraticCurveTo(W * 0.88, H * 0.32, W * 0.85, H * 0.50);
+              ctx.quadraticCurveTo(W * 0.82, H * 0.60, W * 0.72, H * 0.62);
+              ctx.lineTo(W * 0.60, H * 0.60);
+              ctx.quadraticCurveTo(W * 0.50, H * 0.58, W * 0.40, H * 0.60);
+              ctx.quadraticCurveTo(W * 0.25, H * 0.58, W * 0.20, H * 0.50);
               ctx.fill(); ctx.stroke();
               // Corpus callosum (arc)
               ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = '#c084fc';
-              ctx.moveTo(W*0.35, H*0.38); ctx.quadraticCurveTo(W*0.52, H*0.28, W*0.68, H*0.35);
+              ctx.moveTo(W * 0.35, H * 0.38); ctx.quadraticCurveTo(W * 0.52, H * 0.28, W * 0.68, H * 0.35);
               ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = '#a78bfa';
               // Cerebellum
               ctx.beginPath();
-              ctx.ellipse(W*0.78, H*0.68, W*0.09, H*0.08, 0, 0, Math.PI*2);
+              ctx.ellipse(W * 0.78, H * 0.68, W * 0.09, H * 0.08, 0, 0, Math.PI * 2);
               ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
               // Brainstem
               ctx.beginPath();
-              ctx.moveTo(W*0.58, H*0.58); ctx.lineTo(W*0.62, H*0.78);
-              ctx.lineTo(W*0.55, H*0.78); ctx.lineTo(W*0.50, H*0.58);
+              ctx.moveTo(W * 0.58, H * 0.58); ctx.lineTo(W * 0.62, H * 0.78);
+              ctx.lineTo(W * 0.55, H * 0.78); ctx.lineTo(W * 0.50, H * 0.58);
               ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
             } else if (viewKey === 'superior') {
               // Top-down: two hemispheres
               ctx.beginPath();
-              ctx.ellipse(W*0.35, H*0.50, W*0.20, H*0.38, 0, 0, Math.PI*2);
+              ctx.ellipse(W * 0.35, H * 0.50, W * 0.20, H * 0.38, 0, 0, Math.PI * 2);
               ctx.fill(); ctx.stroke();
               ctx.beginPath();
-              ctx.ellipse(W*0.65, H*0.50, W*0.20, H*0.38, 0, 0, Math.PI*2);
+              ctx.ellipse(W * 0.65, H * 0.50, W * 0.20, H * 0.38, 0, 0, Math.PI * 2);
               ctx.fill(); ctx.stroke();
               // Longitudinal fissure
-              ctx.beginPath(); ctx.setLineDash([5,3]);
-              ctx.moveTo(W*0.50, H*0.10); ctx.lineTo(W*0.50, H*0.90);
+              ctx.beginPath(); ctx.setLineDash([5, 3]);
+              ctx.moveTo(W * 0.50, H * 0.10); ctx.lineTo(W * 0.50, H * 0.90);
               ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2; ctx.stroke();
               // Central sulcus
               ctx.beginPath();
-              ctx.moveTo(W*0.20, H*0.38); ctx.quadraticCurveTo(W*0.50, H*0.35, W*0.80, H*0.38);
+              ctx.moveTo(W * 0.20, H * 0.38); ctx.quadraticCurveTo(W * 0.50, H * 0.35, W * 0.80, H * 0.38);
               ctx.stroke();
               ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa';
             } else if (viewKey === 'inferior') {
               // Bottom view
               ctx.beginPath();
-              ctx.ellipse(W*0.50, H*0.40, W*0.30, H*0.30, 0, 0, Math.PI*2);
+              ctx.ellipse(W * 0.50, H * 0.40, W * 0.30, H * 0.30, 0, 0, Math.PI * 2);
               ctx.fill(); ctx.stroke();
               // Cerebellum
               ctx.beginPath();
-              ctx.ellipse(W*0.50, H*0.72, W*0.22, H*0.12, 0, 0, Math.PI*2);
+              ctx.ellipse(W * 0.50, H * 0.72, W * 0.22, H * 0.12, 0, 0, Math.PI * 2);
               ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
               // Brainstem
               ctx.beginPath();
-              ctx.moveTo(W*0.46, H*0.55); ctx.lineTo(W*0.48, H*0.68);
-              ctx.lineTo(W*0.52, H*0.68); ctx.lineTo(W*0.54, H*0.55);
+              ctx.moveTo(W * 0.46, H * 0.55); ctx.lineTo(W * 0.48, H * 0.68);
+              ctx.lineTo(W * 0.52, H * 0.68); ctx.lineTo(W * 0.54, H * 0.55);
               ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
               // Optic chiasm X
               ctx.beginPath(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
-              ctx.moveTo(W*0.44, H*0.30); ctx.lineTo(W*0.56, H*0.36);
-              ctx.moveTo(W*0.56, H*0.30); ctx.lineTo(W*0.44, H*0.36);
+              ctx.moveTo(W * 0.44, H * 0.30); ctx.lineTo(W * 0.56, H * 0.36);
+              ctx.moveTo(W * 0.56, H * 0.30); ctx.lineTo(W * 0.44, H * 0.36);
               ctx.stroke(); ctx.strokeStyle = '#a78bfa';
             }
 
             ctx.restore();
 
             // Draw region markers
-            filtered.forEach(function(r) {
+            filtered.forEach(function (r) {
               var px = r.x * W, py = r.y * H;
               var isSel = sel && sel.id === r.id;
               var rad = isSel ? 10 : 6;
@@ -10781,12 +10841,12 @@
             ctx.restore();
           };
 
-          var handleClick = function(e) {
+          var handleClick = function (e) {
             var rect = e.target.getBoundingClientRect();
             var cx = (e.clientX - rect.left) / rect.width;
             var cy = (e.clientY - rect.top) / rect.height;
             var closest = null, minD = 0.08;
-            filtered.forEach(function(r) {
+            filtered.forEach(function (r) {
               var dist = Math.sqrt(Math.pow(r.x - cx, 2) + Math.pow(r.y - cy, 2));
               if (dist < minD) { minD = dist; closest = r; }
             });
@@ -10796,7 +10856,7 @@
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             // Header
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function() { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("div", null,
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
                 React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
@@ -10804,11 +10864,11 @@
             ),
             // View tabs
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-              Object.keys(VIEWS).map(function(key) {
+              Object.keys(VIEWS).map(function (key) {
                 var v = VIEWS[key];
                 return React.createElement("button", {
                   key: key,
-                  onClick: function() { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
+                  onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-200')
                 }, v.name);
               })
@@ -10818,11 +10878,11 @@
               React.createElement("input", {
                 type: "text", placeholder: "\uD83D\uDD0D Search regions, functions, conditions...",
                 value: d.search || '',
-                onChange: function(e) { upd('search', e.target.value); },
+                onChange: function (e) { upd('search', e.target.value); },
                 className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
               }),
               React.createElement("button", {
-                onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, filtered.length + ' regions')
@@ -10847,31 +10907,27 @@
                     React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
                     React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
-                      (function() {
-                        var wrong = quizPool.filter(function(r) { return r.id !== quizQ.id; }).sort(function() { return Math.random()-0.5; }).slice(0,3);
-                        var opts = wrong.concat([quizQ]).sort(function() { return Math.random()-0.5; });
-                        return opts.map(function(opt) {
-                          var fb = d.quizFeedback;
-                          var isCorrect = opt.id === quizQ.id;
-                          var wasChosen = fb && fb.chosen === opt.id;
-                          var showResult = fb !== null && fb !== undefined;
-                          return React.createElement("button", {
-                            key: opt.id, disabled: showResult,
-                            onClick: function() {
-                              var correct = opt.id === quizQ.id;
-                              upd('quizFeedback', { chosen: opt.id, correct: correct });
-                              if (correct) upd('quizScore', (d.quizScore || 0) + 1);
-                            },
-                            className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
-                              (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                               showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                               'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
-                          }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
-                        });
-                      })()
+                      brainQuizOpts.map(function (opt) {
+                        var fb = d.quizFeedback;
+                        var isCorrect = opt.id === quizQ.id;
+                        var wasChosen = fb && fb.chosen === opt.id;
+                        var showResult = fb !== null && fb !== undefined;
+                        return React.createElement("button", {
+                          key: opt.id, disabled: showResult,
+                          onClick: function () {
+                            var correct = opt.id === quizQ.id;
+                            upd('quizFeedback', { chosen: opt.id, correct: correct });
+                            if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                          },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
+                            (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                              showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                                'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
+                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
+                      })
                     ),
                     d.quizFeedback && React.createElement("button", {
-                      onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                      onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
                       className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
                     }, "Next Question \u2192")
                   ) : null
@@ -10880,7 +10936,7 @@
                     React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
                       React.createElement("div", { className: "flex items-start justify-between" },
                         React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
-                        React.createElement("button", { onClick: function() { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                        React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
                       ),
                       React.createElement("div", { className: "space-y-2.5" },
                         React.createElement("div", null,
@@ -10908,10 +10964,10 @@
                   ) : (
                     React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
                       filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
-                      filtered.map(function(r) {
+                      filtered.map(function (r) {
                         return React.createElement("button", {
                           key: r.id,
-                          onClick: function() { upd('selectedRegion', r.id); },
+                          onClick: function () { upd('selectedRegion', r.id); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
                             (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
                         },
