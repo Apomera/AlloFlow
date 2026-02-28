@@ -656,13 +656,20 @@
           id: 'dataPlot', icon: '📊', label: 'Data Plotter',
           desc: 'Plot data points, fit trend lines, calculate correlation.',
           color: 'teal', ready: true
-        },
-        { id: '_cat_Arts&Music', icon: '', label: 'Arts & Music', desc: '', color: 'slate', category: true },
-        {
-          id: 'musicSynth', icon: '🎹', label: 'Music Synthesizer',
-          desc: 'Play a piano, build beats, and learn the science of sound with real-time waveform visualization.',
-          color: 'violet', ready: true
-        },
+        },
+
+        { id: '_cat_Arts&Music', icon: '', label: 'Arts & Music', desc: '', color: 'slate', category: true },
+
+        {
+
+          id: 'musicSynth', icon: '🎹', label: 'Music Synthesizer',
+
+          desc: 'Play a piano, build beats, and learn the science of sound with real-time waveform visualization.',
+
+          color: 'violet', ready: true
+
+        },
+
       ].map(tool => tool.category
         ? /*#__PURE__*/React.createElement("div", {
           key: tool.id,
@@ -5779,28 +5786,54 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
 stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
     var d = labToolData.galaxy || {};
     var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
+
+    // ── Layer toggle defaults ──
+    var layers = d.layers || { arms: true, bulge: true, blackHole: true, nebulae: true, bgStars: true, grid: false, labels: false };
+    var starCount = d.starCount || 5000;
+    var galaxyType = d.galaxyType || 'barredSpiral';
+
+    // ── Star type data (OBAFGKM Harvard classification) ──
     var STAR_TYPES = [
-        { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', luminosity: '30,000-1,000,000x Sun' },
-        { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', luminosity: '25-30,000x Sun' },
-        { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', luminosity: '5-25x Sun' },
-        { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', luminosity: '1.5-5x Sun' },
-        { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', luminosity: '0.6-1.5x Sun' },
-        { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', luminosity: '0.08-0.6x Sun' },
-        { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', luminosity: '0.001-0.08x Sun' }
+        { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
+        { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+        { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
+        { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
+        { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
+        { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+        { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
     ];
+
+    // ── Nebulae + deep-sky objects (expanded from 4 to 8) ──
     var NEBULAE = [
-        { name: 'Orion Nebula', x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye.' },
-        { name: 'Eagle Nebula', x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', desc: 'Home of the Pillars of Creation. 7,000 light-years from Earth.' },
-        { name: 'Crab Nebula', x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
-        { name: 'Carina Nebula', x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant star.' }
+        { name: 'Orion Nebula', x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.' },
+        { name: 'Eagle Nebula', x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.' },
+        { name: 'Crab Nebula', x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
+        { name: 'Carina Nebula', x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.' },
+        { name: 'Helix Nebula', x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.' },
+        { name: 'Ring Nebula', x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.' },
+        { name: 'Horsehead Nebula', x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.' },
+        { name: 'Lagoon Nebula', x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.' }
     ];
+
+    // ── Galaxy type definitions ──
+    var GALAXY_TYPES = {
+        barredSpiral: { label: 'Barred Spiral', icon: '\uD83C\uDF00', desc: 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.', example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
+        grandDesign: { label: 'Grand Design Spiral', icon: '\uD83C\uDF00', desc: 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.', example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
+        elliptical: { label: 'Elliptical', icon: '\u2B2D\uFE0F', desc: 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.', example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
+        irregular: { label: 'Irregular', icon: '\u2728', desc: 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.', example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
+    };
+    var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
+
+    // ── Warp points ──
     var WARP_POINTS = [
         { label: 'Galactic Core', x: 0, y: 0, z: 0, zoom: 2 },
-        { label: 'Orion Arm (Us)', x: 0.35, y: 0, z: 0.1, zoom: 4 },
-        { label: 'Perseus Arm', x: 0.5, y: 0, z: -0.2, zoom: 3 },
-        { label: 'Sagittarius Arm', x: -0.15, y: 0, z: 0.35, zoom: 3 },
-        { label: 'Overview', x: 0, y: 0.8, z: 0, zoom: 0.8 }
+        { label: 'Orion Arm (Us)', x: 0.35, y: 0, z: 0.1, zoom: 4, desc: 'Our Solar System is here, about 26,000 light-years from the center.' },
+        { label: 'Perseus Arm', x: 0.5, y: 0, z: -0.2, zoom: 3, desc: 'The next spiral arm outward from us. Contains many young, hot stars.' },
+        { label: 'Sagittarius Arm', x: -0.15, y: 0, z: 0.35, zoom: 3, desc: 'The next arm inward toward the galactic center.' },
+        { label: 'Overview', x: 0, y: 0.8, z: 0, zoom: 0.8, desc: 'Full view of the galaxy from above.' }
     ];
+
+    // ── Quiz bank (expanded from 10 to 15) ──
     var QUIZ_BANK = [
         { q: 'What type of star is our Sun?', a: 'G-type', options: ['O-type', 'A-type', 'G-type', 'M-type'] },
         { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', 'Nebula'] },
@@ -5811,8 +5844,25 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         { q: 'How many stars are in the Milky Way?', a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
         { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: ['Elliptical', 'Irregular', 'Spiral', 'Barred spiral'] },
         { q: 'Which star is closest to our Sun?', a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
-        { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] }
+        { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
+        { q: 'What is a planetary nebula?', a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
+        { q: 'How wide is the Milky Way?', a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
+        { q: 'What causes a supernova?', a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
+        { q: 'What is dark matter?', a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
+        { q: 'How long does it take light to cross the Milky Way?', a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] }
     ];
+
+    // ── Scale data ──
+    var SCALE_INFO = [
+        { label: 'Galaxy Diameter', value: '~100,000 light-years' },
+        { label: 'Disk Thickness', value: '~2,000 light-years' },
+        { label: 'Central Bulge', value: '~10,000 light-years' },
+        { label: 'Sun to Center', value: '~26,000 light-years' },
+        { label: 'Stars', value: '100\u2013400 billion' },
+        { label: 'Age', value: '~13.6 billion years' }
+    ];
+
+    // ── Three.js init with layer groups ──
     var canvasRefCb = function (canvasEl) {
         if (!canvasEl || canvasEl._galaxyInit) return;
         canvasEl._galaxyInit = true;
@@ -5824,29 +5874,42 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
             document.head.appendChild(script);
         }
     };
-    function initGalaxy(canvasEl) {
-        var THREE = window.THREE;
-        var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
-        camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
-        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
-        renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x050510);
-        // Background stars
-        var bgGeo = new THREE.BufferGeometry(), bgCount = 2000, bgPos = new Float32Array(bgCount * 3);
-        for (var i = 0; i < bgCount; i++) { bgPos[i * 3] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 1] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 2] = (Math.random() - 0.5) * 20; }
-        bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
-        scene.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })));
-        // Spiral galaxy stars
-        var starCount = 5000, starGeo = new THREE.BufferGeometry();
-        var starPos = new Float32Array(starCount * 3), starColors = new Float32Array(starCount * 3), starData = [];
-        for (var i = 0; i < starCount; i++) {
-            var arm = i % 4, armAngle = (arm / 4) * Math.PI * 2;
-            var dist = Math.pow(Math.random(), 0.6) * 0.8;
-            var angle = armAngle + dist * 2.5 + (Math.random() - 0.5) * 0.4 * (1 - dist * 0.5);
-            var x = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.03;
-            var z = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.03;
-            var y = (Math.random() - 0.5) * 0.04 * (1 - dist);
+
+    function generateStars(THREE, count, gType, galaxyType) {
+        var starGeo = new THREE.BufferGeometry();
+        var starPos = new Float32Array(count * 3), starColors = new Float32Array(count * 3), starData = [];
+        for (var i = 0; i < count; i++) {
+            var x, y, z;
+            if (galaxyType === 'elliptical') {
+                var r = Math.pow(Math.random(), 0.5) * 0.6;
+                var theta = Math.random() * Math.PI * 2;
+                var phi = (Math.random() - 0.5) * Math.PI;
+                x = Math.cos(theta) * Math.cos(phi) * r;
+                z = Math.sin(theta) * Math.cos(phi) * r;
+                y = Math.sin(phi) * r * 0.6;
+            } else if (galaxyType === 'irregular') {
+                x = (Math.random() - 0.5) * 0.8;
+                z = (Math.random() - 0.5) * 0.6;
+                y = (Math.random() - 0.5) * 0.3;
+                var clumpChance = Math.random();
+                if (clumpChance < 0.3) { var cx = (Math.random()-0.5)*0.4; var cz = (Math.random()-0.5)*0.3; x = cx + (Math.random()-0.5)*0.15; z = cz + (Math.random()-0.5)*0.15; y *= 0.5; }
+            } else {
+                var arm = i % (gType.arms || 4);
+                var armAngle = (arm / (gType.arms || 4)) * Math.PI * 2;
+                var dist = Math.pow(Math.random(), 0.6) * 0.8;
+                var windTight = gType.windTightness || 2.5;
+                var barLen = gType.barLength || 0;
+                var angle = armAngle + dist * windTight + (Math.random() - 0.5) * 0.4 * (1 - dist * 0.5);
+                if (barLen > 0 && dist < barLen) {
+                    var barAngle = (arm % 2 === 0) ? 0 : Math.PI;
+                    x = Math.cos(barAngle) * dist + (Math.random() - 0.5) * 0.03;
+                    z = Math.sin(barAngle) * dist * 0.15 + (Math.random() - 0.5) * 0.02;
+                } else {
+                    x = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.03;
+                    z = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.03;
+                }
+                y = (Math.random() - 0.5) * 0.04 * (1 - dist);
+            }
             starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
             var roll = Math.random() * 100;
             var typeIdx = roll < 0.003 ? 0 : roll < 0.133 ? 1 : roll < 0.733 ? 2 : roll < 3.73 ? 3 : roll < 11.33 ? 4 : roll < 23.43 ? 5 : 6;
@@ -5856,8 +5919,41 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         }
         starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
         starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-        var starPoints = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
-        scene.add(starPoints);
+        return { geo: starGeo, data: starData };
+    }
+
+    function initGalaxy(canvasEl) {
+        var THREE = window.THREE;
+        var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
+        camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
+        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+        renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x050510);
+
+        // ── Layer groups ──
+        var bgGroup = new THREE.Group(); bgGroup.name = 'bgStars';
+        var armGroup = new THREE.Group(); armGroup.name = 'arms';
+        var bulgeGroup = new THREE.Group(); bulgeGroup.name = 'bulge';
+        var bhGroup = new THREE.Group(); bhGroup.name = 'blackHole';
+        var nebGroup = new THREE.Group(); nebGroup.name = 'nebulae';
+        var gridGroup = new THREE.Group(); gridGroup.name = 'grid'; gridGroup.visible = false;
+        var labelGroup = new THREE.Group(); labelGroup.name = 'labels'; labelGroup.visible = false;
+        scene.add(bgGroup); scene.add(armGroup); scene.add(bulgeGroup);
+        scene.add(bhGroup); scene.add(nebGroup); scene.add(gridGroup); scene.add(labelGroup);
+
+        // Background stars
+        var bgGeo = new THREE.BufferGeometry(), bgCount = 2000, bgPos = new Float32Array(bgCount * 3);
+        for (var i = 0; i < bgCount; i++) { bgPos[i * 3] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 1] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 2] = (Math.random() - 0.5) * 20; }
+        bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+        bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })));
+
+        // Spiral galaxy stars
+        var starResult = generateStars(THREE, starCount, gType, galaxyType);
+        var starPoints = new THREE.Points(starResult.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+        armGroup.add(starPoints);
+        var starData = starResult.data;
+
         // Central bulge
         var bulgeGeo = new THREE.BufferGeometry(), bulgeCount = 800;
         var bulgePos = new Float32Array(bulgeCount * 3), bulgeCol = new Float32Array(bulgeCount * 3);
@@ -5868,11 +5964,21 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         }
         bulgeGeo.setAttribute('position', new THREE.BufferAttribute(bulgePos, 3));
         bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
-        scene.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
+        bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
+
         // Black hole + accretion ring
-        scene.add(new THREE.Mesh(new THREE.SphereGeometry(0.008, 16, 16), new THREE.MeshBasicMaterial({ color: 0x000000 })));
+        bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.008, 16, 16), new THREE.MeshBasicMaterial({ color: 0x000000 })));
         var ring = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.02, 32), new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
-        ring.rotation.x = Math.PI * 0.5; scene.add(ring);
+        ring.rotation.x = Math.PI * 0.5; bhGroup.add(ring);
+
+        // Scale grid
+        var gridHelper = new THREE.GridHelper(2, 20, 0x223366, 0x112244);
+        gridHelper.position.y = -0.03;
+        gridGroup.add(gridHelper);
+        var ringScale = new THREE.Mesh(new THREE.RingGeometry(0.49, 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.2 }));
+        ringScale.rotation.x = Math.PI * 0.5; ringScale.position.y = -0.02;
+        gridGroup.add(ringScale);
+
         // Nebulae as sprites
         var nebCanvas = document.createElement('canvas'); nebCanvas.width = 64; nebCanvas.height = 64;
         var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [];
@@ -5884,8 +5990,35 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
             var tex = new THREE.CanvasTexture(nebCanvas); tex.needsUpdate = true;
             var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.clone(), transparent: true, opacity: 0.5 }));
             sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
-            sprite.userData = neb; scene.add(sprite); nebulaSprites.push(sprite);
+            sprite.userData = neb; nebGroup.add(sprite); nebulaSprites.push(sprite);
         });
+
+        // Labels for nebulae
+        NEBULAE.forEach(function (neb) {
+            var labelCanvas = document.createElement('canvas'); labelCanvas.width = 256; labelCanvas.height = 48;
+            var lCtx = labelCanvas.getContext('2d');
+            lCtx.fillStyle = 'rgba(0,0,0,0.5)'; lCtx.fillRect(0, 0, 256, 48);
+            lCtx.font = '18px sans-serif'; lCtx.fillStyle = neb.color; lCtx.textAlign = 'center'; lCtx.fillText(neb.name, 128, 32);
+            var labelTex = new THREE.CanvasTexture(labelCanvas);
+            var labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true }));
+            labelSprite.position.set(neb.x, neb.y + neb.r + 0.03, neb.z);
+            labelSprite.scale.set(0.15, 0.03, 1);
+            labelGroup.add(labelSprite);
+        });
+
+        // Store layer references on canvas for toggle access
+        canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup };
+
+        // Function to regenerate stars with new count
+        canvasEl._setStarCount = function (count) {
+            armGroup.remove(starPoints);
+            starPoints.geometry.dispose();
+            var result = generateStars(THREE, count, gType, galaxyType);
+            starPoints = new THREE.Points(result.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+            armGroup.add(starPoints);
+            starData = result.data;
+        };
+
         // Orbit controls
         var isDragging = false, prevX = 0, prevY = 0;
         var spherical = { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: 1.2 };
@@ -5905,6 +6038,7 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         });
         canvasEl.addEventListener('mouseup', function () { isDragging = false; });
         canvasEl.addEventListener('wheel', function (e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); }, { passive: false });
+
         // Raycaster for click selection
         var raycaster = new THREE.Raycaster(); raycaster.params.Points.threshold = 0.02;
         var mouse = new THREE.Vector2();
@@ -5926,8 +6060,9 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         var animId;
         function animate() {
             animId = requestAnimationFrame(animate);
-            starPoints.rotation.y += 0.0003;
+            if (armGroup.visible) armGroup.children.forEach(function(c) { c.rotation.y += 0.0003; });
             nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.35 + 0.15 * Math.sin(Date.now() * 0.001 + i * 1.5); });
+            if (bhGroup.visible) { ring.rotation.z += 0.002; }
             renderer.render(scene, camera);
         }
         animate();
@@ -5935,10 +6070,32 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
         ro.observe(canvasEl);
         canvasEl._galaxyCleanup = function () { if (animId) cancelAnimationFrame(animId); ro.disconnect(); renderer.dispose(); };
     }
+
     var selStar = d.selectedStar ? STAR_TYPES.find(function (s) { return s.id === d.selectedStar; }) : null;
     var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
     var quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+
+    // ── Toggle handler ──
+    var toggleLayer = function (key) {
+        var newLayers = Object.assign({}, layers);
+        newLayers[key] = !newLayers[key];
+        upd("layers", newLayers);
+        var cv = document.querySelector('[data-galaxy-canvas]');
+        if (cv && cv._layers && cv._layers[key]) cv._layers[key].visible = newLayers[key];
+    };
+
+    var LAYER_TOGGLES = [
+        { key: 'arms', icon: '\uD83C\uDF00', label: 'Spiral Arms' },
+        { key: 'bulge', icon: '\uD83D\uDFE1', label: 'Central Bulge' },
+        { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: 'Black Hole' },
+        { key: 'nebulae', icon: '\u2728', label: 'Nebulae' },
+        { key: 'bgStars', icon: '\uD83C\uDF0C', label: 'Background' },
+        { key: 'grid', icon: '\uD83D\uDCCF', label: 'Scale Grid' },
+        { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: 'Labels' }
+    ];
+
     return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+        // ── Header ──
         React.createElement("div", { className: "flex items-center gap-3 mb-3" },
             React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
             React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
@@ -5953,29 +6110,116 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
                 })
             )
         ),
+
+        // ── Galaxy type selector ──
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+            Object.keys(GALAXY_TYPES).map(function (key) {
+                var gt = GALAXY_TYPES[key];
+                return React.createElement("button", {
+                    key: key,
+                    onClick: function () {
+                        upd("galaxyType", key);
+                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
+                    },
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200')
+                }, gt.icon + " " + gt.label);
+            })
+        ),
+
+        // ── Galaxy type info card ──
+        React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-lg border border-indigo-100 text-[11px]" },
+            React.createElement("span", { className: "font-bold text-indigo-700" }, gType.icon + " " + gType.label + ": "),
+            React.createElement("span", { className: "text-slate-600" }, gType.desc),
+            React.createElement("span", { className: "text-indigo-400 ml-1" }, "(e.g. " + gType.example + ")")
+        ),
+
+        // ── 3D Canvas ──
         React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
             React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
+            // Star type legend
             React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
                 React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
                 STAR_TYPES.map(function (st) { return React.createElement("div", { key: st.id, className: "flex items-center gap-1 leading-tight" }, React.createElement("span", { style: { color: st.color, fontSize: '10px' } }, "\u2B50"), React.createElement("span", null, st.id + " (" + st.temp + "K)")); })
+            ),
+            // Scale info overlay
+            layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+                React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
+                SCALE_INFO.map(function (s) { return React.createElement("div", { key: s.label, className: "flex justify-between gap-3" }, React.createElement("span", { className: "text-white/50" }, s.label), React.createElement("span", { className: "font-bold" }, s.value)); })
             )
         ),
+
+        // ── Layer toggles ──
         React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-            WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+            LAYER_TOGGLES.map(function (lt) {
+                var isOn = layers[lt.key] !== false;
+                return React.createElement("button", {
+                    key: lt.key,
+                    onClick: function () { toggleLayer(lt.key); },
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
+                }, lt.icon + " " + lt.label);
+            })
         ),
+
+        // ── Star density slider ──
+        React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
+            React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
+            React.createElement("input", {
+                type: "range", min: 1000, max: 10000, step: 1000, value: starCount,
+                onChange: function (e) {
+                    var val = parseInt(e.target.value);
+                    upd("starCount", val);
+                    var cv = document.querySelector('[data-galaxy-canvas]');
+                    if (cv && cv._setStarCount) cv._setStarCount(val);
+                },
+                className: "flex-1 h-1.5 accent-indigo-500"
+            }),
+            React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
+        ),
+
+        // ── Warp points ──
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+            WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+        ),
+
+        // ── Warp info ──
+        d.warpInfo && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-[11px] text-indigo-700" },
+            React.createElement("span", { className: "font-bold" }, "\uD83D\uDCCD "),
+            d.warpInfo
+        ),
+
+        // ── Star info card ──
         selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
             React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
             React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
             React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
-                React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 text-center" }, React.createElement("div", { className: "font-bold text-slate-500" }, "Temperature"), React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, selStar.temp + " K")),
-                React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 text-center" }, React.createElement("div", { className: "font-bold text-slate-500" }, "% of Stars"), React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, selStar.pct + "%")),
-                React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 text-center" }, React.createElement("div", { className: "font-bold text-slate-500" }, "Luminosity"), React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, selStar.luminosity))
+                [
+                    { label: 'Temperature', val: selStar.temp + ' K' },
+                    { label: '% of Stars', val: selStar.pct + '%' },
+                    { label: 'Luminosity', val: selStar.luminosity },
+                    { label: 'Mass', val: selStar.mass || '?' },
+                    { label: 'Lifetime', val: selStar.lifetime || '?' },
+                    { label: 'Example', val: selStar.example }
+                ].map(function (item) {
+                    return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
+                        React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
+                        React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
+                    );
+                })
             )
         ),
+
+        // ── Nebula info card ──
         selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
             React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
+            React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
+                React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || 'Nebula'),
+                selNeb.dist && React.createElement("span", { className: "text-slate-500" }, "\uD83D\uDCCD " + selNeb.dist)
+            ),
             React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
         ),
+
+        // ── Quiz mode ──
         d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
             React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
@@ -5988,15 +6232,13 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
             React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 quizQ.options.map(function (opt) {
                     return React.createElement("button", {
-                        key: opt, onClick: function () {
+                        key: opt, disabled: !!d.quizFeedback,
+                        onClick: function () {
                             var correct = opt === quizQ.a;
                             upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
-                            if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
-                          var ansOrg = ORGANISMS.find(function(o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
-                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function(f,i) { return ansOrg.id + '_' + i; }).filter(function(k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
-                        }
+                            if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
                             else { upd("quizStreak", 0); }
-                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
                     }, opt);
                 })
             ),
@@ -6005,8 +6247,10 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
                 React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % QUIZ_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
             )
         ),
+
+        // ── Snapshot button ──
         React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-            React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
         )
     )
 })(),
@@ -7433,415 +7677,824 @@ stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: d.material || 'Material', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
-
-// ═══════════════════════════════════════════════════════
-// MUSIC SYNTHESIZER — Web Audio API + Canvas2D Oscilloscope
-// ═══════════════════════════════════════════════════════
-stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
-    const d = labToolData.musicSynth;
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
-
-    // --- Audio Context singleton ---
-    if (!window._alloSynthCtx) {
-        window._alloSynthCtx = null;
-        window._alloSynthGain = null;
-        window._alloSynthAnalyser = null;
-        window._alloSynthActiveNotes = {};
-        window._alloSynthSeqInterval = null;
-    }
-    function getCtx() {
-        if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
-            var ac = new (window.AudioContext || window.webkitAudioContext)();
-            var gain = ac.createGain();
-            gain.gain.value = d.volume || 0.5;
-            var analyser = ac.createAnalyser();
-            analyser.fftSize = 2048;
-            gain.connect(analyser);
-            analyser.connect(ac.destination);
-            window._alloSynthCtx = ac;
-            window._alloSynthGain = gain;
-            window._alloSynthAnalyser = analyser;
-        }
-        if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
-        window._alloSynthGain.gain.value = d.volume || 0.5;
-        return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser };
-    }
-
-    // Note frequency map (equal temperament, A4 = 440 Hz)
-    var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    function noteFreq(note, octave) {
-        var semitone = NOTE_NAMES.indexOf(note);
-        var n = (octave - 4) * 12 + (semitone - 9); // semitones from A4
-        return 440 * Math.pow(2, n / 12);
-    }
-    // Build 2-octave scale
-    var oct = d.octave || 4;
-    var KEYS = [];
-    for (var o = oct; o <= oct + 1; o++) {
-        for (var ni = 0; ni < 12; ni++) {
-            KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1 });
-        }
-    }
-
-    // Play / stop note
-    function playNote(freq, noteId) {
-        var audio = getCtx();
-        if (window._alloSynthActiveNotes[noteId]) return;
-        var osc = audio.ctx.createOscillator();
-        var env = audio.ctx.createGain();
-        osc.type = d.waveType || 'sine';
-        osc.frequency.value = freq;
-        var now = audio.ctx.currentTime;
-        var atk = d.attack || 0.02;
-        var dec = d.decay || 0.1;
-        var sus = d.sustain || 0.7;
-        env.gain.setValueAtTime(0, now);
-        env.gain.linearRampToValueAtTime(1, now + atk);
-        env.gain.linearRampToValueAtTime(sus, now + atk + dec);
-        osc.connect(env);
-        env.connect(audio.gain);
-        osc.start(now);
-        window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
-    }
-    function stopNote(noteId) {
-        var entry = window._alloSynthActiveNotes[noteId];
-        if (!entry) return;
-        var audio = getCtx();
-        var now = audio.ctx.currentTime;
-        var rel = d.release || 0.3;
-        entry.env.gain.cancelScheduledValues(now);
-        entry.env.gain.setValueAtTime(entry.env.gain.value, now);
-        entry.env.gain.linearRampToValueAtTime(0, now + rel);
-        entry.osc.stop(now + rel + 0.05);
-        delete window._alloSynthActiveNotes[noteId];
-    }
-
-    // Keyboard mapping (bottom row = white keys C-B, top row = sharps)
-    var KEY_MAP = {
-        'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
-        's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
-        'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
-        '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
-    };
-
-    // Canvas oscilloscope
-    var canvasRef = function (canvasEl) {
-        if (!canvasEl || canvasEl._synthInit) return;
-        canvasEl._synthInit = true;
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-        var ctx = canvasEl.getContext('2d');
-        var dpr = 2;
-        function draw() {
-            ctx.clearRect(0, 0, cW, cH);
-            // Dark background
-            var grad = ctx.createLinearGradient(0, 0, 0, cH);
-            grad.addColorStop(0, '#1e1b4b');
-            grad.addColorStop(0.5, '#312e81');
-            grad.addColorStop(1, '#1e1b4b');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, cW, cH);
-            // Grid
-            ctx.strokeStyle = 'rgba(139,92,246,0.12)';
-            ctx.lineWidth = 1;
-            for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
-            for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
-            // Center line
-            ctx.strokeStyle = 'rgba(139,92,246,0.25)';
-            ctx.setLineDash([6, 4]);
-            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
-            ctx.setLineDash([]);
-            // Draw waveform from analyser
-            if (window._alloSynthAnalyser) {
-                var analyser = window._alloSynthAnalyser;
-                var bufLen = analyser.fftSize;
-                var dataArr = new Uint8Array(bufLen);
-                analyser.getByteTimeDomainData(dataArr);
-                // Glow effect
-                ctx.shadowColor = '#a78bfa';
-                ctx.shadowBlur = 8;
-                ctx.lineWidth = 2.5 * dpr;
-                ctx.strokeStyle = '#c4b5fd';
-                ctx.beginPath();
-                var sliceW = cW / bufLen;
-                for (var i = 0; i < bufLen; i++) {
-                    var v = dataArr[i] / 128.0;
-                    var py = (v * cH) / 2;
-                    if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py);
-                }
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-                // Second pass for brighter core
-                ctx.lineWidth = 1.5 * dpr;
-                ctx.strokeStyle = '#e9d5ff';
-                ctx.beginPath();
-                for (var i2 = 0; i2 < bufLen; i2++) {
-                    var v2 = dataArr[i2] / 128.0;
-                    var py2 = (v2 * cH) / 2;
-                    if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2);
-                }
-                ctx.stroke();
-            }
-            // Label
-            var wt = canvasEl.dataset.waveType || 'sine';
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
-            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-            ctx.fillStyle = '#c4b5fd';
-            ctx.fillText('\uD83C\uDFB5 ' + wt.toUpperCase(), 8 * dpr, 14 * dpr);
-            canvasEl._synthAnim = requestAnimationFrame(draw);
-        }
-        canvasEl._synthAnim = requestAnimationFrame(draw);
-    };
-
-    // Sequencer
-    var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5'];
-    var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-    var seq = d.sequence || [0, 0, 0, 0, 0, 0, 0, 0];
-    var seqPlaying = d.seqPlaying || false;
-
-    function toggleSeqStep(idx) {
-        var newSeq = seq.slice();
-        newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1); // 0 = off, 1-8 = note
-        upd('sequence', newSeq);
-    }
-
-    function startSequencer() {
-        stopSequencer();
-        upd('seqPlaying', true);
-        upd('seqStep', 0);
-        var bpm = d.bpm || 120;
-        var interval = (60 / bpm) * 1000 / 2; // eighth notes
-        var step = 0;
-        window._alloSynthSeqInterval = setInterval(function () {
-            // Read latest sequence from DOM data attribute
-            var seqEl = document.getElementById('synth-seq-data');
-            var currentSeq = seq;
-            if (seqEl && seqEl.dataset.seq) {
-                try { currentSeq = JSON.parse(seqEl.dataset.seq); } catch (e) { }
-            }
-            // Stop previous note
-            stopNote('seq');
-            var noteIdx = currentSeq[step];
-            if (noteIdx > 0 && noteIdx <= SEQ_FREQS.length) {
-                playNote(SEQ_FREQS[noteIdx - 1], 'seq');
-                setTimeout(function () { stopNote('seq'); }, interval * 0.8);
-            }
-            step = (step + 1) % 8;
-            // Update visual step indicator via dataset
-            if (seqEl) seqEl.dataset.step = step;
-            upd('seqStep', step);
-        }, interval);
-    }
-
-    function stopSequencer() {
-        if (window._alloSynthSeqInterval) {
-            clearInterval(window._alloSynthSeqInterval);
-            window._alloSynthSeqInterval = null;
-        }
-        stopNote('seq');
-        upd('seqPlaying', false);
-        upd('seqStep', -1);
-    }
-
-    // Quiz bank
-    var MUSIC_QUIZ = [
-        { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
-        { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
-        { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
-        { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
-        { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
-        { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
-        { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
-        { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
-        { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
-        { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
-    ];
-
-    // Waveform descriptions
-    var WAVE_INFO = {
-        sine: { emoji: '\u223F', desc: 'Pure tone — only the fundamental frequency. No harmonics. Used in tuning forks and test signals.', harmonics: 'None (fundamental only)' },
-        square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Contains only odd harmonics (1st, 3rd, 5th...). Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)' },
-        sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, and rich. Contains ALL harmonics. Great for brass and string sounds.', harmonics: 'All (1, 2, 3, 4, 5...)' },
-        triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow. Contains odd harmonics but they fall off quickly.', harmonics: 'Odd only, quiet (1/n\u00B2)' }
-    };
-    var wInfo = WAVE_INFO[d.waveType || 'sine'];
-
-    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-        // Hidden data element for sequencer
-        React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, style: { display: "none" } }),
-        // Header
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: function () { stopSequencer(); Object.keys(window._alloSynthActiveNotes || {}).forEach(function (k) { stopNote(k); }); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB9 Music Synthesizer"),
-            React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO")
-        ),
-        // Oscilloscope
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "140px" } },
-            React.createElement("canvas", {
-                ref: canvasRef,
-                "data-wave-type": d.waveType || 'sine',
-                style: { width: "100%", height: "100%", display: "block" }
-            })
-        ),
-        // Waveform selector
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
-            ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
-                var info = WAVE_INFO[wt];
-                return React.createElement("button", {
-                    key: wt,
-                    onClick: function () { upd('waveType', wt); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100')
-                }, info.emoji + ' ' + wt.charAt(0).toUpperCase() + wt.slice(1));
-            })
-        ),
-        // Waveform info card
-        React.createElement("div", { className: "bg-violet-50 rounded-lg p-2.5 border border-violet-200 mb-3 text-xs" },
-            React.createElement("p", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
-            React.createElement("p", { className: "text-violet-600 mt-0.5" }, wInfo.desc),
-            React.createElement("p", { className: "text-violet-500 mt-0.5 font-semibold" }, "\uD83C\uDFBC Harmonics: " + wInfo.harmonics)
-        ),
-        // Piano keyboard
-        React.createElement("div", { className: "mb-3" },
-            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83C\uDFB9 Piano — click keys or press Z-M (white) S,D,G,H,J (black)"),
-            React.createElement("div", { className: "relative", style: { height: "120px" } },
-                // White keys
-                React.createElement("div", { className: "flex h-full" },
-                    KEYS.filter(function (k) { return !k.isBlack; }).map(function (k, i) {
-                        var noteId = k.note + k.octave;
-                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
-                        return React.createElement("button", {
-                            key: noteId,
-                            onMouseDown: function () { playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
-                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                            className: "flex-1 border border-slate-200 rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : 'bg-white hover:bg-slate-50'),
-                            style: { minWidth: "28px" }
-                        },
-                            React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : 'text-slate-400') }, k.note),
-                            React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
-                        );
-                    })
-                ),
-                // Black keys overlay
-                React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
-                    KEYS.map(function (k, i) {
-                        if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
-                        var noteId = k.note + k.octave;
-                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
-                        return React.createElement("button", {
-                            key: noteId,
-                            onMouseDown: function (e) { e.stopPropagation(); playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
-                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-                            className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (isActive ? 'bg-violet-700 shadow-inner' : 'bg-slate-800 hover:bg-slate-700'),
-                            style: { width: "24px", marginLeft: "-12px", marginRight: "-12px", zIndex: 2, pointerEvents: "auto", height: "100%" }
-                        },
-                            React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
-                        );
-                    })
-                )
-            )
-        ),
-        // Frequency display
-        d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
-            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
-                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
-            ),
-            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
-                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
-            ),
-            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
-                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "—")
-            )
-        ),
-        // ADSR Envelope + Volume
-        React.createElement("div", { className: "mb-3" },
-            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDCC8 ADSR Envelope & Volume"),
-            React.createElement("div", { className: "grid grid-cols-5 gap-2" },
-                [
-                    { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
-                    { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
-                    { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
-                    { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
-                    { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
-                ].map(function (s) {
-                    return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
-                        React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
-                        React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
-                    );
-                })
-            )
-        ),
-        // 8-step Sequencer
-        React.createElement("div", { className: "mb-3" },
-            React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 8-Step Sequencer"),
-                React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
-                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
-                    React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
-                    React.createElement("button", {
-                        onClick: function () { if (seqPlaying) { stopSequencer(); } else { startSequencer(); } },
-                        className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600')
-                    }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
-                )
-            ),
-            React.createElement("div", { className: "grid grid-cols-8 gap-1" },
-                seq.map(function (noteIdx, stepIdx) {
-                    var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
-                    var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
-                    var bgColor = noteIdx > 0 ? 'bg-violet-' + (200 + noteIdx * 50) : 'bg-slate-100';
-                    return React.createElement("button", {
-                        key: stepIdx,
-                        onClick: function () { toggleSeqStep(stepIdx); },
-                        className: "p-2 rounded-lg border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50')
-                    },
-                        React.createElement("span", { className: "text-sm font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName),
-                        React.createElement("span", { className: "text-[8px] text-slate-400" }, stepIdx + 1)
-                    );
-                })
-            ),
-            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 text-center" }, "Click steps to cycle through notes (C D E F G A B C5). Click again to clear.")
-        ),
-        // Quiz
-        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-            React.createElement("button", {
-                onClick: function () {
-                    var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
-                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
-                },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
-            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
-            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
-        ),
-        d.quiz && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200 mb-3" },
-            React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
-            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                d.quiz.opts.map(function (opt) {
-                    var isCorrect = opt === d.quiz.a;
-                    var wasChosen = d.quiz.chosen === opt;
-                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
-                    return React.createElement("button", {
-                        key: opt, disabled: d.quiz.answered,
-                        onClick: function () {
-                            var correct = opt === d.quiz.a;
-                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
-                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
-                        },
-                        className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
-                    }, opt);
-                })
-            )
-        ),
-        // Snapshot
-        React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ms-' + Date.now(), tool: 'musicSynth', label: (d.waveType || 'sine') + ' synth', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synth snapshot saved!', 'success'); }, className: "mt-2 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-    )
-})(),
-
+
+
+// ═══════════════════════════════════════════════════════
+
+// MUSIC SYNTHESIZER — Web Audio API + Canvas2D Oscilloscope
+
+// ═══════════════════════════════════════════════════════
+
+stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
+
+    const d = labToolData.musicSynth;
+
+    const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
+
+
+
+    // --- Audio Context singleton ---
+
+    if (!window._alloSynthCtx) {
+
+        window._alloSynthCtx = null;
+
+        window._alloSynthGain = null;
+
+        window._alloSynthAnalyser = null;
+
+        window._alloSynthActiveNotes = {};
+
+        window._alloSynthSeqInterval = null;
+
+    }
+
+    function getCtx() {
+
+        if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
+
+            var ac = new (window.AudioContext || window.webkitAudioContext)();
+
+            var gain = ac.createGain();
+
+            gain.gain.value = d.volume || 0.5;
+
+            var analyser = ac.createAnalyser();
+
+            analyser.fftSize = 2048;
+
+            gain.connect(analyser);
+
+            analyser.connect(ac.destination);
+
+            window._alloSynthCtx = ac;
+
+            window._alloSynthGain = gain;
+
+            window._alloSynthAnalyser = analyser;
+
+        }
+
+        if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
+
+        window._alloSynthGain.gain.value = d.volume || 0.5;
+
+        return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser };
+
+    }
+
+
+
+    // Note frequency map (equal temperament, A4 = 440 Hz)
+
+    var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    function noteFreq(note, octave) {
+
+        var semitone = NOTE_NAMES.indexOf(note);
+
+        var n = (octave - 4) * 12 + (semitone - 9); // semitones from A4
+
+        return 440 * Math.pow(2, n / 12);
+
+    }
+
+    // Build 2-octave scale
+
+    var oct = d.octave || 4;
+
+    var KEYS = [];
+
+    for (var o = oct; o <= oct + 1; o++) {
+
+        for (var ni = 0; ni < 12; ni++) {
+
+            KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1 });
+
+        }
+
+    }
+
+
+
+    // Play / stop note
+
+    function playNote(freq, noteId) {
+
+        var audio = getCtx();
+
+        if (window._alloSynthActiveNotes[noteId]) return;
+
+        var osc = audio.ctx.createOscillator();
+
+        var env = audio.ctx.createGain();
+
+        osc.type = d.waveType || 'sine';
+
+        osc.frequency.value = freq;
+
+        var now = audio.ctx.currentTime;
+
+        var atk = d.attack || 0.02;
+
+        var dec = d.decay || 0.1;
+
+        var sus = d.sustain || 0.7;
+
+        env.gain.setValueAtTime(0, now);
+
+        env.gain.linearRampToValueAtTime(1, now + atk);
+
+        env.gain.linearRampToValueAtTime(sus, now + atk + dec);
+
+        osc.connect(env);
+
+        env.connect(audio.gain);
+
+        osc.start(now);
+
+        window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
+
+    }
+
+    function stopNote(noteId) {
+
+        var entry = window._alloSynthActiveNotes[noteId];
+
+        if (!entry) return;
+
+        var audio = getCtx();
+
+        var now = audio.ctx.currentTime;
+
+        var rel = d.release || 0.3;
+
+        entry.env.gain.cancelScheduledValues(now);
+
+        entry.env.gain.setValueAtTime(entry.env.gain.value, now);
+
+        entry.env.gain.linearRampToValueAtTime(0, now + rel);
+
+        entry.osc.stop(now + rel + 0.05);
+
+        delete window._alloSynthActiveNotes[noteId];
+
+    }
+
+
+
+    // Keyboard mapping (bottom row = white keys C-B, top row = sharps)
+
+    var KEY_MAP = {
+
+        'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
+
+        's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
+
+        'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
+
+        '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
+
+    };
+
+
+
+    // Canvas oscilloscope
+
+    var canvasRef = function (canvasEl) {
+
+        if (!canvasEl || canvasEl._synthInit) return;
+
+        canvasEl._synthInit = true;
+
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+
+        var ctx = canvasEl.getContext('2d');
+
+        var dpr = 2;
+
+        function draw() {
+
+            ctx.clearRect(0, 0, cW, cH);
+
+            // Dark background
+
+            var grad = ctx.createLinearGradient(0, 0, 0, cH);
+
+            grad.addColorStop(0, '#1e1b4b');
+
+            grad.addColorStop(0.5, '#312e81');
+
+            grad.addColorStop(1, '#1e1b4b');
+
+            ctx.fillStyle = grad;
+
+            ctx.fillRect(0, 0, cW, cH);
+
+            // Grid
+
+            ctx.strokeStyle = 'rgba(139,92,246,0.12)';
+
+            ctx.lineWidth = 1;
+
+            for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
+
+            for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+
+            // Center line
+
+            ctx.strokeStyle = 'rgba(139,92,246,0.25)';
+
+            ctx.setLineDash([6, 4]);
+
+            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            // Draw waveform from analyser
+
+            if (window._alloSynthAnalyser) {
+
+                var analyser = window._alloSynthAnalyser;
+
+                var bufLen = analyser.fftSize;
+
+                var dataArr = new Uint8Array(bufLen);
+
+                analyser.getByteTimeDomainData(dataArr);
+
+                // Glow effect
+
+                ctx.shadowColor = '#a78bfa';
+
+                ctx.shadowBlur = 8;
+
+                ctx.lineWidth = 2.5 * dpr;
+
+                ctx.strokeStyle = '#c4b5fd';
+
+                ctx.beginPath();
+
+                var sliceW = cW / bufLen;
+
+                for (var i = 0; i < bufLen; i++) {
+
+                    var v = dataArr[i] / 128.0;
+
+                    var py = (v * cH) / 2;
+
+                    if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py);
+
+                }
+
+                ctx.stroke();
+
+                ctx.shadowBlur = 0;
+
+                // Second pass for brighter core
+
+                ctx.lineWidth = 1.5 * dpr;
+
+                ctx.strokeStyle = '#e9d5ff';
+
+                ctx.beginPath();
+
+                for (var i2 = 0; i2 < bufLen; i2++) {
+
+                    var v2 = dataArr[i2] / 128.0;
+
+                    var py2 = (v2 * cH) / 2;
+
+                    if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2);
+
+                }
+
+                ctx.stroke();
+
+            }
+
+            // Label
+
+            var wt = canvasEl.dataset.waveType || 'sine';
+
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+
+            ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
+
+            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+
+            ctx.fillStyle = '#c4b5fd';
+
+            ctx.fillText('\uD83C\uDFB5 ' + wt.toUpperCase(), 8 * dpr, 14 * dpr);
+
+            canvasEl._synthAnim = requestAnimationFrame(draw);
+
+        }
+
+        canvasEl._synthAnim = requestAnimationFrame(draw);
+
+    };
+
+
+
+    // Sequencer
+
+    var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5'];
+
+    var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+
+    var seq = d.sequence || [0, 0, 0, 0, 0, 0, 0, 0];
+
+    var seqPlaying = d.seqPlaying || false;
+
+
+
+    function toggleSeqStep(idx) {
+
+        var newSeq = seq.slice();
+
+        newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1); // 0 = off, 1-8 = note
+
+        upd('sequence', newSeq);
+
+    }
+
+
+
+    function startSequencer() {
+
+        stopSequencer();
+
+        upd('seqPlaying', true);
+
+        upd('seqStep', 0);
+
+        var bpm = d.bpm || 120;
+
+        var interval = (60 / bpm) * 1000 / 2; // eighth notes
+
+        var step = 0;
+
+        window._alloSynthSeqInterval = setInterval(function () {
+
+            // Read latest sequence from DOM data attribute
+
+            var seqEl = document.getElementById('synth-seq-data');
+
+            var currentSeq = seq;
+
+            if (seqEl && seqEl.dataset.seq) {
+
+                try { currentSeq = JSON.parse(seqEl.dataset.seq); } catch (e) { }
+
+            }
+
+            // Stop previous note
+
+            stopNote('seq');
+
+            var noteIdx = currentSeq[step];
+
+            if (noteIdx > 0 && noteIdx <= SEQ_FREQS.length) {
+
+                playNote(SEQ_FREQS[noteIdx - 1], 'seq');
+
+                setTimeout(function () { stopNote('seq'); }, interval * 0.8);
+
+            }
+
+            step = (step + 1) % 8;
+
+            // Update visual step indicator via dataset
+
+            if (seqEl) seqEl.dataset.step = step;
+
+            upd('seqStep', step);
+
+        }, interval);
+
+    }
+
+
+
+    function stopSequencer() {
+
+        if (window._alloSynthSeqInterval) {
+
+            clearInterval(window._alloSynthSeqInterval);
+
+            window._alloSynthSeqInterval = null;
+
+        }
+
+        stopNote('seq');
+
+        upd('seqPlaying', false);
+
+        upd('seqStep', -1);
+
+    }
+
+
+
+    // Quiz bank
+
+    var MUSIC_QUIZ = [
+
+        { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
+
+        { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
+
+        { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
+
+        { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
+
+        { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
+
+        { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
+
+        { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
+
+        { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
+
+        { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
+
+        { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
+
+    ];
+
+
+
+    // Waveform descriptions
+
+    var WAVE_INFO = {
+
+        sine: { emoji: '\u223F', desc: 'Pure tone — only the fundamental frequency. No harmonics. Used in tuning forks and test signals.', harmonics: 'None (fundamental only)' },
+
+        square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Contains only odd harmonics (1st, 3rd, 5th...). Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)' },
+
+        sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, and rich. Contains ALL harmonics. Great for brass and string sounds.', harmonics: 'All (1, 2, 3, 4, 5...)' },
+
+        triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow. Contains odd harmonics but they fall off quickly.', harmonics: 'Odd only, quiet (1/n\u00B2)' }
+
+    };
+
+    var wInfo = WAVE_INFO[d.waveType || 'sine'];
+
+
+
+    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+
+        // Hidden data element for sequencer
+
+        React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, style: { display: "none" } }),
+
+        // Header
+
+        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+
+            React.createElement("button", { onClick: function () { stopSequencer(); Object.keys(window._alloSynthActiveNotes || {}).forEach(function (k) { stopNote(k); }); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB9 Music Synthesizer"),
+
+            React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO")
+
+        ),
+
+        // Oscilloscope
+
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "140px" } },
+
+            React.createElement("canvas", {
+
+                ref: canvasRef,
+
+                "data-wave-type": d.waveType || 'sine',
+
+                style: { width: "100%", height: "100%", display: "block" }
+
+            })
+
+        ),
+
+        // Waveform selector
+
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+
+            ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
+
+                var info = WAVE_INFO[wt];
+
+                return React.createElement("button", {
+
+                    key: wt,
+
+                    onClick: function () { upd('waveType', wt); },
+
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100')
+
+                }, info.emoji + ' ' + wt.charAt(0).toUpperCase() + wt.slice(1));
+
+            })
+
+        ),
+
+        // Waveform info card
+
+        React.createElement("div", { className: "bg-violet-50 rounded-lg p-2.5 border border-violet-200 mb-3 text-xs" },
+
+            React.createElement("p", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
+
+            React.createElement("p", { className: "text-violet-600 mt-0.5" }, wInfo.desc),
+
+            React.createElement("p", { className: "text-violet-500 mt-0.5 font-semibold" }, "\uD83C\uDFBC Harmonics: " + wInfo.harmonics)
+
+        ),
+
+        // Piano keyboard
+
+        React.createElement("div", { className: "mb-3" },
+
+            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83C\uDFB9 Piano — click keys or press Z-M (white) S,D,G,H,J (black)"),
+
+            React.createElement("div", { className: "relative", style: { height: "120px" } },
+
+                // White keys
+
+                React.createElement("div", { className: "flex h-full" },
+
+                    KEYS.filter(function (k) { return !k.isBlack; }).map(function (k, i) {
+
+                        var noteId = k.note + k.octave;
+
+                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+
+                        return React.createElement("button", {
+
+                            key: noteId,
+
+                            onMouseDown: function () { playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+
+                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+
+                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+
+                            className: "flex-1 border border-slate-200 rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : 'bg-white hover:bg-slate-50'),
+
+                            style: { minWidth: "28px" }
+
+                        },
+
+                            React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : 'text-slate-400') }, k.note),
+
+                            React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
+
+                        );
+
+                    })
+
+                ),
+
+                // Black keys overlay
+
+                React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
+
+                    KEYS.map(function (k, i) {
+
+                        if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
+
+                        var noteId = k.note + k.octave;
+
+                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+
+                        return React.createElement("button", {
+
+                            key: noteId,
+
+                            onMouseDown: function (e) { e.stopPropagation(); playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+
+                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+
+                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+
+                            className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (isActive ? 'bg-violet-700 shadow-inner' : 'bg-slate-800 hover:bg-slate-700'),
+
+                            style: { width: "24px", marginLeft: "-12px", marginRight: "-12px", zIndex: 2, pointerEvents: "auto", height: "100%" }
+
+                        },
+
+                            React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
+
+                        );
+
+                    })
+
+                )
+
+            )
+
+        ),
+
+        // Frequency display
+
+        d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
+
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
+
+            ),
+
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
+
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
+
+            ),
+
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
+
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "—")
+
+            )
+
+        ),
+
+        // ADSR Envelope + Volume
+
+        React.createElement("div", { className: "mb-3" },
+
+            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDCC8 ADSR Envelope & Volume"),
+
+            React.createElement("div", { className: "grid grid-cols-5 gap-2" },
+
+                [
+
+                    { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
+
+                    { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
+
+                    { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
+
+                    { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
+
+                    { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
+
+                ].map(function (s) {
+
+                    return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
+
+                        React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
+
+                        React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
+
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
+
+                    );
+
+                })
+
+            )
+
+        ),
+
+        // 8-step Sequencer
+
+        React.createElement("div", { className: "mb-3" },
+
+            React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+
+                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 8-Step Sequencer"),
+
+                React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
+
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
+
+                    React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
+
+                    React.createElement("button", {
+
+                        onClick: function () { if (seqPlaying) { stopSequencer(); } else { startSequencer(); } },
+
+                        className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600')
+
+                    }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
+
+                )
+
+            ),
+
+            React.createElement("div", { className: "grid grid-cols-8 gap-1" },
+
+                seq.map(function (noteIdx, stepIdx) {
+
+                    var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
+
+                    var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
+
+                    var bgColor = noteIdx > 0 ? 'bg-violet-' + (200 + noteIdx * 50) : 'bg-slate-100';
+
+                    return React.createElement("button", {
+
+                        key: stepIdx,
+
+                        onClick: function () { toggleSeqStep(stepIdx); },
+
+                        className: "p-2 rounded-lg border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50')
+
+                    },
+
+                        React.createElement("span", { className: "text-sm font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName),
+
+                        React.createElement("span", { className: "text-[8px] text-slate-400" }, stepIdx + 1)
+
+                    );
+
+                })
+
+            ),
+
+            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 text-center" }, "Click steps to cycle through notes (C D E F G A B C5). Click again to clear.")
+
+        ),
+
+        // Quiz
+
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+
+            React.createElement("button", {
+
+                onClick: function () {
+
+                    var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
+
+                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+
+                },
+
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
+
+            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
+
+            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+
+        ),
+
+        d.quiz && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200 mb-3" },
+
+            React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
+
+            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+
+                d.quiz.opts.map(function (opt) {
+
+                    var isCorrect = opt === d.quiz.a;
+
+                    var wasChosen = d.quiz.chosen === opt;
+
+                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+
+                    return React.createElement("button", {
+
+                        key: opt, disabled: d.quiz.answered,
+
+                        onClick: function () {
+
+                            var correct = opt === d.quiz.a;
+
+                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+
+                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
+
+                        },
+
+                        className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+
+                    }, opt);
+
+                })
+
+            )
+
+        ),
+
+        // Snapshot
+
+        React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ms-' + Date.now(), tool: 'musicSynth', label: (d.waveType || 'sine') + ' synth', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synth snapshot saved!', 'success'); }, className: "mt-2 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+
+    )
+
+})(),
+
+
+
 
         // ═══════════════════════════════════════════════════════
         // SOLAR SYSTEM EXPLORER
