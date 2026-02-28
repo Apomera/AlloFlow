@@ -608,15 +608,17 @@
           desc: 'Microscope mode: observe, control, and quiz on living organisms. Earn XP!',
           color: 'green', ready: true
         },
-        { id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System',
+        {
+          id: 'solarSystem', icon: '\uD83C\uDF0D', label: 'Solar System',
           desc: '3D interactive solar system with orbit, zoom, planet facts and quiz.',
-          color: 'blue', ready: true },
+          color: 'blue', ready: true
+        },
         {
           id: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy Explorer',
           desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
           color: 'indigo', ready: true
         },
-            { id: 'rocks', icon: '🪨', label: 'Rocks & Minerals', desc: 'Interactive rock cycle, mineral properties & geology', color: '#b45309', cat: 'explore' },
+        { id: 'rocks', icon: '🪨', label: 'Rocks & Minerals', desc: 'Interactive rock cycle, mineral properties & geology', color: '#b45309', cat: 'explore' },
         { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
         { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
         { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
@@ -3150,53 +3152,53 @@
           )
         })(),
 
-stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
-    const d = labToolData.wave;
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
+        stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
+          const d = labToolData.wave;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
 
-    // Canvas-based animated wave
-    const canvasRef = function (canvasEl) {
-        if (!canvasEl || canvasEl._waveInit) return;
-        canvasEl._waveInit = true;
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-        var ctx = canvasEl.getContext('2d');
-        var dpr = 2;
-        var tick = 0;
-        function draw() {
-            tick++;
-            ctx.clearRect(0, 0, cW, cH);
-            // Background gradient
-            var grad = ctx.createLinearGradient(0, 0, 0, cH);
-            grad.addColorStop(0, '#0c4a6e');
-            grad.addColorStop(1, '#0ea5e9');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, cW, cH);
-            // Grid
-            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-            ctx.lineWidth = 1;
-            for (var gx = 0; gx < cW; gx += 30 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
-            for (var gy = 0; gy < cH; gy += 30 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
-            // Center line
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-            ctx.setLineDash([8, 4]);
-            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
-            ctx.setLineDash([]);
-            // Read current params from the canvas data attributes
-            var amp = parseFloat(canvasEl.dataset.amp || '50');
-            var freq = parseFloat(canvasEl.dataset.freq || '2');
-            var waveType = canvasEl.dataset.waveType || 'sine';
-            var showSecond = canvasEl.dataset.showSecond === 'true';
-            var amp2 = parseFloat(canvasEl.dataset.amp2 || '30');
-            var freq2 = parseFloat(canvasEl.dataset.freq2 || '3');
-            var speed = parseFloat(canvasEl.dataset.speed || '1');
-            // Draw main wave
-            ctx.lineWidth = 3 * dpr;
-            ctx.strokeStyle = '#22d3ee';
-            ctx.shadowColor = '#22d3ee';
-            ctx.shadowBlur = 8;
-            ctx.beginPath();
-            for (var x = 0; x < cW; x++) {
+          // Canvas-based animated wave
+          const canvasRef = function (canvasEl) {
+            if (!canvasEl || canvasEl._waveInit) return;
+            canvasEl._waveInit = true;
+            var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+            var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var ctx = canvasEl.getContext('2d');
+            var dpr = 2;
+            var tick = 0;
+            function draw() {
+              tick++;
+              ctx.clearRect(0, 0, cW, cH);
+              // Background gradient
+              var grad = ctx.createLinearGradient(0, 0, 0, cH);
+              grad.addColorStop(0, '#0c4a6e');
+              grad.addColorStop(1, '#0ea5e9');
+              ctx.fillStyle = grad;
+              ctx.fillRect(0, 0, cW, cH);
+              // Grid
+              ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+              ctx.lineWidth = 1;
+              for (var gx = 0; gx < cW; gx += 30 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
+              for (var gy = 0; gy < cH; gy += 30 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+              // Center line
+              ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+              ctx.setLineDash([8, 4]);
+              ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
+              ctx.setLineDash([]);
+              // Read current params from the canvas data attributes
+              var amp = parseFloat(canvasEl.dataset.amp || '50');
+              var freq = parseFloat(canvasEl.dataset.freq || '2');
+              var waveType = canvasEl.dataset.waveType || 'sine';
+              var showSecond = canvasEl.dataset.showSecond === 'true';
+              var amp2 = parseFloat(canvasEl.dataset.amp2 || '30');
+              var freq2 = parseFloat(canvasEl.dataset.freq2 || '3');
+              var speed = parseFloat(canvasEl.dataset.speed || '1');
+              // Draw main wave
+              ctx.lineWidth = 3 * dpr;
+              ctx.strokeStyle = '#22d3ee';
+              ctx.shadowColor = '#22d3ee';
+              ctx.shadowBlur = 8;
+              ctx.beginPath();
+              for (var x = 0; x < cW; x++) {
                 var t = x / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
                 var y;
                 if (waveType === 'sine') y = Math.sin(t);
@@ -3205,21 +3207,21 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
                 else y = (t % (Math.PI * 2)) / Math.PI - 1;
                 var py = cH / 2 - y * amp * dpr;
                 if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-            }
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-            // Draw second wave if enabled
-            if (showSecond) {
+              }
+              ctx.stroke();
+              ctx.shadowBlur = 0;
+              // Draw second wave if enabled
+              if (showSecond) {
                 ctx.lineWidth = 2 * dpr;
                 ctx.strokeStyle = '#f472b6';
                 ctx.shadowColor = '#f472b6';
                 ctx.shadowBlur = 6;
                 ctx.beginPath();
                 for (var x2 = 0; x2 < cW; x2++) {
-                    var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
-                    var y2 = Math.sin(t2);
-                    var py2 = cH / 2 - y2 * amp2 * dpr;
-                    if (x2 === 0) ctx.moveTo(x2, py2); else ctx.lineTo(x2, py2);
+                  var t2 = x2 / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
+                  var y2 = Math.sin(t2);
+                  var py2 = cH / 2 - y2 * amp2 * dpr;
+                  if (x2 === 0) ctx.moveTo(x2, py2); else ctx.lineTo(x2, py2);
                 }
                 ctx.stroke();
                 ctx.shadowBlur = 0;
@@ -3229,173 +3231,173 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
                 ctx.setLineDash([6, 4]);
                 ctx.beginPath();
                 for (var xs = 0; xs < cW; xs++) {
-                    var ts1 = xs / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
-                    var ts2 = xs / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
-                    var ys1 = (waveType === 'sine' ? Math.sin(ts1) : waveType === 'square' ? Math.sign(Math.sin(ts1)) : waveType === 'triangle' ? Math.asin(Math.sin(ts1)) * 2 / Math.PI : (ts1 % (Math.PI * 2)) / Math.PI - 1) * amp;
-                    var ys2 = Math.sin(ts2) * amp2;
-                    var pys = cH / 2 - (ys1 + ys2) * dpr;
-                    if (xs === 0) ctx.moveTo(xs, pys); else ctx.lineTo(xs, pys);
+                  var ts1 = xs / (cW) * Math.PI * 2 * freq - tick * 0.03 * speed;
+                  var ts2 = xs / (cW) * Math.PI * 2 * freq2 - tick * 0.03 * speed;
+                  var ys1 = (waveType === 'sine' ? Math.sin(ts1) : waveType === 'square' ? Math.sign(Math.sin(ts1)) : waveType === 'triangle' ? Math.asin(Math.sin(ts1)) * 2 / Math.PI : (ts1 % (Math.PI * 2)) / Math.PI - 1) * amp;
+                  var ys2 = Math.sin(ts2) * amp2;
+                  var pys = cH / 2 - (ys1 + ys2) * dpr;
+                  if (xs === 0) ctx.moveTo(xs, pys); else ctx.lineTo(xs, pys);
                 }
                 ctx.stroke();
                 ctx.setLineDash([]);
-            }
-            // Labels
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.fillRect(4 * dpr, 4 * dpr, 115 * dpr, (showSecond ? 36 : 20) * dpr);
-            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-            ctx.fillStyle = '#22d3ee';
-            ctx.fillText('\uD83C\uDF0A Main: A=' + amp + ' f=' + freq, 8 * dpr, 16 * dpr);
-            if (showSecond) {
+              }
+              // Labels
+              ctx.fillStyle = 'rgba(0,0,0,0.4)';
+              ctx.fillRect(4 * dpr, 4 * dpr, 115 * dpr, (showSecond ? 36 : 20) * dpr);
+              ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+              ctx.fillStyle = '#22d3ee';
+              ctx.fillText('\uD83C\uDF0A Main: A=' + amp + ' f=' + freq, 8 * dpr, 16 * dpr);
+              if (showSecond) {
                 ctx.fillStyle = '#f472b6';
                 ctx.fillText('\u223F Second: A=' + amp2 + ' f=' + freq2, 8 * dpr, 28 * dpr);
                 ctx.fillStyle = '#a78bfa';
                 ctx.fillText('--- Superposition', 8 * dpr, 38 * dpr);
+              }
+              canvasEl._waveAnim = requestAnimationFrame(draw);
             }
             canvasEl._waveAnim = requestAnimationFrame(draw);
-        }
-        canvasEl._waveAnim = requestAnimationFrame(draw);
-    };
+          };
 
-    // Quiz bank
-    var WAVE_QUIZ = [
-        { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'] },
-        { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'] },
-        { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'] },
-        { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'] },
-        { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'] },
-    ];
+          // Quiz bank
+          var WAVE_QUIZ = [
+            { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'] },
+            { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'] },
+            { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'] },
+            { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'] },
+            { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'] },
+          ];
 
-    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
-            React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
-        ),
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "220px" } },
-            React.createElement("canvas", {
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+            ),
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "400px" } },
+              React.createElement("canvas", {
                 ref: canvasRef,
                 "data-amp": d.amplitude, "data-freq": d.frequency, "data-wave-type": d.waveType || 'sine',
                 "data-show-second": d.showSecond ? 'true' : 'false',
                 "data-amp2": d.amplitude2 || 30, "data-freq2": d.frequency2 || 3,
                 "data-speed": d.speed || 1,
                 style: { width: "100%", height: "100%", display: "block" }
-            })
-        ),
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
-            ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
+              })
+            ),
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+              ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
                 React.createElement("button", {
-                    key: wt, onClick: () => upd('waveType', wt),
-                    className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-600 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
+                  key: wt, onClick: () => upd('waveType', wt),
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-600 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
-            )
-        ),
-        React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-            [
+              )
+            ),
+            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+              [
                 { k: 'amplitude', label: '\uD83D\uDCC8 Amplitude', min: 10, max: 100, step: 1 },
                 { k: 'frequency', label: '\uD83C\uDFB5 Frequency', min: 0.5, max: 10, step: 0.5 },
                 { k: 'speed', label: '\u23E9 Speed', min: 0.1, max: 5, step: 0.1 },
-            ].map(s =>
+              ].map(s =>
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
-                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
-                    React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : d[s.k])),
-                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : 0), onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-cyan-600" })
+                  React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : d[s.k])),
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : 0), onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-cyan-600" })
                 )
-            )
-        ),
-        React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-pink-50 rounded-lg border border-pink-200" },
-            React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
+              )
+            ),
+            React.createElement("div", { className: "flex items-center gap-3 mb-3 p-2 bg-pink-50 rounded-lg border border-pink-200" },
+              React.createElement("label", { className: "text-xs font-bold text-pink-700 flex items-center gap-1.5 cursor-pointer" },
                 React.createElement("input", { type: "checkbox", checked: !!d.showSecond, onChange: e => upd('showSecond', e.target.checked), className: "accent-pink-600" }),
                 "\u223F Show Second Wave (Interference)"
-            ),
-            d.showSecond && React.createElement(React.Fragment, null,
+              ),
+              d.showSecond && React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "flex items-center gap-1" },
-                    React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "A2:"),
-                    React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
-                    React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.amplitude2 || 30)
+                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "A2:"),
+                  React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.amplitude2 || 30)
                 ),
                 React.createElement("div", { className: "flex items-center gap-1" },
-                    React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "f2:"),
-                    React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
-                    React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
+                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "f2:"),
+                  React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
+                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
                 )
-            )
-        ),
-        React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
-            React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              )
+            ),
+            React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
                 React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wavelength"),
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(2) + " m")
-            ),
-            React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              ),
+              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
                 React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Period"),
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (1 / d.frequency).toFixed(3) + " s")
-            ),
-            React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              ),
+              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
                 React.createElement("p", { className: "text-[9px] font-bold text-cyan-600 uppercase" }, "Wave Type"),
                 React.createElement("p", { className: "text-sm font-bold text-cyan-800" }, (d.waveType || 'sine').charAt(0).toUpperCase() + (d.waveType || 'sine').slice(1))
-            )
-        ),
-        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-            React.createElement("button", {
+              )
+            ),
+            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+              React.createElement("button", {
                 onClick: function () {
-                    var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
-                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                  var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
+                  upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " transition-all"
-            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
-            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
-        ),
-        d.quiz && React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200 mb-3" },
-            React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, d.quiz.q),
-            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+              }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+              d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+            ),
+            d.quiz && React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200 mb-3" },
+              React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, d.quiz.q),
+              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 d.quiz.opts.map(function (opt) {
-                    var isCorrect = opt === d.quiz.a;
-                    var wasChosen = d.quiz.chosen === opt;
-                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
-                    return React.createElement("button", {
-                        key: opt, disabled: d.quiz.answered, onClick: function () {
-                            var correct = opt === d.quiz.a;
-                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
-                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.quiz.a, correct ? 'success' : 'error');
-                        }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
-                    }, opt);
+                  var isCorrect = opt === d.quiz.a;
+                  var wasChosen = d.quiz.chosen === opt;
+                  var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                  return React.createElement("button", {
+                    key: opt, disabled: d.quiz.answered, onClick: function () {
+                      var correct = opt === d.quiz.a;
+                      upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                      addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.quiz.a, correct ? 'success' : 'error');
+                    }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                  }, opt);
                 })
-            )
-        ),
-        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-    )
-})(),
+              )
+            ),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          )
+        })(),
 
         stemLabTab === 'explore' && stemLabTool === 'cell' && (() => {
           var d = labToolData.cell;
-          var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function(){ var o={}; o[key]=val; return o; })()) }); }); };
+          var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
 
           // ── Organism definitions ──
           var ORGANISMS = [
-            { id: 'amoeba', label: 'Amoeba', icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission','Pseudopods are temporary projections of cytoplasm','Amoebas live in freshwater, soil, and as parasites','They have no fixed shape - constantly changing','Food vacuoles digest engulfed particles'] },
-            { id: 'paramecium', label: 'Paramecium', icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves','Has an oral groove for feeding','Contains contractile vacuoles to expel water','Reproduces by binary fission and conjugation','Can reverse ciliary beat to escape danger'] },
-            { id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light','Contains chloroplasts for photosynthesis','Has a flagellum for movement','Can switch between autotroph and heterotroph','No cell wall - has a flexible pellicle'] },
-            { id: 'wbc', label: 'White Blood Cell', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system','Uses chemotaxis to find pathogens','Can squeeze through blood vessel walls','Neutrophils are most common type','Produces antibodies to tag invaders'] },
-            { id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)','Cell wall made of peptidoglycan','Some have flagella for movement','Reproduce every 20 minutes in ideal conditions','Plasmids carry extra DNA for antibiotic resistance'] },
-            { id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose','Large central vacuole stores water','Chloroplasts convert light to energy','Has all organelles found in animal cells plus more','Connected to neighbors via plasmodesmata'] }
+            { id: 'amoeba', label: 'Amoeba', icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'] },
+            { id: 'paramecium', label: 'Paramecium', icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'] },
+            { id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'] },
+            { id: 'wbc', label: 'White Blood Cell', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'] },
+            { id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'] },
+            { id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'] }
           ];
 
           // ── Quiz questions (observation-based) ──
           var QUIZ_BANK = [
             { q: 'Which organism moves toward light?', a: 'euglena', hint: 'Look for the one with an eyespot (green, teardrop shape).' },
-            { q: 'What is the amoeba doing to food particles?', a: 'phagocytosis', options: ['phagocytosis','photosynthesis','osmosis','mitosis'], hint: 'Watch how it wraps around food.' },
+            { q: 'What is the amoeba doing to food particles?', a: 'phagocytosis', options: ['phagocytosis', 'photosynthesis', 'osmosis', 'mitosis'], hint: 'Watch how it wraps around food.' },
             { q: 'Which organism has cilia for movement?', a: 'paramecium', hint: 'Look for the oval one that moves fastest.' },
             { q: 'What type of cell has no nucleus?', a: 'bacterium', hint: 'The smallest organisms in the dish.' },
             { q: 'Which cell has a rigid cell wall AND chloroplasts?', a: 'plantcell', hint: 'It does not move \u2014 rectangular shape.' },
             { q: 'What cell defends against pathogens?', a: 'wbc', hint: 'The red-tinted one that chases bacteria.' },
-            { q: 'How does a bacterium reproduce?', a: 'binary fission', options: ['binary fission','mitosis','meiosis','budding'], hint: 'Watch the small ones split in two.' },
-            { q: 'What structure does Euglena use to detect light?', a: 'eyespot', options: ['eyespot','antenna','lens','cornea'], hint: 'Also called a stigma \u2014 a red dot.' },
-            { q: 'What is the powerhouse organelle in eukaryotic cells?', a: 'mitochondria', options: ['mitochondria','ribosome','golgi','lysosome'], hint: 'Produces ATP.' },
+            { q: 'How does a bacterium reproduce?', a: 'binary fission', options: ['binary fission', 'mitosis', 'meiosis', 'budding'], hint: 'Watch the small ones split in two.' },
+            { q: 'What structure does Euglena use to detect light?', a: 'eyespot', options: ['eyespot', 'antenna', 'lens', 'cornea'], hint: 'Also called a stigma \u2014 a red dot.' },
+            { q: 'What is the powerhouse organelle in eukaryotic cells?', a: 'mitochondria', options: ['mitochondria', 'ribosome', 'golgi', 'lysosome'], hint: 'Produces ATP.' },
             { q: 'Which organism can act as BOTH plant and animal?', a: 'euglena', hint: 'Has chloroplasts but can also consume food.' },
-            { q: 'What does phagocytosis mean?', a: 'cell eating', options: ['cell eating','cell drinking','cell dividing','cell dying'], hint: 'Phago = eat, cyto = cell.' },
-            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane','cell wall','nucleus','ribosome'], hint: 'Phospholipid bilayer.' }
+            { q: 'What does phagocytosis mean?', a: 'cell eating', options: ['cell eating', 'cell drinking', 'cell dividing', 'cell dying'], hint: 'Phago = eat, cyto = cell.' },
+            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane', 'cell wall', 'nucleus', 'ribosome'], hint: 'Phospholipid bilayer.' }
           ];
 
           // ── Canvas ref callback for simulation ──
-          var canvasRefCb = function(canvasEl) {
+          var canvasRefCb = function (canvasEl) {
             if (!canvasEl || canvasEl._cellSimInit) return;
             canvasEl._cellSimInit = true;
             var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
@@ -3418,7 +3420,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               world.food = [];
               world.lightZones = [];
               // Spawn 2-3 of each type
-              ORGANISMS.forEach(function(def) {
+              ORGANISMS.forEach(function (def) {
                 var count = def.id === 'plantcell' ? 2 : 3;
                 for (var i = 0; i < count; i++) {
                   world.organisms.push({
@@ -3542,7 +3544,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
                 ctx.fillStyle = 'rgba(167,139,250,0.25)'; ctx.fill();
                 ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1 * dpr; ctx.stroke();
                 // Chloroplasts
-                [-0.5, 0.3, -0.2].forEach(function(off, i) {
+                [-0.5, 0.3, -0.2].forEach(function (off, i) {
                   ctx.beginPath(); ctx.ellipse(hw * off, hh * (i * 0.4 - 0.4), sz * 0.25, sz * 0.15, 0.3 * i, 0, Math.PI * 2);
                   ctx.fillStyle = 'rgba(34,197,94,0.5)'; ctx.fill();
                 });
@@ -3567,7 +3569,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
                 if (def.id === 'euglena') {
                   // Phototaxis - move toward nearest light zone
                   var nearestLight = null, bestDist = Infinity;
-                  world.lightZones.forEach(function(lz) {
+                  world.lightZones.forEach(function (lz) {
                     var dd = Math.hypot(lz.x - o.x, lz.y - o.y);
                     if (dd < bestDist) { bestDist = dd; nearestLight = lz; }
                   });
@@ -3579,7 +3581,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
                 } else if (def.id === 'wbc') {
                   // Chase nearest bacterium
                   var nearest = null, bd2 = Infinity;
-                  world.organisms.forEach(function(t) {
+                  world.organisms.forEach(function (t) {
                     if (t.def.id === 'bacterium') {
                       var dd = Math.hypot(t.x - o.x, t.y - o.y);
                       if (dd < bd2) { bd2 = dd; nearest = t; }
@@ -3608,7 +3610,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
 
               // Player food collection (phagocytosis / ciliary sweep)
               if (playAsOrg === o && (def.id === 'amoeba' || def.id === 'paramecium' || def.id === 'wbc')) {
-                world.food.forEach(function(f) {
+                world.food.forEach(function (f) {
                   if (!f.eaten && Math.hypot(f.x - o.x, f.y - o.y) < o.size + f.size) {
                     f.eaten = true;
                     o.energy = Math.min(100, o.energy + 10);
@@ -3619,7 +3621,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               }
               // Euglena in light zone = photosynthesis
               if (playAsOrg === o && def.id === 'euglena') {
-                world.lightZones.forEach(function(lz) {
+                world.lightZones.forEach(function (lz) {
                   if (Math.hypot(lz.x - o.x, lz.y - o.y) < lz.r) {
                     if (world.tick % 60 === 0) {
                       o.energy = Math.min(100, o.energy + 5);
@@ -3653,7 +3655,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               }
 
               // Light zones
-              world.lightZones.forEach(function(lz) {
+              world.lightZones.forEach(function (lz) {
                 var p = toScreen(lz.x, lz.y);
                 var r = lz.r * cam.zoom * dpr;
                 var grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
@@ -3665,7 +3667,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               });
 
               // Food particles
-              world.food.forEach(function(f) {
+              world.food.forEach(function (f) {
                 if (f.eaten) return;
                 var p = toScreen(f.x, f.y);
                 var sz = f.size * cam.zoom * dpr;
@@ -3674,7 +3676,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               });
 
               // Organisms
-              world.organisms.forEach(function(o) { drawOrganism(o); });
+              world.organisms.forEach(function (o) { drawOrganism(o); });
 
               // Magnification label
               ctx.font = (10 * dpr) + 'px monospace';
@@ -3701,7 +3703,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               world.organisms.forEach(updateOrganism);
               // Respawn eaten food
               if (world.tick % 120 === 0) {
-                world.food.forEach(function(f) {
+                world.food.forEach(function (f) {
                   if (f.eaten) { f.eaten = false; f.x = Math.random() * WORLD_W; f.y = Math.random() * WORLD_H; }
                 });
               }
@@ -3711,25 +3713,25 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
             animId = requestAnimationFrame(loop);
 
             // Mouse/touch events
-            canvasEl.addEventListener('mousedown', function(e) {
+            canvasEl.addEventListener('mousedown', function (e) {
               dragging = true;
               dragStartX = e.clientX; dragStartY = e.clientY;
               camStartX = cam.x; camStartY = cam.y;
             });
-            canvasEl.addEventListener('mousemove', function(e) {
+            canvasEl.addEventListener('mousemove', function (e) {
               if (!dragging) return;
               var dx = (e.clientX - dragStartX) / cam.zoom;
               var dy = (e.clientY - dragStartY) / cam.zoom;
               cam.x = camStartX - dx; cam.y = camStartY - dy;
             });
-            canvasEl.addEventListener('mouseup', function(e) {
+            canvasEl.addEventListener('mouseup', function (e) {
               if (Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
                 // Click - select organism
                 var rect = canvasEl.getBoundingClientRect();
                 var mx = (e.clientX - rect.left) * dpr;
                 var my = (e.clientY - rect.top) * dpr;
                 var clicked = null, bestDist = Infinity;
-                world.organisms.forEach(function(o) {
+                world.organisms.forEach(function (o) {
                   var p = toScreen(o.x, o.y);
                   var dd = Math.hypot(p.x - mx, p.y - my);
                   if (dd < o.size * cam.zoom * dpr * 1.5 && dd < bestDist) { bestDist = dd; clicked = o; }
@@ -3739,7 +3741,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               }
               dragging = false;
             });
-            canvasEl.addEventListener('wheel', function(e) {
+            canvasEl.addEventListener('wheel', function (e) {
               e.preventDefault();
               cam.zoom = Math.max(0.5, Math.min(10, cam.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
               if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom);
@@ -3751,27 +3753,27 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
             window.addEventListener('keyup', onKey);
 
             // External API
-            canvasEl._cellSimSetPlayAs = function(orgId) {
-              playAsOrg = orgId ? world.organisms.find(function(o) { return o.def.id === orgId; }) : null;
+            canvasEl._cellSimSetPlayAs = function (orgId) {
+              playAsOrg = orgId ? world.organisms.find(function (o) { return o.def.id === orgId; }) : null;
               if (playAsOrg) { cam.x = playAsOrg.x; cam.y = playAsOrg.y; cam.zoom = 3; }
             };
-            canvasEl._cellSimSetZoom = function(z) { cam.zoom = z; };
-            canvasEl._cellSimSetPaused = function(p) { canvasEl._cellSimPaused = p; };
-            canvasEl._cellSimSetSpeed = function(s) { /* speed controlled through tick rate */ };
-            canvasEl._cellSimFocusOrganism = function(orgId) {
-              var target = world.organisms.find(function(o) { return o.def.id === orgId; });
+            canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; };
+            canvasEl._cellSimSetPaused = function (p) { canvasEl._cellSimPaused = p; };
+            canvasEl._cellSimSetSpeed = function (s) { /* speed controlled through tick rate */ };
+            canvasEl._cellSimFocusOrganism = function (orgId) {
+              var target = world.organisms.find(function (o) { return o.def.id === orgId; });
               if (target) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; selectedOrg = target; }
             };
 
             // Cleanup
-            canvasEl._cellSimCleanup = function() {
+            canvasEl._cellSimCleanup = function () {
               if (animId) cancelAnimationFrame(animId);
               window.removeEventListener('keydown', onKey);
               window.removeEventListener('keyup', onKey);
             };
 
             // ResizeObserver
-            var ro = new ResizeObserver(function() {
+            var ro = new ResizeObserver(function () {
               W = canvasEl.width = canvasEl.offsetWidth * dpr;
               H = canvasEl.height = canvasEl.offsetHeight * dpr;
             });
@@ -3780,7 +3782,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
           };
 
           // ── Cleanup on unmount ──
-          var cleanupRef = function(el) {
+          var cleanupRef = function (el) {
             if (!el) {
               // Unmount
               var old = document.querySelector('[data-cell-sim-canvas]');
@@ -3788,7 +3790,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
             }
           };
 
-          var selDef = d.selectedOrganism ? ORGANISMS.find(function(o) { return o.id === d.selectedOrganism; }) : null;
+          var selDef = d.selectedOrganism ? ORGANISMS.find(function (o) { return o.id === d.selectedOrganism; }) : null;
 
           // ── Quiz logic ──
           var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
@@ -3796,12 +3798,12 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
           return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             // Header
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function() { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
-              React.createElement("span", { className: "text-xs text-slate-400 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function(o){return o.id===d.playAsOrganism;})||{}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-400 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
               React.createElement("div", { className: "flex gap-1 ml-auto" },
-                ["observe", "play", "quiz"].map(function(m) {
-                  return React.createElement("button", { key: m, onClick: function() { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
+                ["observe", "play", "quiz"].map(function (m) {
+                  return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
                 })
               )
             ),
@@ -3816,28 +3818,30 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               // Zoom overlay
               React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
                 "\uD83D\uDD2C",
-                React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1,
-                  onChange: function(e) { var z = parseFloat(e.target.value); upd("zoom", z); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetZoom) cv._cellSimSetZoom(z); },
-                  className: "w-20 accent-green-600" }),
+                React.createElement("input", {
+                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1,
+                  onChange: function (e) { var z = parseFloat(e.target.value); upd("zoom", z); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetZoom) cv._cellSimSetZoom(z); },
+                  className: "w-20 accent-green-600"
+                }),
                 Math.round(40 * (d.zoom || 1)) + "x"
               ),
               // Speed controls
               React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg px-2 py-1" },
-                React.createElement("button", { onClick: function() { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPaused) cv._cellSimSetPaused(p); }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-600 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { onClick: function () { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPaused) cv._cellSimSetPaused(p); }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-600 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
               )
             ),
 
             // Organism selector buttons
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-              ORGANISMS.map(function(org) {
+              ORGANISMS.map(function (org) {
                 return React.createElement("button", {
                   key: org.id,
-                  onClick: function() {
+                  onClick: function () {
                     upd("selectedOrganism", d.selectedOrganism === org.id ? null : org.id);
                     var cv = document.querySelector('[data-cell-sim-canvas]');
                     if (cv && cv._cellSimFocusOrganism) cv._cellSimFocusOrganism(org.id);
                   },
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "border-" + org.color.replace('#','') + " bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "border-" + org.color.replace('#', '') + " bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
                   style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color } : {}
                 }, org.icon + " " + org.label);
               })
@@ -3851,18 +3855,18 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
                   React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selDef.desc)
                 ),
                 d.mode === 'play' && React.createElement("button", {
-                  onClick: function() {
+                  onClick: function () {
                     upd("playAsOrganism", selDef.id);
                     var cv = document.querySelector('[data-cell-sim-canvas]');
                     if (cv) {
                       cv._cellSimSetPlayAs(selDef.id);
-                      cv._onXP = function(xp, label) {
+                      cv._onXP = function (xp, label) {
                         upd("xpEarned", (d.xpEarned || 0) + xp);
                         if (typeof addToast === 'function') addToast("+" + xp + " XP: " + label + "!", "success");
-                        var orgDef = ORGANISMS.find(function(o) { return o.activity === label || o.id === d.selectedOrganism; });
+                        var orgDef = ORGANISMS.find(function (o) { return o.activity === label || o.id === d.selectedOrganism; });
                         if (orgDef) {
                           var disc = (d.discoveries || []).slice();
-                          var undisc = orgDef.facts.map(function(f,i) { return orgDef.id + '_' + i; }).filter(function(k) { return disc.indexOf(k) === -1; });
+                          var undisc = orgDef.facts.map(function (f, i) { return orgDef.id + '_' + i; }).filter(function (k) { return disc.indexOf(k) === -1; });
                           if (undisc.length > 0) { disc.push(undisc[Math.floor(Math.random() * undisc.length)]); upd("discoveries", disc); }
                         }
                       };
@@ -3880,7 +3884,7 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               ),
               // Facts
               React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },
-                selDef.facts.map(function(fact, i) {
+                selDef.facts.map(function (fact, i) {
                   var discovered = (d.discoveries || []).includes(selDef.id + '_' + i);
                   return React.createElement("div", { key: i, className: "flex items-center gap-2 text-[10px] py-0.5" },
                     React.createElement("span", { className: discovered ? "text-green-600" : "text-slate-300" }, discovered ? "\u2713" : "\uD83D\uDD12"),
@@ -3902,43 +3906,51 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
               React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQuestion.q),
               quizQuestion.options
                 ? React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                    quizQuestion.options.map(function(opt) {
-                      return React.createElement("button", { key: opt, onClick: function() {
+                  quizQuestion.options.map(function (opt) {
+                    return React.createElement("button", {
+                      key: opt, onClick: function () {
                         var correct = opt.toLowerCase() === quizQuestion.a.toLowerCase();
                         upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
-                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
-                          var ansOrg = ORGANISMS.find(function(o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
-                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function(f,i) { return ansOrg.id + '_' + i; }).filter(function(k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                        if (correct) {
+                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
                         }
                         else { upd("quizStreak", 0); }
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-200 bg-white text-slate-700 hover:border-purple-400") }, opt);
-                    })
-                  )
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
+                    }, opt);
+                  })
+                )
                 : React.createElement("div", { className: "flex flex-wrap gap-2" },
-                    ORGANISMS.map(function(org) {
-                      return React.createElement("button", { key: org.id, onClick: function() {
+                  ORGANISMS.map(function (org) {
+                    return React.createElement("button", {
+                      key: org.id, onClick: function () {
                         var correct = org.id === quizQuestion.a;
                         upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
-                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
-                          var ansOrg = ORGANISMS.find(function(o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
-                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function(f,i) { return ansOrg.id + '_' + i; }).filter(function(k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
+                        if (correct) {
+                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
+                          if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
                         }
                         else { upd("quizStreak", 0); }
-                      }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-200 bg-white text-slate-700 hover:border-purple-400" }, org.icon + " " + org.label);
-                    })
-                  ),
+                      }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-200 bg-white text-slate-700 hover:border-purple-400"
+                    }, org.icon + " " + org.label);
+                  })
+                ),
               d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
                 d.quizFeedback.msg,
-                React.createElement("button", { onClick: function() {
-                  var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
-                  upd("quizIdx", nextIdx); upd("quizFeedback", null);
-                }, className: "ml-3 px-2 py-0.5 bg-purple-600 text-white rounded text-xs" }, "Next \u2192")
+                React.createElement("button", {
+                  onClick: function () {
+                    var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                    upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                  }, className: "ml-3 px-2 py-0.5 bg-purple-600 text-white rounded text-xs"
+                }, "Next \u2192")
               )
             ),
 
             // Bottom controls
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Sim' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Cell Simulator snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Sim' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Cell Simulator snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           )
         })(),
@@ -3988,54 +4000,54 @@ stemLabTab === 'explore' && stemLabTool === 'wave' && (() => {
           )
         })(),
 
-stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
-    const d = labToolData.physics;
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
+        stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
+          const d = labToolData.physics;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
 
-    // Canvas animated projectile
-    const canvasRef = function (canvasEl) {
-        if (!canvasEl || canvasEl._physInit) return;
-        canvasEl._physInit = true;
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-        var ctx = canvasEl.getContext('2d');
-        var dpr = 2;
-        var tick = 0;
-        var trails = [];
-        var ball = null;
-        var launched = false;
-        function launch() {
-            var angle = parseFloat(canvasEl.dataset.angle || '45');
-            var vel = parseFloat(canvasEl.dataset.velocity || '25');
-            var grav = parseFloat(canvasEl.dataset.gravity || '9.8');
-            var rad = angle * Math.PI / 180;
-            ball = { x: 40, y: cH / dpr - 40, vx: vel * Math.cos(rad) * 2, vy: -vel * Math.sin(rad) * 2, g: grav * 0.15 };
-            trails.push([]);
-            launched = true;
-        }
-        canvasEl._launch = launch;
-        function draw() {
-            tick++;
-            ctx.clearRect(0, 0, cW, cH);
-            // Sky
-            var skyGrad = ctx.createLinearGradient(0, 0, 0, cH);
-            skyGrad.addColorStop(0, '#1e3a5f');
-            skyGrad.addColorStop(0.6, '#87ceeb');
-            skyGrad.addColorStop(1, '#228B22');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, cW, cH);
-            // Ground
-            ctx.fillStyle = '#2d6a1e';
-            ctx.fillRect(0, cH - 40 * dpr, cW, 40 * dpr);
-            ctx.fillStyle = '#3a8a2e';
-            ctx.fillRect(0, cH - 40 * dpr, cW, 3 * dpr);
-            // Grid
-            ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-            ctx.lineWidth = 1;
-            for (var gx = 0; gx < cW; gx += 40 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH - 40 * dpr); ctx.stroke(); }
-            for (var gy = 0; gy < cH - 40 * dpr; gy += 40 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
-            // Draw all trails
-            trails.forEach(function (trail, idx) {
+          // Canvas animated projectile
+          const canvasRef = function (canvasEl) {
+            if (!canvasEl || canvasEl._physInit) return;
+            canvasEl._physInit = true;
+            var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+            var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var ctx = canvasEl.getContext('2d');
+            var dpr = 2;
+            var tick = 0;
+            var trails = [];
+            var ball = null;
+            var launched = false;
+            function launch() {
+              var angle = parseFloat(canvasEl.dataset.angle || '45');
+              var vel = parseFloat(canvasEl.dataset.velocity || '25');
+              var grav = parseFloat(canvasEl.dataset.gravity || '9.8');
+              var rad = angle * Math.PI / 180;
+              ball = { x: 40, y: cH / dpr - 40, vx: vel * Math.cos(rad) * 2, vy: -vel * Math.sin(rad) * 2, g: grav * 0.15 };
+              trails.push([]);
+              launched = true;
+            }
+            canvasEl._launch = launch;
+            function draw() {
+              tick++;
+              ctx.clearRect(0, 0, cW, cH);
+              // Sky
+              var skyGrad = ctx.createLinearGradient(0, 0, 0, cH);
+              skyGrad.addColorStop(0, '#1e3a5f');
+              skyGrad.addColorStop(0.6, '#87ceeb');
+              skyGrad.addColorStop(1, '#228B22');
+              ctx.fillStyle = skyGrad;
+              ctx.fillRect(0, 0, cW, cH);
+              // Ground
+              ctx.fillStyle = '#2d6a1e';
+              ctx.fillRect(0, cH - 40 * dpr, cW, 40 * dpr);
+              ctx.fillStyle = '#3a8a2e';
+              ctx.fillRect(0, cH - 40 * dpr, cW, 3 * dpr);
+              // Grid
+              ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+              ctx.lineWidth = 1;
+              for (var gx = 0; gx < cW; gx += 40 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH - 40 * dpr); ctx.stroke(); }
+              for (var gy = 0; gy < cH - 40 * dpr; gy += 40 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+              // Draw all trails
+              trails.forEach(function (trail, idx) {
                 if (trail.length < 2) return;
                 var alpha = idx === trails.length - 1 ? 1 : 0.3;
                 ctx.strokeStyle = 'rgba(239,68,68,' + alpha + ')';
@@ -4045,9 +4057,9 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                 trail.forEach(function (p, i) { if (i === 0) ctx.moveTo(p.x * dpr, p.y * dpr); else ctx.lineTo(p.x * dpr, p.y * dpr); });
                 ctx.stroke();
                 ctx.setLineDash([]);
-            });
-            // Animate ball
-            if (ball && launched) {
+              });
+              // Animate ball
+              if (ball && launched) {
                 ball.vy += ball.g * 0.06;
                 ball.x += ball.vx * 0.06;
                 ball.y += ball.vy * 0.06;
@@ -4063,106 +4075,106 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                 ctx.lineTo((ball.x + ball.vx * 1.5) * dpr, (ball.y + ball.vy * 1.5) * dpr); ctx.stroke();
                 // Check ground collision
                 if (ball.y >= cH / dpr - 40) {
-                    ball.y = cH / dpr - 40;
-                    launched = false;
-                    // Store result
-                    var range = ball.x - 40;
-                    canvasEl.dataset.lastRange = range.toFixed(1);
-                    canvasEl.dataset.lastMaxH = '0';
-                    if (trails.length > 0) {
-                        var maxY = Math.min.apply(null, trails[trails.length - 1].map(function (p) { return p.y; }));
-                        canvasEl.dataset.lastMaxH = ((cH / dpr - 40 - maxY)).toFixed(1);
-                    }
+                  ball.y = cH / dpr - 40;
+                  launched = false;
+                  // Store result
+                  var range = ball.x - 40;
+                  canvasEl.dataset.lastRange = range.toFixed(1);
+                  canvasEl.dataset.lastMaxH = '0';
+                  if (trails.length > 0) {
+                    var maxY = Math.min.apply(null, trails[trails.length - 1].map(function (p) { return p.y; }));
+                    canvasEl.dataset.lastMaxH = ((cH / dpr - 40 - maxY)).toFixed(1);
+                  }
                 }
+              }
+              // Launcher
+              var angle = parseFloat(canvasEl.dataset.angle || '45');
+              var rad = angle * Math.PI / 180;
+              ctx.strokeStyle = '#94a3b8';
+              ctx.lineWidth = 4 * dpr;
+              ctx.beginPath(); ctx.moveTo(40 * dpr, (cH / dpr - 40) * dpr);
+              ctx.lineTo((40 + Math.cos(rad) * 35) * dpr, (cH / dpr - 40 - Math.sin(rad) * 35) * dpr); ctx.stroke();
+              // HUD
+              ctx.fillStyle = 'rgba(0,0,0,0.5)';
+              ctx.fillRect(4 * dpr, 4 * dpr, 130 * dpr, 32 * dpr);
+              ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillText('\u26A1 ' + angle + '\u00B0  v=' + (canvasEl.dataset.velocity || '25') + 'm/s', 8 * dpr, 16 * dpr);
+              ctx.fillStyle = '#94a3b8';
+              ctx.fillText('g=' + (canvasEl.dataset.gravity || '9.8') + 'm/s\u00B2', 8 * dpr, 28 * dpr);
+              canvasEl._physAnim = requestAnimationFrame(draw);
             }
-            // Launcher
-            var angle = parseFloat(canvasEl.dataset.angle || '45');
-            var rad = angle * Math.PI / 180;
-            ctx.strokeStyle = '#94a3b8';
-            ctx.lineWidth = 4 * dpr;
-            ctx.beginPath(); ctx.moveTo(40 * dpr, (cH / dpr - 40) * dpr);
-            ctx.lineTo((40 + Math.cos(rad) * 35) * dpr, (cH / dpr - 40 - Math.sin(rad) * 35) * dpr); ctx.stroke();
-            // HUD
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.fillRect(4 * dpr, 4 * dpr, 130 * dpr, 32 * dpr);
-            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillText('\u26A1 ' + angle + '\u00B0  v=' + (canvasEl.dataset.velocity || '25') + 'm/s', 8 * dpr, 16 * dpr);
-            ctx.fillStyle = '#94a3b8';
-            ctx.fillText('g=' + (canvasEl.dataset.gravity || '9.8') + 'm/s\u00B2', 8 * dpr, 28 * dpr);
             canvasEl._physAnim = requestAnimationFrame(draw);
-        }
-        canvasEl._physAnim = requestAnimationFrame(draw);
-    };
+          };
 
-    var PRESETS = [
-        { label: '\uD83C\uDF0D Earth', gravity: 9.8 },
-        { label: '\uD83C\uDF11 Moon', gravity: 1.6 },
-        { label: '\u2642 Mars', gravity: 3.7 },
-        { label: '\u2643 Jupiter', gravity: 24.8 },
-    ];
+          var PRESETS = [
+            { label: '\uD83C\uDF0D Earth', gravity: 9.8 },
+            { label: '\uD83C\uDF11 Moon', gravity: 1.6 },
+            { label: '\u2642 Mars', gravity: 3.7 },
+            { label: '\u2643 Jupiter', gravity: 24.8 },
+          ];
 
-    // Challenge mode
-    var CHALLENGES = [
-        { target: 100, label: 'Hit the 100m mark!' },
-        { target: 200, label: 'Reach 200m range!' },
-        { target: 50, label: 'Precision: land at 50m' },
-    ];
+          // Challenge mode
+          var CHALLENGES = [
+            { target: 100, label: 'Hit the 100m mark!' },
+            { target: 200, label: 'Reach 200m range!' },
+            { target: 50, label: 'Precision: land at 50m' },
+          ];
 
-    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
-            React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
-        ),
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "240px" } },
-            React.createElement("canvas", {
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+            ),
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+              React.createElement("canvas", {
                 ref: canvasRef,
                 id: "physicsCanvas",
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
                 style: { width: "100%", height: "100%", display: "block" }
-            })
-        ),
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
-            React.createElement("button", {
+              })
+            ),
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+              React.createElement("button", {
                 onClick: function () {
-                    var cv = document.getElementById('physicsCanvas');
-                    if (cv && cv._launch) cv._launch();
+                  var cv = document.getElementById('physicsCanvas');
+                  if (cv && cv._launch) cv._launch();
                 }, className: "px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 shadow-md transition-all"
-            }, "\uD83D\uDE80 Launch!"),
-            PRESETS.map(function (p) {
+              }, "\uD83D\uDE80 Launch!"),
+              PRESETS.map(function (p) {
                 return React.createElement("button", {
-                    key: p.label, onClick: function () { upd('gravity', p.gravity); },
-                    className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
+                  key: p.label, onClick: function () { upd('gravity', p.gravity); },
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
                 }, p.label);
-            })
-        ),
-        React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
-            [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
+              })
+            ),
+            React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
+              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
                 return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
-                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
-                    React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
-                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-600" })
+                  React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-600" })
                 );
-            })
-        ),
-        React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
-            React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
+              })
+            ),
+            React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+              React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
                 React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Range"),
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var r = d.angle * Math.PI / 180; return ((d.velocity * d.velocity * Math.sin(2 * r)) / d.gravity).toFixed(1); })() + " m")
-            ),
-            React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
+              ),
+              React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
                 React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Max Height"),
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (vy * vy / (2 * d.gravity)).toFixed(1); })() + " m")
-            ),
-            React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
+              ),
+              React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
                 React.createElement("p", { className: "text-[9px] font-bold text-sky-600 uppercase" }, "Flight Time"),
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (2 * vy / d.gravity).toFixed(2); })() + " s")
-            )
-        ),
-        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Physics snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-    )
-})(),
+              )
+            ),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Physics snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          )
+        })(),
 
         stemLabTab === 'explore' && stemLabTool === 'chemBalance' && (() => {
           const d = labToolData.chemBalance;
@@ -4705,7 +4717,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
             { n: 74, s: 'W', name: 'Tungsten', cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: 'Rhenium', cat: 'transition', c: '#fb923c' },
             { n: 76, s: 'Os', name: 'Osmium', cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: 'Iridium', cat: 'transition', c: '#fb923c' },
             { n: 78, s: 'Pt', name: 'Platinum', cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: 'Gold', cat: 'transition', c: '#fb923c' },
-            { n: 80, s: 'Hg', name: 'Mercury', cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: 'Thallium', cat: 'metal', c: '#94a3b8' , gravity: '0.38g', atmosphere: 'None \u2014 no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
+            { n: 80, s: 'Hg', name: 'Mercury', cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: 'Thallium', cat: 'metal', c: '#94a3b8', gravity: '0.38g', atmosphere: 'None \u2014 no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
             { n: 82, s: 'Pb', name: 'Lead', cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: 'Bismuth', cat: 'metal', c: '#94a3b8' },
             { n: 84, s: 'Po', name: 'Polonium', cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: 'Astatine', cat: 'halogen', c: '#2dd4bf' },
             { n: 86, s: 'Rn', name: 'Radon', cat: 'noble', c: '#c084fc' },
@@ -4994,14 +5006,14 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
           const PLANETS = [
             { name: 'Mercury', emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.35, dist: 4, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
-            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 6, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!' , gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
-            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 8, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.' , gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
-            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.45, dist: 10.5, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).' , gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
-            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 1.6, dist: 15, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!' , gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
-            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 1.3, dist: 20, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true , gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
-            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 0.9, dist: 25, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.' , gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
-            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 0.85, dist: 30, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.' , gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
-            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.25, dist: 34, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.' , gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
+            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 6, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
+            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 8, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.', gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
+            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.45, dist: 10.5, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
+            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 1.6, dist: 15, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 1.3, dist: 20, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
+            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 0.9, dist: 25, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 0.85, dist: 30, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
+            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.25, dist: 34, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
           ];
           const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
           const simSpeed = d.simSpeed || 1;
@@ -5337,9 +5349,10 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                 ),
                 // Mode tabs
                 React.createElement("div", { className: "flex gap-1" },
-                  ['overview', 'surface', 'drone'].map(function(tab) {
-                    return React.createElement("button", { key: tab, onClick: function() { upd('viewTab', tab); },
-                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " + 
+                  ['overview', 'surface', 'drone'].map(function (tab) {
+                    return React.createElement("button", {
+                      key: tab, onClick: function () { upd('viewTab', tab); },
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
                         ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
                     }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : '\uD83D\uDEF8 Drone');
                   })
@@ -5350,8 +5363,8 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
               (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
                 React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
                   [['\uD83C\uDF21', 'Temp', sel.temp], ['\u2600', 'Day', sel.dayLen], ['\uD83C\uDF0D', 'Year', sel.yearLen], ['\uD83D\uDCCF', 'Size', sel.diameter],
-                   ['\u2696\uFE0F', 'Gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', (sel.atmosphere || 'Unknown').substring(0, 30)], ['\uD83D\uDCA0', 'Type', sel.terrainType === 'gasgiant' ? 'Gas Giant' : sel.terrainType === 'icegiant' ? 'Ice Giant' : 'Rocky']
-                  ].map(function(item) {
+                  ['\u2696\uFE0F', 'Gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', (sel.atmosphere || 'Unknown').substring(0, 30)], ['\uD83D\uDCA0', 'Type', sel.terrainType === 'gasgiant' ? 'Gas Giant' : sel.terrainType === 'icegiant' ? 'Ice Giant' : 'Rocky']
+                  ].map(function (item) {
                     return React.createElement("div", { key: item[1], className: "bg-white rounded-lg p-2 text-center border" },
                       React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, item[0] + ' ' + item[1]),
                       React.createElement("p", { className: "text-xs font-bold text-slate-700" }, item[2])
@@ -5363,7 +5376,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                 sel.notableFeatures && React.createElement("div", { className: "bg-white rounded-lg p-3 border" },
                   React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1.5" }, "\u2B50 Notable Features"),
                   React.createElement("div", { className: "flex flex-wrap gap-1.5" },
-                    sel.notableFeatures.map(function(feat, i) {
+                    sel.notableFeatures.map(function (feat, i) {
                       return React.createElement("span", { key: i, className: "px-2 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-100" }, feat);
                     })
                   )
@@ -5383,7 +5396,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                       ['\u2696\uFE0F Gravity', sel.gravity || '?'],
                       ['\uD83C\uDF21 Temperature', sel.temp],
                       ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' —')[0]]
-                    ].map(function(item) {
+                    ].map(function (item) {
                       return React.createElement("div", { key: item[0], className: "bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm" },
                         React.createElement("p", { className: "text-[9px] text-slate-400" }, item[0]),
                         React.createElement("p", { className: "text-xs font-bold" }, item[1])
@@ -5391,7 +5404,8 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                     })
                   )
                 ),
-                React.createElement("button", { onClick: function() { upd('viewTab', 'drone'); },
+                React.createElement("button", {
+                  onClick: function () { upd('viewTab', 'drone'); },
                   className: "w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.01]"
                 }, "\uD83D\uDEF8 Launch Drone on " + sel.name)
               ),
@@ -5401,7 +5415,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '400px' } },
                   React.createElement("canvas", {
                     "data-drone-canvas": "true",
-                    ref: function(canvasEl) {
+                    ref: function (canvasEl) {
                       if (!canvasEl || canvasEl._droneInit === sel.name) return;
                       canvasEl._droneInit = sel.name;
                       var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
@@ -5410,7 +5424,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                       var dpr = window.devicePixelRatio || 1;
 
                       // Drone state
-                      var drone = { x: W/(2*dpr), y: H*0.6/dpr, altitude: 50, vx: 0, vy: 0, speed: 0, heading: 0 };
+                      var drone = { x: W / (2 * dpr), y: H * 0.6 / dpr, altitude: 50, vx: 0, vy: 0, speed: 0, heading: 0 };
                       var tick = 0;
                       var keys = {};
                       var terrainSeed = [];
@@ -5512,14 +5526,14 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                         var tGrad = ctx.createLinearGradient(0, horizonY - 50 * dpr, 0, H);
                         tGrad.addColorStop(0, terrainColor);
                         // Darken terrain below
-                        tGrad.addColorStop(1, '#' + terrainColor.replace('#','').match(/.{2}/g).map(function(h) { return Math.max(0, parseInt(h, 16) - 60).toString(16).padStart(2,'0'); }).join(''));
+                        tGrad.addColorStop(1, '#' + terrainColor.replace('#', '').match(/.{2}/g).map(function (h) { return Math.max(0, parseInt(h, 16) - 60).toString(16).padStart(2, '0'); }).join(''));
                         ctx.fillStyle = tGrad;
                         ctx.fill();
 
                         // Surface details
                         if (terrainType === 'cratered') {
                           for (var cr = 0; cr < 12; cr++) {
-                            var crX = ((cr * 87 + 31 - drone.x * 0.5) % (W/dpr)) * dpr;
+                            var crX = ((cr * 87 + 31 - drone.x * 0.5) % (W / dpr)) * dpr;
                             var crY = horizonY + (20 + cr * 8) * dpr;
                             var crR = (5 + cr % 5 * 3) * dpr;
                             ctx.beginPath(); ctx.arc(crX, crY, crR, 0, Math.PI * 2);
@@ -5528,7 +5542,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                         } else if (terrainType === 'volcanic') {
                           // Lava flows
                           for (var lf = 0; lf < 5; lf++) {
-                            var lfX = ((lf * 120 + 50 - drone.x * 0.3) % (W/dpr)) * dpr;
+                            var lfX = ((lf * 120 + 50 - drone.x * 0.3) % (W / dpr)) * dpr;
                             ctx.beginPath();
                             ctx.moveTo(lfX, horizonY + 10 * dpr);
                             var lfWave = Math.sin(tick * 0.03 + lf) * 5 * dpr;
@@ -5538,7 +5552,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                         } else if (terrainType === 'earthlike') {
                           // Trees
                           for (var tr = 0; tr < 15; tr++) {
-                            var trX = ((tr * 65 + 20 - drone.x * 0.4) % (W/dpr)) * dpr;
+                            var trX = ((tr * 65 + 20 - drone.x * 0.4) % (W / dpr)) * dpr;
                             var trY = horizonY + (5 + tr % 4 * 12) * dpr;
                             ctx.fillStyle = '#2d5a2d';
                             ctx.beginPath(); ctx.moveTo(trX, trY - 12 * dpr);
@@ -5548,7 +5562,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                         } else if (terrainType === 'desert') {
                           // Dust devils
                           for (var dd = 0; dd < 3; dd++) {
-                            var ddX = ((dd * 200 + tick * 0.5 - drone.x * 0.2) % (W/dpr)) * dpr;
+                            var ddX = ((dd * 200 + tick * 0.5 - drone.x * 0.2) % (W / dpr)) * dpr;
                             var ddY = horizonY + 30 * dpr;
                             ctx.beginPath();
                             for (var ddy = 0; ddy < 40 * dpr; ddy += 2 * dpr) {
@@ -5576,8 +5590,8 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                         } else if (terrainType === 'icegiant') {
                           // Diamond rain particles
                           for (var dr = 0; dr < 20; dr++) {
-                            var drX = ((dr * 47 + tick * 1.2) % (W/dpr)) * dpr;
-                            var drY = ((dr * 31 + tick * 2.5) % (H/dpr)) * dpr;
+                            var drX = ((dr * 47 + tick * 1.2) % (W / dpr)) * dpr;
+                            var drY = ((dr * 31 + tick * 2.5) % (H / dpr)) * dpr;
                             ctx.beginPath();
                             ctx.moveTo(drX, drY - 3 * dpr);
                             ctx.lineTo(drX + 2 * dpr, drY);
@@ -5612,7 +5626,7 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                         ctx.fillRect(-8 * dpr, -2 * dpr, 16 * dpr, 4 * dpr);
                         // Propellers (spinning)
                         var propAngle = tick * 0.5;
-                        [-10, 10].forEach(function(off) {
+                        [-10, 10].forEach(function (off) {
                           ctx.save();
                           ctx.translate(off * dpr, -3 * dpr);
                           ctx.rotate(propAngle);
@@ -5681,12 +5695,12 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                       animId = requestAnimationFrame(loop);
 
                       // Cleanup
-                      canvasEl._droneCleanup = function() {
+                      canvasEl._droneCleanup = function () {
                         cancelAnimationFrame(animId);
                         canvasEl.removeEventListener('keydown', onKeyDown);
                         canvasEl.removeEventListener('keyup', onKeyUp);
                       };
-                      var ro = new ResizeObserver(function() {
+                      var ro = new ResizeObserver(function () {
                         W = canvasEl.width = canvasEl.offsetWidth * dpr;
                         H = canvasEl.height = canvasEl.offsetHeight * dpr;
                       });
@@ -5699,11 +5713,13 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
                   React.createElement("div", { style: { position: 'absolute', top: 0, left: 0, right: 0, height: '40px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), transparent)', pointerEvents: 'none', borderRadius: '12px 12px 0 0' } })
                 ),
                 React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic text-center" }, "Click the canvas and use WASD/Arrows to fly \u2022 Q/E for altitude \u2022 Explore " + sel.name + "'s surface!"),
-                React.createElement("button", { onClick: function() {
-                  var cv = document.querySelector('[data-drone-canvas]');
-                  if (cv && cv._droneCleanup) { cv._droneCleanup(); if (cv._droneRO) cv._droneRO.disconnect(); cv._droneInit = null; }
-                  upd('viewTab', 'overview');
-                }, className: "mt-2 px-4 py-1.5 text-xs font-bold bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all" }, "\u2190 Back to Overview")
+                React.createElement("button", {
+                  onClick: function () {
+                    var cv = document.querySelector('[data-drone-canvas]');
+                    if (cv && cv._droneCleanup) { cv._droneCleanup(); if (cv._droneRO) cv._droneRO.disconnect(); cv._droneInit = null; }
+                    upd('viewTab', 'overview');
+                  }, className: "mt-2 px-4 py-1.5 text-xs font-bold bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all"
+                }, "\u2190 Back to Overview")
               )
             ),
             // ── Quiz Mode ──
@@ -5783,117 +5799,117 @@ stemLabTab === 'explore' && stemLabTool === 'physics' && (() => {
           );
         })(),
 
-stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
-    var d = labToolData.galaxy || {};
-    var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
+        stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
+          var d = labToolData.galaxy || {};
+          var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
 
-    // ── Layer toggle defaults ──
-    var layers = d.layers || { arms: true, bulge: true, blackHole: true, nebulae: true, bgStars: true, grid: false, labels: false };
-    var starCount = d.starCount || 5000;
-    var galaxyType = d.galaxyType || 'barredSpiral';
+          // ── Layer toggle defaults ──
+          var layers = d.layers || { arms: true, bulge: true, blackHole: true, nebulae: true, bgStars: true, grid: false, labels: false };
+          var starCount = d.starCount || 5000;
+          var galaxyType = d.galaxyType || 'barredSpiral';
 
-    // ── Star type data (OBAFGKM Harvard classification) ──
-    var STAR_TYPES = [
-        { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
-        { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
-        { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
-        { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
-        { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
-        { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
-        { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
-    ];
+          // ── Star type data (OBAFGKM Harvard classification) ──
+          var STAR_TYPES = [
+            { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
+            { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
+            { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
+            { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
+            { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
+          ];
 
-    // ── Nebulae + deep-sky objects (expanded from 4 to 8) ──
-    var NEBULAE = [
-        { name: 'Orion Nebula', x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.' },
-        { name: 'Eagle Nebula', x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.' },
-        { name: 'Crab Nebula', x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
-        { name: 'Carina Nebula', x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.' },
-        { name: 'Helix Nebula', x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.' },
-        { name: 'Ring Nebula', x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.' },
-        { name: 'Horsehead Nebula', x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.' },
-        { name: 'Lagoon Nebula', x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.' }
-    ];
+          // ── Nebulae + deep-sky objects (expanded from 4 to 8) ──
+          var NEBULAE = [
+            { name: 'Orion Nebula', x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.' },
+            { name: 'Eagle Nebula', x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.' },
+            { name: 'Crab Nebula', x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
+            { name: 'Carina Nebula', x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.' },
+            { name: 'Helix Nebula', x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.' },
+            { name: 'Ring Nebula', x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.' },
+            { name: 'Horsehead Nebula', x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.' },
+            { name: 'Lagoon Nebula', x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.' }
+          ];
 
-    // ── Galaxy type definitions ──
-    var GALAXY_TYPES = {
-        barredSpiral: { label: 'Barred Spiral', icon: '\uD83C\uDF00', desc: 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.', example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
-        grandDesign: { label: 'Grand Design Spiral', icon: '\uD83C\uDF00', desc: 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.', example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
-        elliptical: { label: 'Elliptical', icon: '\u2B2D\uFE0F', desc: 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.', example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
-        irregular: { label: 'Irregular', icon: '\u2728', desc: 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.', example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
-    };
-    var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
+          // ── Galaxy type definitions ──
+          var GALAXY_TYPES = {
+            barredSpiral: { label: 'Barred Spiral', icon: '\uD83C\uDF00', desc: 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.', example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
+            grandDesign: { label: 'Grand Design Spiral', icon: '\uD83C\uDF00', desc: 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.', example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
+            elliptical: { label: 'Elliptical', icon: '\u2B2D\uFE0F', desc: 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.', example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
+            irregular: { label: 'Irregular', icon: '\u2728', desc: 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.', example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
+          };
+          var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
 
-    // ── Warp points ──
-    var WARP_POINTS = [
-        { label: 'Galactic Core', x: 0, y: 0, z: 0, zoom: 2 },
-        { label: 'Orion Arm (Us)', x: 0.35, y: 0, z: 0.1, zoom: 4, desc: 'Our Solar System is here, about 26,000 light-years from the center.' },
-        { label: 'Perseus Arm', x: 0.5, y: 0, z: -0.2, zoom: 3, desc: 'The next spiral arm outward from us. Contains many young, hot stars.' },
-        { label: 'Sagittarius Arm', x: -0.15, y: 0, z: 0.35, zoom: 3, desc: 'The next arm inward toward the galactic center.' },
-        { label: 'Overview', x: 0, y: 0.8, z: 0, zoom: 0.8, desc: 'Full view of the galaxy from above.' }
-    ];
+          // ── Warp points ──
+          var WARP_POINTS = [
+            { label: 'Galactic Core', x: 0, y: 0, z: 0, zoom: 2 },
+            { label: 'Orion Arm (Us)', x: 0.35, y: 0, z: 0.1, zoom: 4, desc: 'Our Solar System is here, about 26,000 light-years from the center.' },
+            { label: 'Perseus Arm', x: 0.5, y: 0, z: -0.2, zoom: 3, desc: 'The next spiral arm outward from us. Contains many young, hot stars.' },
+            { label: 'Sagittarius Arm', x: -0.15, y: 0, z: 0.35, zoom: 3, desc: 'The next arm inward toward the galactic center.' },
+            { label: 'Overview', x: 0, y: 0.8, z: 0, zoom: 0.8, desc: 'Full view of the galaxy from above.' }
+          ];
 
-    // ── Quiz bank (expanded from 10 to 15) ──
-    var QUIZ_BANK = [
-        { q: 'What type of star is our Sun?', a: 'G-type', options: ['O-type', 'A-type', 'G-type', 'M-type'] },
-        { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', 'Nebula'] },
-        { q: 'Which star type is the hottest?', a: 'O-type', options: ['M-type', 'G-type', 'A-type', 'O-type'] },
-        { q: 'Which spiral arm contains our Solar System?', a: 'Orion Arm', options: ['Perseus Arm', 'Orion Arm', 'Sagittarius Arm', 'Norma Arm'] },
-        { q: 'What percentage of stars are M-type red dwarfs?', a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
-        { q: 'What is a nebula?', a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
-        { q: 'How many stars are in the Milky Way?', a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
-        { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: ['Elliptical', 'Irregular', 'Spiral', 'Barred spiral'] },
-        { q: 'Which star is closest to our Sun?', a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
-        { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
-        { q: 'What is a planetary nebula?', a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
-        { q: 'How wide is the Milky Way?', a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
-        { q: 'What causes a supernova?', a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
-        { q: 'What is dark matter?', a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
-        { q: 'How long does it take light to cross the Milky Way?', a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] }
-    ];
+          // ── Quiz bank (expanded from 10 to 15) ──
+          var QUIZ_BANK = [
+            { q: 'What type of star is our Sun?', a: 'G-type', options: ['O-type', 'A-type', 'G-type', 'M-type'] },
+            { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', 'Nebula'] },
+            { q: 'Which star type is the hottest?', a: 'O-type', options: ['M-type', 'G-type', 'A-type', 'O-type'] },
+            { q: 'Which spiral arm contains our Solar System?', a: 'Orion Arm', options: ['Perseus Arm', 'Orion Arm', 'Sagittarius Arm', 'Norma Arm'] },
+            { q: 'What percentage of stars are M-type red dwarfs?', a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
+            { q: 'What is a nebula?', a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
+            { q: 'How many stars are in the Milky Way?', a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
+            { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: ['Elliptical', 'Irregular', 'Spiral', 'Barred spiral'] },
+            { q: 'Which star is closest to our Sun?', a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
+            { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
+            { q: 'What is a planetary nebula?', a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
+            { q: 'How wide is the Milky Way?', a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
+            { q: 'What causes a supernova?', a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
+            { q: 'What is dark matter?', a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
+            { q: 'How long does it take light to cross the Milky Way?', a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] }
+          ];
 
-    // ── Scale data ──
-    var SCALE_INFO = [
-        { label: 'Galaxy Diameter', value: '~100,000 light-years' },
-        { label: 'Disk Thickness', value: '~2,000 light-years' },
-        { label: 'Central Bulge', value: '~10,000 light-years' },
-        { label: 'Sun to Center', value: '~26,000 light-years' },
-        { label: 'Stars', value: '100\u2013400 billion' },
-        { label: 'Age', value: '~13.6 billion years' }
-    ];
+          // ── Scale data ──
+          var SCALE_INFO = [
+            { label: 'Galaxy Diameter', value: '~100,000 light-years' },
+            { label: 'Disk Thickness', value: '~2,000 light-years' },
+            { label: 'Central Bulge', value: '~10,000 light-years' },
+            { label: 'Sun to Center', value: '~26,000 light-years' },
+            { label: 'Stars', value: '100\u2013400 billion' },
+            { label: 'Age', value: '~13.6 billion years' }
+          ];
 
-    // ── Three.js init with layer groups ──
-    var canvasRefCb = function (canvasEl) {
-        if (!canvasEl || canvasEl._galaxyInit) return;
-        canvasEl._galaxyInit = true;
-        var doInit = function () { initGalaxy(canvasEl); };
-        if (window.THREE) { doInit(); } else {
-            var script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-            script.onload = doInit;
-            document.head.appendChild(script);
-        }
-    };
+          // ── Three.js init with layer groups ──
+          var canvasRefCb = function (canvasEl) {
+            if (!canvasEl || canvasEl._galaxyInit) return;
+            canvasEl._galaxyInit = true;
+            var doInit = function () { initGalaxy(canvasEl); };
+            if (window.THREE) { doInit(); } else {
+              var script = document.createElement('script');
+              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+              script.onload = doInit;
+              document.head.appendChild(script);
+            }
+          };
 
-    function generateStars(THREE, count, gType, galaxyType) {
-        var starGeo = new THREE.BufferGeometry();
-        var starPos = new Float32Array(count * 3), starColors = new Float32Array(count * 3), starData = [];
-        for (var i = 0; i < count; i++) {
-            var x, y, z;
-            if (galaxyType === 'elliptical') {
+          function generateStars(THREE, count, gType, galaxyType) {
+            var starGeo = new THREE.BufferGeometry();
+            var starPos = new Float32Array(count * 3), starColors = new Float32Array(count * 3), starData = [];
+            for (var i = 0; i < count; i++) {
+              var x, y, z;
+              if (galaxyType === 'elliptical') {
                 var r = Math.pow(Math.random(), 0.5) * 0.6;
                 var theta = Math.random() * Math.PI * 2;
                 var phi = (Math.random() - 0.5) * Math.PI;
                 x = Math.cos(theta) * Math.cos(phi) * r;
                 z = Math.sin(theta) * Math.cos(phi) * r;
                 y = Math.sin(phi) * r * 0.6;
-            } else if (galaxyType === 'irregular') {
+              } else if (galaxyType === 'irregular') {
                 x = (Math.random() - 0.5) * 0.8;
                 z = (Math.random() - 0.5) * 0.6;
                 y = (Math.random() - 0.5) * 0.3;
                 var clumpChance = Math.random();
-                if (clumpChance < 0.3) { var cx = (Math.random()-0.5)*0.4; var cz = (Math.random()-0.5)*0.3; x = cx + (Math.random()-0.5)*0.15; z = cz + (Math.random()-0.5)*0.15; y *= 0.5; }
-            } else {
+                if (clumpChance < 0.3) { var cx = (Math.random() - 0.5) * 0.4; var cz = (Math.random() - 0.5) * 0.3; x = cx + (Math.random() - 0.5) * 0.15; z = cz + (Math.random() - 0.5) * 0.15; y *= 0.5; }
+              } else {
                 var arm = i % (gType.arms || 4);
                 var armAngle = (arm / (gType.arms || 4)) * Math.PI * 2;
                 var dist = Math.pow(Math.random(), 0.6) * 0.8;
@@ -5901,564 +5917,564 @@ stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
                 var barLen = gType.barLength || 0;
                 var angle = armAngle + dist * windTight + (Math.random() - 0.5) * 0.4 * (1 - dist * 0.5);
                 if (barLen > 0 && dist < barLen) {
-                    var barAngle = (arm % 2 === 0) ? 0 : Math.PI;
-                    x = Math.cos(barAngle) * dist + (Math.random() - 0.5) * 0.03;
-                    z = Math.sin(barAngle) * dist * 0.15 + (Math.random() - 0.5) * 0.02;
+                  var barAngle = (arm % 2 === 0) ? 0 : Math.PI;
+                  x = Math.cos(barAngle) * dist + (Math.random() - 0.5) * 0.03;
+                  z = Math.sin(barAngle) * dist * 0.15 + (Math.random() - 0.5) * 0.02;
                 } else {
-                    x = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.03;
-                    z = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.03;
+                  x = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.03;
+                  z = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.03;
                 }
                 y = (Math.random() - 0.5) * 0.04 * (1 - dist);
+              }
+              starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
+              var roll = Math.random() * 100;
+              var typeIdx = roll < 0.003 ? 0 : roll < 0.133 ? 1 : roll < 0.733 ? 2 : roll < 3.73 ? 3 : roll < 11.33 ? 4 : roll < 23.43 ? 5 : 6;
+              var st = STAR_TYPES[typeIdx], c = new THREE.Color(st.color);
+              starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b;
+              starData.push({ type: st, x: x, y: y, z: z, idx: i });
             }
-            starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
-            var roll = Math.random() * 100;
-            var typeIdx = roll < 0.003 ? 0 : roll < 0.133 ? 1 : roll < 0.733 ? 2 : roll < 3.73 ? 3 : roll < 11.33 ? 4 : roll < 23.43 ? 5 : 6;
-            var st = STAR_TYPES[typeIdx], c = new THREE.Color(st.color);
-            starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b;
-            starData.push({ type: st, x: x, y: y, z: z, idx: i });
-        }
-        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-        starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-        return { geo: starGeo, data: starData };
-    }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+            return { geo: starGeo, data: starData };
+          }
 
-    function initGalaxy(canvasEl) {
-        var THREE = window.THREE;
-        var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
-        camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
-        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
-        renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x050510);
+          function initGalaxy(canvasEl) {
+            var THREE = window.THREE;
+            var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
+            camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
+            var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+            renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x050510);
 
-        // ── Layer groups ──
-        var bgGroup = new THREE.Group(); bgGroup.name = 'bgStars';
-        var armGroup = new THREE.Group(); armGroup.name = 'arms';
-        var bulgeGroup = new THREE.Group(); bulgeGroup.name = 'bulge';
-        var bhGroup = new THREE.Group(); bhGroup.name = 'blackHole';
-        var nebGroup = new THREE.Group(); nebGroup.name = 'nebulae';
-        var gridGroup = new THREE.Group(); gridGroup.name = 'grid'; gridGroup.visible = false;
-        var labelGroup = new THREE.Group(); labelGroup.name = 'labels'; labelGroup.visible = false;
-        scene.add(bgGroup); scene.add(armGroup); scene.add(bulgeGroup);
-        scene.add(bhGroup); scene.add(nebGroup); scene.add(gridGroup); scene.add(labelGroup);
+            // ── Layer groups ──
+            var bgGroup = new THREE.Group(); bgGroup.name = 'bgStars';
+            var armGroup = new THREE.Group(); armGroup.name = 'arms';
+            var bulgeGroup = new THREE.Group(); bulgeGroup.name = 'bulge';
+            var bhGroup = new THREE.Group(); bhGroup.name = 'blackHole';
+            var nebGroup = new THREE.Group(); nebGroup.name = 'nebulae';
+            var gridGroup = new THREE.Group(); gridGroup.name = 'grid'; gridGroup.visible = false;
+            var labelGroup = new THREE.Group(); labelGroup.name = 'labels'; labelGroup.visible = false;
+            scene.add(bgGroup); scene.add(armGroup); scene.add(bulgeGroup);
+            scene.add(bhGroup); scene.add(nebGroup); scene.add(gridGroup); scene.add(labelGroup);
 
-        // Background stars
-        var bgGeo = new THREE.BufferGeometry(), bgCount = 2000, bgPos = new Float32Array(bgCount * 3);
-        for (var i = 0; i < bgCount; i++) { bgPos[i * 3] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 1] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 2] = (Math.random() - 0.5) * 20; }
-        bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
-        bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })));
+            // Background stars
+            var bgGeo = new THREE.BufferGeometry(), bgCount = 2000, bgPos = new Float32Array(bgCount * 3);
+            for (var i = 0; i < bgCount; i++) { bgPos[i * 3] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 1] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 2] = (Math.random() - 0.5) * 20; }
+            bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+            bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })));
 
-        // Spiral galaxy stars
-        var starResult = generateStars(THREE, starCount, gType, galaxyType);
-        var starPoints = new THREE.Points(starResult.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
-        armGroup.add(starPoints);
-        var starData = starResult.data;
-
-        // Central bulge
-        var bulgeGeo = new THREE.BufferGeometry(), bulgeCount = 800;
-        var bulgePos = new Float32Array(bulgeCount * 3), bulgeCol = new Float32Array(bulgeCount * 3);
-        for (var i = 0; i < bulgeCount; i++) {
-            var r = Math.pow(Math.random(), 2) * 0.12, th = Math.random() * Math.PI * 2, ph = (Math.random() - 0.5) * Math.PI * 0.4;
-            bulgePos[i * 3] = Math.cos(th) * Math.cos(ph) * r; bulgePos[i * 3 + 1] = Math.sin(ph) * r * 0.5; bulgePos[i * 3 + 2] = Math.sin(th) * Math.cos(ph) * r;
-            var warmth = 0.8 + Math.random() * 0.2; bulgeCol[i * 3] = warmth; bulgeCol[i * 3 + 1] = warmth * 0.85; bulgeCol[i * 3 + 2] = warmth * 0.5;
-        }
-        bulgeGeo.setAttribute('position', new THREE.BufferAttribute(bulgePos, 3));
-        bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
-        bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
-
-        // Black hole + accretion ring
-        bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.008, 16, 16), new THREE.MeshBasicMaterial({ color: 0x000000 })));
-        var ring = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.02, 32), new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
-        ring.rotation.x = Math.PI * 0.5; bhGroup.add(ring);
-
-        // Scale grid
-        var gridHelper = new THREE.GridHelper(2, 20, 0x223366, 0x112244);
-        gridHelper.position.y = -0.03;
-        gridGroup.add(gridHelper);
-        var ringScale = new THREE.Mesh(new THREE.RingGeometry(0.49, 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.2 }));
-        ringScale.rotation.x = Math.PI * 0.5; ringScale.position.y = -0.02;
-        gridGroup.add(ringScale);
-
-        // Nebulae as sprites
-        var nebCanvas = document.createElement('canvas'); nebCanvas.width = 64; nebCanvas.height = 64;
-        var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [];
-        NEBULAE.forEach(function (neb) {
-            nCtx.clearRect(0, 0, 64, 64);
-            var grad = nCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-            grad.addColorStop(0, neb.color + 'aa'); grad.addColorStop(0.5, neb.color + '44'); grad.addColorStop(1, neb.color + '00');
-            nCtx.fillStyle = grad; nCtx.fillRect(0, 0, 64, 64);
-            var tex = new THREE.CanvasTexture(nebCanvas); tex.needsUpdate = true;
-            var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.clone(), transparent: true, opacity: 0.5 }));
-            sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
-            sprite.userData = neb; nebGroup.add(sprite); nebulaSprites.push(sprite);
-        });
-
-        // Labels for nebulae
-        NEBULAE.forEach(function (neb) {
-            var labelCanvas = document.createElement('canvas'); labelCanvas.width = 256; labelCanvas.height = 48;
-            var lCtx = labelCanvas.getContext('2d');
-            lCtx.fillStyle = 'rgba(0,0,0,0.5)'; lCtx.fillRect(0, 0, 256, 48);
-            lCtx.font = '18px sans-serif'; lCtx.fillStyle = neb.color; lCtx.textAlign = 'center'; lCtx.fillText(neb.name, 128, 32);
-            var labelTex = new THREE.CanvasTexture(labelCanvas);
-            var labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true }));
-            labelSprite.position.set(neb.x, neb.y + neb.r + 0.03, neb.z);
-            labelSprite.scale.set(0.15, 0.03, 1);
-            labelGroup.add(labelSprite);
-        });
-
-        // Store layer references on canvas for toggle access
-        canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup };
-
-        // Function to regenerate stars with new count
-        canvasEl._setStarCount = function (count) {
-            armGroup.remove(starPoints);
-            starPoints.geometry.dispose();
-            var result = generateStars(THREE, count, gType, galaxyType);
-            starPoints = new THREE.Points(result.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+            // Spiral galaxy stars
+            var starResult = generateStars(THREE, starCount, gType, galaxyType);
+            var starPoints = new THREE.Points(starResult.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
             armGroup.add(starPoints);
-            starData = result.data;
-        };
+            var starData = starResult.data;
 
-        // Orbit controls
-        var isDragging = false, prevX = 0, prevY = 0;
-        var spherical = { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: 1.2 };
-        function updateCamera() {
-            camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-            camera.position.y = spherical.r * Math.cos(spherical.phi);
-            camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
-            camera.lookAt(0, 0, 0);
-        }
-        updateCamera();
-        canvasEl.addEventListener('mousedown', function (e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
-        canvasEl.addEventListener('mousemove', function (e) {
-            if (!isDragging) return;
-            spherical.theta += (e.clientX - prevX) * 0.005;
-            spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - (e.clientY - prevY) * 0.005));
-            prevX = e.clientX; prevY = e.clientY; updateCamera();
-        });
-        canvasEl.addEventListener('mouseup', function () { isDragging = false; });
-        canvasEl.addEventListener('wheel', function (e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); }, { passive: false });
+            // Central bulge
+            var bulgeGeo = new THREE.BufferGeometry(), bulgeCount = 800;
+            var bulgePos = new Float32Array(bulgeCount * 3), bulgeCol = new Float32Array(bulgeCount * 3);
+            for (var i = 0; i < bulgeCount; i++) {
+              var r = Math.pow(Math.random(), 2) * 0.12, th = Math.random() * Math.PI * 2, ph = (Math.random() - 0.5) * Math.PI * 0.4;
+              bulgePos[i * 3] = Math.cos(th) * Math.cos(ph) * r; bulgePos[i * 3 + 1] = Math.sin(ph) * r * 0.5; bulgePos[i * 3 + 2] = Math.sin(th) * Math.cos(ph) * r;
+              var warmth = 0.8 + Math.random() * 0.2; bulgeCol[i * 3] = warmth; bulgeCol[i * 3 + 1] = warmth * 0.85; bulgeCol[i * 3 + 2] = warmth * 0.5;
+            }
+            bulgeGeo.setAttribute('position', new THREE.BufferAttribute(bulgePos, 3));
+            bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
+            bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
 
-        // Raycaster for click selection
-        var raycaster = new THREE.Raycaster(); raycaster.params.Points.threshold = 0.02;
-        var mouse = new THREE.Vector2();
-        canvasEl.addEventListener('click', function (e) {
-            var rect = canvasEl.getBoundingClientRect();
-            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            var hits = raycaster.intersectObject(starPoints);
-            if (hits.length > 0 && canvasEl._onSelectStar) canvasEl._onSelectStar(starData[hits[0].index]);
-            var nebHits = raycaster.intersectObjects(nebulaSprites);
-            if (nebHits.length > 0 && canvasEl._onSelectNebula) canvasEl._onSelectNebula(nebHits[0].object.userData);
-        });
-        canvasEl._galaxyWarp = function (wp) {
-            spherical.theta = Math.atan2(wp.x, wp.z) || 0.1;
-            spherical.phi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
-            spherical.r = wp.zoom || 1; updateCamera();
-        };
-        var animId;
-        function animate() {
-            animId = requestAnimationFrame(animate);
-            if (armGroup.visible) armGroup.children.forEach(function(c) { c.rotation.y += 0.0003; });
-            nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.35 + 0.15 * Math.sin(Date.now() * 0.001 + i * 1.5); });
-            if (bhGroup.visible) { ring.rotation.z += 0.002; }
-            renderer.render(scene, camera);
-        }
-        animate();
-        var ro = new ResizeObserver(function () { W = canvasEl.offsetWidth; H = canvasEl.offsetHeight; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); });
-        ro.observe(canvasEl);
-        canvasEl._galaxyCleanup = function () { if (animId) cancelAnimationFrame(animId); ro.disconnect(); renderer.dispose(); };
-    }
+            // Black hole + accretion ring
+            bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.008, 16, 16), new THREE.MeshBasicMaterial({ color: 0x000000 })));
+            var ring = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.02, 32), new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
+            ring.rotation.x = Math.PI * 0.5; bhGroup.add(ring);
 
-    var selStar = d.selectedStar ? STAR_TYPES.find(function (s) { return s.id === d.selectedStar; }) : null;
-    var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
-    var quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+            // Scale grid
+            var gridHelper = new THREE.GridHelper(2, 20, 0x223366, 0x112244);
+            gridHelper.position.y = -0.03;
+            gridGroup.add(gridHelper);
+            var ringScale = new THREE.Mesh(new THREE.RingGeometry(0.49, 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.2 }));
+            ringScale.rotation.x = Math.PI * 0.5; ringScale.position.y = -0.02;
+            gridGroup.add(ringScale);
 
-    // ── Toggle handler ──
-    var toggleLayer = function (key) {
-        var newLayers = Object.assign({}, layers);
-        newLayers[key] = !newLayers[key];
-        upd("layers", newLayers);
-        var cv = document.querySelector('[data-galaxy-canvas]');
-        if (cv && cv._layers && cv._layers[key]) cv._layers[key].visible = newLayers[key];
-    };
+            // Nebulae as sprites
+            var nebCanvas = document.createElement('canvas'); nebCanvas.width = 64; nebCanvas.height = 64;
+            var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [];
+            NEBULAE.forEach(function (neb) {
+              nCtx.clearRect(0, 0, 64, 64);
+              var grad = nCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+              grad.addColorStop(0, neb.color + 'aa'); grad.addColorStop(0.5, neb.color + '44'); grad.addColorStop(1, neb.color + '00');
+              nCtx.fillStyle = grad; nCtx.fillRect(0, 0, 64, 64);
+              var tex = new THREE.CanvasTexture(nebCanvas); tex.needsUpdate = true;
+              var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.clone(), transparent: true, opacity: 0.5 }));
+              sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
+              sprite.userData = neb; nebGroup.add(sprite); nebulaSprites.push(sprite);
+            });
 
-    var LAYER_TOGGLES = [
-        { key: 'arms', icon: '\uD83C\uDF00', label: 'Spiral Arms' },
-        { key: 'bulge', icon: '\uD83D\uDFE1', label: 'Central Bulge' },
-        { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: 'Black Hole' },
-        { key: 'nebulae', icon: '\u2728', label: 'Nebulae' },
-        { key: 'bgStars', icon: '\uD83C\uDF0C', label: 'Background' },
-        { key: 'grid', icon: '\uD83D\uDCCF', label: 'Scale Grid' },
-        { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: 'Labels' }
-    ];
+            // Labels for nebulae
+            NEBULAE.forEach(function (neb) {
+              var labelCanvas = document.createElement('canvas'); labelCanvas.width = 256; labelCanvas.height = 48;
+              var lCtx = labelCanvas.getContext('2d');
+              lCtx.fillStyle = 'rgba(0,0,0,0.5)'; lCtx.fillRect(0, 0, 256, 48);
+              lCtx.font = '18px sans-serif'; lCtx.fillStyle = neb.color; lCtx.textAlign = 'center'; lCtx.fillText(neb.name, 128, 32);
+              var labelTex = new THREE.CanvasTexture(labelCanvas);
+              var labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true }));
+              labelSprite.position.set(neb.x, neb.y + neb.r + 0.03, neb.z);
+              labelSprite.scale.set(0.15, 0.03, 1);
+              labelGroup.add(labelSprite);
+            });
 
-    return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-        // ── Header ──
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
-            React.createElement("div", { className: "flex gap-1 ml-auto" },
+            // Store layer references on canvas for toggle access
+            canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup };
+
+            // Function to regenerate stars with new count
+            canvasEl._setStarCount = function (count) {
+              armGroup.remove(starPoints);
+              starPoints.geometry.dispose();
+              var result = generateStars(THREE, count, gType, galaxyType);
+              starPoints = new THREE.Points(result.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+              armGroup.add(starPoints);
+              starData = result.data;
+            };
+
+            // Orbit controls
+            var isDragging = false, prevX = 0, prevY = 0;
+            var spherical = { theta: Math.PI * 0.1, phi: Math.PI * 0.35, r: 1.2 };
+            function updateCamera() {
+              camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+              camera.position.y = spherical.r * Math.cos(spherical.phi);
+              camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+              camera.lookAt(0, 0, 0);
+            }
+            updateCamera();
+            canvasEl.addEventListener('mousedown', function (e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+            canvasEl.addEventListener('mousemove', function (e) {
+              if (!isDragging) return;
+              spherical.theta += (e.clientX - prevX) * 0.005;
+              spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - (e.clientY - prevY) * 0.005));
+              prevX = e.clientX; prevY = e.clientY; updateCamera();
+            });
+            canvasEl.addEventListener('mouseup', function () { isDragging = false; });
+            canvasEl.addEventListener('wheel', function (e) { e.preventDefault(); spherical.r = Math.max(0.2, Math.min(3, spherical.r * (e.deltaY > 0 ? 1.1 : 0.9))); updateCamera(); }, { passive: false });
+
+            // Raycaster for click selection
+            var raycaster = new THREE.Raycaster(); raycaster.params.Points.threshold = 0.02;
+            var mouse = new THREE.Vector2();
+            canvasEl.addEventListener('click', function (e) {
+              var rect = canvasEl.getBoundingClientRect();
+              mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+              mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+              raycaster.setFromCamera(mouse, camera);
+              var hits = raycaster.intersectObject(starPoints);
+              if (hits.length > 0 && canvasEl._onSelectStar) canvasEl._onSelectStar(starData[hits[0].index]);
+              var nebHits = raycaster.intersectObjects(nebulaSprites);
+              if (nebHits.length > 0 && canvasEl._onSelectNebula) canvasEl._onSelectNebula(nebHits[0].object.userData);
+            });
+            canvasEl._galaxyWarp = function (wp) {
+              spherical.theta = Math.atan2(wp.x, wp.z) || 0.1;
+              spherical.phi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
+              spherical.r = wp.zoom || 1; updateCamera();
+            };
+            var animId;
+            function animate() {
+              animId = requestAnimationFrame(animate);
+              if (armGroup.visible) armGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
+              nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.35 + 0.15 * Math.sin(Date.now() * 0.001 + i * 1.5); });
+              if (bhGroup.visible) { ring.rotation.z += 0.002; }
+              renderer.render(scene, camera);
+            }
+            animate();
+            var ro = new ResizeObserver(function () { W = canvasEl.offsetWidth; H = canvasEl.offsetHeight; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); });
+            ro.observe(canvasEl);
+            canvasEl._galaxyCleanup = function () { if (animId) cancelAnimationFrame(animId); ro.disconnect(); renderer.dispose(); };
+          }
+
+          var selStar = d.selectedStar ? STAR_TYPES.find(function (s) { return s.id === d.selectedStar; }) : null;
+          var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
+          var quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+
+          // ── Toggle handler ──
+          var toggleLayer = function (key) {
+            var newLayers = Object.assign({}, layers);
+            newLayers[key] = !newLayers[key];
+            upd("layers", newLayers);
+            var cv = document.querySelector('[data-galaxy-canvas]');
+            if (cv && cv._layers && cv._layers[key]) cv._layers[key].visible = newLayers[key];
+          };
+
+          var LAYER_TOGGLES = [
+            { key: 'arms', icon: '\uD83C\uDF00', label: 'Spiral Arms' },
+            { key: 'bulge', icon: '\uD83D\uDFE1', label: 'Central Bulge' },
+            { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: 'Black Hole' },
+            { key: 'nebulae', icon: '\u2728', label: 'Nebulae' },
+            { key: 'bgStars', icon: '\uD83C\uDF0C', label: 'Background' },
+            { key: 'grid', icon: '\uD83D\uDCCF', label: 'Scale Grid' },
+            { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: 'Labels' }
+          ];
+
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            // ── Header ──
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
+              React.createElement("div", { className: "flex gap-1 ml-auto" },
                 ["explore", "quiz"].map(function (m) {
-                    return React.createElement("button", {
-                        key: m, onClick: function () {
-                            if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); }
-                            else { upd("quizMode", false); }
-                        }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + ((m === 'quiz' ? d.quizMode : !d.quizMode) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                    }, m);
+                  return React.createElement("button", {
+                    key: m, onClick: function () {
+                      if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); }
+                      else { upd("quizMode", false); }
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + ((m === 'quiz' ? d.quizMode : !d.quizMode) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                  }, m);
                 })
-            )
-        ),
+              )
+            ),
 
-        // ── Galaxy type selector ──
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-            Object.keys(GALAXY_TYPES).map(function (key) {
+            // ── Galaxy type selector ──
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+              Object.keys(GALAXY_TYPES).map(function (key) {
                 var gt = GALAXY_TYPES[key];
                 return React.createElement("button", {
-                    key: key,
-                    onClick: function () {
-                        upd("galaxyType", key);
-                        var cv = document.querySelector('[data-galaxy-canvas]');
-                        if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
-                    },
-                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200')
+                  key: key,
+                  onClick: function () {
+                    upd("galaxyType", key);
+                    var cv = document.querySelector('[data-galaxy-canvas]');
+                    if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
+                  },
+                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200')
                 }, gt.icon + " " + gt.label);
-            })
-        ),
+              })
+            ),
 
-        // ── Galaxy type info card ──
-        React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-lg border border-indigo-100 text-[11px]" },
-            React.createElement("span", { className: "font-bold text-indigo-700" }, gType.icon + " " + gType.label + ": "),
-            React.createElement("span", { className: "text-slate-600" }, gType.desc),
-            React.createElement("span", { className: "text-indigo-400 ml-1" }, "(e.g. " + gType.example + ")")
-        ),
+            // ── Galaxy type info card ──
+            React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-lg border border-indigo-100 text-[11px]" },
+              React.createElement("span", { className: "font-bold text-indigo-700" }, gType.icon + " " + gType.label + ": "),
+              React.createElement("span", { className: "text-slate-600" }, gType.desc),
+              React.createElement("span", { className: "text-indigo-400 ml-1" }, "(e.g. " + gType.example + ")")
+            ),
 
-        // ── 3D Canvas ──
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
-            React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
-            // Star type legend
-            React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+            // ── 3D Canvas ──
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
+              React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
+              // Star type legend
+              React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
                 React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
                 STAR_TYPES.map(function (st) { return React.createElement("div", { key: st.id, className: "flex items-center gap-1 leading-tight" }, React.createElement("span", { style: { color: st.color, fontSize: '10px' } }, "\u2B50"), React.createElement("span", null, st.id + " (" + st.temp + "K)")); })
-            ),
-            // Scale info overlay
-            layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+              ),
+              // Scale info overlay
+              layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
                 React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
                 SCALE_INFO.map(function (s) { return React.createElement("div", { key: s.label, className: "flex justify-between gap-3" }, React.createElement("span", { className: "text-white/50" }, s.label), React.createElement("span", { className: "font-bold" }, s.value)); })
-            )
-        ),
+              )
+            ),
 
-        // ── Layer toggles ──
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-            LAYER_TOGGLES.map(function (lt) {
+            // ── Layer toggles ──
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+              LAYER_TOGGLES.map(function (lt) {
                 var isOn = layers[lt.key] !== false;
                 return React.createElement("button", {
-                    key: lt.key,
-                    onClick: function () { toggleLayer(lt.key); },
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
+                  key: lt.key,
+                  onClick: function () { toggleLayer(lt.key); },
+                  className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
                 }, lt.icon + " " + lt.label);
-            })
-        ),
+              })
+            ),
 
-        // ── Star density slider ──
-        React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
-            React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
-            React.createElement("input", {
+            // ── Star density slider ──
+            React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
+              React.createElement("input", {
                 type: "range", min: 1000, max: 10000, step: 1000, value: starCount,
                 onChange: function (e) {
-                    var val = parseInt(e.target.value);
-                    upd("starCount", val);
-                    var cv = document.querySelector('[data-galaxy-canvas]');
-                    if (cv && cv._setStarCount) cv._setStarCount(val);
+                  var val = parseInt(e.target.value);
+                  upd("starCount", val);
+                  var cv = document.querySelector('[data-galaxy-canvas]');
+                  if (cv && cv._setStarCount) cv._setStarCount(val);
                 },
                 className: "flex-1 h-1.5 accent-indigo-500"
-            }),
-            React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
-        ),
+              }),
+              React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
+            ),
 
-        // ── Warp points ──
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-            WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
-        ),
+            // ── Warp points ──
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+              WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+            ),
 
-        // ── Warp info ──
-        d.warpInfo && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-[11px] text-indigo-700" },
-            React.createElement("span", { className: "font-bold" }, "\uD83D\uDCCD "),
-            d.warpInfo
-        ),
+            // ── Warp info ──
+            d.warpInfo && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-[11px] text-indigo-700" },
+              React.createElement("span", { className: "font-bold" }, "\uD83D\uDCCD "),
+              d.warpInfo
+            ),
 
-        // ── Star info card ──
-        selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
-            React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
-            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
-            React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
+            // ── Star info card ──
+            selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
+              React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
+              React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
+              React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
                 [
-                    { label: 'Temperature', val: selStar.temp + ' K' },
-                    { label: '% of Stars', val: selStar.pct + '%' },
-                    { label: 'Luminosity', val: selStar.luminosity },
-                    { label: 'Mass', val: selStar.mass || '?' },
-                    { label: 'Lifetime', val: selStar.lifetime || '?' },
-                    { label: 'Example', val: selStar.example }
+                  { label: 'Temperature', val: selStar.temp + ' K' },
+                  { label: '% of Stars', val: selStar.pct + '%' },
+                  { label: 'Luminosity', val: selStar.luminosity },
+                  { label: 'Mass', val: selStar.mass || '?' },
+                  { label: 'Lifetime', val: selStar.lifetime || '?' },
+                  { label: 'Example', val: selStar.example }
                 ].map(function (item) {
-                    return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
-                        React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
-                        React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
-                    );
+                  return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
+                    React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
+                    React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
+                  );
                 })
-            )
-        ),
+              )
+            ),
 
-        // ── Nebula info card ──
-        selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
-            React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
-            React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
+            // ── Nebula info card ──
+            selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
+              React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
+              React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
                 React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || 'Nebula'),
                 selNeb.dist && React.createElement("span", { className: "text-slate-500" }, "\uD83D\uDCCD " + selNeb.dist)
+              ),
+              React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
             ),
-            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
-        ),
 
-        // ── Quiz mode ──
-        d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
-            React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            // ── Quiz mode ──
+            d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
                 React.createElement("div", { className: "flex items-center gap-2 text-xs" },
-                    React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
-                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                  React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+                  React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
                 )
-            ),
-            React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
-            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+              ),
+              React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
+              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 quizQ.options.map(function (opt) {
-                    return React.createElement("button", {
-                        key: opt, disabled: !!d.quizFeedback,
-                        onClick: function () {
-                            var correct = opt === quizQ.a;
-                            upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
-                            if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
-                            else { upd("quizStreak", 0); }
-                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
-                    }, opt);
+                  return React.createElement("button", {
+                    key: opt, disabled: !!d.quizFeedback,
+                    onClick: function () {
+                      var correct = opt === quizQ.a;
+                      upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
+                      if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                      else { upd("quizStreak", 0); }
+                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                  }, opt);
                 })
-            ),
-            d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+              ),
+              d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
                 d.quizFeedback.msg,
                 React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % QUIZ_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
+              )
+            ),
+
+            // ── Snapshot button ──
+            React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
-        ),
-
-        // ── Snapshot button ──
-        React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-            React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-        )
-    )
-})(),
+          )
+        })(),
 
 
-stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
-    const d = labToolData.rocks || {};
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, rocks: { ...prev.rocks, [key]: val } }));
-    const mode = d.mode || 'landscape';
+        stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
+          const d = labToolData.rocks || {};
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, rocks: { ...prev.rocks, [key]: val } }));
+          const mode = d.mode || 'landscape';
 
-    // ── Rock type data ──
-    const ROCK_TYPES = {
-        igneous: { label: 'Igneous', icon: '🌋', color: '#ef4444', desc: 'Formed from cooled magma or lava', process: 'Cooling & Crystallization' },
-        sedimentary: { label: 'Sedimentary', icon: '🏖️', color: '#f59e0b', desc: 'Formed from compressed layers of sediment', process: 'Compaction & Cementation' },
-        metamorphic: { label: 'Metamorphic', icon: '⛰️', color: '#8b5cf6', desc: 'Formed when existing rocks change under heat & pressure', process: 'Heat & Pressure' }
-    };
+          // ── Rock type data ──
+          const ROCK_TYPES = {
+            igneous: { label: 'Igneous', icon: '🌋', color: '#ef4444', desc: 'Formed from cooled magma or lava', process: 'Cooling & Crystallization' },
+            sedimentary: { label: 'Sedimentary', icon: '🏖️', color: '#f59e0b', desc: 'Formed from compressed layers of sediment', process: 'Compaction & Cementation' },
+            metamorphic: { label: 'Metamorphic', icon: '⛰️', color: '#8b5cf6', desc: 'Formed when existing rocks change under heat & pressure', process: 'Heat & Pressure' }
+          };
 
-    // ── Rock specimens ──
-    const ROCKS = [
-        { id: 'granite', type: 'igneous', label: 'Granite', hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
-        { id: 'basalt', type: 'igneous', label: 'Basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock — the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
-        { id: 'obsidian', type: 'igneous', label: 'Obsidian', hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
-        { id: 'pumice', type: 'igneous', label: 'Pumice', hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
-        { id: 'sandstone', type: 'sedimentary', label: 'Sandstone', hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
-        { id: 'limestone', type: 'sedimentary', label: 'Limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO₃). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
-        { id: 'shale', type: 'sedimentary', label: 'Shale', hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
-        { id: 'conglom', type: 'sedimentary', label: 'Conglomerate', hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
-        { id: 'marble', type: 'metamorphic', label: 'Marble', hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
-        { id: 'slate', type: 'metamorphic', label: 'Slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation — splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
-        { id: 'quartzite', type: 'metamorphic', label: 'Quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard — even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
-        { id: 'gneiss', type: 'metamorphic', label: 'Gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' }
-    ];
+          // ── Rock specimens ──
+          const ROCKS = [
+            { id: 'granite', type: 'igneous', label: 'Granite', hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
+            { id: 'basalt', type: 'igneous', label: 'Basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock — the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
+            { id: 'obsidian', type: 'igneous', label: 'Obsidian', hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
+            { id: 'pumice', type: 'igneous', label: 'Pumice', hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
+            { id: 'sandstone', type: 'sedimentary', label: 'Sandstone', hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
+            { id: 'limestone', type: 'sedimentary', label: 'Limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO₃). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
+            { id: 'shale', type: 'sedimentary', label: 'Shale', hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
+            { id: 'conglom', type: 'sedimentary', label: 'Conglomerate', hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
+            { id: 'marble', type: 'metamorphic', label: 'Marble', hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
+            { id: 'slate', type: 'metamorphic', label: 'Slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation — splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
+            { id: 'quartzite', type: 'metamorphic', label: 'Quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard — even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
+            { id: 'gneiss', type: 'metamorphic', label: 'Gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' }
+          ];
 
-    // ── Mineral data ──
-    const MINERALS = [
-        { id: 'quartz', label: 'Quartz', hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO₂' },
-        { id: 'feldspar', label: 'Feldspar', hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic', color: '#fce7f3', formula: 'KAlSi₃O₈' },
-        { id: 'mica', label: 'Mica', hardness: 2.5, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl₂(Si₃Al)O₁₀(OH)₂' },
-        { id: 'calcite', label: 'Calcite', hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal', color: '#f0fdf4', formula: 'CaCO₃' },
-        { id: 'halite', label: 'Halite', hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic', color: '#ede9fe', formula: 'NaCl' },
-        { id: 'pyrite', label: 'Pyrite', hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic', color: '#fef3c7', formula: 'FeS₂' },
-        { id: 'talc', label: 'Talc', hardness: 1, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg₃Si₄O₁₀(OH)₂' },
-        { id: 'diamond', label: 'Diamond', hardness: 10, streak: 'None', luster: 'Adamantine', crystal: 'Cubic', color: '#f0f9ff', formula: 'C' }
-    ];
+          // ── Mineral data ──
+          const MINERALS = [
+            { id: 'quartz', label: 'Quartz', hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO₂' },
+            { id: 'feldspar', label: 'Feldspar', hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic', color: '#fce7f3', formula: 'KAlSi₃O₈' },
+            { id: 'mica', label: 'Mica', hardness: 2.5, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl₂(Si₃Al)O₁₀(OH)₂' },
+            { id: 'calcite', label: 'Calcite', hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal', color: '#f0fdf4', formula: 'CaCO₃' },
+            { id: 'halite', label: 'Halite', hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic', color: '#ede9fe', formula: 'NaCl' },
+            { id: 'pyrite', label: 'Pyrite', hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic', color: '#fef3c7', formula: 'FeS₂' },
+            { id: 'talc', label: 'Talc', hardness: 1, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg₃Si₄O₁₀(OH)₂' },
+            { id: 'diamond', label: 'Diamond', hardness: 10, streak: 'None', luster: 'Adamantine', crystal: 'Cubic', color: '#f0f9ff', formula: 'C' }
+          ];
 
-    // ── Quiz bank ──
-    const QUIZ_BANK = [
-        { q: 'Which rock type forms from cooled magma?', a: 'Igneous', options: ['Igneous', 'Sedimentary', 'Metamorphic', 'Organic'] },
-        { q: 'What process turns sediment into sedimentary rock?', a: 'Compaction and cementation', options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'] },
-        { q: 'Marble is a metamorphic form of which rock?', a: 'Limestone', options: ['Limestone', 'Sandstone', 'Granite', 'Basalt'] },
-        { q: 'Which mineral is the hardest on the Mohs scale?', a: 'Diamond', options: ['Diamond', 'Quartz', 'Feldspar', 'Topaz'] },
-        { q: 'What is the softest mineral?', a: 'Talc', options: ['Talc', 'Gypsum', 'Calcite', 'Halite'] },
-        { q: 'Obsidian forms when lava cools...', a: 'Very quickly', options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'] },
-        { q: 'Which rock can float on water?', a: 'Pumice', options: ['Pumice', 'Basalt', 'Marble', 'Granite'] },
-        { q: 'What type of rock is shale?', a: 'Sedimentary', options: ['Sedimentary', 'Igneous', 'Metamorphic', 'Mineral'] },
-        { q: 'Pyrite is also known as...', a: "Fool's gold", options: ["Fool's gold", "White gold", "Rose gold", "Black gold"] },
-        { q: 'Which rock shows distinct banding?', a: 'Gneiss', options: ['Gneiss', 'Granite', 'Basalt', 'Slate'] },
-        { q: 'Limestone fizzes when you add...', a: 'Acid', options: ['Acid', 'Water', 'Salt', 'Oil'] },
-        { q: 'Quartzite is metamorphosed...', a: 'Sandstone', options: ['Sandstone', 'Limestone', 'Shale', 'Granite'] }
-    ];
+          // ── Quiz bank ──
+          const QUIZ_BANK = [
+            { q: 'Which rock type forms from cooled magma?', a: 'Igneous', options: ['Igneous', 'Sedimentary', 'Metamorphic', 'Organic'] },
+            { q: 'What process turns sediment into sedimentary rock?', a: 'Compaction and cementation', options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'] },
+            { q: 'Marble is a metamorphic form of which rock?', a: 'Limestone', options: ['Limestone', 'Sandstone', 'Granite', 'Basalt'] },
+            { q: 'Which mineral is the hardest on the Mohs scale?', a: 'Diamond', options: ['Diamond', 'Quartz', 'Feldspar', 'Topaz'] },
+            { q: 'What is the softest mineral?', a: 'Talc', options: ['Talc', 'Gypsum', 'Calcite', 'Halite'] },
+            { q: 'Obsidian forms when lava cools...', a: 'Very quickly', options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'] },
+            { q: 'Which rock can float on water?', a: 'Pumice', options: ['Pumice', 'Basalt', 'Marble', 'Granite'] },
+            { q: 'What type of rock is shale?', a: 'Sedimentary', options: ['Sedimentary', 'Igneous', 'Metamorphic', 'Mineral'] },
+            { q: 'Pyrite is also known as...', a: "Fool's gold", options: ["Fool's gold", "White gold", "Rose gold", "Black gold"] },
+            { q: 'Which rock shows distinct banding?', a: 'Gneiss', options: ['Gneiss', 'Granite', 'Basalt', 'Slate'] },
+            { q: 'Limestone fizzes when you add...', a: 'Acid', options: ['Acid', 'Water', 'Salt', 'Oil'] },
+            { q: 'Quartzite is metamorphosed...', a: 'Sandstone', options: ['Sandstone', 'Limestone', 'Shale', 'Granite'] }
+          ];
 
-    const selRock = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
-    const selMineral = d.selectedMineral ? MINERALS.find(m => m.id === d.selectedMineral) : null;
-    const quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+          const selRock = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
+          const selMineral = d.selectedMineral ? MINERALS.find(m => m.id === d.selectedMineral) : null;
+          const quizQ = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
 
-    // ── Canvas ref for landscape ──
-    const landscapeRef = function (canvasEl) {
-        if (!canvasEl || canvasEl._rocksInit) return;
-        canvasEl._rocksInit = true;
-        const W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
-        const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
-        const ctx = canvasEl.getContext('2d');
-        const dpr = window.devicePixelRatio || 1;
-        let tick = 0;
-        let hoverZone = null;
+          // ── Canvas ref for landscape ──
+          const landscapeRef = function (canvasEl) {
+            if (!canvasEl || canvasEl._rocksInit) return;
+            canvasEl._rocksInit = true;
+            const W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
+            const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
+            const ctx = canvasEl.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            let tick = 0;
+            let hoverZone = null;
 
-        const zones = [
-            { id: 'volcano', label: '🌋 Volcano (Igneous)', x: 0.12, y: 0.15, w: 0.22, h: 0.55, type: 'igneous' },
-            { id: 'river', label: '🏖️ River Delta (Sedimentary)', x: 0.5, y: 0.45, w: 0.28, h: 0.35, type: 'sedimentary' },
-            { id: 'mountain', label: '⛰️ Mountain Core (Metamorphic)', x: 0.75, y: 0.08, w: 0.22, h: 0.62, type: 'metamorphic' }
-        ];
+            const zones = [
+              { id: 'volcano', label: '🌋 Volcano (Igneous)', x: 0.12, y: 0.15, w: 0.22, h: 0.55, type: 'igneous' },
+              { id: 'river', label: '🏖️ River Delta (Sedimentary)', x: 0.5, y: 0.45, w: 0.28, h: 0.35, type: 'sedimentary' },
+              { id: 'mountain', label: '⛰️ Mountain Core (Metamorphic)', x: 0.75, y: 0.08, w: 0.22, h: 0.62, type: 'metamorphic' }
+            ];
 
-        function drawLandscape() {
-            ctx.clearRect(0, 0, W, H);
-            // Sky gradient
-            const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
-            skyGrad.addColorStop(0, '#0c4a6e');
-            skyGrad.addColorStop(1, '#7dd3fc');
-            ctx.fillStyle = skyGrad;
-            ctx.fillRect(0, 0, W, H * 0.5);
+            function drawLandscape() {
+              ctx.clearRect(0, 0, W, H);
+              // Sky gradient
+              const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+              skyGrad.addColorStop(0, '#0c4a6e');
+              skyGrad.addColorStop(1, '#7dd3fc');
+              ctx.fillStyle = skyGrad;
+              ctx.fillRect(0, 0, W, H * 0.5);
 
-            // Underground gradient
-            const groundGrad = ctx.createLinearGradient(0, H * 0.5, 0, H);
-            groundGrad.addColorStop(0, '#78350f');
-            groundGrad.addColorStop(0.3, '#92400e');
-            groundGrad.addColorStop(1, '#451a03');
-            ctx.fillStyle = groundGrad;
-            ctx.fillRect(0, H * 0.5, W, H * 0.5);
+              // Underground gradient
+              const groundGrad = ctx.createLinearGradient(0, H * 0.5, 0, H);
+              groundGrad.addColorStop(0, '#78350f');
+              groundGrad.addColorStop(0.3, '#92400e');
+              groundGrad.addColorStop(1, '#451a03');
+              ctx.fillStyle = groundGrad;
+              ctx.fillRect(0, H * 0.5, W, H * 0.5);
 
-            // Ground surface line
-            ctx.beginPath();
-            ctx.moveTo(0, H * 0.5);
-            for (let x = 0; x <= W; x += 5) {
+              // Ground surface line
+              ctx.beginPath();
+              ctx.moveTo(0, H * 0.5);
+              for (let x = 0; x <= W; x += 5) {
                 const wave = Math.sin(x * 0.01 + tick * 0.01) * 3 * dpr;
                 ctx.lineTo(x, H * 0.5 + wave);
-            }
-            ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-            ctx.fillStyle = '#65a30d';
-            ctx.fill();
+              }
+              ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+              ctx.fillStyle = '#65a30d';
+              ctx.fill();
 
-            // ── Volcano (left) ──
-            ctx.beginPath();
-            ctx.moveTo(W * 0.02, H * 0.52);
-            ctx.lineTo(W * 0.15, H * 0.12);
-            ctx.lineTo(W * 0.18, H * 0.08);
-            ctx.lineTo(W * 0.21, H * 0.12);
-            ctx.lineTo(W * 0.34, H * 0.52);
-            ctx.closePath();
-            const volcGrad = ctx.createLinearGradient(W * 0.15, H * 0.08, W * 0.15, H * 0.52);
-            volcGrad.addColorStop(0, '#7f1d1d');
-            volcGrad.addColorStop(0.4, '#991b1b');
-            volcGrad.addColorStop(1, '#57534e');
-            ctx.fillStyle = volcGrad;
-            ctx.fill();
+              // ── Volcano (left) ──
+              ctx.beginPath();
+              ctx.moveTo(W * 0.02, H * 0.52);
+              ctx.lineTo(W * 0.15, H * 0.12);
+              ctx.lineTo(W * 0.18, H * 0.08);
+              ctx.lineTo(W * 0.21, H * 0.12);
+              ctx.lineTo(W * 0.34, H * 0.52);
+              ctx.closePath();
+              const volcGrad = ctx.createLinearGradient(W * 0.15, H * 0.08, W * 0.15, H * 0.52);
+              volcGrad.addColorStop(0, '#7f1d1d');
+              volcGrad.addColorStop(0.4, '#991b1b');
+              volcGrad.addColorStop(1, '#57534e');
+              ctx.fillStyle = volcGrad;
+              ctx.fill();
 
-            // Lava flow
-            ctx.beginPath();
-            ctx.moveTo(W * 0.17, H * 0.1);
-            const lavaWave = Math.sin(tick * 0.05) * 5 * dpr;
-            ctx.quadraticCurveTo(W * 0.19 + lavaWave, H * 0.25, W * 0.24, H * 0.42);
-            ctx.lineTo(W * 0.22, H * 0.42);
-            ctx.quadraticCurveTo(W * 0.17 - lavaWave, H * 0.25, W * 0.16, H * 0.1);
-            ctx.closePath();
-            const lavaGrad = ctx.createLinearGradient(W * 0.17, H * 0.1, W * 0.17, H * 0.42);
-            lavaGrad.addColorStop(0, '#fbbf24');
-            lavaGrad.addColorStop(0.5, '#f97316');
-            lavaGrad.addColorStop(1, '#dc2626');
-            ctx.fillStyle = lavaGrad;
-            ctx.fill();
+              // Lava flow
+              ctx.beginPath();
+              ctx.moveTo(W * 0.17, H * 0.1);
+              const lavaWave = Math.sin(tick * 0.05) * 5 * dpr;
+              ctx.quadraticCurveTo(W * 0.19 + lavaWave, H * 0.25, W * 0.24, H * 0.42);
+              ctx.lineTo(W * 0.22, H * 0.42);
+              ctx.quadraticCurveTo(W * 0.17 - lavaWave, H * 0.25, W * 0.16, H * 0.1);
+              ctx.closePath();
+              const lavaGrad = ctx.createLinearGradient(W * 0.17, H * 0.1, W * 0.17, H * 0.42);
+              lavaGrad.addColorStop(0, '#fbbf24');
+              lavaGrad.addColorStop(0.5, '#f97316');
+              lavaGrad.addColorStop(1, '#dc2626');
+              ctx.fillStyle = lavaGrad;
+              ctx.fill();
 
-            // Lava particles
-            for (let i = 0; i < 6; i++) {
+              // Lava particles
+              for (let i = 0; i < 6; i++) {
                 const px = W * 0.17 + Math.sin(tick * 0.08 + i * 1.2) * 12 * dpr;
                 const py = H * 0.06 - Math.abs(Math.sin(tick * 0.06 + i * 0.9)) * 20 * dpr;
                 ctx.beginPath();
                 ctx.arc(px, py, (2 + Math.sin(tick * 0.1 + i)) * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = i % 2 === 0 ? '#fbbf24' : '#f97316';
                 ctx.fill();
-            }
+              }
 
-            // Magma chamber underground
-            ctx.beginPath();
-            ctx.ellipse(W * 0.18, H * 0.75, W * 0.08, H * 0.12, 0, 0, Math.PI * 2);
-            const magmaGrad = ctx.createRadialGradient(W * 0.18, H * 0.75, 0, W * 0.18, H * 0.75, W * 0.08);
-            magmaGrad.addColorStop(0, '#fbbf24');
-            magmaGrad.addColorStop(0.5, '#ea580c');
-            magmaGrad.addColorStop(1, '#7f1d1d');
-            ctx.fillStyle = magmaGrad;
-            ctx.fill();
+              // Magma chamber underground
+              ctx.beginPath();
+              ctx.ellipse(W * 0.18, H * 0.75, W * 0.08, H * 0.12, 0, 0, Math.PI * 2);
+              const magmaGrad = ctx.createRadialGradient(W * 0.18, H * 0.75, 0, W * 0.18, H * 0.75, W * 0.08);
+              magmaGrad.addColorStop(0, '#fbbf24');
+              magmaGrad.addColorStop(0.5, '#ea580c');
+              magmaGrad.addColorStop(1, '#7f1d1d');
+              ctx.fillStyle = magmaGrad;
+              ctx.fill();
 
-            // ── River & sedimentary layers (center) ──
-            // River
-            ctx.beginPath();
-            ctx.moveTo(W * 0.38, H * 0.48);
-            ctx.quadraticCurveTo(W * 0.45, H * 0.46 + Math.sin(tick * 0.02) * 3 * dpr, W * 0.55, H * 0.49);
-            ctx.quadraticCurveTo(W * 0.62, H * 0.5, W * 0.7, H * 0.48);
-            ctx.lineTo(W * 0.7, H * 0.52);
-            ctx.quadraticCurveTo(W * 0.62, H * 0.54, W * 0.55, H * 0.53);
-            ctx.quadraticCurveTo(W * 0.45, H * 0.5, W * 0.38, H * 0.52);
-            ctx.closePath();
-            ctx.fillStyle = '#38bdf8';
-            ctx.fill();
+              // ── River & sedimentary layers (center) ──
+              // River
+              ctx.beginPath();
+              ctx.moveTo(W * 0.38, H * 0.48);
+              ctx.quadraticCurveTo(W * 0.45, H * 0.46 + Math.sin(tick * 0.02) * 3 * dpr, W * 0.55, H * 0.49);
+              ctx.quadraticCurveTo(W * 0.62, H * 0.5, W * 0.7, H * 0.48);
+              ctx.lineTo(W * 0.7, H * 0.52);
+              ctx.quadraticCurveTo(W * 0.62, H * 0.54, W * 0.55, H * 0.53);
+              ctx.quadraticCurveTo(W * 0.45, H * 0.5, W * 0.38, H * 0.52);
+              ctx.closePath();
+              ctx.fillStyle = '#38bdf8';
+              ctx.fill();
 
-            // Sedimentary layers underground
-            const layerColors = ['#d97706', '#fbbf24', '#92400e', '#b45309', '#78716c'];
-            for (let i = 0; i < 5; i++) {
+              // Sedimentary layers underground
+              const layerColors = ['#d97706', '#fbbf24', '#92400e', '#b45309', '#78716c'];
+              for (let i = 0; i < 5; i++) {
                 const ly = H * 0.55 + i * H * 0.08;
                 ctx.fillStyle = layerColors[i];
                 ctx.fillRect(W * 0.38, ly, W * 0.32, H * 0.07);
                 ctx.strokeStyle = 'rgba(0,0,0,0.15)';
                 ctx.lineWidth = 0.5 * dpr;
                 ctx.strokeRect(W * 0.38, ly, W * 0.32, H * 0.07);
-            }
+              }
 
-            // Fossil in layer
-            ctx.font = (14 * dpr) + 'px serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillText('🦴', W * 0.5, H * 0.66);
-            ctx.fillText('🐚', W * 0.58, H * 0.74);
+              // Fossil in layer
+              ctx.font = (14 * dpr) + 'px serif';
+              ctx.fillStyle = 'rgba(255,255,255,0.5)';
+              ctx.fillText('🦴', W * 0.5, H * 0.66);
+              ctx.fillText('🐚', W * 0.58, H * 0.74);
 
-            // ── Mountain (right — metamorphic) ──
-            ctx.beginPath();
-            ctx.moveTo(W * 0.62, H * 0.52);
-            ctx.lineTo(W * 0.78, H * 0.06);
-            ctx.lineTo(W * 0.82, H * 0.02);
-            ctx.lineTo(W * 0.86, H * 0.06);
-            ctx.lineTo(W * 0.98, H * 0.52);
-            ctx.closePath();
-            const mtGrad = ctx.createLinearGradient(W * 0.82, H * 0.02, W * 0.82, H * 0.52);
-            mtGrad.addColorStop(0, '#fafafa');
-            mtGrad.addColorStop(0.2, '#d1d5db');
-            mtGrad.addColorStop(0.5, '#6b7280');
-            mtGrad.addColorStop(1, '#374151');
-            ctx.fillStyle = mtGrad;
-            ctx.fill();
+              // ── Mountain (right — metamorphic) ──
+              ctx.beginPath();
+              ctx.moveTo(W * 0.62, H * 0.52);
+              ctx.lineTo(W * 0.78, H * 0.06);
+              ctx.lineTo(W * 0.82, H * 0.02);
+              ctx.lineTo(W * 0.86, H * 0.06);
+              ctx.lineTo(W * 0.98, H * 0.52);
+              ctx.closePath();
+              const mtGrad = ctx.createLinearGradient(W * 0.82, H * 0.02, W * 0.82, H * 0.52);
+              mtGrad.addColorStop(0, '#fafafa');
+              mtGrad.addColorStop(0.2, '#d1d5db');
+              mtGrad.addColorStop(0.5, '#6b7280');
+              mtGrad.addColorStop(1, '#374151');
+              ctx.fillStyle = mtGrad;
+              ctx.fill();
 
-            // Metamorphic layers folded inside mountain underground
-            for (let i = 0; i < 4; i++) {
+              // Metamorphic layers folded inside mountain underground
+              for (let i = 0; i < 4; i++) {
                 ctx.beginPath();
                 const baseY = H * 0.6 + i * H * 0.08;
                 ctx.moveTo(W * 0.65, baseY);
@@ -6467,118 +6483,118 @@ stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
                 ctx.strokeStyle = ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'][i];
                 ctx.lineWidth = 3 * dpr;
                 ctx.stroke();
+              }
+
+              // Pressure arrows
+              const arrowAlpha = 0.3 + Math.sin(tick * 0.04) * 0.15;
+              ctx.fillStyle = `rgba(139,92,246,${arrowAlpha})`;
+              ctx.font = (16 * dpr) + 'px sans-serif';
+              ctx.fillText('→', W * 0.63, H * 0.72);
+              ctx.fillText('←', W * 0.93, H * 0.72);
+              ctx.fillText('↓', W * 0.8, H * 0.56);
+
+              // ── Zone hover highlights ──
+              zones.forEach(z => {
+                if (hoverZone === z.id) {
+                  ctx.strokeStyle = ROCK_TYPES[z.type].color;
+                  ctx.lineWidth = 3 * dpr;
+                  ctx.setLineDash([6 * dpr, 4 * dpr]);
+                  ctx.strokeRect(z.x * W, z.y * H, z.w * W, z.h * H);
+                  ctx.setLineDash([]);
+                  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                  ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
+                  ctx.fillText(z.label, z.x * W + 6 * dpr, (z.y + z.h) * H - 6 * dpr);
+                }
+              });
+
+              // Rock cycle arrows overlay
+              ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+              ctx.lineWidth = 2 * dpr;
+              ctx.setLineDash([4 * dpr, 4 * dpr]);
+              // Igneous → (weathering) → Sedimentary
+              ctx.beginPath(); ctx.moveTo(W * 0.32, H * 0.45); ctx.quadraticCurveTo(W * 0.4, H * 0.38, W * 0.48, H * 0.45); ctx.stroke();
+              ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = (8 * dpr) + 'px sans-serif';
+              ctx.fillText('Weathering', W * 0.36, H * 0.38);
+              // Sedimentary → (heat/pressure) → Metamorphic
+              ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.7); ctx.quadraticCurveTo(W * 0.72, H * 0.65, W * 0.76, H * 0.62); ctx.stroke();
+              ctx.fillText('Heat & Pressure', W * 0.66, H * 0.62);
+              // Metamorphic → (melting) → Igneous (magma)
+              ctx.beginPath(); ctx.moveTo(W * 0.65, H * 0.85); ctx.quadraticCurveTo(W * 0.45, H * 0.88, W * 0.28, H * 0.78); ctx.stroke();
+              ctx.fillText('Melting', W * 0.42, H * 0.9);
+              ctx.setLineDash([]);
+
+              // Magnification
+              ctx.font = (10 * dpr) + 'px monospace';
+              ctx.fillStyle = 'rgba(255,255,255,0.5)';
+              ctx.fillText('🪨 Cross-Section View', 8 * dpr, H - 8 * dpr);
             }
 
-            // Pressure arrows
-            const arrowAlpha = 0.3 + Math.sin(tick * 0.04) * 0.15;
-            ctx.fillStyle = `rgba(139,92,246,${arrowAlpha})`;
-            ctx.font = (16 * dpr) + 'px sans-serif';
-            ctx.fillText('→', W * 0.63, H * 0.72);
-            ctx.fillText('←', W * 0.93, H * 0.72);
-            ctx.fillText('↓', W * 0.8, H * 0.56);
-
-            // ── Zone hover highlights ──
-            zones.forEach(z => {
-                if (hoverZone === z.id) {
-                    ctx.strokeStyle = ROCK_TYPES[z.type].color;
-                    ctx.lineWidth = 3 * dpr;
-                    ctx.setLineDash([6 * dpr, 4 * dpr]);
-                    ctx.strokeRect(z.x * W, z.y * H, z.w * W, z.h * H);
-                    ctx.setLineDash([]);
-                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                    ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
-                    ctx.fillText(z.label, z.x * W + 6 * dpr, (z.y + z.h) * H - 6 * dpr);
-                }
-            });
-
-            // Rock cycle arrows overlay
-            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-            ctx.lineWidth = 2 * dpr;
-            ctx.setLineDash([4 * dpr, 4 * dpr]);
-            // Igneous → (weathering) → Sedimentary
-            ctx.beginPath(); ctx.moveTo(W * 0.32, H * 0.45); ctx.quadraticCurveTo(W * 0.4, H * 0.38, W * 0.48, H * 0.45); ctx.stroke();
-            ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = (8 * dpr) + 'px sans-serif';
-            ctx.fillText('Weathering', W * 0.36, H * 0.38);
-            // Sedimentary → (heat/pressure) → Metamorphic
-            ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.7); ctx.quadraticCurveTo(W * 0.72, H * 0.65, W * 0.76, H * 0.62); ctx.stroke();
-            ctx.fillText('Heat & Pressure', W * 0.66, H * 0.62);
-            // Metamorphic → (melting) → Igneous (magma)
-            ctx.beginPath(); ctx.moveTo(W * 0.65, H * 0.85); ctx.quadraticCurveTo(W * 0.45, H * 0.88, W * 0.28, H * 0.78); ctx.stroke();
-            ctx.fillText('Melting', W * 0.42, H * 0.9);
-            ctx.setLineDash([]);
-
-            // Magnification
-            ctx.font = (10 * dpr) + 'px monospace';
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillText('🪨 Cross-Section View', 8 * dpr, H - 8 * dpr);
-        }
-
-        let animId = null;
-        function loop() {
-            tick++;
-            drawLandscape();
+            let animId = null;
+            function loop() {
+              tick++;
+              drawLandscape();
+              animId = requestAnimationFrame(loop);
+            }
             animId = requestAnimationFrame(loop);
-        }
-        animId = requestAnimationFrame(loop);
 
-        // Mouse hover for zones
-        canvasEl.addEventListener('mousemove', function (e) {
-            const rect = canvasEl.getBoundingClientRect();
-            const mx = (e.clientX - rect.left) / rect.width;
-            const my = (e.clientY - rect.top) / rect.height;
-            hoverZone = null;
-            zones.forEach(z => {
+            // Mouse hover for zones
+            canvasEl.addEventListener('mousemove', function (e) {
+              const rect = canvasEl.getBoundingClientRect();
+              const mx = (e.clientX - rect.left) / rect.width;
+              const my = (e.clientY - rect.top) / rect.height;
+              hoverZone = null;
+              zones.forEach(z => {
                 if (mx >= z.x && mx <= z.x + z.w && my >= z.y && my <= z.y + z.h) hoverZone = z.id;
+              });
+              canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
             });
-            canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
-        });
 
-        canvasEl.addEventListener('click', function (e) {
-            const rect = canvasEl.getBoundingClientRect();
-            const mx = (e.clientX - rect.left) / rect.width;
-            const my = (e.clientY - rect.top) / rect.height;
-            zones.forEach(z => {
+            canvasEl.addEventListener('click', function (e) {
+              const rect = canvasEl.getBoundingClientRect();
+              const mx = (e.clientX - rect.left) / rect.width;
+              const my = (e.clientY - rect.top) / rect.height;
+              zones.forEach(z => {
                 if (mx >= z.x && mx <= z.x + z.w && my >= z.y && my <= z.y + z.h) {
-                    const typeRocks = ROCKS.filter(r => r.type === z.type);
-                    if (typeRocks.length > 0) {
-                        canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
-                    }
+                  const typeRocks = ROCKS.filter(r => r.type === z.type);
+                  if (typeRocks.length > 0) {
+                    canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+                  }
                 }
+              });
             });
-        });
 
-        canvasEl._rocksCleanup = function () { if (animId) cancelAnimationFrame(animId); };
-        const ro = new ResizeObserver(function () {
-            canvasEl.width = canvasEl.offsetWidth * dpr;
-            canvasEl.height = canvasEl.offsetHeight * dpr;
-        });
-        ro.observe(canvasEl);
-        canvasEl._rocksRO = ro;
-    };
+            canvasEl._rocksCleanup = function () { if (animId) cancelAnimationFrame(animId); };
+            const ro = new ResizeObserver(function () {
+              canvasEl.width = canvasEl.offsetWidth * dpr;
+              canvasEl.height = canvasEl.offsetHeight * dpr;
+            });
+            ro.observe(canvasEl);
+            canvasEl._rocksRO = ro;
+          };
 
-    // ── Rock texture canvas ref ──
-    const textureRef = function (canvasEl) {
-        if (!canvasEl || !selRock || canvasEl._lastRock === selRock.id) return;
-        canvasEl._lastRock = selRock.id;
-        const W = canvasEl.width = 200 * (window.devicePixelRatio || 1);
-        const H = canvasEl.height = 200 * (window.devicePixelRatio || 1);
-        const ctx = canvasEl.getContext('2d');
-        const dpr = window.devicePixelRatio || 1;
+          // ── Rock texture canvas ref ──
+          const textureRef = function (canvasEl) {
+            if (!canvasEl || !selRock || canvasEl._lastRock === selRock.id) return;
+            canvasEl._lastRock = selRock.id;
+            const W = canvasEl.width = 200 * (window.devicePixelRatio || 1);
+            const H = canvasEl.height = 200 * (window.devicePixelRatio || 1);
+            const ctx = canvasEl.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
 
-        // Draw rock texture based on type
-        ctx.fillStyle = selRock.grainColors[0];
-        ctx.fillRect(0, 0, W, H);
+            // Draw rock texture based on type
+            ctx.fillStyle = selRock.grainColors[0];
+            ctx.fillRect(0, 0, W, H);
 
-        if (selRock.texture === 'coarse-grained' || selRock.texture === 'clastic-coarse') {
-            // Large interlocking crystals/grains
-            for (let i = 0; i < 60; i++) {
+            if (selRock.texture === 'coarse-grained' || selRock.texture === 'clastic-coarse') {
+              // Large interlocking crystals/grains
+              for (let i = 0; i < 60; i++) {
                 ctx.beginPath();
                 const x = Math.random() * W, y = Math.random() * H;
                 const sz = (8 + Math.random() * 16) * dpr;
                 ctx.moveTo(x, y - sz);
                 for (let a = 0; a < 6; a++) {
-                    const angle = (a / 6) * Math.PI * 2 - Math.PI / 2;
-                    ctx.lineTo(x + Math.cos(angle) * sz * (0.7 + Math.random() * 0.3), y + Math.sin(angle) * sz * (0.7 + Math.random() * 0.3));
+                  const angle = (a / 6) * Math.PI * 2 - Math.PI / 2;
+                  ctx.lineTo(x + Math.cos(angle) * sz * (0.7 + Math.random() * 0.3), y + Math.sin(angle) * sz * (0.7 + Math.random() * 0.3));
                 }
                 ctx.closePath();
                 ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
@@ -6586,34 +6602,34 @@ stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
                 ctx.strokeStyle = 'rgba(0,0,0,0.2)';
                 ctx.lineWidth = 0.5 * dpr;
                 ctx.stroke();
-            }
-        } else if (selRock.texture === 'fine-grained' || selRock.texture === 'clastic') {
-            // Small speckled grains
-            for (let i = 0; i < 400; i++) {
+              }
+            } else if (selRock.texture === 'fine-grained' || selRock.texture === 'clastic') {
+              // Small speckled grains
+              for (let i = 0; i < 400; i++) {
                 ctx.beginPath();
                 ctx.arc(Math.random() * W, Math.random() * H, (1 + Math.random() * 3) * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
                 ctx.fill();
-            }
-        } else if (selRock.texture === 'glassy') {
-            // Smooth dark with conchoidal fracture lines
-            const grad = ctx.createRadialGradient(W * 0.4, H * 0.4, 0, W * 0.5, H * 0.5, W * 0.6);
-            grad.addColorStop(0, '#1a1a2e');
-            grad.addColorStop(1, '#0a0a0a');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, W, H);
-            for (let i = 0; i < 8; i++) {
+              }
+            } else if (selRock.texture === 'glassy') {
+              // Smooth dark with conchoidal fracture lines
+              const grad = ctx.createRadialGradient(W * 0.4, H * 0.4, 0, W * 0.5, H * 0.5, W * 0.6);
+              grad.addColorStop(0, '#1a1a2e');
+              grad.addColorStop(1, '#0a0a0a');
+              ctx.fillStyle = grad;
+              ctx.fillRect(0, 0, W, H);
+              for (let i = 0; i < 8; i++) {
                 ctx.beginPath();
                 ctx.arc(W * 0.3 + i * 8 * dpr, H * 0.5 + Math.sin(i) * 20 * dpr, (15 + i * 5) * dpr, -0.5, 0.5);
                 ctx.strokeStyle = 'rgba(100,130,180,0.15)';
                 ctx.lineWidth = 1 * dpr;
                 ctx.stroke();
-            }
-        } else if (selRock.texture === 'vesicular') {
-            // Light with holes/vesicles
-            ctx.fillStyle = '#d6d3d1';
-            ctx.fillRect(0, 0, W, H);
-            for (let i = 0; i < 50; i++) {
+              }
+            } else if (selRock.texture === 'vesicular') {
+              // Light with holes/vesicles
+              ctx.fillStyle = '#d6d3d1';
+              ctx.fillRect(0, 0, W, H);
+              for (let i = 0; i < 50; i++) {
                 ctx.beginPath();
                 ctx.ellipse(Math.random() * W, Math.random() * H, (3 + Math.random() * 8) * dpr, (2 + Math.random() * 5) * dpr, Math.random() * Math.PI, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(120,113,108,0.3)';
@@ -6621,36 +6637,36 @@ stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
                 ctx.strokeStyle = 'rgba(0,0,0,0.15)';
                 ctx.lineWidth = 0.5 * dpr;
                 ctx.stroke();
-            }
-        } else if (selRock.texture === 'fine-layered' || selRock.texture === 'foliated') {
-            // Thin parallel layers
-            for (let y = 0; y < H; y += 4 * dpr) {
+              }
+            } else if (selRock.texture === 'fine-layered' || selRock.texture === 'foliated') {
+              // Thin parallel layers
+              for (let y = 0; y < H; y += 4 * dpr) {
                 ctx.fillStyle = selRock.grainColors[Math.floor(y / (4 * dpr)) % selRock.grainColors.length];
                 ctx.fillRect(0, y, W, 3 * dpr);
                 ctx.fillStyle = 'rgba(0,0,0,0.08)';
                 ctx.fillRect(0, y + 3 * dpr, W, 1 * dpr);
-            }
-        } else if (selRock.texture === 'bioclastic') {
-            // Light with shell fragments
-            ctx.fillStyle = '#e5e7eb';
-            ctx.fillRect(0, 0, W, H);
-            for (let i = 0; i < 200; i++) {
+              }
+            } else if (selRock.texture === 'bioclastic') {
+              // Light with shell fragments
+              ctx.fillStyle = '#e5e7eb';
+              ctx.fillRect(0, 0, W, H);
+              for (let i = 0; i < 200; i++) {
                 ctx.beginPath();
                 ctx.arc(Math.random() * W, Math.random() * H, (0.5 + Math.random() * 2) * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
                 ctx.fill();
-            }
-            // Shell imprints
-            for (let i = 0; i < 5; i++) {
+              }
+              // Shell imprints
+              for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
                 ctx.arc(30 * dpr + Math.random() * (W - 60 * dpr), 30 * dpr + Math.random() * (H - 60 * dpr), (6 + Math.random() * 4) * dpr, 0, Math.PI);
                 ctx.strokeStyle = 'rgba(161,161,170,0.4)';
                 ctx.lineWidth = 1 * dpr;
                 ctx.stroke();
-            }
-        } else if (selRock.texture === 'crystalline' || selRock.texture === 'non-foliated') {
-            // Interlocking crystals
-            for (let i = 0; i < 80; i++) {
+              }
+            } else if (selRock.texture === 'crystalline' || selRock.texture === 'non-foliated') {
+              // Interlocking crystals
+              for (let i = 0; i < 80; i++) {
                 ctx.beginPath();
                 const x = Math.random() * W, y = Math.random() * H;
                 const sz = (4 + Math.random() * 10) * dpr;
@@ -6660,436 +6676,436 @@ stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
                 ctx.strokeStyle = 'rgba(0,0,0,0.1)';
                 ctx.lineWidth = 0.5 * dpr;
                 ctx.stroke();
-            }
-        } else if (selRock.texture === 'banded') {
-            // Alternating light/dark bands (wavy)
-            for (let y = 0; y < H; y += 8 * dpr) {
+              }
+            } else if (selRock.texture === 'banded') {
+              // Alternating light/dark bands (wavy)
+              for (let y = 0; y < H; y += 8 * dpr) {
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 for (let x = 0; x <= W; x += 5) {
-                    ctx.lineTo(x, y + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
+                  ctx.lineTo(x, y + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
                 }
                 ctx.lineTo(W, y + 8 * dpr);
                 for (let x = W; x >= 0; x -= 5) {
-                    ctx.lineTo(x, y + 8 * dpr + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
+                  ctx.lineTo(x, y + 8 * dpr + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
                 }
                 ctx.closePath();
                 ctx.fillStyle = Math.floor(y / (8 * dpr)) % 2 === 0 ? '#1e1e1e' : '#d4d4d8';
                 ctx.fill();
+              }
             }
-        }
 
-        // Border
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-        ctx.lineWidth = 2 * dpr;
-        ctx.strokeRect(0, 0, W, H);
-    };
+            // Border
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.lineWidth = 2 * dpr;
+            ctx.strokeRect(0, 0, W, H);
+          };
 
-    // Cleanup ref
-    const cleanupRef = function (el) {
-        if (!el) {
-            const old = document.querySelector('[data-rocks-canvas]');
-            if (old && old._rocksCleanup) { old._rocksCleanup(); if (old._rocksRO) old._rocksRO.disconnect(); }
-        }
-    };
+          // Cleanup ref
+          const cleanupRef = function (el) {
+            if (!el) {
+              const old = document.querySelector('[data-rocks-canvas]');
+              if (old && old._rocksCleanup) { old._rocksCleanup(); if (old._rocksRO) old._rocksRO.disconnect(); }
+            }
+          };
 
-    return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-        // Header
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
-            React.createElement("div", { className: "flex gap-1 ml-auto" },
+          return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
+              React.createElement("div", { className: "flex gap-1 ml-auto" },
                 ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
-                    return React.createElement("button", {
-                        key: m, onClick: function () {
-                            upd("mode", m);
-                            if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizFeedback", null); }
-                            else { upd("quizMode", false); }
-                        }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                    },
-                        m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : '🧠 Quiz');
+                  return React.createElement("button", {
+                    key: m, onClick: function () {
+                      upd("mode", m);
+                      if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizFeedback", null); }
+                      else { upd("quizMode", false); }
+                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                  },
+                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : '🧠 Quiz');
                 })
-            )
-        ),
+              )
+            ),
 
-        // ── Landscape mode ──
-        mode === 'landscape' && React.createElement("div", null,
-            React.createElement("p", { className: "text-xs text-slate-500 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
+            // ── Landscape mode ──
+            mode === 'landscape' && React.createElement("div", null,
+              React.createElement("p", { className: "text-xs text-slate-500 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
+              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
                 React.createElement("canvas", {
-                    "data-rocks-canvas": "true",
-                    ref: function (el) {
-                        landscapeRef(el);
-                        if (el) {
-                            el._onSelectRock = function (rockId, type) {
-                                upd("selectedRock", rockId);
-                                upd("selectedType", type);
-                                upd("mode", "rocks");
-                            };
-                        }
-                    },
-                    style: { width: '100%', height: '100%' }
+                  "data-rocks-canvas": "true",
+                  ref: function (el) {
+                    landscapeRef(el);
+                    if (el) {
+                      el._onSelectRock = function (rockId, type) {
+                        upd("selectedRock", rockId);
+                        upd("selectedType", type);
+                        upd("mode", "rocks");
+                      };
+                    }
+                  },
+                  style: { width: '100%', height: '100%' }
                 })
-            ),
-            // Rock cycle legend
-            React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
+              ),
+              // Rock cycle legend
+              React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
                 Object.values(ROCK_TYPES).map(function (rt) {
-                    return React.createElement("div", { key: rt.label, className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border text-xs font-bold", style: { borderColor: rt.color, color: rt.color } },
-                        rt.icon, " ", rt.label);
+                  return React.createElement("div", { key: rt.label, className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border text-xs font-bold", style: { borderColor: rt.color, color: rt.color } },
+                    rt.icon, " ", rt.label);
                 })
-            ),
-            React.createElement("div", { className: "mt-2 bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-slate-600" },
+              ),
+              React.createElement("div", { className: "mt-2 bg-amber-50 rounded-xl border border-amber-200 p-3 text-xs text-slate-600" },
                 React.createElement("p", { className: "font-bold text-amber-800 mb-1" }, "🔄 The Rock Cycle"),
                 React.createElement("p", null, "Rocks continuously transform: Igneous rocks weather into sediment → Sediment compacts into Sedimentary rocks → Heat & pressure create Metamorphic rocks → Melting creates magma → Cooling forms new Igneous rocks. The cycle never stops!")
-            )
-        ),
+              )
+            ),
 
-        // ── Rocks mode ──
-        mode === 'rocks' && React.createElement("div", null,
-            // Type filter
-            React.createElement("div", { className: "flex gap-2 mb-3" },
+            // ── Rocks mode ──
+            mode === 'rocks' && React.createElement("div", null,
+              // Type filter
+              React.createElement("div", { className: "flex gap-2 mb-3" },
                 ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
-                    return React.createElement("button", {
-                        key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
-                        className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
-                            ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
-                        style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
-                    }, t === 'all' ? '📋 All' : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
+                  return React.createElement("button", {
+                    key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
+                    className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
+                      ((d.selectedType || null) === (t === 'all' ? null : t) ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                    style: (d.selectedType || null) === (t === 'all' ? null : t) ? { background: t === 'all' ? '#78716c' : ROCK_TYPES[t]?.color || '#78716c' } : {}
+                  }, t === 'all' ? '📋 All' : (ROCK_TYPES[t]?.icon || '') + ' ' + ROCK_TYPES[t]?.label);
                 })
-            ),
-            // Rock grid
-            React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
+              ),
+              // Rock grid
+              React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
                 ROCKS.filter(function (r) { return !d.selectedType || r.type === d.selectedType; }).map(function (rock) {
-                    const rt = ROCK_TYPES[rock.type];
-                    return React.createElement("button", {
-                        key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
-                        className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
-                            (d.selectedRock === rock.id ? 'bg-white shadow-lg' : 'bg-slate-50 border-slate-200'),
-                        style: d.selectedRock === rock.id ? { borderColor: rt.color, color: rt.color } : {}
-                    },
-                        React.createElement("div", { className: "text-lg mb-0.5" }, rt.icon),
-                        rock.label);
+                  const rt = ROCK_TYPES[rock.type];
+                  return React.createElement("button", {
+                    key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
+                    className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                      (d.selectedRock === rock.id ? 'bg-white shadow-lg' : 'bg-slate-50 border-slate-200'),
+                    style: d.selectedRock === rock.id ? { borderColor: rt.color, color: rt.color } : {}
+                  },
+                    React.createElement("div", { className: "text-lg mb-0.5" }, rt.icon),
+                    rock.label);
                 })
-            ),
-            // Selected rock detail card
-            selRock && React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: ROCK_TYPES[selRock.type].color } },
+              ),
+              // Selected rock detail card
+              selRock && React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: ROCK_TYPES[selRock.type].color } },
                 React.createElement("div", { className: "flex gap-4" },
-                    // Texture canvas
-                    React.createElement("canvas", { ref: textureRef, style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
-                    React.createElement("div", { className: "flex-1" },
-                        React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
-                        React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
-                        React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc)
-                    )
+                  // Texture canvas
+                  React.createElement("canvas", { ref: textureRef, style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                  React.createElement("div", { className: "flex-1" },
+                    React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
+                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc)
+                  )
                 ),
                 // Properties
                 React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-3" },
-                    [
-                        { label: 'Hardness (Mohs)', value: selRock.hardness + '/10', icon: '💪' },
-                        { label: 'Texture', value: selRock.texture, icon: '🔍' },
-                        { label: 'Uses', value: selRock.uses, icon: '🏗️' }
-                    ].map(function (prop) {
-                        return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
-                            React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
-                            React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-0.5" }, prop.value));
-                    })
+                  [
+                    { label: 'Hardness (Mohs)', value: selRock.hardness + '/10', icon: '💪' },
+                    { label: 'Texture', value: selRock.texture, icon: '🔍' },
+                    { label: 'Uses', value: selRock.uses, icon: '🏗️' }
+                  ].map(function (prop) {
+                    return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-0.5" }, prop.value));
+                  })
                 ),
                 // Mohs scale bar
                 React.createElement("div", { className: "mt-3" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Hardness Scale"),
-                    React.createElement("div", { className: "flex gap-0.5 items-end" },
-                        Array.from({ length: 10 }, function (_, i) {
-                            const active = i + 1 <= Math.round(selRock.hardness);
-                            return React.createElement("div", {
-                                key: i, className: "flex-1 rounded-sm transition-all", style: {
-                                    height: (8 + i * 3) + 'px',
-                                    background: active ? ROCK_TYPES[selRock.type].color : '#e5e7eb'
-                                }
-                            });
-                        })
-                    ),
-                    React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
-                        React.createElement("span", null, "1 (Talc)"),
-                        React.createElement("span", null, "10 (Diamond)"))
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Hardness Scale"),
+                  React.createElement("div", { className: "flex gap-0.5 items-end" },
+                    Array.from({ length: 10 }, function (_, i) {
+                      const active = i + 1 <= Math.round(selRock.hardness);
+                      return React.createElement("div", {
+                        key: i, className: "flex-1 rounded-sm transition-all", style: {
+                          height: (8 + i * 3) + 'px',
+                          background: active ? ROCK_TYPES[selRock.type].color : '#e5e7eb'
+                        }
+                      });
+                    })
+                  ),
+                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
+                    React.createElement("span", null, "1 (Talc)"),
+                    React.createElement("span", null, "10 (Diamond)"))
                 )
-            )
-        ),
-
-        // ── Minerals mode ──
-        mode === 'minerals' && React.createElement("div", null,
-            React.createElement("p", { className: "text-xs text-slate-500 mb-3 italic" }, "Minerals are the building blocks of rocks. Explore their properties below."),
-            React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
-                MINERALS.map(function (min) {
-                    return React.createElement("button", {
-                        key: min.id, onClick: function () { upd("selectedMineral", d.selectedMineral === min.id ? null : min.id); upd("selectedRock", null); },
-                        className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
-                            (d.selectedMineral === min.id ? 'shadow-lg' : 'border-slate-200 bg-slate-50'),
-                        style: d.selectedMineral === min.id ? { borderColor: '#8b5cf6', background: min.color, color: '#1e1b4b' } : {}
-                    },
-                        React.createElement("div", { className: "text-lg mb-0.5" }, "💎"),
-                        min.label);
-                })
+              )
             ),
-            // Selected mineral detail
-            selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in" },
+
+            // ── Minerals mode ──
+            mode === 'minerals' && React.createElement("div", null,
+              React.createElement("p", { className: "text-xs text-slate-500 mb-3 italic" }, "Minerals are the building blocks of rocks. Explore their properties below."),
+              React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
+                MINERALS.map(function (min) {
+                  return React.createElement("button", {
+                    key: min.id, onClick: function () { upd("selectedMineral", d.selectedMineral === min.id ? null : min.id); upd("selectedRock", null); },
+                    className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+                      (d.selectedMineral === min.id ? 'shadow-lg' : 'border-slate-200 bg-slate-50'),
+                    style: d.selectedMineral === min.id ? { borderColor: '#8b5cf6', background: min.color, color: '#1e1b4b' } : {}
+                  },
+                    React.createElement("div", { className: "text-lg mb-0.5" }, "💎"),
+                    min.label);
+                })
+              ),
+              // Selected mineral detail
+              selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in" },
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "💎 " + selMineral.label),
                 React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-3" }, "Formula: " + selMineral.formula),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                    [
-                        { label: 'Hardness', value: selMineral.hardness + ' / 10', icon: '💪' },
-                        { label: 'Streak', value: selMineral.streak, icon: '✏️' },
-                        { label: 'Luster', value: selMineral.luster, icon: '✨' },
-                        { label: 'Crystal System', value: selMineral.crystal, icon: '🔷' }
-                    ].map(function (prop) {
-                        return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
-                            React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
-                            React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
-                    })
+                  [
+                    { label: 'Hardness', value: selMineral.hardness + ' / 10', icon: '💪' },
+                    { label: 'Streak', value: selMineral.streak, icon: '✏️' },
+                    { label: 'Luster', value: selMineral.luster, icon: '✨' },
+                    { label: 'Crystal System', value: selMineral.crystal, icon: '🔷' }
+                  ].map(function (prop) {
+                    return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
+                  })
                 ),
                 // Mohs bar
                 React.createElement("div", { className: "mt-3" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Position"),
-                    React.createElement("div", { className: "flex gap-0.5 items-end" },
-                        Array.from({ length: 10 }, function (_, i) {
-                            const active = i + 1 <= Math.round(selMineral.hardness);
-                            return React.createElement("div", {
-                                key: i, className: "flex-1 rounded-sm transition-all", style: {
-                                    height: (8 + i * 3) + 'px',
-                                    background: active ? '#8b5cf6' : '#e5e7eb'
-                                }
-                            });
-                        })
-                    ),
-                    React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
-                        React.createElement("span", null, "1 (Talc)"),
-                        React.createElement("span", null, "10 (Diamond)"))
+                  React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Position"),
+                  React.createElement("div", { className: "flex gap-0.5 items-end" },
+                    Array.from({ length: 10 }, function (_, i) {
+                      const active = i + 1 <= Math.round(selMineral.hardness);
+                      return React.createElement("div", {
+                        key: i, className: "flex-1 rounded-sm transition-all", style: {
+                          height: (8 + i * 3) + 'px',
+                          background: active ? '#8b5cf6' : '#e5e7eb'
+                        }
+                      });
+                    })
+                  ),
+                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-400 mt-0.5" },
+                    React.createElement("span", null, "1 (Talc)"),
+                    React.createElement("span", null, "10 (Diamond)"))
                 )
-            )
-        ),
+              )
+            ),
 
-        // ── Quiz mode ──
-        d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
-            React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            // ── Quiz mode ──
+            d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
                 React.createElement("span", { className: "font-bold text-green-600 text-xs" }, "\u2714 " + (d.quizScore || 0))
-            ),
-            React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
-            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+              ),
+              React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
+              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 quizQ.options.map(function (opt) {
-                    return React.createElement("button", {
-                        key: opt, onClick: function () {
-                            const correct = opt === quizQ.a;
-                            upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Not quite. The answer is: " + quizQ.a });
-                            if (correct) upd("quizScore", (d.quizScore || 0) + 1);
-                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
-                            (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
-                    }, opt);
+                  return React.createElement("button", {
+                    key: opt, onClick: function () {
+                      const correct = opt === quizQ.a;
+                      upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Not quite. The answer is: " + quizQ.a });
+                      if (correct) upd("quizScore", (d.quizScore || 0) + 1);
+                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
+                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
+                  }, opt);
                 })
-            ),
-            d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+              ),
+              d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
                 d.quizFeedback.msg,
                 React.createElement("button", {
-                    onClick: function () {
-                        const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
-                        upd("quizIdx", nextIdx); upd("quizFeedback", null);
-                    }, className: "ml-3 px-2 py-0.5 bg-amber-600 text-white rounded text-xs"
+                  onClick: function () {
+                    const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+                    upd("quizIdx", nextIdx); upd("quizFeedback", null);
+                  }, className: "ml-3 px-2 py-0.5 bg-amber-600 text-white rounded text-xs"
                 }, "Next \u2192")
-            )
-        ),
+              )
+            ),
 
-        // Bottom controls
-        React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-            React.createElement("button", {
+            // Bottom controls
+            React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+              React.createElement("button", {
                 onClick: function () {
-                    setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: 'Rocks' + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
-                    addToast('\uD83D\uDCF8 Rocks snapshot saved!', 'success');
+                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: 'Rocks' + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
+                  addToast('\uD83D\uDCF8 Rocks snapshot saved!', 'success');
                 }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
-            }, "\uD83D\uDCF8 Snapshot")
-        )
-    )
-})(),
+              }, "\uD83D\uDCF8 Snapshot")
+            )
+          )
+        })(),
 
-// ═══════════════════════════════════════════════════════
-// WATER CYCLE — Canvas2D Animated Particle System
-// ═══════════════════════════════════════════════════════
-stemLabTab === 'explore' && stemLabTool === 'waterCycle' && (() => {
-    const d = labToolData.waterCycle;
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
+        // ═══════════════════════════════════════════════════════
+        // WATER CYCLE — Canvas2D Animated Particle System
+        // ═══════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'waterCycle' && (() => {
+          const d = labToolData.waterCycle;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
 
-    const STAGES = [
-        { id: 'evaporation', label: 'Evaporation', emoji: '\u2600', color: '#f59e0b', desc: 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water.' },
-        { id: 'condensation', label: 'Condensation', emoji: '\u2601', color: '#64748b', desc: 'Water vapor cools as it rises, forming tiny droplets around particles of dust, creating clouds.' },
-        { id: 'precipitation', label: 'Precipitation', emoji: '\uD83C\uDF27', color: '#3b82f6', desc: 'When cloud droplets combine and grow heavy enough, they fall as rain, snow, sleet, or hail.' },
-        { id: 'collection', label: 'Collection', emoji: '\uD83C\uDF0A', color: '#0ea5e9', desc: 'Water gathers in oceans, rivers, lakes, and underground aquifers. The cycle begins again.' },
-        { id: 'transpiration', label: 'Transpiration', emoji: '\uD83C\uDF3F', color: '#22c55e', desc: 'Plants absorb water through roots and release vapor from leaves, contributing to atmospheric moisture.' },
-        { id: 'infiltration', label: 'Infiltration', emoji: '\uD83E\uDEB4', color: '#92400e', desc: 'Water soaks into soil and rock, replenishing groundwater supplies that feed wells and springs.' },
-    ];
-    const sel = STAGES.find(s => s.id === (d.activeStage || 'evaporation'));
+          const STAGES = [
+            { id: 'evaporation', label: 'Evaporation', emoji: '\u2600', color: '#f59e0b', desc: 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water.' },
+            { id: 'condensation', label: 'Condensation', emoji: '\u2601', color: '#64748b', desc: 'Water vapor cools as it rises, forming tiny droplets around particles of dust, creating clouds.' },
+            { id: 'precipitation', label: 'Precipitation', emoji: '\uD83C\uDF27', color: '#3b82f6', desc: 'When cloud droplets combine and grow heavy enough, they fall as rain, snow, sleet, or hail.' },
+            { id: 'collection', label: 'Collection', emoji: '\uD83C\uDF0A', color: '#0ea5e9', desc: 'Water gathers in oceans, rivers, lakes, and underground aquifers. The cycle begins again.' },
+            { id: 'transpiration', label: 'Transpiration', emoji: '\uD83C\uDF3F', color: '#22c55e', desc: 'Plants absorb water through roots and release vapor from leaves, contributing to atmospheric moisture.' },
+            { id: 'infiltration', label: 'Infiltration', emoji: '\uD83E\uDEB4', color: '#92400e', desc: 'Water soaks into soil and rock, replenishing groundwater supplies that feed wells and springs.' },
+          ];
+          const sel = STAGES.find(s => s.id === (d.activeStage || 'evaporation'));
 
-    // Canvas animation
-    const canvasRef = function (canvasEl) {
-        if (!canvasEl || canvasEl._wcInit) return;
-        canvasEl._wcInit = true;
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-        var ctx = canvasEl.getContext('2d');
-        var dpr = 2;
-        var tick = 0;
-        var particles = [];
-        for (var i = 0; i < 80; i++) {
-            particles.push({
+          // Canvas animation
+          const canvasRef = function (canvasEl) {
+            if (!canvasEl || canvasEl._wcInit) return;
+            canvasEl._wcInit = true;
+            var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+            var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var ctx = canvasEl.getContext('2d');
+            var dpr = 2;
+            var tick = 0;
+            var particles = [];
+            for (var i = 0; i < 80; i++) {
+              particles.push({
                 x: Math.random() * cW / dpr,
                 y: Math.random() * cH / dpr,
                 size: 1.5 + Math.random() * 2,
                 speed: 0.3 + Math.random() * 0.7,
                 phase: Math.random() * Math.PI * 2,
                 type: ['evap', 'rain', 'cloud'][Math.floor(Math.random() * 3)]
-            });
-        }
-        function draw() {
-            tick++;
-            ctx.clearRect(0, 0, cW, cH);
-            // Sky gradient with day/night hint
-            var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
-            var g = ctx.createLinearGradient(0, 0, 0, cH);
-            g.addColorStop(0, 'hsl(210,' + (60 + dayPhase * 20) + '%,' + (50 + dayPhase * 25) + '%)');
-            g.addColorStop(0.4, 'hsl(200,70%,' + (65 + dayPhase * 15) + '%)');
-            g.addColorStop(0.65, '#4ade80');
-            g.addColorStop(0.7, '#166534');
-            g.addColorStop(1, '#1a1a2e');
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, cW, cH);
-            // Sun
-            var sunY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.04;
-            ctx.beginPath(); ctx.arc(cW * 0.8, sunY, 16 * dpr, 0, Math.PI * 2);
-            ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 20; ctx.fill(); ctx.shadowBlur = 0;
-            // Sun rays
-            for (var r = 0; r < 8; r++) {
+              });
+            }
+            function draw() {
+              tick++;
+              ctx.clearRect(0, 0, cW, cH);
+              // Sky gradient with day/night hint
+              var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
+              var g = ctx.createLinearGradient(0, 0, 0, cH);
+              g.addColorStop(0, 'hsl(210,' + (60 + dayPhase * 20) + '%,' + (50 + dayPhase * 25) + '%)');
+              g.addColorStop(0.4, 'hsl(200,70%,' + (65 + dayPhase * 15) + '%)');
+              g.addColorStop(0.65, '#4ade80');
+              g.addColorStop(0.7, '#166534');
+              g.addColorStop(1, '#1a1a2e');
+              ctx.fillStyle = g;
+              ctx.fillRect(0, 0, cW, cH);
+              // Sun
+              var sunY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.04;
+              ctx.beginPath(); ctx.arc(cW * 0.8, sunY, 16 * dpr, 0, Math.PI * 2);
+              ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 20; ctx.fill(); ctx.shadowBlur = 0;
+              // Sun rays
+              for (var r = 0; r < 8; r++) {
                 var ra = r * Math.PI / 4 + tick * 0.01;
                 ctx.beginPath();
                 ctx.moveTo(cW * 0.8 + Math.cos(ra) * 20 * dpr, sunY + Math.sin(ra) * 20 * dpr);
                 ctx.lineTo(cW * 0.8 + Math.cos(ra) * 28 * dpr, sunY + Math.sin(ra) * 28 * dpr);
                 ctx.strokeStyle = 'rgba(251,191,36,0.5)'; ctx.lineWidth = 2; ctx.stroke();
-            }
-            // Clouds
-            function drawCloud(cx, cy, sz) {
+              }
+              // Clouds
+              function drawCloud(cx, cy, sz) {
                 ctx.fillStyle = 'rgba(226,232,240,0.8)';
                 ctx.beginPath(); ctx.arc(cx, cy, sz, 0, Math.PI * 2); ctx.fill();
                 ctx.beginPath(); ctx.arc(cx - sz * 0.7, cy + sz * 0.2, sz * 0.7, 0, Math.PI * 2); ctx.fill();
                 ctx.beginPath(); ctx.arc(cx + sz * 0.7, cy + sz * 0.2, sz * 0.8, 0, Math.PI * 2); ctx.fill();
-            }
-            drawCloud(cW * 0.25 + Math.sin(tick * 0.004) * 10, cH * 0.15, 14 * dpr);
-            drawCloud(cW * 0.55 + Math.cos(tick * 0.003) * 8, cH * 0.12, 18 * dpr);
-            drawCloud(cW * 0.4 + Math.sin(tick * 0.005) * 12, cH * 0.2, 12 * dpr);
-            // Water body
-            ctx.fillStyle = 'rgba(14,165,233,0.6)';
-            ctx.beginPath();
-            ctx.moveTo(0, cH * 0.7);
-            for (var wx = 0; wx <= cW; wx += 5) {
+              }
+              drawCloud(cW * 0.25 + Math.sin(tick * 0.004) * 10, cH * 0.15, 14 * dpr);
+              drawCloud(cW * 0.55 + Math.cos(tick * 0.003) * 8, cH * 0.12, 18 * dpr);
+              drawCloud(cW * 0.4 + Math.sin(tick * 0.005) * 12, cH * 0.2, 12 * dpr);
+              // Water body
+              ctx.fillStyle = 'rgba(14,165,233,0.6)';
+              ctx.beginPath();
+              ctx.moveTo(0, cH * 0.7);
+              for (var wx = 0; wx <= cW; wx += 5) {
                 ctx.lineTo(wx, cH * 0.7 + Math.sin(wx * 0.02 + tick * 0.05) * 3 * dpr);
-            }
-            ctx.lineTo(cW, cH * 0.65); ctx.lineTo(0, cH * 0.65); ctx.closePath(); ctx.fill();
-            // Mountains
-            ctx.fillStyle = '#374151';
-            ctx.beginPath(); ctx.moveTo(cW * 0.6, cH * 0.65); ctx.lineTo(cW * 0.7, cH * 0.35); ctx.lineTo(cW * 0.8, cH * 0.65); ctx.fill();
-            ctx.fillStyle = '#e2e8f0';
-            ctx.beginPath(); ctx.moveTo(cW * 0.68, cH * 0.37); ctx.lineTo(cW * 0.7, cH * 0.35); ctx.lineTo(cW * 0.72, cH * 0.37); ctx.lineTo(cW * 0.705, cH * 0.39); ctx.lineTo(cW * 0.695, cH * 0.38); ctx.fill();
-            // Particles
-            particles.forEach(function (p) {
+              }
+              ctx.lineTo(cW, cH * 0.65); ctx.lineTo(0, cH * 0.65); ctx.closePath(); ctx.fill();
+              // Mountains
+              ctx.fillStyle = '#374151';
+              ctx.beginPath(); ctx.moveTo(cW * 0.6, cH * 0.65); ctx.lineTo(cW * 0.7, cH * 0.35); ctx.lineTo(cW * 0.8, cH * 0.65); ctx.fill();
+              ctx.fillStyle = '#e2e8f0';
+              ctx.beginPath(); ctx.moveTo(cW * 0.68, cH * 0.37); ctx.lineTo(cW * 0.7, cH * 0.35); ctx.lineTo(cW * 0.72, cH * 0.37); ctx.lineTo(cW * 0.705, cH * 0.39); ctx.lineTo(cW * 0.695, cH * 0.38); ctx.fill();
+              // Particles
+              particles.forEach(function (p) {
                 p.phase += 0.02;
                 if (p.type === 'evap') {
-                    p.y -= p.speed * 0.5;
-                    p.x += Math.sin(p.phase) * 0.3;
-                    if (p.y < cH * 0.1 / dpr) { p.y = cH * 0.65 / dpr; p.x = Math.random() * cW * 0.5 / dpr; }
-                    ctx.beginPath(); ctx.arc(p.x * dpr, p.y * dpr, p.size * dpr, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(p.phase) * 0.2) + ')'; ctx.fill();
+                  p.y -= p.speed * 0.5;
+                  p.x += Math.sin(p.phase) * 0.3;
+                  if (p.y < cH * 0.1 / dpr) { p.y = cH * 0.65 / dpr; p.x = Math.random() * cW * 0.5 / dpr; }
+                  ctx.beginPath(); ctx.arc(p.x * dpr, p.y * dpr, p.size * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(p.phase) * 0.2) + ')'; ctx.fill();
                 } else if (p.type === 'rain') {
-                    p.y += p.speed * 1.5;
-                    p.x += (Math.random() - 0.5) * 0.2;
-                    if (p.y > cH * 0.7 / dpr) { p.y = cH * 0.15 / dpr; p.x = cW * 0.15 / dpr + Math.random() * cW * 0.4 / dpr; }
-                    ctx.strokeStyle = 'rgba(59,130,246,' + (0.4 + Math.sin(p.phase) * 0.2) + ')';
-                    ctx.lineWidth = 1.5 * dpr;
-                    ctx.beginPath(); ctx.moveTo(p.x * dpr, p.y * dpr); ctx.lineTo(p.x * dpr, (p.y + 4) * dpr); ctx.stroke();
+                  p.y += p.speed * 1.5;
+                  p.x += (Math.random() - 0.5) * 0.2;
+                  if (p.y > cH * 0.7 / dpr) { p.y = cH * 0.15 / dpr; p.x = cW * 0.15 / dpr + Math.random() * cW * 0.4 / dpr; }
+                  ctx.strokeStyle = 'rgba(59,130,246,' + (0.4 + Math.sin(p.phase) * 0.2) + ')';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.beginPath(); ctx.moveTo(p.x * dpr, p.y * dpr); ctx.lineTo(p.x * dpr, (p.y + 4) * dpr); ctx.stroke();
                 } else {
-                    p.x += Math.sin(p.phase) * 0.2;
-                    p.y += Math.cos(p.phase * 0.5) * 0.1;
-                    if (p.x > cW / dpr) p.x = 0;
-                    ctx.beginPath(); ctx.arc(p.x * dpr, Math.min(p.y, cH * 0.25 / dpr) * dpr, p.size * 0.8 * dpr, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(226,232,240,' + (0.2 + Math.sin(p.phase) * 0.15) + ')'; ctx.fill();
+                  p.x += Math.sin(p.phase) * 0.2;
+                  p.y += Math.cos(p.phase * 0.5) * 0.1;
+                  if (p.x > cW / dpr) p.x = 0;
+                  ctx.beginPath(); ctx.arc(p.x * dpr, Math.min(p.y, cH * 0.25 / dpr) * dpr, p.size * 0.8 * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(226,232,240,' + (0.2 + Math.sin(p.phase) * 0.15) + ')'; ctx.fill();
                 }
-            });
-            // Labels on diagram
-            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-            ctx.fillStyle = '#fbbf24'; ctx.fillText('\u2191 Evaporation', 10 * dpr, cH * 0.55);
-            ctx.fillStyle = '#64748b'; ctx.fillText('\u2601 Condensation', cW * 0.3, cH * 0.08);
-            ctx.fillStyle = '#3b82f6'; ctx.fillText('\u2193 Precipitation', cW * 0.12, cH * 0.3);
-            ctx.fillStyle = '#22c55e'; ctx.fillText('\uD83C\uDF3F Transpiration', cW * 0.55, cH * 0.55);
+              });
+              // Labels on diagram
+              ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+              ctx.fillStyle = '#fbbf24'; ctx.fillText('\u2191 Evaporation', 10 * dpr, cH * 0.55);
+              ctx.fillStyle = '#64748b'; ctx.fillText('\u2601 Condensation', cW * 0.3, cH * 0.08);
+              ctx.fillStyle = '#3b82f6'; ctx.fillText('\u2193 Precipitation', cW * 0.12, cH * 0.3);
+              ctx.fillStyle = '#22c55e'; ctx.fillText('\uD83C\uDF3F Transpiration', cW * 0.55, cH * 0.55);
+              canvasEl._wcAnim = requestAnimationFrame(draw);
+            }
             canvasEl._wcAnim = requestAnimationFrame(draw);
-        }
-        canvasEl._wcAnim = requestAnimationFrame(draw);
-    };
+          };
 
-    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
-            React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
-        ),
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "240px" } },
-            React.createElement("canvas", { ref: canvasRef, style: { width: "100%", height: "100%", display: "block" } })
-        ),
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-            STAGES.map(function (stage) {
+          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+            ),
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+              React.createElement("canvas", { ref: canvasRef, style: { width: "100%", height: "100%", display: "block" } })
+            ),
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+              STAGES.map(function (stage) {
                 return React.createElement("button", {
-                    key: stage.id, onClick: function () { upd('activeStage', stage.id); },
-                    className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
-                    style: { backgroundColor: (d.activeStage || 'evaporation') === stage.id ? stage.color : stage.color + '15', borderColor: stage.color, color: (d.activeStage || 'evaporation') === stage.id ? 'white' : stage.color }
+                  key: stage.id, onClick: function () { upd('activeStage', stage.id); },
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
+                  style: { backgroundColor: (d.activeStage || 'evaporation') === stage.id ? stage.color : stage.color + '15', borderColor: stage.color, color: (d.activeStage || 'evaporation') === stage.id ? 'white' : stage.color }
                 }, stage.emoji + " " + stage.label);
-            })
-        ),
-        sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+              })
+            ),
+            sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-2xl" }, sel.emoji),
                 React.createElement("h4", { className: "text-base font-bold", style: { color: sel.color } }, sel.label)
+              ),
+              React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, sel.desc)
             ),
-            React.createElement("p", { className: "text-sm text-slate-600 leading-relaxed" }, sel.desc)
-        ),
-        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-            React.createElement("button", {
+            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+              React.createElement("button", {
                 onClick: function () {
-                    var WC_QS = [
-                        { q: 'What drives evaporation?', a: 'Solar energy', opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'] },
-                        { q: 'What forms clouds?', a: 'Condensation', opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'] },
-                        { q: 'Where does most evaporation occur?', a: 'Oceans', opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'] },
-                        { q: 'What is transpiration?', a: 'Water release from plants', opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'] },
-                        { q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] },
-                    ];
-                    var q = WC_QS[Math.floor(Math.random() * WC_QS.length)];
-                    upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
+                  var WC_QS = [
+                    { q: 'What drives evaporation?', a: 'Solar energy', opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'] },
+                    { q: 'What forms clouds?', a: 'Condensation', opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'] },
+                    { q: 'Where does most evaporation occur?', a: 'Oceans', opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'] },
+                    { q: 'What is transpiration?', a: 'Water release from plants', opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'] },
+                    { q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] },
+                  ];
+                  var q = WC_QS[Math.floor(Math.random() * WC_QS.length)];
+                  upd('wcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0 });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.wcQuiz ? 'bg-sky-100 text-sky-700' : 'bg-sky-600 text-white') + " transition-all"
-            }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
-            d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-            d.wcQuiz && React.createElement("div", { className: "mt-2 bg-sky-50 rounded-lg p-3 border border-sky-200" },
+              }, d.wcQuiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+              d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
+              d.wcQuiz && React.createElement("div", { className: "mt-2 bg-sky-50 rounded-lg p-3 border border-sky-200" },
                 React.createElement("p", { className: "text-sm font-bold text-sky-800 mb-2" }, d.wcQuiz.q),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                    d.wcQuiz.opts.map(function (opt) {
-                        var isCorrect = opt === d.wcQuiz.a;
-                        var wasChosen = d.wcQuiz.chosen === opt;
-                        var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
-                        return React.createElement("button", {
-                            key: opt, disabled: d.wcQuiz.answered, onClick: function () {
-                                var correct = opt === d.wcQuiz.a;
-                                upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
-                                addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.wcQuiz.a, correct ? 'success' : 'error');
-                            }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
-                        }, opt);
-                    })
+                  d.wcQuiz.opts.map(function (opt) {
+                    var isCorrect = opt === d.wcQuiz.a;
+                    var wasChosen = d.wcQuiz.chosen === opt;
+                    var cls = !d.wcQuiz.answered ? 'bg-white border-slate-200 hover:border-sky-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    return React.createElement("button", {
+                      key: opt, disabled: d.wcQuiz.answered, onClick: function () {
+                        var correct = opt === d.wcQuiz.a;
+                        upd('wcQuiz', Object.assign({}, d.wcQuiz, { answered: true, chosen: opt, score: d.wcQuiz.score + (correct ? 1 : 0) }));
+                        addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.wcQuiz.a, correct ? 'success' : 'error');
+                      }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                    }, opt);
+                  })
                 )
-            )
-        ),
-        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-    );
-})(),
+              )
+            ),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          );
+        })(),
 
         // ═══════════════════════════════════════════════════════
         // ROCK CYCLE
@@ -7186,65 +7202,65 @@ stemLabTab === 'explore' && stemLabTool === 'waterCycle' && (() => {
           );
         })(),
 
-// ═══════════════════════════════════════════════════════
-// ECOSYSTEM SIMULATOR — Canvas2D Animated Population
-// ═══════════════════════════════════════════════════════
-stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
-    const d = labToolData.ecosystem;
-    const upd = (key, val) => setLabToolData(prev => ({ ...prev, ecosystem: { ...prev.ecosystem, [key]: val } }));
-    const simulate = () => {
-        let prey = d.prey0, pred = d.pred0;
-        const data = [{ step: 0, prey, pred }];
-        for (let i = 1; i <= 100; i++) {
-            const newPrey = Math.max(1, prey + d.preyBirth * prey - d.preyDeath * prey * pred);
-            const newPred = Math.max(1, pred + d.predBirth * prey * pred - d.predDeath * pred);
-            prey = Math.min(500, Math.round(newPrey));
-            pred = Math.min(500, Math.round(newPred));
-            data.push({ step: i, prey, pred });
-        }
-        upd('data', data);
-        upd('steps', 100);
-    };
-    const W = 440, H = 250, pad = 40;
-    const maxVal = d.data.length > 0 ? Math.max(...d.data.map(dp => Math.max(dp.prey, dp.pred)), 10) : 100;
+        // ═══════════════════════════════════════════════════════
+        // ECOSYSTEM SIMULATOR — Canvas2D Animated Population
+        // ═══════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
+          const d = labToolData.ecosystem;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, ecosystem: { ...prev.ecosystem, [key]: val } }));
+          const simulate = () => {
+            let prey = d.prey0, pred = d.pred0;
+            const data = [{ step: 0, prey, pred }];
+            for (let i = 1; i <= 100; i++) {
+              const newPrey = Math.max(1, prey + d.preyBirth * prey - d.preyDeath * prey * pred);
+              const newPred = Math.max(1, pred + d.predBirth * prey * pred - d.predDeath * pred);
+              prey = Math.min(500, Math.round(newPrey));
+              pred = Math.min(500, Math.round(newPred));
+              data.push({ step: i, prey, pred });
+            }
+            upd('data', data);
+            upd('steps', 100);
+          };
+          const W = 440, H = 250, pad = 40;
+          const maxVal = d.data.length > 0 ? Math.max(...d.data.map(dp => Math.max(dp.prey, dp.pred)), 10) : 100;
 
-    // Canvas animation ref
-    const canvasRef = function (canvasEl) {
-        if (!canvasEl || canvasEl._ecoInit) return;
-        canvasEl._ecoInit = true;
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-        var ctx = canvasEl.getContext('2d');
-        var dpr = 2;
-        var tick = 0;
-        var preyList = [];
-        var predList = [];
-        for (var i = 0; i < 60; i++) preyList.push({ x: Math.random() * cW / dpr, y: cH * 0.35 / dpr + Math.random() * cH * 0.65 / dpr, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2, alive: i < 30 });
-        for (var i = 0; i < 20; i++) predList.push({ x: Math.random() * cW / dpr, y: cH * 0.35 / dpr + Math.random() * cH * 0.65 / dpr, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, alive: i < 10 });
-        function draw() {
-            tick++;
-            ctx.clearRect(0, 0, cW, cH);
-            var dayPhase = (Math.sin(tick * 0.005) + 1) / 2;
-            var skyR = Math.round(135 + dayPhase * 80);
-            var skyG = Math.round(180 + dayPhase * 60);
-            var skyB = Math.round(100 + dayPhase * 50);
-            ctx.fillStyle = 'rgb(' + skyR + ',' + skyG + ',' + skyB + ')';
-            ctx.fillRect(0, 0, cW, cH * 0.35);
-            var groundGrad = ctx.createLinearGradient(0, cH * 0.35, 0, cH);
-            groundGrad.addColorStop(0, '#4ade80');
-            groundGrad.addColorStop(0.5, '#22c55e');
-            groundGrad.addColorStop(1, '#166534');
-            ctx.fillStyle = groundGrad;
-            ctx.fillRect(0, cH * 0.35, cW, cH * 0.65);
-            if (dayPhase > 0.4) {
+          // Canvas animation ref
+          const canvasRef = function (canvasEl) {
+            if (!canvasEl || canvasEl._ecoInit) return;
+            canvasEl._ecoInit = true;
+            var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+            var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var ctx = canvasEl.getContext('2d');
+            var dpr = 2;
+            var tick = 0;
+            var preyList = [];
+            var predList = [];
+            for (var i = 0; i < 60; i++) preyList.push({ x: Math.random() * cW / dpr, y: cH * 0.35 / dpr + Math.random() * cH * 0.65 / dpr, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2, alive: i < 30 });
+            for (var i = 0; i < 20; i++) predList.push({ x: Math.random() * cW / dpr, y: cH * 0.35 / dpr + Math.random() * cH * 0.65 / dpr, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, alive: i < 10 });
+            function draw() {
+              tick++;
+              ctx.clearRect(0, 0, cW, cH);
+              var dayPhase = (Math.sin(tick * 0.005) + 1) / 2;
+              var skyR = Math.round(135 + dayPhase * 80);
+              var skyG = Math.round(180 + dayPhase * 60);
+              var skyB = Math.round(100 + dayPhase * 50);
+              ctx.fillStyle = 'rgb(' + skyR + ',' + skyG + ',' + skyB + ')';
+              ctx.fillRect(0, 0, cW, cH * 0.35);
+              var groundGrad = ctx.createLinearGradient(0, cH * 0.35, 0, cH);
+              groundGrad.addColorStop(0, '#4ade80');
+              groundGrad.addColorStop(0.5, '#22c55e');
+              groundGrad.addColorStop(1, '#166534');
+              ctx.fillStyle = groundGrad;
+              ctx.fillRect(0, cH * 0.35, cW, cH * 0.65);
+              if (dayPhase > 0.4) {
                 ctx.beginPath(); ctx.arc(cW * 0.8, cH * 0.12, 14 * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = '#fbbf24'; ctx.fill();
-            } else {
+              } else {
                 ctx.beginPath(); ctx.arc(cW * 0.7, cH * 0.1, 10 * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = '#e2e8f0'; ctx.fill();
-            }
-            var alivePreyCount = 0, alivePredCount = 0;
-            preyList.forEach(function (p) {
+              }
+              var alivePreyCount = 0, alivePredCount = 0;
+              preyList.forEach(function (p) {
                 if (!p.alive) return;
                 alivePreyCount++;
                 p.x += p.vx; p.y += p.vy;
@@ -7257,21 +7273,21 @@ stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
                 ctx.beginPath(); ctx.arc(p.x * dpr, p.y * dpr, 4 * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = '#86efac'; ctx.fill();
                 ctx.strokeStyle = '#166534'; ctx.lineWidth = 1 * dpr; ctx.stroke();
-            });
-            predList.forEach(function (pr) {
+              });
+              predList.forEach(function (pr) {
                 if (!pr.alive) return;
                 alivePredCount++;
                 var nearest = null, nearDist = Infinity;
                 preyList.forEach(function (p) {
-                    if (!p.alive) return;
-                    var dx = p.x - pr.x, dy = p.y - pr.y;
-                    var dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < nearDist) { nearDist = dist; nearest = p; }
+                  if (!p.alive) return;
+                  var dx = p.x - pr.x, dy = p.y - pr.y;
+                  var dist = Math.sqrt(dx * dx + dy * dy);
+                  if (dist < nearDist) { nearDist = dist; nearest = p; }
                 });
                 if (nearest && nearDist < 120) {
-                    var dx = nearest.x - pr.x, dy = nearest.y - pr.y;
-                    var len = Math.sqrt(dx * dx + dy * dy) || 1;
-                    pr.vx += (dx / len) * 0.08; pr.vy += (dy / len) * 0.08;
+                  var dx = nearest.x - pr.x, dy = nearest.y - pr.y;
+                  var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                  pr.vx += (dx / len) * 0.08; pr.vy += (dy / len) * 0.08;
                 }
                 if (nearest && nearDist < 5) nearest.alive = false;
                 pr.x += pr.vx; pr.y += pr.vy;
@@ -7287,76 +7303,76 @@ stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
                 ctx.closePath();
                 ctx.fillStyle = '#fca5a5'; ctx.fill();
                 ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 1 * dpr; ctx.stroke();
-            });
-            if (tick % 90 === 0) {
+              });
+              if (tick % 90 === 0) {
                 var n = Math.floor(alivePreyCount * 0.15);
                 for (var nn = 0; nn < n && nn < 5; nn++) { var dead = preyList.find(function (p) { return !p.alive; }); var par = preyList.find(function (p) { return p.alive; }); if (dead && par) { dead.x = par.x + (Math.random() - 0.5) * 20; dead.y = par.y + (Math.random() - 0.5) * 20; dead.alive = true; } }
                 if (alivePredCount > 2 && Math.random() < 0.2) { var dp = predList.find(function (p) { return p.alive; }); if (dp) dp.alive = false; }
                 if (alivePreyCount > 20 && Math.random() < 0.3) { var dp2 = predList.find(function (p) { return !p.alive; }); var pp = predList.find(function (p) { return p.alive; }); if (dp2 && pp) { dp2.x = pp.x; dp2.y = pp.y; dp2.alive = true; } }
+              }
+              ctx.fillStyle = 'rgba(0,0,0,0.5)';
+              ctx.fillRect(6 * dpr, 6 * dpr, 120 * dpr, 42 * dpr);
+              ctx.fillStyle = '#86efac'; ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+              ctx.fillText('\uD83D\uDC07 Prey: ' + alivePreyCount, 12 * dpr, 22 * dpr);
+              ctx.fillStyle = '#fca5a5';
+              ctx.fillText('\uD83D\uDC3A Pred: ' + alivePredCount, 12 * dpr, 38 * dpr);
+              ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = (7 * dpr) + 'px sans-serif';
+              ctx.fillText(dayPhase > 0.4 ? '\u2600 Day' : '\uD83C\uDF19 Night', (cW / dpr - 40) * dpr, 18 * dpr);
+              canvasEl._ecoAnim = requestAnimationFrame(draw);
             }
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.fillRect(6 * dpr, 6 * dpr, 120 * dpr, 42 * dpr);
-            ctx.fillStyle = '#86efac'; ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
-            ctx.fillText('\uD83D\uDC07 Prey: ' + alivePreyCount, 12 * dpr, 22 * dpr);
-            ctx.fillStyle = '#fca5a5';
-            ctx.fillText('\uD83D\uDC3A Pred: ' + alivePredCount, 12 * dpr, 38 * dpr);
-            ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = (7 * dpr) + 'px sans-serif';
-            ctx.fillText(dayPhase > 0.4 ? '\u2600 Day' : '\uD83C\uDF19 Night', (cW / dpr - 40) * dpr, 18 * dpr);
             canvasEl._ecoAnim = requestAnimationFrame(draw);
-        }
-        canvasEl._ecoAnim = requestAnimationFrame(draw);
-    };
+          };
 
-    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDC3A Ecosystem Simulator"),
-            React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full" }, "LIVE")
-        ),
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-300 shadow-lg mb-3", style: { height: '220px' } },
-            React.createElement("canvas", { ref: canvasRef, style: { width: '100%', height: '100%', display: 'block' } }),
-            React.createElement("div", { className: "absolute bottom-2 left-2 right-2 flex items-center gap-1 pointer-events-none" },
+          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDC3A Ecosystem Simulator"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full" }, "LIVE")
+            ),
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-300 shadow-lg mb-3", style: { height: '220px' } },
+              React.createElement("canvas", { ref: canvasRef, style: { width: '100%', height: '100%', display: 'block' } }),
+              React.createElement("div", { className: "absolute bottom-2 left-2 right-2 flex items-center gap-1 pointer-events-none" },
                 React.createElement("span", { className: "text-[9px] text-white/60 bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-sm" }, "\uD83D\uDC07 Green = prey  \u2022  \uD83D\uDC3A Red = predators")
-            )
-        ),
-        React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Model predator-prey dynamics (Lotka-Volterra). Adjust rates and run the graph below."),
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-            [
+              )
+            ),
+            React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Model predator-prey dynamics (Lotka-Volterra). Adjust rates and run the graph below."),
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+              [
                 { label: '\uD83D\uDC07\uD83D\uDC3A Balanced', prey0: 80, pred0: 30, preyBirth: 0.1, preyDeath: 0.01, predBirth: 0.01, predDeath: 0.1 },
                 { label: '\uD83D\uDCA5 Extinction', prey0: 30, pred0: 80, preyBirth: 0.05, preyDeath: 0.02, predBirth: 0.01, predDeath: 0.05 },
                 { label: '\uD83D\uDCC8 Boom', prey0: 50, pred0: 10, preyBirth: 0.3, preyDeath: 0.005, predBirth: 0.005, predDeath: 0.15 },
                 { label: '\u2696 Equilibrium', prey0: 100, pred0: 50, preyBirth: 0.1, preyDeath: 0.01, predBirth: 0.005, predDeath: 0.1 },
-            ].map(function (preset) {
+              ].map(function (preset) {
                 return React.createElement("button", {
-                    key: preset.label, onClick: function () {
-                        upd('prey0', preset.prey0); upd('pred0', preset.pred0);
-                        upd('preyBirth', preset.preyBirth); upd('preyDeath', preset.preyDeath);
-                        upd('predBirth', preset.predBirth); upd('predDeath', preset.predDeath);
-                        upd('data', []); upd('steps', 0);
-                    }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
+                  key: preset.label, onClick: function () {
+                    upd('prey0', preset.prey0); upd('pred0', preset.pred0);
+                    upd('preyBirth', preset.preyBirth); upd('preyDeath', preset.preyDeath);
+                    upd('predBirth', preset.predBirth); upd('predDeath', preset.predDeath);
+                    upd('data', []); upd('steps', 0);
+                  }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
                 }, preset.label);
-            })
-        ),
-        React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-            [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83D\uDC3A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: 'Prey Birth', min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: 'Pred Death', min: 0.01, max: 0.5, step: 0.01 }].map(s =>
+              })
+            ),
+            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+              [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83D\uDC3A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: 'Prey Birth', min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: 'Pred Death', min: 0.01, max: 0.5, step: 0.01 }].map(s =>
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
-                    React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
-                    React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
-                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-emerald-600" })
+                  React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-emerald-600" })
                 )
-            )
-        ),
-        React.createElement("button", { onClick: simulate, className: "mb-3 px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all" }, "\u25B6 Run Graph Simulation"),
-        d.data.length > 0 && React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "270px" } },
-            React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
-            React.createElement("line", { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
-            React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.prey / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#22c55e", strokeWidth: 2 }),
-            React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.pred / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 2 }),
-            React.createElement("text", { x: W - pad + 5, y: pad, fill: "#22c55e", style: { fontSize: '9px', fontWeight: 'bold' } }, "Prey")
-        ),
-        d.data.length > 0 && React.createElement("div", { className: "mt-3" },
-            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait"),
-            React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
+              )
+            ),
+            React.createElement("button", { onClick: simulate, className: "mb-3 px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all" }, "\u25B6 Run Graph Simulation"),
+            d.data.length > 0 && React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "270px" } },
+              React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
+              React.createElement("line", { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 1 }),
+              React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.prey / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#22c55e", strokeWidth: 2 }),
+              React.createElement("polyline", { points: d.data.map((dp, i) => (pad + i / 100 * (W - 2 * pad)) + "," + (H - pad - dp.pred / maxVal * (H - 2 * pad))).join(" "), fill: "none", stroke: "#ef4444", strokeWidth: 2 }),
+              React.createElement("text", { x: W - pad + 5, y: pad, fill: "#22c55e", style: { fontSize: '9px', fontWeight: 'bold' } }, "Prey")
+            ),
+            d.data.length > 0 && React.createElement("div", { className: "mt-3" },
+              React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD04 Phase Portrait"),
+              React.createElement("svg", { viewBox: "0 0 300 300", className: "w-full bg-white rounded-xl border border-emerald-200", style: { maxHeight: "260px" } },
                 React.createElement("line", { x1: 30, y1: 270, x2: 270, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
                 React.createElement("line", { x1: 30, y1: 30, x2: 30, y2: 270, stroke: "#e2e8f0", strokeWidth: 1 }),
                 React.createElement("text", { x: 150, y: 295, textAnchor: "middle", fill: "#22c55e", style: { fontSize: '10px', fontWeight: 'bold' } }, "Prey"),
@@ -7364,26 +7380,26 @@ stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
                 React.createElement("polyline", { points: d.data.map(function (dp) { return (30 + dp.prey / maxVal * 240) + "," + (270 - dp.pred / maxVal * 240); }).join(" "), fill: "none", stroke: "#6366f1", strokeWidth: 1.5 }),
                 React.createElement("circle", { cx: 30 + d.data[0].prey / maxVal * 240, cy: 270 - d.data[0].pred / maxVal * 240, r: 4, fill: "#22c55e" }),
                 React.createElement("circle", { cx: 30 + d.data[d.data.length - 1].prey / maxVal * 240, cy: 270 - d.data[d.data.length - 1].pred / maxVal * 240, r: 4, fill: "#ef4444" })
-            ),
-            React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
+              ),
+              React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-2 text-center" },
                 React.createElement("div", { className: "p-1.5 bg-emerald-50 rounded-lg border border-emerald-200" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
-                    React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.prey; })))
+                  React.createElement("p", { className: "text-[9px] font-bold text-emerald-600 uppercase" }, "Peak Prey"),
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.prey; })))
                 ),
                 React.createElement("div", { className: "p-1.5 bg-red-50 rounded-lg border border-red-200" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Pred"),
-                    React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.pred; })))
+                  React.createElement("p", { className: "text-[9px] font-bold text-red-600 uppercase" }, "Peak Pred"),
+                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, Math.max.apply(null, d.data.map(function (dp) { return dp.pred; })))
                 ),
                 React.createElement("div", { className: "p-1.5 bg-indigo-50 rounded-lg border border-indigo-200" },
-                    React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
-                    React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function () { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i - 1].prey > d.data[i - 2].prey && d.data[i - 1].prey > d.data[i].prey) peaks++; } return peaks; })())
+                  React.createElement("p", { className: "text-[9px] font-bold text-indigo-600 uppercase" }, "Cycles"),
+                  React.createElement("p", { className: "text-sm font-bold text-indigo-800" }, (function () { var peaks = 0; for (var i = 2; i < d.data.length; i++) { if (d.data[i - 1].prey > d.data[i - 2].prey && d.data[i - 1].prey > d.data[i].prey) peaks++; } return peaks; })())
                 )
+              ),
+              React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 Closed loops = stable Lotka-Volterra oscillations.")
             ),
-            React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 Closed loops = stable Lotka-Volterra oscillations.")
-        ),
-        React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'eco-' + Date.now(), tool: 'ecosystem', label: 'Ecosystem', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-    );
-})(),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'eco-' + Date.now(), tool: 'ecosystem', label: 'Ecosystem', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+          );
+        })(),
 
         // ═══════════════════════════════════════════════════════
         // FRACTION VISUALIZER
@@ -7679,818 +7695,774 @@ stemLabTab === 'explore' && stemLabTool === 'ecosystem' && (() => {
         })(),
 
 
-// ═══════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════
 
-// MUSIC SYNTHESIZER — Web Audio API + Canvas2D Oscilloscope
+        // MUSIC SYNTHESIZER — Web Audio API + Canvas2D Oscilloscope
 
-// ═══════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════
 
 stemLabTab === 'explore' && stemLabTool === 'musicSynth' && (() => {
-
     const d = labToolData.musicSynth;
-
     const upd = (key, val) => setLabToolData(prev => ({ ...prev, musicSynth: { ...prev.musicSynth, [key]: val } }));
 
-
+    // --- Tooltip helper ---
+    var Tip = function(props) {
+        var showId = 'tip_' + props.id;
+        var isOpen = d[showId];
+        return React.createElement("span", { className: "relative inline-block ml-1" },
+            React.createElement("button", {
+                onClick: function() { upd(showId, !isOpen); },
+                className: "w-4 h-4 rounded-full text-[9px] font-bold leading-none inline-flex items-center justify-center " + (isOpen ? "bg-violet-600 text-white" : "bg-violet-100 text-violet-500 hover:bg-violet-200"),
+                title: props.text
+            }, "\u24D8"),
+            isOpen && React.createElement("div", { className: "absolute z-50 left-6 top-0 w-56 p-2 bg-white border border-violet-200 rounded-lg shadow-xl text-[10px] text-slate-600 leading-relaxed" },
+                React.createElement("div", { className: "font-bold text-violet-700 mb-0.5" }, "\uD83D\uDD2C " + props.title),
+                props.text
+            )
+        );
+    };
 
     // --- Audio Context singleton ---
-
     if (!window._alloSynthCtx) {
-
         window._alloSynthCtx = null;
-
         window._alloSynthGain = null;
-
         window._alloSynthAnalyser = null;
-
         window._alloSynthActiveNotes = {};
-
         window._alloSynthSeqInterval = null;
-
+        window._alloSynthEffects = null;
     }
 
     function getCtx() {
-
         if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
-
             var ac = new (window.AudioContext || window.webkitAudioContext)();
-
             var gain = ac.createGain();
-
             gain.gain.value = d.volume || 0.5;
-
             var analyser = ac.createAnalyser();
-
             analyser.fftSize = 2048;
 
-            gain.connect(analyser);
+            // Effects chain: osc -> env -> effects -> gain -> analyser -> dest
+            // Delay
+            var delay = ac.createDelay(2);
+            delay.delayTime.value = (d.delayTime || 300) / 1000;
+            var delayFeedback = ac.createGain();
+            delayFeedback.gain.value = d.delayFeedback || 0.3;
+            var delayWet = ac.createGain();
+            delayWet.gain.value = d.delayMix || 0;
+            var delayDry = ac.createGain();
+            delayDry.gain.value = 1;
+            delay.connect(delayFeedback);
+            delayFeedback.connect(delay);
+            delay.connect(delayWet);
 
+            // Distortion
+            var distortion = ac.createWaveShaper();
+            function makeDistCurve(amount) {
+                var k = Math.max(1, amount);
+                var samples = 44100;
+                var curve = new Float32Array(samples);
+                for (var i = 0; i < samples; i++) {
+                    var x = (i * 2) / samples - 1;
+                    curve[i] = ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x));
+                }
+                return curve;
+            }
+            distortion.curve = makeDistCurve(d.distAmount || 0);
+            distortion.oversample = '4x';
+
+            // Reverb (convolution with generated impulse)
+            var convolver = ac.createConvolver();
+            var reverbWet = ac.createGain();
+            reverbWet.gain.value = d.reverbMix || 0;
+            var reverbDry = ac.createGain();
+            reverbDry.gain.value = 1;
+            // Generate impulse response
+            var reverbLen = (d.reverbSize || 1.5) * ac.sampleRate;
+            var impulse = ac.createBuffer(2, reverbLen, ac.sampleRate);
+            for (var ch = 0; ch < 2; ch++) {
+                var imp = impulse.getChannelData(ch);
+                for (var si = 0; si < reverbLen; si++) {
+                    imp[si] = (Math.random() * 2 - 1) * Math.pow(1 - si / reverbLen, 2);
+                }
+            }
+            convolver.buffer = impulse;
+
+            // Chorus (LFO modulating a delay)
+            var chorusDelay = ac.createDelay(0.1);
+            chorusDelay.delayTime.value = 0.02;
+            var chorusLFO = ac.createOscillator();
+            var chorusDepth = ac.createGain();
+            chorusLFO.frequency.value = d.chorusRate || 1.5;
+            chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0;
+            chorusLFO.connect(chorusDepth);
+            chorusDepth.connect(chorusDelay.delayTime);
+            chorusLFO.start();
+            var chorusWet = ac.createGain();
+            chorusWet.gain.value = d.chorusMix || 0;
+
+            // Build chain: source -> distortion -> dry/wet splits
+            // Dry path: distortion -> delayDry -> reverbDry -> gain
+            // Delay wet: distortion -> delay -> delayWet -> gain
+            // Reverb wet: distortion -> convolver -> reverbWet -> gain
+            // Chorus: distortion -> chorusDelay -> chorusWet -> gain
+            distortion.connect(delayDry);
+            distortion.connect(delay);
+            distortion.connect(reverbDry);
+            distortion.connect(convolver);
+            distortion.connect(chorusDelay);
+            delayDry.connect(gain);
+            delayWet.connect(gain);
+            reverbDry.connect(gain);
+            convolver.connect(reverbWet);
+            reverbWet.connect(gain);
+            chorusDelay.connect(chorusWet);
+            chorusWet.connect(gain);
+            gain.connect(analyser);
             analyser.connect(ac.destination);
 
             window._alloSynthCtx = ac;
-
             window._alloSynthGain = gain;
-
             window._alloSynthAnalyser = analyser;
-
+            window._alloSynthEffects = {
+                distortion: distortion,
+                delay: delay, delayFeedback: delayFeedback, delayWet: delayWet, delayDry: delayDry,
+                convolver: convolver, reverbWet: reverbWet, reverbDry: reverbDry,
+                chorusDelay: chorusDelay, chorusLFO: chorusLFO, chorusDepth: chorusDepth, chorusWet: chorusWet
+            };
         }
-
         if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
-
         window._alloSynthGain.gain.value = d.volume || 0.5;
-
-        return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser };
-
+        // Update live effect params
+        var fx = window._alloSynthEffects;
+        if (fx) {
+            fx.delay.delayTime.value = (d.delayTime || 300) / 1000;
+            fx.delayFeedback.gain.value = d.delayFeedback || 0.3;
+            fx.delayWet.gain.value = d.delayMix || 0;
+            fx.distortion.curve = makeDistCurve(d.distAmount || 0);
+            fx.reverbWet.gain.value = d.reverbMix || 0;
+            fx.chorusLFO.frequency.value = d.chorusRate || 1.5;
+            fx.chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0;
+            fx.chorusWet.gain.value = d.chorusMix || 0;
+        }
+        return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser, effects: window._alloSynthEffects };
     }
-
-
 
     // Note frequency map (equal temperament, A4 = 440 Hz)
-
     var NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
     function noteFreq(note, octave) {
-
         var semitone = NOTE_NAMES.indexOf(note);
-
-        var n = (octave - 4) * 12 + (semitone - 9); // semitones from A4
-
+        var n = (octave - 4) * 12 + (semitone - 9);
         return 440 * Math.pow(2, n / 12);
-
     }
-
-    // Build 2-octave scale
-
     var oct = d.octave || 4;
-
     var KEYS = [];
-
     for (var o = oct; o <= oct + 1; o++) {
-
         for (var ni = 0; ni < 12; ni++) {
-
             KEYS.push({ note: NOTE_NAMES[ni], octave: o, freq: noteFreq(NOTE_NAMES[ni], o), isBlack: [1, 3, 6, 8, 10].indexOf(ni) !== -1 });
-
         }
-
     }
-
-
 
     // Play / stop note
-
     function playNote(freq, noteId) {
-
         var audio = getCtx();
-
         if (window._alloSynthActiveNotes[noteId]) return;
-
         var osc = audio.ctx.createOscillator();
-
         var env = audio.ctx.createGain();
-
         osc.type = d.waveType || 'sine';
-
         osc.frequency.value = freq;
-
         var now = audio.ctx.currentTime;
-
         var atk = d.attack || 0.02;
-
         var dec = d.decay || 0.1;
-
         var sus = d.sustain || 0.7;
-
         env.gain.setValueAtTime(0, now);
-
         env.gain.linearRampToValueAtTime(1, now + atk);
-
         env.gain.linearRampToValueAtTime(sus, now + atk + dec);
-
         osc.connect(env);
-
-        env.connect(audio.gain);
-
+        env.connect(audio.effects.distortion);
         osc.start(now);
-
         window._alloSynthActiveNotes[noteId] = { osc: osc, env: env };
-
     }
-
     function stopNote(noteId) {
-
         var entry = window._alloSynthActiveNotes[noteId];
-
         if (!entry) return;
-
         var audio = getCtx();
-
         var now = audio.ctx.currentTime;
-
         var rel = d.release || 0.3;
-
         entry.env.gain.cancelScheduledValues(now);
-
         entry.env.gain.setValueAtTime(entry.env.gain.value, now);
-
         entry.env.gain.linearRampToValueAtTime(0, now + rel);
-
         entry.osc.stop(now + rel + 0.05);
-
         delete window._alloSynthActiveNotes[noteId];
-
     }
 
-
-
-    // Keyboard mapping (bottom row = white keys C-B, top row = sharps)
-
-    var KEY_MAP = {
-
-        'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
-
-        's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
-
-        'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
-
-        '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
-
-    };
-
-
-
-    // Canvas oscilloscope
-
-    var canvasRef = function (canvasEl) {
-
-        if (!canvasEl || canvasEl._synthInit) return;
-
-        canvasEl._synthInit = true;
-
-        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-
-        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-
-        var ctx = canvasEl.getContext('2d');
-
-        var dpr = 2;
-
-        function draw() {
-
-            ctx.clearRect(0, 0, cW, cH);
-
-            // Dark background
-
-            var grad = ctx.createLinearGradient(0, 0, 0, cH);
-
-            grad.addColorStop(0, '#1e1b4b');
-
-            grad.addColorStop(0.5, '#312e81');
-
-            grad.addColorStop(1, '#1e1b4b');
-
-            ctx.fillStyle = grad;
-
-            ctx.fillRect(0, 0, cW, cH);
-
-            // Grid
-
-            ctx.strokeStyle = 'rgba(139,92,246,0.12)';
-
-            ctx.lineWidth = 1;
-
-            for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
-
-            for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
-
-            // Center line
-
-            ctx.strokeStyle = 'rgba(139,92,246,0.25)';
-
-            ctx.setLineDash([6, 4]);
-
-            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
-
-            ctx.setLineDash([]);
-
-            // Draw waveform from analyser
-
-            if (window._alloSynthAnalyser) {
-
-                var analyser = window._alloSynthAnalyser;
-
-                var bufLen = analyser.fftSize;
-
-                var dataArr = new Uint8Array(bufLen);
-
-                analyser.getByteTimeDomainData(dataArr);
-
-                // Glow effect
-
-                ctx.shadowColor = '#a78bfa';
-
-                ctx.shadowBlur = 8;
-
-                ctx.lineWidth = 2.5 * dpr;
-
-                ctx.strokeStyle = '#c4b5fd';
-
-                ctx.beginPath();
-
-                var sliceW = cW / bufLen;
-
-                for (var i = 0; i < bufLen; i++) {
-
-                    var v = dataArr[i] / 128.0;
-
-                    var py = (v * cH) / 2;
-
-                    if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py);
-
-                }
-
-                ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Second pass for brighter core
-
-                ctx.lineWidth = 1.5 * dpr;
-
-                ctx.strokeStyle = '#e9d5ff';
-
-                ctx.beginPath();
-
-                for (var i2 = 0; i2 < bufLen; i2++) {
-
-                    var v2 = dataArr[i2] / 128.0;
-
-                    var py2 = (v2 * cH) / 2;
-
-                    if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2);
-
-                }
-
-                ctx.stroke();
-
+    // Drum synthesis
+    function playDrum(type) {
+        var audio = getCtx();
+        var ctx = audio.ctx;
+        var now = ctx.currentTime;
+        var drumGain = ctx.createGain();
+        drumGain.connect(audio.effects.distortion);
+        if (type === 'kick') {
+            var osc = ctx.createOscillator(); osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+            var eg = ctx.createGain(); eg.gain.setValueAtTime(1, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.8;
+            osc.start(now); osc.stop(now + 0.4);
+        } else if (type === 'snare') {
+            var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+            var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+            noise.buffer = nBuf;
+            var nFilter = ctx.createBiquadFilter(); nFilter.type = 'highpass'; nFilter.frequency.value = 1000;
+            var nGain = ctx.createGain(); nGain.gain.setValueAtTime(0.7, now); nGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            noise.connect(nFilter); nFilter.connect(nGain); nGain.connect(drumGain);
+            var body = ctx.createOscillator(); body.type = 'triangle'; body.frequency.value = 180;
+            var bGain = ctx.createGain(); bGain.gain.setValueAtTime(0.5, now); bGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            body.connect(bGain); bGain.connect(drumGain); drumGain.gain.value = 0.7;
+            noise.start(now); noise.stop(now + 0.15); body.start(now); body.stop(now + 0.08);
+        } else if (type === 'hihat') {
+            var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+            var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+            noise.buffer = nBuf;
+            var hpf = ctx.createBiquadFilter(); hpf.type = 'highpass'; hpf.frequency.value = 7000;
+            var eg = ctx.createGain(); eg.gain.setValueAtTime(0.4, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            noise.connect(hpf); hpf.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.5;
+            noise.start(now); noise.stop(now + 0.05);
+        } else if (type === 'clap') {
+            for (var ci = 0; ci < 3; ci++) {
+                var noise = ctx.createBufferSource(); var nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
+                var nd = nBuf.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+                noise.buffer = nBuf;
+                var bpf = ctx.createBiquadFilter(); bpf.type = 'bandpass'; bpf.frequency.value = 2500;
+                var eg = ctx.createGain(); eg.gain.setValueAtTime(0.6, now + ci * 0.01); eg.gain.exponentialRampToValueAtTime(0.01, now + ci * 0.01 + 0.04);
+                noise.connect(bpf); bpf.connect(eg); eg.connect(drumGain);
+                noise.start(now + ci * 0.01); noise.stop(now + ci * 0.01 + 0.04);
             }
-
-            // Label
-
-            var wt = canvasEl.dataset.waveType || 'sine';
-
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-
-            ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
-
-            ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-
-            ctx.fillStyle = '#c4b5fd';
-
-            ctx.fillText('\uD83C\uDFB5 ' + wt.toUpperCase(), 8 * dpr, 14 * dpr);
-
-            canvasEl._synthAnim = requestAnimationFrame(draw);
-
+            drumGain.gain.value = 0.5;
+        } else if (type === 'tom') {
+            var osc = ctx.createOscillator(); osc.type = 'sine';
+            osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+            var eg = ctx.createGain(); eg.gain.setValueAtTime(0.7, now); eg.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.connect(eg); eg.connect(drumGain); drumGain.gain.value = 0.6;
+            osc.start(now); osc.stop(now + 0.3);
         }
+    }
 
-        canvasEl._synthAnim = requestAnimationFrame(draw);
-
+    // Keyboard mappings
+    var KEY_MAP = {
+        'z': 'C', 'x': 'D', 'c': 'E', 'v': 'F', 'b': 'G', 'n': 'A', 'm': 'B',
+        's': 'C#', 'd': 'D#', 'g': 'F#', 'h': 'G#', 'j': 'A#',
+        'q': 'C', 'w': 'D', 'e': 'E', 'r': 'F', 't': 'G', 'y': 'A', 'u': 'B',
+        '2': 'C#', '3': 'D#', '5': 'F#', '6': 'G#', '7': 'A#'
     };
+    // Number key mapping: 1-9 for notes
+    var NUM_KEY_MAP = { '1': 'C', '2': 'D', '3': 'E', '4': 'F', '5': 'G', '6': 'A', '7': 'B', '8': 'C', '9': 'D' };
+    var NUM_KEY_OCT = { '8': 1, '9': 1 };
 
+    // Time signature data
+    var TIME_SIGS = {
+        '4/4': { beats: 4, subdivision: 4, steps: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0] },
+        '3/4': { beats: 3, subdivision: 4, steps: [1,0,0, 1,0,0, 1,0,0, 1,0,0] },
+        '6/8': { beats: 6, subdivision: 3, steps: [1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,0,0] },
+        '5/4': { beats: 5, subdivision: 4, steps: [1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0, 1,0,0,0,0] },
+        '7/8': { beats: 7, subdivision: 2, steps: [1,0,0,0,0,0,0, 1,0,0,0,0,0,0] },
+    };
+    var timeSig = d.timeSig || '4/4';
+    var loopLen = d.loopLen || 8;
+    var LOOP_LENGTHS = [8, 12, 16, 24, 32];
 
-
-    // Sequencer
-
+    // Sequencer data
     var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5'];
-
     var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-
-    var seq = d.sequence || [0, 0, 0, 0, 0, 0, 0, 0];
-
+    var DRUM_TYPES = ['kick', 'snare', 'hihat', 'clap', 'tom'];
+    var DRUM_LABELS = ['\uD83E\uDD41 Kick', '\uD83E\uDD41 Snare', '\uD83E\uDD41 Hat', '\uD83D\uDC4F Clap', '\uD83E\uDD41 Tom'];
+    var seq = d.sequence || new Array(loopLen).fill(0);
+    while (seq.length < loopLen) seq.push(0);
+    seq = seq.slice(0, loopLen);
+    var drumSeq = d.drumSequence || {};
     var seqPlaying = d.seqPlaying || false;
-
-
+    var looping = d.looping !== undefined ? d.looping : true;
 
     function toggleSeqStep(idx) {
-
         var newSeq = seq.slice();
-
-        newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1); // 0 = off, 1-8 = note
-
+        newSeq[idx] = (newSeq[idx] + 1) % (SEQ_NOTES.length + 1);
         upd('sequence', newSeq);
-
     }
-
-
+    function toggleDrumStep(drumType, idx) {
+        var ds = Object.assign({}, drumSeq);
+        if (!ds[drumType]) ds[drumType] = new Array(loopLen).fill(0);
+        var arr = ds[drumType].slice();
+        while (arr.length < loopLen) arr.push(0);
+        arr[idx] = arr[idx] ? 0 : 1;
+        ds[drumType] = arr;
+        upd('drumSequence', ds);
+    }
 
     function startSequencer() {
-
         stopSequencer();
-
         upd('seqPlaying', true);
-
         upd('seqStep', 0);
-
         var bpm = d.bpm || 120;
-
-        var interval = (60 / bpm) * 1000 / 2; // eighth notes
-
+        var interval = (60 / bpm) * 1000 / 2;
         var step = 0;
-
         window._alloSynthSeqInterval = setInterval(function () {
-
-            // Read latest sequence from DOM data attribute
-
             var seqEl = document.getElementById('synth-seq-data');
-
             var currentSeq = seq;
-
-            if (seqEl && seqEl.dataset.seq) {
-
+            var currentDrums = drumSeq;
+            if (seqEl) {
                 try { currentSeq = JSON.parse(seqEl.dataset.seq); } catch (e) { }
-
+                try { currentDrums = JSON.parse(seqEl.dataset.drums || '{}'); } catch (e) { }
             }
-
-            // Stop previous note
-
+            var currentLen = parseInt(seqEl && seqEl.dataset.looplen) || loopLen;
             stopNote('seq');
-
             var noteIdx = currentSeq[step];
-
             if (noteIdx > 0 && noteIdx <= SEQ_FREQS.length) {
-
                 playNote(SEQ_FREQS[noteIdx - 1], 'seq');
-
                 setTimeout(function () { stopNote('seq'); }, interval * 0.8);
-
             }
-
-            step = (step + 1) % 8;
-
-            // Update visual step indicator via dataset
-
+            DRUM_TYPES.forEach(function(dt) {
+                if (currentDrums[dt] && currentDrums[dt][step]) playDrum(dt);
+            });
+            step = (step + 1) % currentLen;
             if (seqEl) seqEl.dataset.step = step;
-
             upd('seqStep', step);
-
+            if (step === 0 && !looping) { stopSequencer(); }
         }, interval);
-
     }
-
-
-
     function stopSequencer() {
-
         if (window._alloSynthSeqInterval) {
-
             clearInterval(window._alloSynthSeqInterval);
-
             window._alloSynthSeqInterval = null;
-
         }
-
         stopNote('seq');
-
         upd('seqPlaying', false);
-
         upd('seqStep', -1);
-
     }
 
-
-
-    // Quiz bank
-
-    var MUSIC_QUIZ = [
-
-        { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
-
-        { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
-
-        { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
-
-        { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
-
-        { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
-
-        { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
-
-        { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
-
-        { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
-
-        { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
-
-        { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
-
-    ];
-
-
-
-    // Waveform descriptions
-
-    var WAVE_INFO = {
-
-        sine: { emoji: '\u223F', desc: 'Pure tone — only the fundamental frequency. No harmonics. Used in tuning forks and test signals.', harmonics: 'None (fundamental only)' },
-
-        square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Contains only odd harmonics (1st, 3rd, 5th...). Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)' },
-
-        sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, and rich. Contains ALL harmonics. Great for brass and string sounds.', harmonics: 'All (1, 2, 3, 4, 5...)' },
-
-        triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow. Contains odd harmonics but they fall off quickly.', harmonics: 'Odd only, quiet (1/n\u00B2)' }
-
+    // Oscilloscope with FFT toggle
+    var showFFT = d.showFFT || false;
+    var canvasRef = function (canvasEl) {
+        if (!canvasEl || canvasEl._synthInit) return;
+        canvasEl._synthInit = true;
+        var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+        var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+        var ctx = canvasEl.getContext('2d');
+        var dpr = 2;
+        function draw() {
+            ctx.clearRect(0, 0, cW, cH);
+            var grad = ctx.createLinearGradient(0, 0, 0, cH);
+            grad.addColorStop(0, '#1e1b4b'); grad.addColorStop(0.5, '#312e81'); grad.addColorStop(1, '#1e1b4b');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, cW, cH);
+            ctx.strokeStyle = 'rgba(139,92,246,0.12)'; ctx.lineWidth = 1;
+            for (var gx = 0; gx < cW; gx += 20 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
+            for (var gy = 0; gy < cH; gy += 20 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
+            ctx.strokeStyle = 'rgba(139,92,246,0.25)'; ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke(); ctx.setLineDash([]);
+            if (window._alloSynthAnalyser) {
+                var analyser = window._alloSynthAnalyser;
+                var isFFT = canvasEl.dataset.showFft === 'true';
+                if (isFFT) {
+                    var freqData = new Uint8Array(analyser.frequencyBinCount);
+                    analyser.getByteFrequencyData(freqData);
+                    var barW = cW / freqData.length * 2.5;
+                    for (var i = 0; i < freqData.length / 2.5; i++) {
+                        var barH = (freqData[i] / 255) * cH * 0.85;
+                        var hue = (i / (freqData.length / 2.5)) * 270;
+                        ctx.fillStyle = 'hsla(' + hue + ',80%,65%,0.8)';
+                        ctx.fillRect(i * barW, cH - barH, barW - 1, barH);
+                    }
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(4 * dpr, 4 * dpr, 95 * dpr, 14 * dpr);
+                    ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; ctx.fillStyle = '#a78bfa';
+                    ctx.fillText('\uD83D\uDCC8 SPECTRUM', 8 * dpr, 14 * dpr);
+                } else {
+                    var bufLen = analyser.fftSize;
+                    var dataArr = new Uint8Array(bufLen);
+                    analyser.getByteTimeDomainData(dataArr);
+                    ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 8;
+                    ctx.lineWidth = 2.5 * dpr; ctx.strokeStyle = '#c4b5fd'; ctx.beginPath();
+                    var sliceW = cW / bufLen;
+                    for (var i = 0; i < bufLen; i++) { var v = dataArr[i] / 128.0; var py = (v * cH) / 2; if (i === 0) ctx.moveTo(0, py); else ctx.lineTo(i * sliceW, py); }
+                    ctx.stroke(); ctx.shadowBlur = 0;
+                    ctx.lineWidth = 1.5 * dpr; ctx.strokeStyle = '#e9d5ff'; ctx.beginPath();
+                    for (var i2 = 0; i2 < bufLen; i2++) { var v2 = dataArr[i2] / 128.0; var py2 = (v2 * cH) / 2; if (i2 === 0) ctx.moveTo(0, py2); else ctx.lineTo(i2 * sliceW, py2); }
+                    ctx.stroke();
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(4 * dpr, 4 * dpr, 85 * dpr, 14 * dpr);
+                    ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; ctx.fillStyle = '#c4b5fd';
+                    var wt = canvasEl.dataset.waveType || 'sine';
+                    ctx.fillText('\uD83C\uDFB5 ' + wt.toUpperCase(), 8 * dpr, 14 * dpr);
+                }
+            }
+            canvasEl._synthAnim = requestAnimationFrame(draw);
+        }
+        canvasEl._synthAnim = requestAnimationFrame(draw);
     };
 
+    // Quiz bank
+    var MUSIC_QUIZ = [
+        { q: 'What frequency is "Concert A" (A4)?', a: '440 Hz', opts: ['220 Hz', '440 Hz', '880 Hz', '330 Hz'] },
+        { q: 'Doubling a frequency raises pitch by...', a: 'One octave', opts: ['One semitone', 'One octave', 'A fifth', 'Two octaves'] },
+        { q: 'Which waveform sounds "hollow" or "woody"?', a: 'Square', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
+        { q: 'A sine wave has how many harmonics?', a: 'Just the fundamental', opts: ['All harmonics', 'Odd harmonics', 'Just the fundamental', 'Even harmonics'] },
+        { q: 'What does ADSR stand for?', a: 'Attack, Decay, Sustain, Release', opts: ['Amp, Delay, Sync, Reverb', 'Attack, Decay, Sustain, Release', 'Audio, Digital, Signal, Routing', 'Attack, Drive, Sweep, Resonance'] },
+        { q: 'A perfect fifth has a frequency ratio of...', a: '3:2', opts: ['2:1', '3:2', '4:3', '5:4'] },
+        { q: 'What is the period of a 440 Hz wave?', a: '~2.27 ms', opts: ['~1 ms', '~2.27 ms', '~4.4 ms', '~10 ms'] },
+        { q: 'Which waveform contains ALL harmonics?', a: 'Sawtooth', opts: ['Sine', 'Square', 'Triangle', 'Sawtooth'] },
+        { q: 'Middle C (C4) is approximately...', a: '261.6 Hz', opts: ['220 Hz', '261.6 Hz', '330 Hz', '440 Hz'] },
+        { q: 'A sawtooth wave sounds...', a: 'Buzzy and bright', opts: ['Pure and clean', 'Buzzy and bright', 'Hollow and woody', 'Soft and mellow'] },
+        { q: 'What acoustic property does reverb simulate?', a: 'Sound reflections in a room', opts: ['Sound pitch', 'Sound reflections in a room', 'Sound speed', 'Sound direction'] },
+        { q: 'What is the Doppler effect?', a: 'Frequency change from motion', opts: ['Echo', 'Frequency change from motion', 'Volume increase', 'Resonance'] },
+        { q: 'How does distortion change a waveform?', a: 'Clips peaks, adding harmonics', opts: ['Removes harmonics', 'Clips peaks, adding harmonics', 'Doubles the frequency', 'Reverses the phase'] },
+    ];
+
+    // Waveform descriptions
+    var WAVE_INFO = {
+        sine: { emoji: '\u223F', desc: 'Pure tone \u2014 only the fundamental frequency. No harmonics. Like a tuning fork or test tone.', harmonics: 'None (fundamental only)', science: 'A sine wave is the simplest wave: y = A\u00B7sin(2\u03C0ft). It produces a single frequency with no overtones. All other periodic waveforms can be decomposed into sine waves (Fourier theorem).' },
+        square: { emoji: '\u25A0', desc: 'Hollow, woody sound. Contains only odd harmonics (1st, 3rd, 5th...). Classic retro game sound.', harmonics: 'Odd only (1, 3, 5, 7...)', science: 'A square wave rapidly alternates between two amplitudes. Its Fourier series is: 4/\u03C0 \u00B7 [sin(f) + sin(3f)/3 + sin(5f)/5 + ...]. Only odd harmonics are present, giving it a hollow quality.' },
+        sawtooth: { emoji: '\u2A5A', desc: 'Bright, buzzy, and rich. Contains ALL harmonics. Great for brass and string sounds.', harmonics: 'All (1, 2, 3, 4, 5...)', science: 'A sawtooth wave ramps linearly then drops. It contains all harmonics: 2/\u03C0 \u00B7 [sin(f) - sin(2f)/2 + sin(3f)/3 - ...]. This richness makes it sound "bright" and useful as a starting point for subtractive synthesis.' },
+        triangle: { emoji: '\u25B3', desc: 'Soft, mellow, slightly hollow. Contains odd harmonics but they fall off quickly.', harmonics: 'Odd only, quiet (1/n\u00B2)', science: 'A triangle wave is like a smoothed square wave. It has only odd harmonics but they drop off as 1/n\u00B2, making it much quieter than a square wave. Formula: 8/\u03C0\u00B2 \u00B7 [sin(f) - sin(3f)/9 + sin(5f)/25 - ...]' }
+    };
     var wInfo = WAVE_INFO[d.waveType || 'sine'];
 
+    // Effects science tooltips
+    var EFFECT_TIPS = {
+        reverb: { title: 'Reverb (Reverberation)', text: 'Simulates sound bouncing off walls in a room. Uses a convolution algorithm that multiplies the audio signal with an impulse response \u2014 a recording of how a space responds to a brief sound. Larger rooms = longer reverb tail.' },
+        delay: { title: 'Delay (Echo)', text: 'Stores the audio signal in a buffer and plays it back after a set time. Feedback loops the delayed signal back into the input, creating repeated echoes that decay over time. Delay time relates to tempo: 60000/BPM = quarter note in ms.' },
+        distortion: { title: 'Distortion (Waveshaping)', text: 'Clips the audio signal when it exceeds a threshold, "squaring off" the waveform peaks. This adds new harmonics not present in the original, making the sound "crunchy." The transfer function maps input amplitude to output amplitude.' },
+        chorus: { title: 'Chorus Effect', text: 'Duplicates the audio signal and modulates the copy\'s pitch with a Low Frequency Oscillator (LFO). The slight detuning between original and copy creates a "thicker" sound, similar to multiple instruments playing in unison but slightly out of tune.' },
+        adsr: { title: 'ADSR Envelope', text: 'Controls how volume changes over the life of a note. Attack: time to reach full volume. Decay: time to drop to sustain level. Sustain: held volume while key is pressed. Release: time to fade to silence after key release.' },
+        bpm: { title: 'Beats Per Minute', text: 'The tempo of music. At 120 BPM, each beat is 500ms (60s/120). A quarter note = 1 beat, eighth note = 0.5 beats. The sequencer subdivides beats into steps. Faster BPM = more energy; slower = more relaxed feel.' },
+        timeSig: { title: 'Time Signature', text: 'The top number tells how many beats per measure; the bottom number tells which note value gets one beat. 4/4 = 4 quarter-note beats (most common). 3/4 = waltz feel. 6/8 = two groups of three (compound duple).' },
+        octave: { title: 'Octave & Frequency', text: 'An octave is a doubling of frequency. A4 = 440 Hz, so A5 = 880 Hz. Western music divides each octave into 12 equal semitones (12-TET). Each semitone multiplies frequency by 2^(1/12) \u2248 1.0595.' },
+        drums: { title: 'Drum Synthesis', text: 'Drums are synthesized using the Web Audio API without samples. Kick = sine wave with rapid frequency sweep (150\u219240 Hz). Snare = noise burst + bandpass filter. Hi-hat = high-pass filtered noise. Each mimics how real drums produce sound through vibrating membranes and metal.' },
+    };
 
-
-    return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
-
+    return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
         // Hidden data element for sequencer
-
-        React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, style: { display: "none" } }),
-
+        React.createElement("div", { id: "synth-seq-data", "data-seq": JSON.stringify(seq), "data-step": d.seqStep || 0, "data-drums": JSON.stringify(drumSeq), "data-looplen": loopLen, style: { display: "none" } }),
         // Header
-
         React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
             React.createElement("button", { onClick: function () { stopSequencer(); Object.keys(window._alloSynthActiveNotes || {}).forEach(function (k) { stopNote(k); }); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-
             React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB9 Music Synthesizer"),
-
-            React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO")
-
+            React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "WEB AUDIO"),
+            React.createElement(Tip, { id: "synth_main", title: "Web Audio Synthesizer", text: "This synthesizer uses the Web Audio API to generate sound in real-time using mathematical waveforms. Each note creates an oscillator that vibrates at a specific frequency. Effects are applied through a chain of audio processing nodes." })
         ),
-
-        // Oscilloscope
-
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "140px" } },
-
+        // Oscilloscope with FFT toggle
+        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg mb-3", style: { height: "200px" } },
             React.createElement("canvas", {
-
                 ref: canvasRef,
-
                 "data-wave-type": d.waveType || 'sine',
-
+                "data-show-fft": showFFT ? 'true' : 'false',
                 style: { width: "100%", height: "100%", display: "block" }
-
-            })
-
-        ),
-
-        // Waveform selector
-
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
-
-            ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
-
-                var info = WAVE_INFO[wt];
-
-                return React.createElement("button", {
-
-                    key: wt,
-
-                    onClick: function () { upd('waveType', wt); },
-
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100')
-
-                }, info.emoji + ' ' + wt.charAt(0).toUpperCase() + wt.slice(1));
-
-            })
-
-        ),
-
-        // Waveform info card
-
-        React.createElement("div", { className: "bg-violet-50 rounded-lg p-2.5 border border-violet-200 mb-3 text-xs" },
-
-            React.createElement("p", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
-
-            React.createElement("p", { className: "text-violet-600 mt-0.5" }, wInfo.desc),
-
-            React.createElement("p", { className: "text-violet-500 mt-0.5 font-semibold" }, "\uD83C\uDFBC Harmonics: " + wInfo.harmonics)
-
-        ),
-
-        // Piano keyboard
-
-        React.createElement("div", { className: "mb-3" },
-
-            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83C\uDFB9 Piano — click keys or press Z-M (white) S,D,G,H,J (black)"),
-
-            React.createElement("div", { className: "relative", style: { height: "120px" } },
-
-                // White keys
-
-                React.createElement("div", { className: "flex h-full" },
-
-                    KEYS.filter(function (k) { return !k.isBlack; }).map(function (k, i) {
-
-                        var noteId = k.note + k.octave;
-
-                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
-
-                        return React.createElement("button", {
-
-                            key: noteId,
-
-                            onMouseDown: function () { playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
-
-                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-
-                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-
-                            className: "flex-1 border border-slate-200 rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : 'bg-white hover:bg-slate-50'),
-
-                            style: { minWidth: "28px" }
-
-                        },
-
-                            React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : 'text-slate-400') }, k.note),
-
-                            React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
-
-                        );
-
-                    })
-
-                ),
-
-                // Black keys overlay
-
-                React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
-
-                    KEYS.map(function (k, i) {
-
-                        if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
-
-                        var noteId = k.note + k.octave;
-
-                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
-
-                        return React.createElement("button", {
-
-                            key: noteId,
-
-                            onMouseDown: function (e) { e.stopPropagation(); playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
-
-                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-
-                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
-
-                            className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (isActive ? 'bg-violet-700 shadow-inner' : 'bg-slate-800 hover:bg-slate-700'),
-
-                            style: { width: "24px", marginLeft: "-12px", marginRight: "-12px", zIndex: 2, pointerEvents: "auto", height: "100%" }
-
-                        },
-
-                            React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
-
-                        );
-
-                    })
-
-                )
-
-            )
-
-        ),
-
-        // Frequency display
-
-        d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
-
-            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
-
-                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
-
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
-
-            ),
-
-            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
-
-                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
-
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
-
-            ),
-
-            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
-
-                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
-
-                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "—")
-
-            )
-
-        ),
-
-        // ADSR Envelope + Volume
-
-        React.createElement("div", { className: "mb-3" },
-
-            React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDCC8 ADSR Envelope & Volume"),
-
-            React.createElement("div", { className: "grid grid-cols-5 gap-2" },
-
-                [
-
-                    { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
-
-                    { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
-
-                    { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
-
-                    { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
-
-                    { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
-
-                ].map(function (s) {
-
-                    return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
-
-                        React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
-
-                        React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
-
-                        React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
-
-                    );
-
-                })
-
-            )
-
-        ),
-
-        // 8-step Sequencer
-
-        React.createElement("div", { className: "mb-3" },
-
-            React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-
-                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 8-Step Sequencer"),
-
-                React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
-
-                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
-
-                    React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
-
-                    React.createElement("button", {
-
-                        onClick: function () { if (seqPlaying) { stopSequencer(); } else { startSequencer(); } },
-
-                        className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600')
-
-                    }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
-
-                )
-
-            ),
-
-            React.createElement("div", { className: "grid grid-cols-8 gap-1" },
-
-                seq.map(function (noteIdx, stepIdx) {
-
-                    var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
-
-                    var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
-
-                    var bgColor = noteIdx > 0 ? 'bg-violet-' + (200 + noteIdx * 50) : 'bg-slate-100';
-
-                    return React.createElement("button", {
-
-                        key: stepIdx,
-
-                        onClick: function () { toggleSeqStep(stepIdx); },
-
-                        className: "p-2 rounded-lg border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50')
-
-                    },
-
-                        React.createElement("span", { className: "text-sm font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName),
-
-                        React.createElement("span", { className: "text-[8px] text-slate-400" }, stepIdx + 1)
-
-                    );
-
-                })
-
-            ),
-
-            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 text-center" }, "Click steps to cycle through notes (C D E F G A B C5). Click again to clear.")
-
-        ),
-
-        // Quiz
-
-        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-
+            }),
             React.createElement("button", {
-
-                onClick: function () {
-
-                    var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
-
-                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
-
-                },
-
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
-
-            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
-
-            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
-
+                onClick: function() { upd('showFFT', !showFFT); },
+                className: "absolute top-2 right-2 px-2 py-1 rounded-md text-[10px] font-bold " + (showFFT ? "bg-violet-600 text-white" : "bg-black/40 text-white/80 hover:bg-black/60"),
+                style: { zIndex: 10 }
+            }, showFFT ? "\uD83C\uDFB5 Waveform" : "\uD83D\uDCC8 Spectrum"),
+            React.createElement(Tip, { id: "oscilloscope", title: "Oscilloscope & Spectrum", text: "Waveform view shows amplitude vs time \u2014 how the speaker cone moves. Spectrum view (FFT) shows amplitude vs frequency \u2014 which pitches are present. The Fast Fourier Transform decomposes any signal into its component sine waves." })
         ),
-
-        d.quiz && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200 mb-3" },
-
-            React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
-
-            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-
-                d.quiz.opts.map(function (opt) {
-
-                    var isCorrect = opt === d.quiz.a;
-
-                    var wasChosen = d.quiz.chosen === opt;
-
-                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
-
-                    return React.createElement("button", {
-
-                        key: opt, disabled: d.quiz.answered,
-
-                        onClick: function () {
-
-                            var correct = opt === d.quiz.a;
-
-                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
-
-                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
-
+        // Waveform selector
+        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+            ['sine', 'square', 'sawtooth', 'triangle'].map(function (wt) {
+                var info = WAVE_INFO[wt];
+                return React.createElement("button", {
+                    key: wt,
+                    onClick: function () { upd('waveType', wt); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100')
+                }, info.emoji + ' ' + wt.charAt(0).toUpperCase() + wt.slice(1));
+            }),
+            React.createElement(Tip, { id: "waveform", title: "Waveform Types", text: wInfo.science })
+        ),
+        // Waveform info card
+        React.createElement("div", { className: "bg-violet-50 rounded-lg p-2.5 border border-violet-200 mb-3 text-xs" },
+            React.createElement("p", { className: "font-bold text-violet-800" }, wInfo.emoji + ' ' + (d.waveType || 'sine').toUpperCase()),
+            React.createElement("p", { className: "text-violet-600 mt-0.5" }, wInfo.desc),
+            React.createElement("p", { className: "text-violet-500 mt-0.5 font-semibold" }, "\uD83C\uDFBC Harmonics: " + wInfo.harmonics)
+        ),
+        // Piano keyboard
+        React.createElement("div", { className: "mb-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB9 Piano \u2014 click keys or press Z-M / 1-9"),
+                React.createElement(Tip, { id: "piano", title: "Piano & Keyboard Input", text: "Two keyboard mappings are available simultaneously: ZXCVBNM for white keys and SDGHJ for sharps (mimicking piano layout), or number keys 1-9 for C through D5. Press + or = to shift up an octave, - to shift down." }),
+                React.createElement("div", { className: "ml-auto flex items-center gap-1" },
+                    React.createElement("button", { onClick: function() { upd('octave', Math.max(2, (d.octave || 4) - 1)); }, className: "px-2 py-0.5 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200" }, "\u2212 Oct"),
+                    React.createElement("span", { className: "text-xs font-bold text-violet-700 px-1" }, "C" + (d.octave || 4)),
+                    React.createElement("button", { onClick: function() { upd('octave', Math.min(7, (d.octave || 4) + 1)); }, className: "px-2 py-0.5 bg-slate-100 rounded text-xs font-bold text-slate-600 hover:bg-slate-200" }, "+ Oct"),
+                    React.createElement(Tip, { id: "octave_ctrl", title: EFFECT_TIPS.octave.title, text: EFFECT_TIPS.octave.text })
+                )
+            ),
+            React.createElement("div", { className: "relative", style: { height: "120px" } },
+                // White keys
+                React.createElement("div", { className: "flex h-full" },
+                    KEYS.filter(function (k) { return !k.isBlack; }).map(function (k, i) {
+                        var noteId = k.note + k.octave;
+                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+                        return React.createElement("button", {
+                            key: noteId,
+                            onMouseDown: function () { playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            className: "flex-1 border border-slate-200 rounded-b-lg transition-all flex flex-col items-center justify-end pb-1.5 " + (isActive ? 'bg-violet-100 border-violet-400 shadow-inner' : 'bg-white hover:bg-slate-50'),
+                            style: { minWidth: "28px" }
                         },
-
-                        className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
-
-                    }, opt);
-
-                })
-
+                            React.createElement("span", { className: "text-[9px] font-bold " + (isActive ? 'text-violet-700' : 'text-slate-400') }, k.note),
+                            React.createElement("span", { className: "text-[8px] text-slate-300" }, k.octave)
+                        );
+                    })
+                ),
+                // Black keys overlay
+                React.createElement("div", { className: "absolute top-0 left-0 right-0 flex", style: { height: "65%", pointerEvents: "none" } },
+                    KEYS.map(function (k, i) {
+                        if (!k.isBlack) return React.createElement("div", { key: 'spacer-' + i, style: { flex: "1 0 0" } });
+                        var noteId = k.note + k.octave;
+                        var isActive = (d.activeKeys || []).indexOf(noteId) !== -1;
+                        return React.createElement("button", {
+                            key: noteId,
+                            onMouseDown: function (e) { e.stopPropagation(); playNote(k.freq, noteId); upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', k.freq); },
+                            onMouseUp: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            onMouseLeave: function () { stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
+                            className: "rounded-b-md transition-all flex items-end justify-center pb-1 " + (isActive ? 'bg-violet-700 shadow-inner' : 'bg-slate-800 hover:bg-slate-700'),
+                            style: { width: "24px", marginLeft: "-12px", marginRight: "-12px", zIndex: 2, pointerEvents: "auto", height: "100%" }
+                        },
+                            React.createElement("span", { className: "text-[8px] font-bold text-white/70" }, k.note)
+                        );
+                    })
+                )
             )
-
         ),
-
+        // Frequency display
+        d.lastNote && React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Note"),
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastNote)
+            ),
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Frequency"),
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, (d.lastFreq || 0).toFixed(1) + " Hz")
+            ),
+            React.createElement("div", { className: "p-2 bg-violet-50 rounded-lg border border-violet-200" },
+                React.createElement("p", { className: "text-[9px] font-bold text-violet-600 uppercase" }, "Period"),
+                React.createElement("p", { className: "text-sm font-bold text-violet-800" }, d.lastFreq ? (1000 / d.lastFreq).toFixed(2) + " ms" : "\u2014")
+            )
+        ),
+        // ADSR Envelope + Volume
+        React.createElement("div", { className: "mb-3" },
+            React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83D\uDCC8 ADSR Envelope & Volume"),
+                React.createElement(Tip, { id: "adsr", title: EFFECT_TIPS.adsr.title, text: EFFECT_TIPS.adsr.text })
+            ),
+            React.createElement("div", { className: "grid grid-cols-5 gap-2" },
+                [
+                    { k: 'attack', label: 'Attack', min: 0.001, max: 1, step: 0.01, color: 'emerald' },
+                    { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, color: 'amber' },
+                    { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, color: 'sky' },
+                    { k: 'release', label: 'Release', min: 0.01, max: 2, step: 0.01, color: 'rose' },
+                    { k: 'volume', label: 'Volume', min: 0, max: 1, step: 0.01, color: 'violet' }
+                ].map(function (s) {
+                    return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-1.5 border" },
+                        React.createElement("label", { className: "text-[9px] font-bold text-slate-500 block" }, s.label),
+                        React.createElement("span", { className: "text-xs font-bold text-" + s.color + "-700 block" }, (d[s.k] || 0).toFixed(2)),
+                        React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-" + s.color + "-600", style: { height: "14px" } })
+                    );
+                })
+            )
+        ),
+        // Effects Section
+        React.createElement("div", { className: "mb-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200" },
+            React.createElement("div", { className: "flex items-center gap-1 mb-2" },
+                React.createElement("p", { className: "text-xs font-bold text-violet-700" }, "\u2728 Effects Chain"),
+                React.createElement(Tip, { id: "fx_chain", title: "Audio Effects Chain", text: "Sound flows through effects in series: Oscillator \u2192 Distortion \u2192 Delay/Reverb/Chorus \u2192 Master Volume. Each effect modifies the signal. Turn up the Mix knob to hear each effect." })
+            ),
+            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" },
+                // Reverb
+                React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, "\uD83C\uDFDB Reverb"),
+                        React.createElement(Tip, { id: "reverb", title: EFFECT_TIPS.reverb.title, text: EFFECT_TIPS.reverb.text })
+                    ),
+                    [{ k: 'reverbMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'reverbSize', label: 'Size', min: 0.1, max: 5, step: 0.1 }].map(function(p) {
+                        return React.createElement("div", { key: p.k, className: "mb-1" },
+                            React.createElement("div", { className: "flex justify-between" },
+                                React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label),
+                                React.createElement("span", { className: "text-[8px] font-bold text-indigo-600" }, (d[p.k] || 0).toFixed(2))
+                            ),
+                            React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-indigo-500", style: { height: "12px" } })
+                        );
+                    })
+                ),
+                // Delay
+                React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-sky-700" }, "\u23F1 Delay"),
+                        React.createElement(Tip, { id: "delay", title: EFFECT_TIPS.delay.title, text: EFFECT_TIPS.delay.text })
+                    ),
+                    [{ k: 'delayMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'delayTime', label: 'Time(ms)', min: 50, max: 1000, step: 10 }, { k: 'delayFeedback', label: 'Feedback', min: 0, max: 0.9, step: 0.05 }].map(function(p) {
+                        return React.createElement("div", { key: p.k, className: "mb-1" },
+                            React.createElement("div", { className: "flex justify-between" },
+                                React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label),
+                                React.createElement("span", { className: "text-[8px] font-bold text-sky-600" }, p.k === 'delayTime' ? Math.round(d[p.k] || 300) : (d[p.k] || 0).toFixed(2))
+                            ),
+                            React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'delayTime' ? 300 : 0), onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-sky-500", style: { height: "12px" } })
+                        );
+                    })
+                ),
+                // Distortion
+                React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-orange-700" }, "\uD83D\uDD25 Distortion"),
+                        React.createElement(Tip, { id: "distortion", title: EFFECT_TIPS.distortion.title, text: EFFECT_TIPS.distortion.text })
+                    ),
+                    [{ k: 'distAmount', label: 'Amount', min: 0, max: 100, step: 1 }].map(function(p) {
+                        return React.createElement("div", { key: p.k, className: "mb-1" },
+                            React.createElement("div", { className: "flex justify-between" },
+                                React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label),
+                                React.createElement("span", { className: "text-[8px] font-bold text-orange-600" }, Math.round(d[p.k] || 0))
+                            ),
+                            React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-orange-500", style: { height: "12px" } })
+                        );
+                    })
+                ),
+                // Chorus
+                React.createElement("div", { className: "bg-white rounded-lg p-2 border" },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\uD83C\uDF0A Chorus"),
+                        React.createElement(Tip, { id: "chorus", title: EFFECT_TIPS.chorus.title, text: EFFECT_TIPS.chorus.text })
+                    ),
+                    [{ k: 'chorusMix', label: 'Mix', min: 0, max: 1, step: 0.05 }, { k: 'chorusRate', label: 'Rate(Hz)', min: 0.1, max: 10, step: 0.1 }].map(function(p) {
+                        return React.createElement("div", { key: p.k, className: "mb-1" },
+                            React.createElement("div", { className: "flex justify-between" },
+                                React.createElement("span", { className: "text-[8px] text-slate-500" }, p.label),
+                                React.createElement("span", { className: "text-[8px] font-bold text-emerald-600" }, (d[p.k] || 0).toFixed(2))
+                            ),
+                            React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function(e) { upd(p.k, parseFloat(e.target.value)); }, className: "w-full accent-emerald-500", style: { height: "12px" } })
+                        );
+                    })
+                )
+            )
+        ),
+        // Sequencer Section
+        React.createElement("div", { className: "mb-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
+                React.createElement("p", { className: "text-xs font-bold text-slate-500" }, "\uD83C\uDFB6 Sequencer"),
+                React.createElement(Tip, { id: "sequencer", title: "Step Sequencer", text: "A step sequencer divides time into equal steps and plays a note or drum hit on each active step. Click a step to cycle through notes. The grid runs left to right, looping at the end. Drum rows trigger percussive sounds independently." }),
+                // Loop length selector
+                React.createElement("div", { className: "flex items-center gap-1 ml-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "Steps:"),
+                    LOOP_LENGTHS.map(function(len) {
+                        return React.createElement("button", {
+                            key: len,
+                            onClick: function() { upd('loopLen', len); var newSeq = (d.sequence || []).slice(); while (newSeq.length < len) newSeq.push(0); upd('sequence', newSeq.slice(0, len)); },
+                            className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (loopLen === len ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200")
+                        }, len);
+                    })
+                ),
+                // Time signature
+                React.createElement("div", { className: "flex items-center gap-1 ml-2" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "Time:"),
+                    Object.keys(TIME_SIGS).map(function(ts) {
+                        return React.createElement("button", {
+                            key: ts,
+                            onClick: function() { upd('timeSig', ts); },
+                            className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (timeSig === ts ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200")
+                        }, ts);
+                    }),
+                    React.createElement(Tip, { id: "timeSig", title: EFFECT_TIPS.timeSig.title, text: EFFECT_TIPS.timeSig.text })
+                ),
+                // BPM & Controls
+                React.createElement("div", { className: "flex items-center gap-1 ml-auto" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, "BPM:"),
+                    React.createElement("input", { type: "number", min: 40, max: 300, value: d.bpm || 120, onChange: function (e) { upd('bpm', parseInt(e.target.value) || 120); }, className: "w-14 text-xs text-center border rounded-md px-1 py-0.5 font-bold" }),
+                    React.createElement(Tip, { id: "bpm", title: EFFECT_TIPS.bpm.title, text: EFFECT_TIPS.bpm.text }),
+                    React.createElement("button", { onClick: function() { upd('looping', !looping); }, className: "ml-1 px-2 py-1 rounded-lg text-[10px] font-bold " + (looping ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-400") }, looping ? "\uD83D\uDD01 Loop" : "\u27A1 Once"),
+                    React.createElement("button", {
+                        onClick: function () { if (seqPlaying) { stopSequencer(); } else { startSequencer(); } },
+                        className: "ml-1 px-3 py-1 rounded-lg text-xs font-bold transition-all " + (seqPlaying ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white hover:bg-emerald-600')
+                    }, seqPlaying ? "\u23F9 Stop" : "\u25B6 Play")
+                )
+            ),
+            // Note sequencer row
+            React.createElement("div", { className: "mb-1" },
+                React.createElement("p", { className: "text-[9px] font-bold text-slate-400 mb-0.5" }, "\uD83C\uDFB5 Melody"),
+                React.createElement("div", { className: "grid gap-0.5", style: { gridTemplateColumns: "repeat(" + loopLen + ", 1fr)" } },
+                    seq.map(function (noteIdx, stepIdx) {
+                        var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
+                        var noteName = noteIdx > 0 ? SEQ_NOTES[noteIdx - 1] : '\u00B7';
+                        var tsData = TIME_SIGS[timeSig];
+                        var beatsPerMeasure = tsData ? tsData.beats : 4;
+                        var isDownbeat = stepIdx % beatsPerMeasure === 0;
+                        return React.createElement("button", {
+                            key: stepIdx,
+                            onClick: function () { toggleSeqStep(stepIdx); },
+                            className: "p-1 rounded border-2 text-center transition-all " + (isActive ? 'border-amber-400 ring-2 ring-amber-300 scale-105' : isDownbeat ? 'border-violet-300' : 'border-slate-200') + " " + (noteIdx > 0 ? 'bg-violet-100' : 'bg-slate-50')
+                        },
+                            React.createElement("span", { className: "text-[10px] font-bold block " + (noteIdx > 0 ? 'text-violet-700' : 'text-slate-300') }, noteName)
+                        );
+                    })
+                )
+            ),
+            // Drum rows
+            React.createElement("div", { className: "mt-1" },
+                React.createElement("div", { className: "flex items-center gap-1 mb-0.5" },
+                    React.createElement("p", { className: "text-[9px] font-bold text-slate-400" }, "\uD83E\uDD41 Drums"),
+                    React.createElement(Tip, { id: "drums", title: EFFECT_TIPS.drums.title, text: EFFECT_TIPS.drums.text })
+                ),
+                DRUM_TYPES.map(function(dt, di) {
+                    var row = drumSeq[dt] || new Array(loopLen).fill(0);
+                    var drumColors = ['bg-rose-100 border-rose-300', 'bg-amber-100 border-amber-300', 'bg-cyan-100 border-cyan-300', 'bg-pink-100 border-pink-300', 'bg-orange-100 border-orange-300'];
+                    var activeColors = ['bg-rose-300', 'bg-amber-300', 'bg-cyan-300', 'bg-pink-300', 'bg-orange-300'];
+                    return React.createElement("div", { key: dt, className: "flex items-center gap-1 mb-0.5" },
+                        React.createElement("button", { onClick: function() { playDrum(dt); }, className: "w-14 text-[9px] font-bold text-slate-600 text-left hover:text-violet-700 transition-colors shrink-0", title: "Preview " + dt }, DRUM_LABELS[di]),
+                        React.createElement("div", { className: "grid gap-0.5 flex-1", style: { gridTemplateColumns: "repeat(" + loopLen + ", 1fr)" } },
+                            Array.from({ length: loopLen }).map(function(_, stepIdx) {
+                                var isHit = row[stepIdx];
+                                var isActive = (d.seqStep || 0) === stepIdx && seqPlaying;
+                                var tsData = TIME_SIGS[timeSig];
+                                var beatsPerMeasure = tsData ? tsData.beats : 4;
+                                var isDownbeat = stepIdx % beatsPerMeasure === 0;
+                                return React.createElement("button", {
+                                    key: stepIdx,
+                                    onClick: function() { toggleDrumStep(dt, stepIdx); },
+                                    className: "h-5 rounded border transition-all " + (isActive ? 'ring-1 ring-amber-400 scale-105 ' : '') + (isHit ? drumColors[di] + ' ' + activeColors[di] : isDownbeat ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200')
+                                });
+                            })
+                        )
+                    );
+                })
+            ),
+            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 text-center" }, "Click melody steps to cycle notes. Click drum cells to toggle hits. Preview drums by clicking labels.")
+        ),
+        // Quiz
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("button", {
+                onClick: function () {
+                    var q = MUSIC_QUIZ[Math.floor(Math.random() * MUSIC_QUIZ.length)];
+                    upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white')
+            }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Music Quiz"),
+            d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+        ),
+        d.quiz && React.createElement("div", { className: "bg-violet-50 rounded-lg p-3 border border-violet-200 mb-3" },
+            React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, d.quiz.q),
+            React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                d.quiz.opts.map(function (opt) {
+                    var isCorrect = opt === d.quiz.a;
+                    var wasChosen = d.quiz.chosen === opt;
+                    var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-violet-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    return React.createElement("button", {
+                        key: opt, disabled: d.quiz.answered,
+                        onClick: function () {
+                            var correct = opt === d.quiz.a;
+                            upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                            addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + d.quiz.a, correct ? 'success' : 'error');
+                        },
+                        className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                    }, opt);
+                })
+            )
+        ),
         // Snapshot
-
         React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ms-' + Date.now(), tool: 'musicSynth', label: (d.waveType || 'sine') + ' synth', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synth snapshot saved!', 'success'); }, className: "mt-2 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-
     )
-
 })(),
 
 
