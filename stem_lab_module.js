@@ -624,6 +624,16 @@
         { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
         { id: 'decomposer', icon: '⚗️', label: 'Decomposer', desc: 'Break materials into elements', ready: true },
         {
+          id: 'anatomy', icon: '🫀', label: 'Human Anatomy',
+          desc: 'Explore all 11 body systems with interactive canvas — skeletal, muscular, circulatory, nervous, and more.',
+          color: 'rose', ready: true
+        },
+        {
+          id: 'brainAtlas', icon: '🧠', label: 'Brain Atlas',
+          desc: 'Detailed cerebral regions, lobes, nuclei and clinical correlations. Lateral, medial, inferior & coronal views.',
+          color: 'purple', ready: true
+        },
+        {
           id: 'molecule', icon: '🔬', label: 'Molecule Builder',
           desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
           color: 'stone', ready: true
@@ -1735,19 +1745,57 @@
           const step = gridW / range;
           const toSvg = (v, axis) => axis === 'x' ? (v - gridRange.min) * step : gridH - (v - gridRange.min) * step;
           const fromSvg = (px, axis) => axis === 'x' ? Math.round(px / step + gridRange.min) : Math.round((gridH - px) / step + gridRange.min);
+          // Connect mode & slope state (stored in gridFeedback object)
+          const connectMode = gridFeedback && gridFeedback.connectMode;
+          const gridLines = (gridFeedback && gridFeedback.lines) || [];
+          const connectFirst = gridFeedback && gridFeedback.connectFirst;
+          const slopeChallenge = gridChallenge && gridChallenge.type === 'slope';
+          const slopeAnswer = gridFeedback && gridFeedback.slopeAnswer;
+          const calcSlope = (p1, p2) => {
+            const dy = p2.y - p1.y;
+            const dx = p2.x - p1.x;
+            if (dx === 0) return { rise: dy, run: 0, value: 'undefined', display: 'undefined' };
+            const gcdFn = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { const t = b; b = a % t; a = t; } return a || 1; };
+            const g = gcdFn(dy, dx);
+            const num = dy / g; const den = dx / g;
+            const frac = den < 0 ? (-num) + '/' + (-den) : den === 1 ? '' + num : num + '/' + den;
+            return { rise: dy, run: dx, value: dy / dx, display: frac };
+          };
           const handleGridClick = e => {
             const rect = e.currentTarget.getBoundingClientRect();
             const x = fromSvg(e.clientX - rect.left, 'x');
             const y = fromSvg(e.clientY - rect.top, 'y');
             if (x < gridRange.min || x > gridRange.max || y < gridRange.min || y > gridRange.max) return;
+            if (connectMode) {
+              const clickedIdx = gridPoints.findIndex(p => p.x === x && p.y === y);
+              if (clickedIdx < 0) {
+                setGridPoints(prev => [...prev, { x, y }]);
+                const newIdx = gridPoints.length;
+                if (connectFirst === null || connectFirst === undefined) {
+                  setGridFeedback(prev => Object.assign({}, prev, { connectFirst: newIdx }));
+                } else {
+                  const from = gridPoints[connectFirst];
+                  const to = { x, y };
+                  const slope = calcSlope(from, to);
+                  setGridFeedback(prev => Object.assign({}, prev, { lines: (prev.lines || []).concat([{ from, to, slope }]), connectFirst: null }));
+                }
+                return;
+              }
+              if (connectFirst === null || connectFirst === undefined) {
+                setGridFeedback(prev => Object.assign({}, prev, { connectFirst: clickedIdx }));
+              } else if (clickedIdx !== connectFirst) {
+                const from = gridPoints[connectFirst];
+                const to = gridPoints[clickedIdx];
+                const slope = calcSlope(from, to);
+                setGridFeedback(prev => Object.assign({}, prev, { lines: (prev.lines || []).concat([{ from, to, slope }]), connectFirst: null }));
+              }
+              return;
+            }
             const existing = gridPoints.findIndex(p => p.x === x && p.y === y);
             if (existing >= 0) {
               setGridPoints(prev => prev.filter((_, i) => i !== existing));
             } else {
-              setGridPoints(prev => [...prev, {
-                x,
-                y
-              }]);
+              setGridPoints(prev => [...prev, { x, y }]);
             }
             setGridFeedback(null);
           };
@@ -1757,15 +1805,24 @@
               const ok = gridPoints.some(p => p.x === gridChallenge.target.x && p.y === gridChallenge.target.y);
               setGridFeedback(ok ? {
                 correct: true,
-                msg: '✅ Correct! Point (' + gridChallenge.target.x + ', ' + gridChallenge.target.y + ') plotted!'
+                msg: '\u2705 Correct! Point (' + gridChallenge.target.x + ', ' + gridChallenge.target.y + ') plotted!'
               } : {
                 correct: false,
-                msg: '❌ Point (' + gridChallenge.target.x + ', ' + gridChallenge.target.y + ') not found on your grid.'
+                msg: '\u274C Point (' + gridChallenge.target.x + ', ' + gridChallenge.target.y + ') not found on your grid.'
               });
               setExploreScore(prev => ({
                 correct: prev.correct + (ok ? 1 : 0),
                 total: prev.total + 1
               }));
+            } else if (gridChallenge.type === 'slope') {
+              const answer = (slopeAnswer || '').trim();
+              const cs = gridChallenge.slopeData;
+              const isCorrect = answer === cs.display || answer === '' + cs.value || (cs.run !== 0 && Math.abs(parseFloat(answer) - cs.value) < 0.01);
+              setGridFeedback(prev => Object.assign({}, prev, {
+                correct: isCorrect,
+                msg: isCorrect ? '\u2705 Correct! Slope = ' + cs.display : '\u274C The slope is ' + cs.display + ' (rise=' + cs.rise + ', run=' + cs.run + ')'
+              }));
+              setExploreScore(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
             }
           };
           return /*#__PURE__*/React.createElement("div", {
@@ -1842,74 +1899,112 @@
               textAnchor: 'end',
               className: 'text-[9px] fill-slate-400'
             }, v) : null);
-          }), gridPoints.map((p, i) => React.createElement('circle', {
-            key: i,
-            cx: toSvg(p.x, 'x'),
-            cy: toSvg(p.y, 'y'),
-            r: 5,
-            fill: '#0891b2',
-            stroke: '#fff',
-            strokeWidth: 2,
-            className: 'cursor-pointer'
-          })), gridPoints.map((p, i) => React.createElement('text', {
-            key: 't' + i,
-            x: toSvg(p.x, 'x') + 8,
-            y: toSvg(p.y, 'y') - 8,
-            className: 'text-[10px] fill-cyan-700 font-bold'
-          }, '(' + p.x + ',' + p.y + ')')))), /*#__PURE__*/React.createElement("div", {
-            className: "flex gap-2 flex-wrap"
-          }, /*#__PURE__*/React.createElement("button", {
-            onClick: () => {
-              const tx = -8 + Math.floor(Math.random() * 17);
-              const ty = -8 + Math.floor(Math.random() * 17);
-              setGridChallenge({
-                type: 'plot',
-                target: {
-                  x: tx,
-                  y: ty
-                }
-              });
-              setGridPoints([]);
-              setGridFeedback(null);
-            },
-            className: "flex-1 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-cyan-600 hover:to-teal-600 transition-all shadow-md"
-          }, "\uD83D\uDCCD Plot a Point"), /*#__PURE__*/React.createElement("button", {
-            onClick: () => {
-              setGridPoints([]);
-              setGridChallenge(null);
-              setGridFeedback(null);
-            },
-            className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
-          }, "\u21BA Clear")), gridChallenge && /*#__PURE__*/React.createElement("div", {
-            className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200"
-          }, /*#__PURE__*/React.createElement("p", {
-            className: "text-sm font-bold text-cyan-800 mb-2"
-          }, "\uD83D\uDCCD Plot the point (", gridChallenge.target.x, ", ", gridChallenge.target.y, ")"), /*#__PURE__*/React.createElement("div", {
-            className: "flex gap-2 items-center"
-          }, /*#__PURE__*/React.createElement("span", {
-            className: "text-xs text-cyan-600"
-          }, "Points placed: ", /*#__PURE__*/React.createElement("span", {
-            className: "font-bold"
-          }, gridPoints.length)), /*#__PURE__*/React.createElement("button", {
-            onClick: checkGrid,
-            className: "ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600 transition-all"
-          }, "\u2714 Check")), gridFeedback && /*#__PURE__*/React.createElement("p", {
-            className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600')
-          }, gridFeedback.msg)), /*#__PURE__*/React.createElement("div", {
-            className: "grid grid-cols-2 gap-3"
-          }, /*#__PURE__*/React.createElement("div", {
-            className: "bg-white rounded-xl p-3 border border-cyan-100 text-center"
-          }, /*#__PURE__*/React.createElement("div", {
-            className: "text-xs font-bold text-cyan-600 uppercase mb-1"
-          }, "Points"), /*#__PURE__*/React.createElement("div", {
-            className: "text-2xl font-bold text-cyan-800"
-          }, gridPoints.length)), /*#__PURE__*/React.createElement("div", {
-            className: "bg-white rounded-xl p-3 border border-cyan-100 text-center"
-          }, /*#__PURE__*/React.createElement("div", {
-            className: "text-xs font-bold text-cyan-600 uppercase mb-1"
-          }, "Quadrants Used"), /*#__PURE__*/React.createElement("div", {
-            className: "text-2xl font-bold text-cyan-800"
-          }, new Set(gridPoints.map(p => p.x >= 0 && p.y >= 0 ? 'I' : p.x < 0 && p.y >= 0 ? 'II' : p.x < 0 && p.y < 0 ? 'III' : 'IV')).size))));
+          }),
+            // ── Connected lines with slope badges ──
+            gridLines.map((ln, li) => React.createElement(React.Fragment, { key: 'ln' + li },
+              React.createElement('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '6,3', opacity: 0.8 }),
+              React.createElement('line', { x1: toSvg(ln.to.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.5 }),
+              React.createElement('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.from.y, 'y'), stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '3,2', opacity: 0.5 }),
+              React.createElement('rect', { x: (toSvg(ln.from.x, 'x') + toSvg(ln.to.x, 'x')) / 2 - 24, y: (toSvg(ln.from.y, 'y') + toSvg(ln.to.y, 'y')) / 2 - 10, width: 48, height: 18, rx: 5, fill: '#6366f1', opacity: 0.9 }),
+              React.createElement('text', { x: (toSvg(ln.from.x, 'x') + toSvg(ln.to.x, 'x')) / 2, y: (toSvg(ln.from.y, 'y') + toSvg(ln.to.y, 'y')) / 2 + 3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '9px', fontWeight: 'bold' } }, 'm=' + ln.slope.display)
+            )),
+            // Slope challenge line
+            slopeChallenge && gridChallenge.p1 && React.createElement(React.Fragment, null,
+              React.createElement('line', { x1: toSvg(gridChallenge.p1.x, 'x'), y1: toSvg(gridChallenge.p1.y, 'y'), x2: toSvg(gridChallenge.p2.x, 'x'), y2: toSvg(gridChallenge.p2.y, 'y'), stroke: '#f59e0b', strokeWidth: 2.5 }),
+              React.createElement('circle', { cx: toSvg(gridChallenge.p1.x, 'x'), cy: toSvg(gridChallenge.p1.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }),
+              React.createElement('circle', { cx: toSvg(gridChallenge.p2.x, 'x'), cy: toSvg(gridChallenge.p2.y, 'y'), r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 })
+            ),
+            // Points
+            gridPoints.map((p, i) => React.createElement('circle', {
+              key: i, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: 5,
+              fill: connectFirst === i ? '#6366f1' : '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'cursor-pointer'
+            })), gridPoints.map((p, i) => React.createElement('text', {
+              key: 't' + i, x: toSvg(p.x, 'x') + 8, y: toSvg(p.y, 'y') - 8, className: 'text-[10px] fill-cyan-700 font-bold'
+            }, '(' + p.x + ',' + p.y + ')')))), /*#__PURE__*/React.createElement("div", {
+              className: "flex gap-2 flex-wrap"
+            }, /*#__PURE__*/React.createElement("button", {
+              onClick: () => {
+                const tx = -8 + Math.floor(Math.random() * 17);
+                const ty = -8 + Math.floor(Math.random() * 17);
+                setGridChallenge({
+                  type: 'plot',
+                  target: {
+                    x: tx,
+                    y: ty
+                  }
+                });
+                setGridPoints([]);
+                setGridFeedback(null);
+              },
+              className: "flex-1 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-cyan-600 hover:to-teal-600 transition-all shadow-md"
+            }, "\uD83D\uDCCD Plot a Point"),
+          // Find Slope button
+          /*#__PURE__*/React.createElement("button", {
+              onClick: () => {
+                const x1 = -6 + Math.floor(Math.random() * 13); const y1 = -6 + Math.floor(Math.random() * 13);
+                let x2 = x1, y2 = y1;
+                while (x2 === x1 && y2 === y1) { x2 = -6 + Math.floor(Math.random() * 13); y2 = -6 + Math.floor(Math.random() * 13); }
+                const p1 = { x: x1, y: y1 }; const p2 = { x: x2, y: y2 };
+                setGridChallenge({ type: 'slope', p1, p2, slopeData: calcSlope(p1, p2) });
+                setGridPoints([p1, p2]); setGridFeedback({ slopeAnswer: '' });
+              },
+              className: "flex-1 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
+            }, "\uD83D\uDCCF Find Slope"),
+          // Connect Mode toggle
+          /*#__PURE__*/React.createElement("button", {
+              onClick: () => { if (connectMode) { setGridFeedback(null); } else { setGridFeedback({ connectMode: true, lines: gridLines, connectFirst: null }); } setGridChallenge(null); },
+              className: "flex-1 py-2 font-bold rounded-lg text-sm transition-all shadow-md " + (connectMode ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
+            }, connectMode ? "\u2714 Connect ON" : "\uD83D\uDD17 Connect"),
+          /*#__PURE__*/React.createElement("button", {
+              onClick: () => { setGridPoints([]); setGridChallenge(null); setGridFeedback(null); },
+              className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
+            }, "\u21BA Clear")),
+            // ── Slope challenge UI ──
+            slopeChallenge && /*#__PURE__*/React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
+              React.createElement("p", { className: "text-sm font-bold text-amber-800 mb-2" }, "\uD83D\uDCCF Slope: (", gridChallenge.p1.x, ",", gridChallenge.p1.y, ") to (", gridChallenge.p2.x, ",", gridChallenge.p2.y, ")"),
+              React.createElement("div", { className: "flex items-center gap-3 mb-2 text-xs text-amber-600" },
+                React.createElement("span", null, "rise = \u0394y = ", gridChallenge.slopeData.rise),
+                React.createElement("span", null, "run = \u0394x = ", gridChallenge.slopeData.run)
+              ),
+              React.createElement("div", { className: "flex gap-2 items-center" },
+                React.createElement("span", { className: "text-xs font-bold text-amber-700" }, "m ="),
+                React.createElement("input", { type: "text", placeholder: "e.g. 2/3", value: slopeAnswer || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { slopeAnswer: e.target.value })), onKeyDown: e => { if (e.key === 'Enter') checkGrid(); }, className: "flex-1 px-3 py-1.5 border-2 border-amber-300 rounded-lg text-sm font-bold focus:border-amber-500 focus:outline-none" }),
+                React.createElement("button", { onClick: checkGrid, className: "px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600" }, "\u2714 Check")
+              ),
+              gridFeedback && gridFeedback.msg && React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
+            ),
+            // ── Plot challenge UI ──
+            gridChallenge && gridChallenge.type === 'plot' && /*#__PURE__*/React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200" },
+              React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, "\uD83D\uDCCD Plot (", gridChallenge.target.x, ", ", gridChallenge.target.y, ")"),
+              React.createElement("div", { className: "flex gap-2 items-center" },
+                React.createElement("span", { className: "text-xs text-cyan-600" }, "Points: ", React.createElement("span", { className: "font-bold" }, gridPoints.length)),
+                React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600" }, "\u2714 Check")
+              ),
+              gridFeedback && gridFeedback.msg && React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
+            ),
+            // ── Connect mode info ──
+            connectMode && /*#__PURE__*/React.createElement("div", { className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200" },
+              React.createElement("p", { className: "text-sm font-bold text-indigo-700 mb-1" }, "\uD83D\uDD17 Connect Mode"),
+              React.createElement("p", { className: "text-xs text-indigo-600" }, connectFirst != null ? 'Click a second point to draw a line.' : 'Click a point to start.'),
+              gridLines.length > 0 && React.createElement("div", { className: "mt-2 space-y-1" },
+                gridLines.map((ln, li) => React.createElement("div", { key: li, className: "flex items-center gap-2 text-[10px] bg-white rounded px-2 py-1 border" },
+                  React.createElement("span", { className: "font-bold text-indigo-600" }, '(' + ln.from.x + ',' + ln.from.y + ') \u2192 (' + ln.to.x + ',' + ln.to.y + ')'),
+                  React.createElement("span", { className: "ml-auto font-bold text-indigo-800" }, 'm=' + ln.slope.display)
+                ))
+              ),
+              React.createElement("button", { onClick: () => setGridFeedback(prev => Object.assign({}, prev, { lines: [], connectFirst: null })), className: "mt-2 px-3 py-1 text-[10px] font-bold bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200" }, "\uD83D\uDDD1 Clear Lines")
+            ),
+          // Stats
+          /*#__PURE__*/React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+              React.createElement("div", { className: "bg-white rounded-xl p-3 border border-cyan-100 text-center" },
+                React.createElement("div", { className: "text-xs font-bold text-cyan-600 uppercase mb-1" }, "Points"),
+                React.createElement("div", { className: "text-2xl font-bold text-cyan-800" }, gridPoints.length)
+              ),
+              React.createElement("div", { className: "bg-white rounded-xl p-3 border border-cyan-100 text-center" },
+                React.createElement("div", { className: "text-xs font-bold text-cyan-600 uppercase mb-1" }, "Lines"),
+                React.createElement("div", { className: "text-2xl font-bold text-cyan-800" }, gridLines.length)
+              )
+            ));
         })(), stemLabTab === 'explore' && stemLabTool === 'protractor' && (() => {
           const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? 'Right' : a < 180 ? 'Obtuse' : a === 180 ? 'Straight' : a < 360 ? 'Reflex' : 'Full';
           const angleClass = classifyAngle(angleValue);
@@ -3115,32 +3210,25 @@
             ),
             React.createElement("div", { className: "mt-2 bg-red-50 rounded-xl border border-red-200 p-3" },
               React.createElement("p", { className: "text-[10px] font-bold text-red-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Analysis"),
-              React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
-                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
-                  React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Riemann Sum"),
-                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, area.toFixed(4))
-                ),
-                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
-                  React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Exact (\u222B)"),
-                  React.createElement("p", { className: "text-sm font-bold text-red-800" }, (function () {
-                    var exact = (d.a / 3) * (Math.pow(d.xMax, 3) - Math.pow(d.xMin, 3)) + (d.b / 2) * (Math.pow(d.xMax, 2) - Math.pow(d.xMin, 2)) + d.c * (d.xMax - d.xMin);
-                    return exact.toFixed(4);
-                  })())
-                ),
-                React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
-                  React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Error"),
-                  React.createElement("p", {
-                    className: "text-sm font-bold " + (function () {
-                      var exact = (d.a / 3) * (Math.pow(d.xMax, 3) - Math.pow(d.xMin, 3)) + (d.b / 2) * (Math.pow(d.xMax, 2) - Math.pow(d.xMin, 2)) + d.c * (d.xMax - d.xMin);
-                      var err = Math.abs(area - exact);
-                      return err < 0.01 ? 'text-emerald-600' : err < 0.1 ? 'text-yellow-600' : 'text-red-600';
-                    })()
-                  }, (function () {
-                    var exact = (d.a / 3) * (Math.pow(d.xMax, 3) - Math.pow(d.xMin, 3)) + (d.b / 2) * (Math.pow(d.xMax, 2) - Math.pow(d.xMin, 2)) + d.c * (d.xMax - d.xMin);
-                    return Math.abs(area - exact).toFixed(4);
-                  })())
-                )
-              ),
+              (function () {
+                var exact = (d.a / 3) * (Math.pow(d.xMax, 3) - Math.pow(d.xMin, 3)) + (d.b / 2) * (Math.pow(d.xMax, 2) - Math.pow(d.xMin, 2)) + d.c * (d.xMax - d.xMin);
+                var err = Math.abs(area - exact);
+                var errColor = err < 0.01 ? 'text-emerald-600' : err < 0.1 ? 'text-yellow-600' : 'text-red-600';
+                return React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
+                  React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                    React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Riemann Sum"),
+                    React.createElement("p", { className: "text-sm font-bold text-red-800" }, area.toFixed(4))
+                  ),
+                  React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                    React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Exact (\u222B)"),
+                    React.createElement("p", { className: "text-sm font-bold text-red-800" }, exact.toFixed(4))
+                  ),
+                  React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
+                    React.createElement("p", { className: "text-[9px] font-bold text-red-500" }, "Error"),
+                    React.createElement("p", { className: "text-sm font-bold " + errColor }, err.toFixed(4))
+                  )
+                );
+              })(),
               React.createElement("p", { className: "mt-2 text-xs text-red-500 italic" },
                 d.n <= 5 ? '\uD83D\uDCA1 Very few rectangles! The approximation is rough. Try increasing n.'
                   : d.n <= 15 ? '\uD83D\uDCA1 Getting closer! More rectangles = better approximation. This is the fundamental idea of integration.'
@@ -3158,8 +3246,17 @@
 
           // Canvas-based animated wave
           const canvasRef = function (canvasEl) {
-            if (!canvasEl || canvasEl._waveInit) return;
+            if (!canvasEl) {
+              if (canvasRef._lastCanvas && canvasRef._lastCanvas._waveAnim) {
+                cancelAnimationFrame(canvasRef._lastCanvas._waveAnim);
+                canvasRef._lastCanvas._waveInit = false;
+                canvasRef._lastCanvas = null;
+              }
+              return;
+            }
+            if (canvasEl._waveInit) return;
             canvasEl._waveInit = true;
+            canvasRef._lastCanvas = canvasEl;
             var cW = canvasEl.width = canvasEl.offsetWidth * 2;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
             var ctx = canvasEl.getContext('2d');
@@ -3377,7 +3474,12 @@
             { id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'] },
             { id: 'wbc', label: 'White Blood Cell', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'] },
             { id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'] },
-            { id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'] }
+            { id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'] },
+            { id: 'diatom', label: 'Diatom', icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'] },
+            { id: 'volvox', label: 'Volvox', icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet — name means "fierce roller"'] },
+            { id: 'stentor', label: 'Stentor', icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long — visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'] },
+            { id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible — survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272°C to 150°C', 'Survived exposure to outer space', 'Enter cryptobiosis — suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'] },
+            { id: 'spirillum', label: 'Spirillum', icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria — up to 60μm'] }
           ];
 
           // ── Quiz questions (observation-based) ──
@@ -3393,7 +3495,12 @@
             { q: 'What is the powerhouse organelle in eukaryotic cells?', a: 'mitochondria', options: ['mitochondria', 'ribosome', 'golgi', 'lysosome'], hint: 'Produces ATP.' },
             { q: 'Which organism can act as BOTH plant and animal?', a: 'euglena', hint: 'Has chloroplasts but can also consume food.' },
             { q: 'What does phagocytosis mean?', a: 'cell eating', options: ['cell eating', 'cell drinking', 'cell dividing', 'cell dying'], hint: 'Phago = eat, cyto = cell.' },
-            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane', 'cell wall', 'nucleus', 'ribosome'], hint: 'Phospholipid bilayer.' }
+            { q: 'Which structure controls what enters and exits a cell?', a: 'cell membrane', options: ['cell membrane', 'cell wall', 'nucleus', 'ribosome'], hint: 'Phospholipid bilayer.' },
+            { q: 'Which organism has a cell wall made of glass (silica)?', a: 'diatom', hint: 'Look for the geometric, crystalline-looking one.' },
+            { q: 'What organism forms hollow spheres of thousands of cells?', a: 'volvox', hint: 'A rotating green colony — its name means "fierce roller."' },
+            { q: 'Which organism can regenerate from tiny fragments?', a: 'stentor', hint: 'The trumpet-shaped one — one of the largest single cells.' },
+            { q: 'What organism can survive in outer space?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Also called a water bear — nearly indestructible!' },
+            { q: 'Which bacterium moves with a corkscrew spiral motion?', a: 'spirillum', hint: 'Look for the spiral orange one spinning through the medium.' }
           ];
 
           // ── Canvas ref callback for simulation ──
@@ -3551,6 +3658,124 @@
                 // Nucleus
                 ctx.beginPath(); ctx.arc(hw * 0.3, -hh * 0.3, sz * 0.22, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(124,58,237,0.4)'; ctx.fill();
+              } else if (def.id === 'diatom') {
+                // Hexagonal silica shell
+                ctx.beginPath();
+                for (var hi = 0; hi < 6; hi++) {
+                  var ha = (hi / 6) * Math.PI * 2 - Math.PI / 6;
+                  var hx = Math.cos(ha) * sz * 1.2, hy = Math.sin(ha) * sz * 1.2;
+                  hi === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+                }
+                ctx.closePath();
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 2 * dpr; ctx.stroke();
+                // Internal radial pattern (raphe)
+                for (var ri2 = 0; ri2 < 6; ri2++) {
+                  var ra = (ri2 / 6) * Math.PI * 2;
+                  ctx.beginPath(); ctx.moveTo(0, 0);
+                  ctx.lineTo(Math.cos(ra) * sz * 0.8, Math.sin(ra) * sz * 0.8);
+                  ctx.strokeStyle = 'rgba(14,165,233,0.3)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                }
+                // Central node
+                ctx.beginPath(); ctx.arc(0, 0, sz * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(14,165,233,0.5)'; ctx.fill();
+              } else if (def.id === 'volvox') {
+                // Hollow sphere colony
+                ctx.beginPath(); ctx.arc(0, 0, sz, 0, Math.PI * 2);
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 2 * dpr; ctx.stroke();
+                // Surface cells (rotating dots)
+                for (var vi = 0; vi < 12; vi++) {
+                  var va = (vi / 12) * Math.PI * 2 + world.tick * 0.02;
+                  var vcx = Math.cos(va) * sz * 0.85, vcy = Math.sin(va) * sz * 0.85;
+                  ctx.beginPath(); ctx.arc(vcx, vcy, sz * 0.08, 0, Math.PI * 2);
+                  ctx.fillStyle = '#22c55e'; ctx.fill();
+                }
+                // Daughter colony inside
+                ctx.beginPath(); ctx.arc(sz * 0.2, -sz * 0.15, sz * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(16,185,129,0.35)'; ctx.fill();
+                ctx.strokeStyle = 'rgba(16,185,129,0.5)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+              } else if (def.id === 'stentor') {
+                // Trumpet / cone shape
+                ctx.beginPath();
+                ctx.moveTo(-sz * 0.3, sz * 1.2);
+                ctx.quadraticCurveTo(-sz * 0.1, 0, -sz * 1.0, -sz * 0.8);
+                ctx.lineTo(sz * 1.0, -sz * 0.8);
+                ctx.quadraticCurveTo(sz * 0.1, 0, sz * 0.3, sz * 1.2);
+                ctx.closePath();
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Cilia crown at wide end
+                for (var sci = 0; sci < 8; sci++) {
+                  var scx = -sz * 0.9 + (sci / 7) * sz * 1.8;
+                  var scWave = Math.sin(world.tick * 0.15 + sci * 0.8) * 4 * dpr;
+                  ctx.beginPath(); ctx.moveTo(scx, -sz * 0.8);
+                  ctx.lineTo(scx + scWave, -sz * 1.1);
+                  ctx.strokeStyle = 'rgba(168,85,247,0.5)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                }
+                // Bead-like macronucleus
+                for (var ni = 0; ni < 3; ni++) {
+                  ctx.beginPath(); ctx.arc(0, sz * (0.3 - ni * 0.35), sz * 0.12, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(168,85,247,0.5)'; ctx.fill();
+                }
+              } else if (def.id === 'tardigrade') {
+                // Plump body
+                ctx.beginPath(); ctx.ellipse(0, 0, sz * 1.3, sz * 0.9, 0, 0, Math.PI * 2);
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Head bump
+                ctx.beginPath(); ctx.arc(sz * 1.1, 0, sz * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                // 8 legs (4 per side) with tiny claws
+                [[-0.8, 0.7], [-0.2, 0.8], [0.3, 0.75], [0.8, 0.6]].forEach(function (leg, li) {
+                  var phase2 = Math.sin(world.tick * 0.08 + li * 1.5) * 3 * dpr;
+                  // Top leg
+                  ctx.beginPath(); ctx.moveTo(sz * leg[0], -sz * leg[1]);
+                  ctx.lineTo(sz * leg[0] + phase2, -sz * (leg[1] + 0.35));
+                  ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                  // Bottom leg
+                  ctx.beginPath(); ctx.moveTo(sz * leg[0], sz * leg[1]);
+                  ctx.lineTo(sz * leg[0] - phase2, sz * (leg[1] + 0.35));
+                  ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                });
+                // Eyes
+                ctx.beginPath(); ctx.arc(sz * 1.2, -sz * 0.12, sz * 0.08, 0, Math.PI * 2);
+                ctx.fillStyle = '#000'; ctx.fill();
+                ctx.beginPath(); ctx.arc(sz * 1.2, sz * 0.12, sz * 0.08, 0, Math.PI * 2);
+                ctx.fillStyle = '#000'; ctx.fill();
+              } else if (def.id === 'spirillum') {
+                // Corkscrew spiral
+                ctx.beginPath();
+                for (var sp = -sz * 2; sp < sz * 2; sp += 1) {
+                  var spx = sp;
+                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + world.tick * 0.15) * sz * 0.5;
+                  sp === -sz * 2 ? ctx.moveTo(spx, spy) : ctx.lineTo(spx, spy);
+                }
+                ctx.strokeStyle = def.color; ctx.lineWidth = sz * 0.4 * dpr / 5; ctx.lineCap = 'round'; ctx.stroke();
+                // Body fill along the spiral
+                ctx.beginPath();
+                for (var sp = -sz * 2; sp < sz * 2; sp += 1) {
+                  var spx = sp;
+                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + world.tick * 0.15) * sz * 0.5;
+                  sp === -sz * 2 ? ctx.moveTo(spx, spy - sz * 0.15) : ctx.lineTo(spx, spy - sz * 0.15);
+                }
+                for (var sp = sz * 2; sp > -sz * 2; sp -= 1) {
+                  var spx = sp;
+                  var spy = Math.sin((sp / (sz * 0.5)) * Math.PI + world.tick * 0.15) * sz * 0.5;
+                  ctx.lineTo(spx, spy + sz * 0.15);
+                }
+                ctx.closePath();
+                ctx.fillStyle = def.bodyColor; ctx.fill();
+                // Flagella tufts at both ends
+                var ftip1 = Math.sin(world.tick * 0.3) * 4 * dpr;
+                ctx.beginPath(); ctx.moveTo(-sz * 2, 0);
+                ctx.bezierCurveTo(-sz * 2.5, ftip1, -sz * 3, -ftip1, -sz * 3.2, ftip1);
+                ctx.strokeStyle = 'rgba(249,115,22,0.5)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
+                var ftip2 = Math.sin(world.tick * 0.3 + Math.PI) * 4 * dpr;
+                ctx.beginPath(); ctx.moveTo(sz * 2, 0);
+                ctx.bezierCurveTo(sz * 2.5, ftip2, sz * 3, -ftip2, sz * 3.2, ftip2);
+                ctx.strokeStyle = 'rgba(249,115,22,0.5)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
               }
               ctx.restore();
             }
@@ -3560,9 +3785,13 @@
               if (playAsOrg === o) {
                 // Player-controlled
                 var spd = def.speed * 1.5;
+                if (spd < 0.3) spd = 0.3; // minimum speed for playable organisms
                 o.vx = ((playerKeys['ArrowRight'] || playerKeys['d'] ? 1 : 0) - (playerKeys['ArrowLeft'] || playerKeys['a'] ? 1 : 0)) * spd;
                 o.vy = ((playerKeys['ArrowDown'] || playerKeys['s'] ? 1 : 0) - (playerKeys['ArrowUp'] || playerKeys['w'] ? 1 : 0)) * spd;
                 if (o.vx || o.vy) o.angle = Math.atan2(o.vy, o.vx);
+                // Camera follow with smooth lerp
+                cam.x += (o.x - cam.x) * 0.08;
+                cam.y += (o.y - cam.y) * 0.08;
               } else if (def.speed > 0) {
                 // AI behavior
                 o.phase += 0.02;
@@ -3591,6 +3820,36 @@
                     o.vx += (nearest.x - o.x) / bd2 * 0.03;
                     o.vy += (nearest.y - o.y) / bd2 * 0.03;
                   }
+                } else if (def.id === 'volvox') {
+                  // Phototaxis like euglena but slower rotation
+                  var nearestLight2 = null, bestD3 = Infinity;
+                  world.lightZones.forEach(function (lz) {
+                    var dd3 = Math.hypot(lz.x - o.x, lz.y - o.y);
+                    if (dd3 < bestD3) { bestD3 = dd3; nearestLight2 = lz; }
+                  });
+                  if (nearestLight2 && bestD3 > nearestLight2.r * 0.3) {
+                    o.vx += (nearestLight2.x - o.x) / bestD3 * 0.01;
+                    o.vy += (nearestLight2.y - o.y) / bestD3 * 0.01;
+                  }
+                  o.angle += 0.02; // constant rotation
+                } else if (def.id === 'stentor') {
+                  // Mostly stationary, gentle sway
+                  o.vx *= 0.9; o.vy *= 0.9;
+                  o.vx += (Math.random() - 0.5) * 0.01;
+                  o.vy += (Math.random() - 0.5) * 0.01;
+                } else if (def.id === 'spirillum') {
+                  // Corkscrew movement — spiraling path
+                  o.vx += (Math.random() - 0.5) * 0.08;
+                  o.vy += (Math.random() - 0.5) * 0.08;
+                  o.angle += 0.05; // spin
+                } else if (def.id === 'diatom') {
+                  // Gentle drift — simulate water currents
+                  o.vx += Math.sin(world.tick * 0.005 + o.phase) * 0.005;
+                  o.vy += Math.cos(world.tick * 0.007 + o.phase) * 0.005;
+                } else if (def.id === 'tardigrade') {
+                  // Slow purposeful walk
+                  o.vx += (Math.random() - 0.5) * 0.03;
+                  o.vy += (Math.random() - 0.5) * 0.03;
                 } else {
                   // Random walk with gentle turns
                   o.vx += (Math.random() - 0.5) * 0.05;
@@ -3609,7 +3868,7 @@
               if (o.y > WORLD_H - o.size) { o.y = WORLD_H - o.size; o.vy = -Math.abs(o.vy); }
 
               // Player food collection (phagocytosis / ciliary sweep)
-              if (playAsOrg === o && (def.id === 'amoeba' || def.id === 'paramecium' || def.id === 'wbc')) {
+              if (playAsOrg === o && (def.id === 'amoeba' || def.id === 'paramecium' || def.id === 'wbc' || def.id === 'stentor' || def.id === 'tardigrade')) {
                 world.food.forEach(function (f) {
                   if (!f.eaten && Math.hypot(f.x - o.x, f.y - o.y) < o.size + f.size) {
                     f.eaten = true;
@@ -3697,15 +3956,18 @@
             }
 
             var animId = null;
+            var speedMultiplier = 1;
             function loop() {
               if (canvasEl._cellSimPaused) { animId = requestAnimationFrame(loop); return; }
-              world.tick++;
-              world.organisms.forEach(updateOrganism);
-              // Respawn eaten food
-              if (world.tick % 120 === 0) {
-                world.food.forEach(function (f) {
-                  if (f.eaten) { f.eaten = false; f.x = Math.random() * WORLD_W; f.y = Math.random() * WORLD_H; }
-                });
+              for (var si = 0; si < speedMultiplier; si++) {
+                world.tick++;
+                world.organisms.forEach(updateOrganism);
+                // Respawn eaten food
+                if (world.tick % 120 === 0) {
+                  world.food.forEach(function (f) {
+                    if (f.eaten) { f.eaten = false; f.x = Math.random() * WORLD_W; f.y = Math.random() * WORLD_H; }
+                  });
+                }
               }
               render();
               animId = requestAnimationFrame(loop);
@@ -3714,6 +3976,7 @@
 
             // Mouse/touch events
             canvasEl.addEventListener('mousedown', function (e) {
+              if (playAsOrg) return; // disable drag when player is controlling
               dragging = true;
               dragStartX = e.clientX; dragStartY = e.clientY;
               camStartX = cam.x; camStartY = cam.y;
@@ -3756,10 +4019,11 @@
             canvasEl._cellSimSetPlayAs = function (orgId) {
               playAsOrg = orgId ? world.organisms.find(function (o) { return o.def.id === orgId; }) : null;
               if (playAsOrg) { cam.x = playAsOrg.x; cam.y = playAsOrg.y; cam.zoom = 3; }
+              canvasEl.focus(); // ensure keyboard works
             };
             canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; };
             canvasEl._cellSimSetPaused = function (p) { canvasEl._cellSimPaused = p; };
-            canvasEl._cellSimSetSpeed = function (s) { /* speed controlled through tick rate */ };
+            canvasEl._cellSimSetSpeed = function (s) { speedMultiplier = Math.max(1, Math.min(5, Math.round(s))); };
             canvasEl._cellSimFocusOrganism = function (orgId) {
               var target = world.organisms.find(function (o) { return o.def.id === orgId; });
               if (target) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; selectedOrg = target; }
@@ -3812,8 +4076,9 @@
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '520px' } },
               React.createElement("canvas", {
                 "data-cell-sim-canvas": "true",
+                tabIndex: 0,
                 ref: canvasRefCb,
-                style: { width: '100%', height: '100%', cursor: 'grab' }
+                style: { width: '100%', height: '100%', cursor: d.playAsOrganism ? 'crosshair' : 'grab', outline: 'none' }
               }),
               // Zoom overlay
               React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
@@ -3826,7 +4091,14 @@
                 Math.round(40 * (d.zoom || 1)) + "x"
               ),
               // Speed controls
-              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg px-2 py-1" },
+              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-600" },
+                "\u23E9",
+                React.createElement("input", {
+                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1,
+                  onChange: function (e) { var s = parseInt(e.target.value); upd("simSpeed", s); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetSpeed) cv._cellSimSetSpeed(s); },
+                  className: "w-16 accent-green-600"
+                }),
+                (d.simSpeed || 1) + "x",
                 React.createElement("button", { onClick: function () { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPaused) cv._cellSimSetPaused(p); }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-600 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
               )
             ),
@@ -4006,8 +4278,17 @@
 
           // Canvas animated projectile
           const canvasRef = function (canvasEl) {
-            if (!canvasEl || canvasEl._physInit) return;
+            if (!canvasEl) {
+              if (canvasRef._lastCanvas && canvasRef._lastCanvas._physAnim) {
+                cancelAnimationFrame(canvasRef._lastCanvas._physAnim);
+                canvasRef._lastCanvas._physInit = false;
+                canvasRef._lastCanvas = null;
+              }
+              return;
+            }
+            if (canvasEl._physInit) return;
             canvasEl._physInit = true;
+            canvasRef._lastCanvas = canvasEl;
             var cW = canvasEl.width = canvasEl.offsetWidth * 2;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
             var ctx = canvasEl.getContext('2d');
@@ -4636,7 +4917,7 @@
           // grade filter removed — all tools visible
           const W = 400, H = 100, pad = 30;
           const toSX = x => pad + ((x - d.range.min) / (d.range.max - d.range.min)) * (W - 2 * pad);
-          const parseIneq = expr => { const m = expr.match(/([a-z])\s*([<>]=?|[≤≥])\s*(-?\d+\.?\d*)/); return m ? { v: m[1], op: m[2], val: parseFloat(m[3]) } : null; };
+          const parseIneq = expr => { const m = expr.match(/([a-z])\s*([<>]=?|[≤≥])\s*(-?\d+\.?\d*)/); if (!m) return null; var op = m[2]; if (op === '≤') op = '<='; if (op === '≥') op = '>='; return { v: m[1], op: op, val: parseFloat(m[3]) }; };
           const ineq = parseIneq(d.expr);
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
@@ -7322,8 +7603,16 @@
             }
             canvasEl._ecoAnim = requestAnimationFrame(draw);
           };
+          // Ecosystem cleanup helper
+          const ecoCleanupRef = function (el) {
+            if (!el && ecoCleanupRef._lastCanvas) {
+              if (ecoCleanupRef._lastCanvas._ecoAnim) cancelAnimationFrame(ecoCleanupRef._lastCanvas._ecoAnim);
+              ecoCleanupRef._lastCanvas = null;
+            }
+          };
 
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { ref: ecoCleanupRef }),
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDC3A Ecosystem Simulator"),
@@ -7523,7 +7812,7 @@
                   )
                 )
               ),
-              React.createElement("button", { onClick: () => { const tmp = d.fromUnit; upd('fromUnit', d.toUnit); upd('toUnit', tmp); }, className: "block mx-auto mt-3 px-4 py-1 bg-cyan-50 text-cyan-600 rounded-full text-xs font-bold hover:bg-cyan-100" }, "\u21C4 Swap")
+              React.createElement("button", { onClick: () => { setLabToolData(prev => ({ ...prev, unitConvert: { ...prev.unitConvert, fromUnit: d.toUnit, toUnit: d.fromUnit } })); }, className: "block mx-auto mt-3 px-4 py-1 bg-cyan-50 text-cyan-600 rounded-full text-xs font-bold hover:bg-cyan-100" }, "\u21C4 Swap")
             )
             ,
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'uc-' + Date.now(), tool: 'unitConvert', label: d.value + ' ' + d.fromUnit + ' to ' + d.toUnit, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
@@ -7638,7 +7927,7 @@
             { name: 'Baking Soda', emoji: '\uD83E\uDDC1', elements: { Na: 27.4, H: 1.2, C: 14.3, O: 57.1 }, formula: 'NaHCO\u2083', fact: 'Reacts with vinegar to produce CO\u2082 bubbles' },
             { name: 'Chalk', emoji: '\uD83E\uDEA8', elements: { Ca: 40.0, C: 12.0, O: 48.0 }, formula: 'CaCO\u2083', fact: 'Made from ancient marine organisms\u2019 shells' },
             { name: 'Rust', emoji: '\uD83D\uDFE5', elements: { Fe: 69.9, O: 30.1 }, formula: 'Fe\u2082O\u2083', fact: 'Iron oxidizes when exposed to moisture and air' },
-            { name: 'Sugar', emoji: '\uD83C\uDF6C', elements: { C: 42.1, H: 6.5, O: 51.4 }, formula: 'C\u2082H\u2082\u2082O\u2081\u2081', fact: 'Sucrose is extracted from sugarcane or sugar beets' },
+            { name: 'Sugar', emoji: '\uD83C\uDF6C', elements: { C: 42.1, H: 6.5, O: 51.4 }, formula: 'C\u2081\u2082H\u2082\u2082O\u2081\u2081', fact: 'Sucrose is extracted from sugarcane or sugar beets' },
             { name: 'Diamond', emoji: '\uD83D\uDC8E', elements: { C: 100 }, formula: 'C', fact: 'The hardest natural material \u2014 pure carbon' },
             { name: 'Marble', emoji: '\uD83C\uDFDB\uFE0F', elements: { Ca: 40.0, C: 12.0, O: 48.0 }, formula: 'CaCO\u2083', fact: 'Metamorphic rock used in sculpture since antiquity' },
             { name: 'Dry Ice', emoji: '\u2744\uFE0F', elements: { C: 27.3, O: 72.7 }, formula: 'CO\u2082', fact: 'Solid carbon dioxide at -78.5\u00B0C' },
@@ -7877,31 +8166,47 @@
             var ctx = audio.ctx; var now = ctx.currentTime;
             var sampleRate = ctx.sampleRate;
             var delayTime = 1 / freq;
-            var bufferSize = Math.round(sampleRate * delayTime);
-            // Noise burst
-            var noiseLen = Math.round(sampleRate * 0.02);
+            var br = brightness !== undefined ? brightness : 0.8;
+            var dmp = damping !== undefined ? damping : 0.996;
+            // Longer noise burst (40ms) for fuller attack
+            var noiseLen = Math.round(sampleRate * 0.04);
             var noiseBuf = ctx.createBuffer(1, noiseLen, sampleRate);
             var noiseData = noiseBuf.getChannelData(0);
-            for (var i = 0; i < noiseLen; i++) noiseData[i] = Math.random() * 2 - 1;
+            // Shaped noise: mix filtered noise for warmer character
+            for (var i = 0; i < noiseLen; i++) {
+              var t = i / noiseLen;
+              noiseData[i] = (Math.random() * 2 - 1) * (1 - t * 0.5); // fade noise tail
+            }
             var noiseSrc = ctx.createBufferSource(); noiseSrc.buffer = noiseBuf;
-            // Create ScriptProcessor for K-S (or use delay line approximation)
-            // Using delay line approach for Web Audio compatibility
+            // Delay line for KS
             var delay = ctx.createDelay(1); delay.delayTime.value = delayTime;
-            var feedback = ctx.createGain(); feedback.gain.value = damping || 0.996;
+            var feedback = ctx.createGain(); feedback.gain.value = dmp;
+            // Primary LPF — warmer ceiling: max 4.8kHz instead of 10kHz
             var lpf = ctx.createBiquadFilter(); lpf.type = 'lowpass';
-            lpf.frequency.value = (brightness || 0.8) * 8000 + 2000;
-            var env = ctx.createGain(); env.gain.setValueAtTime(0.8, now);
-            env.gain.exponentialRampToValueAtTime(0.01, now + 3);
-            // Noise -> delay -> LPF -> feedback -> delay (loop)
-            noiseSrc.connect(delay); delay.connect(lpf); lpf.connect(feedback);
-            feedback.connect(delay); // feedback loop
-            lpf.connect(env); env.connect(audio.effects.filter);
-            noiseSrc.start(now); noiseSrc.stop(now + 0.02);
+            lpf.frequency.value = br * 4000 + 800;
+            lpf.Q.value = 0.5; // gentle resonance
+            // Secondary warmth filter in feedback — removes harsh highs each cycle
+            var warmth = ctx.createBiquadFilter(); warmth.type = 'lowpass';
+            warmth.frequency.value = Math.min(freq * 4, 6000);
+            warmth.Q.value = 0.3;
+            // Output envelope — gentler 4s decay
+            var env = ctx.createGain(); env.gain.setValueAtTime(0.6, now);
+            env.gain.exponentialRampToValueAtTime(0.001, now + 4);
+            // Body tone — subtle sine at fundamental for pitch clarity (8% volume)
+            var body = ctx.createOscillator(); body.type = 'sine'; body.frequency.value = freq;
+            var bodyGain = ctx.createGain(); bodyGain.gain.setValueAtTime(0.05, now);
+            bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+            body.connect(bodyGain); bodyGain.connect(env);
+            body.start(now); body.stop(now + 2);
+            // Signal path: Noise -> delay -> LPF -> warmth -> feedback -> delay
+            noiseSrc.connect(delay); delay.connect(lpf); lpf.connect(warmth);
+            warmth.connect(feedback); feedback.connect(delay);
+            warmth.connect(env); env.connect(audio.effects.filter);
+            noiseSrc.start(now); noiseSrc.stop(now + 0.04);
             window._alloSynthActiveNotes[noteId] = { osc: noiseSrc, env: env };
-            // Spawn particles
-            var noteIdx = NOTE_NAMES.indexOf(noteId.replace(/[0-9]/g, ''));
-            if (noteIdx >= 0) spawnParticles(noteId, NOTE_COLORS[noteIdx]);
-            setTimeout(function () { delete window._alloSynthActiveNotes[noteId]; }, 3000);
+            var nIdx = NOTE_NAMES.indexOf(noteId.replace(/[0-9]/g, ''));
+            if (nIdx >= 0) spawnParticles(noteId, NOTE_COLORS[nIdx]);
+            setTimeout(function () { delete window._alloSynthActiveNotes[noteId]; }, 4500);
           }
           function playPluckedFor(freq, noteId, durationMs, brightness, damping) {
             playPlucked(freq, noteId, brightness, damping);
@@ -7936,6 +8241,64 @@
                   playNoteFor(freq, noteId, 1500);
                 }
               }, idx * strumDelay);
+            });
+          }
+
+          // ═══ OMNICHORD PURE SOUND ═══
+          function playOmnichordTone(freq, noteId, durationMs, preset) {
+            var audio = getCtx();
+            if (window._alloSynthActiveNotes[noteId]) return;
+            var ctx = audio.ctx; var now = ctx.currentTime;
+            var p = preset || 'harp';
+            var osc1 = ctx.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = freq;
+            var osc2 = ctx.createOscillator(); osc2.type = 'triangle'; osc2.frequency.value = freq;
+            var gain1 = ctx.createGain(); var gain2 = ctx.createGain();
+            var master = ctx.createGain();
+            if (p === 'harp') { gain1.gain.value = 0.5; gain2.gain.value = 0.3; }
+            else if (p === 'organ') { gain1.gain.value = 0.3; gain2.gain.value = 0.5; }
+            else { gain1.gain.value = 0.4; gain2.gain.value = 0.4; }
+            var attack = p === 'pad' ? 0.25 : 0.015;
+            var release = p === 'pad' ? 1.2 : p === 'harp' ? 0.6 : 0.35;
+            var vol = 0.3;
+            master.gain.setValueAtTime(0, now);
+            master.gain.linearRampToValueAtTime(vol, now + attack);
+            osc1.connect(gain1); osc2.connect(gain2);
+            gain1.connect(master); gain2.connect(master);
+            if (p !== 'harp') {
+              var osc3 = ctx.createOscillator(); osc3.type = 'sine';
+              osc3.frequency.value = freq * 1.003;
+              var gain3 = ctx.createGain(); gain3.gain.value = 0.12;
+              osc3.connect(gain3); gain3.connect(master); osc3.start(now);
+              window._alloSynthActiveNotes[noteId + '_ch'] = { o: osc3 };
+            }
+            master.connect(audio.masterGain);
+            osc1.start(now); osc2.start(now);
+            // Auto-release after duration
+            var dur = durationMs || 1200;
+            var endT = now + dur / 1000;
+            master.gain.setValueAtTime(vol, endT);
+            master.gain.linearRampToValueAtTime(0, endT + release);
+            setTimeout(function () {
+              try { osc1.stop(); osc2.stop(); } catch (e) { }
+              if (window._alloSynthActiveNotes[noteId + '_ch']) {
+                try { window._alloSynthActiveNotes[noteId + '_ch'].o.stop(); } catch (e) { }
+                delete window._alloSynthActiveNotes[noteId + '_ch'];
+              }
+              delete window._alloSynthActiveNotes[noteId];
+            }, dur + release * 1000 + 100);
+            window._alloSynthActiveNotes[noteId] = { oscs: [osc1, osc2], master: master };
+          }
+          function strumOmnichord(rootNote, chordType, preset) {
+            var chordData = CHORDS[chordType]; if (!chordData) return;
+            var ri = NOTE_NAMES.indexOf(rootNote);
+            var intervals = chordData.intervals.slice();
+            var oct = d.octave || 4;
+            intervals.forEach(function (intv, idx) {
+              setTimeout(function () {
+                var nIdx = (ri + intv) % 12;
+                var nOct = oct + Math.floor((ri + intv) / 12);
+                playOmnichordTone(noteFreq(NOTE_NAMES[nIdx], nOct), 'omni_' + idx, 1400, preset);
+              }, idx * 35);
             });
           }
 
@@ -8149,11 +8512,12 @@
           }
 
           // ═══ SEQUENCER DATA ═══
-          var SEQ_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C5', 'D5', 'E5'];
-          var SEQ_FREQS = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33, 659.26];
+          var SEQ_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C5', 'C#5', 'D5', 'D#5', 'E5'];
+          var SEQ_FREQS = [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88, 523.25, 554.37, 587.33, 622.25, 659.26];
+          var SEQ_IS_BLACK = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0]; // for grid styling
           var DRUM_TYPES = ['kick', 'snare', 'hihat', 'clap', 'tom'];
           var DRUM_LABELS = ['\uD83E\uDD41 Kick', '\uD83E\uDD41 Snare', '\uD83E\uDD43 Hi-Hat', '\uD83D\uDC4F Clap', '\uD83E\uDD41 Tom'];
-          var LOOP_LENGTHS = [8, 12, 16, 24, 32];
+          var LOOP_LENGTHS = [8, 12, 16, 24, 32, 48, 64];
           var TIME_SIGS = { '4/4': { beats: 4, note: 4 }, '3/4': { beats: 3, note: 4 }, '6/8': { beats: 6, note: 8 }, '5/4': { beats: 5, note: 4 }, '7/8': { beats: 7, note: 8 } };
 
           // ═══ EFFECT TOOLTIPS ═══
@@ -8267,6 +8631,7 @@
 
           // ═══ SEQUENCER ═══
           function toggleSeqStep(idx) { var s = seq.slice(); s[idx] = (s[idx] + 1) % (SEQ_NOTES.length + 1); upd('sequence', s); }
+          function setSeqStep(idx, noteIdx) { var s = seq.slice(); s[idx] = noteIdx; upd('sequence', s); }
           function toggleDrumStep(type, idx) {
             var ds = Object.assign({}, drumSeq);
             if (!ds[type]) ds[type] = new Array(loopLen).fill(0);
@@ -8508,7 +8873,7 @@
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
               React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ id: 'play', icon: '\uD83C\uDFB9', label: 'Play' }, { id: 'scales', icon: '\uD83C\uDFB5', label: 'Scales' }, { id: 'chords', icon: '\uD83C\uDFB6', label: 'Chords' }, { id: 'theory', icon: '\uD83D\uDCDA', label: 'Theory' }].map(function (tab) {
+                [{ id: 'play', icon: '\uD83C\uDFB9', label: 'Play' }, { id: 'scales', icon: '\uD83C\uDFB5', label: 'Scales' }, { id: 'chords', icon: '\uD83C\uDFB6', label: 'Chords' }, { id: 'omnichord', icon: '\uD83C\uDF1F', label: 'Omnichord' }, { id: 'theory', icon: '\uD83D\uDCDA', label: 'Theory' }].map(function (tab) {
                   return React.createElement("button", {
                     key: tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
@@ -8953,7 +9318,9 @@
                 React.createElement("div", { className: "flex" },
                   React.createElement("div", { className: "flex flex-col gap-0.5 mr-1", style: { width: '28px' } },
                     SEQ_NOTES.slice().reverse().map(function (n, ri) {
-                      return React.createElement("div", { key: n, className: "h-5 flex items-center justify-end pr-1 text-[8px] font-bold text-slate-400" }, n);
+                      var origIdx = SEQ_NOTES.length - 1 - ri;
+                      var isBlack = SEQ_IS_BLACK[origIdx];
+                      return React.createElement("div", { key: n, className: "h-5 flex items-center justify-end pr-1 text-[8px] font-bold " + (isBlack ? 'text-slate-300 bg-slate-100 rounded-l' : 'text-slate-400') }, n);
                     })
                   ),
                   React.createElement("div", { className: "flex-1 grid gap-0.5", style: { gridTemplateColumns: 'repeat(' + loopLen + ', minmax(20px, 1fr))' } },
@@ -8967,11 +9334,12 @@
                             var isCurrentStep = seqPlaying && (d.seqStep || 0) === c;
                             var beatNum = TIME_SIGS[timeSig] ? TIME_SIGS[timeSig].beats : 4;
                             var isDownbeat = c % beatNum === 0;
+                            var isBlackRow = SEQ_IS_BLACK[r];
                             cells.push(React.createElement("div", {
                               key: r + '_' + c,
                               onClick: function () { var s = seq.slice(); s[c] = s[c] === noteIdx ? 0 : noteIdx; upd('sequence', s); },
                               className: "h-5 rounded-sm cursor-pointer transition-all select-none " +
-                                (isActive ? 'bg-purple-500 shadow-sm' : isCurrentStep ? 'bg-purple-100 border border-purple-300' : isDownbeat ? 'bg-slate-100 hover:bg-purple-100' : 'bg-slate-50 hover:bg-purple-50 border border-slate-100')
+                                (isActive ? 'bg-purple-500 shadow-sm' : isCurrentStep ? 'bg-purple-100 border border-purple-300' : isBlackRow ? (isDownbeat ? 'bg-slate-150 hover:bg-purple-100' : 'bg-slate-100 hover:bg-purple-50 border border-slate-150') : isDownbeat ? 'bg-slate-100 hover:bg-purple-100' : 'bg-slate-50 hover:bg-purple-50 border border-slate-100')
                             }));
                           })(row, col);
                         }
@@ -9073,9 +9441,55 @@
                   seqPlaying && React.createElement("line", { x1: 55 + (d.seqStep || 0) * 30, y1: 20, x2: 55 + (d.seqStep || 0) * 30, y2: 75, stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.6 })
                 )
               ),
-
-              // Snapshot button
-              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: 'Composition', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Composition saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Save Composition")
+              // ── Composition Save/Load ──
+              React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3 mt-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, "\uD83D\uDCBE Compositions"),
+                  React.createElement("button", {
+                    onClick: function () {
+                      var name = prompt('Name your composition:', 'My Composition ' + new Date().toLocaleDateString());
+                      if (!name) return;
+                      var comp = { name: name, sequence: seq.slice(), drumSequence: JSON.parse(JSON.stringify(drumSeq)), loopLen: loopLen, bpm: d.bpm || 120, timeSig: timeSig, waveType: d.waveType || 'sine', synthEngine: synthEngine, timestamp: Date.now() };
+                      var saved = JSON.parse(localStorage.getItem('alloflow_compositions') || '[]');
+                      saved.push(comp); localStorage.setItem('alloflow_compositions', JSON.stringify(saved));
+                      upd('compRefresh', Date.now());
+                      addToast('\uD83D\uDCBE Composition "' + name + '" saved!', 'success');
+                    },
+                    className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
+                  }, "\uD83D\uDCBE Save"),
+                  React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: 'Composition', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all" }, "\uD83D\uDCF8 Snapshot")
+                ),
+                // Saved compositions list
+                (function () {
+                  var saved = JSON.parse(localStorage.getItem('alloflow_compositions') || '[]');
+                  if (saved.length === 0) return React.createElement("p", { className: "text-[10px] text-slate-400 italic" }, "No saved compositions yet. Click Save to store your work!");
+                  return React.createElement("div", { className: "flex flex-col gap-1 max-h-32 overflow-y-auto" },
+                    saved.map(function (comp, ci) {
+                      return React.createElement("div", { key: ci, className: "flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-indigo-100" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-indigo-700 flex-1 truncate" }, comp.name),
+                        React.createElement("span", { className: "text-[9px] text-slate-400" }, comp.loopLen + " steps \u00B7 " + comp.bpm + " BPM"),
+                        React.createElement("button", {
+                          onClick: function () {
+                            upd('sequence', comp.sequence); upd('drumSequence', comp.drumSequence); upd('loopLen', comp.loopLen); upd('bpm', comp.bpm); upd('timeSig', comp.timeSig);
+                            if (comp.waveType) upd('waveType', comp.waveType); if (comp.synthEngine) upd('synthEngine', comp.synthEngine);
+                            addToast('\uD83C\uDFB5 Loaded "' + comp.name + '"', 'success');
+                          },
+                          className: "px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                        }, "\u25B6 Load"),
+                        React.createElement("button", {
+                          onClick: function () {
+                            var s = JSON.parse(localStorage.getItem('alloflow_compositions') || '[]');
+                            s.splice(ci, 1); localStorage.setItem('alloflow_compositions', JSON.stringify(s));
+                            upd('compRefresh', Date.now());
+                            addToast('\uD83D\uDDD1 Deleted "' + comp.name + '"', 'info');
+                          },
+                          className: "px-1.5 py-0.5 rounded text-[9px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50"
+                        }, "\u2715")
+                      );
+                    })
+                  );
+                })()
+              )
             ),
 
             // ═══════════ TAB: SCALES ═══════════
@@ -9296,6 +9710,118 @@
               )
             ),
 
+            // ═══════════ TAB: OMNICHORD ═══════════
+            synthTab === 'omnichord' && React.createElement("div", null,
+              // Voice presets
+              React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-rose-50 rounded-xl border border-amber-200 p-4 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                  React.createElement("span", { className: "text-sm font-bold text-amber-800" }, "\uD83C\uDF1F Omnichord"),
+                  React.createElement("span", { className: "text-[10px] text-amber-600" }, "Pure sine+triangle blend")
+                ),
+                React.createElement("p", { className: "text-[10px] text-amber-700 mb-3 leading-relaxed" }, "The Omnichord creates warm, pure tones by blending sine and triangle waves. Choose a voice, pick a chord from the grid below, then strum the plate!"),
+
+                // Voice selector
+                React.createElement("div", { className: "flex gap-2 mb-4" },
+                  [{ id: 'harp', label: '\uD83C\uDFB5 Harp', desc: 'Pure & clean' },
+                  { id: 'organ', label: '\u2728 Organ', desc: 'Warm chorus' },
+                  { id: 'pad', label: '\uD83C\uDF0A Pad', desc: 'Slow & lush' }].map(function (v) {
+                    return React.createElement("button", {
+                      key: v.id,
+                      onClick: function () { upd('omniVoice', v.id); },
+                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-600 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
+                    },
+                      React.createElement("div", { className: "text-xs font-bold" }, v.label),
+                      React.createElement("div", { className: "text-[9px] " + ((d.omniVoice || 'harp') === v.id ? 'text-amber-200' : 'text-amber-500') }, v.desc)
+                    );
+                  })
+                ),
+
+                // Chord grid
+                React.createElement("div", { className: "mb-4" },
+                  React.createElement("div", { className: "text-[10px] font-bold text-amber-700 mb-2" }, "\uD83C\uDFB6 Chord Grid \u2014 tap to play"),
+                  React.createElement("div", { className: "grid grid-cols-7 gap-1" },
+                    // Header row
+                    ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (root) {
+                      return React.createElement("div", { key: 'h_' + root, className: "text-center text-[10px] font-bold text-amber-600 py-0.5" }, root);
+                    })
+                  ),
+                  // Chord type rows
+                  [{ type: 'Major', label: 'Maj', color: 'from-amber-400 to-amber-500' },
+                  { type: 'Minor', label: 'min', color: 'from-rose-400 to-rose-500' },
+                  { type: 'Dom7', label: '7th', color: 'from-purple-400 to-purple-500' }].map(function (ct) {
+                    return React.createElement("div", { key: ct.type, className: "grid grid-cols-7 gap-1 mt-1" },
+                      ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (root) {
+                        var isActive = d.omniChordRoot === root && d.omniChordType === ct.type;
+                        return React.createElement("button", {
+                          key: root + ct.type,
+                          onClick: function () {
+                            upd('omniChordRoot', root); upd('omniChordType', ct.type);
+                            strumOmnichord(root, ct.type, d.omniVoice || 'harp');
+                          },
+                          className: "py-2 rounded-lg text-[10px] font-bold transition-all " + (isActive ? 'bg-gradient-to-b ' + ct.color + ' text-white shadow-md scale-105' : 'bg-white border border-amber-200 text-amber-800 hover:border-amber-400 hover:bg-amber-50')
+                        }, root + ct.label);
+                      })
+                    );
+                  })
+                ),
+
+                // Strum plate
+                React.createElement("div", { className: "mb-3" },
+                  React.createElement("div", { className: "text-[10px] font-bold text-amber-700 mb-2" }, "\uD83C\uDFB8 Strum Plate \u2014 tap or drag across"),
+                  React.createElement("div", { className: "flex gap-0.5 bg-gradient-to-b from-amber-100 to-amber-200 rounded-xl p-3 border border-amber-300" },
+                    (function () {
+                      var chordRoot = d.omniChordRoot || 'C';
+                      var chordType = d.omniChordType || 'Major';
+                      var chordData = CHORDS[chordType];
+                      if (!chordData) return null;
+                      var ri = NOTE_NAMES.indexOf(chordRoot);
+                      var oct = d.octave || 4;
+                      // Build string set: chord notes spread across range
+                      var strings = [];
+                      chordData.intervals.forEach(function (intv) {
+                        var nIdx = (ri + intv) % 12; var nOct = oct + Math.floor((ri + intv) / 12);
+                        strings.push({ note: NOTE_NAMES[nIdx], oct: nOct, freq: noteFreq(NOTE_NAMES[nIdx], nOct) });
+                      });
+                      // Add octave above for more strings
+                      chordData.intervals.forEach(function (intv) {
+                        var nIdx = (ri + intv) % 12; var nOct = oct + 1 + Math.floor((ri + intv) / 12);
+                        strings.push({ note: NOTE_NAMES[nIdx], oct: nOct, freq: noteFreq(NOTE_NAMES[nIdx], nOct) });
+                      });
+                      return strings.slice(0, 8).map(function (s, si) {
+                        var isPlaying = (d.omniStrumActive || []).indexOf(si) !== -1;
+                        return React.createElement("div", {
+                          key: si,
+                          onMouseDown: function () {
+                            playOmnichordTone(s.freq, 'omniStr_' + si, 900, d.omniVoice || 'harp');
+                            upd('omniStrumActive', (d.omniStrumActive || []).concat([si]));
+                            setTimeout(function () { upd('omniStrumActive', (d.omniStrumActive || []).filter(function (x) { return x !== si; })); }, 400);
+                          },
+                          onMouseEnter: function (e) {
+                            if (e.buttons === 1) {
+                              playOmnichordTone(s.freq, 'omniStr_' + si, 900, d.omniVoice || 'harp');
+                              upd('omniStrumActive', (d.omniStrumActive || []).concat([si]));
+                              setTimeout(function () { upd('omniStrumActive', (d.omniStrumActive || []).filter(function (x) { return x !== si; })); }, 400);
+                            }
+                          },
+                          className: "flex-1 rounded-lg cursor-pointer transition-all select-none " + (isPlaying ? 'bg-amber-500 shadow-lg scale-y-105' : 'bg-gradient-to-b from-amber-300 to-amber-400 hover:from-amber-400 hover:to-amber-500'),
+                          style: { height: '80px', minWidth: '30px' }
+                        },
+                          React.createElement("div", { className: "text-center pt-1 text-[9px] font-bold " + (isPlaying ? 'text-white' : 'text-amber-800') }, s.note + s.oct),
+                          React.createElement("div", { className: "w-px mx-auto h-12 " + (isPlaying ? 'bg-white' : 'bg-amber-600 opacity-40') })
+                        );
+                      });
+                    })()
+                  )
+                ),
+
+                // Full strum button
+                React.createElement("button", {
+                  onClick: function () { strumOmnichord(d.omniChordRoot || 'C', d.omniChordType || 'Major', d.omniVoice || 'harp'); },
+                  className: "w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-rose-500 text-white hover:from-amber-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all"
+                }, "\uD83C\uDFB5 Strum " + (d.omniChordRoot || 'C') + " " + (d.omniChordType || 'Major'))
+              )
+            ),
+
             // ═══════════ TAB: THEORY ═══════════
             synthTab === 'theory' && React.createElement("div", null,
               // Intervals
@@ -9505,6 +10031,126 @@
                     )
                   );
                 })()
+              ),
+
+              // ── Chord Detection Challenge ──
+              React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-4 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                  React.createElement("span", { className: "text-sm font-bold text-rose-800" }, "\uD83C\uDFB5 Chord Detection"),
+                  d.chordDetectScore > 0 && React.createElement("span", { className: "text-xs font-bold text-green-600 ml-auto" }, "\u2B50 " + d.chordDetectScore + "/" + (d.chordDetectTotal || 0)),
+                  React.createElement("button", {
+                    onClick: function () {
+                      var chordNames = ['Major', 'Minor', 'Diminished', 'Augmented', 'Maj7', 'Min7', 'Dom7', 'Sus2', 'Sus4'];
+                      var roots = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+                      var correctType = chordNames[Math.floor(Math.random() * chordNames.length)];
+                      var correctRoot = roots[Math.floor(Math.random() * roots.length)];
+                      var wrongOpts = chordNames.filter(function (c) { return c !== correctType; });
+                      wrongOpts.sort(function () { return Math.random() - 0.5; });
+                      var opts = [correctType].concat(wrongOpts.slice(0, 3));
+                      opts.sort(function () { return Math.random() - 0.5; });
+                      playChord(correctRoot, correctType, 0);
+                      upd('chordDetect', { root: correctRoot, type: correctType, opts: opts, answered: false, chosen: null });
+                    },
+                    className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white hover:bg-rose-700"
+                  }, d.chordDetect ? '\uD83D\uDD04 New Chord' : '\u25B6 Start'),
+                  d.chordDetect && React.createElement("button", {
+                    onClick: function () { playChord(d.chordDetect.root, d.chordDetect.type, 0); },
+                    className: "px-2 py-1 rounded-lg text-xs font-bold bg-rose-100 text-rose-700"
+                  }, '\uD83D\uDD0A Replay')
+                ),
+                d.chordDetect && React.createElement("div", null,
+                  React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, "What type of chord do you hear?"),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    d.chordDetect.opts.map(function (opt) {
+                      var fb = d.chordDetect.answered;
+                      var isCorrect = fb && opt === d.chordDetect.type;
+                      var isChosen = d.chordDetect.chosen === opt;
+                      var isWrong = fb && isChosen && !isCorrect;
+                      return React.createElement("button", {
+                        key: opt, disabled: fb,
+                        onClick: function () {
+                          var correct = opt === d.chordDetect.type;
+                          upd('chordDetect', Object.assign({}, d.chordDetect, { answered: true, chosen: opt }));
+                          upd('chordDetectScore', (d.chordDetectScore || 0) + (correct ? 1 : 0));
+                          upd('chordDetectTotal', (d.chordDetectTotal || 0) + 1);
+                          addToast(correct ? '\u2705 Correct! ' + d.chordDetect.root + ' ' + d.chordDetect.type : '\u274C It was ' + d.chordDetect.root + ' ' + d.chordDetect.type, correct ? 'success' : 'error');
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-rose-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
+                      }, opt);
+                    })
+                  ),
+                  d.chordDetect.answered && React.createElement("p", { className: "text-xs text-rose-600 mt-2" }, "\uD83C\uDFB6 It was ", React.createElement("span", { className: "font-bold" }, d.chordDetect.root + " " + d.chordDetect.type), " \u2014 ", CHORDS[d.chordDetect.type] && CHORDS[d.chordDetect.type].desc)
+                )
+              ),
+
+              // ── Aural Dictation Challenge ──
+              React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 mb-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                  React.createElement("span", { className: "text-sm font-bold text-violet-800" }, "\uD83D\uDCDD Aural Dictation"),
+                  d.dictationScore > 0 && React.createElement("span", { className: "text-xs font-bold text-green-600 ml-auto" }, "\u2B50 " + d.dictationScore + "/" + (d.dictationTotal || 0)),
+                  React.createElement("button", {
+                    onClick: function () {
+                      var roots = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+                      var octave = d.octave || 4;
+                      var melody = [];
+                      for (var i = 0; i < 4; i++) { melody.push(roots[Math.floor(Math.random() * roots.length)]); }
+                      melody.forEach(function (note, idx) {
+                        setTimeout(function () { playNoteFor(noteFreq(note, octave), 'dict_' + idx, 450); }, idx * 500);
+                      });
+                      upd('dictation', { melody: melody, guesses: ['', '', '', ''], answered: false });
+                    },
+                    className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700"
+                  }, d.dictation ? '\uD83D\uDD04 New Melody' : '\u25B6 Start'),
+                  d.dictation && React.createElement("button", {
+                    onClick: function () {
+                      var octave = d.octave || 4;
+                      d.dictation.melody.forEach(function (note, idx) {
+                        setTimeout(function () { playNoteFor(noteFreq(note, octave), 'dict_' + idx, 450); }, idx * 500);
+                      });
+                    },
+                    className: "px-2 py-1 rounded-lg text-xs font-bold bg-violet-100 text-violet-700"
+                  }, '\uD83D\uDD0A Replay')
+                ),
+                d.dictation && React.createElement("div", null,
+                  React.createElement("p", { className: "text-xs font-bold text-violet-700 mb-2" }, "Identify each note in the 4-note melody:"),
+                  React.createElement("div", { className: "flex gap-2 mb-3" },
+                    [0, 1, 2, 3].map(function (idx) {
+                      var guess = d.dictation.guesses[idx];
+                      var answered = d.dictation.answered;
+                      var correct = answered && guess === d.dictation.melody[idx];
+                      var wrong = answered && guess && !correct;
+                      return React.createElement("div", { key: idx, className: "flex-1 text-center" },
+                        React.createElement("div", { className: "text-[10px] font-bold text-violet-500 mb-1" }, "Note " + (idx + 1)),
+                        React.createElement("select", {
+                          value: guess || '', disabled: answered,
+                          onChange: function (e) {
+                            var g = d.dictation.guesses.slice(); g[idx] = e.target.value;
+                            upd('dictation', Object.assign({}, d.dictation, { guesses: g }));
+                          },
+                          className: "w-full px-2 py-1.5 rounded-lg border-2 text-sm font-bold " + (correct ? 'border-green-400 bg-green-50 text-green-700' : wrong ? 'border-red-400 bg-red-50 text-red-600' : 'border-violet-200 text-slate-700')
+                        },
+                          React.createElement("option", { value: "" }, "?"),
+                          ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (n) { return React.createElement("option", { key: n, value: n }, n); })
+                        ),
+                        answered && React.createElement("div", { className: "text-[9px] font-bold mt-1 " + (correct ? 'text-green-600' : 'text-red-500') }, correct ? '\u2705' : '\u274C ' + d.dictation.melody[idx])
+                      );
+                    })
+                  ),
+                  !d.dictation.answered && React.createElement("button", {
+                    onClick: function () {
+                      var g = d.dictation.guesses; var m = d.dictation.melody;
+                      var c = g.filter(function (v, i) { return v === m[i]; }).length;
+                      upd('dictation', Object.assign({}, d.dictation, { answered: true }));
+                      upd('dictationScore', (d.dictationScore || 0) + c);
+                      upd('dictationTotal', (d.dictationTotal || 0) + 4);
+                      addToast(c === 4 ? '\u2705 Perfect! All 4 notes!' : c > 0 ? '\uD83C\uDFAF ' + c + '/4 correct' : '\u274C Try again!', c === 4 ? 'success' : c > 0 ? 'info' : 'error');
+                    },
+                    className: "w-full py-2 rounded-lg text-sm font-bold bg-violet-600 text-white hover:bg-violet-700 transition-all"
+                  }, "\u2714 Check Dictation"),
+                  d.dictation.answered && React.createElement("div", { className: "text-center mt-2" },
+                    React.createElement("p", { className: "text-xs text-violet-600" }, "\uD83C\uDFB5 The melody was: ", React.createElement("span", { className: "font-bold" }, d.dictation.melody.join(' \u2192 ')))
+                  )
+                )
               )
             ),
 
@@ -9518,11 +10164,768 @@
 
         })(),
 
+        // ═══════════════════════════════════════════════════════
+        // HUMAN ANATOMY EXPLORER
+        stemLabTab === 'explore' && stemLabTool === 'anatomy' && (() => {
+          var d = labToolData.anatomy || {};
+          var upd = function(k, v) { setLabToolData(function(p) { return Object.assign({}, p, { anatomy: Object.assign({}, p.anatomy, (function(){ var o={}; o[k]=v; return o; })()) }); }); };
 
+          var SYSTEMS = {
+            skeletal: {
+              name: 'Skeletal', icon: '\uD83E\uDDB4', color: '#fef3c7', accent: '#b45309',
+              desc: '206 bones \u2014 support, protection, movement, mineral storage, hematopoiesis.',
+              structures: [
+                { id:'skull', name:'Skull (Cranium)', x:0.50, y:0.06, v:'b', fn:'Protects the brain. 22 fused bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical:'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and birth canal passage.', detail:'Houses meninges, brain, and cranial nerve foramina. Sutures (coronal, sagittal, lambdoid) fuse by age 2.' },
+                { id:'mandible', name:'Mandible', x:0.50, y:0.10, v:'a', fn:'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical:'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
+                { id:'clavicle', name:'Clavicle', x:0.40, y:0.155, v:'a', fn:'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical:'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
+                { id:'sternum', name:'Sternum', x:0.50, y:0.22, v:'a', fn:'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical:'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
+                { id:'ribs', name:'Ribs (1\u201312)', x:0.58, y:0.25, v:'b', fn:'12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical:'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
+                { id:'scapula', name:'Scapula', x:0.38, y:0.22, v:'p', fn:'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical:'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
+                { id:'humerus', name:'Humerus', x:0.26, y:0.27, v:'a', fn:'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical:'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
+                { id:'radius', name:'Radius', x:0.21, y:0.36, v:'a', fn:'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical:'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
+                { id:'ulna', name:'Ulna', x:0.24, y:0.36, v:'a', fn:'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical:'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
+                { id:'carpals', name:'Carpals', x:0.17, y:0.44, v:'a', fn:'8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical:'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
+                { id:'vertebral', name:'Vertebral Column', x:0.50, y:0.30, v:'p', fn:'33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical:'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.' },
+                { id:'pelvis', name:'Pelvis', x:0.50, y:0.42, v:'b', fn:'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical:'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.' },
+                { id:'femur', name:'Femur', x:0.42, y:0.57, v:'a', fn:'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical:'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.' },
+                { id:'patella', name:'Patella', x:0.43, y:0.66, v:'a', fn:'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical:'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
+                { id:'tibia', name:'Tibia', x:0.42, y:0.76, v:'a', fn:'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical:'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
+                { id:'fibula', name:'Fibula', x:0.46, y:0.76, v:'a', fn:'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical:'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
+                { id:'tarsals', name:'Tarsals', x:0.42, y:0.89, v:'a', fn:'7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical:'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
+                { id:'sacrum', name:'Sacrum & Coccyx', x:0.50, y:0.44, v:'p', fn:'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical:'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' }
+              ]
+            },
+            muscular: {
+              name: 'Muscular', icon: '\uD83D\uDCAA', color: '#fce7f3', accent: '#be185d',
+              desc: '600+ muscles \u2014 movement, posture, heat production, joint stabilization.',
+              structures: [
+                { id:'deltoid', name:'Deltoid', x:0.30, y:0.18, v:'a', fn:'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin:'Lateral third of clavicle, acromion, scapular spine', insertion:'Deltoid tuberosity of humerus', clinical:'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).' },
+                { id:'pectoralis', name:'Pectoralis Major', x:0.42, y:0.22, v:'a', fn:'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin:'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion:'Lateral lip of bicipital groove (humerus)', clinical:'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
+                { id:'biceps', name:'Biceps Brachii', x:0.24, y:0.29, v:'a', fn:'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin:'Short head: coracoid process; Long head: supraglenoid tubercle', insertion:'Radial tuberosity and bicipital aponeurosis', clinical:'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.' },
+                { id:'triceps', name:'Triceps Brachii', x:0.73, y:0.29, v:'p', fn:'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin:'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion:'Olecranon process of ulna', clinical:'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
+                { id:'rectus_ab', name:'Rectus Abdominis', x:0.50, y:0.34, v:'a', fn:'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin:'Pubic crest and symphysis', insertion:'Xiphoid process, costal cartilages 5\u20137', clinical:'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
+                { id:'obliques', name:'External Obliques', x:0.58, y:0.34, v:'a', fn:'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin:'External surfaces of ribs 5\u201312', insertion:'Linea alba, pubic tubercle, iliac crest', clinical:'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
+                { id:'quads', name:'Quadriceps Femoris', x:0.42, y:0.55, v:'a', fn:'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin:'Rectus femoris: AIIS; Vasti: femoral shaft', insertion:'Tibial tuberosity via patellar tendon', clinical:'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.' },
+                { id:'hamstrings', name:'Hamstrings', x:0.58, y:0.58, v:'p', fn:'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin:'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion:'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical:'"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.' },
+                { id:'gastrocnemius', name:'Gastrocnemius', x:0.58, y:0.74, v:'p', fn:'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin:'Medial and lateral femoral condyles', insertion:'Calcaneus via Achilles tendon', clinical:'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.' },
+                { id:'trapezius', name:'Trapezius', x:0.50, y:0.20, v:'p', fn:'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin:'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion:'Lateral third of clavicle, acromion, scapular spine', clinical:'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
+                { id:'lats', name:'Latissimus Dorsi', x:0.62, y:0.32, v:'p', fn:'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin:'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion:'Floor of bicipital (intertubercular) groove', clinical:'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
+                { id:'glutes', name:'Gluteus Maximus', x:0.50, y:0.44, v:'p', fn:'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin:'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion:'IT band and gluteal tuberosity of femur', clinical:'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
+                { id:'sartorius', name:'Sartorius', x:0.38, y:0.52, v:'a', fn:'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin:'Anterior superior iliac spine (ASIS)', insertion:'Pes anserinus (medial proximal tibia)', clinical:'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
+                { id:'tibialis', name:'Tibialis Anterior', x:0.40, y:0.76, v:'a', fn:'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin:'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion:'Medial cuneiform, base of 1st metatarsal', clinical:'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
+                { id:'soleus', name:'Soleus', x:0.58, y:0.78, v:'p', fn:'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin:'Soleal line and posterior proximal fibula', insertion:'Calcaneus via Achilles tendon', clinical:'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' }
+              ]
+            },
+            circulatory: {
+              name: 'Circulatory', icon: '\u2764\uFE0F', color: '#fee2e2', accent: '#dc2626',
+              desc: 'Heart, 60,000 miles of vessels, 5L of blood \u2014 delivers O\u2082, nutrients, hormones; removes waste.',
+              structures: [
+                { id:'heart', name:'Heart', x:0.48, y:0.24, v:'a', fn:'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical:'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.' },
+                { id:'aorta', name:'Aorta', x:0.52, y:0.22, v:'a', fn:'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical:'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.' },
+                { id:'sup_vena', name:'Superior Vena Cava', x:0.54, y:0.20, v:'a', fn:'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical:'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
+                { id:'inf_vena', name:'Inferior Vena Cava', x:0.52, y:0.36, v:'a', fn:'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical:'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
+                { id:'pulm_art', name:'Pulmonary Arteries', x:0.46, y:0.22, v:'a', fn:'Carry deoxygenated blood from RV to lungs. Only arteries that carry deoxygenated blood. Bifurcates at T5.', clinical:'Pulmonary embolism (PE): clot from DVT lodges in pulmonary arteries. Saddle PE is life-threatening.' },
+                { id:'carotid', name:'Carotid Arteries', x:0.44, y:0.12, v:'a', fn:'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical:'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.' },
+                { id:'jugular', name:'Jugular Veins', x:0.56, y:0.12, v:'a', fn:'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical:'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
+                { id:'coronary', name:'Coronary Arteries', x:0.46, y:0.25, v:'a', fn:'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical:'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
+                { id:'femoral_a', name:'Femoral Artery', x:0.44, y:0.48, v:'a', fn:'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical:'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
+                { id:'brachial', name:'Brachial Artery', x:0.28, y:0.30, v:'a', fn:'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical:'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
+                { id:'portal', name:'Hepatic Portal Vein', x:0.52, y:0.32, v:'a', fn:'Carries nutrient-rich blood from GI tract and spleen to liver for processing. Formed by superior mesenteric and splenic veins. Portal circulation is unique.', clinical:'Portal hypertension in cirrhosis \u2192 esophageal varices, caput medusae, hemorrhoids, splenomegaly.' }
+              ]
+            },
+            nervous: {
+              name: 'Nervous', icon: '\u26A1', color: '#ede9fe', accent: '#7c3aed',
+              desc: 'CNS (brain + spinal cord) and PNS (31 spinal nerve pairs, 12 cranial nerve pairs, autonomic NS).',
+              structures: [
+                { id:'brain', name:'Brain', x:0.50, y:0.05, v:'b', fn:'~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082.', clinical:'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy.' },
+                { id:'spinal_cord', name:'Spinal Cord', x:0.50, y:0.30, v:'p', fn:'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical:'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.' },
+                { id:'vagus', name:'Vagus Nerve (CN X)', x:0.44, y:0.14, v:'a', fn:'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical:'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
+                { id:'sciatic', name:'Sciatic Nerve', x:0.55, y:0.50, v:'p', fn:'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical:'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.' },
+                { id:'brachial_plexus', name:'Brachial Plexus', x:0.34, y:0.16, v:'a', fn:'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical:'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
+                { id:'median', name:'Median Nerve', x:0.22, y:0.38, v:'a', fn:'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical:'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
+                { id:'ulnar_n', name:'Ulnar Nerve', x:0.78, y:0.34, v:'a', fn:'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical:'"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
+                { id:'femoral_n', name:'Femoral Nerve', x:0.40, y:0.48, v:'a', fn:'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical:'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
+                { id:'sympathetic', name:'Sympathetic Chain', x:0.54, y:0.30, v:'p', fn:'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical:'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
+                { id:'cranial_n', name:'Cranial Nerves (I\u2013XII)', x:0.50, y:0.08, v:'a', fn:'12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical:'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
+              ]
+            },
+            lymphatic: {
+              name: 'Lymphatic', icon: '\uD83D\uDFE2', color: '#dcfce7', accent: '#16a34a',
+              desc: 'Returns interstitial fluid, absorbs dietary fat, immune surveillance \u2014 600\u2013700 lymph nodes, thymus, spleen.',
+              structures: [
+                { id:'thymus', name:'Thymus', x:0.50, y:0.19, v:'a', fn:'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical:'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.' },
+                { id:'spleen', name:'Spleen', x:0.58, y:0.30, v:'a', fn:'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical:'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.' },
+                { id:'tonsils', name:'Tonsils (Waldeyer Ring)', x:0.50, y:0.11, v:'a', fn:'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical:'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
+                { id:'cervical_ln', name:'Cervical Lymph Nodes', x:0.56, y:0.13, v:'a', fn:'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical:'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
+                { id:'axillary_ln', name:'Axillary Lymph Nodes', x:0.32, y:0.22, v:'a', fn:'5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical:'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
+                { id:'inguinal_ln', name:'Inguinal Lymph Nodes', x:0.44, y:0.44, v:'a', fn:'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical:'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
+                { id:'thoracic_duct', name:'Thoracic Duct', x:0.48, y:0.26, v:'p', fn:'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical:'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
+                { id:'bone_marrow', name:'Bone Marrow', x:0.42, y:0.57, v:'a', fn:'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical:'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
+              ]
+            },
+            organs: {
+              name: 'Organ Systems', icon: '\uD83C\uDFE5', color: '#e0f2fe', accent: '#0284c7',
+              desc: 'Major visceral organs \u2014 respiration, digestion, filtration, endocrine regulation.',
+              structures: [
+                { id:'lungs', name:'Lungs', x:0.42, y:0.24, v:'a', fn:'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical:'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.' },
+                { id:'liver', name:'Liver', x:0.56, y:0.30, v:'a', fn:'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical:'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.' },
+                { id:'stomach', name:'Stomach', x:0.55, y:0.33, v:'a', fn:'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical:'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.' },
+                { id:'kidneys', name:'Kidneys', x:0.58, y:0.36, v:'p', fn:'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical:'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.' },
+                { id:'sm_intestine', name:'Small Intestine', x:0.50, y:0.38, v:'a', fn:'6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical:'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
+                { id:'lg_intestine', name:'Large Intestine', x:0.50, y:0.40, v:'a', fn:'1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical:'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
+                { id:'pancreas', name:'Pancreas', x:0.52, y:0.34, v:'a', fn:'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical:'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
+                { id:'gallbladder', name:'Gallbladder', x:0.55, y:0.31, v:'a', fn:'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical:'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
+                { id:'bladder', name:'Urinary Bladder', x:0.50, y:0.44, v:'a', fn:'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical:'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
+                { id:'diaphragm', name:'Diaphragm', x:0.50, y:0.27, v:'a', fn:'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical:'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."' },
+                { id:'thyroid', name:'Thyroid Gland', x:0.50, y:0.135, v:'a', fn:'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical:'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
+                { id:'adrenals', name:'Adrenal Glands', x:0.56, y:0.34, v:'p', fn:'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical:'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
+              ]
+            }
+          };
 
+          var sysKey = d.system || 'skeletal';
+          var sys = SYSTEMS[sysKey];
+          var view = d.view || 'anterior';
+          var searchTerm = (d.search || '').toLowerCase();
+          var allStructures = sys.structures;
+          var viewFiltered = allStructures.filter(function(s) { return s.v === 'b' || s.v === (view === 'anterior' ? 'a' : 'p'); });
+          var filtered = searchTerm ? viewFiltered.filter(function(s) { return s.name.toLowerCase().indexOf(searchTerm) >= 0 || s.fn.toLowerCase().indexOf(searchTerm) >= 0; }) : viewFiltered;
+          var sel = d.selectedStructure ? allStructures.find(function(s) { return s.id === d.selectedStructure; }) : null;
+
+          // Quiz logic
+          var quizPool = allStructures.filter(function(s) { return s.fn; });
+          var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
+          var quizOptions = [];
+          if (quizQ) {
+            var wrong = quizPool.filter(function(s) { return s.id !== quizQ.id; });
+            var shuffled = wrong.sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+            quizOptions = shuffled.concat([quizQ]).sort(function() { return Math.random() - 0.5; });
+          }
+
+          // Body drawing on canvas
+          var canvasRef = function(canvas) {
+            if (!canvas) return;
+            if (canvas._anatomyDrawn === sysKey + view + d.selectedStructure + searchTerm) return;
+            canvas._anatomyDrawn = sysKey + view + d.selectedStructure + searchTerm;
+            var ctx = canvas.getContext('2d');
+            var W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            // Body silhouette
+            ctx.save();
+            ctx.fillStyle = '#f5f0eb';
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1.5;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            // Head
+            ctx.beginPath(); ctx.ellipse(W*0.5, H*0.065, W*0.055, H*0.045, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            // Neck
+            ctx.beginPath(); ctx.rect(W*0.47, H*0.1, W*0.06, H*0.03); ctx.fill(); ctx.stroke();
+            // Torso
+            ctx.beginPath();
+            ctx.moveTo(W*0.32, H*0.135); ctx.lineTo(W*0.68, H*0.135);
+            ctx.quadraticCurveTo(W*0.70, H*0.22, W*0.64, H*0.40);
+            ctx.lineTo(W*0.57, H*0.43); ctx.lineTo(W*0.43, H*0.43);
+            ctx.lineTo(W*0.36, H*0.40);
+            ctx.quadraticCurveTo(W*0.30, H*0.22, W*0.32, H*0.135);
+            ctx.fill(); ctx.stroke();
+            // Left arm
+            ctx.beginPath();
+            ctx.moveTo(W*0.32, H*0.14); ctx.quadraticCurveTo(W*0.22, H*0.20, W*0.19, H*0.30);
+            ctx.quadraticCurveTo(W*0.16, H*0.38, W*0.14, H*0.45);
+            ctx.lineTo(W*0.18, H*0.45); ctx.quadraticCurveTo(W*0.20, H*0.38, W*0.23, H*0.30);
+            ctx.quadraticCurveTo(W*0.26, H*0.22, W*0.35, H*0.14);
+            ctx.fill(); ctx.stroke();
+            // Right arm
+            ctx.beginPath();
+            ctx.moveTo(W*0.68, H*0.14); ctx.quadraticCurveTo(W*0.78, H*0.20, W*0.81, H*0.30);
+            ctx.quadraticCurveTo(W*0.84, H*0.38, W*0.86, H*0.45);
+            ctx.lineTo(W*0.82, H*0.45); ctx.quadraticCurveTo(W*0.80, H*0.38, W*0.77, H*0.30);
+            ctx.quadraticCurveTo(W*0.74, H*0.22, W*0.65, H*0.14);
+            ctx.fill(); ctx.stroke();
+            // Left leg
+            ctx.beginPath();
+            ctx.moveTo(W*0.43, H*0.43); ctx.quadraticCurveTo(W*0.38, H*0.56, W*0.36, H*0.68);
+            ctx.quadraticCurveTo(W*0.35, H*0.78, W*0.34, H*0.88);
+            ctx.lineTo(W*0.30, H*0.93); ctx.lineTo(W*0.40, H*0.93);
+            ctx.lineTo(W*0.42, H*0.88); ctx.quadraticCurveTo(W*0.43, H*0.78, W*0.44, H*0.68);
+            ctx.quadraticCurveTo(W*0.46, H*0.56, W*0.50, H*0.43);
+            ctx.fill(); ctx.stroke();
+            // Right leg
+            ctx.beginPath();
+            ctx.moveTo(W*0.57, H*0.43); ctx.quadraticCurveTo(W*0.62, H*0.56, W*0.64, H*0.68);
+            ctx.quadraticCurveTo(W*0.65, H*0.78, W*0.66, H*0.88);
+            ctx.lineTo(W*0.70, H*0.93); ctx.lineTo(W*0.60, H*0.93);
+            ctx.lineTo(W*0.58, H*0.88); ctx.quadraticCurveTo(W*0.57, H*0.78, W*0.56, H*0.68);
+            ctx.quadraticCurveTo(W*0.54, H*0.56, W*0.50, H*0.43);
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+
+            // Draw structure markers
+            filtered.forEach(function(st) {
+              var px = st.x * W, py = st.y * H;
+              var isSel = sel && sel.id === st.id;
+              var r = isSel ? 9 : 5;
+              // Glow for selected
+              if (isSel) {
+                ctx.save();
+                ctx.shadowColor = sys.accent;
+                ctx.shadowBlur = 12;
+                ctx.beginPath(); ctx.arc(px, py, r + 2, 0, Math.PI * 2);
+                ctx.fillStyle = sys.accent + '40';
+                ctx.fill();
+                ctx.restore();
+              }
+              ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2);
+              ctx.fillStyle = isSel ? sys.accent : sys.accent + '99';
+              ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+              // Label for selected
+              if (isSel) {
+                ctx.save();
+                ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                ctx.textAlign = px > W * 0.5 ? 'right' : 'left';
+                ctx.fillStyle = sys.accent;
+                var lx = px > W * 0.5 ? px - 14 : px + 14;
+                ctx.fillText(st.name, lx, py + 3);
+                ctx.restore();
+              }
+            });
+
+            // View label
+            ctx.save();
+            ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.textAlign = 'center';
+            ctx.fillText(view === 'anterior' ? 'ANTERIOR VIEW' : 'POSTERIOR VIEW', W * 0.5, H - 6);
+            ctx.restore();
+          };
+
+          // Canvas click handler
+          var handleClick = function(e) {
+            var rect = e.target.getBoundingClientRect();
+            var cx = (e.clientX - rect.left) / rect.width;
+            var cy = (e.clientY - rect.top) / rect.height;
+            var closest = null, minD = 0.06;
+            filtered.forEach(function(st) {
+              var dist = Math.sqrt(Math.pow(st.x - cx, 2) + Math.pow(st.y - cy, 2));
+              if (dist < minD) { minD = dist; closest = st; }
+            });
+            if (closest) upd('selectedStructure', closest.id);
+          };
+
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function() { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("div", null,
+                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEC0 Human Anatomy Explorer"),
+                React.createElement("p", { className: "text-xs text-slate-400" }, sys.desc)
+              )
+            ),
+            // System tabs
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+              Object.keys(SYSTEMS).map(function(key) {
+                var s = SYSTEMS[key];
+                return React.createElement("button", {
+                  key: key,
+                  onClick: function() { upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', ''); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'),
+                  style: sysKey === key ? { background: s.accent } : {}
+                }, s.icon + ' ' + s.name);
+              })
+            ),
+            // Controls: view toggle, search, quiz
+            React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
+              React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
+                ['anterior', 'posterior'].map(function(v) {
+                  return React.createElement("button", {
+                    key: v,
+                    onClick: function() { upd('view', v); upd('selectedStructure', null); },
+                    className: "px-3 py-1 text-xs font-bold transition-all " + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
+                  }, v.charAt(0).toUpperCase() + v.slice(1));
+                })
+              ),
+              React.createElement("input", {
+                type: "text", placeholder: "\uD83D\uDD0D Search structures...",
+                value: d.search || '',
+                onChange: function(e) { upd('search', e.target.value); },
+                className: "flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+              }),
+              React.createElement("button", {
+                onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+              }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
+              React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, filtered.length + ' structures')
+            ),
+            // Main content: canvas + detail panel
+            React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+              // Canvas
+              React.createElement("div", { className: "flex-shrink-0" },
+                React.createElement("canvas", {
+                  ref: canvasRef, width: 280, height: 480,
+                  onClick: handleClick,
+                  className: "rounded-xl border-2 cursor-crosshair",
+                  style: { borderColor: sys.accent + '30', background: '#fafaf9' }
+                })
+              ),
+              // Right panel
+              React.createElement("div", { className: "flex-1 min-w-0" },
+                d.quizMode ? (
+                  // Quiz panel
+                  quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDEA Anatomy Quiz"),
+                      React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0) + "/" + Math.min((d.quizIdx || 0) + 1, quizPool.length))
+                    ),
+                    React.createElement("p", { className: "text-sm text-slate-800 font-bold leading-relaxed" }, "Which structure has this function?"),
+                    React.createElement("p", { className: "text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic" }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : '')),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
+                      quizOptions.map(function(opt) {
+                        var fb = d.quizFeedback;
+                        var isCorrect = opt.id === quizQ.id;
+                        var wasChosen = fb && fb.chosen === opt.id;
+                        var showResult = fb !== null && fb !== undefined;
+                        return React.createElement("button", {
+                          key: opt.id,
+                          disabled: showResult,
+                          onClick: function() {
+                            var correct = opt.id === quizQ.id;
+                            upd('quizFeedback', { chosen: opt.id, correct: correct });
+                            if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                          },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 " +
+                            (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                             showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                             'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
+                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
+                      })
+                    ),
+                    d.quizFeedback && React.createElement("button", {
+                      onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-all"
+                    }, "Next Question \u2192")
+                  ) : React.createElement("p", { className: "text-sm text-slate-500 italic" }, "No quiz questions available.")
+                ) : (
+                  sel ? (
+                    // Detail panel
+                    React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 space-y-3", style: { borderColor: sys.accent + '40' } },
+                      React.createElement("div", { className: "flex items-start justify-between" },
+                        React.createElement("h4", { className: "text-base font-black", style: { color: sys.accent } }, sel.name),
+                        React.createElement("button", { onClick: function() { upd('selectedStructure', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                      ),
+                      React.createElement("div", { className: "space-y-2.5" },
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                          React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
+                        ),
+                        sel.origin && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Origin"),
+                            React.createElement("p", { className: "text-xs text-slate-600" }, sel.origin)
+                          ),
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Insertion"),
+                            React.createElement("p", { className: "text-xs text-slate-600" }, sel.insertion)
+                          )
+                        ),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\u26A0 Clinical Significance"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.clinical)
+                        ),
+                        sel.detail && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Detail"),
+                          React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, sel.detail)
+                        )
+                      )
+                    )
+                  ) : (
+                    // Structure list
+                    React.createElement("div", { className: "space-y-1 max-h-[460px] overflow-y-auto pr-1" },
+                      filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No structures match your search."),
+                      filtered.map(function(st) {
+                        return React.createElement("button", {
+                          key: st.id,
+                          onClick: function() { upd('selectedStructure', st.id); },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
+                            (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-200'),
+                          style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
+                        },
+                          React.createElement("div", { className: "font-bold text-slate-800" }, st.name),
+                          React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                        );
+                      })
+                    )
+                  )
+                )
+              )
+            )
+          );
+        })(),
 
         // ═══════════════════════════════════════════════════════
-        // SOLAR SYSTEM EXPLORER
+        // BRAIN ATLAS EXPLORER
+        stemLabTab === 'explore' && stemLabTool === 'brainAtlas' && (() => {
+          var d = labToolData.brainAtlas || {};
+          var upd = function(k, v) { setLabToolData(function(p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function(){ var o={}; o[k]=v; return o; })()) }); }); };
+
+          var VIEWS = {
+            lateral: {
+              name: 'Lateral', desc: 'Side view showing all four lobes, cerebellum, and brainstem',
+              regions: [
+                { id:'frontal', name:'Frontal Lobe', x:0.28, y:0.32, w:0.22, fn:'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann:'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood:'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions:'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage:'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
+                { id:'prefrontal', name:'Prefrontal Cortex', x:0.18, y:0.35, w:0.12, fn:'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann:'BA 9, 10, 11, 12, 46, 47', blood:'Anterior cerebral artery, middle cerebral artery', conditions:'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage:'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
+                { id:'motor_cortex', name:'Primary Motor Cortex', x:0.42, y:0.18, w:0.08, fn:'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann:'BA 4', blood:'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions:'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage:'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
+                { id:'parietal', name:'Parietal Lobe', x:0.52, y:0.22, w:0.18, fn:'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann:'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood:'Middle cerebral artery, posterior cerebral artery', conditions:'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage:'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
+                { id:'temporal', name:'Temporal Lobe', x:0.38, y:0.58, w:0.20, fn:'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann:'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood:'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions:'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage:'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
+                { id:'occipital', name:'Occipital Lobe', x:0.78, y:0.32, w:0.14, fn:'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann:'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood:'Posterior cerebral artery', conditions:'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage:'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
+                { id:'cerebellum', name:'Cerebellum', x:0.78, y:0.62, w:0.14, fn:'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann:'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood:'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions:'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage:'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
+                { id:'brainstem', name:'Brainstem', x:0.62, y:0.68, w:0.10, fn:'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann:'N/A', blood:'Basilar artery, vertebral arteries, PICA, AICA', conditions:'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage:'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
+                { id:'brocas', name:'Broca\u2019s Area', x:0.25, y:0.48, w:0.08, fn:'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann:'BA 44, 45', blood:'Middle cerebral artery (superior division)', conditions:'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage:'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
+                { id:'wernickes', name:'Wernicke\u2019s Area', x:0.55, y:0.50, w:0.10, fn:'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann:'BA 22 (posterior part)', blood:'Middle cerebral artery (inferior division)', conditions:'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage:'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' }
+              ]
+            },
+            medial: {
+              name: 'Medial (Sagittal)', desc: 'Midline cut revealing deep structures',
+              regions: [
+                { id:'corpus_callosum', name:'Corpus Callosum', x:0.48, y:0.30, w:0.20, fn:'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann:'N/A (white matter tract)', blood:'Anterior cerebral artery (pericallosal branches)', conditions:'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage:'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
+                { id:'thalamus', name:'Thalamus', x:0.52, y:0.42, w:0.10, fn:'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann:'N/A (diencephalon)', blood:'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions:'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage:'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
+                { id:'hypothalamus', name:'Hypothalamus', x:0.42, y:0.52, w:0.08, fn:'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann:'N/A (diencephalon)', blood:'Circle of Willis branches, superior hypophyseal artery', conditions:'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage:'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
+                { id:'cingulate', name:'Cingulate Gyrus', x:0.42, y:0.22, w:0.18, fn:'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann:'BA 23, 24, 25, 31, 32, 33', blood:'Anterior cerebral artery (callosomarginal branches)', conditions:'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage:'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
+                { id:'hippocampus', name:'Hippocampus', x:0.58, y:0.55, w:0.10, fn:'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann:'Archicortex (3-layered, not neocortical)', blood:'Posterior cerebral artery (hippocampal branches)', conditions:'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage:'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
+                { id:'amygdala', name:'Amygdala', x:0.38, y:0.58, w:0.08, fn:'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann:'N/A (subcortical)', blood:'Anterior choroidal artery, middle cerebral artery branches', conditions:'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage:'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
+                { id:'basal_ganglia', name:'Basal Ganglia', x:0.50, y:0.38, w:0.10, fn:'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann:'N/A (subcortical nuclei)', blood:'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions:'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage:'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
+                { id:'ventricles', name:'Ventricular System', x:0.50, y:0.45, w:0.10, fn:'CSF-filled cavities: 2 lateral ventricles \u2192 interventricular foramina (Monro) \u2192 3rd ventricle \u2192 cerebral aqueduct (Sylvius) \u2192 4th ventricle. Choroid plexus produces ~500mL CSF/day. CSF cushions brain.', brodmann:'N/A', blood:'Choroid plexus supplied by choroidal arteries', conditions:'Hydrocephalus: obstructive (non-communicating, e.g. aqueductal stenosis) or communicating (impaired absorption at arachnoid granulations). Normal pressure hydrocephalus: triad of dementia, gait ataxia, urinary incontinence ("wet, wacky, wobbly").', damage:'Increased ICP from CSF obstruction \u2192 headache, nausea, papilledema, herniation if untreated.' }
+              ]
+            },
+            superior: {
+              name: 'Superior (Top)', desc: 'View from above showing hemispheres and sulci',
+              regions: [
+                { id:'longitudinal', name:'Longitudinal Fissure', x:0.50, y:0.50, w:0.04, fn:'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann:'N/A (anatomical landmark)', blood:'Superior sagittal sinus runs along its superior border', conditions:'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage:'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
+                { id:'central_sulcus', name:'Central Sulcus (Rolandic)', x:0.50, y:0.38, w:0.30, fn:'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann:'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood:'Middle cerebral artery branches', conditions:'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage:'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
+                { id:'frontal_sup', name:'Frontal Lobes (Superior View)', x:0.35, y:0.25, w:0.15, fn:'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann:'BA 4, 6, 8, 9, 10, 46', blood:'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions:'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage:'Executive dysfunction, personality changes, contralateral motor weakness.' },
+                { id:'parietal_sup', name:'Parietal Lobes (Superior View)', x:0.55, y:0.55, w:0.15, fn:'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann:'BA 1,2,3,5,7,39,40', blood:'Middle cerebral artery, posterior cerebral artery', conditions:'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage:'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' }
+              ]
+            },
+            inferior: {
+              name: 'Inferior (Bottom)', desc: 'View from below showing cranial nerves and base',
+              regions: [
+                { id:'olfactory', name:'Olfactory Bulbs/Tracts (CN I)', x:0.50, y:0.20, w:0.10, fn:'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann:'N/A', blood:'Anterior cerebral artery (olfactory branches)', conditions:'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage:'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
+                { id:'optic_chiasm', name:'Optic Chiasm (CN II)', x:0.50, y:0.32, w:0.10, fn:'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann:'N/A', blood:'Superior hypophyseal artery, ophthalmic artery', conditions:'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage:'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
+                { id:'temporal_inf', name:'Temporal Lobes (Inferior)', x:0.40, y:0.50, w:0.15, fn:'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann:'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood:'Posterior cerebral artery', conditions:'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage:'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
+                { id:'cerebellum_inf', name:'Cerebellum (Inferior)', x:0.50, y:0.72, w:0.18, fn:'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann:'N/A', blood:'PICA (posterior inferior cerebellar artery)', conditions:'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage:'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
+                { id:'medulla_inf', name:'Medulla Oblongata (Inferior)', x:0.50, y:0.60, w:0.08, fn:'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann:'N/A', blood:'Vertebral arteries, PICA', conditions:'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage:'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
+                { id:'cn_nerves', name:'Cranial Nerves (II\u2013XII)', x:0.50, y:0.45, w:0.12, fn:'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann:'N/A', blood:'Various branches of basilar and vertebral arteries', conditions:'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage:'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' }
+              ]
+            }
+          };
+
+          var viewKey = d.view || 'lateral';
+          var currentView = VIEWS[viewKey];
+          var regions = currentView.regions;
+          var searchTerm = (d.search || '').toLowerCase();
+          var filtered = searchTerm ? regions.filter(function(r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
+          var sel = d.selectedRegion ? regions.find(function(r) { return r.id === d.selectedRegion; }) : null;
+
+          // Quiz logic
+          var allRegions = []; Object.values(VIEWS).forEach(function(v) { v.regions.forEach(function(r) { if (!allRegions.find(function(a) { return a.id === r.id; })) allRegions.push(r); }); });
+          var quizPool = allRegions.filter(function(r) { return r.damage; });
+          var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
+
+          // Brain canvas
+          var canvasRef = function(canvas) {
+            if (!canvas) return;
+            if (canvas._brainDrawn === viewKey + d.selectedRegion + searchTerm) return;
+            canvas._brainDrawn = viewKey + d.selectedRegion + searchTerm;
+            var ctx = canvas.getContext('2d');
+            var W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+            ctx.save();
+
+            // Brain outline per view
+            ctx.fillStyle = '#f5f0f8';
+            ctx.strokeStyle = '#a78bfa';
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+
+            if (viewKey === 'lateral') {
+              // Side view brain shape
+              ctx.beginPath();
+              ctx.moveTo(W*0.15, H*0.45);
+              ctx.quadraticCurveTo(W*0.12, H*0.20, W*0.35, H*0.12);
+              ctx.quadraticCurveTo(W*0.55, H*0.08, W*0.72, H*0.15);
+              ctx.quadraticCurveTo(W*0.88, H*0.25, W*0.90, H*0.42);
+              ctx.quadraticCurveTo(W*0.88, H*0.55, W*0.78, H*0.60);
+              ctx.quadraticCurveTo(W*0.70, H*0.72, W*0.62, H*0.76);
+              ctx.quadraticCurveTo(W*0.50, H*0.78, W*0.42, H*0.72);
+              ctx.quadraticCurveTo(W*0.30, H*0.62, W*0.20, H*0.55);
+              ctx.quadraticCurveTo(W*0.14, H*0.50, W*0.15, H*0.45);
+              ctx.fill(); ctx.stroke();
+              // Central sulcus (divides frontal/parietal)
+              ctx.beginPath(); ctx.setLineDash([4,3]);
+              ctx.moveTo(W*0.50, H*0.12); ctx.lineTo(W*0.42, H*0.55);
+              ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
+              // Lateral sulcus (Sylvian fissure)
+              ctx.beginPath();
+              ctx.moveTo(W*0.35, H*0.50); ctx.quadraticCurveTo(W*0.50, H*0.48, W*0.65, H*0.42);
+              ctx.stroke();
+              ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
+              // Cerebellum (separate shape)
+              ctx.beginPath();
+              ctx.ellipse(W*0.80, H*0.65, W*0.10, H*0.08, 0, 0, Math.PI*2);
+              ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
+              // Brainstem
+              ctx.beginPath();
+              ctx.moveTo(W*0.62, H*0.62); ctx.lineTo(W*0.65, H*0.78);
+              ctx.lineTo(W*0.58, H*0.78); ctx.lineTo(W*0.55, H*0.62);
+              ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
+            } else if (viewKey === 'medial') {
+              // Sagittal brain
+              ctx.beginPath();
+              ctx.moveTo(W*0.20, H*0.50);
+              ctx.quadraticCurveTo(W*0.15, H*0.22, W*0.40, H*0.12);
+              ctx.quadraticCurveTo(W*0.60, H*0.08, W*0.78, H*0.18);
+              ctx.quadraticCurveTo(W*0.88, H*0.32, W*0.85, H*0.50);
+              ctx.quadraticCurveTo(W*0.82, H*0.60, W*0.72, H*0.62);
+              ctx.lineTo(W*0.60, H*0.60);
+              ctx.quadraticCurveTo(W*0.50, H*0.58, W*0.40, H*0.60);
+              ctx.quadraticCurveTo(W*0.25, H*0.58, W*0.20, H*0.50);
+              ctx.fill(); ctx.stroke();
+              // Corpus callosum (arc)
+              ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = '#c084fc';
+              ctx.moveTo(W*0.35, H*0.38); ctx.quadraticCurveTo(W*0.52, H*0.28, W*0.68, H*0.35);
+              ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = '#a78bfa';
+              // Cerebellum
+              ctx.beginPath();
+              ctx.ellipse(W*0.78, H*0.68, W*0.09, H*0.08, 0, 0, Math.PI*2);
+              ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
+              // Brainstem
+              ctx.beginPath();
+              ctx.moveTo(W*0.58, H*0.58); ctx.lineTo(W*0.62, H*0.78);
+              ctx.lineTo(W*0.55, H*0.78); ctx.lineTo(W*0.50, H*0.58);
+              ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
+            } else if (viewKey === 'superior') {
+              // Top-down: two hemispheres
+              ctx.beginPath();
+              ctx.ellipse(W*0.35, H*0.50, W*0.20, H*0.38, 0, 0, Math.PI*2);
+              ctx.fill(); ctx.stroke();
+              ctx.beginPath();
+              ctx.ellipse(W*0.65, H*0.50, W*0.20, H*0.38, 0, 0, Math.PI*2);
+              ctx.fill(); ctx.stroke();
+              // Longitudinal fissure
+              ctx.beginPath(); ctx.setLineDash([5,3]);
+              ctx.moveTo(W*0.50, H*0.10); ctx.lineTo(W*0.50, H*0.90);
+              ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2; ctx.stroke();
+              // Central sulcus
+              ctx.beginPath();
+              ctx.moveTo(W*0.20, H*0.38); ctx.quadraticCurveTo(W*0.50, H*0.35, W*0.80, H*0.38);
+              ctx.stroke();
+              ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa';
+            } else if (viewKey === 'inferior') {
+              // Bottom view
+              ctx.beginPath();
+              ctx.ellipse(W*0.50, H*0.40, W*0.30, H*0.30, 0, 0, Math.PI*2);
+              ctx.fill(); ctx.stroke();
+              // Cerebellum
+              ctx.beginPath();
+              ctx.ellipse(W*0.50, H*0.72, W*0.22, H*0.12, 0, 0, Math.PI*2);
+              ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
+              // Brainstem
+              ctx.beginPath();
+              ctx.moveTo(W*0.46, H*0.55); ctx.lineTo(W*0.48, H*0.68);
+              ctx.lineTo(W*0.52, H*0.68); ctx.lineTo(W*0.54, H*0.55);
+              ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
+              // Optic chiasm X
+              ctx.beginPath(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+              ctx.moveTo(W*0.44, H*0.30); ctx.lineTo(W*0.56, H*0.36);
+              ctx.moveTo(W*0.56, H*0.30); ctx.lineTo(W*0.44, H*0.36);
+              ctx.stroke(); ctx.strokeStyle = '#a78bfa';
+            }
+
+            ctx.restore();
+
+            // Draw region markers
+            filtered.forEach(function(r) {
+              var px = r.x * W, py = r.y * H;
+              var isSel = sel && sel.id === r.id;
+              var rad = isSel ? 10 : 6;
+              if (isSel) {
+                ctx.save();
+                ctx.shadowColor = '#7c3aed';
+                ctx.shadowBlur = 14;
+                ctx.beginPath(); ctx.arc(px, py, rad + 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#7c3aed30';
+                ctx.fill();
+                ctx.restore();
+              }
+              ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2);
+              ctx.fillStyle = isSel ? '#7c3aed' : '#7c3aedaa';
+              ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+              if (isSel) {
+                ctx.save();
+                ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                ctx.textAlign = px > W * 0.5 ? 'right' : 'left';
+                ctx.fillStyle = '#7c3aed';
+                ctx.fillText(r.name, px > W * 0.5 ? px - 15 : px + 15, py + 3);
+                ctx.restore();
+              }
+            });
+            // View label
+            ctx.save();
+            ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentView.name.toUpperCase() + ' VIEW', W * 0.5, H - 6);
+            ctx.restore();
+          };
+
+          var handleClick = function(e) {
+            var rect = e.target.getBoundingClientRect();
+            var cx = (e.clientX - rect.left) / rect.width;
+            var cy = (e.clientY - rect.top) / rect.height;
+            var closest = null, minD = 0.08;
+            filtered.forEach(function(r) {
+              var dist = Math.sqrt(Math.pow(r.x - cx, 2) + Math.pow(r.y - cy, 2));
+              if (dist < minD) { minD = dist; closest = r; }
+            });
+            if (closest) upd('selectedRegion', closest.id);
+          };
+
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function() { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("div", null,
+                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
+                React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
+              )
+            ),
+            // View tabs
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+              Object.keys(VIEWS).map(function(key) {
+                var v = VIEWS[key];
+                return React.createElement("button", {
+                  key: key,
+                  onClick: function() { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-200')
+                }, v.name);
+              })
+            ),
+            // Controls
+            React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
+              React.createElement("input", {
+                type: "text", placeholder: "\uD83D\uDD0D Search regions, functions, conditions...",
+                value: d.search || '',
+                onChange: function(e) { upd('search', e.target.value); },
+                className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+              }),
+              React.createElement("button", {
+                onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+              }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
+              React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, filtered.length + ' regions')
+            ),
+            // Main: canvas + detail
+            React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("div", { className: "flex-shrink-0" },
+                React.createElement("canvas", {
+                  ref: canvasRef, width: 320, height: 400,
+                  onClick: handleClick,
+                  className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
+                  style: { background: '#faf8ff' }
+                })
+              ),
+              React.createElement("div", { className: "flex-1 min-w-0" },
+                d.quizMode ? (
+                  quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
+                      React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
+                    ),
+                    React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
+                    React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
+                      (function() {
+                        var wrong = quizPool.filter(function(r) { return r.id !== quizQ.id; }).sort(function() { return Math.random()-0.5; }).slice(0,3);
+                        var opts = wrong.concat([quizQ]).sort(function() { return Math.random()-0.5; });
+                        return opts.map(function(opt) {
+                          var fb = d.quizFeedback;
+                          var isCorrect = opt.id === quizQ.id;
+                          var wasChosen = fb && fb.chosen === opt.id;
+                          var showResult = fb !== null && fb !== undefined;
+                          return React.createElement("button", {
+                            key: opt.id, disabled: showResult,
+                            onClick: function() {
+                              var correct = opt.id === quizQ.id;
+                              upd('quizFeedback', { chosen: opt.id, correct: correct });
+                              if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                            },
+                            className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
+                              (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                               showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                               'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
+                          }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
+                        });
+                      })()
+                    ),
+                    d.quizFeedback && React.createElement("button", {
+                      onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                    }, "Next Question \u2192")
+                  ) : null
+                ) : (
+                  sel ? (
+                    React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
+                      React.createElement("div", { className: "flex items-start justify-between" },
+                        React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
+                        React.createElement("button", { onClick: function() { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                      ),
+                      React.createElement("div", { className: "space-y-2.5" },
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                          React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
+                        ),
+                        sel.brodmann && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
+                          React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
+                        ),
+                        sel.blood && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
+                          React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
+                        ),
+                        sel.conditions && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
+                        ),
+                        sel.damage && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
+                        )
+                      )
+                    )
+                  ) : (
+                    React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
+                      filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
+                      filtered.map(function(r) {
+                        return React.createElement("button", {
+                          key: r.id,
+                          onClick: function() { upd('selectedRegion', r.id); },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
+                            (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
+                        },
+                          React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
+                          React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        );
+                      })
+                    )
+                  )
+                )
+              )
+            )
+          );
+        })(),
 
       )));
     };
