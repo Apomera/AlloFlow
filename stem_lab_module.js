@@ -5953,6 +5953,162 @@
                         var sunDir = new THREE.DirectionalLight(0xffeedd, sel.terrainType === 'iceworld' ? 0.3 : 1.0);
                         sunDir.position.set(50, 30, 20); scene.add(sunDir);
 
+                        // ── 3D Rover / Probe Model ──
+                        var roverGroup = new THREE.Group();
+                        if (!isGas) {
+                          // Rocky planet: build a simple rover out of boxes and cylinders
+                          // Body
+                          var bodyGeo = new THREE.BoxGeometry(0.8, 0.35, 1.2);
+                          var bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.6, roughness: 0.3 });
+                          var body = new THREE.Mesh(bodyGeo, bodyMat);
+                          body.position.y = 0.35;
+                          roverGroup.add(body);
+                          // Camera mast
+                          var mastGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.5);
+                          var mastMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7 });
+                          var mast = new THREE.Mesh(mastGeo, mastMat);
+                          mast.position.set(0, 0.77, -0.3);
+                          roverGroup.add(mast);
+                          // Camera head
+                          var headGeo = new THREE.BoxGeometry(0.2, 0.12, 0.15);
+                          var headMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.5 });
+                          var head = new THREE.Mesh(headGeo, headMat);
+                          head.position.set(0, 1.05, -0.32);
+                          roverGroup.add(head);
+                          // Lens (blue emissive)
+                          var lensGeo = new THREE.SphereGeometry(0.04, 8, 8);
+                          var lensMat = new THREE.MeshStandardMaterial({ color: 0x00aaff, emissive: 0x0066ff, emissiveIntensity: 0.8 });
+                          var lens = new THREE.Mesh(lensGeo, lensMat);
+                          lens.position.set(0, 1.05, -0.41);
+                          roverGroup.add(lens);
+                          // Solar panel
+                          var panelGeo = new THREE.BoxGeometry(1.0, 0.03, 0.6);
+                          var panelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a5e, metalness: 0.3, roughness: 0.5 });
+                          var panel = new THREE.Mesh(panelGeo, panelMat);
+                          panel.position.set(0, 0.56, 0.15);
+                          roverGroup.add(panel);
+                          // 6 wheels (3 per side)
+                          var wheelGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.08, 12);
+                          var wheelMat = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.4, roughness: 0.8 });
+                          var wheelPositions = [
+                            [-0.45, 0.15, -0.4], [-0.45, 0.15, 0], [-0.45, 0.15, 0.4],
+                            [0.45, 0.15, -0.4], [0.45, 0.15, 0], [0.45, 0.15, 0.4]
+                          ];
+                          wheelPositions.forEach(function (wp) {
+                            var wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                            wheel.position.set(wp[0], wp[1], wp[2]);
+                            wheel.rotation.z = Math.PI / 2;
+                            roverGroup.add(wheel);
+                          });
+                          // Antenna
+                          var antGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.8);
+                          var antMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.8 });
+                          var ant = new THREE.Mesh(antGeo, antMat);
+                          ant.position.set(0.25, 0.92, 0.3);
+                          roverGroup.add(ant);
+                          // Antenna dish
+                          var dishGeo = new THREE.CircleGeometry(0.1, 12);
+                          var dishMat = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, metalness: 0.3 });
+                          var dish = new THREE.Mesh(dishGeo, dishMat);
+                          dish.position.set(0.25, 1.35, 0.3);
+                          dish.rotation.x = -0.5;
+                          roverGroup.add(dish);
+                        } else {
+                          // Gas giant: build a probe/drone
+                          var probeGeo = new THREE.SphereGeometry(0.4, 16, 12);
+                          var probeMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.7, roughness: 0.2 });
+                          var probe = new THREE.Mesh(probeGeo, probeMat);
+                          probe.position.y = 0;
+                          roverGroup.add(probe);
+                          // Heat shield bottom
+                          var shieldGeo = new THREE.SphereGeometry(0.42, 16, 8, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.5);
+                          var shieldMat = new THREE.MeshStandardMaterial({ color: 0xcc6600, metalness: 0.2, roughness: 0.8 });
+                          var shield = new THREE.Mesh(shieldGeo, shieldMat);
+                          shield.rotation.x = Math.PI;
+                          roverGroup.add(shield);
+                          // Instrument boom
+                          var boomGeo = new THREE.CylinderGeometry(0.03, 0.03, 1.0);
+                          var boomMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.6 });
+                          var boom = new THREE.Mesh(boomGeo, boomMat);
+                          boom.position.set(0, 0.5, 0);
+                          roverGroup.add(boom);
+                          // Antenna top
+                          var pAntGeo = new THREE.ConeGeometry(0.08, 0.2, 8);
+                          var pAntMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5 });
+                          var pAnt = new THREE.Mesh(pAntGeo, pAntMat);
+                          pAnt.position.set(0, 1.1, 0);
+                          roverGroup.add(pAnt);
+                          // Blinking lights
+                          var lightGeo = new THREE.SphereGeometry(0.05, 8, 8);
+                          var lightMat1 = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1.0 });
+                          var lightMat2 = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.0 });
+                          var redLight = new THREE.Mesh(lightGeo, lightMat1);
+                          redLight.position.set(0.3, 0.1, 0.3);
+                          roverGroup.add(redLight);
+                          var greenLight = new THREE.Mesh(lightGeo, lightMat2);
+                          greenLight.position.set(-0.3, 0.1, 0.3);
+                          roverGroup.add(greenLight);
+                        }
+                        roverGroup.position.copy(playerPos);
+                        if (!isGas) roverGroup.position.y = 0; // wheels on ground
+                        scene.add(roverGroup);
+
+                        // ── Scattered Environment Objects (rocks/boulders for depth cues) ──
+                        var envObjects = [];
+                        if (!isGas) {
+                          var rockColor = new THREE.Color(sel.terrainColor || '#886644');
+                          for (var ri = 0; ri < 80; ri++) {
+                            var rSize = 0.1 + Math.random() * 0.6;
+                            var rGeo = new THREE.DodecahedronGeometry(rSize, 0);
+                            // Deform vertices for organic shapes
+                            var rPositions = rGeo.attributes.position.array;
+                            for (var rv = 0; rv < rPositions.length; rv += 3) {
+                              rPositions[rv] *= 0.7 + Math.random() * 0.6;
+                              rPositions[rv + 1] *= 0.5 + Math.random() * 0.5;
+                              rPositions[rv + 2] *= 0.7 + Math.random() * 0.6;
+                            }
+                            rGeo.computeVertexNormals();
+                            var rMat = new THREE.MeshStandardMaterial({
+                              color: rockColor.clone().offsetHSL(Math.random() * 0.05 - 0.025, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05),
+                              roughness: 0.9, metalness: 0.1, flatShading: true
+                            });
+                            var rock = new THREE.Mesh(rGeo, rMat);
+                            rock.position.set(
+                              (Math.random() - 0.5) * 80,
+                              rSize * 0.3,
+                              (Math.random() - 0.5) * 80
+                            );
+                            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                            scene.add(rock);
+                            envObjects.push(rock);
+                          }
+                          // A few large landmark boulders
+                          for (var bi = 0; bi < 6; bi++) {
+                            var bSize = 1.5 + Math.random() * 2;
+                            var bGeo = new THREE.DodecahedronGeometry(bSize, 1);
+                            var bPositions = bGeo.attributes.position.array;
+                            for (var bv = 0; bv < bPositions.length; bv += 3) {
+                              bPositions[bv] *= 0.6 + Math.random() * 0.8;
+                              bPositions[bv + 1] *= 0.4 + Math.random() * 0.6;
+                              bPositions[bv + 2] *= 0.6 + Math.random() * 0.8;
+                            }
+                            bGeo.computeVertexNormals();
+                            var bMat = new THREE.MeshStandardMaterial({
+                              color: rockColor.clone().offsetHSL(0, -0.05, -0.1),
+                              roughness: 0.95, metalness: 0.05, flatShading: true
+                            });
+                            var boulder = new THREE.Mesh(bGeo, bMat);
+                            boulder.position.set(
+                              (Math.random() - 0.5) * 60,
+                              bSize * 0.25,
+                              (Math.random() - 0.5) * 60
+                            );
+                            boulder.rotation.y = Math.random() * Math.PI * 2;
+                            scene.add(boulder);
+                            envObjects.push(boulder);
+                          }
+                        }
+
                         // ── Particle effects ──
                         if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
                           var partCount = 200;
@@ -6386,6 +6542,24 @@
                               m.material.opacity = 0.5 + Math.abs(Math.sin(tick3d * 0.05)) * 0.3;
                             }
                           });
+
+                          // ── Update rover/probe model position ──
+                          roverGroup.position.x = playerPos.x;
+                          roverGroup.position.z = playerPos.z;
+                          if (!isGas) {
+                            roverGroup.position.y = 0; // wheels on ground
+                            roverGroup.rotation.y = yaw + Math.PI; // face movement direction
+                          } else {
+                            roverGroup.position.y = playerPos.y - 0.5;
+                            roverGroup.rotation.y = yaw + Math.PI;
+                            // Probe lights blink
+                            if (redLight && greenLight) {
+                              redLight.material.emissiveIntensity = Math.sin(tick3d * 0.1) > 0 ? 1.0 : 0.1;
+                              greenLight.material.emissiveIntensity = Math.sin(tick3d * 0.1) > 0 ? 0.1 : 1.0;
+                            }
+                          }
+                          // Hide rover in 1st person, show in 3rd
+                          roverGroup.visible = thirdPerson;
 
                           renderer.render(scene, camera);
                         }
