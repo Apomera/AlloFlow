@@ -5506,12 +5506,17 @@
               let camTheta = 0.5, camPhi = 1.0, camDist = 55;
               let isDragging = false, lastX = 0, lastY = 0;
               let targetLookAt = new THREE.Vector3(0, 0, 0);
+              let currentLookAt = new THREE.Vector3(0, 0, 0);
+              let currentDist = 55;
+              let targetDist = 55;
+              let focusedPlanetIdx = -1; // index in planetMeshes, -1 = none (system view)
+              let cameraLerp = 0.06; // smooth interpolation speed
 
               function updateCamera() {
-                camera.position.x = targetLookAt.x + camDist * Math.sin(camPhi) * Math.cos(camTheta);
-                camera.position.y = targetLookAt.y + camDist * Math.cos(camPhi);
-                camera.position.z = targetLookAt.z + camDist * Math.sin(camPhi) * Math.sin(camTheta);
-                camera.lookAt(targetLookAt);
+                camera.position.x = currentLookAt.x + currentDist * Math.sin(camPhi) * Math.cos(camTheta);
+                camera.position.y = currentLookAt.y + currentDist * Math.cos(camPhi);
+                camera.position.z = currentLookAt.z + currentDist * Math.sin(camPhi) * Math.sin(camTheta);
+                camera.lookAt(currentLookAt);
               }
               updateCamera();
 
@@ -5534,11 +5539,10 @@
               }
               function onSolarWheel(e) {
                 e.preventDefault();
-                camDist = Math.max(8, Math.min(120, camDist + e.deltaY * 0.03));
-                updateCamera();
+                targetDist = Math.max(3, Math.min(120, targetDist + e.deltaY * 0.05));
               }
 
-              // ── Raycasting for planet clicks ──
+              // ── Raycasting for planet clicks (smooth fly-to) ──
               const raycaster = new THREE.Raycaster();
               const mouse = new THREE.Vector2();
               function onSolarClick(e) {
@@ -5549,19 +5553,39 @@
                 raycaster.setFromCamera(mouse, camera);
                 const hits = raycaster.intersectObjects(planetMeshes);
                 if (hits.length > 0) {
-                  const name = hits[0].object.userData.name;
+                  const hitObj = hits[0].object;
+                  const name = hitObj.userData.name;
                   upd('selectedPlanet', name);
-                  const pm = hits[0].object.position;
-                  targetLookAt.set(pm.x, pm.y, pm.z);
-                  camDist = Math.max(8, hits[0].object.geometry.parameters.radius * 8);
-                  updateCamera();
+                  focusedPlanetIdx = hitObj.userData.idx;
+                  // Set smooth zoom target — closer for small planets, farther for giants
+                  var radius = hitObj.geometry.parameters.radius;
+                  targetDist = Math.max(3, Math.min(18, radius * 5));
+                  // Set lookAt target to planet's current position (will be tracked each frame)
+                  targetLookAt.copy(hitObj.position);
+                  // Adjust camera angle for a nice viewing angle
+                  camPhi = 0.8;
+                } else {
+                  // Clicked empty space — deselect, return to system view
+                  upd('selectedPlanet', null);
+                  focusedPlanetIdx = -1;
+                  targetLookAt.set(0, 0, 0);
+                  targetDist = 55;
                 }
+              }
+              // Double-click to reset to full system view
+              function onSolarDblClick(e) {
+                upd('selectedPlanet', null);
+                focusedPlanetIdx = -1;
+                targetLookAt.set(0, 0, 0);
+                targetDist = 55;
+                camPhi = 1.0;
               }
               canvas.addEventListener('pointerdown', onSolarDown);
               canvas.addEventListener('pointermove', onSolarMove);
               canvas.addEventListener('pointerup', onSolarUp);
               canvas.addEventListener('wheel', onSolarWheel, { passive: false });
               canvas.addEventListener('click', onSolarClick);
+              canvas.addEventListener('dblclick', onSolarDblClick);
 
               // ── Planet label overlay ──
               const labelContainer = canvas.parentElement.querySelector('.solar-labels');
@@ -5584,6 +5608,17 @@
                   mesh.position.z = Math.sin(mesh._orbitAngle) * mesh._orbitDist;
                   mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
                 });
+
+                // ── Smooth camera tracking ──
+                // If focused on a planet, update targetLookAt to follow it as it orbits
+                if (focusedPlanetIdx >= 0 && focusedPlanetIdx < planetMeshes.length) {
+                  var fp = planetMeshes[focusedPlanetIdx];
+                  targetLookAt.copy(fp.position);
+                }
+                // Smoothly interpolate camera toward target
+                currentLookAt.lerp(targetLookAt, cameraLerp);
+                currentDist += (targetDist - currentDist) * cameraLerp;
+                updateCamera();
 
                 // Slowly rotate asteroids
                 const aArr = asteroidGeo.attributes.position.array;
@@ -5641,6 +5676,7 @@
                 canvas.removeEventListener('pointerup', onSolarUp);
                 canvas.removeEventListener('wheel', onSolarWheel);
                 canvas.removeEventListener('click', onSolarClick);
+                canvas.removeEventListener('dblclick', onSolarDblClick);
                 resizeObserver.disconnect();
                 renderer.dispose();
                 scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
@@ -6016,15 +6052,15 @@
                         var hazardEl = document.createElement('div');
                         hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.85);backdrop-filter:blur(4px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,100,100,0.4);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px';
                         var hazardMsgs = {
-                          'Venus':   ['\u26A0 SURFACE TEMP 462\u00B0C \u2014 exceeds hull tolerance', '\u26A0 ATMOSPHERIC PRESSURE: 90x Earth \u2014 structural warning', '\u26A0 SULFURIC ACID CLOUDS DETECTED overhead'],
+                          'Venus': ['\u26A0 SURFACE TEMP 462\u00B0C \u2014 exceeds hull tolerance', '\u26A0 ATMOSPHERIC PRESSURE: 90x Earth \u2014 structural warning', '\u26A0 SULFURIC ACID CLOUDS DETECTED overhead'],
                           'Jupiter': ['\u26A0 RADIATION: 20 Sv/day \u2014 lethal exposure zone', '\u26A0 WIND SHEAR: 360 km/h crosswind detected', '\u26A0 AMMONIA ICE CRYSTALS impacting sensors'],
-                          'Saturn':  ['\u26A0 RING DEBRIS: micro-meteoroid risk elevated', '\u26A0 WIND SPEED: 1,800 km/h at equatorial band'],
-                          'Mars':    ['\u26A0 DUST STORM APPROACHING \u2014 visibility dropping', '\u26A0 UV RADIATION: no magnetic shield \u2014 high exposure', '\u26A0 THIN ATMOSPHERE: suit pressure critical'],
+                          'Saturn': ['\u26A0 RING DEBRIS: micro-meteoroid risk elevated', '\u26A0 WIND SPEED: 1,800 km/h at equatorial band'],
+                          'Mars': ['\u26A0 DUST STORM APPROACHING \u2014 visibility dropping', '\u26A0 UV RADIATION: no magnetic shield \u2014 high exposure', '\u26A0 THIN ATMOSPHERE: suit pressure critical'],
                           'Mercury': ['\u26A0 SOLAR RADIATION ALERT \u2014 no magnetic shielding', '\u26A0 SURFACE TEMP SWING: -180\u00B0C to 430\u00B0C across terminator'],
-                          'Pluto':   ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
-                          'Uranus':  ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
+                          'Pluto': ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
+                          'Uranus': ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
                           'Neptune': ['\u26A0 WIND SPEED: 2,100 km/h \u2014 fastest in solar system', '\u26A0 GREAT DARK SPOT: storm system ahead'],
-                          'Earth':   ['\u2139 All systems nominal \u2014 home sweet home']
+                          'Earth': ['\u2139 All systems nominal \u2014 home sweet home']
                         };
                         var planetHazards = hazardMsgs[sel.name] || ['\u26A0 Environmental data unavailable'];
                         var hazardIdx = 0;
