@@ -6049,8 +6049,7 @@
                           greenLight.position.set(-0.3, 0.1, 0.3);
                           roverGroup.add(greenLight);
                         }
-                        roverGroup.position.copy(playerPos);
-                        if (!isGas) roverGroup.position.y = 0; // wheels on ground
+                        roverGroup.position.set(0, isGas ? 5 : 0, 0); // initial position; animation loop tracks playerPos
                         scene.add(roverGroup);
 
                         // ── Scattered Environment Objects (rocks/boulders for depth cues) ──
