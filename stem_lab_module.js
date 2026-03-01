@@ -139,6 +139,39 @@
         gradeLevel
       } = props;
 
+      // ── STEM Lab XP System (per-activity cap: 100 XP) ──
+      var stemXpData = (labToolData && labToolData._stemXP) || {};
+      function awardStemXP(activityId, points, reason) {
+        setLabToolData(function (prev) {
+          var xpState = Object.assign({}, (prev && prev._stemXP) || {});
+          var actData = Object.assign({}, xpState[activityId] || { earned: 0, log: [] });
+          var cap = 100;
+          var canEarn = Math.max(0, cap - actData.earned);
+          var awarded = Math.min(points, canEarn);
+          if (awarded <= 0) return prev;
+          actData.earned += awarded;
+          actData.log = (actData.log || []).concat([{
+            pts: awarded, reason: reason || 'Activity', ts: Date.now()
+          }]);
+          xpState[activityId] = actData;
+          // Total XP across all activities
+          var total = 0;
+          Object.keys(xpState).forEach(function (k) {
+            if (k !== '_total' && xpState[k] && typeof xpState[k].earned === 'number') total += xpState[k].earned;
+          });
+          xpState._total = total;
+          return Object.assign({}, prev, { _stemXP: xpState });
+        });
+        if (addToast) addToast('\u2B50 +' + Math.min(points, 100) + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
+      }
+      function getStemXP(activityId) {
+        return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
+      }
+      function getStemXPCap(activityId) {
+        return 100 - getStemXP(activityId);
+      }
+      var totalStemXP = stemXpData._total || 0;
+
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
         className: "fixed inset-0 z-[9999] flex items-stretch justify-center",
@@ -152,7 +185,11 @@
         className: "flex items-center justify-between px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3"
-      }, /*#__PURE__*/React.createElement("div", {
+      }, React.createElement("div", {
+        className: "flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-full px-3 py-1 text-xs font-bold",
+        title: "Total STEM Lab XP earned across all activities"
+      }, React.createElement("span", null, "⭐"), React.createElement("span", null, totalStemXP + " XP")),
+      /*#__PURE__*/React.createElement("div", {
         className: "bg-white/20 p-2 rounded-lg"
       }, /*#__PURE__*/React.createElement(Calculator, {
         size: 20
@@ -198,11 +235,11 @@
         className: "flex border-b border-slate-200 bg-slate-50 px-6"
       }, [{
         id: 'create',
-        label: '📝 Create',
+        label: '\uD83D\uDCDD Create',
         desc: 'Generate & assess'
       }, {
         id: 'explore',
-        label: '🔧 Explore',
+        label: '\uD83D\uDD27 Explore',
         desc: 'Manipulatives'
       }].map(tab => /*#__PURE__*/React.createElement("button", {
         key: tab.id,
@@ -469,7 +506,40 @@
           addToast('STEM Assessment saved to resources (' + assessmentBlocks.length + ' blocks)', 'success');
         },
         className: "py-3 px-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
-      }, "\uD83D\uDCBE Save to Resources"), toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", {
+      }, "\uD83D\uDCBE Save to Resources"), React.createElement("div", { className: "mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("span", { className: "text-lg" }, "\u2B50"),
+                React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "STEM Lab XP Progress"),
+                React.createElement("span", { className: "ml-auto text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full" }, totalStemXP + " Total XP")
+              ),
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px]" },
+                [
+                  { id: 'galaxy_quiz', label: '\uD83C\uDF0C Galaxy Quiz', icon: '\uD83C\uDF0C' },
+                  { id: 'galaxy_explore', label: '\u2B50 Galaxy Discovery', icon: '\u2B50' },
+                  { id: 'solar_quiz', label: '\uD83C\uDF0D Solar System', icon: '\uD83C\uDF0D' },
+                  { id: 'universe_explore', label: '\uD83C\uDF20 Universe', icon: '\uD83C\uDF20' },
+                  { id: 'cell_quiz', label: '\uD83D\uDD2C Cell Lab', icon: '\uD83D\uDD2C' },
+                  { id: 'rocks_quiz', label: '\uD83E\uDEA8 Rocks', icon: '\uD83E\uDEA8' }
+                ].map(function (act) {
+                  var earned = getStemXP(act.id);
+                  var pct = Math.min(100, earned);
+                  return React.createElement("div", { key: act.id, className: "bg-white rounded-lg p-2 border border-amber-100" },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1" },
+                      React.createElement("span", null, act.icon),
+                      React.createElement("span", { className: "font-bold text-slate-700" }, act.label)
+                    ),
+                    React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden" },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: { width: pct + '%', background: pct >= 100 ? 'linear-gradient(90deg, #f59e0b, #10b981)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)' } })
+                    ),
+                    React.createElement("div", { className: "flex justify-between mt-0.5" },
+                      React.createElement("span", { className: "text-amber-600" }, earned + "/100 XP"),
+                      pct >= 100 && React.createElement("span", { className: "text-green-600 font-bold" }, "\u2714 MAX")
+                    )
+                  );
+                })
+              )
+            ),
+            toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", {
         className: "mt-4 pt-4 border-t border-slate-200"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2 mb-3"
@@ -617,6 +687,11 @@
           id: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy Explorer',
           desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
           color: 'indigo', ready: true
+        },
+        {
+          id: 'universe', icon: '\uD83C\uDF20', label: 'Universe Time-Lapse',
+          desc: 'Experience 13.8 billion years of cosmic history, from the Big Bang to the far future.',
+          color: 'violet', ready: true
         },
         { id: 'rocks', icon: '🪨', label: 'Rocks & Minerals', desc: 'Interactive rock cycle, mineral properties & geology', color: '#b45309', cat: 'explore' },
         { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
@@ -4184,7 +4259,7 @@
                         var correct = opt.toLowerCase() === quizQuestion.a.toLowerCase();
                         upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +" + 10 + " XP" : "\u274C Not quite. " + quizQuestion.hint });
                         if (correct) {
-                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); awardStemXP('galaxy_quiz', 10, 'Galaxy quiz correct');
                           var ansOrg = ORGANISMS.find(function (o) { return o.id === quizQuestion.a || o.label.toLowerCase() === quizQuestion.a; });
                           if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
                         }
@@ -5640,11 +5715,12 @@
                 // Mode tabs
                 React.createElement("div", { className: "flex gap-1" },
                   ['overview', 'surface', 'drone'].map(function (tab) {
+                    var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
                     return React.createElement("button", {
                       key: tab, onClick: function () { upd('viewTab', tab); },
                       className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
                         ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
-                    }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : '\uD83D\uDEF8 Drone');
+                    }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : (isGas ? '\uD83D\uDEF8 Probe' : '\uD83D\uDE97 Rover'));
                   })
                 )
               ),
@@ -5697,320 +5773,258 @@
                 React.createElement("button", {
                   onClick: function () { upd('viewTab', 'drone'); },
                   className: "w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.01]"
-                }, "\uD83D\uDEF8 Launch Drone on " + sel.name)
+                }, (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant' ? "\uD83D\uDEF8 Launch Atmospheric Probe on " : "\uD83D\uDE97 Deploy Rover on ") + sel.name)
               ),
 
-              // ── DRONE TAB ──
+              // ── ROVER / PROBE TAB (Three.js First-Person) ──
               (d.viewTab) === 'drone' && React.createElement("div", null,
-                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '400px' } },
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '450px' } },
                   React.createElement("canvas", {
                     "data-drone-canvas": "true",
                     ref: function (canvasEl) {
                       if (!canvasEl || canvasEl._droneInit === sel.name) return;
                       canvasEl._droneInit = sel.name;
-                      var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
-                      var H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
-                      var ctx = canvasEl.getContext('2d');
-                      var dpr = window.devicePixelRatio || 1;
 
-                      // Drone state
-                      var drone = { x: W / (2 * dpr), y: H * 0.6 / dpr, altitude: 50, vx: 0, vy: 0, speed: 0, heading: 0 };
-                      var tick = 0;
-                      var keys = {};
-                      var terrainSeed = [];
-                      var skyColor = sel.skyColor || '#000000';
-                      var terrainColor = sel.terrainColor || '#888888';
-                      var terrainType = sel.terrainType || 'cratered';
+                      function doInit(THREE) {
+                        var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
+                        var scene = new THREE.Scene();
+                        var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
+                        var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 500);
+                        camera.position.set(0, isGas ? 5 : 1.6, 0);
+                        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+                        renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                        renderer.setClearColor(new THREE.Color(sel.skyColor || '#000000'));
 
-                      // Generate terrain heightmap
-                      for (var i = 0; i < 200; i++) {
-                        var h = 0;
-                        if (terrainType === 'cratered') h = Math.random() * 40 + Math.sin(i * 0.15) * 20;
-                        else if (terrainType === 'volcanic') h = Math.abs(Math.sin(i * 0.08)) * 60 + Math.random() * 15;
-                        else if (terrainType === 'earthlike') h = Math.sin(i * 0.05) * 30 + Math.sin(i * 0.15) * 15 + Math.random() * 10;
-                        else if (terrainType === 'desert') h = Math.sin(i * 0.1) * 25 + Math.random() * 8;
-                        else if (terrainType === 'gasgiant') h = Math.sin(i * 0.03) * 10 + Math.sin(i * 0.1) * 5;
-                        else if (terrainType === 'icegiant') h = Math.sin(i * 0.06) * 20 + Math.random() * 12;
-                        else if (terrainType === 'iceworld') h = Math.sin(i * 0.04) * 15 + Math.random() * 6;
-                        terrainSeed.push(h);
-                      }
-
-                      function getTerrainH(worldX) {
-                        var idx = ((worldX / 5) % terrainSeed.length + terrainSeed.length) % terrainSeed.length;
-                        var i0 = Math.floor(idx), i1 = (i0 + 1) % terrainSeed.length;
-                        var frac = idx - i0;
-                        return terrainSeed[i0] * (1 - frac) + terrainSeed[i1] * frac;
-                      }
-
-                      function drawScene() {
-                        ctx.clearRect(0, 0, W, H);
-                        tick++;
-
-                        // ── Sky ──
-                        var skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
-                        skyGrad.addColorStop(0, skyColor);
-                        var lighterSky = skyColor;
-                        // Lighten sky near horizon
-                        skyGrad.addColorStop(1, terrainType === 'cratered' ? '#111' : terrainType === 'volcanic' ? '#d4923a' : terrainType === 'earthlike' ? '#87ceeb' : terrainType === 'desert' ? '#d4a574' : terrainType === 'iceworld' ? '#2a2a3a' : skyColor);
-                        ctx.fillStyle = skyGrad;
-                        ctx.fillRect(0, 0, W, H * 0.55);
-
-                        // Stars for dark-sky worlds
-                        if (terrainType === 'cratered' || terrainType === 'iceworld') {
-                          for (var s = 0; s < 100; s++) {
-                            var sx = (Math.sin(s * 127.1 + 311.7) * 0.5 + 0.5) * W;
-                            var sy = (Math.sin(s * 269.5 + 183.3) * 0.5 + 0.5) * H * 0.45;
-                            var ss = (1 + Math.sin(tick * 0.02 + s)) * 0.5 * dpr;
-                            ctx.beginPath(); ctx.arc(sx, sy, ss, 0, Math.PI * 2);
-                            ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.4) + ')';
-                            ctx.fill();
+                        // ── Sky dome ──
+                        var skyGeo = new THREE.SphereGeometry(200, 32, 16);
+                        var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
+                        var sCtx = skyCv.getContext('2d');
+                        var sGrad = sCtx.createLinearGradient(0, 0, 0, 256);
+                        sGrad.addColorStop(0, sel.skyColor || '#000');
+                        sGrad.addColorStop(0.5, sel.terrainType === 'earthlike' ? '#87ceeb' : sel.terrainType === 'volcanic' ? '#d4923a' : sel.skyColor || '#111');
+                        sGrad.addColorStop(1, sel.terrainColor || '#333');
+                        sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 512, 256);
+                        // Stars for dark worlds
+                        if (sel.terrainType === 'cratered' || sel.terrainType === 'iceworld' || sel.terrainType === 'desert') {
+                          for (var si = 0; si < 200; si++) {
+                            sCtx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
+                            sCtx.beginPath(); sCtx.arc(Math.random() * 512, Math.random() * 128, Math.random() * 1.5, 0, Math.PI * 2); sCtx.fill();
                           }
                         }
+                        var skyTex = new THREE.CanvasTexture(skyCv);
+                        var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide });
+                        scene.add(new THREE.Mesh(skyGeo, skyMat));
 
-                        // Clouds for atmospheric worlds
-                        if (terrainType === 'earthlike' || terrainType === 'volcanic' || terrainType === 'gasgiant') {
-                          for (var c = 0; c < 6; c++) {
-                            var cx = ((c * 150 * dpr - tick * 0.3 + drone.x * 0.1) % (W + 200 * dpr)) - 100 * dpr;
-                            var cy = (50 + c * 25 + Math.sin(c * 2.1) * 15) * dpr;
-                            ctx.beginPath();
-                            ctx.ellipse(cx, cy, (60 + c * 10) * dpr, (15 + c * 3) * dpr, 0, 0, Math.PI * 2);
-                            var cloudColor = terrainType === 'volcanic' ? 'rgba(200,160,60,0.25)' : terrainType === 'gasgiant' ? 'rgba(200,170,100,0.3)' : 'rgba(255,255,255,0.4)';
-                            ctx.fillStyle = cloudColor;
-                            ctx.fill();
+                        // ── Terrain (rocky planets) or Cloud layers (gas giants) ──
+                        if (!isGas) {
+                          var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
+                          var posArr = terrainGeo.attributes.position.array;
+                          for (var vi = 0; vi < posArr.length; vi += 3) {
+                            var px = posArr[vi], py = posArr[vi + 1];
+                            var h = Math.sin(px * 0.05) * 3 + Math.sin(py * 0.08) * 2 + Math.sin(px * 0.15 + py * 0.1) * 1;
+                            if (sel.terrainType === 'volcanic') h = Math.abs(Math.sin(px * 0.04) * 5) + Math.random() * 0.5;
+                            if (sel.terrainType === 'earthlike') h = Math.sin(px * 0.03) * 2 + Math.sin(py * 0.05) * 1.5 + Math.random() * 0.3;
+                            if (sel.terrainType === 'desert') h = Math.sin(px * 0.06) * 1.5 + Math.random() * 0.2;
+                            if (sel.terrainType === 'iceworld') h = Math.sin(px * 0.04 + py * 0.03) * 1 + Math.random() * 0.15;
+                            posArr[vi + 2] = h;
                           }
-                        }
-
-                        // Sun (size varies by planet distance)
-                        var sunSize = terrainType === 'cratered' ? 40 : terrainType === 'iceworld' ? 4 : terrainType === 'icegiant' ? 6 : 15;
-                        var sunX = W * 0.8, sunY = H * 0.15;
-                        var sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * dpr);
-                        sunGrad.addColorStop(0, '#fffde0');
-                        sunGrad.addColorStop(0.5, '#ffd54f');
-                        sunGrad.addColorStop(1, 'rgba(255,213,79,0)');
-                        ctx.beginPath(); ctx.arc(sunX, sunY, sunSize * dpr * 1.5, 0, Math.PI * 2);
-                        ctx.fillStyle = sunGrad; ctx.fill();
-
-                        // Saturn: show rings in sky
-                        if (sel.name === 'Saturn') {
-                          ctx.strokeStyle = 'rgba(210,180,120,0.3)';
-                          ctx.lineWidth = 12 * dpr;
-                          ctx.beginPath();
-                          ctx.ellipse(W * 0.3, H * 0.15, W * 0.35, H * 0.04, 0.1, 0, Math.PI * 2);
-                          ctx.stroke();
-                          ctx.lineWidth = 6 * dpr;
-                          ctx.beginPath();
-                          ctx.ellipse(W * 0.3, H * 0.15, W * 0.42, H * 0.05, 0.1, 0, Math.PI * 2);
-                          ctx.stroke();
-                        }
-
-                        // ── Terrain ──
-                        var horizonY = H * 0.55;
-                        ctx.beginPath();
-                        ctx.moveTo(0, horizonY);
-                        for (var tx = 0; tx <= W; tx += 3 * dpr) {
-                          var worldX = tx / dpr + drone.x;
-                          var th = getTerrainH(worldX);
-                          ctx.lineTo(tx, horizonY - th * dpr * 0.8);
-                        }
-                        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-                        var tGrad = ctx.createLinearGradient(0, horizonY - 50 * dpr, 0, H);
-                        tGrad.addColorStop(0, terrainColor);
-                        // Darken terrain below
-                        tGrad.addColorStop(1, '#' + terrainColor.replace('#', '').match(/.{2}/g).map(function (h) { return Math.max(0, parseInt(h, 16) - 60).toString(16).padStart(2, '0'); }).join(''));
-                        ctx.fillStyle = tGrad;
-                        ctx.fill();
-
-                        // Surface details
-                        if (terrainType === 'cratered') {
-                          for (var cr = 0; cr < 12; cr++) {
-                            var crX = ((cr * 87 + 31 - drone.x * 0.5) % (W / dpr)) * dpr;
-                            var crY = horizonY + (20 + cr * 8) * dpr;
-                            var crR = (5 + cr % 5 * 3) * dpr;
-                            ctx.beginPath(); ctx.arc(crX, crY, crR, 0, Math.PI * 2);
-                            ctx.strokeStyle = 'rgba(100,100,100,0.3)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
-                          }
-                        } else if (terrainType === 'volcanic') {
-                          // Lava flows
-                          for (var lf = 0; lf < 5; lf++) {
-                            var lfX = ((lf * 120 + 50 - drone.x * 0.3) % (W / dpr)) * dpr;
-                            ctx.beginPath();
-                            ctx.moveTo(lfX, horizonY + 10 * dpr);
-                            var lfWave = Math.sin(tick * 0.03 + lf) * 5 * dpr;
-                            ctx.quadraticCurveTo(lfX + 30 * dpr + lfWave, horizonY + 40 * dpr, lfX + 60 * dpr, horizonY + 80 * dpr);
-                            ctx.strokeStyle = 'rgba(255,160,0,0.4)'; ctx.lineWidth = 3 * dpr; ctx.stroke();
-                          }
-                        } else if (terrainType === 'earthlike') {
-                          // Trees
-                          for (var tr = 0; tr < 15; tr++) {
-                            var trX = ((tr * 65 + 20 - drone.x * 0.4) % (W / dpr)) * dpr;
-                            var trY = horizonY + (5 + tr % 4 * 12) * dpr;
-                            ctx.fillStyle = '#2d5a2d';
-                            ctx.beginPath(); ctx.moveTo(trX, trY - 12 * dpr);
-                            ctx.lineTo(trX - 6 * dpr, trY); ctx.lineTo(trX + 6 * dpr, trY); ctx.closePath(); ctx.fill();
-                            ctx.fillStyle = '#4a3728'; ctx.fillRect(trX - 1 * dpr, trY, 2 * dpr, 4 * dpr);
-                          }
-                        } else if (terrainType === 'desert') {
-                          // Dust devils
-                          for (var dd = 0; dd < 3; dd++) {
-                            var ddX = ((dd * 200 + tick * 0.5 - drone.x * 0.2) % (W / dpr)) * dpr;
-                            var ddY = horizonY + 30 * dpr;
-                            ctx.beginPath();
-                            for (var ddy = 0; ddy < 40 * dpr; ddy += 2 * dpr) {
-                              var ddWobble = Math.sin(ddy * 0.1 + tick * 0.05 + dd) * (3 + ddy * 0.08) * dpr;
-                              ctx.lineTo(ddX + ddWobble, ddY - ddy);
-                            }
-                            ctx.strokeStyle = 'rgba(180,130,80,0.25)'; ctx.lineWidth = 4 * dpr; ctx.stroke();
-                          }
-                        } else if (terrainType === 'gasgiant') {
-                          // Cloud bands
-                          for (var band = 0; band < 8; band++) {
-                            var bY = horizonY + band * H * 0.05;
-                            ctx.fillStyle = band % 2 === 0 ? 'rgba(200,160,80,0.2)' : 'rgba(180,120,60,0.15)';
-                            ctx.fillRect(0, bY, W, H * 0.04);
-                          }
-                          // Lightning
-                          if (tick % 120 < 5) {
-                            var lx = (tick * 7) % W;
-                            ctx.strokeStyle = 'rgba(255,255,200,0.7)'; ctx.lineWidth = 2 * dpr;
-                            ctx.beginPath(); ctx.moveTo(lx, horizonY);
-                            ctx.lineTo(lx + 10 * dpr, horizonY + 30 * dpr);
-                            ctx.lineTo(lx - 5 * dpr, horizonY + 50 * dpr);
-                            ctx.stroke();
-                          }
-                        } else if (terrainType === 'icegiant') {
-                          // Diamond rain particles
-                          for (var dr = 0; dr < 20; dr++) {
-                            var drX = ((dr * 47 + tick * 1.2) % (W / dpr)) * dpr;
-                            var drY = ((dr * 31 + tick * 2.5) % (H / dpr)) * dpr;
-                            ctx.beginPath();
-                            ctx.moveTo(drX, drY - 3 * dpr);
-                            ctx.lineTo(drX + 2 * dpr, drY);
-                            ctx.lineTo(drX, drY + 3 * dpr);
-                            ctx.lineTo(drX - 2 * dpr, drY);
-                            ctx.closePath();
-                            ctx.fillStyle = 'rgba(200,230,255,' + (0.2 + Math.random() * 0.3) + ')';
-                            ctx.fill();
-                          }
-                        } else if (terrainType === 'iceworld') {
-                          // Nitrogen ice crystal sparkles
-                          for (var ic = 0; ic < 30; ic++) {
-                            if (Math.random() > 0.7) {
-                              var icX = Math.random() * W;
-                              var icY = horizonY + Math.random() * (H - horizonY);
-                              ctx.beginPath(); ctx.arc(icX, icY, 1.5 * dpr, 0, Math.PI * 2);
-                              ctx.fillStyle = 'rgba(200,220,255,0.5)'; ctx.fill();
+                          terrainGeo.computeVertexNormals();
+                          var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
+                          var tCx = tCv.getContext('2d');
+                          var baseC = new THREE.Color(sel.terrainColor || '#886644');
+                          for (var ty = 0; ty < 256; ty++) {
+                            for (var tx = 0; tx < 256; tx++) {
+                              var n = (Math.sin(tx * 0.3 + ty * 0.2) * 0.5 + Math.random() * 0.3) * 0.15;
+                              var r = Math.min(255, Math.max(0, Math.round((baseC.r + n) * 255)));
+                              var g = Math.min(255, Math.max(0, Math.round((baseC.g + n * 0.8) * 255)));
+                              var b = Math.min(255, Math.max(0, Math.round((baseC.b - n * 0.3) * 255)));
+                              tCx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+                              tCx.fillRect(tx, ty, 1, 1);
                             }
                           }
+                          var terrainTex = new THREE.CanvasTexture(tCv);
+                          terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(10, 10);
+                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.9, metalness: 0.1, flatShading: true });
+                          var terrain = new THREE.Mesh(terrainGeo, terrainMat);
+                          terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
+                        } else {
+                          // Gas giant cloud layers
+                          for (var cl = 0; cl < 5; cl++) {
+                            var clGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
+                            var clCv = document.createElement('canvas'); clCv.width = 256; clCv.height = 64;
+                            var clCx = clCv.getContext('2d');
+                            for (var cy = 0; cy < 64; cy++) {
+                              var band = Math.sin(cy * 0.3 + cl * 2) * 0.5 + 0.5;
+                              var r2 = Math.round(new THREE.Color(sel.terrainColor).r * 255 * (0.7 + band * 0.3));
+                              var g2 = Math.round(new THREE.Color(sel.terrainColor).g * 255 * (0.7 + band * 0.3));
+                              var b2 = Math.round(new THREE.Color(sel.terrainColor).b * 255 * (0.8 + band * 0.2));
+                              for (var cx2 = 0; cx2 < 256; cx2++) {
+                                var turb = Math.sin(cx2 * 0.05 + cy * 0.1 + cl) * 20;
+                                clCx.fillStyle = 'rgb(' + Math.max(0, r2 + turb) + ',' + Math.max(0, g2 + turb * 0.7) + ',' + Math.max(0, b2 + turb * 0.3) + ')';
+                                clCx.fillRect(cx2, cy, 1, 1);
+                              }
+                            }
+                            var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(3, 1);
+                            var clMat = new THREE.MeshBasicMaterial({ map: clTex, transparent: true, opacity: 0.6 - cl * 0.1, side: THREE.DoubleSide });
+                            var clMesh = new THREE.Mesh(clGeo, clMat);
+                            clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = -2 - cl * 4;
+                            clMesh._cloudSpeed = 0.01 + cl * 0.005;
+                            scene.add(clMesh);
+                          }
                         }
 
-                        // ── Drone sprite ──
-                        var droneScreenX = W / 2;
-                        var droneScreenY = H * 0.45 - drone.altitude * 0.5 * dpr;
-                        // Shadow
-                        ctx.beginPath();
-                        ctx.ellipse(droneScreenX, horizonY + 5 * dpr, 15 * dpr, 3 * dpr, 0, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fill();
-                        // Body
-                        ctx.save(); ctx.translate(droneScreenX, droneScreenY);
-                        ctx.fillStyle = '#475569';
-                        ctx.fillRect(-8 * dpr, -2 * dpr, 16 * dpr, 4 * dpr);
-                        // Propellers (spinning)
-                        var propAngle = tick * 0.5;
-                        [-10, 10].forEach(function (off) {
-                          ctx.save();
-                          ctx.translate(off * dpr, -3 * dpr);
-                          ctx.rotate(propAngle);
-                          ctx.fillStyle = '#94a3b8';
-                          ctx.fillRect(-6 * dpr, -0.5 * dpr, 12 * dpr, 1 * dpr);
-                          ctx.restore();
+                        // ── Lighting ──
+                        scene.add(new THREE.AmbientLight(0x444466, 0.6));
+                        var sunDir = new THREE.DirectionalLight(0xffeedd, sel.terrainType === 'iceworld' ? 0.3 : 1.0);
+                        sunDir.position.set(50, 30, 20); scene.add(sunDir);
+
+                        // ── Particle effects ──
+                        if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
+                          var partCount = 200;
+                          var partGeo = new THREE.BufferGeometry();
+                          var partPos = new Float32Array(partCount * 3);
+                          for (var pi = 0; pi < partCount; pi++) {
+                            partPos[pi * 3] = (Math.random() - 0.5) * 60;
+                            partPos[pi * 3 + 1] = Math.random() * 8;
+                            partPos[pi * 3 + 2] = (Math.random() - 0.5) * 60;
+                          }
+                          partGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
+                          var partColor = sel.terrainType === 'volcanic' ? 0xff6600 : 0xc9a06a;
+                          scene.add(new THREE.Points(partGeo, new THREE.PointsMaterial({ color: partColor, size: 0.05, transparent: true, opacity: 0.4 })));
+                        }
+                        if (sel.terrainType === 'icegiant' || sel.name === 'Uranus') {
+                          // Diamond rain
+                          var drCount = 100;
+                          var drGeo = new THREE.BufferGeometry();
+                          var drPos = new Float32Array(drCount * 3);
+                          for (var di = 0; di < drCount; di++) {
+                            drPos[di * 3] = (Math.random() - 0.5) * 40;
+                            drPos[di * 3 + 1] = Math.random() * 20;
+                            drPos[di * 3 + 2] = (Math.random() - 0.5) * 40;
+                          }
+                          drGeo.setAttribute('position', new THREE.BufferAttribute(drPos, 3));
+                          var diamonds = new THREE.Points(drGeo, new THREE.PointsMaterial({ color: 0xccddff, size: 0.08, transparent: true, opacity: 0.6 }));
+                          scene.add(diamonds);
+                        }
+
+                        // ── Movement state ──
+                        var moveState = { forward: false, back: false, left: false, right: false, up: false, down: false };
+                        var yaw = 0, pitch = 0, playerPos = new THREE.Vector3(0, isGas ? 5 : 1.6, 0);
+                        var speed3d = isGas ? 0.15 : 0.08;
+
+                        function onKey(e, pressed) {
+                          switch (e.key.toLowerCase()) {
+                            case 'w': case 'arrowup': moveState.forward = pressed; break;
+                            case 's': case 'arrowdown': moveState.back = pressed; break;
+                            case 'a': case 'arrowleft': moveState.left = pressed; break;
+                            case 'd': case 'arrowright': moveState.right = pressed; break;
+                            case 'q': case ' ': moveState.up = pressed; break;
+                            case 'e': case 'shift': moveState.down = pressed; break;
+                          }
+                          e.preventDefault();
+                        }
+                        canvasEl.tabIndex = 0;
+                        canvasEl.addEventListener('keydown', function (e) { onKey(e, true); });
+                        canvasEl.addEventListener('keyup', function (e) { onKey(e, false); });
+
+                        // Mouse look
+                        var isLooking = false;
+                        canvasEl.addEventListener('mousedown', function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
+                        canvasEl.addEventListener('mouseup', function () { isLooking = false; });
+                        function onMouseMove(e) {
+                          if (!isLooking && !document.pointerLockElement) return;
+                          yaw -= e.movementX * 0.003;
+                          pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * 0.003));
+                        }
+                        document.addEventListener('mousemove', onMouseMove);
+                        canvasEl.focus();
+
+                        var tick3d = 0;
+                        var animId3d;
+                        function animate3d() {
+                          animId3d = requestAnimationFrame(animate3d);
+                          tick3d++;
+                          // Movement
+                          var dir = new THREE.Vector3();
+                          if (moveState.forward) dir.z -= 1;
+                          if (moveState.back) dir.z += 1;
+                          if (moveState.left) dir.x -= 1;
+                          if (moveState.right) dir.x += 1;
+                          dir.normalize().multiplyScalar(speed3d);
+                          dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                          playerPos.add(dir);
+                          if (moveState.up) playerPos.y += speed3d;
+                          if (moveState.down) playerPos.y = Math.max(isGas ? 1 : 1.0, playerPos.y - speed3d);
+                          if (!isGas) playerPos.y = Math.max(1.6, playerPos.y);
+
+                          camera.position.copy(playerPos);
+                          camera.rotation.order = 'YXZ';
+                          camera.rotation.y = yaw;
+                          camera.rotation.x = pitch;
+
+                          // Animate cloud layers for gas giants
+                          scene.children.forEach(function (c) {
+                            if (c._cloudSpeed) {
+                              c.position.x = Math.sin(tick3d * c._cloudSpeed) * 2;
+                              c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7) * 1.5;
+                            }
+                          });
+
+                          // Diamond rain animation
+                          if (diamonds) {
+                            var dArr = diamonds.geometry.attributes.position.array;
+                            for (var dri = 0; dri < dArr.length; dri += 3) {
+                              dArr[dri + 1] -= 0.05;
+                              if (dArr[dri + 1] < -5) dArr[dri + 1] = 20;
+                            }
+                            diamonds.geometry.attributes.position.needsUpdate = true;
+                          }
+
+                          renderer.render(scene, camera);
+                        }
+                        animId3d = requestAnimationFrame(animate3d);
+
+                        // HUD overlay via CSS
+                        var hud = document.createElement('div');
+                        hud.className = 'rover-hud';
+                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:8px;padding:8px 12px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
+                        var modeLabel = isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
+                        hud.innerHTML = '<div style="font-weight:bold;font-size:11px;margin-bottom:4px">' + modeLabel + '</div>' +
+                          '<div>Planet: ' + sel.name + '</div>' +
+                          '<div>Gravity: ' + (sel.gravity || '?') + '</div>' +
+                          '<div>Temp: ' + sel.temp + '</div>' +
+                          '<div style="color:#94a3b8;margin-top:4px;font-size:9px">WASD move \u2022 Mouse look \u2022 Q/E altitude</div>';
+                        canvasEl.parentElement.appendChild(hud);
+
+                        // Resize handler
+                        var ro3d = new ResizeObserver(function () {
+                          W = canvasEl.offsetWidth; H = canvasEl.offsetHeight;
+                          camera.aspect = W / H; camera.updateProjectionMatrix();
+                          renderer.setSize(W, H);
                         });
-                        // Camera lens
-                        ctx.beginPath(); ctx.arc(0, 3 * dpr, 2 * dpr, 0, Math.PI * 2);
-                        ctx.fillStyle = '#3b82f6'; ctx.fill();
-                        // Thruster glow
-                        if (keys['ArrowUp'] || keys['w']) {
-                          ctx.beginPath(); ctx.arc(0, 5 * dpr, 3 * dpr, 0, Math.PI);
-                          ctx.fillStyle = 'rgba(56,189,248,0.4)'; ctx.fill();
-                        }
-                        ctx.restore();
+                        ro3d.observe(canvasEl);
 
-                        // ── HUD overlay ──
-                        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                        ctx.fillRect(8 * dpr, 8 * dpr, 160 * dpr, 80 * dpr);
-                        ctx.strokeStyle = 'rgba(56,189,248,0.5)'; ctx.lineWidth = 1 * dpr;
-                        ctx.strokeRect(8 * dpr, 8 * dpr, 160 * dpr, 80 * dpr);
-                        ctx.fillStyle = '#38bdf8'; ctx.font = 'bold ' + (9 * dpr) + 'px monospace';
-                        ctx.fillText('\uD83D\uDEF8 DRONE TELEMETRY', 14 * dpr, 22 * dpr);
-                        ctx.fillStyle = '#e2e8f0'; ctx.font = (8 * dpr) + 'px monospace';
-                        ctx.fillText('ALT: ' + Math.round(drone.altitude) + ' m', 14 * dpr, 36 * dpr);
-                        ctx.fillText('POS: ' + Math.round(drone.x) + ', ' + Math.round(drone.y), 14 * dpr, 48 * dpr);
-                        ctx.fillText('SPD: ' + Math.abs(Math.round(drone.speed * 10)) + ' m/s', 14 * dpr, 60 * dpr);
-                        ctx.fillText('GRAV: ' + (sel.gravity || '?'), 14 * dpr, 72 * dpr);
-                        ctx.fillText('TEMP: ' + sel.temp, 14 * dpr, 84 * dpr);
-
-                        // Planet name overlay
-                        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                        ctx.font = 'bold ' + (12 * dpr) + 'px sans-serif';
-                        ctx.fillText(sel.emoji + ' ' + sel.name + ' Surface', W - 180 * dpr, 22 * dpr);
-
-                        // Controls hint
-                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                        ctx.font = (7 * dpr) + 'px sans-serif';
-                        ctx.fillText('WASD / Arrows to fly \u2022 Q/E altitude', W / 2 - 80 * dpr, H - 10 * dpr);
+                        canvasEl._droneCleanup = function () {
+                          cancelAnimationFrame(animId3d);
+                          document.removeEventListener('mousemove', onMouseMove);
+                          if (document.pointerLockElement === canvasEl) document.exitPointerLock();
+                          ro3d.disconnect();
+                          renderer.dispose();
+                          if (hud.parentElement) hud.parentElement.removeChild(hud);
+                        };
+                        canvasEl._droneRO = ro3d;
                       }
 
-                      // Key handlers
-                      function onKeyDown(e) { keys[e.key] = true; e.preventDefault(); }
-                      function onKeyUp(e) { keys[e.key] = false; }
-                      canvasEl.tabIndex = 0;
-                      canvasEl.addEventListener('keydown', onKeyDown);
-                      canvasEl.addEventListener('keyup', onKeyUp);
-                      canvasEl.focus();
-
-                      var animId;
-                      function loop() {
-                        // Movement
-                        var accel = 0.15;
-                        if (keys['ArrowLeft'] || keys['a']) drone.x -= 2;
-                        if (keys['ArrowRight'] || keys['d']) drone.x += 2;
-                        if (keys['ArrowUp'] || keys['w']) drone.altitude = Math.min(200, drone.altitude + 1.5);
-                        if (keys['ArrowDown'] || keys['s']) drone.altitude = Math.max(5, drone.altitude - 1.5);
-                        if (keys['q']) drone.altitude = Math.min(200, drone.altitude + 2);
-                        if (keys['e']) drone.altitude = Math.max(5, drone.altitude - 2);
-                        drone.speed = (keys['ArrowLeft'] || keys['a']) ? -2 : (keys['ArrowRight'] || keys['d']) ? 2 : drone.speed * 0.95;
-
-                        drawScene();
-                        animId = requestAnimationFrame(loop);
+                      // Load Three.js and init
+                      if (window.THREE) { doInit(window.THREE); }
+                      else {
+                        var s = document.createElement('script');
+                        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+                        s.onload = function () { doInit(window.THREE); };
+                        document.head.appendChild(s);
                       }
-                      animId = requestAnimationFrame(loop);
 
-                      // Cleanup
-                      canvasEl._droneCleanup = function () {
-                        cancelAnimationFrame(animId);
-                        canvasEl.removeEventListener('keydown', onKeyDown);
-                        canvasEl.removeEventListener('keyup', onKeyUp);
-                      };
-                      var ro = new ResizeObserver(function () {
-                        W = canvasEl.width = canvasEl.offsetWidth * dpr;
-                        H = canvasEl.height = canvasEl.offsetHeight * dpr;
-                      });
-                      ro.observe(canvasEl);
-                      canvasEl._droneRO = ro;
-                    },
-                    style: { width: '100%', height: '100%', cursor: 'crosshair', outline: 'none' }
-                  }),
-                  // Overlay gradient top
-                  React.createElement("div", { style: { position: 'absolute', top: 0, left: 0, right: 0, height: '40px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), transparent)', pointerEvents: 'none', borderRadius: '12px 12px 0 0' } })
-                ),
-                React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic text-center" }, "Click the canvas and use WASD/Arrows to fly \u2022 Q/E for altitude \u2022 Explore " + sel.name + "'s surface!"),
-                React.createElement("button", {
-                  onClick: function () {
-                    var cv = document.querySelector('[data-drone-canvas]');
-                    if (cv && cv._droneCleanup) { cv._droneCleanup(); if (cv._droneRO) cv._droneRO.disconnect(); cv._droneInit = null; }
-                    upd('viewTab', 'overview');
-                  }, className: "mt-2 px-4 py-1.5 text-xs font-bold bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all"
-                }, "\u2190 Back to Overview")
-              )
+
             ),
             // ── Quiz Mode ──
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
@@ -6096,17 +6110,21 @@
           // ── Layer toggle defaults ──
           var layers = d.layers || { arms: true, bulge: true, blackHole: true, nebulae: true, bgStars: true, grid: false, labels: false };
           var starCount = d.starCount || 5000;
+          var cosmicAge = d.cosmicAge !== undefined ? d.cosmicAge : 10;
+          var showLifecycle = d.showLifecycle || false;
+          var lifecycleMass = d.lifecycleMass !== undefined ? d.lifecycleMass : 1;
+          var showSNAnim = d.showSNAnim || false;
           var galaxyType = d.galaxyType || 'barredSpiral';
 
           // ── Star type data (OBAFGKM Harvard classification) ──
           var STAR_TYPES = [
-            { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
-            { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
-            { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
-            { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
-            { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
-            { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
-            { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
+            { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', whyItMatters: 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
+            { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', whyItMatters: 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', whyItMatters: 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
+            { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', whyItMatters: 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
+            { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', whyItMatters: 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
+            { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', whyItMatters: 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', whyItMatters: 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
           ];
 
           // ── Nebulae + deep-sky objects (expanded from 4 to 8) ──
@@ -6168,7 +6186,83 @@
             { label: 'Age', value: '~13.6 billion years' }
           ];
 
+          // ── Epoch narration for time-lapse ──
+          var EPOCH_NARRATION = [
+            { age: 0.1, title: 'Cosmic Dawn', emoji: '\u2728', desc: 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.' },
+            { age: 0.4, title: 'First Galaxies', emoji: '\uD83C\uDF0C', desc: 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.' },
+            { age: 1.0, title: 'Galaxy Assembly', emoji: '\uD83C\uDF00', desc: 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.' },
+            { age: 4.6, title: 'Milky Way Forms', emoji: '\uD83C\uDF1F', desc: 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.' },
+            { age: 9.2, title: 'Sun Is Born', emoji: '\u2600\uFE0F', desc: 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.' },
+            { age: 10.0, title: 'Mature Galaxy', emoji: '\uD83D\uDD2D', desc: 'The Milky Way settles into its current form with 200-400 billion stars. Star formation slows as gas reserves deplete.' },
+            { age: 13.0, title: 'Present Era', emoji: '\uD83C\uDF0D', desc: 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.' },
+            { age: 13.8, title: 'Right Now', emoji: '\uD83D\uDE80', desc: 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.' }
+          ];
+          function getEpochNarration(age) {
+            var best = null;
+            for (var i = EPOCH_NARRATION.length - 1; i >= 0; i--) {
+              if (age >= EPOCH_NARRATION[i].age) { best = EPOCH_NARRATION[i]; break; }
+            }
+            return best;
+          }
+
+          // ── Cosmic age ↔ star distribution ──
+          function getAgeDistribution(age) {
+            var t = Math.max(0, Math.min(14, age));
+            var early = Math.max(0, 1 - t / 5);
+            var late = Math.min(1, t / 8);
+            return [
+              0.003 + early * 0.05,
+              0.13 + early * 1.5,
+              0.6 + early * 3.0,
+              3 + early * 4.0,
+              7.6 - late * 2,
+              12.1 + late * 3,
+              76.5 + late * 10
+            ];
+          }
+
+          // ── Stellar lifecycle data ──
+          var LIFECYCLE = {
+            stages: [
+              { name: 'Nebula', emoji: '\u2601\uFE0F', desc: 'A vast cloud of gas & dust collapses under gravity.', color: '#a855f7' },
+              { name: 'Protostar', emoji: '\uD83D\uDFE0', desc: 'Core heats up from gravitational compression. Not yet fusing.', color: '#fb923c' },
+              { name: 'Main Sequence', emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for millions to billions of years.', color: '#fbbf24' },
+              { name: 'Red Giant', emoji: '\uD83D\uDD34', desc: 'Core contracts, outer layers expand. Helium fusion begins.', color: '#ef4444' }
+            ],
+            lowMass: [
+              { name: 'Planetary Nebula', emoji: '\uD83D\uDFE3', desc: 'Outer layers shed gently into space.', color: '#818cf8' },
+              { name: 'White Dwarf', emoji: '\u26AA', desc: 'Dense stellar core slowly cools. Size of Earth, mass of Sun.', color: '#e2e8f0' }
+            ],
+            highMass: [
+              { name: 'Supernova', emoji: '\uD83D\uDCA5', desc: 'Core collapses! A catastrophic explosion outshining entire galaxies.', color: '#fbbf24' },
+              { name: 'Neutron Star', emoji: '\u2B50', desc: 'Ultra-dense remnant. A teaspoon weighs billions of tons.', color: '#38bdf8', maxMass: 25 },
+              { name: 'Black Hole', emoji: '\uD83D\uDD73\uFE0F', desc: 'Gravity so strong nothing escapes. Spacetime itself warps.', color: '#1e1b4b', minMass: 25 }
+            ]
+          };
+
           // ── Three.js init with layer groups ──
+          // Post-processing script loader
+          function loadGalaxyPP(cb) {
+            if (window._galaxyPPLoaded) { cb(); return; }
+            var urls = [
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+              'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+            ];
+            var idx = 0;
+            function next() {
+              if (idx >= urls.length) { window._galaxyPPLoaded = true; cb(); return; }
+              var s = document.createElement('script');
+              s.src = urls[idx]; s.onload = function () { idx++; next(); };
+              s.onerror = function () { idx++; next(); };
+              document.head.appendChild(s);
+            }
+            next();
+          }
+
           var canvasRefCb = function (canvasEl) {
             if (!canvasEl) {
               var prev = document.querySelector('[data-galaxy-canvas]');
@@ -6177,7 +6271,7 @@
             }
             if (canvasEl._galaxyInit) return;
             canvasEl._galaxyInit = true;
-            var doInit = function () { initGalaxy(canvasEl); };
+            var doInit = function () { loadGalaxyPP(function () { initGalaxy(canvasEl); }); };
             if (window.THREE) { doInit(); } else {
               var script = document.createElement('script');
               script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -6186,9 +6280,10 @@
             }
           };
 
-          function generateStars(THREE, count, gType, galaxyType) {
+          function generateStars(THREE, count, gType, galaxyType, ageDist) {
             var starGeo = new THREE.BufferGeometry();
             var starPos = new Float32Array(count * 3), starColors = new Float32Array(count * 3), starData = [];
+            var starTypeArr = new Float32Array(count), starPhaseArr = new Float32Array(count);
             for (var i = 0; i < count; i++) {
               var x, y, z;
               if (galaxyType === 'elliptical') {
@@ -6222,14 +6317,19 @@
                 y = (Math.random() - 0.5) * 0.04 * (1 - dist);
               }
               starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
-              var roll = Math.random() * 100;
-              var typeIdx = roll < 0.003 ? 0 : roll < 0.133 ? 1 : roll < 0.733 ? 2 : roll < 3.73 ? 3 : roll < 11.33 ? 4 : roll < 23.43 ? 5 : 6;
+              var pcts = ageDist || [0.003, 0.13, 0.6, 3, 7.6, 12.1, 76.5];
+              var pctTotal = pcts.reduce(function(a,b){return a+b;},0);
+              var cum = 0, roll = Math.random() * pctTotal, typeIdx = 6;
+              for (var ti = 0; ti < pcts.length; ti++) { cum += pcts[ti]; if (roll < cum) { typeIdx = ti; break; } }
               var st = STAR_TYPES[typeIdx], c = new THREE.Color(st.color);
               starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b;
+              starTypeArr[i] = typeIdx; starPhaseArr[i] = Math.random();
               starData.push({ type: st, x: x, y: y, z: z, idx: i });
             }
             starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
             starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+            starGeo.setAttribute('aStarType', new THREE.BufferAttribute(starTypeArr, 1));
+            starGeo.setAttribute('aPhase', new THREE.BufferAttribute(starPhaseArr, 1));
             return { geo: starGeo, data: starData };
           }
 
@@ -6261,7 +6361,41 @@
 
             // Spiral galaxy stars
             var starResult = generateStars(THREE, starCount, gType, galaxyType);
-            var starPoints = new THREE.Points(starResult.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+            var starShaderMat = new THREE.ShaderMaterial({
+              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() } },
+              vertexShader: [
+                'attribute float aStarType;',
+                'attribute float aPhase;',
+                'varying vec3 vSC;',
+                'varying float vA;',
+                'uniform float uTime;',
+                'uniform float uPR;',
+                'void main() {',
+                '  vSC = color;',
+                '  float sz = 14.0 - aStarType * 1.7;',
+                '  vA = 0.7 + 0.3 * sin(uTime * 1.5 + aPhase * 6.283);',
+                '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                '  gl_PointSize = sz * uPR * (200.0 / max(-mv.z, 0.1));',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'varying vec3 vSC;',
+                'varying float vA;',
+                'void main() {',
+                '  float d = length(gl_PointCoord - 0.5) * 2.0;',
+                '  if (d > 1.0) discard;',
+                '  float glow = exp(-d * d * 3.0);',
+                '  float core = smoothstep(1.0, 0.0, d);',
+                '  gl_FragColor = vec4(vSC * (0.3 + 0.7 * glow), core * vA * 0.9);',
+                '}'
+              ].join('\n'),
+              vertexColors: true,
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            });
+            var starPoints = new THREE.Points(starResult.geo, starShaderMat);
             armGroup.add(starPoints);
             var starData = starResult.data;
 
@@ -6276,11 +6410,36 @@
             bulgeGeo.setAttribute('position', new THREE.BufferAttribute(bulgePos, 3));
             bulgeGeo.setAttribute('color', new THREE.BufferAttribute(bulgeCol, 3));
             bulgeGroup.add(new THREE.Points(bulgeGeo, new THREE.PointsMaterial({ size: 0.01, vertexColors: true, transparent: true, opacity: 0.8 })));
+            // Bulge glow sprite
+            var bgCv = document.createElement('canvas'); bgCv.width = 128; bgCv.height = 128;
+            var bgCtx = bgCv.getContext('2d');
+            var bgGrad = bgCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            bgGrad.addColorStop(0, 'rgba(255,220,150,0.5)'); bgGrad.addColorStop(0.3, 'rgba(255,180,100,0.2)');
+            bgGrad.addColorStop(0.6, 'rgba(200,150,80,0.05)'); bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            bgCtx.fillStyle = bgGrad; bgCtx.fillRect(0, 0, 128, 128);
+            var bulgeTex = new THREE.CanvasTexture(bgCv);
+            var bulgeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulgeTex, transparent: true, blending: THREE.AdditiveBlending }));
+            bulgeGlow.scale.set(0.35, 0.15, 1); bulgeGroup.add(bulgeGlow);
 
-            // Black hole + accretion ring
-            bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.008, 16, 16), new THREE.MeshBasicMaterial({ color: 0x000000 })));
-            var ring = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.02, 32), new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
-            ring.rotation.x = Math.PI * 0.5; bhGroup.add(ring);
+            // Black hole + enhanced accretion disk
+            bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.01, 24, 24), new THREE.MeshBasicMaterial({ color: 0x000000 })));
+            // Multi-ring accretion disk with color gradient
+            var ringColors = [[0.015, 0.025, 0xffffcc, 0.8], [0.025, 0.035, 0xffaa44, 0.6], [0.035, 0.045, 0xff6622, 0.4], [0.045, 0.055, 0xcc3311, 0.2]];
+            var rings = [];
+            ringColors.forEach(function (rc) {
+              var r = new THREE.Mesh(new THREE.RingGeometry(rc[0], rc[1], 48), new THREE.MeshBasicMaterial({ color: rc[2], side: THREE.DoubleSide, transparent: true, opacity: rc[3], blending: THREE.AdditiveBlending }));
+              r.rotation.x = Math.PI * 0.5; bhGroup.add(r); rings.push(r);
+            });
+            var ring = rings[0];
+            // Black hole glow sprite
+            var bhGlowCv = document.createElement('canvas'); bhGlowCv.width = 64; bhGlowCv.height = 64;
+            var bhGc = bhGlowCv.getContext('2d');
+            var bhGrad = bhGc.createRadialGradient(32, 32, 0, 32, 32, 32);
+            bhGrad.addColorStop(0, 'rgba(255,200,100,0.6)'); bhGrad.addColorStop(0.3, 'rgba(255,120,40,0.2)'); bhGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            bhGc.fillStyle = bhGrad; bhGc.fillRect(0, 0, 64, 64);
+            var bhGlowTex = new THREE.CanvasTexture(bhGlowCv);
+            var bhGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: bhGlowTex, transparent: true, blending: THREE.AdditiveBlending, opacity: 0.7 }));
+            bhGlow.scale.set(0.12, 0.12, 1); bhGroup.add(bhGlow);
 
             // Scale grid
             var gridHelper = new THREE.GridHelper(2, 20, 0x223366, 0x112244);
@@ -6325,9 +6484,60 @@
               armGroup.remove(starPoints);
               starPoints.geometry.dispose();
               var result = generateStars(THREE, count, gType, galaxyType);
-              starPoints = new THREE.Points(result.geo, new THREE.PointsMaterial({ size: 0.008, vertexColors: true, transparent: true, opacity: 0.9 }));
+              starPoints = new THREE.Points(result.geo, starShaderMat);
               armGroup.add(starPoints);
               starData = result.data;
+            };
+
+            // Post-processing bloom
+            var composer = null;
+            if (THREE.EffectComposer && THREE.RenderPass && THREE.UnrealBloomPass) {
+              composer = new THREE.EffectComposer(renderer);
+              composer.addPass(new THREE.RenderPass(scene, camera));
+              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 0.7, 0.3, 0.85);
+              composer.addPass(bloomPass);
+              canvasEl._bloomPass = bloomPass;
+            }
+
+            // Supernova flash system for time-lapse
+            var supernovae = [];
+            canvasEl._triggerSupernova = function () {
+              if (starData.length === 0) return;
+              var idx = Math.floor(Math.random() * starData.length);
+              var sd = starData[idx];
+              var snCv = document.createElement('canvas'); snCv.width = 64; snCv.height = 64;
+              var sc = snCv.getContext('2d');
+              var sg = sc.createRadialGradient(32, 32, 0, 32, 32, 32);
+              sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(0.2, 'rgba(200,220,255,0.8)');
+              sg.addColorStop(0.5, 'rgba(100,150,255,0.3)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+              sc.fillStyle = sg; sc.fillRect(0, 0, 64, 64);
+              var snTex = new THREE.CanvasTexture(snCv);
+              var snSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: snTex, transparent: true, blending: THREE.AdditiveBlending }));
+              snSprite.position.set(sd.x, sd.y, sd.z);
+              snSprite.scale.set(0.001, 0.001, 1);
+              scene.add(snSprite);
+              supernovae.push({ sprite: snSprite, birth: Date.now(), duration: 2000 });
+            };
+
+            // Time-lapse age update
+            canvasEl._updateAge = function (age) {
+              var dist = getAgeDistribution(age);
+              var cumul = [], cum2 = 0, tot = dist.reduce(function(a,b){return a+b;},0);
+              for (var t2 = 0; t2 < dist.length; t2++) { cum2 += dist[t2]; cumul.push(cum2 / tot * 100); }
+              var colors = starPoints.geometry.attributes.color.array;
+              var types = starPoints.geometry.attributes.aStarType.array;
+              for (var si = 0; si < starData.length; si++) {
+                var roll2 = ((si * 7919 + 1) % 10000) / 100;
+                var ti2 = 6;
+                for (var tt = 0; tt < cumul.length; tt++) { if (roll2 < cumul[tt]) { ti2 = tt; break; } }
+                var stc = new THREE.Color(STAR_TYPES[ti2].color);
+                colors[si * 3] = stc.r; colors[si * 3 + 1] = stc.g; colors[si * 3 + 2] = stc.b;
+                types[si] = ti2;
+              }
+              starPoints.geometry.attributes.color.needsUpdate = true;
+              starPoints.geometry.attributes.aStarType.needsUpdate = true;
+              var nebOp = 0.2 + 0.5 * Math.max(0, 1 - age / 10);
+              nebulaSprites.forEach(function(s) { s.material.opacity = nebOp; });
             };
 
             // Orbit controls
@@ -6373,13 +6583,28 @@
               spherical.phi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
               spherical.r = wp.zoom || 1; updateCamera();
             };
-            var animId;
+            var animId, startT = Date.now();
             function animate() {
               animId = requestAnimationFrame(animate);
+              var elapsed = (Date.now() - startT) * 0.001;
+              starShaderMat.uniforms.uTime.value = elapsed;
               if (armGroup.visible) armGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
-              nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.35 + 0.15 * Math.sin(Date.now() * 0.001 + i * 1.5); });
-              if (bhGroup.visible) { ring.rotation.z += 0.002; }
-              renderer.render(scene, camera);
+              nebulaSprites.forEach(function (s, i) { s.material.opacity = Math.max(0.1, s.material.opacity + 0.002 * Math.sin(elapsed + i * 1.5)); });
+              if (bhGroup.visible) {
+                rings.forEach(function (r, ri) { r.rotation.z += 0.005 - ri * 0.001; });
+                bhGlow.material.opacity = 0.5 + 0.2 * Math.sin(elapsed * 0.8);
+              }
+              // Animate supernovae
+              for (var sni = supernovae.length - 1; sni >= 0; sni--) {
+                var sn = supernovae[sni];
+                var prog = (Date.now() - sn.birth) / sn.duration;
+                if (prog > 1) { scene.remove(sn.sprite); sn.sprite.material.dispose(); supernovae.splice(sni, 1); continue; }
+                var scale = 0.001 + prog * 0.08;
+                sn.sprite.scale.set(scale, scale, 1);
+                sn.sprite.material.opacity = prog < 0.3 ? prog / 0.3 : 1 - (prog - 0.3) / 0.7;
+              }
+              if (composer) composer.render();
+              else renderer.render(scene, camera);
             }
             animate();
             var ro = new ResizeObserver(function () { W = canvasEl.offsetWidth; H = canvasEl.offsetHeight; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); });
@@ -6391,7 +6616,10 @@
               canvasEl.removeEventListener('mouseup', onGalUp);
               canvasEl.removeEventListener('wheel', onGalWheel);
               canvasEl.removeEventListener('click', onGalClick);
-              ro.disconnect(); renderer.dispose();
+              ro.disconnect();
+              if (composer) { composer.passes.forEach(function(p) { if (p.dispose) p.dispose(); }); }
+              supernovae.forEach(function(sn) { scene.remove(sn.sprite); sn.sprite.material.dispose(); });
+              renderer.dispose();
             };
           }
 
@@ -6460,7 +6688,7 @@
 
             // ── 3D Canvas ──
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
-              React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
+              React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
               // Star type legend
               React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
                 React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
@@ -6501,6 +6729,154 @@
               React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
             ),
 
+            // ── Cosmic Age Time-Lapse ──
+            React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-4" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Time-Lapse"),
+                React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, cosmicAge.toFixed(1) + " Gyr")
+              ),
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "Big Bang"),
+                React.createElement("input", {
+                  type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
+                  onChange: function (e) {
+                    var val = parseFloat(e.target.value);
+                    upd("cosmicAge", val);
+                    var cv = document.querySelector('[data-galaxy-canvas]');
+                    if (cv && cv._updateAge) cv._updateAge(val);
+                  },
+                  className: "flex-1 h-1.5 accent-violet-500"
+                }),
+                React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "14 Gyr")
+              ),
+              React.createElement("div", { className: "flex gap-1.5 mt-2" },
+                React.createElement("button", {
+                  onClick: function () {
+                    if (window._galaxyTimeLapse) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
+                    upd("isPlaying", true);
+                    var age = cosmicAge;
+                    window._galaxyTimeLapse = setInterval(function () {
+                      age += 0.1;
+                      if (age > 14) { age = 0.1; }
+                      upd("cosmicAge", parseFloat(age.toFixed(1)));
+                      var cv = document.querySelector('[data-galaxy-canvas]');
+                      if (cv && cv._updateAge) cv._updateAge(age);
+                      if (Math.random() < 0.15 && cv && cv._triggerSupernova) cv._triggerSupernova();
+                    }, 150);
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                }, d.isPlaying ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
+                React.createElement("button", {
+                  onClick: function () {
+                    var cv = document.querySelector('[data-galaxy-canvas]');
+                    if (cv && cv._triggerSupernova) cv._triggerSupernova();
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                }, "\uD83D\uDCA5 Supernova!"),
+                React.createElement("button", {
+                  onClick: function () { upd("showLifecycle", !showLifecycle); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (showLifecycle ? "bg-indigo-600 text-white" : "bg-white text-indigo-600 border border-indigo-200") + " transition-all"
+                }, "\u2B50 Star Lifecycle")
+              ),
+              // Milestone labels
+              React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
+                [
+                  { age: 0.4, label: "First stars" },
+                  { age: 1, label: "Galaxies form" },
+                  { age: 4.6, label: "Milky Way" },
+                  { age: 9.2, label: "Sun born" },
+                  { age: 13.8, label: "Now" }
+                ].map(function (m) {
+                  return React.createElement("span", {
+                    key: m.age,
+                    className: "cursor-pointer hover:text-violet-600" + (Math.abs(cosmicAge - m.age) < 0.3 ? " font-bold text-violet-700" : ""),
+                    onClick: function () {
+                      upd("cosmicAge", m.age);
+                      var cv = document.querySelector('[data-galaxy-canvas]');
+                      if (cv && cv._updateAge) cv._updateAge(m.age);
+                    }
+                  }, m.label);
+                })
+              ),
+              // ── Epoch narration card ──
+              (function () {
+                var epoch = getEpochNarration(cosmicAge);
+                if (!epoch) return null;
+                return React.createElement("div", { className: "mt-2 flex items-start gap-2 px-3 py-2 bg-violet-100/60 rounded-lg border border-violet-200 animate-in fade-in duration-300" },
+                  React.createElement("span", { className: "text-lg flex-shrink-0" }, epoch.emoji),
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-bold text-violet-800" }, epoch.title + " (" + epoch.age + " Gyr)"),
+                    React.createElement("p", { className: "text-[10px] text-violet-600 leading-relaxed" }, epoch.desc)
+                  )
+                );
+              })()
+            ),
+
+            // ── Stellar Lifecycle Panel ──
+            showLifecycle && React.createElement("div", { className: "mt-3 bg-slate-900 rounded-xl border-2 border-indigo-400 p-4 animate-in fade-in" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                React.createElement("h4", { className: "text-sm font-bold text-white" }, "\u2B50 Stellar Lifecycle"),
+                React.createElement("button", { onClick: function () { upd("showLifecycle", false); }, className: "ml-auto text-xs text-slate-400 hover:text-white" }, "\u2715 Close")
+              ),
+              // Mass slider
+              React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+                React.createElement("span", { className: "text-[10px] text-slate-400 whitespace-nowrap" }, "\u2696 Mass:"),
+                React.createElement("input", {
+                  type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass,
+                  onChange: function (e) { upd("lifecycleMass", parseFloat(e.target.value)); },
+                  className: "flex-1 h-1.5 accent-amber-400"
+                }),
+                React.createElement("span", { className: "text-xs font-bold text-amber-400" }, lifecycleMass + " M\u2609")
+              ),
+              // Mass category
+              React.createElement("p", { className: "text-[10px] text-slate-500 mb-3 italic" },
+                lifecycleMass < 0.5 ? "Brown dwarf \u2014 too small for hydrogen fusion." :
+                lifecycleMass < 8 ? "\uD83C\uDF1F Low-mass star (like our Sun). Will become a white dwarf." :
+                lifecycleMass < 25 ? "\uD83D\uDCA5 Massive star. Will explode as a supernova \u2192 neutron star." :
+                "\uD83D\uDD73\uFE0F Hypermassive star. Supernova \u2192 black hole formation!"
+              ),
+              // Lifecycle stages
+              React.createElement("div", { className: "space-y-1.5" },
+                LIFECYCLE.stages.map(function (s, idx) {
+                  return React.createElement("div", { key: s.name, className: "flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 border border-slate-700" },
+                    React.createElement("span", { className: "text-lg" }, s.emoji),
+                    React.createElement("div", { className: "flex-1" },
+                      React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, s.desc)
+                    ),
+                    idx < LIFECYCLE.stages.length - 1 && React.createElement("span", { className: "text-slate-600 text-xs" }, "\u2192")
+                  );
+                }),
+                // Branch based on mass
+                React.createElement("div", { className: "flex items-center gap-1 ml-6 mt-1" },
+                  React.createElement("span", { className: "text-slate-600 text-xs" }, lifecycleMass < 8 ? "\u2193 Gentle death" : "\u2193 Violent death")
+                ),
+                (lifecycleMass < 8 ? LIFECYCLE.lowMass : LIFECYCLE.highMass.filter(function (s) {
+                  if (s.minMass && lifecycleMass < s.minMass) return false;
+                  if (s.maxMass && lifecycleMass > s.maxMass) return false;
+                  return true;
+                })).map(function (s) {
+                  return React.createElement("div", { key: s.name, className: "flex items-center gap-2 p-2 rounded-lg border ml-4", style: { borderColor: s.color + '44', background: s.color + '11' } },
+                    React.createElement("span", { className: "text-lg" }, s.emoji),
+                    React.createElement("div", { className: "flex-1" },
+                      React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
+                      React.createElement("p", { className: "text-[9px] text-slate-400" }, s.desc)
+                    )
+                  );
+                })
+              ),
+              // Fun facts
+              React.createElement("div", { className: "mt-3 p-2 bg-indigo-900/50 rounded-lg border border-indigo-700" },
+                React.createElement("p", { className: "text-[9px] text-indigo-300" },
+                  lifecycleMass < 0.5 ? "\uD83D\uDCA1 Brown dwarfs are sometimes called 'failed stars.' They glow faintly from gravitational contraction." :
+                  lifecycleMass < 2 ? "\uD83D\uDCA1 Stars like our Sun live ~10 billion years. Our Sun is about halfway through its life!" :
+                  lifecycleMass < 8 ? "\uD83D\uDCA1 Larger low-mass stars burn hotter and die sooner. A 2 M\u2609 star lives only ~1.5 billion years." :
+                  lifecycleMass < 25 ? "\uD83D\uDCA1 Neutron stars are so dense that a sugar-cube-sized piece weighs about 1 billion tons!" :
+                  "\uD83D\uDCA1 Stellar black holes form from stars >25 M\u2609. The Milky Way alone has ~100 million of them!"
+                )
+              )
+            ),
+
             // ── Warp points ──
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
               WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
@@ -6530,6 +6906,15 @@
                     React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
                   );
                 })
+              ),
+              // Why It Matters
+              selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
+                React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
+                React.createElement("p", { className: "text-[10px] text-amber-800 leading-relaxed" }, selStar.whyItMatters)
+              ),
+              // Scale comparison
+              React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
+                React.createElement("p", { className: "text-[9px] text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller'}[selStar.id] || 'similar in size') + ".")
               )
             ),
 
@@ -6580,6 +6965,225 @@
         })(),
 
 
+        stemLabTab === 'explore' && stemLabTool === 'universe' && (() => {
+          var d = labToolData.universe || {};
+          var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { universe: Object.assign({}, prev.universe || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
+
+          var cosmicTime = d.cosmicTime !== undefined ? d.cosmicTime : 0;
+          var isPlaying = d.isPlaying || false;
+          var speed = d.speed || 1;
+
+          // ── Cosmic epochs ──
+          var EPOCHS = [
+            { t: 0, name: 'The Big Bang', emoji: '\uD83D\uDCA5', color: '#fef3c7', border: '#f59e0b', sky: '#ffffff',
+              desc: 'All matter, energy, space, and time explode from an infinitely dense singularity. Temperature: trillions of degrees. The four fundamental forces separate within the first second.',
+              facts: ['The entire observable universe was smaller than an atom', 'Temperature exceeded 10 trillion degrees', 'Matter and antimatter were created and annihilated in equal amounts'] },
+            { t: 0.38, name: 'Recombination', emoji: '\uD83C\uDF1F', color: '#fef9c3', border: '#eab308', sky: '#ff6b35',
+              desc: 'The universe cools enough for electrons to bind with protons, forming the first atoms (mostly hydrogen and helium). Light breaks free \u2014 this is the Cosmic Microwave Background we detect today.',
+              facts: ['The universe became transparent to light', 'Temperature dropped to ~3,000K', 'The CMB is the oldest light we can observe'] },
+            { t: 0.4, name: 'The Dark Ages', emoji: '\uD83C\uDF11', color: '#1e1b4b', border: '#4338ca', sky: '#0a0a1a',
+              desc: 'No stars exist yet. The universe is filled with neutral hydrogen in total darkness. Gravity slowly pulls matter into denser regions that will become the first cosmic structures.',
+              facts: ['Lasted about 100 million years', 'Dark matter began forming cosmic web filaments', 'No light sources existed anywhere'] },
+            { t: 0.5, name: 'First Stars', emoji: '\u2B50', color: '#1e293b', border: '#3b82f6', sky: '#0a1628',
+              desc: 'Population III stars ignite \u2014 massive, metal-free giants 100-1000x our Sun\'s mass. They live fast and die young, seeding the universe with the first heavy elements through supernovae.',
+              facts: ['These stars were 100-1000x more massive than our Sun', 'They lived only a few million years', 'Their supernovae created carbon, oxygen, and iron for the first time'] },
+            { t: 1.0, name: 'First Galaxies', emoji: '\uD83C\uDF0C', color: '#1e1b4b', border: '#6366f1', sky: '#0f0f2e',
+              desc: 'Protogalaxies form from dark matter halos collecting gas. Quasars blaze as supermassive black holes devour surrounding matter. The cosmic web of filaments takes shape.',
+              facts: ['The first galaxies were much smaller than ours', 'Quasars outshone entire galaxies', 'Galaxy mergers were extremely common'] },
+            { t: 4.6, name: 'Milky Way Forms', emoji: '\uD83C\uDF00', color: '#1e1b4b', border: '#8b5cf6', sky: '#0d0d2a',
+              desc: 'Our home galaxy assembles through mergers. A central bar forms, spiral arms develop, and billions of stars orbit the galactic center. The stage is being set for our Solar System.',
+              facts: ['The Milky Way merged with several smaller galaxies', 'It contains 200-400 billion stars', 'Our galaxy is ~100,000 light-years across'] },
+            { t: 9.2, name: 'Our Sun Is Born', emoji: '\u2600\uFE0F', color: '#1e293b', border: '#f59e0b', sky: '#1a1a35',
+              desc: 'A molecular cloud in the Orion Arm collapses, forming our Sun and protoplanetary disk. Within 100 million years, Earth forms. Within 1 billion years, early life appears.',
+              facts: ['Our Sun is a 3rd-generation star (contains recycled supernova elements)', 'The Solar System formed 4.6 billion years ago', 'Life appeared on Earth within its first billion years'] },
+            { t: 13.0, name: 'Present Day', emoji: '\uD83C\uDF0D', color: '#1e293b', border: '#10b981', sky: '#0a0a28',
+              desc: 'Humans have walked on the Moon, sent probes beyond the Solar System, and detected gravitational waves and exoplanets. The universe is 13.8 billion years old and accelerating.',
+              facts: ['We can observe 2 trillion galaxies', 'Dark energy makes up 68% of the universe', 'The James Webb Space Telescope sees galaxies from 13+ billion years ago'] },
+            { t: 13.8, name: 'The Far Future', emoji: '\uD83D\uDD2E', color: '#0f172a', border: '#6366f1', sky: '#050510',
+              desc: 'Stars will eventually exhaust their fuel. Red dwarfs will be the last to shine, trillions of years from now. Ultimately, the universe faces heat death \u2014 maximum entropy, no usable energy.',
+              facts: ['The last stars will die in ~100 trillion years', 'Black holes will evaporate via Hawking radiation', 'The universe will reach maximum entropy \u2014 total darkness and cold'] }
+          ];
+
+          function getCurrentEpoch(t) {
+            for (var i = EPOCHS.length - 1; i >= 0; i--) { if (t >= EPOCHS[i].t) return EPOCHS[i]; }
+            return EPOCHS[0];
+          }
+          var epoch = getCurrentEpoch(cosmicTime);
+
+          // ── Canvas visualization ──
+          var canvasRefCb = function (canvasEl) {
+            if (!canvasEl || canvasEl._universeInit) return;
+            canvasEl._universeInit = true;
+            var dpr = window.devicePixelRatio || 1;
+            var W = canvasEl.width = canvasEl.offsetWidth * dpr;
+            var H = canvasEl.height = canvasEl.offsetHeight * dpr;
+            var ctx = canvasEl.getContext('2d');
+            var tick = 0;
+            var particles = [];
+            for (var i = 0; i < 400; i++) {
+              particles.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, c: Math.random(), age: Math.random() * 100 });
+            }
+            function draw() {
+              tick++;
+              var t = parseFloat(canvasEl.dataset.time || '0');
+              var ep = getCurrentEpoch(t);
+              ctx.clearRect(0, 0, W, H);
+              // Sky gradient
+              var skyGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.6);
+              if (t < 0.2) {
+                var flash = Math.max(0, 1 - t / 0.2);
+                skyGrad.addColorStop(0, 'rgba(255,255,200,' + flash + ')');
+                skyGrad.addColorStop(0.3, 'rgba(255,200,100,' + (flash * 0.6) + ')');
+                skyGrad.addColorStop(1, 'rgba(10,10,30,' + (1 - flash * 0.5) + ')');
+              } else if (t < 0.5) {
+                skyGrad.addColorStop(0, '#1a1a2e'); skyGrad.addColorStop(1, '#0a0a15');
+              } else {
+                skyGrad.addColorStop(0, '#0d0d25'); skyGrad.addColorStop(1, '#050510');
+              }
+              ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+              // Particles (stars and elements)
+              var starBrightness = t < 0.4 ? 0 : Math.min(1, (t - 0.4) / 1.0);
+              var starCount = Math.min(particles.length, Math.floor(starBrightness * particles.length));
+              for (var pi = 0; pi < starCount; pi++) {
+                var p = particles[pi];
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+                if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                var twinkle = 0.5 + 0.5 * Math.sin(tick * 0.03 + pi * 1.7);
+                var hue = t < 2 ? '200,220,255' : (p.c < 0.5 ? '255,220,180' : '200,210,255');
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * twinkle, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * twinkle * 0.8) + ')';
+                ctx.fill();
+              }
+              // Galaxy sprites (after t > 1 Gyr)
+              if (t > 1) {
+                var galaxyCount = Math.min(12, Math.floor((t - 1) * 2));
+                for (var gi = 0; gi < galaxyCount; gi++) {
+                  var gx = ((gi * 137 + 50) % (W / dpr)) * dpr;
+                  var gy = ((gi * 97 + 30) % (H / dpr)) * dpr;
+                  var gs = (8 + gi % 5 * 4) * dpr;
+                  var galGrad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gs);
+                  var galHue = gi % 3 === 0 ? '180,160,255' : gi % 3 === 1 ? '255,200,150' : '150,200,255';
+                  galGrad.addColorStop(0, 'rgba(' + galHue + ',0.4)');
+                  galGrad.addColorStop(0.5, 'rgba(' + galHue + ',0.15)');
+                  galGrad.addColorStop(1, 'rgba(' + galHue + ',0)');
+                  ctx.beginPath(); ctx.arc(gx, gy, gs, 0, Math.PI * 2);
+                  ctx.fillStyle = galGrad; ctx.fill();
+                }
+              }
+              // CMB glow (recombination era)
+              if (t > 0.2 && t < 1.0) {
+                var cmbAlpha = Math.max(0, 0.3 * (1 - (t - 0.2) / 0.8));
+                ctx.fillStyle = 'rgba(255,180,100,' + cmbAlpha + ')'; ctx.fillRect(0, 0, W, H);
+              }
+              // Big Bang flash
+              if (t < 0.1) {
+                var flashR = (t / 0.1) * W * 0.5;
+                var fg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, flashR);
+                fg.addColorStop(0, 'rgba(255,255,255,' + (1 - t / 0.1) + ')');
+                fg.addColorStop(0.5, 'rgba(255,220,100,' + (0.5 - t * 5) + ')');
+                fg.addColorStop(1, 'rgba(255,100,50,0)');
+                ctx.beginPath(); ctx.arc(W / 2, H / 2, flashR, 0, Math.PI * 2);
+                ctx.fillStyle = fg; ctx.fill();
+              }
+              // Epoch label
+              ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = 'bold ' + (10 * dpr) + 'px sans-serif';
+              ctx.fillText(ep.emoji + ' ' + ep.name, 12 * dpr, H - 12 * dpr);
+              ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = (8 * dpr) + 'px sans-serif';
+              ctx.fillText(cosmicTime < 1 ? (cosmicTime * 1000).toFixed(0) + ' Myr' : cosmicTime.toFixed(1) + ' Gyr', 12 * dpr, H - 26 * dpr);
+              canvasEl._animId = requestAnimationFrame(draw);
+            }
+            canvasEl._animId = requestAnimationFrame(draw);
+            canvasEl._universeCleanup = function () { cancelAnimationFrame(canvasEl._animId); canvasEl._universeInit = false; };
+            var ro = new ResizeObserver(function () { W = canvasEl.width = canvasEl.offsetWidth * dpr; H = canvasEl.height = canvasEl.offsetHeight * dpr; });
+            ro.observe(canvasEl); canvasEl._ro = ro;
+          };
+
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-universe-canvas]'); if (cv && cv._universeCleanup) cv._universeCleanup(); if (cv && cv._ro) cv._ro.disconnect(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF20 Universe Time-Lapse"),
+              React.createElement("span", { className: "text-xs text-slate-400" }, "13.8 billion years of cosmic history")
+            ),
+            // Canvas
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg", style: { height: '360px', background: '#050510' } },
+              React.createElement("canvas", { "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), style: { width: '100%', height: '100%', display: 'block' } })
+            ),
+            // Timeline slider
+            React.createElement("div", { className: "mt-3 bg-gradient-to-r from-amber-50 via-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-4" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Timeline"),
+                React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, cosmicTime < 1 ? (cosmicTime * 1000).toFixed(0) + ' Myr' : cosmicTime.toFixed(1) + ' Gyr')
+              ),
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-[9px] text-violet-400" }, "Big Bang"),
+                React.createElement("input", { type: "range", min: 0, max: 13.8, step: 0.01, value: cosmicTime,
+                  onChange: function (e) { var val = parseFloat(e.target.value); upd("cosmicTime", val); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(val); },
+                  className: "flex-1 h-1.5 accent-violet-500" }),
+                React.createElement("span", { className: "text-[9px] text-violet-400" }, "Now")
+              ),
+              // Playback controls
+              React.createElement("div", { className: "flex gap-2 mt-2" },
+                React.createElement("button", {
+                  onClick: function () {
+                    if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; upd("isPlaying", false); return; }
+                    upd("isPlaying", true);
+                    var t = cosmicTime;
+                    window._universeTimeLapse = setInterval(function () {
+                      t += 0.02 * speed;
+                      if (t > 13.8) { t = 0; }
+                      upd("cosmicTime", parseFloat(t.toFixed(2)));
+                      var cv = document.querySelector('[data-universe-canvas]');
+                      if (cv) cv.dataset.time = String(t);
+                    }, 50);
+                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                }, isPlaying ? "\u23F9 Stop" : "\u25B6 Play"),
+                React.createElement("div", { className: "flex items-center gap-1.5 bg-white/60 rounded-lg px-2 py-1 border border-violet-200" },
+                  React.createElement("span", { className: "text-[9px] text-violet-500 font-bold" }, "Speed"),
+                  React.createElement("input", { type: "range", min: 0.5, max: 5, step: 0.5, value: speed, onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-16 h-1 accent-violet-400" }),
+                  React.createElement("span", { className: "text-[10px] text-violet-600 font-bold w-6" }, speed + "x")
+                )
+              ),
+              // Epoch quick-jump buttons
+              React.createElement("div", { className: "flex flex-wrap gap-1 mt-2" },
+                EPOCHS.map(function (ep) {
+                  var isCurrent = cosmicTime >= ep.t && (EPOCHS.indexOf(ep) === EPOCHS.length - 1 || cosmicTime < EPOCHS[EPOCHS.indexOf(ep) + 1].t);
+                  return React.createElement("button", {
+                    key: ep.name,
+                    onClick: function () { upd("cosmicTime", ep.t); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(ep.t); awardStemXP('universe_explore', 5, 'Visited epoch: ' + ep.name); },
+                    className: "px-2 py-1 rounded-lg text-[9px] font-bold transition-all hover:scale-105 " + (isCurrent ? "text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:border-violet-300"),
+                    style: isCurrent ? { backgroundColor: ep.border } : {}
+                  }, ep.emoji + " " + ep.name);
+                })
+              )
+            ),
+            // ── Current epoch info card ──
+            React.createElement("div", { className: "mt-3 rounded-xl border-2 p-4 animate-in fade-in duration-300", style: { backgroundColor: epoch.color, borderColor: epoch.border } },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("span", { className: "text-2xl" }, epoch.emoji),
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "text-sm font-black", style: { color: epoch.border } }, epoch.name),
+                  React.createElement("p", { className: "text-[10px] text-slate-500" }, cosmicTime < 1 ? (cosmicTime * 1000).toFixed(0) + ' million years after the Big Bang' : cosmicTime.toFixed(1) + ' billion years after the Big Bang')
+                )
+              ),
+              React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-3" }, epoch.desc),
+              React.createElement("div", { className: "space-y-1" },
+                React.createElement("p", { className: "text-[10px] font-bold text-slate-600" }, "\uD83D\uDCA1 Key Facts:"),
+                epoch.facts.map(function (fact, i) {
+                  return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[10px] text-slate-600" },
+                    React.createElement("span", { className: "text-violet-500 mt-0.5 flex-shrink-0" }, "\u2022"),
+                    React.createElement("span", null, fact)
+                  );
+                })
+              )
+            ),
+            // Snapshot button
+            React.createElement("div", { className: "flex mt-3" },
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: 'Universe: ' + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Universe snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            )
+          );
+        })(),
+
         stemLabTab === 'explore' && stemLabTool === 'rocks' && (() => {
           const d = labToolData.rocks || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, rocks: { ...prev.rocks, [key]: val } }));
@@ -6595,37 +7199,54 @@
           // ── Rock specimens ──
           const ROCKS = [
             { id: 'granite', type: 'igneous', label: 'Granite', hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
-            { id: 'basalt', type: 'igneous', label: 'Basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock — the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
+            { id: 'basalt', type: 'igneous', label: 'Basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock \u2014 the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
             { id: 'obsidian', type: 'igneous', label: 'Obsidian', hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
             { id: 'pumice', type: 'igneous', label: 'Pumice', hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
+            { id: 'rhyolite', type: 'igneous', label: 'Rhyolite', hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
+            { id: 'diorite', type: 'igneous', label: 'Diorite', hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
+            { id: 'andesite', type: 'igneous', label: 'Andesite', hardness: 6, texture: 'fine-grained', grainColors: ['#6b7280', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
+            { id: 'tuff', type: 'igneous', label: 'Tuff', hardness: 4, texture: 'vesicular', grainColors: ['#fde68a', '#d6d3d1', '#a8a29e', '#e7e5e4'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
             { id: 'sandstone', type: 'sedimentary', label: 'Sandstone', hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
-            { id: 'limestone', type: 'sedimentary', label: 'Limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO₃). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
+            { id: 'limestone', type: 'sedimentary', label: 'Limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
             { id: 'shale', type: 'sedimentary', label: 'Shale', hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
             { id: 'conglom', type: 'sedimentary', label: 'Conglomerate', hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
+            { id: 'chalk', type: 'sedimentary', label: 'Chalk', hardness: 1, texture: 'bioclastic', grainColors: ['#fafafa', '#f5f5f4', '#e5e7eb', '#ffffff'], desc: 'Soft, white limestone made of microscopic plankton shells (coccoliths). The White Cliffs of Dover are chalk. Extremely fine-grained \u2014 each grain is a tiny fossil!', uses: 'Blackboard chalk, whiting, soil amendment, toothpaste' },
+            { id: 'travertine', type: 'sedimentary', label: 'Travertine', hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
             { id: 'marble', type: 'metamorphic', label: 'Marble', hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
-            { id: 'slate', type: 'metamorphic', label: 'Slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation — splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
-            { id: 'quartzite', type: 'metamorphic', label: 'Quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard — even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
-            { id: 'gneiss', type: 'metamorphic', label: 'Gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' }
+            { id: 'slate', type: 'metamorphic', label: 'Slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation \u2014 splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
+            { id: 'quartzite', type: 'metamorphic', label: 'Quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard \u2014 even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
+            { id: 'gneiss', type: 'metamorphic', label: 'Gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
+            { id: 'schist', type: 'metamorphic', label: 'Schist', hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
+            { id: 'phyllite', type: 'metamorphic', label: 'Phyllite', hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#6b7280', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
           ];
 
           // ── Mineral data ──
           const MINERALS = [
-            { id: 'quartz', label: 'Quartz', hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO₂' },
-            { id: 'feldspar', label: 'Feldspar', hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic', color: '#fce7f3', formula: 'KAlSi₃O₈' },
-            { id: 'mica', label: 'Mica', hardness: 2.5, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl₂(Si₃Al)O₁₀(OH)₂' },
-            { id: 'calcite', label: 'Calcite', hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal', color: '#f0fdf4', formula: 'CaCO₃' },
-            { id: 'halite', label: 'Halite', hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic', color: '#ede9fe', formula: 'NaCl' },
-            { id: 'pyrite', label: 'Pyrite', hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic', color: '#fef3c7', formula: 'FeS₂' },
-            { id: 'talc', label: 'Talc', hardness: 1, streak: 'White', luster: 'Pearly', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg₃Si₄O₁₀(OH)₂' },
-            { id: 'diamond', label: 'Diamond', hardness: 10, streak: 'None', luster: 'Adamantine', crystal: 'Cubic', color: '#f0f9ff', formula: 'C' }
+            { id: 'quartz', label: 'Quartz', hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric \u2014 when squeezed, it generates an electric charge. This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
+            { id: 'feldspar', label: 'Feldspar', hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', color: '#fce7f3', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
+            { id: 'mica', label: 'Mica (Muscovite)', hardness: 2.5, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia \u2014 hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
+            { id: 'calcite', label: 'Calcite', hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', color: '#f0fdf4', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage \u2014 always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
+            { id: 'halite', label: 'Halite', hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#ede9fe', formula: 'NaCl', desc: 'Common table salt! Forms perfect cubic crystals. Tastes salty (one of the few minerals safe to taste-test). Forms when shallow seas or salt lakes evaporate. Can be colorless, white, pink, blue, or red depending on impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'Roman soldiers were sometimes paid in salt \u2014 the word "salary" comes from the Latin "salarium" (salt money). The phrase "worth your salt" comes from this tradition!', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
+            { id: 'pyrite', label: 'Pyrite', hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#fef3c7', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
+            { id: 'talc', label: 'Talc', hardness: 1, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral \u2014 #1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
+            { id: 'diamond', label: 'Diamond', hardness: 10, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon \u2014 the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
+            { id: 'magnetite', label: 'Magnetite', hardness: 5.5, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
+            { id: 'hematite', label: 'Hematite', hardness: 5.5, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'The red color of Mars comes from hematite! NASA\u2019s rovers have confirmed that the Martian soil is rich in iron oxide. Hematite was also used by prehistoric humans as the first paint pigment \u2014 cave paintings from 40,000 years ago used ground hematite!', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
+            { id: 'garnet', label: 'Garnet', hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
+            { id: 'olivine', label: 'Olivine', hardness: 6.5, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine makes up most of the upper mantle of Earth! There is more olivine inside Earth than any other mineral. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
+            { id: 'fluorite', label: 'Fluorite', hardness: 4, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world" \u2014 comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England \u2014 "Blue John"), and Illinois (USA).' },
+            { id: 'galena', label: 'Galena', hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#6b7280', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage \u2014 fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA \u2014 largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
+            { id: 'gypsum', label: 'Gypsum', hardness: 2, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#faf5ff', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons \u2014 the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
+            { id: 'sulfur', label: 'Sulfur', hardness: 2, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color and rotten-egg smell when heated. Very light and brittle. Low melting point (115\u00B0C). Burns with a blue flame producing SO\u2082 gas. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
+            { id: 'corundum', label: 'Corundum', hardness: 9, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities \u2014 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
+            { id: 'topaz', label: 'Topaz', hardness: 8, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The largest uncut topaz crystal ever found (the "El-Dorado Topaz" from Brazil) weighs 6.2 kg (31,000 carats)! Imperial topaz (rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
           ];
-
           // ── Quiz bank ──
           const QUIZ_BANK = [
             { q: 'Which rock type forms from cooled magma?', a: 'Igneous', options: ['Igneous', 'Sedimentary', 'Metamorphic', 'Organic'] },
             { q: 'What process turns sediment into sedimentary rock?', a: 'Compaction and cementation', options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'] },
             { q: 'Marble is a metamorphic form of which rock?', a: 'Limestone', options: ['Limestone', 'Sandstone', 'Granite', 'Basalt'] },
-            { q: 'Which mineral is the hardest on the Mohs scale?', a: 'Diamond', options: ['Diamond', 'Quartz', 'Feldspar', 'Topaz'] },
+            { q: 'Which mineral is the hardest on the Mohs scale?', a: 'Diamond', options: ['Diamond', 'Quartz', 'Corundum', 'Topaz'] },
             { q: 'What is the softest mineral?', a: 'Talc', options: ['Talc', 'Gypsum', 'Calcite', 'Halite'] },
             { q: 'Obsidian forms when lava cools...', a: 'Very quickly', options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'] },
             { q: 'Which rock can float on water?', a: 'Pumice', options: ['Pumice', 'Basalt', 'Marble', 'Granite'] },
@@ -6633,7 +7254,25 @@
             { q: 'Pyrite is also known as...', a: "Fool's gold", options: ["Fool's gold", "White gold", "Rose gold", "Black gold"] },
             { q: 'Which rock shows distinct banding?', a: 'Gneiss', options: ['Gneiss', 'Granite', 'Basalt', 'Slate'] },
             { q: 'Limestone fizzes when you add...', a: 'Acid', options: ['Acid', 'Water', 'Salt', 'Oil'] },
-            { q: 'Quartzite is metamorphosed...', a: 'Sandstone', options: ['Sandstone', 'Limestone', 'Shale', 'Granite'] }
+            { q: 'Quartzite is metamorphosed...', a: 'Sandstone', options: ['Sandstone', 'Limestone', 'Shale', 'Granite'] },
+            { q: 'Rhyolite is the extrusive equivalent of...', a: 'Granite', options: ['Granite', 'Basalt', 'Gabbro', 'Diorite'] },
+            { q: 'Which mineral is naturally magnetic?', a: 'Magnetite', options: ['Magnetite', 'Hematite', 'Pyrite', 'Galena'] },
+            { q: 'Ruby and sapphire are both varieties of...', a: 'Corundum', options: ['Corundum', 'Quartz', 'Diamond', 'Topaz'] },
+            { q: 'What gives Mars its red color?', a: 'Hematite (iron oxide)', options: ['Hematite (iron oxide)', 'Rust from water', 'Red sand', 'Volcanic dust'] },
+            { q: 'The word "fluorescence" comes from which mineral?', a: 'Fluorite', options: ['Fluorite', 'Quartz', 'Diamond', 'Calcite'] },
+            { q: 'Chalk is made of tiny shells from...', a: 'Microscopic plankton', options: ['Microscopic plankton', 'Snails', 'Clams', 'Coral'] },
+            { q: 'Diorite has what distinctive appearance?', a: 'Salt and pepper', options: ['Salt and pepper', 'Solid black', 'Striped', 'Glassy'] },
+            { q: 'Which mineral was used in early crystal radios?', a: 'Galena', options: ['Galena', 'Quartz', 'Diamond', 'Pyrite'] },
+            { q: 'The green beaches of Hawaii are made of...', a: 'Olivine', options: ['Olivine', 'Emerald', 'Jade', 'Green glass'] },
+            { q: 'Which building was made from travertine?', a: 'The Colosseum', options: ['The Colosseum', 'The Pyramids', 'Stonehenge', 'Taj Mahal'] },
+            { q: 'Schist gets its sparkly appearance from...', a: 'Aligned mica flakes', options: ['Aligned mica flakes', 'Quartz crystals', 'Gold inclusions', 'Diamond dust'] },
+            { q: 'What makes quartz watches accurate?', a: 'Piezoelectric effect', options: ['Piezoelectric effect', 'Magnetic field', 'Battery power', 'High density'] },
+            { q: 'Where are the largest crystals ever found?', a: 'Naica Mine, Mexico', options: ['Naica Mine, Mexico', 'Mount Everest', 'Grand Canyon', 'Sahara Desert'] },
+            { q: 'The word "salary" comes from the Latin word for...', a: 'Salt', options: ['Salt', 'Silver', 'Gold', 'Stone'] },
+            { q: 'Andesite is named after...', a: 'The Andes Mountains', options: ['The Andes Mountains', 'Andean people', 'A scientist named Ande', 'An ancient city'] },
+            { q: 'Tuff is made from consolidated...', a: 'Volcanic ash', options: ['Volcanic ash', 'River sand', 'Coral reef', 'Glacier ice'] },
+            { q: 'Which metamorphic rock comes between slate and schist?', a: 'Phyllite', options: ['Phyllite', 'Marble', 'Gneiss', 'Quartzite'] },
+            { q: 'Garnet crystals commonly have how many sides?', a: '12 (dodecahedral)', options: ['12 (dodecahedral)', '4 (tetrahedral)', '6 (cubic)', '8 (octahedral)'] }
           ];
 
           const selRock = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
@@ -7169,23 +7808,36 @@
                 })
               ),
               // Selected mineral detail
-              selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in" },
-                React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "💎 " + selMineral.label),
-                React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-3" }, "Formula: " + selMineral.formula),
+              selMineral && React.createElement("div", { className: "bg-white rounded-xl border-2 border-violet-300 p-4 animate-in fade-in space-y-3" },
+                React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
+                React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-1" }, "Formula: " + selMineral.formula),
+                selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                   [
-                    { label: 'Hardness', value: selMineral.hardness + ' / 10', icon: '💪' },
-                    { label: 'Streak', value: selMineral.streak, icon: '✏️' },
-                    { label: 'Luster', value: selMineral.luster, icon: '✨' },
-                    { label: 'Crystal System', value: selMineral.crystal, icon: '🔷' }
+                    { label: 'Hardness', value: selMineral.hardness + ' / 10', icon: '\uD83D\uDCAA' },
+                    { label: 'Streak', value: selMineral.streak, icon: '\u270F\uFE0F' },
+                    { label: 'Luster', value: selMineral.luster, icon: '\u2728' },
+                    { label: 'Crystal System', value: selMineral.crystal, icon: '\uD83D\uDD37' }
                   ].map(function (prop) {
                     return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
                       React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
                       React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
                   })
                 ),
+                selMineral.uses && React.createElement("div", { className: "bg-blue-50 rounded-lg p-2.5" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F Uses"),
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.uses)
+                ),
+                selMineral.funFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2.5 border border-amber-200" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 Fun Fact"),
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed italic" }, selMineral.funFact)
+                ),
+                selMineral.occurrence && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2.5" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D Where Found"),
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.occurrence)
+                ),
                 // Mohs bar
-                React.createElement("div", { className: "mt-3" },
+                React.createElement("div", { className: "mt-1" },
                   React.createElement("p", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "Mohs Position"),
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
                     Array.from({ length: 10 }, function (_, i) {
@@ -8243,12 +8895,18 @@
             // Output envelope — gentler 4s decay
             var env = ctx.createGain(); env.gain.setValueAtTime(0.6, now);
             env.gain.exponentialRampToValueAtTime(0.001, now + 4);
-            // Body tone — subtle sine at fundamental for pitch clarity (8% volume)
+            // Body tone — sine at fundamental for pitch clarity (10% volume)
             var body = ctx.createOscillator(); body.type = 'sine'; body.frequency.value = freq;
-            var bodyGain = ctx.createGain(); bodyGain.gain.setValueAtTime(0.05, now);
-            bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+            var bodyGain = ctx.createGain(); bodyGain.gain.setValueAtTime(0.10, now);
+            bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
             body.connect(bodyGain); bodyGain.connect(env);
-            body.start(now); body.stop(now + 2);
+            body.start(now); body.stop(now + 2.5);
+            // Second harmonic for warmth/richness (4% volume)
+            var harm2 = ctx.createOscillator(); harm2.type = 'sine'; harm2.frequency.value = freq * 2;
+            var harm2Gain = ctx.createGain(); harm2Gain.gain.setValueAtTime(0.04, now);
+            harm2Gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+            harm2.connect(harm2Gain); harm2Gain.connect(env);
+            harm2.start(now); harm2.stop(now + 1.5);
             // Signal path: Noise -> delay -> LPF -> warmth -> feedback -> delay
             noiseSrc.connect(delay); delay.connect(lpf); lpf.connect(warmth);
             warmth.connect(feedback); feedback.connect(delay);
@@ -8322,7 +8980,7 @@
               osc3.connect(gain3); gain3.connect(master); osc3.start(now);
               window._alloSynthActiveNotes[noteId + '_ch'] = { o: osc3 };
             }
-            master.connect(audio.masterGain);
+            master.connect(audio.gain);
             osc1.start(now); osc2.start(now);
             // Auto-release after duration
             var dur = durationMs || 1200;
@@ -8800,7 +9458,16 @@
 
           // ═══ OSCILLOSCOPE REF ═══
           var canvasRef = function (canvasEl) {
-            if (!canvasEl || canvasEl._synthVizInit) return;
+            if (!canvasEl) {
+              if (canvasRef._lastCanvas && canvasRef._lastCanvas._synthVizAnim) {
+                cancelAnimationFrame(canvasRef._lastCanvas._synthVizAnim);
+                canvasRef._lastCanvas._synthVizInit = false;
+              }
+              canvasRef._lastCanvas = null;
+              return;
+            }
+            if (canvasEl._synthVizInit) return;
+            canvasRef._lastCanvas = canvasEl;
             canvasEl._synthVizInit = true;
             var W = canvasEl.width = canvasEl.offsetWidth * 2;
             var H = canvasEl.height = canvasEl.offsetHeight * 2;
@@ -9004,7 +9671,14 @@
                   [{ id: 'standard', label: '\u223F Synth' }, { id: 'plucked', label: '\uD83C\uDFB8 Plucked' }].map(function (eng) {
                     return React.createElement("button", {
                       key: eng.id,
-                      onClick: function () { upd('synthEngine', eng.id); },
+                      onClick: function () {
+                        // Clear all active notes when switching engines to prevent stale entries blocking playback
+                        Object.keys(window._alloSynthActiveNotes || {}).forEach(function (nid) {
+                          try { var e = window._alloSynthActiveNotes[nid]; if (e && e.osc) e.osc.stop(); if (e && e.env) { e.env.gain.cancelScheduledValues(0); e.env.gain.value = 0; } } catch (ex) { }
+                          delete window._alloSynthActiveNotes[nid];
+                        });
+                        upd('synthEngine', eng.id);
+                      },
                       className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + (synthEngine === eng.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                     }, eng.label);
                   })
@@ -9034,7 +9708,7 @@
                         onMouseUp: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
                         onMouseLeave: function () { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); },
                         className: "absolute z-10 rounded-b-md select-none flex flex-col items-center justify-end pb-1 transition-all cursor-pointer " + (isActive ? 'bg-purple-600 shadow-lg shadow-purple-500/50' : dimmed ? 'bg-slate-700 opacity-30' : 'bg-slate-800 hover:bg-slate-700'),
-                        style: { width: '28px', height: '85px', left: (key.position * 42 + 28) + 'px', top: 0 }
+                        style: { width: '5.5%', height: '85px', left: (key.position * (100 / 14) + (100 / 14) * 0.65) + '%', top: 0 }
                       },
                         React.createElement("span", { className: "text-[8px] text-white/60 font-bold" }, key.note)
                       );
@@ -10338,13 +11012,24 @@
           var sys = SYSTEMS[sysKey];
           var view = d.view || 'anterior';
           var searchTerm = (d.search || '').toLowerCase();
+          var complexity = d.complexity || 3;
+
+          // Complexity level lookup — structures shown at each tier
+          var ELEMENTARY_IDS = ['skull', 'ribs', 'femur', 'humerus', 'vertebral', 'pelvis', 'biceps', 'quads', 'heart', 'brain', 'lungs', 'stomach', 'kidneys', 'spinal_cord', 'deltoid', 'hamstrings', 'gastrocnemius', 'aorta', 'carotid', 'sciatic', 'liver', 'diaphragm', 'spleen', 'thymus'];
+          var MIDDLE_IDS = ELEMENTARY_IDS.concat(['mandible', 'clavicle', 'sternum', 'scapula', 'radius', 'ulna', 'tibia', 'fibula', 'patella', 'tarsals', 'carpals', 'sacrum', 'pectoralis', 'triceps', 'rectus_ab', 'obliques', 'trapezius', 'lats', 'glutes', 'tibialis', 'soleus', 'sartorius', 'sup_vena', 'inf_vena', 'pulm_art', 'jugular', 'coronary', 'femoral_a', 'brachial', 'portal', 'vagus', 'brachial_plexus', 'median', 'ulnar_n', 'femoral_n', 'cranial_n', 'sympathetic', 'sm_intestine', 'lg_intestine', 'pancreas', 'gallbladder', 'bladder', 'thyroid', 'adrenals', 'cervical_ln', 'axillary_ln', 'inguinal_ln', 'thoracic_duct', 'bone_marrow']);
+          function passesComplexity(st) {
+            if (complexity >= 3) return true;
+            if (complexity === 1) return ELEMENTARY_IDS.indexOf(st.id) !== -1;
+            return MIDDLE_IDS.indexOf(st.id) !== -1;
+          }
+
           var allStructures = sys.structures;
-          var viewFiltered = allStructures.filter(function (s) { return s.v === 'b' || s.v === (view === 'anterior' ? 'a' : 'p'); });
+          var viewFiltered = allStructures.filter(function (s) { return (s.v === 'b' || s.v === (view === 'anterior' ? 'a' : 'p')) && passesComplexity(s); });
           var filtered = searchTerm ? viewFiltered.filter(function (s) { return s.name.toLowerCase().indexOf(searchTerm) >= 0 || s.fn.toLowerCase().indexOf(searchTerm) >= 0; }) : viewFiltered;
           var sel = d.selectedStructure ? allStructures.find(function (s) { return s.id === d.selectedStructure; }) : null;
 
           // Quiz logic — options memoized in state to prevent re-shuffle on render
-          var quizPool = allStructures.filter(function (s) { return s.fn; });
+          var quizPool = allStructures.filter(function (s) { return s.fn && passesComplexity(s); });
           var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
           var quizOptions = d._quizOpts || [];
           if (quizQ && d._quizOptsFor !== (sysKey + '|' + d.quizIdx)) {
@@ -10510,6 +11195,15 @@
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
+              React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
+                [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
+                  return React.createElement("button", {
+                    key: lv.v, title: lv.tip + ' level',
+                    onClick: function () { upd('complexity', lv.v); upd('selectedStructure', null); },
+                    className: "px-2 py-1 text-[10px] font-bold transition-all " + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
+                  }, lv.label);
+                })
+              ),
               React.createElement("span", { className: "text-[10px] text-slate-400 font-bold" }, filtered.length + ' structures')
             ),
             // Main content: canvas + detail panel
@@ -10554,6 +11248,11 @@
                                 'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                       })
+                    ),
+                    d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                      React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizQ.name),
+                      React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                      quizQ.clinical && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\u26A0 Clinical: "), quizQ.clinical)
                     ),
                     d.quizFeedback && React.createElement("button", {
                       onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
@@ -10925,6 +11624,12 @@
                                 'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
                       })
+                    ),
+                    d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                      React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
+                      React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                      quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
+                      quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
                     ),
                     d.quizFeedback && React.createElement("button", {
                       onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
