@@ -757,6 +757,12 @@
 
           },
 
+          {
+            id: 'artStudio', icon: '🎨', label: 'Art & Design Studio',
+            desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
+            color: 'rose', ready: true
+          },
+
         ].map(tool => tool.category
           ? /*#__PURE__*/React.createElement("div", {
             key: tool.id,
