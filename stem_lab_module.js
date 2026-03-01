@@ -4991,7 +4991,7 @@
                           var correct = opt === fgQuiz.answer;
                           upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt }));
                           upd('fgScore', fgScore + (correct ? 1 : 0)); upd('fgStreak', correct ? fgStreak + 1 : 0);
-                          if (correct) addToast(t('stem.func_grapher.correct_it')s a ' + fgQuiz.type + ' function', 'success'); else addToast(t('stem.func_grapher.that')s a ' + fgQuiz.type + ' function', 'error');
+                          if (correct) addToast(t('stem.func_grapher.correct_it') + "'s a " + fgQuiz.type + ' function', 'success'); else addToast(t('stem.func_grapher.that') + "'s a " + fgQuiz.type + ' function', 'error');
                         }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
                       }, opt);
                     })
@@ -6375,7 +6375,7 @@
                           var correct = opt === dpQuiz.answer;
                           upd('dpQuiz', Object.assign({}, dpQuiz, { answered: true, chosen: opt }));
                           upd('dpScore', dpScore + (correct ? 1 : 0));
-                          if (correct) addToast(t('stem.data_plot.correct') + dpQuiz.answer + ' correlation', 'success'); else addToast(t('stem.data_plot.it')s ' + dpQuiz.answer + ' correlation', 'error');
+                          if (correct) addToast(t('stem.data_plot.correct') + dpQuiz.answer + ' correlation', 'success'); else addToast(t('stem.data_plot.it') + "'s " + dpQuiz.answer + ' correlation', 'error');
                         }, className: "px-4 py-2 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all"
                       }, opt);
                     })
@@ -6670,1619 +6670,1619 @@
             Be: { desc: t('stem.periodic.rare_toxic_metal_that_is'), uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
             B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
             C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
-            N: { desc: t('stem.periodic.makes_up_78_of_earth')s atmosphere', uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O(Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
-            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant')s crust', uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O(Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃(Rust)', 'O₃(Ozone)'] },
+            N: { desc: t('stem.periodic.makes_up_78_of_earth') + "'s atmosphere", uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O(Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
+            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant') + "'s crust", uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O(Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃(Rust)', 'O₃(Ozone)'] },
             F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
-        Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
-        Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
-        Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
-        Al: { desc: t('stem.periodic.most_abundant_metal_in_earth')s crust', uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃(Aluminum Chloride)'] },
+            Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
+            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
+            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
+            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth') + "'s crust", uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃(Aluminum Chloride)'] },
             Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
-        P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
-        S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
-        Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
-        Ar: { desc: t('stem.periodic.third_most_abundant_gas_in'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
-        K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
-        Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
-        Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
-        Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
-        Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
-        Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
-        Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
-        Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
-        Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
-        Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
-        Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
-        Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
-        I: { desc: t('stem.periodic.essential_trace_element_for_thyroid'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
-        Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
-        U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
-        Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
-        Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
-        Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
-        W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
+            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
+            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
+            Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
+            Ar: { desc: t('stem.periodic.third_most_abundant_gas_in'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
+            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
+            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
+            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
+            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
+            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
+            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
+            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
+            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
+            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
+            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
+            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
+            Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
+            I: { desc: t('stem.periodic.essential_trace_element_for_thyroid'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
+            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
+            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
+            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
+            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
+            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
+            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
           };
-    const getElementDetail = (sym) => ELEMENT_DETAILS[sym] || null;
-    const getElementCompounds = (sym) => COMPOUNDS.filter(c => Object.keys(c.recipe).includes(sym));
+          const getElementDetail = (sym) => ELEMENT_DETAILS[sym] || null;
+          const getElementCompounds = (sym) => COMPOUNDS.filter(c => Object.keys(c.recipe).includes(sym));
 
-    const getEl = (sym) => ELEMENTS.find(e => e.s === sym);
-    // ── Periodic Table layout (row, col) ──
-    const PT_LAYOUT = [
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
-      [3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10],
-      [11, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 14, 15, 16, 17, 18],
-      [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
-      [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54],
-      [55, 56, 0, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86],
-      [87, 88, 0, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118],
-      [],
-      [0, 0, 0, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71],
-      [0, 0, 0, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103]
-    ];
-    // ── Compound Recipes ──
-    const COMPOUNDS = [
-      { name: t('stem.chem_balance.water'), formula: t('stem.periodic.hu2082o'), recipe: { H: 2, O: 1 }, desc: t('stem.periodic.essential_for_life'), emoji: '\uD83D\uDCA7' },
-      { name: t('stem.periodic.carbon_dioxide'), formula: t('stem.periodic.cou2082'), recipe: { C: 1, O: 2 }, desc: t('stem.periodic.greenhouse_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
-      { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), recipe: { Na: 1, Cl: 1 }, desc: t('stem.periodic.sodium_chloride'), emoji: '\uD83E\uDDC2' },
-      { name: t('stem.chem_balance.ammonia'), formula: t('stem.periodic.nhu2083'), recipe: { N: 1, H: 3 }, desc: t('stem.periodic.cleaning_agent'), emoji: '\uD83E\uDDEA' },
-      { name: t('stem.periodic.methane'), formula: t('stem.periodic.chu2084'), recipe: { C: 1, H: 4 }, desc: t('stem.periodic.natural_gas'), emoji: '\uD83D\uDD25' },
-      { name: t('stem.periodic.hydrogen_peroxide'), formula: 'H\u2082O\u2082', recipe: { H: 2, O: 2 }, desc: t('stem.periodic.disinfectant'), emoji: '\uD83E\uDE79' },
-      { name: t('stem.periodic.ethanol'), formula: 'C\u2082H\u2085OH', recipe: { C: 2, H: 6, O: 1 }, desc: t('stem.periodic.alcohol'), emoji: '\uD83C\uDF7A' },
-      { name: t('stem.periodic.sulfuric_acid'), formula: 'H\u2082SO\u2084', recipe: { H: 2, S: 1, O: 4 }, desc: t('stem.periodic.battery_acid'), emoji: '\u26A0\uFE0F' },
-      { name: t('stem.periodic.glucose'), formula: 'C\u2086H\u2081\u2082O\u2086', recipe: { C: 6, H: 12, O: 6 }, desc: t('stem.periodic.blood_sugar'), emoji: '\uD83C\uDF6C' },
-      { name: t('stem.periodic.baking_soda'), formula: 'NaHCO\u2083', recipe: { Na: 1, H: 1, C: 1, O: 3 }, desc: t('stem.periodic.sodium_bicarbonate'), emoji: '\uD83E\uDDC1' },
-      { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCO\u2083', recipe: { Ca: 1, C: 1, O: 3 }, desc: t('stem.periodic.chalk_marble'), emoji: '\uD83E\uDEA8' },
-      { name: t('stem.chem_balance.iron_oxide'), formula: 'Fe\u2082O\u2083', recipe: { Fe: 2, O: 3 }, desc: t('stem.periodic.rust'), emoji: '\uD83D\uDFE5' },
-      { name: t('stem.periodic.sodium_hydroxide'), formula: 'NaOH', recipe: { Na: 1, O: 1, H: 1 }, desc: t('stem.periodic.lye_caustic_soda'), emoji: '\uD83E\uDDEA' },
-      { name: t('stem.periodic.hydrochloric_acid'), formula: 'HCl', recipe: { H: 1, Cl: 1 }, desc: t('stem.periodic.stomach_acid'), emoji: '\uD83E\uDE79' },
-      { name: t('stem.periodic.acetic_acid'), formula: 'CH\u2083COOH', recipe: { C: 2, H: 4, O: 2 }, desc: t('stem.periodic.vinegar'), emoji: '\uD83E\uDD4B' },
-      { name: t('stem.periodic.nitrogen_dioxide'), formula: 'NO\u2082', recipe: { N: 1, O: 2 }, desc: t('stem.periodic.brown_smog_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
-      { name: t('stem.periodic.sulfur_dioxide'), formula: 'SO\u2082', recipe: { S: 1, O: 2 }, desc: t('stem.periodic.acid_rain_precursor'), emoji: '\uD83C\uDF27\uFE0F' },
-      { name: t('stem.periodic.ozone'), formula: 'O\u2083', recipe: { O: 3 }, desc: t('stem.periodic.uv_shield'), emoji: '\uD83D\uDEE1\uFE0F' },
-      { name: t('stem.periodic.laughing_gas'), formula: 'N\u2082O', recipe: { N: 2, O: 1 }, desc: t('stem.periodic.nitrous_oxide'), emoji: '\uD83D\uDE02' },
-      { name: t('stem.periodic.silicon_dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: t('stem.periodic.sand_glass'), emoji: '\uD83C\uDFD6\uFE0F' },
-    ];
-    const selectedEls = d.selectedElements || {};
-    const discovered = d.discoveredCompounds || [];
-    const addElement = (sym) => { const cur = { ...selectedEls }; cur[sym] = (cur[sym] || 0) + 1; upd('selectedElements', cur); };
-    const removeElement = (sym) => { const cur = { ...selectedEls }; if (cur[sym] > 1) cur[sym]--; else delete cur[sym]; upd('selectedElements', cur); };
-    const clearElements = () => upd('selectedElements', {});
-    const tryCraft = () => {
-      const match = COMPOUNDS.find(c => {
-        const rKeys = Object.keys(c.recipe); const sKeys = Object.keys(selectedEls);
-        if (rKeys.length !== sKeys.length) return false;
-        return rKeys.every(k => selectedEls[k] === c.recipe[k]);
-      });
-      if (match) {
-        const isNew = !discovered.includes(match.formula);
-        upd('craftResult', { success: true, compound: match, isNew });
-        if (isNew) upd('discoveredCompounds', [...discovered, match.formula]);
-      } else {
-        upd('craftResult', { success: false });
-      }
-    };
-    const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
-    // ── Molecule Viewer presets ──
-    const viewerPresets = [
-      { name: t('stem.periodic.hu2082o'), atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H2O' },
-      { name: t('stem.periodic.cou2082'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO2' },
-      { name: t('stem.periodic.chu2084'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH4' },
-      { name: t('stem.periodic.nacl'), atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: t('stem.periodic.nacl') },
-      { name: t('stem.periodic.nhu2083'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH3' },
-    ];
-    return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-      // Header
-      React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-        React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-        React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Molecule Lab"),
-        discovered.length > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " discovered")
-      ),
-      // Mode tabs
-      React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
-        [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table']].map(([m, label]) =>
-          React.createElement("button", { key: m, onClick: () => upd('moleculeMode', m), className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, label)
-        )
-      ),
-      // ── Viewer Mode ──
-      mode === 'viewer' && React.createElement("div", null,
-        React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
-        React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
-          (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
-          (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
-            React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
-            React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
-          ))
-        ),
-        React.createElement("div", { className: "mt-2 text-center" },
-          React.createElement("span", { className: "text-sm font-bold text-slate-500" }, "Formula: "),
-          React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '\u2014')
-        )
-      ),
-      // ── Compound Creator Mode ──
-      mode === 'creator' && React.createElement("div", null,
-        React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, "Select elements to craft compounds. Like Minecraft\u2019s Compound Creator!"),
-        // Element selector grid (common elements)
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
-          ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Zn', 'Br', 'Ag', 'I', 'Au'].map(sym => {
-            const el = getEl(sym);
-            return React.createElement("button", { key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
-              React.createElement("span", { className: "text-sm font-black" }, sym),
-              React.createElement("span", { className: "text-[8px] opacity-70" }, el?.n || '')
-            );
-          })
-        ),
-        // Selected elements display
-        React.createElement("div", { className: "bg-white rounded-xl border-2 border-dashed border-slate-300 p-4 mb-4 min-h-[80px] flex items-center justify-center gap-2 flex-wrap" },
-          Object.keys(selectedEls).length === 0
-            ? React.createElement("p", { className: "text-slate-400 text-sm italic" }, "Tap elements above to add them...")
-            : Object.entries(selectedEls).map(([sym, count]) => {
-              const el = getEl(sym);
-              return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
-                React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#64748b' } }, sym),
-                React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
-                React.createElement("button", { onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-500 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
-              );
-            })
-        ),
-        // Action buttons
-        React.createElement("div", { className: "flex gap-2 mb-4" },
-          React.createElement("button", { onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
-          React.createElement("button", { onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Clear")
-        ),
-        // Craft result
-        d.craftResult && (d.craftResult.success
-          ? React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 text-center animate-in zoom-in" },
-            React.createElement("p", { className: "text-3xl mb-1" }, d.craftResult.compound.emoji),
-            React.createElement("p", { className: "text-lg font-black text-emerald-700" }, (d.craftResult.isNew ? '\uD83C\uDF89 NEW! ' : '\u2705 ') + d.craftResult.compound.name),
-            React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.craftResult.compound.formula),
-            React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, d.craftResult.compound.desc)
-          )
-          : React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-xl p-3 text-center" },
-            React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\uD83E\uDD14 No known compound matches this combination. Try different elements!"))
-        ),
-        // Discovery log
-        discovered.length > 0 && React.createElement("div", { className: "mt-4 bg-slate-50 rounded-xl p-3 border" },
-          React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83D\uDCDA Discovery Log (" + discovered.length + "/" + COMPOUNDS.length + ")"),
-          React.createElement("div", { className: "flex flex-wrap gap-1" },
-            COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-400') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
-          )
-        )
-      ),
-      // ── Periodic Table Mode ──
-      mode === 'table' && React.createElement("div", null,
-        React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Tap any element to learn about it. The full 118-element periodic table."),
-        d.selectedElement && (() => {
-          const detail = getElementDetail(d.selectedElement.s);
-          const relatedCompounds = getElementCompounds(d.selectedElement.s);
-          return React.createElement("div", { className: "mb-3 rounded-xl border-2 overflow-hidden " + (catColors[d.selectedElement.cat] || 'bg-slate-50 border-slate-200') },
-            React.createElement("div", { className: "p-3 flex items-center gap-3" },
-              React.createElement("div", { className: "w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white font-bold shadow-md flex-shrink-0", style: { backgroundColor: d.selectedElement.c } },
-                React.createElement("span", { className: "text-[10px] opacity-80" }, d.selectedElement.n),
-                React.createElement("span", { className: "text-xl font-black" }, d.selectedElement.s)
-              ),
-              React.createElement("div", { className: "flex-1 min-w-0" },
-                React.createElement("p", { className: "text-lg font-bold text-slate-800" }, d.selectedElement.name),
-                React.createElement("p", { className: "text-xs text-slate-500" }, "Atomic #" + d.selectedElement.n + " \u2022 " + (d.selectedElement.cat || 'element').replace(/^\w/, c => c.toUpperCase())),
-                detail && React.createElement("p", { className: "text-xs text-slate-600 mt-1 italic" }, detail.desc)
-              ),
-              React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-400 hover:text-slate-600 flex-shrink-0" }, "\u2715")
+          const getEl = (sym) => ELEMENTS.find(e => e.s === sym);
+          // ── Periodic Table layout (row, col) ──
+          const PT_LAYOUT = [
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+            [3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10],
+            [11, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 14, 15, 16, 17, 18],
+            [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
+            [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54],
+            [55, 56, 0, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86],
+            [87, 88, 0, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118],
+            [],
+            [0, 0, 0, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71],
+            [0, 0, 0, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103]
+          ];
+          // ── Compound Recipes ──
+          const COMPOUNDS = [
+            { name: t('stem.chem_balance.water'), formula: t('stem.periodic.hu2082o'), recipe: { H: 2, O: 1 }, desc: t('stem.periodic.essential_for_life'), emoji: '\uD83D\uDCA7' },
+            { name: t('stem.periodic.carbon_dioxide'), formula: t('stem.periodic.cou2082'), recipe: { C: 1, O: 2 }, desc: t('stem.periodic.greenhouse_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
+            { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), recipe: { Na: 1, Cl: 1 }, desc: t('stem.periodic.sodium_chloride'), emoji: '\uD83E\uDDC2' },
+            { name: t('stem.chem_balance.ammonia'), formula: t('stem.periodic.nhu2083'), recipe: { N: 1, H: 3 }, desc: t('stem.periodic.cleaning_agent'), emoji: '\uD83E\uDDEA' },
+            { name: t('stem.periodic.methane'), formula: t('stem.periodic.chu2084'), recipe: { C: 1, H: 4 }, desc: t('stem.periodic.natural_gas'), emoji: '\uD83D\uDD25' },
+            { name: t('stem.periodic.hydrogen_peroxide'), formula: 'H\u2082O\u2082', recipe: { H: 2, O: 2 }, desc: t('stem.periodic.disinfectant'), emoji: '\uD83E\uDE79' },
+            { name: t('stem.periodic.ethanol'), formula: 'C\u2082H\u2085OH', recipe: { C: 2, H: 6, O: 1 }, desc: t('stem.periodic.alcohol'), emoji: '\uD83C\uDF7A' },
+            { name: t('stem.periodic.sulfuric_acid'), formula: 'H\u2082SO\u2084', recipe: { H: 2, S: 1, O: 4 }, desc: t('stem.periodic.battery_acid'), emoji: '\u26A0\uFE0F' },
+            { name: t('stem.periodic.glucose'), formula: 'C\u2086H\u2081\u2082O\u2086', recipe: { C: 6, H: 12, O: 6 }, desc: t('stem.periodic.blood_sugar'), emoji: '\uD83C\uDF6C' },
+            { name: t('stem.periodic.baking_soda'), formula: 'NaHCO\u2083', recipe: { Na: 1, H: 1, C: 1, O: 3 }, desc: t('stem.periodic.sodium_bicarbonate'), emoji: '\uD83E\uDDC1' },
+            { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCO\u2083', recipe: { Ca: 1, C: 1, O: 3 }, desc: t('stem.periodic.chalk_marble'), emoji: '\uD83E\uDEA8' },
+            { name: t('stem.chem_balance.iron_oxide'), formula: 'Fe\u2082O\u2083', recipe: { Fe: 2, O: 3 }, desc: t('stem.periodic.rust'), emoji: '\uD83D\uDFE5' },
+            { name: t('stem.periodic.sodium_hydroxide'), formula: 'NaOH', recipe: { Na: 1, O: 1, H: 1 }, desc: t('stem.periodic.lye_caustic_soda'), emoji: '\uD83E\uDDEA' },
+            { name: t('stem.periodic.hydrochloric_acid'), formula: 'HCl', recipe: { H: 1, Cl: 1 }, desc: t('stem.periodic.stomach_acid'), emoji: '\uD83E\uDE79' },
+            { name: t('stem.periodic.acetic_acid'), formula: 'CH\u2083COOH', recipe: { C: 2, H: 4, O: 2 }, desc: t('stem.periodic.vinegar'), emoji: '\uD83E\uDD4B' },
+            { name: t('stem.periodic.nitrogen_dioxide'), formula: 'NO\u2082', recipe: { N: 1, O: 2 }, desc: t('stem.periodic.brown_smog_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
+            { name: t('stem.periodic.sulfur_dioxide'), formula: 'SO\u2082', recipe: { S: 1, O: 2 }, desc: t('stem.periodic.acid_rain_precursor'), emoji: '\uD83C\uDF27\uFE0F' },
+            { name: t('stem.periodic.ozone'), formula: 'O\u2083', recipe: { O: 3 }, desc: t('stem.periodic.uv_shield'), emoji: '\uD83D\uDEE1\uFE0F' },
+            { name: t('stem.periodic.laughing_gas'), formula: 'N\u2082O', recipe: { N: 2, O: 1 }, desc: t('stem.periodic.nitrous_oxide'), emoji: '\uD83D\uDE02' },
+            { name: t('stem.periodic.silicon_dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: t('stem.periodic.sand_glass'), emoji: '\uD83C\uDFD6\uFE0F' },
+          ];
+          const selectedEls = d.selectedElements || {};
+          const discovered = d.discoveredCompounds || [];
+          const addElement = (sym) => { const cur = { ...selectedEls }; cur[sym] = (cur[sym] || 0) + 1; upd('selectedElements', cur); };
+          const removeElement = (sym) => { const cur = { ...selectedEls }; if (cur[sym] > 1) cur[sym]--; else delete cur[sym]; upd('selectedElements', cur); };
+          const clearElements = () => upd('selectedElements', {});
+          const tryCraft = () => {
+            const match = COMPOUNDS.find(c => {
+              const rKeys = Object.keys(c.recipe); const sKeys = Object.keys(selectedEls);
+              if (rKeys.length !== sKeys.length) return false;
+              return rKeys.every(k => selectedEls[k] === c.recipe[k]);
+            });
+            if (match) {
+              const isNew = !discovered.includes(match.formula);
+              upd('craftResult', { success: true, compound: match, isNew });
+              if (isNew) upd('discoveredCompounds', [...discovered, match.formula]);
+            } else {
+              upd('craftResult', { success: false });
+            }
+          };
+          const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
+          // ── Molecule Viewer presets ──
+          const viewerPresets = [
+            { name: t('stem.periodic.hu2082o'), atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H2O' },
+            { name: t('stem.periodic.cou2082'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO2' },
+            { name: t('stem.periodic.chu2084'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH4' },
+            { name: t('stem.periodic.nacl'), atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: t('stem.periodic.nacl') },
+            { name: t('stem.periodic.nhu2083'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH3' },
+          ];
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            // Header
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Molecule Lab"),
+              discovered.length > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " discovered")
             ),
-            detail && React.createElement("div", { className: "border-t border-slate-200/50 px-3 pb-3" },
-              React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2 mt-2" },
-                React.createElement("div", null,
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDD27 Common Uses"),
-                  React.createElement("div", { className: "flex flex-wrap gap-1" },
-                    (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[10px] font-medium text-slate-700 border border-slate-200/80" }, use))
+            // Mode tabs
+            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
+              [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table']].map(([m, label]) =>
+                React.createElement("button", { key: m, onClick: () => upd('moleculeMode', m), className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700') }, label)
+              )
+            ),
+            // ── Viewer Mode ──
+            mode === 'viewer' && React.createElement("div", null,
+              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-stone-700 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200') }, p.name))),
+              React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+                (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
+                (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
+                  React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
+                  React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
+                ))
+              ),
+              React.createElement("div", { className: "mt-2 text-center" },
+                React.createElement("span", { className: "text-sm font-bold text-slate-500" }, "Formula: "),
+                React.createElement("span", { className: "text-lg font-bold text-slate-800" }, d.formula || '\u2014')
+              )
+            ),
+            // ── Compound Creator Mode ──
+            mode === 'creator' && React.createElement("div", null,
+              React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, "Select elements to craft compounds. Like Minecraft\u2019s Compound Creator!"),
+              // Element selector grid (common elements)
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
+                ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Zn', 'Br', 'Ag', 'I', 'Au'].map(sym => {
+                  const el = getEl(sym);
+                  return React.createElement("button", { key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
+                    React.createElement("span", { className: "text-sm font-black" }, sym),
+                    React.createElement("span", { className: "text-[8px] opacity-70" }, el?.n || '')
+                  );
+                })
+              ),
+              // Selected elements display
+              React.createElement("div", { className: "bg-white rounded-xl border-2 border-dashed border-slate-300 p-4 mb-4 min-h-[80px] flex items-center justify-center gap-2 flex-wrap" },
+                Object.keys(selectedEls).length === 0
+                  ? React.createElement("p", { className: "text-slate-400 text-sm italic" }, "Tap elements above to add them...")
+                  : Object.entries(selectedEls).map(([sym, count]) => {
+                    const el = getEl(sym);
+                    return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
+                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#64748b' } }, sym),
+                      React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
+                      React.createElement("button", { onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-500 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
+                    );
+                  })
+              ),
+              // Action buttons
+              React.createElement("div", { className: "flex gap-2 mb-4" },
+                React.createElement("button", { onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
+                React.createElement("button", { onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Clear")
+              ),
+              // Craft result
+              d.craftResult && (d.craftResult.success
+                ? React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 text-center animate-in zoom-in" },
+                  React.createElement("p", { className: "text-3xl mb-1" }, d.craftResult.compound.emoji),
+                  React.createElement("p", { className: "text-lg font-black text-emerald-700" }, (d.craftResult.isNew ? '\uD83C\uDF89 NEW! ' : '\u2705 ') + d.craftResult.compound.name),
+                  React.createElement("p", { className: "text-sm font-bold text-emerald-600" }, d.craftResult.compound.formula),
+                  React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, d.craftResult.compound.desc)
+                )
+                : React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-xl p-3 text-center" },
+                  React.createElement("p", { className: "text-sm font-bold text-amber-700" }, "\uD83E\uDD14 No known compound matches this combination. Try different elements!"))
+              ),
+              // Discovery log
+              discovered.length > 0 && React.createElement("div", { className: "mt-4 bg-slate-50 rounded-xl p-3 border" },
+                React.createElement("p", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83D\uDCDA Discovery Log (" + discovered.length + "/" + COMPOUNDS.length + ")"),
+                React.createElement("div", { className: "flex flex-wrap gap-1" },
+                  COMPOUNDS.map(c => React.createElement("span", { key: c.formula, className: "px-2 py-0.5 rounded text-xs font-bold " + (discovered.includes(c.formula) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-400') }, discovered.includes(c.formula) ? c.emoji + ' ' + c.name : '\uD83D\uDD12 ???'))
+                )
+              )
+            ),
+            // ── Periodic Table Mode ──
+            mode === 'table' && React.createElement("div", null,
+              React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Tap any element to learn about it. The full 118-element periodic table."),
+              d.selectedElement && (() => {
+                const detail = getElementDetail(d.selectedElement.s);
+                const relatedCompounds = getElementCompounds(d.selectedElement.s);
+                return React.createElement("div", { className: "mb-3 rounded-xl border-2 overflow-hidden " + (catColors[d.selectedElement.cat] || 'bg-slate-50 border-slate-200') },
+                  React.createElement("div", { className: "p-3 flex items-center gap-3" },
+                    React.createElement("div", { className: "w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white font-bold shadow-md flex-shrink-0", style: { backgroundColor: d.selectedElement.c } },
+                      React.createElement("span", { className: "text-[10px] opacity-80" }, d.selectedElement.n),
+                      React.createElement("span", { className: "text-xl font-black" }, d.selectedElement.s)
+                    ),
+                    React.createElement("div", { className: "flex-1 min-w-0" },
+                      React.createElement("p", { className: "text-lg font-bold text-slate-800" }, d.selectedElement.name),
+                      React.createElement("p", { className: "text-xs text-slate-500" }, "Atomic #" + d.selectedElement.n + " \u2022 " + (d.selectedElement.cat || 'element').replace(/^\w/, c => c.toUpperCase())),
+                      detail && React.createElement("p", { className: "text-xs text-slate-600 mt-1 italic" }, detail.desc)
+                    ),
+                    React.createElement("button", { onClick: () => upd('selectedElement', null), className: "p-1 text-slate-400 hover:text-slate-600 flex-shrink-0" }, "\u2715")
+                  ),
+                  detail && React.createElement("div", { className: "border-t border-slate-200/50 px-3 pb-3" },
+                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2 mt-2" },
+                      React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDD27 Common Uses"),
+                        React.createElement("div", { className: "flex flex-wrap gap-1" },
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[10px] font-medium text-slate-700 border border-slate-200/80" }, use))
+                        )
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83E\uDDEA Key Compounds"),
+                        React.createElement("div", { className: "flex flex-wrap gap-1" },
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[10px] font-medium text-slate-700 border border-slate-200/80" }, comp))
+                        )
+                      )
+                    ),
+                    relatedCompounds.length > 0 && React.createElement("div", { className: "mt-2" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
+                      React.createElement("div", { className: "flex flex-wrap gap-1" },
+                        relatedCompounds.map((comp, i) => React.createElement("button", { key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                      )
+                    )
+                  )
+                );
+              })(),
+              // Table grid
+              React.createElement("div", { className: "overflow-x-auto" },
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(0, 1fr))', gap: '1px', minWidth: '600px' } },
+                  PT_LAYOUT.flatMap((row, ri) => {
+                    if (row.length === 0) return [React.createElement("div", { key: 'gap-' + ri, style: { gridColumn: 'span 18', height: '4px' } })];
+                    return row.map((num, ci) => {
+                      if (num === 0) return React.createElement("div", { key: ri + '-' + ci });
+                      const el = ELEMENTS[num - 1];
+                      if (!el) return React.createElement("div", { key: ri + '-' + ci });
+                      return React.createElement("button", { key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[8px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
+                        React.createElement("span", { className: "font-black text-[10px] leading-none" }, el.s),
+                        React.createElement("span", { className: "opacity-60 leading-none" }, el.n)
+                      );
+                    });
+                  })
+                )
+              ),
+              // Legend
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3 justify-center" },
+                [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', t('stem.periodic.lanthanide')], ['actinide', t('stem.periodic.actinide')]].map(([cat, label]) =>
+                  React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[9px] font-bold border " + (catColors[cat] || '') }, label)
+                )
+              ),
+              // ── Quiz: Element Hunt ──
+              (() => {
+                var elQuiz = d.elQuiz || null;
+                var elScore = d.elScore || 0;
+                var elStreak = d.elStreak || 0;
+                function makeElQuiz() {
+                  var quizTypes = [
+                    function () { var el = ELEMENTS[Math.floor(Math.random() * 36)]; return { text: 'Which element has the symbol "' + el.s + '"?', answer: el.name, opts: [el.name].concat(ELEMENTS.filter(function (e) { return e.name !== el.name; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3).map(function (e) { return e.name; })).sort(function () { return Math.random() - 0.5; }) }; },
+                    function () { var el = ELEMENTS[Math.floor(Math.random() * 36)]; return { text: 'What is the atomic number of ' + el.name + '?', answer: String(el.n), opts: [String(el.n), String(el.n + 2), String(el.n > 3 ? el.n - 2 : el.n + 4), String(el.n + 7)].sort(function () { return Math.random() - 0.5; }) }; },
+                    function () { var cats = ['alkali', 'noble', 'halogen', 'transition', 'nonmetal']; var catLabels = { alkali: 'Alkali Metal', noble: 'Noble Gas', halogen: 'Halogen', transition: 'Transition Metal', nonmetal: 'Nonmetal' }; var cat = cats[Math.floor(Math.random() * cats.length)]; var ex = ELEMENTS.filter(function (e) { return e.cat === cat; }); var el = ex[Math.floor(Math.random() * ex.length)]; return { text: 'What category does ' + el.name + ' (' + el.s + ') belong to?', answer: catLabels[cat], opts: Object.values(catLabels).sort(function () { return Math.random() - 0.5; }).slice(0, 4) }; },
+                  ];
+                  var gen = quizTypes[Math.floor(Math.random() * quizTypes.length)];
+                  var q = gen(); q.answered = false;
+                  if (q.opts.indexOf(q.answer) < 0) q.opts[0] = q.answer;
+                  return q;
+                }
+                return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
+                    elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + elScore + ' | 🔥 ' + elStreak)
+                  ),
+                  elQuiz && !elQuiz.answered && React.createElement("div", { className: "bg-cyan-50 rounded-xl p-3 border border-cyan-200" },
+                    React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, elQuiz.text),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                      elQuiz.opts.map(function (opt) {
+                        return React.createElement("button", {
+                          key: opt, onClick: function () {
+                            var correct = opt === elQuiz.answer;
+                            upd('elQuiz', Object.assign({}, elQuiz, { answered: true, chosen: opt }));
+                            upd('elScore', elScore + (correct ? 1 : 0)); upd('elStreak', correct ? elStreak + 1 : 0);
+                            if (correct) addToast(t('stem.periodic.correct'), 'success'); else addToast(t('stem.periodic.answer') + elQuiz.answer, 'error');
+                          }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 transition-all"
+                        }, opt);
+                      })
+                    )
+                  ),
+                  elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + elQuiz.answer)
+                );
+              })()
+            )
+          )
+        })(),
+
+
+
+        // ═══════════════════════════════════════════════════════
+        // SOLAR SYSTEM EXPLORER — 3D (Three.js)
+        // ═══════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'solarSystem' && (() => {
+          const d = labToolData.solarSystem;
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
+          const PLANETS = [
+            { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
+            { name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
+            { name: t('stem.solar_sys.earth'), emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.', gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
+            { name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
+            { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
+            { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
+            { name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
+          ];
+          const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
+          const simSpeed = d.simSpeed || 1;
+          const paused = d.paused || false;
+
+          // ── Three.js 3D Canvas ──
+          const canvasRef = function (canvas) {
+            if (!canvas) { // cleanup on unmount
+              const prev = document.querySelector('.solar3d-canvas');
+              if (prev && prev._solarCleanup) { prev._solarCleanup(); prev._solarInit = false; }
+              return;
+            }
+            if (canvas._solarInit) return;
+            canvas._solarInit = true;
+
+            // Load Three.js if needed
+            function initScene(THREE) {
+              const W = canvas.clientWidth || 600;
+              const H = canvas.clientHeight || 340;
+              const scene = new THREE.Scene();
+              const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 1000);
+              camera.position.set(0, 28, 50);
+              camera.lookAt(0, 0, 0);
+              const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              renderer.setSize(W, H);
+
+              // ── Starfield ──
+              const starGeo = new THREE.BufferGeometry();
+              const starPos = new Float32Array(3000);
+              for (let i = 0; i < 3000; i++) { starPos[i] = (Math.random() - 0.5) * 400; }
+              starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.8 })));
+
+              // ── Ambient light ──
+              scene.add(new THREE.AmbientLight(0x222244, 0.3));
+
+              // ── Sun ──
+              const sunGeo = new THREE.SphereGeometry(5.5, 32, 32);
+              const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+              const sun = new THREE.Mesh(sunGeo, sunMat);
+              scene.add(sun);
+              const sunLight = new THREE.PointLight(0xffffff, 1.5, 200);
+              scene.add(sunLight);
+              // Sun glow sprite
+              const glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
+              const gctx = glowCanvas.getContext('2d');
+              const grad = gctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+              grad.addColorStop(0, 'rgba(255,220,80,0.6)'); grad.addColorStop(0.4, 'rgba(255,180,40,0.2)'); grad.addColorStop(1, 'rgba(255,160,0,0)');
+              gctx.fillStyle = grad; gctx.fillRect(0, 0, 128, 128);
+              const glowTex = new THREE.CanvasTexture(glowCanvas);
+              const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending }));
+              glowSprite.scale.set(18, 18, 1);
+              scene.add(glowSprite);
+
+              // ── Procedural planet texture ──
+              function makePlanetTex(rgb, variation) {
+                const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+                const ctx = c.getContext('2d');
+                const base = rgb;
+                for (let y = 0; y < 64; y++) {
+                  for (let x = 0; x < 128; x++) {
+                    const n = (Math.sin(x * 0.3 + y * 0.1) * 0.5 + Math.sin(y * 0.5) * 0.3 + Math.random() * 0.2) * variation;
+                    const r = Math.min(255, Math.max(0, Math.round((base[0] + n * 0.15) * 255)));
+                    const g = Math.min(255, Math.max(0, Math.round((base[1] + n * 0.1) * 255)));
+                    const b = Math.min(255, Math.max(0, Math.round((base[2] - n * 0.05) * 255)));
+                    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+                    ctx.fillRect(x, y, 1, 1);
+                  }
+                }
+                const tex = new THREE.CanvasTexture(c); tex.needsUpdate = true; return tex;
+              }
+
+              // ── Create planets ──
+              const planetMeshes = [];
+              const orbitLines = [];
+              PLANETS.forEach(function (p, idx) {
+                // Orbit ring
+                const orbitGeo = new THREE.RingGeometry(p.dist - 0.02, p.dist + 0.02, 128);
+                const orbitMat = new THREE.MeshBasicMaterial({ color: 0x334466, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+                const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
+                orbitMesh.rotation.x = -Math.PI / 2;
+                scene.add(orbitMesh);
+                orbitLines.push(orbitMesh);
+
+                // Planet sphere
+                const geo = new THREE.SphereGeometry(p.size, 24, 24);
+                const tex = makePlanetTex(p.rgb, 1.0 + idx * 0.3);
+                const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.1 });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.userData = { name: p.name, idx: idx };
+                // Starting orbital angle — spread planets out
+                mesh._orbitAngle = (idx / PLANETS.length) * Math.PI * 2;
+                mesh._orbitDist = p.dist;
+                mesh._orbitSpeed = p.speed;
+                mesh.position.set(Math.cos(mesh._orbitAngle) * p.dist, 0, Math.sin(mesh._orbitAngle) * p.dist);
+                scene.add(mesh);
+                planetMeshes.push(mesh);
+
+                // Saturn's rings
+                if (p.hasRings) {
+                  const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.2, 64);
+                  const ringCanvas = document.createElement('canvas'); ringCanvas.width = 256; ringCanvas.height = 1;
+                  const rctx = ringCanvas.getContext('2d');
+                  const rGrad = rctx.createLinearGradient(0, 0, 256, 0);
+                  rGrad.addColorStop(0, 'rgba(210,180,120,0.0)'); rGrad.addColorStop(0.15, 'rgba(210,180,120,0.7)');
+                  rGrad.addColorStop(0.4, 'rgba(180,160,100,0.5)'); rGrad.addColorStop(0.5, 'rgba(140,130,80,0.1)');
+                  rGrad.addColorStop(0.6, 'rgba(200,170,110,0.6)'); rGrad.addColorStop(0.85, 'rgba(180,150,90,0.4)');
+                  rGrad.addColorStop(1, 'rgba(160,140,80,0.0)');
+                  rctx.fillStyle = rGrad; rctx.fillRect(0, 0, 256, 1);
+                  const ringTex = new THREE.CanvasTexture(ringCanvas);
+                  const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+                  const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                  ringMesh.rotation.x = -Math.PI / 2 + p.tilt;
+                  mesh.add(ringMesh);
+                }
+              });
+
+              // ── Asteroid belt (between Mars and Jupiter) ──
+              const asteroidCount = 300;
+              const asteroidGeo = new THREE.BufferGeometry();
+              const aPos = new Float32Array(asteroidCount * 3);
+              for (let i = 0; i < asteroidCount; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const r = 22 + Math.random() * 4;
+                aPos[i * 3] = Math.cos(ang) * r;
+                aPos[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
+                aPos[i * 3 + 2] = Math.sin(ang) * r;
+              }
+              asteroidGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3));
+              scene.add(new THREE.Points(asteroidGeo, new THREE.PointsMaterial({ color: 0x888888, size: 0.08 })));
+
+              // ── Camera orbit controls (manual) ──
+              let camTheta = 0.5, camPhi = 1.0, camDist = 55;
+              let isDragging = false, lastX = 0, lastY = 0;
+              let targetLookAt = new THREE.Vector3(0, 0, 0);
+              let currentLookAt = new THREE.Vector3(0, 0, 0);
+              let currentDist = 55;
+              let targetDist = 55;
+              let focusedPlanetIdx = -1; // index in planetMeshes, -1 = none (system view)
+              let cameraLerp = 0.06; // smooth interpolation speed
+
+              function updateCamera() {
+                camera.position.x = currentLookAt.x + currentDist * Math.sin(camPhi) * Math.cos(camTheta);
+                camera.position.y = currentLookAt.y + currentDist * Math.cos(camPhi);
+                camera.position.z = currentLookAt.z + currentDist * Math.sin(camPhi) * Math.sin(camTheta);
+                camera.lookAt(currentLookAt);
+              }
+              updateCamera();
+
+              function onSolarDown(e) {
+                isDragging = true; lastX = e.clientX; lastY = e.clientY;
+                canvas._clickStartX = e.clientX; canvas._clickStartY = e.clientY;
+                canvas.setPointerCapture(e.pointerId);
+              }
+              function onSolarMove(e) {
+                if (!isDragging) return;
+                const dx = e.clientX - lastX; const dy = e.clientY - lastY;
+                camTheta -= dx * 0.008;
+                camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi - dy * 0.008));
+                lastX = e.clientX; lastY = e.clientY;
+                updateCamera();
+              }
+              function onSolarUp(e) {
+                isDragging = false;
+                canvas.releasePointerCapture(e.pointerId);
+              }
+              function onSolarWheel(e) {
+                e.preventDefault();
+                targetDist = Math.max(3, Math.min(120, targetDist + e.deltaY * 0.05));
+              }
+
+              // ── Raycasting for planet clicks (smooth fly-to) ──
+              const raycaster = new THREE.Raycaster();
+              const mouse = new THREE.Vector2();
+              function onSolarClick(e) {
+                if (Math.abs(e.clientX - (canvas._clickStartX || 0)) > 5 || Math.abs(e.clientY - (canvas._clickStartY || 0)) > 5) return; // was a drag
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const hits = raycaster.intersectObjects(planetMeshes);
+                if (hits.length > 0) {
+                  const hitObj = hits[0].object;
+                  const name = hitObj.userData.name;
+                  upd('selectedPlanet', name);
+                  focusedPlanetIdx = hitObj.userData.idx;
+                  // Set smooth zoom target — closer for small planets, farther for giants
+                  var radius = hitObj.geometry.parameters.radius;
+                  targetDist = Math.max(3, Math.min(18, radius * 5));
+                  // Set lookAt target to planet's current position (will be tracked each frame)
+                  targetLookAt.copy(hitObj.position);
+                  // Adjust camera angle for a nice viewing angle
+                  camPhi = 0.8;
+                } else {
+                  // Clicked empty space — deselect, return to system view
+                  upd('selectedPlanet', null);
+                  focusedPlanetIdx = -1;
+                  targetLookAt.set(0, 0, 0);
+                  targetDist = 55;
+                }
+              }
+              // Double-click to reset to full system view
+              function onSolarDblClick(e) {
+                upd('selectedPlanet', null);
+                focusedPlanetIdx = -1;
+                targetLookAt.set(0, 0, 0);
+                targetDist = 55;
+                camPhi = 1.0;
+              }
+              canvas.addEventListener('pointerdown', onSolarDown);
+              canvas.addEventListener('pointermove', onSolarMove);
+              canvas.addEventListener('pointerup', onSolarUp);
+              canvas.addEventListener('wheel', onSolarWheel, { passive: false });
+              canvas.addEventListener('click', onSolarClick);
+              canvas.addEventListener('dblclick', onSolarDblClick);
+
+              // ── Planet label overlay ──
+              const labelContainer = canvas.parentElement.querySelector('.solar-labels');
+
+              // ── Animation loop ──
+              let animId;
+              let time = 0;
+              function animate() {
+                animId = requestAnimationFrame(animate);
+                const speed = parseFloat(canvas.dataset.speed || '1');
+                const isPaused = canvas.dataset.paused === 'true';
+                if (!isPaused) {
+                  time += 0.008 * speed;
+                }
+
+                // Orbit planets
+                planetMeshes.forEach(function (mesh, i) {
+                  mesh._orbitAngle += 0.008 * mesh._orbitSpeed * speed * (isPaused ? 0 : 1);
+                  mesh.position.x = Math.cos(mesh._orbitAngle) * mesh._orbitDist;
+                  mesh.position.z = Math.sin(mesh._orbitAngle) * mesh._orbitDist;
+                  mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
+                });
+
+                // ── Smooth camera tracking ──
+                // If focused on a planet, update targetLookAt to follow it as it orbits
+                if (focusedPlanetIdx >= 0 && focusedPlanetIdx < planetMeshes.length) {
+                  var fp = planetMeshes[focusedPlanetIdx];
+                  targetLookAt.copy(fp.position);
+                }
+                // Smoothly interpolate camera toward target
+                currentLookAt.lerp(targetLookAt, cameraLerp);
+                currentDist += (targetDist - currentDist) * cameraLerp;
+                updateCamera();
+
+                // Slowly rotate asteroids
+                const aArr = asteroidGeo.attributes.position.array;
+                if (!isPaused) {
+                  for (let i = 0; i < asteroidCount; i++) {
+                    const x = aArr[i * 3]; const z = aArr[i * 3 + 2];
+                    const a = Math.atan2(z, x) + 0.0003 * speed;
+                    const r = Math.sqrt(x * x + z * z);
+                    aArr[i * 3] = Math.cos(a) * r;
+                    aArr[i * 3 + 2] = Math.sin(a) * r;
+                  }
+                  asteroidGeo.attributes.position.needsUpdate = true;
+                }
+
+                // Sun pulse
+                const pulse = 1.0 + Math.sin(time * 2) * 0.03;
+                sun.scale.set(pulse, pulse, pulse);
+                glowSprite.scale.set(12 * pulse, 12 * pulse, 1);
+
+                // Update labels
+                if (labelContainer) {
+                  labelContainer.innerHTML = '';
+                  planetMeshes.forEach(function (mesh) {
+                    const pos = mesh.position.clone();
+                    pos.y += mesh.geometry.parameters.radius + 0.4;
+                    pos.project(camera);
+                    if (pos.z < 1 && pos.z > -1) {
+                      const lx = (pos.x * 0.5 + 0.5) * W;
+                      const ly = (-pos.y * 0.5 + 0.5) * H;
+                      const isSelected = canvas.dataset.selected === mesh.userData.name;
+                      const label = document.createElement('div');
+                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:9px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);color:' + (isSelected ? '#fbbf24' : '#94a3b8') + ';white-space:nowrap;transition:color 0.2s;';
+                      label.textContent = mesh.userData.name;
+                      labelContainer.appendChild(label);
+                    }
+                  });
+                }
+
+                renderer.render(scene, camera);
+              }
+              animate();
+
+              // ── Resize handler ──
+              const resizeObserver = new ResizeObserver(function () {
+                const w = canvas.clientWidth; const h = canvas.clientHeight;
+                if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
+              });
+              resizeObserver.observe(canvas);
+
+              // ── Cleanup ──
+              canvas._solarCleanup = function () {
+                cancelAnimationFrame(animId);
+                canvas.removeEventListener('pointerdown', onSolarDown);
+                canvas.removeEventListener('pointermove', onSolarMove);
+                canvas.removeEventListener('pointerup', onSolarUp);
+                canvas.removeEventListener('wheel', onSolarWheel);
+                canvas.removeEventListener('click', onSolarClick);
+                canvas.removeEventListener('dblclick', onSolarDblClick);
+                resizeObserver.disconnect();
+                renderer.dispose();
+                scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+              };
+            }
+
+            // Load Three.js or use existing
+            if (window.THREE) {
+              initScene(window.THREE);
+            } else {
+              const s = document.createElement('script');
+              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+              s.onload = function () { initScene(window.THREE); };
+              document.head.appendChild(s);
+            }
+          };
+
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, "3D")
+            ),
+            // 3D Canvas container
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-800/50 shadow-lg", style: { background: '#0a0e27' } },
+              React.createElement("canvas", {
+                ref: canvasRef,
+                className: "solar3d-canvas w-full",
+                style: { height: '520px', display: 'block', cursor: 'grab' },
+                'data-speed': String(simSpeed),
+                'data-paused': String(paused),
+                'data-selected': d.selectedPlanet || ''
+              }),
+              // Floating planet labels
+              React.createElement("div", { className: "solar-labels", style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' } }),
+              // Controls overlay
+              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
+                React.createElement("button", {
+                  onClick: () => upd('paused', !paused),
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
+                }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
+                React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
+                  React.createElement("span", { className: "text-[9px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
+                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '12px' } }),
+                  React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold min-w-[28px] text-right" }, simSpeed.toFixed(1) + "x")
+                ),
+                React.createElement("button", {
+                  onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c && c._solarInit) { /* reset camera via reinit — crude but works */ c._solarCleanup && c._solarCleanup(); c._solarInit = false; setTimeout(function () { canvasRef(c); }, 50); } },
+                  className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
+                }, "\uD83C\uDFE0 Reset View"),
+                React.createElement("span", { className: "text-[9px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
+              )
+            ),
+            // Planet buttons row
+            React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
+              PLANETS.map(p => React.createElement("button", {
+                key: p.name,
+                onClick: () => upd('selectedPlanet', p.name),
+                className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
+                style: d.selectedPlanet === p.name ? { backgroundColor: p.color } : {}
+              }, p.emoji + " " + p.name))
+            ),
+            // ── Scale Explanation Collapsible ──
+            React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
+              React.createElement("summary", { className: "px-3 py-1.5 text-[11px] font-bold text-amber-700 cursor-pointer select-none hover:bg-amber-100/50 transition-colors" }, "\uD83D\uDD2D Why aren't the sizes truly to scale?"),
+              React.createElement("div", { className: "px-3 pb-3 text-[10px] text-amber-800 leading-relaxed" },
+                React.createElement("p", { className: "mb-2" }, "If this model were truly to scale, the Sun would be a beach ball and Earth would be a grain of sand 30 meters away! Jupiter would be a marble 155 meters away, and Pluto would be invisible 1.2 km from the Sun."),
+                React.createElement("div", { className: "grid grid-cols-3 gap-1.5 mb-2" },
+                  [
+                    { body: '\u2600\uFE0F Sun', real: '1,391,000 km', scale: '109\u00D7 Earth' },
+                    { body: '\uD83E\uDE90 Jupiter', real: '139,820 km', scale: '11.2\u00D7 Earth' },
+                    { body: '\uD83C\uDF0D Earth', real: '12,742 km', scale: '1\u00D7 (baseline)' },
+                    { body: '\uD83D\uDD35 Neptune', real: '49,244 km', scale: '3.9\u00D7 Earth' },
+                    { body: '\uD83D\uDD34 Mars', real: '6,779 km', scale: '0.53\u00D7 Earth' },
+                    { body: '\u2B50 Pluto', real: '2,377 km', scale: '0.19\u00D7 Earth' }
+                  ].map(function (item) {
+                    return React.createElement("div", { key: item.body, className: "bg-white/60 rounded-lg p-1.5 text-center border border-amber-100" },
+                      React.createElement("div", { className: "font-bold" }, item.body),
+                      React.createElement("div", { className: "text-amber-600" }, item.real),
+                      React.createElement("div", { className: "text-amber-500 italic" }, item.scale)
+                    );
+                  })
+                ),
+                React.createElement("p", { className: "italic text-amber-600" }, "\uD83D\uDCA1 The solar system is 99.86% empty space! Our model compresses distances so you can explore everything in one view.")
+              )
+            ),
+            // ── Planet Info Card (Enhanced with Close-Up & Drone) ──
+            sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
+              // Planet header
+              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                React.createElement("div", { className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl", style: { backgroundColor: sel.color + '20', border: '2px solid ' + sel.color } }, sel.emoji),
+                React.createElement("div", { className: "flex-1" },
+                  React.createElement("h4", { className: "text-lg font-black text-slate-800" }, sel.name),
+                  React.createElement("p", { className: "text-xs text-slate-500" }, sel.diameter + " \u2022 " + sel.moons + " moon" + (sel.moons !== 1 ? 's' : '') + " \u2022 " + (sel.gravity || '?'))
+                ),
+                // Mode tabs
+                React.createElement("div", { className: "flex gap-1" },
+                  ['overview', 'surface', 'drone'].map(function (tab) {
+                    var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
+                    return React.createElement("button", {
+                      key: tab, onClick: function () { upd('viewTab', tab); },
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
+                        ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
+                    }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : (isGas ? '\uD83D\uDEF8 Probe' : '\uD83D\uDE97 Rover'));
+                  })
+                )
+              ),
+
+              // ── OVERVIEW TAB ──
+              (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
+                React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+                  [['\uD83C\uDF21', 'Temp', sel.temp], ['\u2600', 'Day', sel.dayLen], ['\uD83C\uDF0D', 'Year', sel.yearLen], ['\uD83D\uDCCF', 'Size', sel.diameter],
+                  ['\u2696\uFE0F', 'Gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', (sel.atmosphere || 'Unknown').substring(0, 30)], ['\uD83D\uDCA0', 'Type', sel.terrainType === 'gasgiant' ? 'Gas Giant' : sel.terrainType === 'icegiant' ? 'Ice Giant' : 'Rocky']
+                  ].map(function (item) {
+                    return React.createElement("div", { key: item[1], className: "bg-white rounded-lg p-2 text-center border" },
+                      React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-xs font-bold text-slate-700" }, item[2])
+                    );
+                  })
+                ),
+                React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100 mb-2" }, "\uD83D\uDCA1 " + sel.fact),
+                sel.surfaceDesc && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg p-2 border border-sky-200 mb-2" },
+                  React.createElement("p", { className: "text-[11px] font-bold text-sky-700 mb-0.5" }, "\uD83C\uDF0D Surface Description"),
+                  React.createElement("p", { className: "text-[10px] text-sky-600 leading-relaxed" }, sel.surfaceDesc)
+                ),
+                sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg p-2 border border-violet-200 mb-2" },
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, "\uD83C\uDFAF Notable Features"),
+                  React.createElement("div", { className: "grid grid-cols-1 gap-1" },
+                    sel.notableFeatures.map(function (feat, fi) {
+                      return React.createElement("div", { key: fi, className: "flex items-center gap-1.5 text-[10px] text-violet-600" },
+                        React.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" }),
+                        React.createElement("span", null, feat)
+                      );
+                    })
                   )
                 ),
-                React.createElement("div", null,
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83E\uDDEA Key Compounds"),
-                  React.createElement("div", { className: "flex flex-wrap gap-1" },
-                    (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[10px] font-medium text-slate-700 border border-slate-200/80" }, comp))
+                // Notable features
+                sel.notableFeatures && React.createElement("div", { className: "bg-white rounded-lg p-3 border" },
+                  React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1.5" }, "\u2B50 Notable Features"),
+                  React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                    sel.notableFeatures.map(function (feat, i) {
+                      return React.createElement("span", { key: i, className: "px-2 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-100" }, feat);
+                    })
                   )
                 )
               ),
-              relatedCompounds.length > 0 && React.createElement("div", { className: "mt-2" },
-                React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
-                React.createElement("div", { className: "flex flex-wrap gap-1" },
-                  relatedCompounds.map((comp, i) => React.createElement("button", { key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
-                )
-              )
-            )
-          );
-        })(),
-        // Table grid
-        React.createElement("div", { className: "overflow-x-auto" },
-          React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(0, 1fr))', gap: '1px', minWidth: '600px' } },
-            PT_LAYOUT.flatMap((row, ri) => {
-              if (row.length === 0) return [React.createElement("div", { key: 'gap-' + ri, style: { gridColumn: 'span 18', height: '4px' } })];
-              return row.map((num, ci) => {
-                if (num === 0) return React.createElement("div", { key: ri + '-' + ci });
-                const el = ELEMENTS[num - 1];
-                if (!el) return React.createElement("div", { key: ri + '-' + ci });
-                return React.createElement("button", { key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[8px] font-bold border transition-all hover:scale-125 hover:z-10 hover:shadow-lg " + (catColors[el.cat] || 'bg-slate-50 border-slate-200'), title: el.name, style: { minWidth: '28px' } },
-                  React.createElement("span", { className: "font-black text-[10px] leading-none" }, el.s),
-                  React.createElement("span", { className: "opacity-60 leading-none" }, el.n)
-                );
-              });
-            })
-          )
-        ),
-        // Legend
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3 justify-center" },
-          [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', t('stem.periodic.lanthanide')], ['actinide', t('stem.periodic.actinide')]].map(([cat, label]) =>
-            React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[9px] font-bold border " + (catColors[cat] || '') }, label)
-          )
-        ),
-        // ── Quiz: Element Hunt ──
-        (() => {
-          var elQuiz = d.elQuiz || null;
-          var elScore = d.elScore || 0;
-          var elStreak = d.elStreak || 0;
-          function makeElQuiz() {
-            var quizTypes = [
-              function () { var el = ELEMENTS[Math.floor(Math.random() * 36)]; return { text: 'Which element has the symbol "' + el.s + '"?', answer: el.name, opts: [el.name].concat(ELEMENTS.filter(function (e) { return e.name !== el.name; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3).map(function (e) { return e.name; })).sort(function () { return Math.random() - 0.5; }) }; },
-              function () { var el = ELEMENTS[Math.floor(Math.random() * 36)]; return { text: 'What is the atomic number of ' + el.name + '?', answer: String(el.n), opts: [String(el.n), String(el.n + 2), String(el.n > 3 ? el.n - 2 : el.n + 4), String(el.n + 7)].sort(function () { return Math.random() - 0.5; }) }; },
-              function () { var cats = ['alkali', 'noble', 'halogen', 'transition', 'nonmetal']; var catLabels = { alkali: 'Alkali Metal', noble: 'Noble Gas', halogen: 'Halogen', transition: 'Transition Metal', nonmetal: 'Nonmetal' }; var cat = cats[Math.floor(Math.random() * cats.length)]; var ex = ELEMENTS.filter(function (e) { return e.cat === cat; }); var el = ex[Math.floor(Math.random() * ex.length)]; return { text: 'What category does ' + el.name + ' (' + el.s + ') belong to?', answer: catLabels[cat], opts: Object.values(catLabels).sort(function () { return Math.random() - 0.5; }).slice(0, 4) }; },
-            ];
-            var gen = quizTypes[Math.floor(Math.random() * quizTypes.length)];
-            var q = gen(); q.answered = false;
-            if (q.opts.indexOf(q.answer) < 0) q.opts[0] = q.answer;
-            return q;
+
+              // ── SURFACE TAB ──
+              (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4 text-white" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0D"),
+                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Surface Conditions")
+                  ),
+                  React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3" }, sel.surfaceDesc || 'Surface data unavailable.'),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                    [
+                      ['\u2696\uFE0F Gravity', sel.gravity || '?'],
+                      ['\uD83C\uDF21 Temperature', sel.temp],
+                      ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' —')[0]]
+                    ].map(function (item) {
+                      return React.createElement("div", { key: item[0], className: "bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm" },
+                        React.createElement("p", { className: "text-[9px] text-slate-400" }, item[0]),
+                        React.createElement("p", { className: "text-xs font-bold" }, item[1])
+                      );
+                    })
+                  )
+                ),
+                React.createElement("button", {
+                  onClick: function () { upd('viewTab', 'drone'); },
+                  className: "w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.01]"
+                }, (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant' ? "\uD83D\uDEF8 Launch Atmospheric Probe on " : "\uD83D\uDE97 Deploy Rover on ") + sel.name)
+              ),
+
+              // ── ROVER / PROBE TAB (Three.js First-Person) ──
+              (d.viewTab) === 'drone' && React.createElement("div", null,
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '450px' } },
+                  React.createElement("canvas", {
+                    "data-drone-canvas": "true",
+                    ref: function (canvasEl) {
+                      if (!canvasEl || canvasEl._droneInit === sel.name) return;
+                      canvasEl._droneInit = sel.name;
+
+                      function doInit(THREE) {
+                        var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
+                        var scene = new THREE.Scene();
+                        var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
+                        var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 500);
+                        camera.position.set(0, isGas ? 5 : 1.6, 0);
+                        var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+                        renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                        renderer.setClearColor(new THREE.Color(sel.skyColor || '#000000'));
+
+                        // ── Sky dome ──
+                        var skyGeo = new THREE.SphereGeometry(200, 32, 16);
+                        var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
+                        var sCtx = skyCv.getContext('2d');
+                        var sGrad = sCtx.createLinearGradient(0, 0, 0, 256);
+                        sGrad.addColorStop(0, sel.skyColor || '#000');
+                        sGrad.addColorStop(0.5, sel.terrainType === 'earthlike' ? '#87ceeb' : sel.terrainType === 'volcanic' ? '#d4923a' : sel.skyColor || '#111');
+                        sGrad.addColorStop(1, sel.terrainColor || '#333');
+                        sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 512, 256);
+                        // Stars for dark worlds
+                        if (sel.terrainType === 'cratered' || sel.terrainType === 'iceworld' || sel.terrainType === 'desert') {
+                          for (var si = 0; si < 200; si++) {
+                            sCtx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
+                            sCtx.beginPath(); sCtx.arc(Math.random() * 512, Math.random() * 128, Math.random() * 1.5, 0, Math.PI * 2); sCtx.fill();
+                          }
+                        }
+                        var skyTex = new THREE.CanvasTexture(skyCv);
+                        var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide });
+                        scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+                        // ── Terrain (rocky planets) or Cloud layers (gas giants) ──
+                        if (!isGas) {
+                          var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
+                          var posArr = terrainGeo.attributes.position.array;
+                          for (var vi = 0; vi < posArr.length; vi += 3) {
+                            var px = posArr[vi], py = posArr[vi + 1];
+                            var h = Math.sin(px * 0.05) * 3 + Math.sin(py * 0.08) * 2 + Math.sin(px * 0.15 + py * 0.1) * 1;
+                            if (sel.terrainType === 'volcanic') h = Math.abs(Math.sin(px * 0.04) * 5) + Math.random() * 0.5;
+                            if (sel.terrainType === 'earthlike') h = Math.sin(px * 0.03) * 2 + Math.sin(py * 0.05) * 1.5 + Math.random() * 0.3;
+                            if (sel.terrainType === 'desert') h = Math.sin(px * 0.06) * 1.5 + Math.random() * 0.2;
+                            if (sel.terrainType === 'iceworld') h = Math.sin(px * 0.04 + py * 0.03) * 1 + Math.random() * 0.15;
+                            posArr[vi + 2] = h;
+                          }
+                          terrainGeo.computeVertexNormals();
+                          var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
+                          var tCx = tCv.getContext('2d');
+                          var baseC = new THREE.Color(sel.terrainColor || '#886644');
+                          for (var ty = 0; ty < 256; ty++) {
+                            for (var tx = 0; tx < 256; tx++) {
+                              var n = (Math.sin(tx * 0.3 + ty * 0.2) * 0.5 + Math.random() * 0.3) * 0.15;
+                              var r = Math.min(255, Math.max(0, Math.round((baseC.r + n) * 255)));
+                              var g = Math.min(255, Math.max(0, Math.round((baseC.g + n * 0.8) * 255)));
+                              var b = Math.min(255, Math.max(0, Math.round((baseC.b - n * 0.3) * 255)));
+                              tCx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+                              tCx.fillRect(tx, ty, 1, 1);
+                            }
+                          }
+                          var terrainTex = new THREE.CanvasTexture(tCv);
+                          terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(10, 10);
+                          var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.9, metalness: 0.1, flatShading: true });
+                          var terrain = new THREE.Mesh(terrainGeo, terrainMat);
+                          terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
+                        } else {
+                          // Gas giant cloud layers
+                          for (var cl = 0; cl < 5; cl++) {
+                            var clGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
+                            var clCv = document.createElement('canvas'); clCv.width = 256; clCv.height = 64;
+                            var clCx = clCv.getContext('2d');
+                            for (var cy = 0; cy < 64; cy++) {
+                              var band = Math.sin(cy * 0.3 + cl * 2) * 0.5 + 0.5;
+                              var r2 = Math.round(new THREE.Color(sel.terrainColor).r * 255 * (0.7 + band * 0.3));
+                              var g2 = Math.round(new THREE.Color(sel.terrainColor).g * 255 * (0.7 + band * 0.3));
+                              var b2 = Math.round(new THREE.Color(sel.terrainColor).b * 255 * (0.8 + band * 0.2));
+                              for (var cx2 = 0; cx2 < 256; cx2++) {
+                                var turb = Math.sin(cx2 * 0.05 + cy * 0.1 + cl) * 20;
+                                clCx.fillStyle = 'rgb(' + Math.max(0, r2 + turb) + ',' + Math.max(0, g2 + turb * 0.7) + ',' + Math.max(0, b2 + turb * 0.3) + ')';
+                                clCx.fillRect(cx2, cy, 1, 1);
+                              }
+                            }
+                            var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(3, 1);
+                            var clMat = new THREE.MeshBasicMaterial({ map: clTex, transparent: true, opacity: 0.6 - cl * 0.1, side: THREE.DoubleSide });
+                            var clMesh = new THREE.Mesh(clGeo, clMat);
+                            clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = -2 - cl * 4;
+                            clMesh._cloudSpeed = 0.01 + cl * 0.005;
+                            scene.add(clMesh);
+                          }
+                        }
+
+                        // ── Lighting ──
+                        scene.add(new THREE.AmbientLight(0x444466, 0.6));
+                        var sunDir = new THREE.DirectionalLight(0xffeedd, sel.terrainType === 'iceworld' ? 0.3 : 1.0);
+                        sunDir.position.set(50, 30, 20); scene.add(sunDir);
+
+                        // ── 3D Rover / Probe Model ──
+                        var roverGroup = new THREE.Group();
+                        if (!isGas) {
+                          // Rocky planet: build a simple rover out of boxes and cylinders
+                          // Body
+                          var bodyGeo = new THREE.BoxGeometry(0.8, 0.35, 1.2);
+                          var bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.6, roughness: 0.3 });
+                          var body = new THREE.Mesh(bodyGeo, bodyMat);
+                          body.position.y = 0.35;
+                          roverGroup.add(body);
+                          // Camera mast
+                          var mastGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.5);
+                          var mastMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7 });
+                          var mast = new THREE.Mesh(mastGeo, mastMat);
+                          mast.position.set(0, 0.77, -0.3);
+                          roverGroup.add(mast);
+                          // Camera head
+                          var headGeo = new THREE.BoxGeometry(0.2, 0.12, 0.15);
+                          var headMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.5 });
+                          var head = new THREE.Mesh(headGeo, headMat);
+                          head.position.set(0, 1.05, -0.32);
+                          roverGroup.add(head);
+                          // Lens (blue emissive)
+                          var lensGeo = new THREE.SphereGeometry(0.04, 8, 8);
+                          var lensMat = new THREE.MeshStandardMaterial({ color: 0x00aaff, emissive: 0x0066ff, emissiveIntensity: 0.8 });
+                          var lens = new THREE.Mesh(lensGeo, lensMat);
+                          lens.position.set(0, 1.05, -0.41);
+                          roverGroup.add(lens);
+                          // Solar panel
+                          var panelGeo = new THREE.BoxGeometry(1.0, 0.03, 0.6);
+                          var panelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a5e, metalness: 0.3, roughness: 0.5 });
+                          var panel = new THREE.Mesh(panelGeo, panelMat);
+                          panel.position.set(0, 0.56, 0.15);
+                          roverGroup.add(panel);
+                          // 6 wheels (3 per side)
+                          var wheelGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.08, 12);
+                          var wheelMat = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.4, roughness: 0.8 });
+                          var wheelPositions = [
+                            [-0.45, 0.15, -0.4], [-0.45, 0.15, 0], [-0.45, 0.15, 0.4],
+                            [0.45, 0.15, -0.4], [0.45, 0.15, 0], [0.45, 0.15, 0.4]
+                          ];
+                          wheelPositions.forEach(function (wp) {
+                            var wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                            wheel.position.set(wp[0], wp[1], wp[2]);
+                            wheel.rotation.z = Math.PI / 2;
+                            roverGroup.add(wheel);
+                          });
+                          // Antenna
+                          var antGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.8);
+                          var antMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.8 });
+                          var ant = new THREE.Mesh(antGeo, antMat);
+                          ant.position.set(0.25, 0.92, 0.3);
+                          roverGroup.add(ant);
+                          // Antenna dish
+                          var dishGeo = new THREE.CircleGeometry(0.1, 12);
+                          var dishMat = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, metalness: 0.3 });
+                          var dish = new THREE.Mesh(dishGeo, dishMat);
+                          dish.position.set(0.25, 1.35, 0.3);
+                          dish.rotation.x = -0.5;
+                          roverGroup.add(dish);
+                        } else {
+                          // Gas giant: build a probe/drone
+                          var probeGeo = new THREE.SphereGeometry(0.4, 16, 12);
+                          var probeMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.7, roughness: 0.2 });
+                          var probe = new THREE.Mesh(probeGeo, probeMat);
+                          probe.position.y = 0;
+                          roverGroup.add(probe);
+                          // Heat shield bottom
+                          var shieldGeo = new THREE.SphereGeometry(0.42, 16, 8, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.5);
+                          var shieldMat = new THREE.MeshStandardMaterial({ color: 0xcc6600, metalness: 0.2, roughness: 0.8 });
+                          var shield = new THREE.Mesh(shieldGeo, shieldMat);
+                          shield.rotation.x = Math.PI;
+                          roverGroup.add(shield);
+                          // Instrument boom
+                          var boomGeo = new THREE.CylinderGeometry(0.03, 0.03, 1.0);
+                          var boomMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.6 });
+                          var boom = new THREE.Mesh(boomGeo, boomMat);
+                          boom.position.set(0, 0.5, 0);
+                          roverGroup.add(boom);
+                          // Antenna top
+                          var pAntGeo = new THREE.ConeGeometry(0.08, 0.2, 8);
+                          var pAntMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5 });
+                          var pAnt = new THREE.Mesh(pAntGeo, pAntMat);
+                          pAnt.position.set(0, 1.1, 0);
+                          roverGroup.add(pAnt);
+                          // Blinking lights
+                          var lightGeo = new THREE.SphereGeometry(0.05, 8, 8);
+                          var lightMat1 = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1.0 });
+                          var lightMat2 = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.0 });
+                          var redLight = new THREE.Mesh(lightGeo, lightMat1);
+                          redLight.position.set(0.3, 0.1, 0.3);
+                          roverGroup.add(redLight);
+                          var greenLight = new THREE.Mesh(lightGeo, lightMat2);
+                          greenLight.position.set(-0.3, 0.1, 0.3);
+                          roverGroup.add(greenLight);
+                        }
+                        roverGroup.position.set(0, isGas ? 5 : 0, 0); // initial position; animation loop tracks playerPos
+                        scene.add(roverGroup);
+
+                        // ── Scattered Environment Objects (rocks/boulders for depth cues) ──
+                        var envObjects = [];
+                        if (!isGas) {
+                          var rockColor = new THREE.Color(sel.terrainColor || '#886644');
+                          for (var ri = 0; ri < 80; ri++) {
+                            var rSize = 0.1 + Math.random() * 0.6;
+                            var rGeo = new THREE.DodecahedronGeometry(rSize, 0);
+                            // Deform vertices for organic shapes
+                            var rPositions = rGeo.attributes.position.array;
+                            for (var rv = 0; rv < rPositions.length; rv += 3) {
+                              rPositions[rv] *= 0.7 + Math.random() * 0.6;
+                              rPositions[rv + 1] *= 0.5 + Math.random() * 0.5;
+                              rPositions[rv + 2] *= 0.7 + Math.random() * 0.6;
+                            }
+                            rGeo.computeVertexNormals();
+                            var rMat = new THREE.MeshStandardMaterial({
+                              color: rockColor.clone().offsetHSL(Math.random() * 0.05 - 0.025, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05),
+                              roughness: 0.9, metalness: 0.1, flatShading: true
+                            });
+                            var rock = new THREE.Mesh(rGeo, rMat);
+                            rock.position.set(
+                              (Math.random() - 0.5) * 80,
+                              rSize * 0.3,
+                              (Math.random() - 0.5) * 80
+                            );
+                            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                            scene.add(rock);
+                            envObjects.push(rock);
+                          }
+                          // A few large landmark boulders
+                          for (var bi = 0; bi < 6; bi++) {
+                            var bSize = 1.5 + Math.random() * 2;
+                            var bGeo = new THREE.DodecahedronGeometry(bSize, 1);
+                            var bPositions = bGeo.attributes.position.array;
+                            for (var bv = 0; bv < bPositions.length; bv += 3) {
+                              bPositions[bv] *= 0.6 + Math.random() * 0.8;
+                              bPositions[bv + 1] *= 0.4 + Math.random() * 0.6;
+                              bPositions[bv + 2] *= 0.6 + Math.random() * 0.8;
+                            }
+                            bGeo.computeVertexNormals();
+                            var bMat = new THREE.MeshStandardMaterial({
+                              color: rockColor.clone().offsetHSL(0, -0.05, -0.1),
+                              roughness: 0.95, metalness: 0.05, flatShading: true
+                            });
+                            var boulder = new THREE.Mesh(bGeo, bMat);
+                            boulder.position.set(
+                              (Math.random() - 0.5) * 60,
+                              bSize * 0.25,
+                              (Math.random() - 0.5) * 60
+                            );
+                            boulder.rotation.y = Math.random() * Math.PI * 2;
+                            scene.add(boulder);
+                            envObjects.push(boulder);
+                          }
+                        }
+
+                        // ── Particle effects ──
+                        if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
+                          var partCount = 200;
+                          var partGeo = new THREE.BufferGeometry();
+                          var partPos = new Float32Array(partCount * 3);
+                          for (var pi = 0; pi < partCount; pi++) {
+                            partPos[pi * 3] = (Math.random() - 0.5) * 60;
+                            partPos[pi * 3 + 1] = Math.random() * 8;
+                            partPos[pi * 3 + 2] = (Math.random() - 0.5) * 60;
+                          }
+                          partGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
+                          var partColor = sel.terrainType === 'volcanic' ? 0xff6600 : 0xc9a06a;
+                          scene.add(new THREE.Points(partGeo, new THREE.PointsMaterial({ color: partColor, size: 0.05, transparent: true, opacity: 0.4 })));
+                        }
+                        if (sel.terrainType === 'icegiant' || sel.name === t('stem.solar_sys.uranus')) {
+                          // Diamond rain
+                          var drCount = 100;
+                          var drGeo = new THREE.BufferGeometry();
+                          var drPos = new Float32Array(drCount * 3);
+                          for (var di = 0; di < drCount; di++) {
+                            drPos[di * 3] = (Math.random() - 0.5) * 40;
+                            drPos[di * 3 + 1] = Math.random() * 20;
+                            drPos[di * 3 + 2] = (Math.random() - 0.5) * 40;
+                          }
+                          drGeo.setAttribute('position', new THREE.BufferAttribute(drPos, 3));
+                          var diamonds = new THREE.Points(drGeo, new THREE.PointsMaterial({ color: 0xccddff, size: 0.08, transparent: true, opacity: 0.6 }));
+                          scene.add(diamonds);
+                        }
+
+                        // ── Movement state ──
+                        var moveState = { forward: false, back: false, left: false, right: false, up: false, down: false };
+                        var yaw = 0, pitch = 0, playerPos = new THREE.Vector3(0, isGas ? 5 : 1.6, 0);
+                        var speed3d = isGas ? 0.15 : 0.08;
+
+                        function onKey(e, pressed) {
+                          switch (e.key.toLowerCase()) {
+                            case 'w': case 'arrowup': moveState.forward = pressed; break;
+                            case 's': case 'arrowdown': moveState.back = pressed; break;
+                            case 'a': case 'arrowleft': moveState.left = pressed; break;
+                            case 'd': case 'arrowright': moveState.right = pressed; break;
+                            case 'q': case ' ': moveState.up = pressed; break;
+                            case 'e': case 'shift': moveState.down = pressed; break;
+                          }
+                          e.preventDefault();
+                        }
+                        canvasEl.tabIndex = 0;
+                        canvasEl.addEventListener('keydown', function (e) { onKey(e, true); });
+                        canvasEl.addEventListener('keyup', function (e) { onKey(e, false); });
+
+                        // Mouse look
+                        var isLooking = false;
+                        canvasEl.addEventListener('mousedown', function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
+                        canvasEl.addEventListener('mouseup', function () { isLooking = false; });
+                        function onMouseMove(e) {
+                          if (!isLooking && !document.pointerLockElement) return;
+                          yaw -= e.movementX * 0.003;
+                          pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * 0.003));
+                        }
+                        document.addEventListener('mousemove', onMouseMove);
+                        canvasEl.focus();
+
+                        var tick3d = 0;
+                        var animId3d;
+                        // animate3d is defined later as animate3dV2 with 3rd-person and compass support
+
+                        // ── Rich Educational HUD (Enhanced) ──
+                        var hud = document.createElement('div');
+                        hud.className = 'rover-hud';
+                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3);max-width:290px;transition:opacity 0.3s';
+                        var modeLabel = isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
+                        var atmosLabel = sel.atmosphere || 'No data';
+                        var gravLabel = sel.gravity || '?';
+                        var featList = (sel.notableFeatures || []).slice(0, 3).map(function (f) { return '<div style="color:#94a3b8;font-size:9px;padding-left:8px">\u2022 ' + f + '</div>'; }).join('');
+                        // Live telemetry spans (updated each frame)
+                        var hudStaticHTML =
+                          '<div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#7dd3fc;letter-spacing:1px" id="hud-mode">' + modeLabel + '</div>' +
+                          '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-bottom:4px">' +
+                          '<span style="color:#64748b">{t('stem.planet_view.planet')}</span><span style="color:#e2e8f0;font-weight:bold">' + sel.name + ' ' + sel.emoji + '</span>' +
+                            '<span style="color:#64748b">{t('stem.planet_view.gravity')}</span><span>' + gravLabel + '</span>' +
+                              '<span style="color:#64748b">{t('stem.planet_view.temp')}</span><span>' + sel.temp + '</span>' +
+                                '<span style="color:#64748b">{t('stem.planet_view.atmos')}</span><span style="font-size:9px">' + atmosLabel + '</span>' +
+                                  '</div>' +
+                                  '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
+                                  '<span style="color:#64748b">\uD83D\uDCCF Alt</span><span id="hud-alt" style="color:#67e8f9">0 m</span>' +
+                                  '<span style="color:#64748b">\uD83D\uDCA8 Spd</span><span id="hud-spd" style="color:#67e8f9">0 m/s</span>' +
+                                  '<span style="color:#64748b">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
+                                  '<span style="color:#64748b">\uD83D\uDCCD Pos</span><span id="hud-pos" style="color:#67e8f9;font-size:9px">0.0, 0.0</span>' +
+                                  '<span style="color:#64748b">\uD83D\uDEB6 Dist</span><span id="hud-odo" style="color:#67e8f9">0 m</span>' +
+                                  '<span style="color:#64748b">\uD83D\uDD2D Disc</span><span id="hud-disc" style="color:#fbbf24">0 / 0</span>' +
+                                  '</div>' +
+                                  (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
+                                  '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">WASD move \u2022 Mouse look \u2022 Q/E alt \u2022 V view \u2022 M mission</div>';
+                    hud.innerHTML = hudStaticHTML;
+                    canvasEl.parentElement.appendChild(hud);
+
+                    // ── Hazard Warning Strip ──
+                    var hazardEl = document.createElement('div');
+                    hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.85);backdrop-filter:blur(4px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,100,100,0.4);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px';
+                    var hazardMsgs = {
+                      t('stem.solar_sys.venus'): ['\u26A0 SURFACE TEMP 462\u00B0C \u2014 exceeds hull tolerance', '\u26A0 ATMOSPHERIC PRESSURE: 90x Earth \u2014 structural warning', '\u26A0 SULFURIC ACID CLOUDS DETECTED overhead'],
+                      t('stem.solar_sys.jupiter'): ['\u26A0 RADIATION: 20 Sv/day \u2014 lethal exposure zone', '\u26A0 WIND SHEAR: 360 km/h crosswind detected', '\u26A0 AMMONIA ICE CRYSTALS impacting sensors'],
+                      t('stem.solar_sys.saturn'): ['\u26A0 RING DEBRIS: micro-meteoroid risk elevated', '\u26A0 WIND SPEED: 1,800 km/h at equatorial band'],
+                      t('stem.solar_sys.mars'): ['\u26A0 DUST STORM APPROACHING \u2014 visibility dropping', '\u26A0 UV RADIATION: no magnetic shield \u2014 high exposure', '\u26A0 THIN ATMOSPHERE: suit pressure critical'],
+                      t('stem.periodic.mercury'): ['\u26A0 SOLAR RADIATION ALERT \u2014 no magnetic shielding', '\u26A0 SURFACE TEMP SWING: -180\u00B0C to 430\u00B0C across terminator'],
+                      t('stem.solar_sys.pluto'): ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
+                      t('stem.solar_sys.uranus'): ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
+                      t('stem.solar_sys.neptune'): ['\u26A0 WIND SPEED: 2,100 km/h \u2014 fastest in solar system', '\u26A0 GREAT DARK SPOT: storm system ahead'],
+                      t('stem.solar_sys.earth'): ['\u2139 All systems nominal \u2014 home sweet home']
+                    };
+                    var planetHazards = hazardMsgs[sel.name] || ['\u26A0 Environmental data unavailable'];
+                    var hazardIdx = 0;
+                    canvasEl.parentElement.appendChild(hazardEl);
+                    var hazardTimer = setInterval(function () {
+                      hazardEl.style.opacity = '0';
+                      setTimeout(function () {
+                        hazardEl.textContent = planetHazards[hazardIdx % planetHazards.length];
+                        hazardEl.style.background = sel.name === t('stem.solar_sys.earth') ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
+                        hazardEl.style.opacity = '1';
+                        hazardIdx++;
+                      }, 500);
+                      setTimeout(function () { hazardEl.style.opacity = '0'; }, 4500);
+                    }, 8000);
+                    // Show first warning after 2s
+                    setTimeout(function() {
+                      hazardEl.textContent = planetHazards[0];
+                      hazardEl.style.background = sel.name === t('stem.solar_sys.earth') ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
+                      hazardEl.style.opacity = '1';
+                      hazardIdx = 1;
+                      setTimeout(function () { hazardEl.style.opacity = '0'; }, 4500);
+                    }, 2000);
+
+          // ── Discovery System (POI landmarks) ──
+          var POI_DATA = {
+            t('stem.periodic.mercury'): [
+              { x: 15, z: -10, name: t('stem.planet_view.caloris_basin'), desc: 'One of the largest impact craters in the solar system (1,550 km wide).', fact: 'The impact was so powerful it created chaotic terrain on the opposite side of Mercury.' },
+              { x: -20, z: 8, name: t('stem.planet_view.ice_deposits'), desc: t('stem.planet_view.permanently_shadowed_craters_at_the'), fact: 'Despite being closest to the Sun, Mercury has ice because some craters never see sunlight.' },
+              { x: 30, z: 25, name: t('stem.planet_view.scarps_cliffs'), desc: 'Mercury shrank as its iron core cooled, creating massive cliff-like wrinkles.', fact: 'These scarps can be hundreds of km long and over 1 km tall.' }
+            ],
+            t('stem.solar_sys.venus'): [
+              { x: 12, z: -15, name: t('stem.planet_view.maxwell_montes'), desc: 'Highest mountain on Venus at 11 km \u2014 taller than Everest.', fact: 'The summit is coated with a metallic "snow" made from lead sulfide and bismuth sulfide.' },
+              { x: -18, z: 20, name: t('stem.planet_view.pancake_dome'), desc: 'Flat-topped volcanic domes unique to Venus, up to 65 km across.', fact: 'Extremely viscous lava oozed out and spread like thick pancake batter.' },
+              { x: 25, z: 5, name: t('stem.planet_view.venera_13_landing_site'), desc: 'Soviet lander that survived 127 minutes on the surface in 1982.', fact: 'Venera 13 took the first color photos of Venus\u2019s surface before being crushed by pressure.' }
+            ],
+            t('stem.solar_sys.earth'): [
+              { x: 10, z: -12, name: t('stem.planet_view.mariana_trench'), desc: t('stem.planet_view.deepest_point_on_earth_at'), fact: 'More people have walked on the Moon than have been to the bottom of the Mariana Trench.' },
+              { x: -22, z: 15, name: t('stem.planet_view.midatlantic_ridge'), desc: t('stem.planet_view.underwater_mountain_range_where_tectonic'), fact: 'The Atlantic Ocean grows about 2.5 cm wider every year.' },
+              { x: 28, z: -8, name: t('stem.planet_view.great_barrier_reef'), desc: t('stem.planet_view.largest_living_structure_on_earth'), fact: 'The reef is made of 2,900 individual reef systems and supports 1,500+ species of fish.' }
+            ],
+            t('stem.solar_sys.mars'): [
+              { x: 20, z: -18, name: t('stem.planet_view.olympus_mons_base'), desc: t('stem.planet_view.base_of_the_tallest_volcano'), fact: 'Olympus Mons is so wide (624 km) that standing on its edge, you couldn\u2019t see the summit \u2014 it curves beyond the horizon.' },
+              { x: -25, z: 12, name: t('stem.planet_view.valles_marineris_rim'), desc: t('stem.planet_view.a_canyon_system_4000_km'), fact: 'It would stretch from New York to Los Angeles and is 5x deeper than the Grand Canyon.' },
+              { x: 8, z: 30, name: t('stem.planet_view.polar_ice_cap'), desc: t('stem.planet_view.layered_ice_deposits_of_frozen'), fact: 'If all of Mars\u2019s polar ice melted, it could cover the entire planet in 11 meters of water.' },
+              { x: -15, z: -25, name: t('stem.planet_view.perseverance_rover_site'), desc: 'Jezero Crater \u2014 where NASA\u2019s rover searches for signs of ancient life.', fact: 'Perseverance arrived Feb 2021 and has driven 28+ km, collecting rock samples for future return to Earth.' }
+            ],
+            t('stem.solar_sys.jupiter'): [
+              { x: 18, z: -20, name: t('stem.planet_view.great_red_spot_eye'), desc: 'An anticyclonic storm raging for 350+ years, larger than Earth.', fact: 'Wind speeds at the edge reach 680 km/h \u2014 twice the speed of the strongest Earth hurricane.' },
+              { x: -15, z: 15, name: t('stem.planet_view.ammonia_crystal_layer'), desc: 'Upper cloud layer made of frozen ammonia crystals at -145\u00B0C.', fact: 'Below this layer are ammonium hydrosulfide clouds, and below those, water clouds. Jupiter has weather 3 layers deep.' },
+              { x: 25, z: 8, name: t('stem.planet_view.lightning_alley'), desc: 'Zones between cloud bands where convection drives massive lightning storms.', fact: 'Jupiter\u2019s lightning is 10x more powerful than Earth\u2019s and occurs mostly at the poles and deep clouds.' },
+              { x: -8, z: -28, name: t('stem.planet_view.metallic_hydrogen_zone'), desc: 'Deep below the clouds, pressure turns hydrogen into liquid metal.', fact: 'This metallic hydrogen ocean generates Jupiter\u2019s magnetic field \u2014 20,000x stronger than Earth\u2019s.' }
+            ],
+            t('stem.solar_sys.saturn'): [
+              { x: 20, z: -15, name: t('stem.planet_view.hexagonal_polar_vortex'), desc: 'A persistent hexagonal cloud pattern at Saturn\u2019s north pole.', fact: 'Each side of the hexagon is about 14,500 km long \u2014 wider than Earth\u2019s diameter.' },
+              { x: -18, z: 22, name: t('stem.planet_view.ring_shadow_zone'), desc: 'Area where Saturn\u2019s rings cast shadows on the cloud tops.', fact: 'Saturn\u2019s rings are only about 10 m thick despite being 282,000 km wide \u2014 thinner than a razor blade proportionally.' },
+              { x: 12, z: 10, name: t('stem.planet_view.titan_flyby_path'), desc: t('stem.planet_view.the_orbital_zone_of_titan'), fact: 'Titan has lakes of liquid methane and a thicker atmosphere than Earth \u2014 the only moon with a substantial atmosphere.' }
+            ],
+            t('stem.solar_sys.uranus'): [
+              { x: 15, z: -18, name: t('stem.planet_view.diamond_rain_zone'), desc: 'At 8,000 km depth, extreme pressure crushes carbon into diamonds.', fact: 'These diamonds may be as large as millions of carats and rain down to form a diamond layer around the core.' },
+              { x: -20, z: 14, name: t('stem.planet_view.magnetic_pole_shift'), desc: 'Uranus\u2019s magnetic field is tilted 59\u00B0 from its rotation axis.', fact: 'Combined with the 98\u00B0 axial tilt, Uranus\u2019s magnetosphere tumbles chaotically through space.' },
+              { x: 25, z: -5, name: t('stem.planet_view.cloud_band_transition'), desc: 'Faint methane cloud bands where wind patterns change direction.', fact: 'Uranus appears featureless but Hubble revealed complex cloud systems moving at 900 km/h.' }
+            ],
+            t('stem.solar_sys.neptune'): [
+              { x: 18, z: -22, name: t('stem.planet_view.great_dark_spot_region'), desc: 'A massive storm system similar to Jupiter\u2019s Great Red Spot.', fact: 'Unlike Jupiter\u2019s spot, Neptune\u2019s dark spots appear and disappear within years \u2014 the planet is surprisingly dynamic.' },
+              { x: -14, z: 16, name: t('stem.planet_view.supersonic_wind_belt'), desc: 'Equatorial winds reaching 2,100 km/h \u2014 faster than the speed of sound.', fact: 'Neptune generates more heat than it receives from the Sun, driving these extreme winds from internal energy.' },
+              { x: 22, z: 10, name: t('stem.planet_view.triton_orbital_cross'), desc: 'The path of Triton \u2014 the only large moon that orbits backwards.', fact: 'Triton is likely a captured Kuiper Belt object. Its nitrogen geysers shoot plumes 8 km high.' }
+            ],
+            t('stem.solar_sys.pluto'): [
+              { x: 12, z: -14, name: t('stem.planet_view.tombaugh_regio'), desc: 'The famous heart-shaped glacier made of nitrogen and carbon monoxide ice.', fact: 'The left lobe (Sputnik Planitia) is a vast ice plain with convection cells that slowly churn the ice.' },
+              { x: -16, z: 18, name: t('stem.planet_view.ice_mountains'), desc: 'Mountains of water ice rising 2\u20133 km above the nitrogen plains.', fact: 'Because water ice is less dense than nitrogen ice at Pluto\u2019s temperatures, these mountains literally float.' },
+              { x: 20, z: 5, name: t('stem.planet_view.cthulhu_macula'), desc: t('stem.planet_view.a_dark_equatorial_region_2990'), fact: 'Tholins are complex organic molecules created when methane is irradiated \u2014 they give Pluto its reddish-brown color.' }
+            ]
+          };
+          var pois = POI_DATA[sel.name] || [];
+          var discoveredPOIs = {};
+          var totalPOIs = pois.length;
+
+          // Place POI markers in the 3D scene
+          var poiMeshes = [];
+          pois.forEach(function (poi, idx) {
+            var poiGeo = new THREE.SphereGeometry(0.3, 8, 8);
+            var poiMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.7 });
+            var poiMesh = new THREE.Mesh(poiGeo, poiMat);
+            poiMesh.position.set(poi.x, isGas ? 3 : 1.5, poi.z);
+            poiMesh._poiIdx = idx;
+            scene.add(poiMesh);
+            poiMeshes.push(poiMesh);
+            // Glow ring around POI
+            var ringGeo = new THREE.RingGeometry(0.5, 0.8, 16);
+            var ringMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
+            var ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.x = -Math.PI / 2;
+            ringMesh.position.set(poi.x, isGas ? 2.5 : 1.0, poi.z);
+            ringMesh._pulsePhase = idx;
+            scene.add(ringMesh);
+            poiMeshes.push(ringMesh);
+          });
+
+          // Discovery card overlay
+          var discCard = document.createElement('div');
+          discCard.style.cssText = 'position:absolute;bottom:56px;right:8px;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);border-radius:12px;padding:12px 16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:11;border:1px solid rgba(251,191,36,0.4);max-width:280px;opacity:0;transition:opacity 0.5s,transform 0.5s;transform:translateY(10px)';
+          canvasEl.parentElement.appendChild(discCard);
+          var discTimeout = null;
+
+          function showDiscovery(poi, idx) {
+            if (discoveredPOIs[idx]) return;
+            discoveredPOIs[idx] = true;
+            var discCount = Object.keys(discoveredPOIs).length;
+            discCard.innerHTML =
+              '<div style="font-weight:bold;font-size:13px;color:#fbbf24;margin-bottom:4px">\uD83D\uDD0D DISCOVERY: ' + poi.name + '</div>' +
+              '<div style="color:#e2e8f0;margin-bottom:4px;line-height:1.4">' + poi.desc + '</div>' +
+              '<div style="color:#67e8f9;font-size:10px;font-style:italic;border-top:1px solid rgba(251,191,36,0.2);padding-top:4px">\uD83D\uDCA1 ' + poi.fact + '</div>' +
+              '<div style="color:#34d399;font-size:10px;font-weight:bold;margin-top:4px">\u2B50 +10 XP \u2022 ' + discCount + '/' + totalPOIs + ' discovered</div>';
+            discCard.style.opacity = '1';
+            discCard.style.transform = 'translateY(0)';
+            // Award XP
+            if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 10);
+            if (discTimeout) clearTimeout(discTimeout);
+            discTimeout = setTimeout(function () {
+              discCard.style.opacity = '0';
+              discCard.style.transform = 'translateY(10px)';
+            }, 7000);
           }
-          return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-              React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
-              elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + elScore + ' | 🔥 ' + elStreak)
-            ),
-            elQuiz && !elQuiz.answered && React.createElement("div", { className: "bg-cyan-50 rounded-xl p-3 border border-cyan-200" },
-              React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, elQuiz.text),
-              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                elQuiz.opts.map(function (opt) {
-                  return React.createElement("button", {
-                    key: opt, onClick: function () {
-                      var correct = opt === elQuiz.answer;
-                      upd('elQuiz', Object.assign({}, elQuiz, { answered: true, chosen: opt }));
-                      upd('elScore', elScore + (correct ? 1 : 0)); upd('elStreak', correct ? elStreak + 1 : 0);
-                      if (correct) addToast(t('stem.periodic.correct'), 'success'); else addToast(t('stem.periodic.answer') + elQuiz.answer, 'error');
-                    }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 transition-all"
-                  }, opt);
-                })
-              )
-            ),
-            elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + elQuiz.answer)
-          );
-        })()
-      )
-    )
-  }) (),
 
+          // ── Mission Card Overlay (M key toggle) ──
+          var missionCard = document.createElement('div');
+          missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.3);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none';
+          var missionIcon = isGas ? '\uD83D\uDEF8' : '\uD83D\uDE97';
+          var missionType = isGas ? 'Atmospheric Survey' : 'Surface Exploration';
+          missionCard.innerHTML =
+            '<div style="text-align:center;margin-bottom:12px">' +
+            '<div style="font-size:32px;margin-bottom:4px">' + missionIcon + '</div>' +
+            '<div style="font-weight:bold;font-size:16px;color:#7dd3fc;letter-spacing:1px">{t('stem.planet_view.mission_briefing')}</div>' +
+              '<div style="color:#94a3b8;font-size:11px">' + missionType + ' \u2014 ' + sel.name + '</div>' +
+              '</div>' +
+              '<div style="background:rgba(56,189,248,0.1);border-radius:10px;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.15)">' +
+              '<div style="font-weight:bold;color:#38bdf8;margin-bottom:4px">\uD83C\uDFAF Objectives</div>' +
+              '<div id="mission-objectives" style="color:#e2e8f0;line-height:1.8">' +
+              pois.map(function (p, i) { return '<div id="obj-' + i + '" style="font-size:11px">\u2610 Discover ' + p.name + '</div>'; }).join('') +
+              '</div>' +
+              '</div>' +
+              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
+              '<div style="background:rgba(251,191,36,0.1);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid rgba(251,191,36,0.15)">' +
+              '<div style="color:#fbbf24;font-weight:bold;font-size:14px" id="mission-disc-count">0/' + totalPOIs + '</div>' +
+              '<div style="color:#94a3b8;font-size:9px">{t('stem.planet_quiz.discoveries')}</div></div>' +
+                '<div style="background:rgba(52,211,153,0.1);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid rgba(52,211,153,0.15)">' +
+                '<div style="color:#34d399;font-weight:bold;font-size:14px" id="mission-xp-count">0</div>' +
+                '<div style="color:#94a3b8;font-size:9px">{t('stem.planet_quiz.xp_earned')}</div></div>' +
+                  '</div>' +
+                  '<div style="text-align:center;color:#64748b;font-size:10px">Press <span style="color:#38bdf8;font-weight:bold">M</span> to close \u2022 <span style="color:#38bdf8;font-weight:bold">{t('stem.planet_quiz.wasd')}</span> to move \u2022 <span style="color:#38bdf8;font-weight:bold">V</span> to toggle view</div>';
+          canvasEl.parentElement.appendChild(missionCard);
+          var missionVisible = false;
 
+          // Telemetry tracking state
+          var prevPos = new THREE.Vector3().copy(playerPos);
+          var odometer = 0;
+          var lastSpeed = 0;
+          var scaleFactor = isGas ? 100 : 50; // meters per unit for display
 
-    // ═══════════════════════════════════════════════════════
-    // SOLAR SYSTEM EXPLORER — 3D (Three.js)
-    // ═══════════════════════════════════════════════════════
-    stemLabTab === 'explore' && stemLabTool === 'solarSystem' && (() => {
-      const d = labToolData.solarSystem;
-      const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
-      const PLANETS = [
-        { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
-        { name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
-        { name: t('stem.solar_sys.earth'), emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.', gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
-        { name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
-        { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
-        { name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
-        { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
-        { name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
-        { name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
-      ];
-      const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
-      const simSpeed = d.simSpeed || 1;
-      const paused = d.paused || false;
+          // ── Science Fact Ticker (bottom of canvas, expanded) ──
+          var ticker = document.createElement('div');
+          ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.2);text-align:center;transition:opacity 0.5s';
+          // Categorized facts with icons
+          var scienceFacts = [
+            // Surface / Geology
+            '\uD83E\uDEA8 ' + (sel.surfaceDesc || sel.fact),
+            '\uD83E\uDEA8 ' + sel.fact,
+            // Climate / Weather
+            '\uD83C\uDF21 A day on ' + sel.name + ' lasts ' + (sel.dayLen || '?') + '. A year lasts ' + (sel.yearLen || '?') + '.',
+            '\uD83C\uDF21 Gravity on ' + sel.name + ' is ' + gravLabel + ' compared to Earth\u2019s 1.0g.',
+            // Scale comparisons
+            '\uD83C\uDF0D ' + sel.name + '\u2019s diameter is ' + (sel.diameter || '?') + (sel.name !== t('stem.solar_sys.earth') ? ' (Earth: 12,742 km).' : '.'),
+            // Gas vs rocky
+            isGas ? '\uD83E\uDEA8 Gas giants have no solid surface \u2014 you would fall forever through ever-denser gas layers.' : '\uD83E\uDEA8 The terrain is generated from real-world elevation science for ' + sel.terrainType + ' surfaces.',
+            isGas ? '\uD83C\uDF21 If you parachuted into ' + sel.name + ', you would never touch ground \u2014 just endless clouds.' : '\uD83E\uDEA8 The surface of ' + sel.name + ' is made of ' + (sel.surface || 'rock and dust') + '.',
+            // Planet-specific unique facts
+            sel.name === t('stem.periodic.mercury') ? '\uD83D\uDE80 MESSENGER orbited Mercury 2011\u20132015, mapping the entire surface and discovering ice in polar craters.' : sel.name === t('stem.solar_sys.venus') ? '\uD83D\uDE80 Soviet Venera 13 survived 127 minutes on Venus\u2019s surface in 1982 \u2014 still a record.' : sel.name === t('stem.solar_sys.earth') ? '\uD83D\uDE80 The ISS orbits Earth every 90 minutes at 27,600 km/h, 408 km above us.' : sel.name === t('stem.solar_sys.mars') ? '\uD83D\uDE80 Perseverance landed Feb 2021 in Jezero Crater, searching for signs of ancient microbial life.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83D\uDE80 Juno has been orbiting Jupiter since 2016, peering beneath the cloud tops with microwave sensors.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83D\uDE80 Cassini orbited Saturn for 13 years (2004\u20132017) before its grand finale plunge into the atmosphere.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83D\uDE80 Only Voyager 2 has visited Uranus, flying by in January 1986 and discovering 10 new moons.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83D\uDE80 Voyager 2 is the only spacecraft to visit Neptune, flying by in August 1989.' : '\uD83D\uDE80 NASA\u2019s New Horizons flew past Pluto in July 2015, revealing a geologically active world.',
+            // More planet-specific facts
+            sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Uranus was knocked on its side by an ancient collision with an Earth-sized object.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.periodic.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
+            // Chemistry / science
+            '\uD83E\uDDEA Atmosphere: ' + atmosLabel,
+            sel.name === t('stem.solar_sys.mars') ? '\uD83E\uDDEA Mars\u2019s red color comes from iron oxide (rust) in its soil \u2014 the entire planet is literally rusty.' : sel.name === t('stem.solar_sys.venus') ? '\uD83E\uDDEA Venus\u2019s clouds contain sulfuric acid droplets \u2014 rain evaporates before reaching the surface.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDDEA Jupiter\u2019s interior contains metallic hydrogen \u2014 hydrogen so compressed it conducts electricity like a metal.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83E\uDDEA Titan\u2019s thick atmosphere is mostly nitrogen, like Earth\u2019s, but with methane playing the role of water.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83E\uDDEA Methane in Uranus\u2019s upper atmosphere absorbs red light, giving it that distinctive blue-green color.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDDEA Neptune\u2019s vivid blue is from methane \u2014 but a still-unknown compound makes it bluer than Uranus.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83E\uDDEA Tholins on Pluto\u2019s surface are complex organic molecules \u2014 building blocks for prebiotic chemistry.' : sel.name === t('stem.solar_sys.earth') ? '\uD83E\uDDEA Earth\u2019s ozone layer (O\u2083) absorbs 97\u201399% of the Sun\u2019s UV radiation, making life on land possible.' : '\uD83E\uDDEA Mercury\u2019s exosphere contains sodium, pumped off the surface by solar photons.'
+          ].filter(Boolean);
+          var factIdx = 0;
+          ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[0];
+          canvasEl.parentElement.appendChild(ticker);
+          var factTimer = setInterval(function () {
+            factIdx = (factIdx + 1) % scienceFacts.length;
+            ticker.style.opacity = '0';
+            setTimeout(function () { ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[factIdx]; ticker.style.opacity = '1'; }, 400);
+          }, 6000);
 
-      // ── Three.js 3D Canvas ──
-      const canvasRef = function (canvas) {
-        if (!canvas) { // cleanup on unmount
-          const prev = document.querySelector('.solar3d-canvas');
-          if (prev && prev._solarCleanup) { prev._solarCleanup(); prev._solarInit = false; }
-          return;
-        }
-        if (canvas._solarInit) return;
-        canvas._solarInit = true;
+          // ── Compass / bearing indicator (top-right) ──
+          var compass = document.createElement('div');
+          compass.style.cssText = 'position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
+          compass.innerHTML = '\uD83E\uDDED';
+          canvasEl.parentElement.appendChild(compass);
 
-        // Load Three.js if needed
-        function initScene(THREE) {
-          const W = canvas.clientWidth || 600;
-          const H = canvas.clientHeight || 340;
-          const scene = new THREE.Scene();
-          const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 1000);
-          camera.position.set(0, 28, 50);
-          camera.lookAt(0, 0, 0);
-          const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-          renderer.setSize(W, H);
-
-          // ── Starfield ──
-          const starGeo = new THREE.BufferGeometry();
-          const starPos = new Float32Array(3000);
-          for (let i = 0; i < 3000; i++) { starPos[i] = (Math.random() - 0.5) * 400; }
-          starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.8 })));
-
-          // ── Ambient light ──
-          scene.add(new THREE.AmbientLight(0x222244, 0.3));
-
-          // ── Sun ──
-          const sunGeo = new THREE.SphereGeometry(5.5, 32, 32);
-          const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
-          const sun = new THREE.Mesh(sunGeo, sunMat);
-          scene.add(sun);
-          const sunLight = new THREE.PointLight(0xffffff, 1.5, 200);
-          scene.add(sunLight);
-          // Sun glow sprite
-          const glowCanvas = document.createElement('canvas'); glowCanvas.width = 128; glowCanvas.height = 128;
-          const gctx = glowCanvas.getContext('2d');
-          const grad = gctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-          grad.addColorStop(0, 'rgba(255,220,80,0.6)'); grad.addColorStop(0.4, 'rgba(255,180,40,0.2)'); grad.addColorStop(1, 'rgba(255,160,0,0)');
-          gctx.fillStyle = grad; gctx.fillRect(0, 0, 128, 128);
-          const glowTex = new THREE.CanvasTexture(glowCanvas);
-          const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending }));
-          glowSprite.scale.set(18, 18, 1);
-          scene.add(glowSprite);
-
-          // ── Procedural planet texture ──
-          function makePlanetTex(rgb, variation) {
-            const c = document.createElement('canvas'); c.width = 128; c.height = 64;
-            const ctx = c.getContext('2d');
-            const base = rgb;
-            for (let y = 0; y < 64; y++) {
-              for (let x = 0; x < 128; x++) {
-                const n = (Math.sin(x * 0.3 + y * 0.1) * 0.5 + Math.sin(y * 0.5) * 0.3 + Math.random() * 0.2) * variation;
-                const r = Math.min(255, Math.max(0, Math.round((base[0] + n * 0.15) * 255)));
-                const g = Math.min(255, Math.max(0, Math.round((base[1] + n * 0.1) * 255)));
-                const b = Math.min(255, Math.max(0, Math.round((base[2] - n * 0.05) * 255)));
-                ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-                ctx.fillRect(x, y, 1, 1);
+          // ── 3rd-person camera toggle (V key) + Mission card (M key) ──
+          var thirdPerson = false;
+          var tpOffset = new THREE.Vector3(0, 3, 6);
+          canvasEl.addEventListener('keydown', function (e) {
+            if (e.key === 'v' || e.key === 'V') {
+              thirdPerson = !thirdPerson;
+              var label = document.getElementById('hud-mode');
+              if (label) {
+                var viewLabel = thirdPerson ? ' [3RD PERSON]' : ' [1ST PERSON]';
+                label.textContent = modeLabel + viewLabel;
               }
             }
-            const tex = new THREE.CanvasTexture(c); tex.needsUpdate = true; return tex;
-          }
-
-          // ── Create planets ──
-          const planetMeshes = [];
-          const orbitLines = [];
-          PLANETS.forEach(function (p, idx) {
-            // Orbit ring
-            const orbitGeo = new THREE.RingGeometry(p.dist - 0.02, p.dist + 0.02, 128);
-            const orbitMat = new THREE.MeshBasicMaterial({ color: 0x334466, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-            const orbitMesh = new THREE.Mesh(orbitGeo, orbitMat);
-            orbitMesh.rotation.x = -Math.PI / 2;
-            scene.add(orbitMesh);
-            orbitLines.push(orbitMesh);
-
-            // Planet sphere
-            const geo = new THREE.SphereGeometry(p.size, 24, 24);
-            const tex = makePlanetTex(p.rgb, 1.0 + idx * 0.3);
-            const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.1 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.userData = { name: p.name, idx: idx };
-            // Starting orbital angle — spread planets out
-            mesh._orbitAngle = (idx / PLANETS.length) * Math.PI * 2;
-            mesh._orbitDist = p.dist;
-            mesh._orbitSpeed = p.speed;
-            mesh.position.set(Math.cos(mesh._orbitAngle) * p.dist, 0, Math.sin(mesh._orbitAngle) * p.dist);
-            scene.add(mesh);
-            planetMeshes.push(mesh);
-
-            // Saturn's rings
-            if (p.hasRings) {
-              const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.2, 64);
-              const ringCanvas = document.createElement('canvas'); ringCanvas.width = 256; ringCanvas.height = 1;
-              const rctx = ringCanvas.getContext('2d');
-              const rGrad = rctx.createLinearGradient(0, 0, 256, 0);
-              rGrad.addColorStop(0, 'rgba(210,180,120,0.0)'); rGrad.addColorStop(0.15, 'rgba(210,180,120,0.7)');
-              rGrad.addColorStop(0.4, 'rgba(180,160,100,0.5)'); rGrad.addColorStop(0.5, 'rgba(140,130,80,0.1)');
-              rGrad.addColorStop(0.6, 'rgba(200,170,110,0.6)'); rGrad.addColorStop(0.85, 'rgba(180,150,90,0.4)');
-              rGrad.addColorStop(1, 'rgba(160,140,80,0.0)');
-              rctx.fillStyle = rGrad; rctx.fillRect(0, 0, 256, 1);
-              const ringTex = new THREE.CanvasTexture(ringCanvas);
-              const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-              const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-              ringMesh.rotation.x = -Math.PI / 2 + p.tilt;
-              mesh.add(ringMesh);
+            if (e.key === 'm' || e.key === 'M') {
+              missionVisible = !missionVisible;
+              missionCard.style.display = missionVisible ? 'block' : 'none';
+              setTimeout(function () { missionCard.style.opacity = missionVisible ? '1' : '0'; }, 10);
             }
           });
 
-          // ── Asteroid belt (between Mars and Jupiter) ──
-          const asteroidCount = 300;
-          const asteroidGeo = new THREE.BufferGeometry();
-          const aPos = new Float32Array(asteroidCount * 3);
-          for (let i = 0; i < asteroidCount; i++) {
-            const ang = Math.random() * Math.PI * 2;
-            const r = 22 + Math.random() * 4;
-            aPos[i * 3] = Math.cos(ang) * r;
-            aPos[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
-            aPos[i * 3 + 2] = Math.sin(ang) * r;
-          }
-          asteroidGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3));
-          scene.add(new THREE.Points(asteroidGeo, new THREE.PointsMaterial({ color: 0x888888, size: 0.08 })));
+          // ── Animation loop with 3rd-person + compass ──
+          function animate3dV2() {
+            animId3d = requestAnimationFrame(animate3dV2);
+            tick3d++;
+            // Movement
+            var dir = new THREE.Vector3();
+            if (moveState.forward) dir.z -= 1;
+            if (moveState.back) dir.z += 1;
+            if (moveState.left) dir.x -= 1;
+            if (moveState.right) dir.x += 1;
+            dir.normalize().multiplyScalar(speed3d);
+            dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+            playerPos.add(dir);
+            if (moveState.up) playerPos.y += speed3d;
+            if (moveState.down) playerPos.y = Math.max(isGas ? 1 : 1.0, playerPos.y - speed3d);
+            if (!isGas) playerPos.y = Math.max(1.6, playerPos.y);
 
-          // ── Camera orbit controls (manual) ──
-          let camTheta = 0.5, camPhi = 1.0, camDist = 55;
-          let isDragging = false, lastX = 0, lastY = 0;
-          let targetLookAt = new THREE.Vector3(0, 0, 0);
-          let currentLookAt = new THREE.Vector3(0, 0, 0);
-          let currentDist = 55;
-          let targetDist = 55;
-          let focusedPlanetIdx = -1; // index in planetMeshes, -1 = none (system view)
-          let cameraLerp = 0.06; // smooth interpolation speed
-
-          function updateCamera() {
-            camera.position.x = currentLookAt.x + currentDist * Math.sin(camPhi) * Math.cos(camTheta);
-            camera.position.y = currentLookAt.y + currentDist * Math.cos(camPhi);
-            camera.position.z = currentLookAt.z + currentDist * Math.sin(camPhi) * Math.sin(camTheta);
-            camera.lookAt(currentLookAt);
-          }
-          updateCamera();
-
-          function onSolarDown(e) {
-            isDragging = true; lastX = e.clientX; lastY = e.clientY;
-            canvas._clickStartX = e.clientX; canvas._clickStartY = e.clientY;
-            canvas.setPointerCapture(e.pointerId);
-          }
-          function onSolarMove(e) {
-            if (!isDragging) return;
-            const dx = e.clientX - lastX; const dy = e.clientY - lastY;
-            camTheta -= dx * 0.008;
-            camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi - dy * 0.008));
-            lastX = e.clientX; lastY = e.clientY;
-            updateCamera();
-          }
-          function onSolarUp(e) {
-            isDragging = false;
-            canvas.releasePointerCapture(e.pointerId);
-          }
-          function onSolarWheel(e) {
-            e.preventDefault();
-            targetDist = Math.max(3, Math.min(120, targetDist + e.deltaY * 0.05));
-          }
-
-          // ── Raycasting for planet clicks (smooth fly-to) ──
-          const raycaster = new THREE.Raycaster();
-          const mouse = new THREE.Vector2();
-          function onSolarClick(e) {
-            if (Math.abs(e.clientX - (canvas._clickStartX || 0)) > 5 || Math.abs(e.clientY - (canvas._clickStartY || 0)) > 5) return; // was a drag
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects(planetMeshes);
-            if (hits.length > 0) {
-              const hitObj = hits[0].object;
-              const name = hitObj.userData.name;
-              upd('selectedPlanet', name);
-              focusedPlanetIdx = hitObj.userData.idx;
-              // Set smooth zoom target — closer for small planets, farther for giants
-              var radius = hitObj.geometry.parameters.radius;
-              targetDist = Math.max(3, Math.min(18, radius * 5));
-              // Set lookAt target to planet's current position (will be tracked each frame)
-              targetLookAt.copy(hitObj.position);
-              // Adjust camera angle for a nice viewing angle
-              camPhi = 0.8;
+            if (thirdPerson) {
+              // 3rd person: camera behind and above
+              var behind = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiplyScalar(6);
+              camera.position.set(playerPos.x + behind.x, playerPos.y + 3, playerPos.z + behind.z);
+              camera.lookAt(playerPos.x, playerPos.y, playerPos.z);
             } else {
-              // Clicked empty space — deselect, return to system view
-              upd('selectedPlanet', null);
-              focusedPlanetIdx = -1;
-              targetLookAt.set(0, 0, 0);
-              targetDist = 55;
-            }
-          }
-          // Double-click to reset to full system view
-          function onSolarDblClick(e) {
-            upd('selectedPlanet', null);
-            focusedPlanetIdx = -1;
-            targetLookAt.set(0, 0, 0);
-            targetDist = 55;
-            camPhi = 1.0;
-          }
-          canvas.addEventListener('pointerdown', onSolarDown);
-          canvas.addEventListener('pointermove', onSolarMove);
-          canvas.addEventListener('pointerup', onSolarUp);
-          canvas.addEventListener('wheel', onSolarWheel, { passive: false });
-          canvas.addEventListener('click', onSolarClick);
-          canvas.addEventListener('dblclick', onSolarDblClick);
-
-          // ── Planet label overlay ──
-          const labelContainer = canvas.parentElement.querySelector('.solar-labels');
-
-          // ── Animation loop ──
-          let animId;
-          let time = 0;
-          function animate() {
-            animId = requestAnimationFrame(animate);
-            const speed = parseFloat(canvas.dataset.speed || '1');
-            const isPaused = canvas.dataset.paused === 'true';
-            if (!isPaused) {
-              time += 0.008 * speed;
+              camera.position.copy(playerPos);
+              camera.rotation.order = 'YXZ';
+              camera.rotation.y = yaw;
+              camera.rotation.x = pitch;
             }
 
-            // Orbit planets
-            planetMeshes.forEach(function (mesh, i) {
-              mesh._orbitAngle += 0.008 * mesh._orbitSpeed * speed * (isPaused ? 0 : 1);
-              mesh.position.x = Math.cos(mesh._orbitAngle) * mesh._orbitDist;
-              mesh.position.z = Math.sin(mesh._orbitAngle) * mesh._orbitDist;
-              mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
+            // Animate clouds
+            scene.children.forEach(function (c) {
+              if (c._cloudSpeed) {
+                c.position.x = Math.sin(tick3d * c._cloudSpeed) * 2;
+                c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7) * 1.5;
+              }
             });
 
-            // ── Smooth camera tracking ──
-            // If focused on a planet, update targetLookAt to follow it as it orbits
-            if (focusedPlanetIdx >= 0 && focusedPlanetIdx < planetMeshes.length) {
-              var fp = planetMeshes[focusedPlanetIdx];
-              targetLookAt.copy(fp.position);
-            }
-            // Smoothly interpolate camera toward target
-            currentLookAt.lerp(targetLookAt, cameraLerp);
-            currentDist += (targetDist - currentDist) * cameraLerp;
-            updateCamera();
-
-            // Slowly rotate asteroids
-            const aArr = asteroidGeo.attributes.position.array;
-            if (!isPaused) {
-              for (let i = 0; i < asteroidCount; i++) {
-                const x = aArr[i * 3]; const z = aArr[i * 3 + 2];
-                const a = Math.atan2(z, x) + 0.0003 * speed;
-                const r = Math.sqrt(x * x + z * z);
-                aArr[i * 3] = Math.cos(a) * r;
-                aArr[i * 3 + 2] = Math.sin(a) * r;
+            // Diamond rain
+            if (typeof diamonds !== 'undefined' && diamonds) {
+              var dArr = diamonds.geometry.attributes.position.array;
+              for (var dri = 0; dri < dArr.length; dri += 3) {
+                dArr[dri + 1] -= 0.05;
+                if (dArr[dri + 1] < -5) dArr[dri + 1] = 20;
               }
-              asteroidGeo.attributes.position.needsUpdate = true;
+              diamonds.geometry.attributes.position.needsUpdate = true;
             }
 
-            // Sun pulse
-            const pulse = 1.0 + Math.sin(time * 2) * 0.03;
-            sun.scale.set(pulse, pulse, pulse);
-            glowSprite.scale.set(12 * pulse, 12 * pulse, 1);
+            // Update compass bearing
+            var deg = ((yaw * 180 / Math.PI) % 360 + 360) % 360;
+            var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            var dirLabel = dirs[Math.round(deg / 45) % 8];
+            compass.textContent = dirLabel;
 
-            // Update labels
-            if (labelContainer) {
-              labelContainer.innerHTML = '';
-              planetMeshes.forEach(function (mesh) {
-                const pos = mesh.position.clone();
-                pos.y += mesh.geometry.parameters.radius + 0.4;
-                pos.project(camera);
-                if (pos.z < 1 && pos.z > -1) {
-                  const lx = (pos.x * 0.5 + 0.5) * W;
-                  const ly = (-pos.y * 0.5 + 0.5) * H;
-                  const isSelected = canvas.dataset.selected === mesh.userData.name;
-                  const label = document.createElement('div');
-                  label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:9px;font-weight:700;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);color:' + (isSelected ? '#fbbf24' : '#94a3b8') + ';white-space:nowrap;transition:color 0.2s;';
-                  label.textContent = mesh.userData.name;
-                  labelContainer.appendChild(label);
+            // ── Live telemetry updates (every 3 frames for perf) ──
+            if (tick3d % 3 === 0) {
+              var dx = playerPos.x - prevPos.x, dz = playerPos.z - prevPos.z, dy = playerPos.y - prevPos.y;
+              var frameDist = Math.sqrt(dx * dx + dy * dy + dz * dz) * scaleFactor;
+              odometer += frameDist;
+              lastSpeed = frameDist * 20; // ~60fps/3 = 20 updates/s
+              prevPos.copy(playerPos);
+
+              var altEl = document.getElementById('hud-alt');
+              var spdEl = document.getElementById('hud-spd');
+              var hdgEl = document.getElementById('hud-hdg');
+              var posEl = document.getElementById('hud-pos');
+              var odoEl = document.getElementById('hud-odo');
+              var dscEl = document.getElementById('hud-disc');
+              var altitude = ((playerPos.y - (isGas ? 0 : 1.6)) * scaleFactor).toFixed(0);
+              if (altEl) altEl.textContent = altitude + ' m';
+              if (spdEl) spdEl.textContent = lastSpeed.toFixed(1) + ' m/s';
+              if (hdgEl) hdgEl.textContent = dirLabel + ' ' + Math.round(deg) + '\u00B0';
+              if (posEl) posEl.textContent = (playerPos.x * 10).toFixed(1) + ', ' + (playerPos.z * 10).toFixed(1);
+              if (odoEl) odoEl.textContent = odometer > 1000 ? (odometer / 1000).toFixed(1) + ' km' : Math.round(odometer) + ' m';
+              if (dscEl) dscEl.textContent = Object.keys(discoveredPOIs).length + ' / ' + totalPOIs;
+            }
+
+            // ── POI proximity detection (every 10 frames) ──
+            if (tick3d % 10 === 0) {
+              for (var pi2 = 0; pi2 < pois.length; pi2++) {
+                var poi = pois[pi2];
+                var pdx = playerPos.x - poi.x, pdz = playerPos.z - poi.z;
+                var poiDist = Math.sqrt(pdx * pdx + pdz * pdz);
+                if (poiDist < 4 && !discoveredPOIs[pi2]) {
+                  showDiscovery(poi, pi2);
+                  // Update mission card objectives
+                  var objEl = document.getElementById('obj-' + pi2);
+                  if (objEl) { objEl.innerHTML = '\u2611 <span style="color:#34d399;text-decoration:line-through">' + poi.name + '</span> \u2714'; }
+                  var dcEl = document.getElementById('mission-disc-count');
+                  if (dcEl) dcEl.textContent = Object.keys(discoveredPOIs).length + '/' + totalPOIs;
+                  var xpEl = document.getElementById('mission-xp-count');
+                  if (xpEl) xpEl.textContent = (Object.keys(discoveredPOIs).length * 10) + '';
                 }
-              });
+              }
             }
+
+            // ── Pulse POI markers (animate opacity) ──
+            poiMeshes.forEach(function (m) {
+              if (m._pulsePhase !== undefined) {
+                m.material.opacity = 0.2 + Math.abs(Math.sin(tick3d * 0.03 + m._pulsePhase)) * 0.3;
+              } else if (m._poiIdx !== undefined && discoveredPOIs[m._poiIdx]) {
+                m.material.color.setHex(0x34d399); // green when discovered
+                m.material.opacity = 0.4;
+              } else if (m._poiIdx !== undefined) {
+                m.material.opacity = 0.5 + Math.abs(Math.sin(tick3d * 0.05)) * 0.3;
+              }
+            });
+
+            // ── Update rover/probe model position ──
+            roverGroup.position.x = playerPos.x;
+            roverGroup.position.z = playerPos.z;
+            if (!isGas) {
+              roverGroup.position.y = 0; // wheels on ground
+              roverGroup.rotation.y = yaw + Math.PI; // face movement direction
+            } else {
+              roverGroup.position.y = playerPos.y - 0.5;
+              roverGroup.rotation.y = yaw + Math.PI;
+              // Probe lights blink
+              if (redLight && greenLight) {
+                redLight.material.emissiveIntensity = Math.sin(tick3d * 0.1) > 0 ? 1.0 : 0.1;
+                greenLight.material.emissiveIntensity = Math.sin(tick3d * 0.1) > 0 ? 0.1 : 1.0;
+              }
+            }
+            // Hide rover in 1st person, show in 3rd
+            roverGroup.visible = thirdPerson;
 
             renderer.render(scene, camera);
           }
-          animate();
+          animId3d = requestAnimationFrame(animate3dV2);
 
-          // ── Resize handler ──
-          const resizeObserver = new ResizeObserver(function () {
-            const w = canvas.clientWidth; const h = canvas.clientHeight;
-            if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
+          // Resize handler
+          var ro3d = new ResizeObserver(function () {
+            W = canvasEl.offsetWidth; H = canvasEl.offsetHeight;
+            camera.aspect = W / H; camera.updateProjectionMatrix();
+            renderer.setSize(W, H);
           });
-          resizeObserver.observe(canvas);
+          ro3d.observe(canvasEl);
 
-          // ── Cleanup ──
-          canvas._solarCleanup = function () {
-            cancelAnimationFrame(animId);
-            canvas.removeEventListener('pointerdown', onSolarDown);
-            canvas.removeEventListener('pointermove', onSolarMove);
-            canvas.removeEventListener('pointerup', onSolarUp);
-            canvas.removeEventListener('wheel', onSolarWheel);
-            canvas.removeEventListener('click', onSolarClick);
-            canvas.removeEventListener('dblclick', onSolarDblClick);
-            resizeObserver.disconnect();
+          canvasEl._droneCleanup = function () {
+            cancelAnimationFrame(animId3d);
+            clearInterval(factTimer);
+            clearInterval(hazardTimer);
+            document.removeEventListener('mousemove', onMouseMove);
+            if (document.pointerLockElement === canvasEl) document.exitPointerLock();
+            ro3d.disconnect();
             renderer.dispose();
-            scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+            if (hud.parentElement) hud.parentElement.removeChild(hud);
+            if (ticker.parentElement) ticker.parentElement.removeChild(ticker);
+            if (compass.parentElement) compass.parentElement.removeChild(compass);
+            if (hazardEl.parentElement) hazardEl.parentElement.removeChild(hazardEl);
+            if (discCard.parentElement) discCard.parentElement.removeChild(discCard);
+            if (missionCard.parentElement) missionCard.parentElement.removeChild(missionCard);
+            if (discTimeout) clearTimeout(discTimeout);
           };
+          canvasEl._droneRO = ro3d;
         }
-
-        // Load Three.js or use existing
-        if (window.THREE) {
-          initScene(window.THREE);
-        } else {
-          const s = document.createElement('script');
-          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-          s.onload = function () { initScene(window.THREE); };
-          document.head.appendChild(s);
-        }
-      };
-
-      return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-          React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-          React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
-          React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, "3D")
-        ),
-        // 3D Canvas container
-        React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-800/50 shadow-lg", style: { background: '#0a0e27' } },
-          React.createElement("canvas", {
-            ref: canvasRef,
-            className: "solar3d-canvas w-full",
-            style: { height: '520px', display: 'block', cursor: 'grab' },
-            'data-speed': String(simSpeed),
-            'data-paused': String(paused),
-            'data-selected': d.selectedPlanet || ''
-          }),
-          // Floating planet labels
-          React.createElement("div", { className: "solar-labels", style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' } }),
-          // Controls overlay
-          React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto" },
-            React.createElement("button", {
-              onClick: () => upd('paused', !paused),
-              className: "px-2.5 py-1 rounded-lg text-xs font-bold " + (paused ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/80 hover:bg-white/20') + " backdrop-blur-sm border border-white/10 transition-all"
-            }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
-            React.createElement("div", { className: "flex items-center gap-1.5 flex-1 max-w-[180px] bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/10" },
-              React.createElement("span", { className: "text-[9px] text-white/60 font-bold whitespace-nowrap" }, "Speed"),
-              React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '12px' } }),
-              React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold min-w-[28px] text-right" }, simSpeed.toFixed(1) + "x")
-            ),
-            React.createElement("button", {
-              onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c && c._solarInit) { /* reset camera via reinit — crude but works */ c._solarCleanup && c._solarCleanup(); c._solarInit = false; setTimeout(function () { canvasRef(c); }, 50); } },
-              className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
-            }, "\uD83C\uDFE0 Reset View"),
-            React.createElement("span", { className: "text-[9px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
-          )
-        ),
-        // Planet buttons row
-        React.createElement("div", { className: "flex gap-1 mt-2 flex-wrap justify-center" },
-          PLANETS.map(p => React.createElement("button", {
-            key: p.name,
-            onClick: () => upd('selectedPlanet', p.name),
-            className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
-            style: d.selectedPlanet === p.name ? { backgroundColor: p.color } : {}
-          }, p.emoji + " " + p.name))
-        ),
-        // ── Scale Explanation Collapsible ──
-        React.createElement("details", { className: "mt-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden" },
-          React.createElement("summary", { className: "px-3 py-1.5 text-[11px] font-bold text-amber-700 cursor-pointer select-none hover:bg-amber-100/50 transition-colors" }, "\uD83D\uDD2D Why aren't the sizes truly to scale?"),
-          React.createElement("div", { className: "px-3 pb-3 text-[10px] text-amber-800 leading-relaxed" },
-            React.createElement("p", { className: "mb-2" }, "If this model were truly to scale, the Sun would be a beach ball and Earth would be a grain of sand 30 meters away! Jupiter would be a marble 155 meters away, and Pluto would be invisible 1.2 km from the Sun."),
-            React.createElement("div", { className: "grid grid-cols-3 gap-1.5 mb-2" },
-              [
-                { body: '\u2600\uFE0F Sun', real: '1,391,000 km', scale: '109\u00D7 Earth' },
-                { body: '\uD83E\uDE90 Jupiter', real: '139,820 km', scale: '11.2\u00D7 Earth' },
-                { body: '\uD83C\uDF0D Earth', real: '12,742 km', scale: '1\u00D7 (baseline)' },
-                { body: '\uD83D\uDD35 Neptune', real: '49,244 km', scale: '3.9\u00D7 Earth' },
-                { body: '\uD83D\uDD34 Mars', real: '6,779 km', scale: '0.53\u00D7 Earth' },
-                { body: '\u2B50 Pluto', real: '2,377 km', scale: '0.19\u00D7 Earth' }
-              ].map(function (item) {
-                return React.createElement("div", { key: item.body, className: "bg-white/60 rounded-lg p-1.5 text-center border border-amber-100" },
-                  React.createElement("div", { className: "font-bold" }, item.body),
-                  React.createElement("div", { className: "text-amber-600" }, item.real),
-                  React.createElement("div", { className: "text-amber-500 italic" }, item.scale)
-                );
-              })
-            ),
-            React.createElement("p", { className: "italic text-amber-600" }, "\uD83D\uDCA1 The solar system is 99.86% empty space! Our model compresses distances so you can explore everything in one view.")
-          )
-        ),
-        // ── Planet Info Card (Enhanced with Close-Up & Drone) ──
-        sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
-          // Planet header
-          React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-            React.createElement("div", { className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl", style: { backgroundColor: sel.color + '20', border: '2px solid ' + sel.color } }, sel.emoji),
-            React.createElement("div", { className: "flex-1" },
-              React.createElement("h4", { className: "text-lg font-black text-slate-800" }, sel.name),
-              React.createElement("p", { className: "text-xs text-slate-500" }, sel.diameter + " \u2022 " + sel.moons + " moon" + (sel.moons !== 1 ? 's' : '') + " \u2022 " + (sel.gravity || '?'))
-            ),
-            // Mode tabs
-            React.createElement("div", { className: "flex gap-1" },
-              ['overview', 'surface', 'drone'].map(function (tab) {
-                var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
-                return React.createElement("button", {
-                  key: tab, onClick: function () { upd('viewTab', tab); },
-                  className: "px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all " +
-                    ((d.viewTab || 'overview') === tab ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-200 text-slate-500 hover:bg-slate-300')
-                }, tab === 'overview' ? '\uD83D\uDCCA Overview' : tab === 'surface' ? '\u26C5 Surface' : (isGas ? '\uD83D\uDEF8 Probe' : '\uD83D\uDE97 Rover'));
-              })
-            )
-          ),
-
-          // ── OVERVIEW TAB ──
-          (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
-            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-              [['\uD83C\uDF21', 'Temp', sel.temp], ['\u2600', 'Day', sel.dayLen], ['\uD83C\uDF0D', 'Year', sel.yearLen], ['\uD83D\uDCCF', 'Size', sel.diameter],
-              ['\u2696\uFE0F', 'Gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', (sel.atmosphere || 'Unknown').substring(0, 30)], ['\uD83D\uDCA0', 'Type', sel.terrainType === 'gasgiant' ? 'Gas Giant' : sel.terrainType === 'icegiant' ? 'Ice Giant' : 'Rocky']
-              ].map(function (item) {
-                return React.createElement("div", { key: item[1], className: "bg-white rounded-lg p-2 text-center border" },
-                  React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, item[0] + ' ' + item[1]),
-                  React.createElement("p", { className: "text-xs font-bold text-slate-700" }, item[2])
-                );
-              })
-            ),
-            React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100 mb-2" }, "\uD83D\uDCA1 " + sel.fact),
-            sel.surfaceDesc && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg p-2 border border-sky-200 mb-2" },
-              React.createElement("p", { className: "text-[11px] font-bold text-sky-700 mb-0.5" }, "\uD83C\uDF0D Surface Description"),
-              React.createElement("p", { className: "text-[10px] text-sky-600 leading-relaxed" }, sel.surfaceDesc)
-            ),
-            sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg p-2 border border-violet-200 mb-2" },
-              React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, "\uD83C\uDFAF Notable Features"),
-              React.createElement("div", { className: "grid grid-cols-1 gap-1" },
-                sel.notableFeatures.map(function (feat, fi) {
-                  return React.createElement("div", { key: fi, className: "flex items-center gap-1.5 text-[10px] text-violet-600" },
-                    React.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" }),
-                    React.createElement("span", null, feat)
-                  );
-                })
-              )
-            ),
-            // Notable features
-            sel.notableFeatures && React.createElement("div", { className: "bg-white rounded-lg p-3 border" },
-              React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1.5" }, "\u2B50 Notable Features"),
-              React.createElement("div", { className: "flex flex-wrap gap-1.5" },
-                sel.notableFeatures.map(function (feat, i) {
-                  return React.createElement("span", { key: i, className: "px-2 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold border border-indigo-100" }, feat);
-                })
-              )
-            )
-          ),
-
-          // ── SURFACE TAB ──
-          (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
-            React.createElement("div", { className: "bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4 text-white" },
-              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0D"),
-                React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Surface Conditions")
-              ),
-              React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3" }, sel.surfaceDesc || 'Surface data unavailable.'),
-              React.createElement("div", { className: "grid grid-cols-3 gap-2" },
-                [
-                  ['\u2696\uFE0F Gravity', sel.gravity || '?'],
-                  ['\uD83C\uDF21 Temperature', sel.temp],
-                  ['\uD83C\uDF2C\uFE0F Atmosphere', (sel.atmosphere || 'None').split(' —')[0]]
-                ].map(function (item) {
-                  return React.createElement("div", { key: item[0], className: "bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm" },
-                    React.createElement("p", { className: "text-[9px] text-slate-400" }, item[0]),
-                    React.createElement("p", { className: "text-xs font-bold" }, item[1])
-                  );
-                })
-              )
-            ),
-            React.createElement("button", {
-              onClick: function () { upd('viewTab', 'drone'); },
-              className: "w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.01]"
-            }, (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant' ? "\uD83D\uDEF8 Launch Atmospheric Probe on " : "\uD83D\uDE97 Deploy Rover on ") + sel.name)
-          ),
-
-          // ── ROVER / PROBE TAB (Three.js First-Person) ──
-          (d.viewTab) === 'drone' && React.createElement("div", null,
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-300 shadow-lg", style: { height: '450px' } },
-              React.createElement("canvas", {
-                "data-drone-canvas": "true",
-                ref: function (canvasEl) {
-                  if (!canvasEl || canvasEl._droneInit === sel.name) return;
-                  canvasEl._droneInit = sel.name;
-
-                  function doInit(THREE) {
-                    var W = canvasEl.offsetWidth, H = canvasEl.offsetHeight;
-                    var scene = new THREE.Scene();
-                    var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
-                    var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 500);
-                    camera.position.set(0, isGas ? 5 : 1.6, 0);
-                    var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
-                    renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                    renderer.setClearColor(new THREE.Color(sel.skyColor || '#000000'));
-
-                    // ── Sky dome ──
-                    var skyGeo = new THREE.SphereGeometry(200, 32, 16);
-                    var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
-                    var sCtx = skyCv.getContext('2d');
-                    var sGrad = sCtx.createLinearGradient(0, 0, 0, 256);
-                    sGrad.addColorStop(0, sel.skyColor || '#000');
-                    sGrad.addColorStop(0.5, sel.terrainType === 'earthlike' ? '#87ceeb' : sel.terrainType === 'volcanic' ? '#d4923a' : sel.skyColor || '#111');
-                    sGrad.addColorStop(1, sel.terrainColor || '#333');
-                    sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 512, 256);
-                    // Stars for dark worlds
-                    if (sel.terrainType === 'cratered' || sel.terrainType === 'iceworld' || sel.terrainType === 'desert') {
-                      for (var si = 0; si < 200; si++) {
-                        sCtx.fillStyle = 'rgba(255,255,255,' + (0.3 + Math.random() * 0.5) + ')';
-                        sCtx.beginPath(); sCtx.arc(Math.random() * 512, Math.random() * 128, Math.random() * 1.5, 0, Math.PI * 2); sCtx.fill();
-                      }
-                    }
-                    var skyTex = new THREE.CanvasTexture(skyCv);
-                    var skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide });
-                    scene.add(new THREE.Mesh(skyGeo, skyMat));
-
-                    // ── Terrain (rocky planets) or Cloud layers (gas giants) ──
-                    if (!isGas) {
-                      var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
-                      var posArr = terrainGeo.attributes.position.array;
-                      for (var vi = 0; vi < posArr.length; vi += 3) {
-                        var px = posArr[vi], py = posArr[vi + 1];
-                        var h = Math.sin(px * 0.05) * 3 + Math.sin(py * 0.08) * 2 + Math.sin(px * 0.15 + py * 0.1) * 1;
-                        if (sel.terrainType === 'volcanic') h = Math.abs(Math.sin(px * 0.04) * 5) + Math.random() * 0.5;
-                        if (sel.terrainType === 'earthlike') h = Math.sin(px * 0.03) * 2 + Math.sin(py * 0.05) * 1.5 + Math.random() * 0.3;
-                        if (sel.terrainType === 'desert') h = Math.sin(px * 0.06) * 1.5 + Math.random() * 0.2;
-                        if (sel.terrainType === 'iceworld') h = Math.sin(px * 0.04 + py * 0.03) * 1 + Math.random() * 0.15;
-                        posArr[vi + 2] = h;
-                      }
-                      terrainGeo.computeVertexNormals();
-                      var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
-                      var tCx = tCv.getContext('2d');
-                      var baseC = new THREE.Color(sel.terrainColor || '#886644');
-                      for (var ty = 0; ty < 256; ty++) {
-                        for (var tx = 0; tx < 256; tx++) {
-                          var n = (Math.sin(tx * 0.3 + ty * 0.2) * 0.5 + Math.random() * 0.3) * 0.15;
-                          var r = Math.min(255, Math.max(0, Math.round((baseC.r + n) * 255)));
-                          var g = Math.min(255, Math.max(0, Math.round((baseC.g + n * 0.8) * 255)));
-                          var b = Math.min(255, Math.max(0, Math.round((baseC.b - n * 0.3) * 255)));
-                          tCx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-                          tCx.fillRect(tx, ty, 1, 1);
-                        }
-                      }
-                      var terrainTex = new THREE.CanvasTexture(tCv);
-                      terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(10, 10);
-                      var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.9, metalness: 0.1, flatShading: true });
-                      var terrain = new THREE.Mesh(terrainGeo, terrainMat);
-                      terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
-                    } else {
-                      // Gas giant cloud layers
-                      for (var cl = 0; cl < 5; cl++) {
-                        var clGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
-                        var clCv = document.createElement('canvas'); clCv.width = 256; clCv.height = 64;
-                        var clCx = clCv.getContext('2d');
-                        for (var cy = 0; cy < 64; cy++) {
-                          var band = Math.sin(cy * 0.3 + cl * 2) * 0.5 + 0.5;
-                          var r2 = Math.round(new THREE.Color(sel.terrainColor).r * 255 * (0.7 + band * 0.3));
-                          var g2 = Math.round(new THREE.Color(sel.terrainColor).g * 255 * (0.7 + band * 0.3));
-                          var b2 = Math.round(new THREE.Color(sel.terrainColor).b * 255 * (0.8 + band * 0.2));
-                          for (var cx2 = 0; cx2 < 256; cx2++) {
-                            var turb = Math.sin(cx2 * 0.05 + cy * 0.1 + cl) * 20;
-                            clCx.fillStyle = 'rgb(' + Math.max(0, r2 + turb) + ',' + Math.max(0, g2 + turb * 0.7) + ',' + Math.max(0, b2 + turb * 0.3) + ')';
-                            clCx.fillRect(cx2, cy, 1, 1);
-                          }
-                        }
-                        var clTex = new THREE.CanvasTexture(clCv); clTex.wrapS = THREE.RepeatWrapping; clTex.repeat.set(3, 1);
-                        var clMat = new THREE.MeshBasicMaterial({ map: clTex, transparent: true, opacity: 0.6 - cl * 0.1, side: THREE.DoubleSide });
-                        var clMesh = new THREE.Mesh(clGeo, clMat);
-                        clMesh.rotation.x = -Math.PI / 2; clMesh.position.y = -2 - cl * 4;
-                        clMesh._cloudSpeed = 0.01 + cl * 0.005;
-                        scene.add(clMesh);
-                      }
-                    }
-
-                    // ── Lighting ──
-                    scene.add(new THREE.AmbientLight(0x444466, 0.6));
-                    var sunDir = new THREE.DirectionalLight(0xffeedd, sel.terrainType === 'iceworld' ? 0.3 : 1.0);
-                    sunDir.position.set(50, 30, 20); scene.add(sunDir);
-
-                    // ── 3D Rover / Probe Model ──
-                    var roverGroup = new THREE.Group();
-                    if (!isGas) {
-                      // Rocky planet: build a simple rover out of boxes and cylinders
-                      // Body
-                      var bodyGeo = new THREE.BoxGeometry(0.8, 0.35, 1.2);
-                      var bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.6, roughness: 0.3 });
-                      var body = new THREE.Mesh(bodyGeo, bodyMat);
-                      body.position.y = 0.35;
-                      roverGroup.add(body);
-                      // Camera mast
-                      var mastGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.5);
-                      var mastMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7 });
-                      var mast = new THREE.Mesh(mastGeo, mastMat);
-                      mast.position.set(0, 0.77, -0.3);
-                      roverGroup.add(mast);
-                      // Camera head
-                      var headGeo = new THREE.BoxGeometry(0.2, 0.12, 0.15);
-                      var headMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.5 });
-                      var head = new THREE.Mesh(headGeo, headMat);
-                      head.position.set(0, 1.05, -0.32);
-                      roverGroup.add(head);
-                      // Lens (blue emissive)
-                      var lensGeo = new THREE.SphereGeometry(0.04, 8, 8);
-                      var lensMat = new THREE.MeshStandardMaterial({ color: 0x00aaff, emissive: 0x0066ff, emissiveIntensity: 0.8 });
-                      var lens = new THREE.Mesh(lensGeo, lensMat);
-                      lens.position.set(0, 1.05, -0.41);
-                      roverGroup.add(lens);
-                      // Solar panel
-                      var panelGeo = new THREE.BoxGeometry(1.0, 0.03, 0.6);
-                      var panelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a5e, metalness: 0.3, roughness: 0.5 });
-                      var panel = new THREE.Mesh(panelGeo, panelMat);
-                      panel.position.set(0, 0.56, 0.15);
-                      roverGroup.add(panel);
-                      // 6 wheels (3 per side)
-                      var wheelGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.08, 12);
-                      var wheelMat = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.4, roughness: 0.8 });
-                      var wheelPositions = [
-                        [-0.45, 0.15, -0.4], [-0.45, 0.15, 0], [-0.45, 0.15, 0.4],
-                        [0.45, 0.15, -0.4], [0.45, 0.15, 0], [0.45, 0.15, 0.4]
-                      ];
-                      wheelPositions.forEach(function (wp) {
-                        var wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                        wheel.position.set(wp[0], wp[1], wp[2]);
-                        wheel.rotation.z = Math.PI / 2;
-                        roverGroup.add(wheel);
-                      });
-                      // Antenna
-                      var antGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.8);
-                      var antMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.8 });
-                      var ant = new THREE.Mesh(antGeo, antMat);
-                      ant.position.set(0.25, 0.92, 0.3);
-                      roverGroup.add(ant);
-                      // Antenna dish
-                      var dishGeo = new THREE.CircleGeometry(0.1, 12);
-                      var dishMat = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, metalness: 0.3 });
-                      var dish = new THREE.Mesh(dishGeo, dishMat);
-                      dish.position.set(0.25, 1.35, 0.3);
-                      dish.rotation.x = -0.5;
-                      roverGroup.add(dish);
-                    } else {
-                      // Gas giant: build a probe/drone
-                      var probeGeo = new THREE.SphereGeometry(0.4, 16, 12);
-                      var probeMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.7, roughness: 0.2 });
-                      var probe = new THREE.Mesh(probeGeo, probeMat);
-                      probe.position.y = 0;
-                      roverGroup.add(probe);
-                      // Heat shield bottom
-                      var shieldGeo = new THREE.SphereGeometry(0.42, 16, 8, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.5);
-                      var shieldMat = new THREE.MeshStandardMaterial({ color: 0xcc6600, metalness: 0.2, roughness: 0.8 });
-                      var shield = new THREE.Mesh(shieldGeo, shieldMat);
-                      shield.rotation.x = Math.PI;
-                      roverGroup.add(shield);
-                      // Instrument boom
-                      var boomGeo = new THREE.CylinderGeometry(0.03, 0.03, 1.0);
-                      var boomMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.6 });
-                      var boom = new THREE.Mesh(boomGeo, boomMat);
-                      boom.position.set(0, 0.5, 0);
-                      roverGroup.add(boom);
-                      // Antenna top
-                      var pAntGeo = new THREE.ConeGeometry(0.08, 0.2, 8);
-                      var pAntMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.5 });
-                      var pAnt = new THREE.Mesh(pAntGeo, pAntMat);
-                      pAnt.position.set(0, 1.1, 0);
-                      roverGroup.add(pAnt);
-                      // Blinking lights
-                      var lightGeo = new THREE.SphereGeometry(0.05, 8, 8);
-                      var lightMat1 = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1.0 });
-                      var lightMat2 = new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1.0 });
-                      var redLight = new THREE.Mesh(lightGeo, lightMat1);
-                      redLight.position.set(0.3, 0.1, 0.3);
-                      roverGroup.add(redLight);
-                      var greenLight = new THREE.Mesh(lightGeo, lightMat2);
-                      greenLight.position.set(-0.3, 0.1, 0.3);
-                      roverGroup.add(greenLight);
-                    }
-                    roverGroup.position.set(0, isGas ? 5 : 0, 0); // initial position; animation loop tracks playerPos
-                    scene.add(roverGroup);
-
-                    // ── Scattered Environment Objects (rocks/boulders for depth cues) ──
-                    var envObjects = [];
-                    if (!isGas) {
-                      var rockColor = new THREE.Color(sel.terrainColor || '#886644');
-                      for (var ri = 0; ri < 80; ri++) {
-                        var rSize = 0.1 + Math.random() * 0.6;
-                        var rGeo = new THREE.DodecahedronGeometry(rSize, 0);
-                        // Deform vertices for organic shapes
-                        var rPositions = rGeo.attributes.position.array;
-                        for (var rv = 0; rv < rPositions.length; rv += 3) {
-                          rPositions[rv] *= 0.7 + Math.random() * 0.6;
-                          rPositions[rv + 1] *= 0.5 + Math.random() * 0.5;
-                          rPositions[rv + 2] *= 0.7 + Math.random() * 0.6;
-                        }
-                        rGeo.computeVertexNormals();
-                        var rMat = new THREE.MeshStandardMaterial({
-                          color: rockColor.clone().offsetHSL(Math.random() * 0.05 - 0.025, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05),
-                          roughness: 0.9, metalness: 0.1, flatShading: true
-                        });
-                        var rock = new THREE.Mesh(rGeo, rMat);
-                        rock.position.set(
-                          (Math.random() - 0.5) * 80,
-                          rSize * 0.3,
-                          (Math.random() - 0.5) * 80
-                        );
-                        rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-                        scene.add(rock);
-                        envObjects.push(rock);
-                      }
-                      // A few large landmark boulders
-                      for (var bi = 0; bi < 6; bi++) {
-                        var bSize = 1.5 + Math.random() * 2;
-                        var bGeo = new THREE.DodecahedronGeometry(bSize, 1);
-                        var bPositions = bGeo.attributes.position.array;
-                        for (var bv = 0; bv < bPositions.length; bv += 3) {
-                          bPositions[bv] *= 0.6 + Math.random() * 0.8;
-                          bPositions[bv + 1] *= 0.4 + Math.random() * 0.6;
-                          bPositions[bv + 2] *= 0.6 + Math.random() * 0.8;
-                        }
-                        bGeo.computeVertexNormals();
-                        var bMat = new THREE.MeshStandardMaterial({
-                          color: rockColor.clone().offsetHSL(0, -0.05, -0.1),
-                          roughness: 0.95, metalness: 0.05, flatShading: true
-                        });
-                        var boulder = new THREE.Mesh(bGeo, bMat);
-                        boulder.position.set(
-                          (Math.random() - 0.5) * 60,
-                          bSize * 0.25,
-                          (Math.random() - 0.5) * 60
-                        );
-                        boulder.rotation.y = Math.random() * Math.PI * 2;
-                        scene.add(boulder);
-                        envObjects.push(boulder);
-                      }
-                    }
-
-                    // ── Particle effects ──
-                    if (sel.terrainType === 'desert' || sel.terrainType === 'volcanic') {
-                      var partCount = 200;
-                      var partGeo = new THREE.BufferGeometry();
-                      var partPos = new Float32Array(partCount * 3);
-                      for (var pi = 0; pi < partCount; pi++) {
-                        partPos[pi * 3] = (Math.random() - 0.5) * 60;
-                        partPos[pi * 3 + 1] = Math.random() * 8;
-                        partPos[pi * 3 + 2] = (Math.random() - 0.5) * 60;
-                      }
-                      partGeo.setAttribute('position', new THREE.BufferAttribute(partPos, 3));
-                      var partColor = sel.terrainType === 'volcanic' ? 0xff6600 : 0xc9a06a;
-                      scene.add(new THREE.Points(partGeo, new THREE.PointsMaterial({ color: partColor, size: 0.05, transparent: true, opacity: 0.4 })));
-                    }
-                    if (sel.terrainType === 'icegiant' || sel.name === t('stem.solar_sys.uranus')) {
-                      // Diamond rain
-                      var drCount = 100;
-                      var drGeo = new THREE.BufferGeometry();
-                      var drPos = new Float32Array(drCount * 3);
-                      for (var di = 0; di < drCount; di++) {
-                        drPos[di * 3] = (Math.random() - 0.5) * 40;
-                        drPos[di * 3 + 1] = Math.random() * 20;
-                        drPos[di * 3 + 2] = (Math.random() - 0.5) * 40;
-                      }
-                      drGeo.setAttribute('position', new THREE.BufferAttribute(drPos, 3));
-                      var diamonds = new THREE.Points(drGeo, new THREE.PointsMaterial({ color: 0xccddff, size: 0.08, transparent: true, opacity: 0.6 }));
-                      scene.add(diamonds);
-                    }
-
-                    // ── Movement state ──
-                    var moveState = { forward: false, back: false, left: false, right: false, up: false, down: false };
-                    var yaw = 0, pitch = 0, playerPos = new THREE.Vector3(0, isGas ? 5 : 1.6, 0);
-                    var speed3d = isGas ? 0.15 : 0.08;
-
-                    function onKey(e, pressed) {
-                      switch (e.key.toLowerCase()) {
-                        case 'w': case 'arrowup': moveState.forward = pressed; break;
-                        case 's': case 'arrowdown': moveState.back = pressed; break;
-                        case 'a': case 'arrowleft': moveState.left = pressed; break;
-                        case 'd': case 'arrowright': moveState.right = pressed; break;
-                        case 'q': case ' ': moveState.up = pressed; break;
-                        case 'e': case 'shift': moveState.down = pressed; break;
-                      }
-                      e.preventDefault();
-                    }
-                    canvasEl.tabIndex = 0;
-                    canvasEl.addEventListener('keydown', function (e) { onKey(e, true); });
-                    canvasEl.addEventListener('keyup', function (e) { onKey(e, false); });
-
-                    // Mouse look
-                    var isLooking = false;
-                    canvasEl.addEventListener('mousedown', function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
-                    canvasEl.addEventListener('mouseup', function () { isLooking = false; });
-                    function onMouseMove(e) {
-                      if (!isLooking && !document.pointerLockElement) return;
-                      yaw -= e.movementX * 0.003;
-                      pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * 0.003));
-                    }
-                    document.addEventListener('mousemove', onMouseMove);
-                    canvasEl.focus();
-
-                    var tick3d = 0;
-                    var animId3d;
-                    // animate3d is defined later as animate3dV2 with 3rd-person and compass support
-
-                    // ── Rich Educational HUD (Enhanced) ──
-                    var hud = document.createElement('div');
-                    hud.className = 'rover-hud';
-                    hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3);max-width:290px;transition:opacity 0.3s';
-                    var modeLabel = isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
-                    var atmosLabel = sel.atmosphere || 'No data';
-                    var gravLabel = sel.gravity || '?';
-                    var featList = (sel.notableFeatures || []).slice(0, 3).map(function (f) { return '<div style="color:#94a3b8;font-size:9px;padding-left:8px">\u2022 ' + f + '</div>'; }).join('');
-                    // Live telemetry spans (updated each frame)
-                    var hudStaticHTML =
-                      '<div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#7dd3fc;letter-spacing:1px" id="hud-mode">' + modeLabel + '</div>' +
-                      '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-bottom:4px">' +
-                      '<span style="color:#64748b">{t('stem.planet_view.planet')}</span><span style="color:#e2e8f0;font-weight:bold">' + sel.name + ' ' + sel.emoji + '</span>' +
-                        '<span style="color:#64748b">{t('stem.planet_view.gravity')}</span><span>' + gravLabel + '</span>' +
-                          '<span style="color:#64748b">{t('stem.planet_view.temp')}</span><span>' + sel.temp + '</span>' +
-                            '<span style="color:#64748b">{t('stem.planet_view.atmos')}</span><span style="font-size:9px">' + atmosLabel + '</span>' +
-                              '</div>' +
-                              '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
-                              '<span style="color:#64748b">\uD83D\uDCCF Alt</span><span id="hud-alt" style="color:#67e8f9">0 m</span>' +
-                              '<span style="color:#64748b">\uD83D\uDCA8 Spd</span><span id="hud-spd" style="color:#67e8f9">0 m/s</span>' +
-                              '<span style="color:#64748b">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
-                              '<span style="color:#64748b">\uD83D\uDCCD Pos</span><span id="hud-pos" style="color:#67e8f9;font-size:9px">0.0, 0.0</span>' +
-                              '<span style="color:#64748b">\uD83D\uDEB6 Dist</span><span id="hud-odo" style="color:#67e8f9">0 m</span>' +
-                              '<span style="color:#64748b">\uD83D\uDD2D Disc</span><span id="hud-disc" style="color:#fbbf24">0 / 0</span>' +
-                              '</div>' +
-                              (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
-                              '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">WASD move \u2022 Mouse look \u2022 Q/E alt \u2022 V view \u2022 M mission</div>';
-                hud.innerHTML = hudStaticHTML;
-                canvasEl.parentElement.appendChild(hud);
-
-                // ── Hazard Warning Strip ──
-                var hazardEl = document.createElement('div');
-                hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.85);backdrop-filter:blur(4px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,100,100,0.4);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px';
-                var hazardMsgs = {
-                  t('stem.solar_sys.venus'): ['\u26A0 SURFACE TEMP 462\u00B0C \u2014 exceeds hull tolerance', '\u26A0 ATMOSPHERIC PRESSURE: 90x Earth \u2014 structural warning', '\u26A0 SULFURIC ACID CLOUDS DETECTED overhead'],
-                  t('stem.solar_sys.jupiter'): ['\u26A0 RADIATION: 20 Sv/day \u2014 lethal exposure zone', '\u26A0 WIND SHEAR: 360 km/h crosswind detected', '\u26A0 AMMONIA ICE CRYSTALS impacting sensors'],
-                  t('stem.solar_sys.saturn'): ['\u26A0 RING DEBRIS: micro-meteoroid risk elevated', '\u26A0 WIND SPEED: 1,800 km/h at equatorial band'],
-                  t('stem.solar_sys.mars'): ['\u26A0 DUST STORM APPROACHING \u2014 visibility dropping', '\u26A0 UV RADIATION: no magnetic shield \u2014 high exposure', '\u26A0 THIN ATMOSPHERE: suit pressure critical'],
-                  t('stem.periodic.mercury'): ['\u26A0 SOLAR RADIATION ALERT \u2014 no magnetic shielding', '\u26A0 SURFACE TEMP SWING: -180\u00B0C to 430\u00B0C across terminator'],
-                  t('stem.solar_sys.pluto'): ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
-                  t('stem.solar_sys.uranus'): ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
-                  t('stem.solar_sys.neptune'): ['\u26A0 WIND SPEED: 2,100 km/h \u2014 fastest in solar system', '\u26A0 GREAT DARK SPOT: storm system ahead'],
-                  t('stem.solar_sys.earth'): ['\u2139 All systems nominal \u2014 home sweet home']
-                };
-                var planetHazards = hazardMsgs[sel.name] || ['\u26A0 Environmental data unavailable'];
-                var hazardIdx = 0;
-                canvasEl.parentElement.appendChild(hazardEl);
-                var hazardTimer = setInterval(function () {
-                  hazardEl.style.opacity = '0';
-                  setTimeout(function () {
-                    hazardEl.textContent = planetHazards[hazardIdx % planetHazards.length];
-                    hazardEl.style.background = sel.name === t('stem.solar_sys.earth') ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
-                    hazardEl.style.opacity = '1';
-                    hazardIdx++;
-                  }, 500);
-                  setTimeout(function () { hazardEl.style.opacity = '0'; }, 4500);
-                }, 8000);
-                // Show first warning after 2s
-                setTimeout(function() {
-                  hazardEl.textContent = planetHazards[0];
-                  hazardEl.style.background = sel.name === t('stem.solar_sys.earth') ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
-                  hazardEl.style.opacity = '1';
-                  hazardIdx = 1;
-                  setTimeout(function () { hazardEl.style.opacity = '0'; }, 4500);
-                }, 2000);
-
-      // ── Discovery System (POI landmarks) ──
-      var POI_DATA = {
-        t('stem.periodic.mercury'): [
-          { x: 15, z: -10, name: t('stem.planet_view.caloris_basin'), desc: 'One of the largest impact craters in the solar system (1,550 km wide).', fact: 'The impact was so powerful it created chaotic terrain on the opposite side of Mercury.' },
-          { x: -20, z: 8, name: t('stem.planet_view.ice_deposits'), desc: t('stem.planet_view.permanently_shadowed_craters_at_the'), fact: 'Despite being closest to the Sun, Mercury has ice because some craters never see sunlight.' },
-          { x: 30, z: 25, name: t('stem.planet_view.scarps_cliffs'), desc: 'Mercury shrank as its iron core cooled, creating massive cliff-like wrinkles.', fact: 'These scarps can be hundreds of km long and over 1 km tall.' }
-        ],
-        t('stem.solar_sys.venus'): [
-          { x: 12, z: -15, name: t('stem.planet_view.maxwell_montes'), desc: 'Highest mountain on Venus at 11 km \u2014 taller than Everest.', fact: 'The summit is coated with a metallic "snow" made from lead sulfide and bismuth sulfide.' },
-          { x: -18, z: 20, name: t('stem.planet_view.pancake_dome'), desc: 'Flat-topped volcanic domes unique to Venus, up to 65 km across.', fact: 'Extremely viscous lava oozed out and spread like thick pancake batter.' },
-          { x: 25, z: 5, name: t('stem.planet_view.venera_13_landing_site'), desc: 'Soviet lander that survived 127 minutes on the surface in 1982.', fact: 'Venera 13 took the first color photos of Venus\u2019s surface before being crushed by pressure.' }
-        ],
-        t('stem.solar_sys.earth'): [
-          { x: 10, z: -12, name: t('stem.planet_view.mariana_trench'), desc: t('stem.planet_view.deepest_point_on_earth_at'), fact: 'More people have walked on the Moon than have been to the bottom of the Mariana Trench.' },
-          { x: -22, z: 15, name: t('stem.planet_view.midatlantic_ridge'), desc: t('stem.planet_view.underwater_mountain_range_where_tectonic'), fact: 'The Atlantic Ocean grows about 2.5 cm wider every year.' },
-          { x: 28, z: -8, name: t('stem.planet_view.great_barrier_reef'), desc: t('stem.planet_view.largest_living_structure_on_earth'), fact: 'The reef is made of 2,900 individual reef systems and supports 1,500+ species of fish.' }
-        ],
-        t('stem.solar_sys.mars'): [
-          { x: 20, z: -18, name: t('stem.planet_view.olympus_mons_base'), desc: t('stem.planet_view.base_of_the_tallest_volcano'), fact: 'Olympus Mons is so wide (624 km) that standing on its edge, you couldn\u2019t see the summit \u2014 it curves beyond the horizon.' },
-          { x: -25, z: 12, name: t('stem.planet_view.valles_marineris_rim'), desc: t('stem.planet_view.a_canyon_system_4000_km'), fact: 'It would stretch from New York to Los Angeles and is 5x deeper than the Grand Canyon.' },
-          { x: 8, z: 30, name: t('stem.planet_view.polar_ice_cap'), desc: t('stem.planet_view.layered_ice_deposits_of_frozen'), fact: 'If all of Mars\u2019s polar ice melted, it could cover the entire planet in 11 meters of water.' },
-          { x: -15, z: -25, name: t('stem.planet_view.perseverance_rover_site'), desc: 'Jezero Crater \u2014 where NASA\u2019s rover searches for signs of ancient life.', fact: 'Perseverance arrived Feb 2021 and has driven 28+ km, collecting rock samples for future return to Earth.' }
-        ],
-        t('stem.solar_sys.jupiter'): [
-          { x: 18, z: -20, name: t('stem.planet_view.great_red_spot_eye'), desc: 'An anticyclonic storm raging for 350+ years, larger than Earth.', fact: 'Wind speeds at the edge reach 680 km/h \u2014 twice the speed of the strongest Earth hurricane.' },
-          { x: -15, z: 15, name: t('stem.planet_view.ammonia_crystal_layer'), desc: 'Upper cloud layer made of frozen ammonia crystals at -145\u00B0C.', fact: 'Below this layer are ammonium hydrosulfide clouds, and below those, water clouds. Jupiter has weather 3 layers deep.' },
-          { x: 25, z: 8, name: t('stem.planet_view.lightning_alley'), desc: 'Zones between cloud bands where convection drives massive lightning storms.', fact: 'Jupiter\u2019s lightning is 10x more powerful than Earth\u2019s and occurs mostly at the poles and deep clouds.' },
-          { x: -8, z: -28, name: t('stem.planet_view.metallic_hydrogen_zone'), desc: 'Deep below the clouds, pressure turns hydrogen into liquid metal.', fact: 'This metallic hydrogen ocean generates Jupiter\u2019s magnetic field \u2014 20,000x stronger than Earth\u2019s.' }
-        ],
-        t('stem.solar_sys.saturn'): [
-          { x: 20, z: -15, name: t('stem.planet_view.hexagonal_polar_vortex'), desc: 'A persistent hexagonal cloud pattern at Saturn\u2019s north pole.', fact: 'Each side of the hexagon is about 14,500 km long \u2014 wider than Earth\u2019s diameter.' },
-          { x: -18, z: 22, name: t('stem.planet_view.ring_shadow_zone'), desc: 'Area where Saturn\u2019s rings cast shadows on the cloud tops.', fact: 'Saturn\u2019s rings are only about 10 m thick despite being 282,000 km wide \u2014 thinner than a razor blade proportionally.' },
-          { x: 12, z: 10, name: t('stem.planet_view.titan_flyby_path'), desc: t('stem.planet_view.the_orbital_zone_of_titan'), fact: 'Titan has lakes of liquid methane and a thicker atmosphere than Earth \u2014 the only moon with a substantial atmosphere.' }
-        ],
-        t('stem.solar_sys.uranus'): [
-          { x: 15, z: -18, name: t('stem.planet_view.diamond_rain_zone'), desc: 'At 8,000 km depth, extreme pressure crushes carbon into diamonds.', fact: 'These diamonds may be as large as millions of carats and rain down to form a diamond layer around the core.' },
-          { x: -20, z: 14, name: t('stem.planet_view.magnetic_pole_shift'), desc: 'Uranus\u2019s magnetic field is tilted 59\u00B0 from its rotation axis.', fact: 'Combined with the 98\u00B0 axial tilt, Uranus\u2019s magnetosphere tumbles chaotically through space.' },
-          { x: 25, z: -5, name: t('stem.planet_view.cloud_band_transition'), desc: 'Faint methane cloud bands where wind patterns change direction.', fact: 'Uranus appears featureless but Hubble revealed complex cloud systems moving at 900 km/h.' }
-        ],
-        t('stem.solar_sys.neptune'): [
-          { x: 18, z: -22, name: t('stem.planet_view.great_dark_spot_region'), desc: 'A massive storm system similar to Jupiter\u2019s Great Red Spot.', fact: 'Unlike Jupiter\u2019s spot, Neptune\u2019s dark spots appear and disappear within years \u2014 the planet is surprisingly dynamic.' },
-          { x: -14, z: 16, name: t('stem.planet_view.supersonic_wind_belt'), desc: 'Equatorial winds reaching 2,100 km/h \u2014 faster than the speed of sound.', fact: 'Neptune generates more heat than it receives from the Sun, driving these extreme winds from internal energy.' },
-          { x: 22, z: 10, name: t('stem.planet_view.triton_orbital_cross'), desc: 'The path of Triton \u2014 the only large moon that orbits backwards.', fact: 'Triton is likely a captured Kuiper Belt object. Its nitrogen geysers shoot plumes 8 km high.' }
-        ],
-        t('stem.solar_sys.pluto'): [
-          { x: 12, z: -14, name: t('stem.planet_view.tombaugh_regio'), desc: 'The famous heart-shaped glacier made of nitrogen and carbon monoxide ice.', fact: 'The left lobe (Sputnik Planitia) is a vast ice plain with convection cells that slowly churn the ice.' },
-          { x: -16, z: 18, name: t('stem.planet_view.ice_mountains'), desc: 'Mountains of water ice rising 2\u20133 km above the nitrogen plains.', fact: 'Because water ice is less dense than nitrogen ice at Pluto\u2019s temperatures, these mountains literally float.' },
-          { x: 20, z: 5, name: t('stem.planet_view.cthulhu_macula'), desc: t('stem.planet_view.a_dark_equatorial_region_2990'), fact: 'Tholins are complex organic molecules created when methane is irradiated \u2014 they give Pluto its reddish-brown color.' }
-        ]
-      };
-      var pois = POI_DATA[sel.name] || [];
-      var discoveredPOIs = {};
-      var totalPOIs = pois.length;
-
-      // Place POI markers in the 3D scene
-      var poiMeshes = [];
-      pois.forEach(function (poi, idx) {
-        var poiGeo = new THREE.SphereGeometry(0.3, 8, 8);
-        var poiMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.7 });
-        var poiMesh = new THREE.Mesh(poiGeo, poiMat);
-        poiMesh.position.set(poi.x, isGas ? 3 : 1.5, poi.z);
-        poiMesh._poiIdx = idx;
-        scene.add(poiMesh);
-        poiMeshes.push(poiMesh);
-        // Glow ring around POI
-        var ringGeo = new THREE.RingGeometry(0.5, 0.8, 16);
-        var ringMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
-        var ringMesh = new THREE.Mesh(ringGeo, ringMat);
-        ringMesh.rotation.x = -Math.PI / 2;
-        ringMesh.position.set(poi.x, isGas ? 2.5 : 1.0, poi.z);
-        ringMesh._pulsePhase = idx;
-        scene.add(ringMesh);
-        poiMeshes.push(ringMesh);
-      });
-
-      // Discovery card overlay
-      var discCard = document.createElement('div');
-      discCard.style.cssText = 'position:absolute;bottom:56px;right:8px;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);border-radius:12px;padding:12px 16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:11;border:1px solid rgba(251,191,36,0.4);max-width:280px;opacity:0;transition:opacity 0.5s,transform 0.5s;transform:translateY(10px)';
-      canvasEl.parentElement.appendChild(discCard);
-      var discTimeout = null;
-
-      function showDiscovery(poi, idx) {
-        if (discoveredPOIs[idx]) return;
-        discoveredPOIs[idx] = true;
-        var discCount = Object.keys(discoveredPOIs).length;
-        discCard.innerHTML =
-          '<div style="font-weight:bold;font-size:13px;color:#fbbf24;margin-bottom:4px">\uD83D\uDD0D DISCOVERY: ' + poi.name + '</div>' +
-          '<div style="color:#e2e8f0;margin-bottom:4px;line-height:1.4">' + poi.desc + '</div>' +
-          '<div style="color:#67e8f9;font-size:10px;font-style:italic;border-top:1px solid rgba(251,191,36,0.2);padding-top:4px">\uD83D\uDCA1 ' + poi.fact + '</div>' +
-          '<div style="color:#34d399;font-size:10px;font-weight:bold;margin-top:4px">\u2B50 +10 XP \u2022 ' + discCount + '/' + totalPOIs + ' discovered</div>';
-        discCard.style.opacity = '1';
-        discCard.style.transform = 'translateY(0)';
-        // Award XP
-        if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 10);
-        if (discTimeout) clearTimeout(discTimeout);
-        discTimeout = setTimeout(function () {
-          discCard.style.opacity = '0';
-          discCard.style.transform = 'translateY(10px)';
-        }, 7000);
-      }
-
-      // ── Mission Card Overlay (M key toggle) ──
-      var missionCard = document.createElement('div');
-      missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.3);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none';
-      var missionIcon = isGas ? '\uD83D\uDEF8' : '\uD83D\uDE97';
-      var missionType = isGas ? 'Atmospheric Survey' : 'Surface Exploration';
-      missionCard.innerHTML =
-        '<div style="text-align:center;margin-bottom:12px">' +
-        '<div style="font-size:32px;margin-bottom:4px">' + missionIcon + '</div>' +
-        '<div style="font-weight:bold;font-size:16px;color:#7dd3fc;letter-spacing:1px">{t('stem.planet_view.mission_briefing')}</div>' +
-          '<div style="color:#94a3b8;font-size:11px">' + missionType + ' \u2014 ' + sel.name + '</div>' +
-          '</div>' +
-          '<div style="background:rgba(56,189,248,0.1);border-radius:10px;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.15)">' +
-          '<div style="font-weight:bold;color:#38bdf8;margin-bottom:4px">\uD83C\uDFAF Objectives</div>' +
-          '<div id="mission-objectives" style="color:#e2e8f0;line-height:1.8">' +
-          pois.map(function (p, i) { return '<div id="obj-' + i + '" style="font-size:11px">\u2610 Discover ' + p.name + '</div>'; }).join('') +
-          '</div>' +
-          '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
-          '<div style="background:rgba(251,191,36,0.1);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid rgba(251,191,36,0.15)">' +
-          '<div style="color:#fbbf24;font-weight:bold;font-size:14px" id="mission-disc-count">0/' + totalPOIs + '</div>' +
-          '<div style="color:#94a3b8;font-size:9px">{t('stem.planet_quiz.discoveries')}</div></div>' +
-            '<div style="background:rgba(52,211,153,0.1);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid rgba(52,211,153,0.15)">' +
-            '<div style="color:#34d399;font-weight:bold;font-size:14px" id="mission-xp-count">0</div>' +
-            '<div style="color:#94a3b8;font-size:9px">{t('stem.planet_quiz.xp_earned')}</div></div>' +
-              '</div>' +
-              '<div style="text-align:center;color:#64748b;font-size:10px">Press <span style="color:#38bdf8;font-weight:bold">M</span> to close \u2022 <span style="color:#38bdf8;font-weight:bold">{t('stem.planet_quiz.wasd')}</span> to move \u2022 <span style="color:#38bdf8;font-weight:bold">V</span> to toggle view</div>';
-      canvasEl.parentElement.appendChild(missionCard);
-      var missionVisible = false;
-
-      // Telemetry tracking state
-      var prevPos = new THREE.Vector3().copy(playerPos);
-      var odometer = 0;
-      var lastSpeed = 0;
-      var scaleFactor = isGas ? 100 : 50; // meters per unit for display
-
-      // ── Science Fact Ticker (bottom of canvas, expanded) ──
-      var ticker = document.createElement('div');
-      ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.2);text-align:center;transition:opacity 0.5s';
-      // Categorized facts with icons
-      var scienceFacts = [
-        // Surface / Geology
-        '\uD83E\uDEA8 ' + (sel.surfaceDesc || sel.fact),
-        '\uD83E\uDEA8 ' + sel.fact,
-        // Climate / Weather
-        '\uD83C\uDF21 A day on ' + sel.name + ' lasts ' + (sel.dayLen || '?') + '. A year lasts ' + (sel.yearLen || '?') + '.',
-        '\uD83C\uDF21 Gravity on ' + sel.name + ' is ' + gravLabel + ' compared to Earth\u2019s 1.0g.',
-        // Scale comparisons
-        '\uD83C\uDF0D ' + sel.name + '\u2019s diameter is ' + (sel.diameter || '?') + (sel.name !== t('stem.solar_sys.earth') ? ' (Earth: 12,742 km).' : '.'),
-        // Gas vs rocky
-        isGas ? '\uD83E\uDEA8 Gas giants have no solid surface \u2014 you would fall forever through ever-denser gas layers.' : '\uD83E\uDEA8 The terrain is generated from real-world elevation science for ' + sel.terrainType + ' surfaces.',
-        isGas ? '\uD83C\uDF21 If you parachuted into ' + sel.name + ', you would never touch ground \u2014 just endless clouds.' : '\uD83E\uDEA8 The surface of ' + sel.name + ' is made of ' + (sel.surface || 'rock and dust') + '.',
-        // Planet-specific unique facts
-        sel.name === t('stem.periodic.mercury') ? '\uD83D\uDE80 MESSENGER orbited Mercury 2011\u20132015, mapping the entire surface and discovering ice in polar craters.' : sel.name === t('stem.solar_sys.venus') ? '\uD83D\uDE80 Soviet Venera 13 survived 127 minutes on Venus\u2019s surface in 1982 \u2014 still a record.' : sel.name === t('stem.solar_sys.earth') ? '\uD83D\uDE80 The ISS orbits Earth every 90 minutes at 27,600 km/h, 408 km above us.' : sel.name === t('stem.solar_sys.mars') ? '\uD83D\uDE80 Perseverance landed Feb 2021 in Jezero Crater, searching for signs of ancient microbial life.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83D\uDE80 Juno has been orbiting Jupiter since 2016, peering beneath the cloud tops with microwave sensors.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83D\uDE80 Cassini orbited Saturn for 13 years (2004\u20132017) before its grand finale plunge into the atmosphere.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83D\uDE80 Only Voyager 2 has visited Uranus, flying by in January 1986 and discovering 10 new moons.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83D\uDE80 Voyager 2 is the only spacecraft to visit Neptune, flying by in August 1989.' : '\uD83D\uDE80 NASA\u2019s New Horizons flew past Pluto in July 2015, revealing a geologically active world.',
-        // More planet-specific facts
-        sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Uranus was knocked on its side by an ancient collision with an Earth-sized object.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.periodic.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
-        // Chemistry / science
-        '\uD83E\uDDEA Atmosphere: ' + atmosLabel,
-        sel.name === t('stem.solar_sys.mars') ? '\uD83E\uDDEA Mars\u2019s red color comes from iron oxide (rust) in its soil \u2014 the entire planet is literally rusty.' : sel.name === t('stem.solar_sys.venus') ? '\uD83E\uDDEA Venus\u2019s clouds contain sulfuric acid droplets \u2014 rain evaporates before reaching the surface.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDDEA Jupiter\u2019s interior contains metallic hydrogen \u2014 hydrogen so compressed it conducts electricity like a metal.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83E\uDDEA Titan\u2019s thick atmosphere is mostly nitrogen, like Earth\u2019s, but with methane playing the role of water.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83E\uDDEA Methane in Uranus\u2019s upper atmosphere absorbs red light, giving it that distinctive blue-green color.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDDEA Neptune\u2019s vivid blue is from methane \u2014 but a still-unknown compound makes it bluer than Uranus.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83E\uDDEA Tholins on Pluto\u2019s surface are complex organic molecules \u2014 building blocks for prebiotic chemistry.' : sel.name === t('stem.solar_sys.earth') ? '\uD83E\uDDEA Earth\u2019s ozone layer (O\u2083) absorbs 97\u201399% of the Sun\u2019s UV radiation, making life on land possible.' : '\uD83E\uDDEA Mercury\u2019s exosphere contains sodium, pumped off the surface by solar photons.'
-      ].filter(Boolean);
-      var factIdx = 0;
-      ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[0];
-      canvasEl.parentElement.appendChild(ticker);
-      var factTimer = setInterval(function () {
-        factIdx = (factIdx + 1) % scienceFacts.length;
-        ticker.style.opacity = '0';
-        setTimeout(function () { ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[factIdx]; ticker.style.opacity = '1'; }, 400);
-      }, 6000);
-
-      // ── Compass / bearing indicator (top-right) ──
-      var compass = document.createElement('div');
-      compass.style.cssText = 'position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
-      compass.innerHTML = '\uD83E\uDDED';
-      canvasEl.parentElement.appendChild(compass);
-
-      // ── 3rd-person camera toggle (V key) + Mission card (M key) ──
-      var thirdPerson = false;
-      var tpOffset = new THREE.Vector3(0, 3, 6);
-      canvasEl.addEventListener('keydown', function (e) {
-        if (e.key === 'v' || e.key === 'V') {
-          thirdPerson = !thirdPerson;
-          var label = document.getElementById('hud-mode');
-          if (label) {
-            var viewLabel = thirdPerson ? ' [3RD PERSON]' : ' [1ST PERSON]';
-            label.textContent = modeLabel + viewLabel;
-          }
-        }
-        if (e.key === 'm' || e.key === 'M') {
-          missionVisible = !missionVisible;
-          missionCard.style.display = missionVisible ? 'block' : 'none';
-          setTimeout(function () { missionCard.style.opacity = missionVisible ? '1' : '0'; }, 10);
-        }
-      });
-
-      // ── Animation loop with 3rd-person + compass ──
-      function animate3dV2() {
-        animId3d = requestAnimationFrame(animate3dV2);
-        tick3d++;
-        // Movement
-        var dir = new THREE.Vector3();
-        if (moveState.forward) dir.z -= 1;
-        if (moveState.back) dir.z += 1;
-        if (moveState.left) dir.x -= 1;
-        if (moveState.right) dir.x += 1;
-        dir.normalize().multiplyScalar(speed3d);
-        dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-        playerPos.add(dir);
-        if (moveState.up) playerPos.y += speed3d;
-        if (moveState.down) playerPos.y = Math.max(isGas ? 1 : 1.0, playerPos.y - speed3d);
-        if (!isGas) playerPos.y = Math.max(1.6, playerPos.y);
-
-        if (thirdPerson) {
-          // 3rd person: camera behind and above
-          var behind = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiplyScalar(6);
-          camera.position.set(playerPos.x + behind.x, playerPos.y + 3, playerPos.z + behind.z);
-          camera.lookAt(playerPos.x, playerPos.y, playerPos.z);
-        } else {
-          camera.position.copy(playerPos);
-          camera.rotation.order = 'YXZ';
-          camera.rotation.y = yaw;
-          camera.rotation.x = pitch;
-        }
-
-        // Animate clouds
-        scene.children.forEach(function (c) {
-          if (c._cloudSpeed) {
-            c.position.x = Math.sin(tick3d * c._cloudSpeed) * 2;
-            c.position.z = Math.cos(tick3d * c._cloudSpeed * 0.7) * 1.5;
-          }
-        });
-
-        // Diamond rain
-        if (typeof diamonds !== 'undefined' && diamonds) {
-          var dArr = diamonds.geometry.attributes.position.array;
-          for (var dri = 0; dri < dArr.length; dri += 3) {
-            dArr[dri + 1] -= 0.05;
-            if (dArr[dri + 1] < -5) dArr[dri + 1] = 20;
-          }
-          diamonds.geometry.attributes.position.needsUpdate = true;
-        }
-
-        // Update compass bearing
-        var deg = ((yaw * 180 / Math.PI) % 360 + 360) % 360;
-        var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-        var dirLabel = dirs[Math.round(deg / 45) % 8];
-        compass.textContent = dirLabel;
-
-        // ── Live telemetry updates (every 3 frames for perf) ──
-        if (tick3d % 3 === 0) {
-          var dx = playerPos.x - prevPos.x, dz = playerPos.z - prevPos.z, dy = playerPos.y - prevPos.y;
-          var frameDist = Math.sqrt(dx * dx + dy * dy + dz * dz) * scaleFactor;
-          odometer += frameDist;
-          lastSpeed = frameDist * 20; // ~60fps/3 = 20 updates/s
-          prevPos.copy(playerPos);
-
-          var altEl = document.getElementById('hud-alt');
-          var spdEl = document.getElementById('hud-spd');
-          var hdgEl = document.getElementById('hud-hdg');
-          var posEl = document.getElementById('hud-pos');
-          var odoEl = document.getElementById('hud-odo');
-          var dscEl = document.getElementById('hud-disc');
-          var altitude = ((playerPos.y - (isGas ? 0 : 1.6)) * scaleFactor).toFixed(0);
-          if (altEl) altEl.textContent = altitude + ' m';
-          if (spdEl) spdEl.textContent = lastSpeed.toFixed(1) + ' m/s';
-          if (hdgEl) hdgEl.textContent = dirLabel + ' ' + Math.round(deg) + '\u00B0';
-          if (posEl) posEl.textContent = (playerPos.x * 10).toFixed(1) + ', ' + (playerPos.z * 10).toFixed(1);
-          if (odoEl) odoEl.textContent = odometer > 1000 ? (odometer / 1000).toFixed(1) + ' km' : Math.round(odometer) + ' m';
-          if (dscEl) dscEl.textContent = Object.keys(discoveredPOIs).length + ' / ' + totalPOIs;
-        }
-
-        // ── POI proximity detection (every 10 frames) ──
-        if (tick3d % 10 === 0) {
-          for (var pi2 = 0; pi2 < pois.length; pi2++) {
-            var poi = pois[pi2];
-            var pdx = playerPos.x - poi.x, pdz = playerPos.z - poi.z;
-            var poiDist = Math.sqrt(pdx * pdx + pdz * pdz);
-            if (poiDist < 4 && !discoveredPOIs[pi2]) {
-              showDiscovery(poi, pi2);
-              // Update mission card objectives
-              var objEl = document.getElementById('obj-' + pi2);
-              if (objEl) { objEl.innerHTML = '\u2611 <span style="color:#34d399;text-decoration:line-through">' + poi.name + '</span> \u2714'; }
-              var dcEl = document.getElementById('mission-disc-count');
-              if (dcEl) dcEl.textContent = Object.keys(discoveredPOIs).length + '/' + totalPOIs;
-              var xpEl = document.getElementById('mission-xp-count');
-              if (xpEl) xpEl.textContent = (Object.keys(discoveredPOIs).length * 10) + '';
-            }
-          }
-        }
-
-        // ── Pulse POI markers (animate opacity) ──
-        poiMeshes.forEach(function (m) {
-          if (m._pulsePhase !== undefined) {
-            m.material.opacity = 0.2 + Math.abs(Math.sin(tick3d * 0.03 + m._pulsePhase)) * 0.3;
-          } else if (m._poiIdx !== undefined && discoveredPOIs[m._poiIdx]) {
-            m.material.color.setHex(0x34d399); // green when discovered
-            m.material.opacity = 0.4;
-          } else if (m._poiIdx !== undefined) {
-            m.material.opacity = 0.5 + Math.abs(Math.sin(tick3d * 0.05)) * 0.3;
-          }
-        });
-
-        // ── Update rover/probe model position ──
-        roverGroup.position.x = playerPos.x;
-        roverGroup.position.z = playerPos.z;
-        if (!isGas) {
-          roverGroup.position.y = 0; // wheels on ground
-          roverGroup.rotation.y = yaw + Math.PI; // face movement direction
-        } else {
-          roverGroup.position.y = playerPos.y - 0.5;
-          roverGroup.rotation.y = yaw + Math.PI;
-          // Probe lights blink
-          if (redLight && greenLight) {
-            redLight.material.emissiveIntensity = Math.sin(tick3d * 0.1) > 0 ? 1.0 : 0.1;
-            greenLight.material.emissiveIntensity = Math.sin(tick3d * 0.1) > 0 ? 0.1 : 1.0;
-          }
-        }
-        // Hide rover in 1st person, show in 3rd
-        roverGroup.visible = thirdPerson;
-
-        renderer.render(scene, camera);
-      }
-      animId3d = requestAnimationFrame(animate3dV2);
-
-      // Resize handler
-      var ro3d = new ResizeObserver(function () {
-        W = canvasEl.offsetWidth; H = canvasEl.offsetHeight;
-        camera.aspect = W / H; camera.updateProjectionMatrix();
-        renderer.setSize(W, H);
-      });
-      ro3d.observe(canvasEl);
-
-      canvasEl._droneCleanup = function () {
-        cancelAnimationFrame(animId3d);
-        clearInterval(factTimer);
-        clearInterval(hazardTimer);
-        document.removeEventListener('mousemove', onMouseMove);
-        if (document.pointerLockElement === canvasEl) document.exitPointerLock();
-        ro3d.disconnect();
-        renderer.dispose();
-        if (hud.parentElement) hud.parentElement.removeChild(hud);
-        if (ticker.parentElement) ticker.parentElement.removeChild(ticker);
-        if (compass.parentElement) compass.parentElement.removeChild(compass);
-        if (hazardEl.parentElement) hazardEl.parentElement.removeChild(hazardEl);
-        if (discCard.parentElement) discCard.parentElement.removeChild(discCard);
-        if (missionCard.parentElement) missionCard.parentElement.removeChild(missionCard);
-        if (discTimeout) clearTimeout(discTimeout);
-      };
-      canvasEl._droneRO = ro3d;
-    }
 
                       // Load Three.js and init
                       if (window.THREE) { doInit(window.THREE); }
-  else {
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.onload = function () { doInit(window.THREE); };
-    document.head.appendChild(s);
-  }
-}
-                  }),
-// ── Quiz Mode ──
-React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
-  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-    React.createElement("button", {
-      onClick: () => {
-        const QUIZ_QS = [
-          { q: 'Which planet is the hottest?', a: t('stem.solar_sys.venus'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!' },
-          { q: 'Which planet has the most moons?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.uranus'), t('stem.solar_sys.neptune')], tip: 'Saturn has 146 known moons as of 2024!' },
-          { q: 'Which planet rotates on its side?', a: t('stem.solar_sys.uranus'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn'), t('stem.solar_sys.pluto')], tip: 'Uranus has an axial tilt of 97.77\u00B0!' },
-          { q: 'Which is the smallest planet?', a: t('stem.periodic.mercury'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.mars'), t('stem.solar_sys.pluto'), t('stem.solar_sys.venus')], tip: 'Mercury is only 4,879 km in diameter.' },
-          { q: 'Which planet has the longest year?', a: t('stem.solar_sys.pluto'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.pluto'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn')], tip: 'Pluto takes 248 Earth years to orbit the Sun!' },
-          { q: 'Which planet has the shortest day?', a: t('stem.solar_sys.jupiter'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.earth'), t('stem.solar_sys.mars')], tip: 'Jupiter rotates in just 10 hours!' },
-          { q: 'Which planet is known as the Red Planet?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.periodic.mercury'), t('stem.solar_sys.jupiter')], tip: 'Iron oxide (rust) gives Mars its red color.' },
-          { q: 'Which planet could float in water?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!' },
-          { q: 'Where is the tallest volcano in the solar system?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.earth'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!' },
-          { q: 'Which planet has the strongest winds?', a: t('stem.solar_sys.neptune'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Neptune\u2019s winds reach 2,100 km/h!' },
-        ];
-        const q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-        upd('quiz', { ...q, answered: false, correct: null, score: d.quiz?.score || 0, streak: d.quiz?.streak || 0 });
-      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
-    }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
-    d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak")
-  ),
-  d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200 animate-in slide-in-from-bottom" },
-    React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, d.quiz.q),
-    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-      d.quiz.opts.map(function (opt) {
-        var isCorrect = opt === d.quiz.a;
-        var wasChosen = d.quiz.chosen === opt;
-        var cls = !d.quiz.answered ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50' : isCorrect ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : wasChosen && !isCorrect ? 'bg-red-100 text-red-800 border-red-300' : 'bg-slate-50 text-slate-400 border-slate-200';
-        return React.createElement("button", {
-          key: opt, disabled: d.quiz.answered, onClick: function () {
-            var correct = opt === d.quiz.a;
-            upd('quiz', Object.assign({}, d.quiz, { answered: true, correct: correct, chosen: opt, score: d.quiz.score + (correct ? 1 : 0), streak: correct ? d.quiz.streak + 1 : 0 }));
-            if (correct) addToast(t('stem.planet_quiz.u2705_correct') + d.quiz.tip, 'success');
-            else addToast(t('stem.planet_quiz.u274c_the_answer_is') + d.quiz.a + '. ' + d.quiz.tip, 'error');
-          }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
-        }, opt);
-      })
+      else {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        s.onload = function () { doInit(window.THREE); };
+        document.head.appendChild(s);
+      }
+    }
+  }),
+  // ── Quiz Mode ──
+  React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+      React.createElement("button", {
+        onClick: () => {
+          const QUIZ_QS = [
+            { q: 'Which planet is the hottest?', a: t('stem.solar_sys.venus'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!' },
+            { q: 'Which planet has the most moons?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.uranus'), t('stem.solar_sys.neptune')], tip: 'Saturn has 146 known moons as of 2024!' },
+            { q: 'Which planet rotates on its side?', a: t('stem.solar_sys.uranus'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn'), t('stem.solar_sys.pluto')], tip: 'Uranus has an axial tilt of 97.77\u00B0!' },
+            { q: 'Which is the smallest planet?', a: t('stem.periodic.mercury'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.mars'), t('stem.solar_sys.pluto'), t('stem.solar_sys.venus')], tip: 'Mercury is only 4,879 km in diameter.' },
+            { q: 'Which planet has the longest year?', a: t('stem.solar_sys.pluto'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.pluto'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn')], tip: 'Pluto takes 248 Earth years to orbit the Sun!' },
+            { q: 'Which planet has the shortest day?', a: t('stem.solar_sys.jupiter'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.earth'), t('stem.solar_sys.mars')], tip: 'Jupiter rotates in just 10 hours!' },
+            { q: 'Which planet is known as the Red Planet?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.periodic.mercury'), t('stem.solar_sys.jupiter')], tip: 'Iron oxide (rust) gives Mars its red color.' },
+            { q: 'Which planet could float in water?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!' },
+            { q: 'Where is the tallest volcano in the solar system?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.earth'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!' },
+            { q: 'Which planet has the strongest winds?', a: t('stem.solar_sys.neptune'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Neptune\u2019s winds reach 2,100 km/h!' },
+          ];
+          const q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+          upd('quiz', { ...q, answered: false, correct: null, score: d.quiz?.score || 0, streak: d.quiz?.streak || 0 });
+        }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
+      }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+      d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct | \uD83D\uDD25 " + d.quiz.streak + " streak")
     ),
-    d.quiz.answered && React.createElement("p", { className: "mt-2 text-xs text-indigo-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
-  ),
-  // ── Planet Comparison ──
-  React.createElement("div", { className: "mt-3" },
-    React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD0D Compare Planets"),
-    React.createElement("div", { className: "flex gap-2 mb-2" },
-      React.createElement("select", { value: d.compare1 || '', onChange: function (e) { upd('compare1', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
-        React.createElement("option", { value: "" }, "Select..."),
-        PLANETS.map(function (p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
-      ),
-      React.createElement("span", { className: "text-slate-400 font-bold self-center" }, "vs"),
-      React.createElement("select", { value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
-        React.createElement("option", { value: "" }, "Select..."),
-        PLANETS.map(function (p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
-      )
-    ),
-    d.compare1 && d.compare2 && (function () {
-      var p1 = PLANETS.find(function (p) { return p.name === d.compare1; });
-      var p2 = PLANETS.find(function (p) { return p.name === d.compare2; });
-      if (!p1 || !p2) return null;
-      var GRAVITY = { Mercury: 0.38, Venus: 0.91, Earth: 1.0, Mars: 0.38, Jupiter: 2.34, Saturn: 1.06, Uranus: 0.92, Neptune: 1.19, Pluto: 0.06 };
-      return React.createElement("div", { className: "grid grid-cols-3 gap-1 text-center text-xs" },
-        [['', p1.name, p2.name], ['\uD83C\uDF21 Temp', p1.temp, p2.temp], ['\u2600 Day', p1.dayLen, p2.dayLen], ['\uD83C\uDF0D Year', p1.yearLen, p2.yearLen], ['\uD83D\uDCCF Size', p1.diameter, p2.diameter], ['\uD83C\uDF11 Moons', p1.moons, p2.moons], ['\u2696 Gravity', (GRAVITY[p1.name] || 1).toFixed(2) + 'g', (GRAVITY[p2.name] || 1).toFixed(2) + 'g'], ['\uD83E\uDDD1 70kg on', Math.round(70 * (GRAVITY[p1.name] || 1)) + 'kg', Math.round(70 * (GRAVITY[p2.name] || 1)) + 'kg']].map(function (row, ri) {
-          return React.createElement(React.Fragment, { key: ri },
-            row.map(function (cell, ci) {
-              return React.createElement("div", { key: ci, className: "py-1 " + (ri === 0 ? 'font-black text-slate-700' : ci === 0 ? 'font-bold text-slate-500' : 'font-bold text-slate-700') + (ri > 0 && ri % 2 === 0 ? ' bg-slate-50' : '') }, cell);
-            })
-          );
+    d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200 animate-in slide-in-from-bottom" },
+      React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, d.quiz.q),
+      React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+        d.quiz.opts.map(function (opt) {
+          var isCorrect = opt === d.quiz.a;
+          var wasChosen = d.quiz.chosen === opt;
+          var cls = !d.quiz.answered ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50' : isCorrect ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : wasChosen && !isCorrect ? 'bg-red-100 text-red-800 border-red-300' : 'bg-slate-50 text-slate-400 border-slate-200';
+          return React.createElement("button", {
+            key: opt, disabled: d.quiz.answered, onClick: function () {
+              var correct = opt === d.quiz.a;
+              upd('quiz', Object.assign({}, d.quiz, { answered: true, correct: correct, chosen: opt, score: d.quiz.score + (correct ? 1 : 0), streak: correct ? d.quiz.streak + 1 : 0 }));
+              if (correct) addToast(t('stem.planet_quiz.u2705_correct') + d.quiz.tip, 'success');
+              else addToast(t('stem.planet_quiz.u274c_the_answer_is') + d.quiz.a + '. ' + d.quiz.tip, 'error');
+            }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+          }, opt);
         })
-      );
-    })()
-  )
-),
+      ),
+      d.quiz.answered && React.createElement("p", { className: "mt-2 text-xs text-indigo-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
+    ),
+    // ── Planet Comparison ──
+    React.createElement("div", { className: "mt-3" },
+      React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD0D Compare Planets"),
+      React.createElement("div", { className: "flex gap-2 mb-2" },
+        React.createElement("select", { value: d.compare1 || '', onChange: function (e) { upd('compare1', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
+          React.createElement("option", { value: "" }, "Select..."),
+          PLANETS.map(function (p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
+        ),
+        React.createElement("span", { className: "text-slate-400 font-bold self-center" }, "vs"),
+        React.createElement("select", { value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
+          React.createElement("option", { value: "" }, "Select..."),
+          PLANETS.map(function (p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
+        )
+      ),
+      d.compare1 && d.compare2 && (function () {
+        var p1 = PLANETS.find(function (p) { return p.name === d.compare1; });
+        var p2 = PLANETS.find(function (p) { return p.name === d.compare2; });
+        if (!p1 || !p2) return null;
+        var GRAVITY = { Mercury: 0.38, Venus: 0.91, Earth: 1.0, Mars: 0.38, Jupiter: 2.34, Saturn: 1.06, Uranus: 0.92, Neptune: 1.19, Pluto: 0.06 };
+        return React.createElement("div", { className: "grid grid-cols-3 gap-1 text-center text-xs" },
+          [['', p1.name, p2.name], ['\uD83C\uDF21 Temp', p1.temp, p2.temp], ['\u2600 Day', p1.dayLen, p2.dayLen], ['\uD83C\uDF0D Year', p1.yearLen, p2.yearLen], ['\uD83D\uDCCF Size', p1.diameter, p2.diameter], ['\uD83C\uDF11 Moons', p1.moons, p2.moons], ['\u2696 Gravity', (GRAVITY[p1.name] || 1).toFixed(2) + 'g', (GRAVITY[p2.name] || 1).toFixed(2) + 'g'], ['\uD83E\uDDD1 70kg on', Math.round(70 * (GRAVITY[p1.name] || 1)) + 'kg', Math.round(70 * (GRAVITY[p2.name] || 1)) + 'kg']].map(function (row, ri) {
+            return React.createElement(React.Fragment, { key: ri },
+              row.map(function (cell, ci) {
+                return React.createElement("div", { key: ci, className: "py-1 " + (ri === 0 ? 'font-black text-slate-700' : ci === 0 ? 'font-bold text-slate-500' : 'font-bold text-slate-700') + (ri > 0 && ri % 2 === 0 ? ' bg-slate-50' : '') }, cell);
+              })
+            );
+          })
+        );
+      })()
+    )
+  ),
                 ),
               ),
-React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.planet_quiz.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+  React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.planet_quiz.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           );
-        }) (),
+})(),
 
   stemLabTab === 'explore' && stemLabTool === 'galaxy' && (() => {
     var d = labToolData.galaxy || {};
