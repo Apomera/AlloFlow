@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
     // stem_lab_module.js
     // Auto-extracted from AlloFlowANTI.txt
@@ -7,6 +7,7 @@
 
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.StemLab = function StemLabModal(props) {
+    const t = props.t || (k => k);
       const {
         ArrowLeft,
         Calculator,
@@ -162,7 +163,7 @@
           xpState._total = total;
           return Object.assign({}, prev, { _stemXP: xpState });
         });
-        if (addToast) addToast('\u2B50 +' + Math.min(points, 100) + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
+        if (addToast) addToast(t('stem.common.u2b50') + Math.min(points, 100) + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
       }
       function getStemXP(activityId) {
         return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
@@ -171,6 +172,106 @@
         return 100 - getStemXP(activityId);
       }
       var totalStemXP = stemXpData._total || 0;
+
+      // ── Theme Detection (reads DOM class from parent app) ──
+      var _stemTheme = 'light';
+      try {
+        if (document.querySelector('.theme-dark')) _stemTheme = 'dark';
+        else if (document.querySelector('.theme-contrast')) _stemTheme = 'contrast';
+      } catch (e) { }
+      var isDark = _stemTheme === 'dark';
+      var isContrast = _stemTheme === 'contrast';
+      // Palette shortcuts for canvas rendering
+      var _pal = isDark ? { bg: '#1e293b', bgAlt: '#334155', text: '#f1f5f9', textMuted: '#94a3b8', border: '#475569', card: '#1e293b', accent: '#38bdf8' }
+        : isContrast ? { bg: '#000000', bgAlt: '#1a1a1a', text: '#ffffff', textMuted: '#e2e8f0', border: '#fbbf24', card: '#000000', accent: '#fbbf24' }
+          : { bg: '#ffffff', bgAlt: '#f8fafc', text: '#1e293b', textMuted: '#64748b', border: '#e2e8f0', card: '#ffffff', accent: '#3b82f6' };
+
+      // ── localStorage persistence ──
+      if (!labToolData._persisted) {
+        try {
+          var _saved = localStorage.getItem('alloflow_stemlab_v2');
+          if (_saved) {
+            var _parsed = JSON.parse(_saved);
+            if (_parsed && typeof _parsed === 'object') {
+              setLabToolData(function (prev) { return Object.assign({}, prev, _parsed, { _persisted: true }); });
+            }
+          } else {
+            setLabToolData(function (prev) { return Object.assign({}, prev, { _persisted: true }); });
+          }
+        } catch (e) {
+          setLabToolData(function (prev) { return Object.assign({}, prev, { _persisted: true }); });
+        }
+      }
+      // Save to localStorage on meaningful changes (debounced via flag)
+      if (labToolData._persisted && !labToolData._saving) {
+        try {
+          var _toSave = {};
+          ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', '_tutorialSeen'].forEach(function (k) {
+            if (labToolData[k]) _toSave[k] = labToolData[k];
+          });
+          localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
+        } catch (e) { }
+      }
+
+      // ── Tutorial Overlay Helper ──
+      var _tutorialSeen = labToolData._tutorialSeen || {};
+      function markTutorialSeen(toolId) {
+        setLabToolData(function (prev) {
+          var seen = Object.assign({}, prev._tutorialSeen || {});
+          seen[toolId] = true;
+          return Object.assign({}, prev, { _tutorialSeen: seen });
+        });
+      }
+      function renderTutorial(toolId, steps) {
+        if (_tutorialSeen[toolId]) return null;
+        var step = labToolData._tutorialStep || 0;
+        if (step >= steps.length) { markTutorialSeen(toolId); return null; }
+        var s = steps[step];
+        // Theme-aware styles (inline to survive parent .theme-contrast [class*="bg-"] override)
+        var _tutBg = isContrast ? { backgroundColor: '#000', color: '#fff', border: '3px solid #fbbf24' }
+          : isDark ? { backgroundColor: '#312e81', color: '#e0e7ff', border: '2px solid #818cf8' }
+            : { backgroundColor: '#4f46e5', color: '#fff', border: '2px solid #818cf8' };
+        var _tutBtn = isContrast ? { backgroundColor: '#fbbf24', color: '#000' }
+          : isDark ? { backgroundColor: '#e0e7ff', color: '#312e81' }
+            : { backgroundColor: '#fff', color: '#4f46e5' };
+        var _tutSkip = isContrast ? { color: '#fbbf24' } : { color: '#a5b4fc' };
+        return React.createElement("div", { className: "absolute z-50 animate-in fade-in duration-300", style: { top: s.top || '50%', left: s.left || '50%', transform: 'translate(-50%,-50%)', maxWidth: '280px' } },
+          React.createElement("div", { className: "rounded-xl p-3 shadow-xl", style: Object.assign({}, _tutBg, { animation: 'pulse 2s infinite' }) },
+            React.createElement("p", { className: "text-xs font-bold mb-1" }, "\uD83D\uDCA1 Step " + (step + 1) + " of " + steps.length),
+            React.createElement("p", { className: "text-xs leading-relaxed" }, s.text),
+            React.createElement("div", { className: "flex gap-2 mt-2 justify-end" },
+              React.createElement("button", { onClick: function () { markTutorialSeen(toolId); setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: 0 }); }); }, className: "px-2 py-1 text-[10px]", style: _tutSkip }, "Skip"),
+              React.createElement("button", { onClick: function () { setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: (p._tutorialStep || 0) + 1 }); }); }, className: "px-3 py-1 text-[10px] font-bold rounded-lg", style: _tutBtn }, step < steps.length - 1 ? "Next \u2192" : "Got it! \u2705")
+            )
+          )
+        );
+      }
+
+      // ── Tutorial Step Definitions ──
+      var _tutCalculus = [
+        { text: 'Welcome to the Calculus Visualizer! Adjust the sliders for a, b, c to change the curve f(x) = ax\u00B2 + bx + c.', top: '30%', left: '50%' },
+        { text: 'Set xMin and xMax to define the integration bounds, then watch the area fill in real-time.', top: '50%', left: '50%' },
+        { text: 'Switch between Left Riemann, Right Riemann, Midpoint, and Trapezoidal methods to see how they approximate the integral differently.', top: '70%', left: '50%' },
+        { text: 'The convergence mini-chart below shows how the error shrinks as the number of rectangles increases. Try it!', top: '85%', left: '50%' }
+      ];
+      var _tutWave = [
+        { text: 'Welcome to the Wave Simulator! Drag the Amplitude and Frequency sliders to shape your wave.', top: '30%', left: '50%' },
+        { text: 'Switch wave types — Sine, Square, Triangle, or Sawtooth — to explore different waveforms.', top: '50%', left: '50%' },
+        { text: 'Enable the second wave to see superposition — two waves combining into one!', top: '65%', left: '50%' },
+        { text: 'Use keyboard shortcuts: Arrow Up/Down for amplitude, Left/Right for frequency, +/- for speed.', top: '80%', left: '50%' }
+      ];
+      var _tutPhysics = [
+        { text: 'Welcome to the Projectile Physics Lab! Adjust the angle and velocity sliders to set up your launch.', top: '25%', left: '50%' },
+        { text: 'Click "Launch" (or press Space) to fire the projectile. Watch it trace a parabolic arc!', top: '45%', left: '50%' },
+        { text: 'Tweak gravity and wind to see how forces change the trajectory. Use WASD keys for fine control.', top: '65%', left: '50%' },
+        { text: 'Check the flight stats panel for max height, range, and flight time. Try challenge mode to predict landings!', top: '85%', left: '50%' }
+      ];
+      var _tutGalaxy = [
+        { text: 'Welcome to the Galaxy Simulator! Click and drag to orbit around the galaxy, scroll to zoom.', top: '25%', left: '50%' },
+        { text: 'Adjust Star Count and Arm Count to change the galaxy\'s structure. Watch the spiral arms reform!', top: '45%', left: '50%' },
+        { text: 'Click on any star to identify its spectral type (O, B, A, F, G, K, M) — the hottest stars are blue!', top: '65%', left: '50%' },
+        { text: 'Use keyboard: Arrow keys to orbit, +/- to zoom, R to reset view. Try the quiz to test your knowledge!', top: '80%', left: '50%' }
+      ];
 
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
@@ -187,7 +288,7 @@
         className: "flex items-center gap-3"
       }, React.createElement("div", {
         className: "flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-full px-3 py-1 text-xs font-bold",
-        title: "Total STEM Lab XP earned across all activities"
+        title: t('stem.solver.total_stem_lab_xp_earned')
       }, React.createElement("span", null, "⭐"), React.createElement("span", null, totalStemXP + " XP")),
       /*#__PURE__*/React.createElement("div", {
         className: "bg-white/20 p-2 rounded-lg"
@@ -236,11 +337,11 @@
       }, [{
         id: 'create',
         label: '\uD83D\uDCDD Create',
-        desc: 'Generate & assess'
+        desc: t('stem.solver.generate_assess')
       }, {
         id: 'explore',
         label: '\uD83D\uDD27 Explore',
-        desc: 'Manipulatives'
+        desc: t('stem.solver.manipulatives')
       }].map(tab => /*#__PURE__*/React.createElement("button", {
         key: tab.id,
         onClick: () => {
@@ -279,14 +380,14 @@
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-xs font-bold text-slate-400 uppercase"
       }, "Style:"), [{
-        val: 'Step-by-Step',
-        label: 'Step-by-Step'
+        val: t('stem.solver.stepbystep'),
+        label: t('stem.solver.stepbystep')
       }, {
-        val: 'Conceptual',
-        label: 'Conceptual'
+        val: t('stem.solver.conceptual'),
+        label: t('stem.solver.conceptual')
       }, {
         val: 'Real-World Application',
-        label: 'Real-World'
+        label: t('stem.solver.realworld')
       }].map(s => /*#__PURE__*/React.createElement("button", {
         key: s.val,
         onClick: () => setMathMode(s.val),
@@ -335,19 +436,19 @@
       }, "Tools:"), [{
         id: 'volume',
         icon: '📦',
-        label: 'Volume Explorer'
+        label: t('stem.assessment.volume_explorer')
       }, {
         id: 'numberline',
         icon: '📏',
-        label: 'Number Line'
+        label: t('stem.assessment.number_line')
       }, {
         id: 'areamodel',
         icon: '🟧',
-        label: 'Area Model'
+        label: t('stem.assessment.area_model')
       }, {
         id: 'fractionViz',
         icon: '🍕',
-        label: 'Fraction Lab'
+        label: t('stem.assessment.fraction_lab')
       }].map(tool => /*#__PURE__*/React.createElement("button", {
         key: tool.id,
         onClick: () => {
@@ -470,7 +571,7 @@
           if (fluencyBlocks.length > 0 && assessmentBlocks.length === fluencyBlocks.length) {
             startMathFluencyProbe(false);
             setShowStemLab(false);
-            addToast('Fluency drill started! ' + fluencyBlocks.reduce((s, b) => s + b.quantity, 0) + ' problems', 'info');
+            addToast(t('stem.fluency.fluency_drill_started') + fluencyBlocks.reduce((s, b) => s + b.quantity, 0) + ' problems', 'info');
             return;
           }
           const prompt = assessmentBlocks.map((b, i) => i + 1 + '. ' + b.type.replace('_', ' ') + ' (' + b.quantity + '): ' + (b.directive || 'general')).join('\n');
@@ -491,7 +592,7 @@
           const stemAssessment = {
             id: 'stem-' + Date.now(),
             type: 'stem-assessment',
-            title: 'STEM Assessment: ' + (mathSubject || 'General Math'),
+            title: t('stem.fluency.stem_assessment') + (mathSubject || 'General Math'),
             timestamp: Date.now(),
             data: {
               blocks: assessmentBlocks.map(b => ({
@@ -503,7 +604,7 @@
             }
           };
           setHistory(prev => [...prev, stemAssessment]);
-          addToast('STEM Assessment saved to resources (' + assessmentBlocks.length + ' blocks)', 'success');
+          addToast(t('stem.fluency.stem_assessment_saved_to_resources') + assessmentBlocks.length + ' blocks)', 'success');
         },
         className: "py-3 px-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
       }, "\uD83D\uDCBE Save to Resources"), React.createElement("div", { className: "mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4" },
@@ -588,7 +689,7 @@
         }, new Date(snap.timestamp).toLocaleTimeString()))))))), stemLabTab === 'explore' && !stemLabTool && /*#__PURE__*/React.createElement("div", {
           className: "grid grid-cols-2 gap-4 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, [
-          { id: '_cat_MathFundamentals', icon: '', label: 'Math Fundamentals', desc: '', color: 'slate', category: true },
+          { id: '_cat_MathFundamentals', icon: '', label: t('stem.tools_menu.math_fundamentals'), desc: '', color: 'slate', category: true },
           {
             id: 'volume',
             icon: '📦',
@@ -600,7 +701,7 @@
           {
             id: 'numberline',
             icon: '📏',
-            label: 'Number Line',
+            label: t('stem.assessment.number_line'),
             desc: 'Interactive number line with draggable markers. Great for addition, subtraction, fractions.',
             color: 'blue',
             ready: true
@@ -608,7 +709,7 @@
           {
             id: 'areamodel',
             icon: '🟧',
-            label: 'Area Model',
+            label: t('stem.assessment.area_model'),
             desc: 'Visual multiplication and division with color-coded rows and columns.',
             color: 'amber',
             ready: true
@@ -616,7 +717,7 @@
           {
             id: 'fractionViz',
             icon: '🍕',
-            label: 'Fraction Lab',
+            label: t('stem.assessment.fraction_lab'),
             desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
             color: 'rose',
             ready: true
@@ -624,7 +725,7 @@
           {
             id: 'base10',
             icon: '🧮',
-            label: 'Base-10 Blocks',
+            label: t('stem.tools_menu.base10_blocks'),
             desc: 'Place value with ones, tens, hundreds. Regroup and decompose numbers.',
             color: 'orange',
             ready: true
@@ -632,15 +733,15 @@
           {
             id: 'coordinate',
             icon: '📍',
-            label: 'Coordinate Grid',
-            desc: 'Plot points, draw lines, and explore the coordinate plane.',
+            label: t('stem.tools_menu.coordinate_grid'),
+            desc: t('stem.tools_menu.plot_points_draw_lines_and'),
             color: 'cyan',
             ready: true
           },
           {
             id: 'protractor',
             icon: '📐',
-            label: 'Angle Explorer',
+            label: t('stem.tools_menu.angle_explorer'),
             desc: 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
             color: 'purple',
             ready: true
@@ -648,33 +749,33 @@
           {
             id: 'multtable',
             icon: '🔢',
-            label: 'Multiplication Table',
+            label: t('stem.tools_menu.multiplication_table'),
             desc: 'Interactive times table grid. Spot patterns, practice facts with challenges.',
             color: 'pink',
             ready: true
           },
-          { id: '_cat_AdvancedMath', icon: '', label: 'Advanced Math', desc: '', color: 'slate', category: true },
+          { id: '_cat_AdvancedMath', icon: '', label: t('stem.tools_menu.advanced_math'), desc: '', color: 'slate', category: true },
           {
-            id: 'funcGrapher', icon: '📈', label: 'Function Grapher',
+            id: 'funcGrapher', icon: '📈', label: t('stem.tools_menu.function_grapher'),
             desc: 'Plot linear, quadratic, and trig functions. Adjust coefficients in real-time.',
             color: 'indigo', ready: true
           },
           {
-            id: 'inequality', icon: '🎨', label: 'Inequality Grapher',
-            desc: 'Graph inequalities on number lines and coordinate planes.',
+            id: 'inequality', icon: '🎨', label: t('stem.tools_menu.inequality_grapher'),
+            desc: t('stem.tools_menu.graph_inequalities_on_number_lines'),
             color: 'fuchsia', ready: true
           },
           {
-            id: 'calculus', icon: '∫', label: 'Calculus Visualizer',
+            id: 'calculus', icon: '∫', label: t('stem.tools_menu.calculus_visualizer'),
             desc: 'Riemann sums, area under curves, and derivative tangent lines.',
             color: 'red', ready: true
           },
-          { id: 'probability', icon: '\uD83C\uDFB2', label: 'Probability' },
-          { id: 'fractions', icon: '\uD83C\uDF55', label: 'Fractions' },
-          { id: 'unitConvert', icon: '\uD83D\uDCCF', label: 'Unit Converter' },
-          { id: '_cat_Life&EarthScience', icon: '', label: 'Life & Earth Science', desc: '', color: 'slate', category: true },
+          { id: 'probability', icon: '\uD83C\uDFB2', label: t('stem.tools_menu.probability') },
+          { id: 'fractions', icon: '\uD83C\uDF55', label: t('stem.tools_menu.fractions') },
+          { id: 'unitConvert', icon: '\uD83D\uDCCF', label: t('stem.tools_menu.unit_converter') },
+          { id: '_cat_Life&EarthScience', icon: '', label: t('stem.tools_menu.life_earth_science'), desc: '', color: 'slate', category: true },
           {
-            id: 'cell', icon: '🔬', label: 'Cell Simulator',
+            id: 'cell', icon: '🔬', label: t('stem.tools_menu.cell_simulator'),
             desc: 'Microscope mode: observe, control, and quiz on living organisms. Earn XP!',
             color: 'green', ready: true
           },
@@ -684,72 +785,72 @@
             color: 'blue', ready: true
           },
           {
-            id: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy Explorer',
+            id: 'galaxy', icon: '\uD83C\uDF0C', label: t('stem.tools_menu.galaxy_explorer'),
             desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
             color: 'indigo', ready: true
           },
           {
-            id: 'universe', icon: '\uD83C\uDF20', label: 'Universe Time-Lapse',
+            id: 'universe', icon: '\uD83C\uDF20', label: t('stem.tools_menu.universe_timelapse'),
             desc: 'Experience 13.8 billion years of cosmic history, from the Big Bang to the far future.',
             color: 'violet', ready: true
           },
-          { id: 'rocks', icon: '🪨', label: 'Rocks & Minerals', desc: 'Interactive rock cycle, mineral properties & geology', color: '#b45309', cat: 'explore' },
-          { id: 'waterCycle', icon: '\uD83C\uDF0A', label: 'Water Cycle' },
-          { id: 'rockCycle', icon: '\uD83E\uDEA8', label: 'Rock Cycle' },
+          { id: 'rocks', icon: '🪨', label: t('stem.tools_menu.rocks_minerals'), desc: t('stem.tools_menu.interactive_rock_cycle_mineral_properties'), color: '#b45309', cat: 'explore' },
+          { id: 'waterCycle', icon: '\uD83C\uDF0A', label: t('stem.tools_menu.water_cycle') },
+          { id: 'rockCycle', icon: '\uD83E\uDEA8', label: t('stem.tools_menu.rock_cycle') },
           { id: 'ecosystem', icon: '\uD83D\uDC3A', label: 'Ecosystem' },
-          { id: 'decomposer', icon: '⚗️', label: 'Decomposer', desc: 'Break materials into elements', ready: true },
+          { id: 'decomposer', icon: '⚗️', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'), ready: true },
           {
-            id: 'anatomy', icon: '🫀', label: 'Human Anatomy',
+            id: 'anatomy', icon: '🫀', label: t('stem.tools_menu.human_anatomy'),
             desc: 'Explore all 11 body systems with interactive canvas — skeletal, muscular, circulatory, nervous, and more.',
             color: 'rose', ready: true
           },
           {
-            id: 'brainAtlas', icon: '🧠', label: 'Brain Atlas',
+            id: 'brainAtlas', icon: '🧠', label: t('stem.tools_menu.brain_atlas'),
             desc: 'Detailed cerebral regions, lobes, nuclei and clinical correlations. Lateral, medial, inferior & coronal views.',
             color: 'purple', ready: true
           },
           {
-            id: 'molecule', icon: '🔬', label: 'Molecule Builder',
+            id: 'molecule', icon: '🔬', label: t('stem.tools_menu.molecule_builder'),
             desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
             color: 'stone', ready: true
           },
-          { id: '_cat_Physics&Chemistry', icon: '', label: 'Physics & Chemistry', desc: '', color: 'slate', category: true },
+          { id: '_cat_Physics&Chemistry', icon: '', label: t('stem.tools_menu.physics_chemistry'), desc: '', color: 'slate', category: true },
           {
-            id: 'wave', icon: '🌊', label: 'Wave Simulator',
+            id: 'wave', icon: '🌊', label: t('stem.tools_menu.wave_simulator'),
             desc: 'Adjust frequency, amplitude, wavelength. Explore interference patterns.',
             color: 'cyan', ready: true
           },
           {
-            id: 'circuit', icon: '🔌', label: 'Circuit Builder',
+            id: 'circuit', icon: '🔌', label: t('stem.tools_menu.circuit_builder'),
             desc: 'Build circuits with resistors and batteries. Calculate voltage and current.',
             color: 'yellow', ready: true
           },
           {
-            id: 'chemBalance', icon: '⚗️', label: 'Equation Balancer',
-            desc: 'Balance chemical equations with visual atom counting.',
+            id: 'chemBalance', icon: '⚗️', label: t('stem.tools_menu.equation_balancer'),
+            desc: t('stem.tools_menu.balance_chemical_equations_with_visual'),
             color: 'lime', ready: true
           },
           {
-            id: 'punnett', icon: '🧬', label: 'Punnett Square',
+            id: 'punnett', icon: '🧬', label: t('stem.tools_menu.punnett_square'),
             desc: 'Genetic crosses with alleles. Predict genotype and phenotype ratios.',
             color: 'violet', ready: true
           },
           {
-            id: 'physics', icon: '⚡', label: 'Physics Simulator',
+            id: 'physics', icon: '⚡', label: t('stem.tools_menu.physics_simulator'),
             desc: 'Projectile motion, velocity vectors, and trajectory visualization.',
             color: 'sky', ready: true
           },
           {
-            id: 'dataPlot', icon: '📊', label: 'Data Plotter',
-            desc: 'Plot data points, fit trend lines, calculate correlation.',
+            id: 'dataPlot', icon: '📊', label: t('stem.tools_menu.data_plotter'),
+            desc: t('stem.tools_menu.plot_data_points_fit_trend'),
             color: 'teal', ready: true
           },
 
-          { id: '_cat_Arts&Music', icon: '', label: 'Arts & Music', desc: '', color: 'slate', category: true },
+          { id: '_cat_Arts&Music', icon: '', label: t('stem.tools_menu.arts_music'), desc: '', color: 'slate', category: true },
 
           {
 
-            id: 'musicSynth', icon: '🎹', label: 'Music Synthesizer',
+            id: 'musicSynth', icon: '🎹', label: t('stem.tools_menu.music_synthesizer'),
 
             desc: 'Play a piano, build beats, and learn the science of sound with real-time waveform visualization.',
 
@@ -758,7 +859,7 @@
           },
 
           {
-            id: 'artStudio', icon: '🎨', label: 'Art & Design Studio',
+            id: 'artStudio', icon: '🎨', label: t('stem.tools_menu.art_design_studio'),
             desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
             color: 'rose', ready: true
           },
@@ -1237,7 +1338,7 @@
                 const snap = {
                   id: 'snap-' + Date.now(),
                   tool: 'volume',
-                  label: 'Volume: ' + (cubeBuilderMode === 'slider' ? cubeDims.l + '\u00d7' + cubeDims.w + '\u00d7' + cubeDims.h : cubePositions.size + ' cubes'),
+                  label: t('stem.volume.volume') + (cubeBuilderMode === 'slider' ? cubeDims.l + '\u00d7' + cubeDims.w + '\u00d7' + cubeDims.h : cubePositions.size + ' cubes'),
                   mode: cubeBuilderMode,
                   data: cubeBuilderMode === 'slider' ? {
                     dims: {
@@ -1252,7 +1353,7 @@
                   timestamp: Date.now()
                 };
                 setToolSnapshots(prev => [...prev, snap]);
-                addToast('\U0001f4f8 Snapshot saved!', 'success');
+                addToast(t('stem.volume.u0001f4f8_snapshot_saved'), 'success');
               },
               className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
             }, "\uD83D\uDCF8 Snapshot")), /*#__PURE__*/React.createElement("div", {
@@ -1548,7 +1649,7 @@
                   }));
                 }
               },
-              placeholder: "Volume...",
+              placeholder: t('stem.area.volume'),
               className: "flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono",
               "aria-label": "Answer"
             }), cubeChallenge.buildMode && /*#__PURE__*/React.createElement("div", {
@@ -1647,14 +1748,14 @@
                 const snap = {
                   id: 'snap-' + Date.now(),
                   tool: 'base10',
-                  label: 'Base-10: ' + (base10Value.ones + base10Value.tens * 10 + base10Value.hundreds * 100 + base10Value.thousands * 1000),
+                  label: t('stem.place_value.base10') + (base10Value.ones + base10Value.tens * 10 + base10Value.hundreds * 100 + base10Value.thousands * 1000),
                   data: {
                     ...base10Value
                   },
                   timestamp: Date.now()
                 };
                 setToolSnapshots(prev => [...prev, snap]);
-                addToast('\U0001f4f8 Snapshot saved!', 'success');
+                addToast(t('stem.place_value.u0001f4f8_snapshot_saved'), 'success');
               },
               className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
             }, "\uD83D\uDCF8 Snapshot"))), /*#__PURE__*/React.createElement("div", {
@@ -1927,14 +2028,14 @@
                 const snap = {
                   id: 'snap-' + Date.now(),
                   tool: 'coordinate',
-                  label: 'Grid: ' + gridPoints.length + ' points',
+                  label: t('stem.coordinate.grid') + gridPoints.length + ' points',
                   data: {
                     points: [...gridPoints]
                   },
                   timestamp: Date.now()
                 };
                 setToolSnapshots(prev => [...prev, snap]);
-                addToast('\U0001f4f8 Snapshot saved!', 'success');
+                addToast(t('stem.coordinate.u0001f4f8_snapshot_saved'), 'success');
               },
               className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
             }, "\uD83D\uDCF8 Snapshot"))), /*#__PURE__*/React.createElement("div", {
@@ -2087,7 +2188,7 @@
                 )
               ));
           })(), stemLabTab === 'explore' && stemLabTool === 'protractor' && (() => {
-            const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? 'Right' : a < 180 ? 'Obtuse' : a === 180 ? 'Straight' : a < 360 ? 'Reflex' : 'Full';
+            const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('stem.calculus.right') : a < 180 ? 'Obtuse' : a === 180 ? 'Straight' : a < 360 ? 'Reflex' : 'Full';
             const angleClass = classifyAngle(angleValue);
             const rad = angleValue * Math.PI / 180;
             const cx = 200,
@@ -2162,14 +2263,14 @@
                 const snap = {
                   id: 'snap-' + Date.now(),
                   tool: 'protractor',
-                  label: 'Angle: ' + angleValue + '\u00b0',
+                  label: t('stem.angle.angle') + angleValue + '\u00b0',
                   data: {
                     angle: angleValue
                   },
                   timestamp: Date.now()
                 };
                 setToolSnapshots(prev => [...prev, snap]);
-                addToast('\U0001f4f8 Snapshot saved!', 'success');
+                addToast(t('stem.angle.u0001f4f8_snapshot_saved'), 'success');
               },
               className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
             }, "\uD83D\uDCF8 Snapshot"))), /*#__PURE__*/React.createElement("div", {
@@ -2266,7 +2367,7 @@
             }, /*#__PURE__*/React.createElement("div", {
               className: "text-xs font-bold text-purple-600 uppercase mb-1"
             }, "Type"), /*#__PURE__*/React.createElement("div", {
-              className: `text-lg font-bold ${angleClass === 'Right' ? 'text-green-600' : angleClass === 'Acute' ? 'text-blue-600' : angleClass === 'Obtuse' ? 'text-orange-600' : 'text-red-600'}`
+              className: `text-lg font-bold ${angleClass === t('stem.calculus.right') ? 'text-green-600' : angleClass === 'Acute' ? 'text-blue-600' : angleClass === 'Obtuse' ? 'text-orange-600' : 'text-red-600'}`
             }, angleClass)), /*#__PURE__*/React.createElement("div", {
               className: "bg-white rounded-xl p-3 border border-purple-100 text-center"
             }, /*#__PURE__*/React.createElement("div", {
@@ -2563,12 +2664,12 @@
             id: "nlMarkerVal",
             min: numberLineRange.min,
             max: numberLineRange.max,
-            placeholder: "Value...",
+            placeholder: t('stem.mult_table.value'),
             className: "flex-1 px-3 py-2 text-sm border border-blue-200 rounded-lg"
           }), /*#__PURE__*/React.createElement("input", {
             type: "text",
             id: "nlMarkerLabel",
-            placeholder: "Label (optional)",
+            placeholder: t('stem.mult_table.label_optional'),
             className: "flex-1 px-3 py-2 text-sm border border-blue-200 rounded-lg"
           }), /*#__PURE__*/React.createElement("button", {
             onClick: () => {
@@ -3274,35 +3375,41 @@
           var exact = (d.a / 3) * (Math.pow(d.xMax, 3) - Math.pow(d.xMin, 3)) + (d.b / 2) * (Math.pow(d.xMax, 2) - Math.pow(d.xMin, 2)) + d.c * (d.xMax - d.xMin);
           var err = Math.abs(area - exact);
 
-          // Convergence data (error vs n for mini chart)
+          // Convergence data (error vs n for mini chart) — memoized
           var CW = 160, Cpad = 15;
-          var convData = [];
-          for (var cn = 2; cn <= 50; cn += 2) {
-            var cdx2 = (d.xMax - d.xMin) / cn;
-            var carea = 0;
-            if (mode === 'trapezoid') {
-              for (var cti = 0; cti < cn; cti++) { var cxti = d.xMin + cti * cdx2; carea += (evalF(cxti) + evalF(cxti + cdx2)) / 2 * cdx2; }
-            } else if (mode === 'simpson' && cn % 2 === 0) {
-              for (var csi = 0; csi < cn; csi += 2) { var csx0 = d.xMin + csi * cdx2; carea += (evalF(csx0) + 4 * evalF(csx0 + cdx2) + evalF(csx0 + 2 * cdx2)) * cdx2 / 3; }
-            } else {
-              for (var cri = 0; cri < cn; cri++) { var cxi = d.xMin + cri * cdx2; carea += evalF(mode === 'left' ? cxi : mode === 'right' ? cxi + cdx2 : cxi + cdx2 / 2) * cdx2; }
+          var _convCacheKey = [d.a, d.b, d.c, d.xMin, d.xMax, mode].join(',');
+          if (!window._calcConvCache || window._calcConvCache.key !== _convCacheKey) {
+            var _cd = [];
+            for (var cn = 2; cn <= 50; cn += 2) {
+              var cdx2 = (d.xMax - d.xMin) / cn;
+              var carea = 0;
+              if (mode === 'trapezoid') {
+                for (var cti = 0; cti < cn; cti++) { var cxti = d.xMin + cti * cdx2; carea += (evalF(cxti) + evalF(cxti + cdx2)) / 2 * cdx2; }
+              } else if (mode === 'simpson' && cn % 2 === 0) {
+                for (var csi = 0; csi < cn; csi += 2) { var csx0 = d.xMin + csi * cdx2; carea += (evalF(csx0) + 4 * evalF(csx0 + cdx2) + evalF(csx0 + 2 * cdx2)) * cdx2 / 3; }
+              } else {
+                for (var cri = 0; cri < cn; cri++) { var cxi = d.xMin + cri * cdx2; carea += evalF(mode === 'left' ? cxi : mode === 'right' ? cxi + cdx2 : cxi + cdx2 / 2) * cdx2; }
+              }
+              _cd.push({ n: cn, err: Math.abs(carea - exact) });
             }
-            convData.push({ n: cn, err: Math.abs(carea - exact) });
+            window._calcConvCache = { key: _convCacheKey, data: _cd };
           }
+          var convData = window._calcConvCache.data;
           var convMaxErr = Math.max(...convData.map(c => c.err), 0.001);
           var convToX = function (n) { return Cpad + ((n - 2) / 48) * (CW - 2 * Cpad); };
           var convToY = function (e) { return 55 - (e / convMaxErr) * 40; };
 
           // Mode options
           var MODES = [
-            { id: 'left', label: 'Left' },
-            { id: 'midpoint', label: 'Midpoint' },
-            { id: 'right', label: 'Right' },
-            { id: 'trapezoid', label: 'Trapezoid' },
+            { id: 'left', label: t('stem.calculus.left') },
+            { id: 'midpoint', label: t('stem.calculus.midpoint') },
+            { id: 'right', label: t('stem.calculus.right') },
+            { id: 'trapezoid', label: t('stem.calculus.trapezoid') },
             { id: 'simpson', label: "Simpson's" }
           ];
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+            renderTutorial('calculus', _tutCalculus),
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u222B Calculus Visualizer"),
@@ -3359,7 +3466,7 @@
             ),
             // Controls
             React.createElement("div", { className: "grid grid-cols-2 gap-3 mt-3" },
-              [{ k: 'xMin', label: 'a (lower)', min: -2, max: 8, step: 0.5 }, { k: 'xMax', label: 'b (upper)', min: 1, max: 10, step: 0.5 }, { k: 'n', label: 'Rectangles (n)', min: 2, max: 50, step: mode === 'simpson' ? 2 : 1 }, { k: 'a', label: 'Coeff a', min: -3, max: 3, step: 0.1 }].map(function (s) {
+              [{ k: 'xMin', label: 'a (lower)', min: -2, max: 8, step: 0.5 }, { k: 'xMax', label: 'b (upper)', min: 1, max: 10, step: 0.5 }, { k: 'n', label: t('stem.calculus.rectangles_n'), min: 2, max: 50, step: mode === 'simpson' ? 2 : 1 }, { k: 'a', label: t('stem.calculus.coeff_a'), min: -3, max: 3, step: 0.1 }].map(function (s) {
                 return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
                   React.createElement("label", { className: "text-xs font-bold text-red-600" }, s.label + ": " + d[s.k]),
                   React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: function (e) { upd(s.k, parseFloat(e.target.value)); }, className: "w-full accent-red-600" })
@@ -3429,7 +3536,7 @@
                 }, p.label);
               })
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'calc-' + Date.now(), tool: 'calculus', label: '\u222B[' + d.xMin + ',' + d.xMax + '] n=' + d.n, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Calculus snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'calc-' + Date.now(), tool: 'calculus', label: '\u222B[' + d.xMin + ',' + d.xMax + '] n=' + d.n, data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.calculus.ud83dudcf8_calculus_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -3571,6 +3678,37 @@
                 }
                 ctx.stroke();
                 ctx.shadowBlur = 0;
+                // ── Match the Waveform target ──
+                var targetAmp = parseFloat(canvasEl.dataset.targetAmp || '0');
+                var targetFreq = parseFloat(canvasEl.dataset.targetFreq || '0');
+                if (targetAmp > 0 && targetFreq > 0) {
+                  ctx.lineWidth = 2.5 * dpr;
+                  ctx.strokeStyle = '#fbbf24';
+                  ctx.setLineDash([8, 6]);
+                  ctx.globalAlpha = 0.8;
+                  ctx.beginPath();
+                  for (var xt = 0; xt < cW; xt++) {
+                    var tt = xt / cW * Math.PI * 2 * targetFreq - tick * 0.03 * speed;
+                    var yt = Math.sin(tt);
+                    var pyt = cH / 2 - yt * targetAmp * dpr;
+                    if (xt === 0) ctx.moveTo(xt, pyt); else ctx.lineTo(xt, pyt);
+                  }
+                  ctx.stroke();
+                  ctx.setLineDash([]); ctx.globalAlpha = 1;
+                  // Match score HUD
+                  var ampDiff = Math.abs(amp - targetAmp) / targetAmp;
+                  var freqDiff = Math.abs(freq - targetFreq) / targetFreq;
+                  var matchPct = Math.max(0, Math.round((1 - (ampDiff + freqDiff) / 2) * 100));
+                  ctx.fillStyle = matchPct > 90 ? '#22c55e' : matchPct > 60 ? '#eab308' : '#ef4444';
+                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'right';
+                  ctx.fillText('Match: ' + matchPct + '%', (cW / dpr - 8) * dpr, (cH / dpr - 10) * dpr);
+                  if (matchPct > 90) {
+                    ctx.fillStyle = '#22c55e';
+                    ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+                    ctx.fillText('\u2705 Great match!', (cW / dpr - 8) * dpr, (cH / dpr - 24) * dpr);
+                  }
+                }
                 // Draw second wave if enabled
                 if (showSecond) {
                   ctx.lineWidth = 2 * dpr;
@@ -3664,7 +3802,7 @@
               upd('_audioOsc', osc);
               upd('soundPlaying', true);
             } catch (e) {
-              addToast('\u26A0 Audio not supported in this browser', 'error');
+              addToast(t('stem.wave.u26a0_audio_not_supported_in'), 'error');
             }
           };
 
@@ -3679,7 +3817,8 @@
             { q: 'The speed of a wave equals:', a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'] },
           ];
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+            renderTutorial('wave', _tutWave),
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
@@ -3699,13 +3838,24 @@
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "400px" } },
               React.createElement("canvas", {
                 ref: canvasRef,
+                tabIndex: 0, role: "application", "aria-label": "Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed",
                 "data-amp": d.amplitude, "data-freq": d.frequency, "data-wave-type": d.waveType || 'sine',
                 "data-show-second": d.showSecond ? 'true' : 'false',
                 "data-amp2": d.amplitude2 || 30, "data-freq2": d.frequency2 || 3,
                 "data-speed": d.speed || 1,
                 "data-wave-mode": waveMode,
                 "data-harmonic": d.harmonic || 1,
-                style: { width: "100%", height: "100%", display: "block" }
+                "data-target-amp": d.matchTarget ? d.matchTarget.amp : 0,
+                "data-target-freq": d.matchTarget ? d.matchTarget.freq : 0,
+                onKeyDown: function (e) {
+                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('amplitude', Math.min(100, (d.amplitude || 50) + 5)); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('amplitude', Math.max(5, (d.amplitude || 50) - 5)); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); upd('frequency', Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10)); }
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); upd('frequency', Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10)); }
+                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); upd('speed', Math.min(3, Math.round(((d.speed || 1) + 0.25) * 100) / 100)); }
+                  else if (e.key === '-') { e.preventDefault(); upd('speed', Math.max(0.25, Math.round(((d.speed || 1) - 0.25) * 100) / 100)); }
+                },
+                style: { width: "100%", height: "100%", display: "block", outline: "none" }
               })
             ),
             // Wave type buttons (free mode only)
@@ -3803,6 +3953,20 @@
                   upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " transition-all"
               }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
+              React.createElement("button", {
+                onClick: function () {
+                  var tAmps = [20, 30, 40, 50, 60, 70];
+                  var tFreqs = [1, 2, 3, 4, 5, 6];
+                  var ta = tAmps[Math.floor(Math.random() * tAmps.length)];
+                  var tf = tFreqs[Math.floor(Math.random() * tFreqs.length)];
+                  upd('matchTarget', { amp: ta, freq: tf });
+                  addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed'), 'info');
+                }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white') + " transition-all"
+              }, d.matchTarget ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
+              d.matchTarget && React.createElement("button", {
+                onClick: function () { upd('matchTarget', null); },
+                className: "px-2 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100"
+              }, "\u2715 Clear"),
               d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
             ),
             d.quiz && React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200 mb-3" },
@@ -3822,7 +3986,7 @@
                 })
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Wave snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.wave.ud83dudcf8_wave_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -3833,17 +3997,17 @@
 
           // ── Organism definitions ──
           var ORGANISMS = [
-            { id: 'amoeba', label: 'Amoeba', icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'] },
-            { id: 'paramecium', label: 'Paramecium', icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'] },
-            { id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'] },
-            { id: 'wbc', label: 'White Blood Cell', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'] },
-            { id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'] },
-            { id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'] },
-            { id: 'diatom', label: 'Diatom', icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'] },
-            { id: 'volvox', label: 'Volvox', icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet — name means "fierce roller"'] },
-            { id: 'stentor', label: 'Stentor', icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long — visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'] },
-            { id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible — survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272°C to 150°C', 'Survived exposure to outer space', 'Enter cryptobiosis — suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'] },
-            { id: 'spirillum', label: 'Spirillum', icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria — up to 60μm'] }
+            { id: 'amoeba', label: t('stem.cell.amoeba'), icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'] },
+            { id: 'paramecium', label: t('stem.cell.paramecium'), icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'] },
+            { id: 'euglena', label: t('stem.cell.euglena'), icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: t('stem.chem_balance.photosynthesis'), activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'] },
+            { id: 'wbc', label: t('stem.cell.white_blood_cell'), icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'] },
+            { id: 'bacterium', label: t('stem.cell.bacterium'), icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'] },
+            { id: 'plantcell', label: t('stem.cell.plant_cell'), icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'] },
+            { id: 'diatom', label: t('stem.cell.diatom'), icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'] },
+            { id: 'volvox', label: t('stem.cell.volvox'), icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet — name means "fierce roller"'] },
+            { id: 'stentor', label: t('stem.cell.stentor'), icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long — visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'] },
+            { id: 'tardigrade', label: t('stem.cell.tardigrade'), icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible — survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272°C to 150°C', 'Survived exposure to outer space', 'Enter cryptobiosis — suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'] },
+            { id: 'spirillum', label: t('stem.cell.spirillum'), icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria — up to 60μm'] }
           ];
 
           // ── Quiz questions (observation-based) ──
@@ -4248,7 +4412,7 @@
                   if (Math.hypot(lz.x - o.x, lz.y - o.y) < lz.r) {
                     if (world.tick % 60 === 0) {
                       o.energy = Math.min(100, o.energy + 5);
-                      if (canvasEl._onXP) canvasEl._onXP(def.xp, 'Photosynthesis');
+                      if (canvasEl._onXP) canvasEl._onXP(def.xp, t('stem.chem_balance.photosynthesis'));
                     }
                   }
                 });
@@ -4448,7 +4612,7 @@
               React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
                 "\uD83D\uDD2C",
                 React.createElement("input", {
-                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1,
+                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1, "aria-label": "Microscope zoom level",
                   onChange: function (e) { var z = parseFloat(e.target.value); upd("zoom", z); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetZoom) cv._cellSimSetZoom(z); },
                   className: "w-20 accent-green-600"
                 }),
@@ -4458,7 +4622,7 @@
               React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-600" },
                 "\u23E9",
                 React.createElement("input", {
-                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1,
+                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1, "aria-label": "Simulation speed",
                   onChange: function (e) { var s = parseInt(e.target.value); upd("simSpeed", s); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetSpeed) cv._cellSimSetSpeed(s); },
                   className: "w-16 accent-green-600"
                 }),
@@ -4586,7 +4750,7 @@
 
             // Bottom controls
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Sim' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Cell Simulator snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: t('stem.func_graph.cell_sim') + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(t('stem.func_graph.ud83dudcf8_cell_simulator_snapshot_saved'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           )
         })(),
@@ -4653,12 +4817,12 @@
 
           // Function type presets
           var TYPES = [
-            { id: 'linear', label: 'Linear', emoji: '\u2571' },
-            { id: 'quadratic', label: 'Quadratic', emoji: '\u2229' },
-            { id: 'cubic', label: 'Cubic', emoji: '\u223F' },
-            { id: 'trig', label: 'Trig', emoji: '\u223C' },
-            { id: 'exponential', label: 'Exponential', emoji: '\uD83D\uDCC8' },
-            { id: 'absolute', label: 'Absolute', emoji: '\u22C0' }
+            { id: 'linear', label: t('stem.func_grapher.linear'), emoji: '\u2571' },
+            { id: 'quadratic', label: t('stem.func_grapher.quadratic'), emoji: '\u2229' },
+            { id: 'cubic', label: t('stem.func_grapher.cubic'), emoji: '\u223F' },
+            { id: 'trig', label: t('stem.func_grapher.trig'), emoji: '\u223C' },
+            { id: 'exponential', label: t('stem.func_grapher.exponential'), emoji: '\uD83D\uDCC8' },
+            { id: 'absolute', label: t('stem.func_grapher.absolute'), emoji: '\u22C0' }
           ];
 
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
@@ -4739,7 +4903,7 @@
               [{ k: 'a', label: 'a', min: -5, max: 5, step: 0.1 }, { k: 'b', label: 'b', min: -5, max: 5, step: 0.1 }, { k: 'c', label: 'c', min: -5, max: 5, step: 0.1 }].map(s =>
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
                   React.createElement("label", { className: "text-xs font-bold text-indigo-600" }, s.label + " = " + d[s.k]),
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-indigo-600" })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-indigo-600", "aria-label": "Parameter " + s.label })
                 )
               )
             ),
@@ -4760,7 +4924,7 @@
                   return React.createElement("button", {
                     key: p.label, onClick: function () {
                       upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
-                      addToast('\uD83D\uDCC8 ' + p.tip, 'success');
+                      addToast(t('stem.func_grapher.ud83dudcc8') + p.tip, 'success');
                     }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
                   }, p.label);
                 })
@@ -4773,7 +4937,43 @@
               React.createElement("span", null, "\uD83D\uDD34 Roots"),
               React.createElement("span", null, "\uD83D\uDFE2 y-intercept")
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Function snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            // ── Quiz: Name That Graph ──
+            (() => {
+              var fgQuiz = d.fgQuiz || null;
+              var fgScore = d.fgScore || 0;
+              var fgStreak = d.fgStreak || 0;
+              function makeFgQuiz() {
+                var types = ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute'];
+                var labels = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)' };
+                var t = types[Math.floor(Math.random() * types.length)];
+                var opts = [labels[t]];
+                while (opts.length < 4) { var r = labels[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
+                return { type: t, answer: labels[t], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+              }
+              return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("button", { onClick: function () { var q = makeFgQuiz(); upd('fgQuiz', q); upd('type', q.type); upd('a', q.type === 'trig' ? 2 : (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1)); upd('b', Math.floor(Math.random() * 5) - 2); upd('c', Math.floor(Math.random() * 3) - 1); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fgQuiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white') + " hover:opacity-90 transition-all" }, fgQuiz ? '🔄 New Challenge' : '🎯 Name That Graph'),
+                  fgScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + fgScore + ' | 🔥 ' + fgStreak)
+                ),
+                fgQuiz && !fgQuiz.answered && React.createElement("div", { className: "bg-violet-50 rounded-xl p-3 border border-violet-200" },
+                  React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, 'What type of function is graphed above?'),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    fgQuiz.opts.map(function (opt) {
+                      return React.createElement("button", {
+                        key: opt, onClick: function () {
+                          var correct = opt === fgQuiz.answer;
+                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt }));
+                          upd('fgScore', fgScore + (correct ? 1 : 0)); upd('fgStreak', correct ? fgStreak + 1 : 0);
+                          if (correct) addToast(t('stem.func_grapher.correct_it')s a ' + fgQuiz.type + ' function', 'success'); else addToast(t('stem.func_grapher.that')s a ' + fgQuiz.type + ' function', 'error');
+                        }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
+                      }, opt);
+                    })
+                  )
+                ),
+                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, fgQuiz.chosen === fgQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + fgQuiz.answer)
+              );
+            })(),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.func_grapher.ud83dudcf8_function_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -5105,7 +5305,8 @@
             { target: 200, label: '\uD83C\uDFAF Reach 200m range', tolerance: 12 },
           ];
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+            renderTutorial('physics', _tutPhysics),
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
@@ -5115,9 +5316,23 @@
               React.createElement("canvas", {
                 ref: canvasRef,
                 id: "physicsCanvas",
+                tabIndex: 0,
+                role: "application",
+                "aria-label": "Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch",
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
                 "data-air-resist": d.airResist ? 'true' : 'false',
-                style: { width: "100%", height: "100%", display: "block" }
+                onKeyDown: function (e) {
+                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('angle', Math.min(90, (d.angle || 45) + 5)); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('angle', Math.max(0, (d.angle || 45) - 5)); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); upd('velocity', Math.min(100, (d.velocity || 50) + 5)); }
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); upd('velocity', Math.max(5, (d.velocity || 50) - 5)); }
+                  else if (e.key === ' ') {
+                    e.preventDefault();
+                    var cv = document.getElementById('physicsCanvas');
+                    if (cv && cv._launchProjectile) cv._launchProjectile();
+                  }
+                },
+                style: { width: "100%", height: "100%", display: "block", outline: "none" }
               })
             ),
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
@@ -5139,7 +5354,7 @@
               })
             ),
             React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-3" },
-              [{ k: 'angle', label: 'Angle (\u00B0)', min: 5, max: 85, step: 1 }, { k: 'velocity', label: 'Velocity (m/s)', min: 5, max: 50, step: 1 }, { k: 'gravity', label: 'Gravity (m/s\u00B2)', min: 1, max: 25, step: 0.1 }].map(function (s) {
+              [{ k: 'angle', label: t('stem.physics.angle_u00b0'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: t('stem.physics.velocity_ms'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: t('stem.physics.gravity_msu00b2'), min: 1, max: 25, step: 0.1 }].map(function (s) {
                 return React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
                   React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
                   React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
@@ -5184,7 +5399,58 @@
                 React.createElement("p", { className: "text-sm font-bold text-sky-800" }, (function () { var vy = d.velocity * Math.sin(d.angle * Math.PI / 180); return (2 * vy / d.gravity).toFixed(2); })() + " s")
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Physics snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            // ── Predict the Landing Quiz ──
+            React.createElement("div", { className: "mt-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF Predict the Landing"),
+                React.createElement("button", {
+                  onClick: function () {
+                    var qAngles = [20, 30, 35, 40, 45, 50, 55, 60, 70];
+                    var qVels = [15, 20, 25, 30, 35, 40];
+                    var qGravs = [9.8, 1.6, 3.7, 24.8];
+                    var qa = qAngles[Math.floor(Math.random() * qAngles.length)];
+                    var qv = qVels[Math.floor(Math.random() * qVels.length)];
+                    var qg = qGravs[Math.floor(Math.random() * qGravs.length)];
+                    var qrad = qa * Math.PI / 180;
+                    var qRange = (qv * qv * Math.sin(2 * qrad)) / qg;
+                    var opts = [qRange];
+                    while (opts.length < 4) {
+                      var fake = qRange * (0.3 + Math.random() * 1.8);
+                      if (Math.abs(fake - qRange) > qRange * 0.15) opts.push(fake);
+                    }
+                    opts.sort(function () { return Math.random() - 0.5; });
+                    upd('quizActive', true); upd('quizAngle', qa); upd('quizVel', qv); upd('quizGrav', qg);
+                    upd('quizAnswer', qRange); upd('quizOptions', opts); upd('quizPicked', null); upd('quizFeedback', null);
+                  }, className: "px-3 py-1 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-all"
+                }, d.quizActive ? "\uD83D\uDD04 New Question" : "\u25B6 Start Quiz")
+              ),
+              d.quizActive && React.createElement("div", { className: "space-y-2" },
+                React.createElement("p", { className: "text-xs text-slate-600" }, "A projectile is launched at ", React.createElement("b", null, d.quizAngle + "\u00B0"), " with velocity ", React.createElement("b", null, d.quizVel + " m/s"), " and gravity ", React.createElement("b", null, d.quizGrav + " m/s\u00B2"), ". How far does it land?"),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                  (d.quizOptions || []).map(function (opt, oi) {
+                    var picked = d.quizPicked === oi;
+                    var correct = d.quizPicked !== null && Math.abs(opt - d.quizAnswer) < 0.5;
+                    var wrong = picked && !correct;
+                    return React.createElement("button", {
+                      key: oi, disabled: d.quizPicked !== null,
+                      onClick: function () {
+                        upd('quizPicked', oi);
+                        var isCorrect = Math.abs(opt - d.quizAnswer) < 0.5;
+                        upd('quizFeedback', isCorrect ? 'correct' : 'wrong');
+                        if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Predicted the landing!'); }
+                        else { upd('quizStreak', 0); }
+                      },
+                      className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
+                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-400' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
+                    }, opt.toFixed(1) + " m");
+                  })
+                ),
+                d.quizFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.quizFeedback === 'correct' ? 'text-emerald-600' : 'text-red-600') },
+                  d.quizFeedback === 'correct' ? '\u2705 Correct! R = v\u00B2sin(2\u03B8)/g = ' + d.quizAnswer.toFixed(1) + 'm' : '\u274C Not quite. The answer is ' + d.quizAnswer.toFixed(1) + 'm'),
+                d.quizStreak > 1 && React.createElement("p", { className: "text-xs font-bold text-amber-600" }, "\uD83D\uDD25 Streak: " + d.quizStreak + "!")
+              )
+            ),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.physics.ud83dudcf8_physics_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -5194,20 +5460,20 @@
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, chemBalance: { ...prev.chemBalance, [key]: val } }));
           const allPresets = [
             // Beginner (Gr 5-6)
-            { name: 'Water', tier: 'beginner', eq: 'H\u2082 + O\u2082 \u2192 H\u2082O', target: [2, 1, 2], atoms: { H: [2, 0, 2], O: [0, 2, 1] }, hint: 'Hydrogen needs 4 atoms total on each side' },
-            { name: 'Table Salt', tier: 'beginner', eq: 'Na + Cl\u2082 \u2192 NaCl', target: [2, 1, 2], atoms: { Na: [1, 0, 1], Cl: [0, 2, 1] }, hint: 'Each NaCl needs one Na and one Cl' },
-            { name: 'Magnesium Oxide', tier: 'beginner', eq: 'Mg + O\u2082 \u2192 MgO', target: [2, 1, 2], atoms: { Mg: [1, 0, 1], O: [0, 2, 1] }, hint: 'Oxygen comes in pairs' },
-            { name: 'Iron Oxide', tier: 'beginner', eq: 'Fe + O\u2082 \u2192 Fe\u2082O\u2083', target: [4, 3, 2], atoms: { Fe: [1, 0, 2], O: [0, 2, 3] }, hint: 'Count Fe and O atoms on each side' },
+            { name: t('stem.chem_balance.water'), tier: 'beginner', eq: 'H\u2082 + O\u2082 \u2192 H\u2082O', target: [2, 1, 2], atoms: { H: [2, 0, 2], O: [0, 2, 1] }, hint: 'Hydrogen needs 4 atoms total on each side' },
+            { name: t('stem.chem_balance.table_salt'), tier: 'beginner', eq: 'Na + Cl\u2082 \u2192 NaCl', target: [2, 1, 2], atoms: { Na: [1, 0, 1], Cl: [0, 2, 1] }, hint: 'Each NaCl needs one Na and one Cl' },
+            { name: t('stem.chem_balance.magnesium_oxide'), tier: 'beginner', eq: 'Mg + O\u2082 \u2192 MgO', target: [2, 1, 2], atoms: { Mg: [1, 0, 1], O: [0, 2, 1] }, hint: 'Oxygen comes in pairs' },
+            { name: t('stem.chem_balance.iron_oxide'), tier: 'beginner', eq: 'Fe + O\u2082 \u2192 Fe\u2082O\u2083', target: [4, 3, 2], atoms: { Fe: [1, 0, 2], O: [0, 2, 3] }, hint: 'Count Fe and O atoms on each side' },
             // Intermediate (Gr 7-8)
-            { name: 'Combustion', tier: 'intermediate', eq: 'CH\u2084 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 2, 1, 2], atoms: { C: [1, 0, 1, 0], H: [4, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'Balance C first, then H, then O' },
-            { name: 'Photosynthesis', tier: 'intermediate', eq: 'CO\u2082 + H\u2082O \u2192 C\u2086H\u2081\u2082O\u2086 + O\u2082', target: [6, 6, 1, 6], atoms: { C: [1, 0, 6, 0], O: [2, 1, 6, 2], H: [0, 2, 12, 0] }, hint: 'Start with carbon: you need 6 CO\u2082' },
-            { name: 'Acid + Base', tier: 'intermediate', eq: 'HCl + NaOH \u2192 NaCl + H\u2082O', target: [1, 1, 1, 1], atoms: { H: [1, 1, 0, 2], Cl: [1, 0, 1, 0], Na: [0, 1, 1, 0], O: [0, 1, 0, 1] }, hint: 'This one is already balanced at 1:1:1:1!' },
-            { name: 'Ammonia', tier: 'intermediate', eq: 'N\u2082 + H\u2082 \u2192 NH\u2083', target: [1, 3, 2], atoms: { N: [2, 0, 1], H: [0, 2, 3] }, hint: 'You need 2 NH\u2083 to use both N atoms' },
+            { name: t('stem.chem_balance.combustion'), tier: 'intermediate', eq: 'CH\u2084 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 2, 1, 2], atoms: { C: [1, 0, 1, 0], H: [4, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'Balance C first, then H, then O' },
+            { name: t('stem.chem_balance.photosynthesis'), tier: 'intermediate', eq: 'CO\u2082 + H\u2082O \u2192 C\u2086H\u2081\u2082O\u2086 + O\u2082', target: [6, 6, 1, 6], atoms: { C: [1, 0, 6, 0], O: [2, 1, 6, 2], H: [0, 2, 12, 0] }, hint: 'Start with carbon: you need 6 CO\u2082' },
+            { name: t('stem.chem_balance.acid_base'), tier: 'intermediate', eq: 'HCl + NaOH \u2192 NaCl + H\u2082O', target: [1, 1, 1, 1], atoms: { H: [1, 1, 0, 2], Cl: [1, 0, 1, 0], Na: [0, 1, 1, 0], O: [0, 1, 0, 1] }, hint: 'This one is already balanced at 1:1:1:1!' },
+            { name: t('stem.chem_balance.ammonia'), tier: 'intermediate', eq: 'N\u2082 + H\u2082 \u2192 NH\u2083', target: [1, 3, 2], atoms: { N: [2, 0, 1], H: [0, 2, 3] }, hint: 'You need 2 NH\u2083 to use both N atoms' },
             // Advanced (Gr 9+)
-            { name: 'Thermite', tier: 'advanced', eq: 'Al + Fe\u2082O\u2083 \u2192 Al\u2082O\u2083 + Fe', target: [2, 1, 1, 2], atoms: { Al: [1, 0, 2, 0], Fe: [0, 2, 0, 1], O: [0, 3, 3, 0] }, hint: 'Aluminum replaces iron' },
-            { name: 'Ethanol Combustion', tier: 'advanced', eq: 'C\u2082H\u2085OH + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 3, 2, 3], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [1, 2, 2, 1] }, hint: 'Balance C, then H, then adjust O last' },
-            { name: 'Calcium Carbonate', tier: 'advanced', eq: 'CaCO\u2083 \u2192 CaO + CO\u2082', target: [1, 1, 1], atoms: { Ca: [1, 1, 0], C: [1, 0, 1], O: [3, 1, 2] }, hint: 'Decomposition: already balanced!' },
-            { name: 'Glucose Combustion', tier: 'advanced', eq: 'C\u2086H\u2081\u2082O\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 6, 6, 6], atoms: { C: [6, 0, 1, 0], H: [12, 0, 0, 2], O: [6, 2, 2, 1] }, hint: 'Balance C (6), then H (12\u219206), then O last' },
+            { name: t('stem.chem_balance.thermite'), tier: 'advanced', eq: 'Al + Fe\u2082O\u2083 \u2192 Al\u2082O\u2083 + Fe', target: [2, 1, 1, 2], atoms: { Al: [1, 0, 2, 0], Fe: [0, 2, 0, 1], O: [0, 3, 3, 0] }, hint: 'Aluminum replaces iron' },
+            { name: t('stem.chem_balance.ethanol_combustion'), tier: 'advanced', eq: 'C\u2082H\u2085OH + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 3, 2, 3], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [1, 2, 2, 1] }, hint: 'Balance C, then H, then adjust O last' },
+            { name: t('stem.chem_balance.calcium_carbonate'), tier: 'advanced', eq: 'CaCO\u2083 \u2192 CaO + CO\u2082', target: [1, 1, 1], atoms: { Ca: [1, 1, 0], C: [1, 0, 1], O: [3, 1, 2] }, hint: 'Decomposition: already balanced!' },
+            { name: t('stem.chem_balance.glucose_combustion'), tier: 'advanced', eq: 'C\u2086H\u2081\u2082O\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 6, 6, 6], atoms: { C: [6, 0, 1, 0], H: [12, 0, 0, 2], O: [6, 2, 2, 1] }, hint: 'Balance C (6), then H (12\u219206), then O last' },
           ];
           const tierFilter = d.tierFilter || 'all';
           const filtered = tierFilter === 'all' ? allPresets : allPresets.filter(p => p.tier === tierFilter);
@@ -5346,7 +5612,14 @@
               React.createElement("div", { className: "flex justify-center gap-3 mb-3" },
                 React.createElement("button", { onClick: checkBalance, className: "px-6 py-2.5 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm" }, "\u2696\uFE0F Check Balance"),
                 React.createElement("button", { onClick: () => upd('showHints', !showHints), className: "px-4 py-2 rounded-lg font-bold text-xs transition-colors " + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500 hover:bg-blue-50') }, showHints ? '\uD83D\uDCA1 Hide Hints' : '\uD83D\uDCA1 Show Hints'),
-                React.createElement("button", { onClick: () => { upd('coefficients', Array(numSlots).fill(1)); upd('feedback', null); }, className: "px-4 py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Reset")
+                React.createElement("button", { onClick: () => { upd('coefficients', Array(numSlots).fill(1)); upd('feedback', null); }, className: "px-4 py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-xs hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Reset"),
+                React.createElement("button", {
+                  onClick: function () {
+                    var pick = filtered[Math.floor(Math.random() * filtered.length)];
+                    switchPreset(pick.name);
+                    addToast(t('stem.chem_balance.ud83cudfb2_random') + pick.name + ' (' + pick.tier + ')', 'info');
+                  }, className: "px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 transition-colors border border-purple-200"
+                }, "\uD83C\uDFB2 Random Equation")
               ),
               // Hint panel
               showHints && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 text-left" },
@@ -5378,7 +5651,7 @@
               d.timerActive && d.timerStart && React.createElement("span", { className: "text-xs font-mono font-bold text-amber-600" }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's'),
               d.feedback && d.feedback.correct && d.timerActive && d.timerStart && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '\u26A1 Solved in ' + ((Date.now() - d.timerStart) / 1000).toFixed(1) + 's!')
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'cb-' + Date.now(), tool: 'chemBalance', label: preset.name + ' ' + coeffs.join(':'), data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'cb-' + Date.now(), tool: 'chemBalance', label: preset.name + ' ' + coeffs.join(':'), data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.chem_balance.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -5386,17 +5659,79 @@
         stemLabTab === 'explore' && stemLabTool === 'punnett' && (() => {
           const d = labToolData.punnett;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, punnett: { ...prev.punnett, [key]: val } }));
-          const grid = [[d.parent1[0] + d.parent2[0], d.parent1[0] + d.parent2[1]], [d.parent1[1] + d.parent2[0], d.parent1[1] + d.parent2[1]]];
-          const counts = {};
-          grid.flat().forEach(g => { counts[g] = (counts[g] || 0) + 1; });
-          const isHomo = a => a[0] === a[1];
-          const phenotype = g => g.includes(g[0].toUpperCase()) ? 'Dominant' : 'Recessive';
-          const domCount = grid.flat().filter(g => phenotype(g) === 'Dominant').length;
-          const recCount = 4 - domCount;
-          // Genotype categories
-          const homoD = grid.flat().filter(g => g[0] === g[1] && g[0] === g[0].toUpperCase()).length;
-          const hetero = grid.flat().filter(g => g[0] !== g[1]).length;
-          const homoR = grid.flat().filter(g => g[0] === g[1] && g[0] === g[0].toLowerCase()).length;
+          var inheritMode = d.inheritMode || 'complete';
+
+          // ── Sex-linked grid computation ──
+          var grid, isSexLinked = inheritMode === 'sexLinked';
+          if (isSexLinked) {
+            // Parent 1 = mother (XX), Parent 2 = father (XY)
+            // Use alleles: parent1 = [allele1, allele2] on X, parent2 = [allele] on X (Y has none)
+            var mX1 = 'X' + d.parent1[0], mX2 = 'X' + d.parent2[0]; // mother's two X chromosomes carry alleles from both parent1[0], parent2[0]
+            // Simpler model: mother = X^a X^b (from parent1), father = X^c Y (from parent2[0] for X allele)
+            var momAlleles = [d.parent1[0], d.parent1[1]]; // mom's two X-linked alleles
+            var dadXAllele = d.parent2[0]; // dad's X-linked allele
+            // Father produces X^d and Y gametes; Mother produces X^a and X^b
+            grid = [
+              ['X' + momAlleles[0] + 'X' + dadXAllele, 'X' + momAlleles[0] + 'Y'],
+              ['X' + momAlleles[1] + 'X' + dadXAllele, 'X' + momAlleles[1] + 'Y']
+            ];
+          } else {
+            grid = [[d.parent1[0] + d.parent2[0], d.parent1[0] + d.parent2[1]], [d.parent1[1] + d.parent2[0], d.parent1[1] + d.parent2[1]]];
+          }
+
+          // ── Mode-aware phenotype function ──
+          var phenotype;
+          if (inheritMode === 'incomplete') {
+            phenotype = function (g) {
+              if (isSexLinked) return 'Dominant';
+              var upper = g[0].toUpperCase();
+              if (g[0] === g[1] && g[0] === upper) return 'Dominant';
+              if (g[0] === g[1]) return 'Recessive';
+              return 'Blended'; // heterozygous = intermediate phenotype
+            };
+          } else if (inheritMode === 'codominant') {
+            phenotype = function (g) {
+              if (isSexLinked) return 'Dominant';
+              var upper = g[0].toUpperCase();
+              if (g[0] === g[1] && g[0] === upper) return 'Dominant';
+              if (g[0] === g[1]) return 'Recessive';
+              return 'Codominant'; // heterozygous = both expressed
+            };
+          } else if (isSexLinked) {
+            phenotype = function (g) {
+              // g is like "XAXa" (female) or "XaY" (male)
+              if (g.includes('Y')) {
+                // Male: only one X allele determines phenotype
+                var xA = g.replace('Y', '').replace('X', '');
+                return xA === xA.toUpperCase() ? 'Dominant' : 'Recessive';
+              }
+              // Female: XX — check for any uppercase
+              var alleles = g.split('X').filter(Boolean);
+              return alleles.some(function (a) { return a === a.toUpperCase(); }) ? 'Dominant' : 'Recessive';
+            };
+          } else {
+            // Complete dominance (default)
+            phenotype = function (g) { return g.includes(g[0].toUpperCase()) ? 'Dominant' : 'Recessive'; };
+          }
+
+          var flatGrid = grid.flat();
+          var counts = {};
+          flatGrid.forEach(function (g) { counts[g] = (counts[g] || 0) + 1; });
+          var domCount = flatGrid.filter(function (g) { return phenotype(g) === 'Dominant'; }).length;
+          var recCount = flatGrid.filter(function (g) { return phenotype(g) === 'Recessive'; }).length;
+          var blendCount = flatGrid.filter(function (g) { return phenotype(g) === 'Blended' || phenotype(g) === 'Codominant'; }).length;
+          // Genotype categories (non-sex-linked only)
+          var homoD = isSexLinked ? 0 : flatGrid.filter(function (g) { return g[0] === g[1] && g[0] === g[0].toUpperCase(); }).length;
+          var hetero = isSexLinked ? 0 : flatGrid.filter(function (g) { return g[0] !== g[1]; }).length;
+          var homoR = isSexLinked ? 0 : flatGrid.filter(function (g) { return g[0] === g[1] && g[0] === g[0].toLowerCase(); }).length;
+
+          // Phenotype color helpers
+          var phenoColor = function (p) {
+            if (p === 'Dominant') return { bg: 'bg-emerald-50', text: 'text-emerald-700', sub: 'text-emerald-400', border: 'border-emerald-300' };
+            if (p === 'Recessive') return { bg: 'bg-amber-50', text: 'text-amber-700', sub: 'text-amber-400', border: 'border-amber-300' };
+            if (p === 'Blended') return { bg: 'bg-pink-50', text: 'text-pink-700', sub: 'text-pink-400', border: 'border-pink-300' };
+            return { bg: 'bg-purple-50', text: 'text-purple-700', sub: 'text-purple-400', border: 'border-purple-300' }; // Codominant
+          };
 
           // SVG pie chart helper
           function pieSlice(cx, cy, r, startAngle, endAngle) {
@@ -5411,16 +5746,40 @@
           // Active preset for organism display
           var activePreset = d._activePreset || null;
 
-          // Trait presets with organisms
-          var PRESETS = [
-            { label: '\uD83C\uDF31 Mendel\u2019s Peas (Tt \u00D7 Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic experiment — 3:1 ratio of tall to short pea plants' },
-            { label: '\uD83C\uDF38 Flower Color (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White flowers', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color (R) is dominant over white (r)' },
-            { label: '\uD83D\uDFE4 Bb \u00D7 Bb (Eye color)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue eyes', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified model)' },
-            { label: '\uD83E\uDDB7 Tongue Rolling (Tt \u00D7 Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Roller vs Non-roller', domEmoji: '\uD83D\uDE1B', recEmoji: '\uD83D\uDE10', domLabel: 'Roller', recLabel: 'Non-roller', tip: 'Tongue rolling ability is a fun dominant trait!' },
-            { label: '\uD83D\uDCA0 Test Cross (Bb \u00D7 bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity — 1:1 ratio expected' },
-            { label: '\uD83D\uDC01 Fur Color (Bb \u00D7 Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Black vs White fur', domEmoji: '\u2B1B', recEmoji: '\u2B1C', domLabel: 'Black fur', recLabel: 'White fur', tip: 'Black fur is dominant over white/albino in many mammals' },
-            { label: '\uD83E\uDD47 BB \u00D7 bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: all heterozygous, 100% dominant phenotype' },
-          ];
+          // ── Inheritance mode info ──
+          var MODE_INFO = {
+            complete: { icon: '\uD83E\uDDEC', label: t('stem.punnett.complete_dominance'), desc: 'One allele fully masks the other. Heterozygotes look like the dominant homozygote.' },
+            incomplete: { icon: '\uD83C\uDF38', label: t('stem.punnett.incomplete_dominance'), desc: 'Neither allele fully dominates. Heterozygotes show a blended intermediate phenotype.' },
+            codominant: { icon: '\uD83E\uDE78', label: t('stem.punnett.codominance'), desc: 'Both alleles are fully expressed. Heterozygotes show both traits simultaneously.' },
+            sexLinked: { icon: '\u2640\u2642', label: t('stem.punnett.sexlinked_xlinked'), desc: 'Trait is carried on the X chromosome. Males (XY) need only one copy to express.' }
+          };
+          var modeInfo = MODE_INFO[inheritMode];
+
+          // Trait presets by mode
+          var PRESETS_BY_MODE = {
+            complete: [
+              { label: '\uD83C\uDF31 Peas (Tt × Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic 3:1 ratio of tall to short pea plants' },
+              { label: '\uD83C\uDF38 Flower (Rr × Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color is dominant over white' },
+              { label: '\uD83D\uDFE4 Eyes (Bb × Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified)' },
+              { label: '\uD83D\uDCA0 Test Cross (Bb × bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity — 1:1 ratio' },
+              { label: '\uD83E\uDD47 BB × bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: 100% heterozygous, all dominant' },
+            ],
+            incomplete: [
+              { label: '\uD83C\uDF3A Snapdragon (Rr × Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Flower color', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83C\uDF38', domLabel: 'Red', recLabel: 'White', blendLabel: 'Pink', tip: 'Classic incomplete dominance: red × white = pink heterozygotes' },
+              { label: '\uD83D\uDC14 Andalusian (Bb × Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Feather color', domEmoji: '\u2B1B', recEmoji: '\u2B1C', blendEmoji: '\uD83D\uDD35', domLabel: 'Black', recLabel: 'White', blendLabel: 'Blue', tip: 'Andalusian fowl: black × white = blue feathers' },
+              { label: '\uD83D\uDC34 Palomino (Cc × Cc)', p1: ['C', 'c'], p2: ['C', 'c'], trait: 'Coat color', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83E\uDDD1', blendEmoji: '\uD83D\uDFE1', domLabel: 'Chestnut', recLabel: 'Cremello', blendLabel: 'Palomino', tip: 'Horse coat: chestnut × cremello = palomino' },
+            ],
+            codominant: [
+              { label: '\uD83E\uDE78 Blood Type (AB × AB)', p1: ['A', 'B'], p2: ['A', 'B'], trait: 'ABO blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'A and B alleles are codominant — both expressed in AB blood type' },
+              { label: '\uD83E\uDE78 Blood (Ai × Bi)', p1: ['A', 'i'], p2: ['B', 'i'], trait: 'Blood type', domEmoji: '\uD83C\uDD70', recEmoji: '\uD83C\uDD71', blendEmoji: '\uD83C\uDD8E', domLabel: 'Type A', recLabel: 'Type B', blendLabel: 'Type AB', tip: 'Carrier cross: possible A, B, AB, or O children' },
+              { label: '\uD83D\uDC04 Roan Cattle (Rr × Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' },
+            ],
+            sexLinked: [
+              { label: '\uD83D\uDC41 Color Vision (Cc × cY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother × normal father: 50% sons affected' },
+              { label: '\uD83E\uDE78 Hemophilia (Hh × hY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' },
+            ]
+          };
+          var PRESETS = PRESETS_BY_MODE[inheritMode] || PRESETS_BY_MODE.complete;
 
           return React.createElement("div", { className: "max-w-2xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-4" },
@@ -5429,48 +5788,77 @@
               React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "GENETICS")
             ),
             React.createElement("p", { className: "text-xs text-slate-400 italic -mt-2 mb-3" }, "Predict offspring genotypes. Select alleles for each parent."),
+            // ── Inheritance Mode Selector ──
+            React.createElement("div", { className: "mb-4 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200" },
+              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\uD83E\uDDEC Inheritance Mode"),
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+                ['complete', 'incomplete', 'codominant', 'sexLinked'].map(function (mode) {
+                  var info = MODE_INFO[mode];
+                  var isActive = inheritMode === mode;
+                  return React.createElement("button", {
+                    key: mode,
+                    onClick: function () { upd('inheritMode', mode); upd('_activePreset', null); },
+                    className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border-2 " + (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                  }, info.icon + ' ' + info.label);
+                })
+              ),
+              React.createElement("p", { className: "text-[10px] text-slate-500 italic leading-relaxed" }, modeInfo.desc)
+            ),
             // Parent allele selectors
             React.createElement("div", { className: "flex gap-6 mb-4 justify-center" },
-              [['Parent 1', 'parent1', 'violet'], ['Parent 2', 'parent2', 'blue']].map(([label, key, color]) =>
-                React.createElement("div", { key, className: "text-center" },
-                  React.createElement("label", { className: `text-sm font-bold text-${color}-700 mb-2 block` }, label),
-                  React.createElement("div", { className: "flex gap-2" },
-                    [0, 1].map(i => React.createElement("select", { key: i, value: d[key][i], onChange: e => { const na = [...d[key]]; na[i] = e.target.value; upd(key, na); }, className: `px-3 py-2 border-2 border-${color}-200 rounded-lg font-bold text-lg text-center` },
-                      ['A', 'a', 'B', 'b', 'C', 'c', 'R', 'r', 'T', 't'].map(a => React.createElement("option", { key: a, value: a }, a))
-                    ))
+              [[isSexLinked ? 'Mother (XX)' : 'Parent 1', 'parent1', 'violet'], [isSexLinked ? 'Father (XY)' : 'Parent 2', 'parent2', 'blue']].map(function (_ref) {
+                var label = _ref[0], key = _ref[1], color = _ref[2];
+                // For sex-linked father, only show 1 allele selector (X allele; Y is automatic)
+                var selectorCount = isSexLinked && key === 'parent2' ? 1 : 2;
+                return React.createElement("div", { key: key, className: "text-center" },
+                  React.createElement("label", { className: 'text-sm font-bold text-' + color + '-700 mb-2 block' }, label),
+                  React.createElement("div", { className: "flex gap-2 items-center justify-center" },
+                    Array.from({ length: selectorCount }).map(function (_, i) {
+                      return React.createElement("select", { key: i, value: d[key][i], onChange: function (e) { var na = d[key].slice(); na[i] = e.target.value; upd(key, na); }, className: 'px-3 py-2 border-2 border-' + color + '-200 rounded-lg font-bold text-lg text-center', 'aria-label': label + ' allele ' + (i + 1) },
+                        ['A', 'a', 'B', 'b', 'C', 'c', 'R', 'r', 'T', 't', 'H', 'h', 'i'].map(function (a) { return React.createElement("option", { key: a, value: a }, a); })
+                      );
+                    }),
+                    isSexLinked && key === 'parent2' && React.createElement("span", { className: "px-3 py-2 bg-slate-200 rounded-lg font-bold text-lg text-slate-500" }, "Y")
                   )
-                )
-              )
+                );
+              })
             ),
             // Punnett Grid
             React.createElement("div", { className: "bg-white rounded-xl border border-violet-200 p-4 inline-block mx-auto", style: { display: 'flex', justifyContent: 'center' } },
               React.createElement("table", { className: "border-collapse" },
                 React.createElement("thead", null, React.createElement("tr", null,
                   React.createElement("th", { className: "w-16 h-16" }),
-                  d.parent2.map((a, i) => React.createElement("th", { key: i, className: "w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200" }, a))
+                  isSexLinked
+                    ? [React.createElement("th", { key: 0, className: "w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200" }, 'X' + d.parent2[0]), React.createElement("th", { key: 1, className: "w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-200" }, 'Y')]
+                    : d.parent2.map(function (a, i) { return React.createElement("th", { key: i, className: "w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200" }, a); })
                 )),
-                React.createElement("tbody", null, d.parent1.map((a, r) =>
-                  React.createElement("tr", { key: r },
-                    React.createElement("td", { className: "w-16 h-16 text-center text-lg font-bold text-violet-600 bg-violet-50 border border-violet-200" }, a),
-                    grid[r].map((g, c) => {
-                      var isDom = phenotype(g) === 'Dominant';
-                      var isHomozygous = g[0] === g[1];
-                      var cellLabel = isHomozygous ? (isDom ? 'Homo Dom' : 'Homo Rec') : 'Hetero';
-                      return React.createElement("td", { key: c, className: "w-16 h-16 text-center border border-slate-200 relative " + (isDom ? 'bg-emerald-50' : 'bg-amber-50') },
-                        React.createElement("span", { className: "text-lg font-bold " + (isDom ? 'text-emerald-700' : 'text-amber-700') }, g),
-                        React.createElement("span", { className: "block text-[8px] " + (isDom ? 'text-emerald-400' : 'text-amber-400') }, cellLabel),
-                        // Organism emoji if preset is active
-                        activePreset && React.createElement("span", { className: "text-[10px] absolute top-0.5 right-0.5" }, isDom ? activePreset.domEmoji : activePreset.recEmoji)
+                React.createElement("tbody", null, d.parent1.map(function (a, r) {
+                  var rowLabel = isSexLinked ? 'X' + a : a;
+                  return React.createElement("tr", { key: r },
+                    React.createElement("td", { className: "w-16 h-16 text-center text-lg font-bold text-violet-600 bg-violet-50 border border-violet-200" }, rowLabel),
+                    grid[r].map(function (g, c) {
+                      var p = phenotype(g);
+                      var pc = phenoColor(p);
+                      var cellLabel = isSexLinked ? (g.includes('Y') ? '\u2642 Male' : '\u2640 Female') : (p === 'Blended' ? 'Blended' : p === 'Codominant' ? 'Both' : (g[0] === g[1] ? (p === 'Dominant' ? 'Homo D' : 'Homo R') : 'Hetero'));
+                      var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
+                      return React.createElement("td", { key: c, className: "w-16 h-16 text-center border border-slate-200 relative " + pc.bg },
+                        React.createElement("span", { className: "text-lg font-bold " + pc.text }, g),
+                        React.createElement("span", { className: "block text-[8px] " + pc.sub }, cellLabel),
+                        cellEmoji && React.createElement("span", { className: "text-[10px] absolute top-0.5 right-0.5" }, cellEmoji)
                       );
                     })
-                  )
-                ))
+                  );
+                }))
               )
             ),
             // Genotype ratios text
             React.createElement("div", { className: "mt-4 bg-slate-50 rounded-lg p-3 text-center" },
-              React.createElement("p", { className: "text-sm font-bold text-slate-600" }, "Genotype Ratios: " + Object.entries(counts).map(([g, c]) => g + ': ' + c + '/4').join(' | ')),
-              React.createElement("p", { className: "text-xs text-slate-400 mt-1" }, "Phenotype: " + domCount + "/4 Dominant, " + recCount + "/4 Recessive")
+              React.createElement("p", { className: "text-sm font-bold text-slate-600" }, "Genotype Ratios: " + Object.entries(counts).map(function (e) { return e[0] + ': ' + e[1] + '/4'; }).join(' | ')),
+              React.createElement("p", { className: "text-xs text-slate-400 mt-1" },
+                blendCount > 0
+                  ? 'Phenotype: ' + domCount + '/4 Dominant, ' + blendCount + '/4 ' + (inheritMode === 'incomplete' ? 'Blended' : 'Codominant') + ', ' + recCount + '/4 Recessive'
+                  : 'Phenotype: ' + domCount + '/4 Dominant, ' + recCount + '/4 Recessive'
+              )
             ),
             // ── Phenotype Pie Chart + Bar Chart side by side ──
             React.createElement("div", { className: "mt-3 grid grid-cols-2 gap-3" },
@@ -5478,12 +5866,34 @@
               React.createElement("div", { className: "bg-white rounded-xl border p-3 text-center" },
                 React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\uD83E\uDD67 Phenotype Pie"),
                 React.createElement("svg", { viewBox: "0 0 120 120", className: "w-24 h-24 mx-auto" },
-                  domCount > 0 && domCount < 4 ? [
-                    React.createElement("path", { key: "dom", d: pieSlice(60, 60, 50, -Math.PI / 2, -Math.PI / 2 + (domCount / 4) * Math.PI * 2), fill: "#22c55e", stroke: "#ffffff", strokeWidth: 2 }),
-                    React.createElement("path", { key: "rec", d: pieSlice(60, 60, 50, -Math.PI / 2 + (domCount / 4) * Math.PI * 2, -Math.PI / 2 + Math.PI * 2), fill: "#f59e0b", stroke: "#ffffff", strokeWidth: 2 })
-                  ] : React.createElement("circle", { cx: 60, cy: 60, r: 50, fill: domCount === 4 ? "#22c55e" : "#f59e0b", stroke: "#ffffff", strokeWidth: 2 }),
-                  React.createElement("text", { x: 60, y: 58, textAnchor: "middle", style: { fontSize: '10px', fontWeight: 'bold' }, fill: "#1e293b" }, (domCount * 25) + '% D'),
-                  React.createElement("text", { x: 60, y: 72, textAnchor: "middle", style: { fontSize: '9px' }, fill: "#64748b" }, (recCount * 25) + '% R')
+                  (function () {
+                    var slices = [];
+                    var total = domCount + blendCount + recCount;
+                    if (total === 0) return React.createElement("circle", { cx: 60, cy: 60, r: 50, fill: "#94a3b8", stroke: "#ffffff", strokeWidth: 2 });
+                    var angle = -Math.PI / 2;
+                    if (domCount > 0 && domCount < total) {
+                      var a2 = angle + (domCount / total) * Math.PI * 2;
+                      slices.push(React.createElement("path", { key: "dom", d: pieSlice(60, 60, 50, angle, a2), fill: "#22c55e", stroke: "#fff", strokeWidth: 2 }));
+                      angle = a2;
+                    }
+                    if (blendCount > 0 && blendCount < total) {
+                      var a3 = angle + (blendCount / total) * Math.PI * 2;
+                      slices.push(React.createElement("path", { key: "blend", d: pieSlice(60, 60, 50, angle, a3), fill: inheritMode === 'incomplete' ? "#ec4899" : "#a855f7", stroke: "#fff", strokeWidth: 2 }));
+                      angle = a3;
+                    }
+                    if (recCount > 0 && recCount < total) {
+                      var a4 = angle + (recCount / total) * Math.PI * 2;
+                      slices.push(React.createElement("path", { key: "rec", d: pieSlice(60, 60, 50, angle, a4), fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }));
+                    }
+                    if (slices.length === 0) {
+                      var col = domCount === total ? "#22c55e" : blendCount === total ? (inheritMode === 'incomplete' ? "#ec4899" : "#a855f7") : "#f59e0b";
+                      slices.push(React.createElement("circle", { key: "full", cx: 60, cy: 60, r: 50, fill: col, stroke: "#fff", strokeWidth: 2 }));
+                    }
+                    slices.push(React.createElement("text", { key: "t1", x: 60, y: 56, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold' }, fill: "#1e293b" }, (domCount * 25) + '% D'));
+                    if (blendCount > 0) slices.push(React.createElement("text", { key: "t2", x: 60, y: 68, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold' }, fill: "#1e293b" }, (blendCount * 25) + '% ' + (inheritMode === 'incomplete' ? 'B' : 'Co')));
+                    slices.push(React.createElement("text", { key: "t3", x: 60, y: blendCount > 0 ? 80 : 72, textAnchor: "middle", style: { fontSize: '9px' }, fill: "#64748b" }, (recCount * 25) + '% R'));
+                    return slices;
+                  })()
                 )
               ),
               // Genotype breakdown
@@ -5515,12 +5925,12 @@
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
               React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\uD83E\uDDEC Quick Crosses"),
               React.createElement("div", { className: "flex flex-wrap gap-1.5" },
-                PRESETS.map(function (preset) {
+                (PRESETS_BY_MODE[inheritMode] || []).map(function (preset) {
                   return React.createElement("button", {
                     key: preset.label, onClick: function () {
                       upd('parent1', preset.p1); upd('parent2', preset.p2);
                       upd('_activePreset', preset);
-                      addToast('\uD83E\uDDEC ' + preset.tip, 'success');
+                      addToast(t('stem.punnett.ud83euddec') + preset.tip, 'success');
                     }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 transition-all"
                   }, preset.label);
                 })
@@ -5528,14 +5938,17 @@
             ),
             // ── Phenotype Visual (when preset is active) ──
             activePreset && React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-200 p-3" },
-              React.createElement("p", { className: "text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-2" }, "\uD83D\uDC40 Offspring Phenotypes — " + activePreset.trait),
+              React.createElement("p", { className: "text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-2" }, "\uD83D\uDC40 Offspring Phenotypes \u2014 " + activePreset.trait),
               React.createElement("div", { className: "flex justify-center gap-2" },
-                grid.flat().map(function (g, i) {
-                  var isDom = phenotype(g) === 'Dominant';
-                  return React.createElement("div", { key: i, className: "text-center p-2 rounded-lg border-2 transition-all " + (isDom ? 'bg-emerald-50 border-emerald-300' : 'bg-amber-50 border-amber-300'), style: { minWidth: '60px' } },
-                    React.createElement("span", { className: "text-2xl block mb-1" }, isDom ? activePreset.domEmoji : activePreset.recEmoji),
-                    React.createElement("span", { className: "text-[10px] font-bold block " + (isDom ? 'text-emerald-700' : 'text-amber-700') }, g),
-                    React.createElement("span", { className: "text-[8px] block " + (isDom ? 'text-emerald-500' : 'text-amber-500') }, isDom ? activePreset.domLabel : activePreset.recLabel)
+                flatGrid.map(function (g, i) {
+                  var p = phenotype(g);
+                  var pc = phenoColor(p);
+                  var emoji = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji);
+                  var label = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendLabel || 'Mixed') : (p === 'Dominant' ? activePreset.domLabel : activePreset.recLabel);
+                  return React.createElement("div", { key: i, className: "text-center p-2 rounded-lg border-2 transition-all " + pc.bg + ' ' + pc.border, style: { minWidth: '60px' } },
+                    React.createElement("span", { className: "text-2xl block mb-1" }, emoji),
+                    React.createElement("span", { className: "text-[10px] font-bold block " + pc.text }, g),
+                    React.createElement("span", { className: "text-[8px] block " + pc.sub }, label)
                   );
                 })
               )
@@ -5543,6 +5956,20 @@
             // ── Educational Callout ──
             React.createElement("p", { className: "mt-3 text-xs text-slate-400 italic" },
               (function () {
+                if (inheritMode === 'incomplete') {
+                  if (blendCount === 4) return '\uD83D\uDCA1 100% blended phenotype! Both parents are heterozygous \u2014 classic incomplete dominance 1:2:1 ratio.';
+                  if (blendCount === 2) return '\uD83D\uDCA1 50% blended. Some offspring express intermediate traits!';
+                  return '\uD83D\uDCA1 Incomplete dominance: heterozygotes show a blend of both parental traits.';
+                }
+                if (inheritMode === 'codominant') {
+                  if (blendCount > 0) return '\uD83D\uDCA1 ' + (blendCount * 25) + '% of offspring express both alleles simultaneously \u2014 that\u2019s codominance!';
+                  return '\uD83D\uDCA1 No heterozygotes in this cross. Try crossing different alleles to see codominance.';
+                }
+                if (isSexLinked) {
+                  var malesAffected = flatGrid.filter(function (g) { return g.includes('Y') && phenotype(g) === 'Recessive'; }).length;
+                  var femalesCarrier = flatGrid.filter(function (g) { return !g.includes('Y') && g.split('X').filter(Boolean).length === 2 && g.split('X').filter(Boolean)[0] !== g.split('X').filter(Boolean)[1]; }).length;
+                  return '\uD83D\uDCA1 X-linked: ' + (malesAffected > 0 ? malesAffected + '/2 sons affected' : 'no sons affected') + '. ' + (femalesCarrier > 0 ? femalesCarrier + '/2 daughters are carriers.' : 'Daughters are not carriers.');
+                }
                 if (domCount === 4) return '\uD83D\uDCA1 100% dominant phenotype. At least one parent must be homozygous dominant (BB).';
                 if (domCount === 3) return '\uD83D\uDCA1 Classic 3:1 ratio! Both parents are heterozygous (Bb) \u2014 this is Mendel\u2019s foundational ratio.';
                 if (domCount === 2) return '\uD83D\uDCA1 1:1 ratio. This is a test cross \u2014 one parent is heterozygous, the other recessive.';
@@ -5550,7 +5977,7 @@
                 return '\uD83D\uDCA1 100% recessive. Both parents must be homozygous recessive (bb).';
               })()
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pn-' + Date.now(), tool: 'punnett', label: d.parent1.join('') + ' \u00D7 ' + d.parent2.join(''), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Punnett snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'pn-' + Date.now(), tool: 'punnett', label: d.parent1.join('') + ' \u00D7 ' + d.parent2.join(''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(t('stem.punnett.ud83dudcf8_punnett_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -5717,14 +6144,14 @@
             // Readout cards
             React.createElement("div", { className: "mt-3 grid grid-cols-4 gap-2" },
               [
-                { label: 'Mode', val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261' },
-                { label: 'Resistance', val: totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8' },
-                { label: 'Current', val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1' },
-                { label: 'Power', val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25' }
+                { label: t('stem.circuit.mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261' },
+                { label: t('stem.circuit.resistance'), val: totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8' },
+                { label: t('stem.circuit.current'), val: current.toFixed(3) + 'A', color: 'blue', icon: '\u26A1' },
+                { label: t('stem.circuit.power'), val: power.toFixed(2) + 'W', color: 'red', icon: '\uD83D\uDD25' }
               ].map(function (m) {
-                return React.createElement("div", { key: m.label, className: "text-center p-2 rounded-xl border transition-all " + (isShort && m.label !== 'Mode' ? 'bg-red-50 border-red-200' : 'bg-' + m.color + '-50 border-' + m.color + '-200') },
-                  React.createElement("p", { className: "text-[10px] font-bold uppercase " + (isShort && m.label !== 'Mode' ? 'text-red-600' : 'text-' + m.color + '-600') }, m.icon + ' ' + m.label),
-                  React.createElement("p", { className: "text-sm font-bold " + (isShort && m.label !== 'Mode' ? 'text-red-800' : 'text-' + m.color + '-800') }, m.val)
+                return React.createElement("div", { key: m.label, className: "text-center p-2 rounded-xl border transition-all " + (isShort && m.label !== t('stem.circuit.mode') ? 'bg-red-50 border-red-200' : 'bg-' + m.color + '-50 border-' + m.color + '-200') },
+                  React.createElement("p", { className: "text-[10px] font-bold uppercase " + (isShort && m.label !== t('stem.circuit.mode') ? 'text-red-600' : 'text-' + m.color + '-600') }, m.icon + ' ' + m.label),
+                  React.createElement("p", { className: "text-sm font-bold " + (isShort && m.label !== t('stem.circuit.mode') ? 'text-red-800' : 'text-' + m.color + '-800') }, m.val)
                 );
               })
             ),
@@ -5765,25 +6192,25 @@
               React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Circuit Challenges"),
               React.createElement("div", { className: "flex flex-wrap gap-2" },
                 [
-                  { label: 'Get 2A current', target: 2, type: 'current', unit: 'A' },
-                  { label: 'Get 0.5A current', target: 0.5, type: 'current', unit: 'A' },
-                  { label: 'Total R = 200\u03A9', target: 200, type: 'resistance', unit: '\u03A9' },
-                  { label: 'Power = 24W', target: 24, type: 'power', unit: 'W' },
-                  { label: 'Total R = 50\u03A9', target: 50, type: 'resistance', unit: '\u03A9' },
+                  { label: t('stem.circuit.get_2a_current'), target: 2, type: 'current', unit: 'A' },
+                  { label: t('stem.circuit.get_05a_current'), target: 0.5, type: 'current', unit: 'A' },
+                  { label: t('stem.circuit.total_r_200u03a9'), target: 200, type: 'resistance', unit: '\u03A9' },
+                  { label: t('stem.circuit.power_24w'), target: 24, type: 'power', unit: 'W' },
+                  { label: t('stem.circuit.total_r_50u03a9'), target: 50, type: 'resistance', unit: '\u03A9' },
                 ].map(function (ch) {
                   var actual = ch.type === 'current' ? current : ch.type === 'resistance' ? totalR : power;
                   var close = Math.abs(actual - ch.target) < ch.target * 0.05;
                   return React.createElement("button", {
                     key: ch.label, onClick: function () {
-                      if (close) { addToast('\u2705 Challenge complete! You hit ' + actual.toFixed(3) + ch.unit + ' (target: ' + ch.target + ch.unit + ')', 'success'); }
-                      else { addToast('\uD83C\uDFAF Target: ' + ch.target + ch.unit + ' | Current: ' + actual.toFixed(3) + ch.unit + '. Adjust components!', 'info'); }
+                      if (close) { addToast(t('stem.circuit.u2705_challenge_complete_you_hit') + actual.toFixed(3) + ch.unit + ' (target: ' + ch.target + ch.unit + ')', 'success'); }
+                      else { addToast(t('stem.circuit.ud83cudfaf_target') + ch.target + ch.unit + ' | Current: ' + actual.toFixed(3) + ch.unit + '. Adjust components!', 'info'); }
                       upd('challenge', ch);
                     }, className: "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all " + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50')
                   }, (close ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: Object.assign({}, d, { mode: mode }), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Circuit snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: Object.assign({}, d, { mode: mode }), timestamp: Date.now() }]); addToast(t('stem.circuit.ud83dudcf8_circuit_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -5891,7 +6318,46 @@
                 React.createElement("p", { className: "text-sm font-bold text-teal-800" }, (function (ps) { var m = ps.reduce(function (s, p) { return s + p.y }, 0) / ps.length; return Math.sqrt(ps.reduce(function (s, p) { return s + Math.pow(p.y - m, 2) }, 0) / ps.length); })(d.points).toFixed(2))
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dp-' + Date.now(), tool: 'dataPlot', label: d.points.length + ' pts r²=' + r2.toFixed(2), data: { points: [...d.points] }, timestamp: Date.now() }]); addToast('📸 Data snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
+            // ── Quiz: Predict the Correlation ──
+            (() => {
+              var dpQuiz = d.dpQuiz || null;
+              var dpScore = d.dpScore || 0;
+              function makeDpQuiz() {
+                var scenarios = [
+                  { q: 'Hours studied vs. Test score', a: 'Positive', pts: Array.from({ length: 12 }, (_, i) => ({ x: i + 1, y: 50 + i * 3.5 + Math.random() * 10 - 5 })) },
+                  { q: 'Temperature vs. Hot chocolate sales', a: 'Negative', pts: Array.from({ length: 12 }, (_, i) => ({ x: 30 + i * 5, y: 100 - i * 7 + Math.random() * 10 - 5 })) },
+                  { q: 'Shoe size vs. IQ', a: 'None', pts: Array.from({ length: 12 }, () => ({ x: 5 + Math.random() * 10, y: 80 + Math.random() * 40 })) },
+                  { q: 'Age of car vs. Resale value', a: 'Negative', pts: Array.from({ length: 12 }, (_, i) => ({ x: i, y: 30000 - i * 2500 + Math.random() * 3000 - 1500 })) },
+                  { q: 'Practice hours vs. Free throw %', a: 'Positive', pts: Array.from({ length: 12 }, (_, i) => ({ x: i * 2, y: 40 + i * 4 + Math.random() * 8 - 4 })) },
+                  { q: 'Number of pets vs. Favorite color', a: 'None', pts: Array.from({ length: 12 }, () => ({ x: Math.floor(Math.random() * 6), y: Math.floor(Math.random() * 8) })) },
+                ];
+                var s = scenarios[Math.floor(Math.random() * scenarios.length)];
+                return { text: s.q, answer: s.a, pts: s.pts, opts: ['Positive', 'Negative', 'None'].sort(function () { return Math.random() - 0.5; }), answered: false };
+              }
+              return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("button", { onClick: function () { var q = makeDpQuiz(); upd('dpQuiz', q); upd('points', q.pts); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-600 text-white') + " hover:opacity-90 transition-all" }, dpQuiz ? '🔄 Next Scenario' : '📊 Predict Correlation'),
+                  dpScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + dpScore + ' correct')
+                ),
+                dpQuiz && !dpQuiz.answered && React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 border border-teal-200" },
+                  React.createElement("p", { className: "text-sm font-bold text-teal-800 mb-2" }, '"' + dpQuiz.text + '" — What correlation do you see?'),
+                  React.createElement("div", { className: "flex gap-2" },
+                    dpQuiz.opts.map(function (opt) {
+                      return React.createElement("button", {
+                        key: opt, onClick: function () {
+                          var correct = opt === dpQuiz.answer;
+                          upd('dpQuiz', Object.assign({}, dpQuiz, { answered: true, chosen: opt }));
+                          upd('dpScore', dpScore + (correct ? 1 : 0));
+                          if (correct) addToast(t('stem.data_plot.correct') + dpQuiz.answer + ' correlation', 'success'); else addToast(t('stem.data_plot.it')s ' + dpQuiz.answer + ' correlation', 'error');
+                        }, className: "px-4 py-2 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all"
+                      }, opt);
+                    })
+                  )
+                ),
+                dpQuiz && dpQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (dpQuiz.chosen === dpQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, dpQuiz.chosen === dpQuiz.answer ? '✅ Correct! ' + dpQuiz.answer + ' correlation.' : '❌ Answer: ' + dpQuiz.answer + ' correlation.')
+              );
+            })(),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dp-' + Date.now(), tool: 'dataPlot', label: d.points.length + ' pts r²=' + r2.toFixed(2), data: { points: [...d.points] }, timestamp: Date.now() }]); addToast(t('stem.data_plot.data_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
           )
         })(),
 
@@ -6075,7 +6541,7 @@
                 !d.quiz.answered
                   ? React.createElement("div", { className: "flex gap-2" },
                     React.createElement("input", {
-                      type: "text", placeholder: "Type your answer...", className: "flex-1 px-3 py-2 border border-fuchsia-200 rounded-lg font-mono text-sm", onKeyDown: function (e) {
+                      type: "text", placeholder: t('stem.inequality.type_your_answer'), className: "flex-1 px-3 py-2 border border-fuchsia-200 rounded-lg font-mono text-sm", onKeyDown: function (e) {
                         if (e.key === 'Enter') {
                           var userAns = e.target.value.trim();
                           // Normalize
@@ -6094,7 +6560,7 @@
                   )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'iq-' + Date.now(), tool: 'inequality', label: d.expr, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Inequality snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'iq-' + Date.now(), tool: 'inequality', label: d.expr, data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.inequality.ud83dudcf8_inequality_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           )
         })(),
 
@@ -6106,108 +6572,108 @@
           const mode = d.moleculeMode || 'viewer';
           // ── Periodic Table Data (118 elements) ──
           const ELEMENTS = [
-            { n: 1, s: 'H', name: 'Hydrogen', cat: 'nonmetal', c: '#60a5fa' }, { n: 2, s: 'He', name: 'Helium', cat: 'noble', c: '#c084fc' },
-            { n: 3, s: 'Li', name: 'Lithium', cat: 'alkali', c: '#f87171' }, { n: 4, s: 'Be', name: 'Beryllium', cat: 'alkaline', c: '#fbbf24' },
-            { n: 5, s: 'B', name: 'Boron', cat: 'metalloid', c: '#34d399' }, { n: 6, s: 'C', name: 'Carbon', cat: 'nonmetal', c: '#60a5fa' },
-            { n: 7, s: 'N', name: 'Nitrogen', cat: 'nonmetal', c: '#60a5fa' }, { n: 8, s: 'O', name: 'Oxygen', cat: 'nonmetal', c: '#60a5fa' },
-            { n: 9, s: 'F', name: 'Fluorine', cat: 'halogen', c: '#2dd4bf' }, { n: 10, s: 'Ne', name: 'Neon', cat: 'noble', c: '#c084fc' },
-            { n: 11, s: 'Na', name: 'Sodium', cat: 'alkali', c: '#f87171' }, { n: 12, s: 'Mg', name: 'Magnesium', cat: 'alkaline', c: '#fbbf24' },
-            { n: 13, s: 'Al', name: 'Aluminum', cat: 'metal', c: '#94a3b8' }, { n: 14, s: 'Si', name: 'Silicon', cat: 'metalloid', c: '#34d399' },
-            { n: 15, s: 'P', name: 'Phosphorus', cat: 'nonmetal', c: '#60a5fa' }, { n: 16, s: 'S', name: 'Sulfur', cat: 'nonmetal', c: '#60a5fa' },
-            { n: 17, s: 'Cl', name: 'Chlorine', cat: 'halogen', c: '#2dd4bf' }, { n: 18, s: 'Ar', name: 'Argon', cat: 'noble', c: '#c084fc' },
-            { n: 19, s: 'K', name: 'Potassium', cat: 'alkali', c: '#f87171' }, { n: 20, s: 'Ca', name: 'Calcium', cat: 'alkaline', c: '#fbbf24' },
-            { n: 21, s: 'Sc', name: 'Scandium', cat: 'transition', c: '#fb923c' }, { n: 22, s: 'Ti', name: 'Titanium', cat: 'transition', c: '#fb923c' },
-            { n: 23, s: 'V', name: 'Vanadium', cat: 'transition', c: '#fb923c' }, { n: 24, s: 'Cr', name: 'Chromium', cat: 'transition', c: '#fb923c' },
-            { n: 25, s: 'Mn', name: 'Manganese', cat: 'transition', c: '#fb923c' }, { n: 26, s: 'Fe', name: 'Iron', cat: 'transition', c: '#fb923c' },
-            { n: 27, s: 'Co', name: 'Cobalt', cat: 'transition', c: '#fb923c' }, { n: 28, s: 'Ni', name: 'Nickel', cat: 'transition', c: '#fb923c' },
-            { n: 29, s: 'Cu', name: 'Copper', cat: 'transition', c: '#fb923c' }, { n: 30, s: 'Zn', name: 'Zinc', cat: 'transition', c: '#fb923c' },
-            { n: 31, s: 'Ga', name: 'Gallium', cat: 'metal', c: '#94a3b8' }, { n: 32, s: 'Ge', name: 'Germanium', cat: 'metalloid', c: '#34d399' },
-            { n: 33, s: 'As', name: 'Arsenic', cat: 'metalloid', c: '#34d399' }, { n: 34, s: 'Se', name: 'Selenium', cat: 'nonmetal', c: '#60a5fa' },
-            { n: 35, s: 'Br', name: 'Bromine', cat: 'halogen', c: '#2dd4bf' }, { n: 36, s: 'Kr', name: 'Krypton', cat: 'noble', c: '#c084fc' },
-            { n: 37, s: 'Rb', name: 'Rubidium', cat: 'alkali', c: '#f87171' }, { n: 38, s: 'Sr', name: 'Strontium', cat: 'alkaline', c: '#fbbf24' },
-            { n: 39, s: 'Y', name: 'Yttrium', cat: 'transition', c: '#fb923c' }, { n: 40, s: 'Zr', name: 'Zirconium', cat: 'transition', c: '#fb923c' },
-            { n: 41, s: 'Nb', name: 'Niobium', cat: 'transition', c: '#fb923c' }, { n: 42, s: 'Mo', name: 'Molybdenum', cat: 'transition', c: '#fb923c' },
-            { n: 43, s: 'Tc', name: 'Technetium', cat: 'transition', c: '#fb923c' }, { n: 44, s: 'Ru', name: 'Ruthenium', cat: 'transition', c: '#fb923c' },
-            { n: 45, s: 'Rh', name: 'Rhodium', cat: 'transition', c: '#fb923c' }, { n: 46, s: 'Pd', name: 'Palladium', cat: 'transition', c: '#fb923c' },
-            { n: 47, s: 'Ag', name: 'Silver', cat: 'transition', c: '#fb923c' }, { n: 48, s: 'Cd', name: 'Cadmium', cat: 'transition', c: '#fb923c' },
-            { n: 49, s: 'In', name: 'Indium', cat: 'metal', c: '#94a3b8' }, { n: 50, s: 'Sn', name: 'Tin', cat: 'metal', c: '#94a3b8' },
-            { n: 51, s: 'Sb', name: 'Antimony', cat: 'metalloid', c: '#34d399' }, { n: 52, s: 'Te', name: 'Tellurium', cat: 'metalloid', c: '#34d399' },
-            { n: 53, s: 'I', name: 'Iodine', cat: 'halogen', c: '#2dd4bf' }, { n: 54, s: 'Xe', name: 'Xenon', cat: 'noble', c: '#c084fc' },
-            { n: 55, s: 'Cs', name: 'Cesium', cat: 'alkali', c: '#f87171' }, { n: 56, s: 'Ba', name: 'Barium', cat: 'alkaline', c: '#fbbf24' },
-            { n: 57, s: 'La', name: 'Lanthanide', cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: 'Cerium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 59, s: 'Pr', name: 'Praseodymium', cat: 'lanthanide', c: '#a78bfa' }, { n: 60, s: 'Nd', name: 'Neodymium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 61, s: 'Pm', name: 'Promethium', cat: 'lanthanide', c: '#a78bfa' }, { n: 62, s: 'Sm', name: 'Samarium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 63, s: 'Eu', name: 'Europium', cat: 'lanthanide', c: '#a78bfa' }, { n: 64, s: 'Gd', name: 'Gadolinium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 65, s: 'Tb', name: 'Terbium', cat: 'lanthanide', c: '#a78bfa' }, { n: 66, s: 'Dy', name: 'Dysprosium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 67, s: 'Ho', name: 'Holmium', cat: 'lanthanide', c: '#a78bfa' }, { n: 68, s: 'Er', name: 'Erbium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 69, s: 'Tm', name: 'Thulium', cat: 'lanthanide', c: '#a78bfa' }, { n: 70, s: 'Yb', name: 'Ytterbium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 71, s: 'Lu', name: 'Lutetium', cat: 'lanthanide', c: '#a78bfa' },
-            { n: 72, s: 'Hf', name: 'Hafnium', cat: 'transition', c: '#fb923c' }, { n: 73, s: 'Ta', name: 'Tantalum', cat: 'transition', c: '#fb923c' },
-            { n: 74, s: 'W', name: 'Tungsten', cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: 'Rhenium', cat: 'transition', c: '#fb923c' },
-            { n: 76, s: 'Os', name: 'Osmium', cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: 'Iridium', cat: 'transition', c: '#fb923c' },
-            { n: 78, s: 'Pt', name: 'Platinum', cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: 'Gold', cat: 'transition', c: '#fb923c' },
-            { n: 80, s: 'Hg', name: 'Mercury', cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: 'Thallium', cat: 'metal', c: '#94a3b8', gravity: '0.38g', atmosphere: 'None \u2014 no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
-            { n: 82, s: 'Pb', name: 'Lead', cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: 'Bismuth', cat: 'metal', c: '#94a3b8' },
-            { n: 84, s: 'Po', name: 'Polonium', cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: 'Astatine', cat: 'halogen', c: '#2dd4bf' },
-            { n: 86, s: 'Rn', name: 'Radon', cat: 'noble', c: '#c084fc' },
-            { n: 87, s: 'Fr', name: 'Francium', cat: 'alkali', c: '#f87171' }, { n: 88, s: 'Ra', name: 'Radium', cat: 'alkaline', c: '#fbbf24' },
-            { n: 89, s: 'Ac', name: 'Actinide', cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: 'Thorium', cat: 'actinide', c: '#f472b6' },
-            { n: 91, s: 'Pa', name: 'Protactinium', cat: 'actinide', c: '#f472b6' }, { n: 92, s: 'U', name: 'Uranium', cat: 'actinide', c: '#f472b6' },
-            { n: 93, s: 'Np', name: 'Neptunium', cat: 'actinide', c: '#f472b6' }, { n: 94, s: 'Pu', name: 'Plutonium', cat: 'actinide', c: '#f472b6' },
-            { n: 95, s: 'Am', name: 'Americium', cat: 'actinide', c: '#f472b6' }, { n: 96, s: 'Cm', name: 'Curium', cat: 'actinide', c: '#f472b6' },
-            { n: 97, s: 'Bk', name: 'Berkelium', cat: 'actinide', c: '#f472b6' }, { n: 98, s: 'Cf', name: 'Californium', cat: 'actinide', c: '#f472b6' },
-            { n: 99, s: 'Es', name: 'Einsteinium', cat: 'actinide', c: '#f472b6' }, { n: 100, s: 'Fm', name: 'Fermium', cat: 'actinide', c: '#f472b6' },
-            { n: 101, s: 'Md', name: 'Mendelevium', cat: 'actinide', c: '#f472b6' }, { n: 102, s: 'No', name: 'Nobelium', cat: 'actinide', c: '#f472b6' },
-            { n: 103, s: 'Lr', name: 'Lawrencium', cat: 'actinide', c: '#f472b6' },
-            { n: 104, s: 'Rf', name: 'Rutherfordium', cat: 'transition', c: '#fb923c' }, { n: 105, s: 'Db', name: 'Dubnium', cat: 'transition', c: '#fb923c' },
-            { n: 106, s: 'Sg', name: 'Seaborgium', cat: 'transition', c: '#fb923c' }, { n: 107, s: 'Bh', name: 'Bohrium', cat: 'transition', c: '#fb923c' },
-            { n: 108, s: 'Hs', name: 'Hassium', cat: 'transition', c: '#fb923c' }, { n: 109, s: 'Mt', name: 'Meitnerium', cat: 'transition', c: '#fb923c' },
-            { n: 110, s: 'Ds', name: 'Darmstadtium', cat: 'transition', c: '#fb923c' }, { n: 111, s: 'Rg', name: 'Roentgenium', cat: 'transition', c: '#fb923c' },
-            { n: 112, s: 'Cn', name: 'Copernicium', cat: 'transition', c: '#fb923c' }, { n: 113, s: 'Nh', name: 'Nihonium', cat: 'metal', c: '#94a3b8' },
-            { n: 114, s: 'Fl', name: 'Flerovium', cat: 'metal', c: '#94a3b8' }, { n: 115, s: 'Mc', name: 'Moscovium', cat: 'metal', c: '#94a3b8' },
-            { n: 116, s: 'Lv', name: 'Livermorium', cat: 'metal', c: '#94a3b8' }, { n: 117, s: 'Ts', name: 'Tennessine', cat: 'halogen', c: '#2dd4bf' },
-            { n: 118, s: 'Og', name: 'Oganesson', cat: 'noble', c: '#c084fc' }
+            { n: 1, s: 'H', name: t('stem.periodic.hydrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 2, s: 'He', name: t('stem.periodic.helium'), cat: 'noble', c: '#c084fc' },
+            { n: 3, s: 'Li', name: t('stem.periodic.lithium'), cat: 'alkali', c: '#f87171' }, { n: 4, s: 'Be', name: t('stem.periodic.beryllium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 5, s: 'B', name: t('stem.periodic.boron'), cat: 'metalloid', c: '#34d399' }, { n: 6, s: 'C', name: t('stem.periodic.carbon'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 7, s: 'N', name: t('stem.periodic.nitrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 8, s: 'O', name: t('stem.periodic.oxygen'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 9, s: 'F', name: t('stem.periodic.fluorine'), cat: 'halogen', c: '#2dd4bf' }, { n: 10, s: 'Ne', name: t('stem.periodic.neon'), cat: 'noble', c: '#c084fc' },
+            { n: 11, s: 'Na', name: t('stem.periodic.sodium'), cat: 'alkali', c: '#f87171' }, { n: 12, s: 'Mg', name: t('stem.periodic.magnesium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 13, s: 'Al', name: t('stem.periodic.aluminum'), cat: 'metal', c: '#94a3b8' }, { n: 14, s: 'Si', name: t('stem.periodic.silicon'), cat: 'metalloid', c: '#34d399' },
+            { n: 15, s: 'P', name: t('stem.periodic.phosphorus'), cat: 'nonmetal', c: '#60a5fa' }, { n: 16, s: 'S', name: t('stem.periodic.sulfur'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 17, s: 'Cl', name: t('stem.periodic.chlorine'), cat: 'halogen', c: '#2dd4bf' }, { n: 18, s: 'Ar', name: t('stem.periodic.argon'), cat: 'noble', c: '#c084fc' },
+            { n: 19, s: 'K', name: t('stem.periodic.potassium'), cat: 'alkali', c: '#f87171' }, { n: 20, s: 'Ca', name: t('stem.periodic.calcium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 21, s: 'Sc', name: t('stem.periodic.scandium'), cat: 'transition', c: '#fb923c' }, { n: 22, s: 'Ti', name: t('stem.periodic.titanium'), cat: 'transition', c: '#fb923c' },
+            { n: 23, s: 'V', name: t('stem.periodic.vanadium'), cat: 'transition', c: '#fb923c' }, { n: 24, s: 'Cr', name: t('stem.periodic.chromium'), cat: 'transition', c: '#fb923c' },
+            { n: 25, s: 'Mn', name: t('stem.periodic.manganese'), cat: 'transition', c: '#fb923c' }, { n: 26, s: 'Fe', name: t('stem.periodic.iron'), cat: 'transition', c: '#fb923c' },
+            { n: 27, s: 'Co', name: t('stem.periodic.cobalt'), cat: 'transition', c: '#fb923c' }, { n: 28, s: 'Ni', name: t('stem.periodic.nickel'), cat: 'transition', c: '#fb923c' },
+            { n: 29, s: 'Cu', name: t('stem.periodic.copper'), cat: 'transition', c: '#fb923c' }, { n: 30, s: 'Zn', name: t('stem.periodic.zinc'), cat: 'transition', c: '#fb923c' },
+            { n: 31, s: 'Ga', name: t('stem.periodic.gallium'), cat: 'metal', c: '#94a3b8' }, { n: 32, s: 'Ge', name: t('stem.periodic.germanium'), cat: 'metalloid', c: '#34d399' },
+            { n: 33, s: 'As', name: t('stem.periodic.arsenic'), cat: 'metalloid', c: '#34d399' }, { n: 34, s: 'Se', name: t('stem.periodic.selenium'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 35, s: 'Br', name: t('stem.periodic.bromine'), cat: 'halogen', c: '#2dd4bf' }, { n: 36, s: 'Kr', name: t('stem.periodic.krypton'), cat: 'noble', c: '#c084fc' },
+            { n: 37, s: 'Rb', name: t('stem.periodic.rubidium'), cat: 'alkali', c: '#f87171' }, { n: 38, s: 'Sr', name: t('stem.periodic.strontium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 39, s: 'Y', name: t('stem.periodic.yttrium'), cat: 'transition', c: '#fb923c' }, { n: 40, s: 'Zr', name: t('stem.periodic.zirconium'), cat: 'transition', c: '#fb923c' },
+            { n: 41, s: 'Nb', name: t('stem.periodic.niobium'), cat: 'transition', c: '#fb923c' }, { n: 42, s: 'Mo', name: t('stem.periodic.molybdenum'), cat: 'transition', c: '#fb923c' },
+            { n: 43, s: 'Tc', name: t('stem.periodic.technetium'), cat: 'transition', c: '#fb923c' }, { n: 44, s: 'Ru', name: t('stem.periodic.ruthenium'), cat: 'transition', c: '#fb923c' },
+            { n: 45, s: 'Rh', name: t('stem.periodic.rhodium'), cat: 'transition', c: '#fb923c' }, { n: 46, s: 'Pd', name: t('stem.periodic.palladium'), cat: 'transition', c: '#fb923c' },
+            { n: 47, s: 'Ag', name: t('stem.periodic.silver'), cat: 'transition', c: '#fb923c' }, { n: 48, s: 'Cd', name: t('stem.periodic.cadmium'), cat: 'transition', c: '#fb923c' },
+            { n: 49, s: 'In', name: t('stem.periodic.indium'), cat: 'metal', c: '#94a3b8' }, { n: 50, s: 'Sn', name: 'Tin', cat: 'metal', c: '#94a3b8' },
+            { n: 51, s: 'Sb', name: t('stem.periodic.antimony'), cat: 'metalloid', c: '#34d399' }, { n: 52, s: 'Te', name: t('stem.periodic.tellurium'), cat: 'metalloid', c: '#34d399' },
+            { n: 53, s: 'I', name: t('stem.periodic.iodine'), cat: 'halogen', c: '#2dd4bf' }, { n: 54, s: 'Xe', name: t('stem.periodic.xenon'), cat: 'noble', c: '#c084fc' },
+            { n: 55, s: 'Cs', name: t('stem.periodic.cesium'), cat: 'alkali', c: '#f87171' }, { n: 56, s: 'Ba', name: t('stem.periodic.barium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 57, s: 'La', name: t('stem.periodic.lanthanide'), cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: t('stem.periodic.cerium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 59, s: 'Pr', name: t('stem.periodic.praseodymium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 60, s: 'Nd', name: t('stem.periodic.neodymium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 61, s: 'Pm', name: t('stem.periodic.promethium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 62, s: 'Sm', name: t('stem.periodic.samarium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 63, s: 'Eu', name: t('stem.periodic.europium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 64, s: 'Gd', name: t('stem.periodic.gadolinium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 65, s: 'Tb', name: t('stem.periodic.terbium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 66, s: 'Dy', name: t('stem.periodic.dysprosium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 67, s: 'Ho', name: t('stem.periodic.holmium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 68, s: 'Er', name: t('stem.periodic.erbium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 69, s: 'Tm', name: t('stem.periodic.thulium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 70, s: 'Yb', name: t('stem.periodic.ytterbium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 71, s: 'Lu', name: t('stem.periodic.lutetium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 72, s: 'Hf', name: t('stem.periodic.hafnium'), cat: 'transition', c: '#fb923c' }, { n: 73, s: 'Ta', name: t('stem.periodic.tantalum'), cat: 'transition', c: '#fb923c' },
+            { n: 74, s: 'W', name: t('stem.periodic.tungsten'), cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: t('stem.periodic.rhenium'), cat: 'transition', c: '#fb923c' },
+            { n: 76, s: 'Os', name: t('stem.periodic.osmium'), cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: t('stem.periodic.iridium'), cat: 'transition', c: '#fb923c' },
+            { n: 78, s: 'Pt', name: t('stem.periodic.platinum'), cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: t('stem.periodic.gold'), cat: 'transition', c: '#fb923c' },
+            { n: 80, s: 'Hg', name: t('stem.periodic.mercury'), cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: t('stem.periodic.thallium'), cat: 'metal', c: '#94a3b8', gravity: '0.38g', atmosphere: 'None \u2014 no significant atmosphere', surface: 'Heavily cratered, resembling the Moon', notableFeatures: ['Caloris Basin (1,550 km crater)', 'Ice in permanently shadowed craters', 'Fastest orbital speed: 47 km/s'], skyColor: '#000000', terrainColor: '#7a7a7a', terrainType: 'cratered', surfaceDesc: 'Grey cratered wasteland under a black sky. The Sun appears 3x larger than on Earth.' },
+            { n: 82, s: 'Pb', name: t('stem.periodic.lead'), cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: t('stem.periodic.bismuth'), cat: 'metal', c: '#94a3b8' },
+            { n: 84, s: 'Po', name: t('stem.periodic.polonium'), cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: t('stem.periodic.astatine'), cat: 'halogen', c: '#2dd4bf' },
+            { n: 86, s: 'Rn', name: t('stem.periodic.radon'), cat: 'noble', c: '#c084fc' },
+            { n: 87, s: 'Fr', name: t('stem.periodic.francium'), cat: 'alkali', c: '#f87171' }, { n: 88, s: 'Ra', name: t('stem.periodic.radium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 89, s: 'Ac', name: t('stem.periodic.actinide'), cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: t('stem.periodic.thorium'), cat: 'actinide', c: '#f472b6' },
+            { n: 91, s: 'Pa', name: t('stem.periodic.protactinium'), cat: 'actinide', c: '#f472b6' }, { n: 92, s: 'U', name: t('stem.periodic.uranium'), cat: 'actinide', c: '#f472b6' },
+            { n: 93, s: 'Np', name: t('stem.periodic.neptunium'), cat: 'actinide', c: '#f472b6' }, { n: 94, s: 'Pu', name: t('stem.periodic.plutonium'), cat: 'actinide', c: '#f472b6' },
+            { n: 95, s: 'Am', name: t('stem.periodic.americium'), cat: 'actinide', c: '#f472b6' }, { n: 96, s: 'Cm', name: t('stem.periodic.curium'), cat: 'actinide', c: '#f472b6' },
+            { n: 97, s: 'Bk', name: t('stem.periodic.berkelium'), cat: 'actinide', c: '#f472b6' }, { n: 98, s: 'Cf', name: t('stem.periodic.californium'), cat: 'actinide', c: '#f472b6' },
+            { n: 99, s: 'Es', name: t('stem.periodic.einsteinium'), cat: 'actinide', c: '#f472b6' }, { n: 100, s: 'Fm', name: t('stem.periodic.fermium'), cat: 'actinide', c: '#f472b6' },
+            { n: 101, s: 'Md', name: t('stem.periodic.mendelevium'), cat: 'actinide', c: '#f472b6' }, { n: 102, s: 'No', name: t('stem.periodic.nobelium'), cat: 'actinide', c: '#f472b6' },
+            { n: 103, s: 'Lr', name: t('stem.periodic.lawrencium'), cat: 'actinide', c: '#f472b6' },
+            { n: 104, s: 'Rf', name: t('stem.periodic.rutherfordium'), cat: 'transition', c: '#fb923c' }, { n: 105, s: 'Db', name: t('stem.periodic.dubnium'), cat: 'transition', c: '#fb923c' },
+            { n: 106, s: 'Sg', name: t('stem.periodic.seaborgium'), cat: 'transition', c: '#fb923c' }, { n: 107, s: 'Bh', name: t('stem.periodic.bohrium'), cat: 'transition', c: '#fb923c' },
+            { n: 108, s: 'Hs', name: t('stem.periodic.hassium'), cat: 'transition', c: '#fb923c' }, { n: 109, s: 'Mt', name: t('stem.periodic.meitnerium'), cat: 'transition', c: '#fb923c' },
+            { n: 110, s: 'Ds', name: t('stem.periodic.darmstadtium'), cat: 'transition', c: '#fb923c' }, { n: 111, s: 'Rg', name: t('stem.periodic.roentgenium'), cat: 'transition', c: '#fb923c' },
+            { n: 112, s: 'Cn', name: t('stem.periodic.copernicium'), cat: 'transition', c: '#fb923c' }, { n: 113, s: 'Nh', name: t('stem.periodic.nihonium'), cat: 'metal', c: '#94a3b8' },
+            { n: 114, s: 'Fl', name: t('stem.periodic.flerovium'), cat: 'metal', c: '#94a3b8' }, { n: 115, s: 'Mc', name: t('stem.periodic.moscovium'), cat: 'metal', c: '#94a3b8' },
+            { n: 116, s: 'Lv', name: t('stem.periodic.livermorium'), cat: 'metal', c: '#94a3b8' }, { n: 117, s: 'Ts', name: t('stem.periodic.tennessine'), cat: 'halogen', c: '#2dd4bf' },
+            { n: 118, s: 'Og', name: t('stem.periodic.oganesson'), cat: 'noble', c: '#c084fc' }
           ];
 
           // ── Element Details (descriptions, uses, compounds) ──
           const ELEMENT_DETAILS = {
-            H: { desc: 'Lightest element; fuels stars via fusion', uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
-            He: { desc: 'Inert noble gas; 2nd most abundant in universe', uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas — does not form compounds)'] },
-            Li: { desc: 'Lightest metal; soft enough to cut with a knife', uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
-            Be: { desc: 'Rare, toxic metal that is very stiff and light', uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
-            B: { desc: 'Metalloid essential for plant growth', uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
-            C: { desc: 'Basis of all known life; forms diamond & graphite', uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
-            N: { desc: 'Makes up 78% of Earth\'s atmosphere', uses: ['Fertilizers', 'Explosives (TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O (Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
-            O: { desc: 'Essential for respiration; most abundant element in Earth\'s crust', uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O (Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃ (Rust)', 'O₃ (Ozone)'] },
-            F: { desc: 'Most reactive and electronegative element', uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
-            Ne: { desc: 'Produces iconic reddish-orange glow in signs', uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
-            Na: { desc: 'Soft, silvery metal that reacts explosively with water', uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
-            Mg: { desc: 'Lightweight metal that burns with brilliant white flame', uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
-            Al: { desc: 'Most abundant metal in Earth\'s crust', uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃ (Aluminum Chloride)'] },
-            Si: { desc: 'Semiconductor that powers the digital age', uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
-            P: { desc: 'Essential for DNA and bones; glows in the dark', uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
-            S: { desc: 'Yellow element with distinctive rotten-egg smell', uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
-            Cl: { desc: 'Greenish-yellow gas used to purify water', uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
-            Ar: { desc: 'Third most abundant gas in atmosphere', uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
-            K: { desc: 'Essential nutrient found in bananas', uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
-            Ca: { desc: 'Builds bones and teeth; 5th most abundant element', uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
-            Fe: { desc: 'Most used metal; core of Earth is mostly iron', uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
-            Cu: { desc: 'Reddish metal used since the Bronze Age', uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
-            Zn: { desc: 'Bluish-white metal that prevents rust', uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
-            Ag: { desc: 'Best conductor of electricity among all metals', uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
-            Au: { desc: 'Dense, soft, shiny precious metal — never rusts', uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
-            Ti: { desc: 'Strong as steel but 45% lighter', uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
-            Cr: { desc: 'Shiny metal that gives rubies their red color', uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
-            Mn: { desc: 'Essential for steel production and bone health', uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
-            Ni: { desc: 'Corrosion-resistant metal used in coins worldwide', uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
-            Br: { desc: 'Only non-metal liquid at room temperature', uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
-            I: { desc: 'Essential trace element for thyroid function', uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
-            Pt: { desc: 'Precious metal rarer than gold', uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
-            U: { desc: 'Dense radioactive metal that powers nuclear plants', uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
-            Hg: { desc: 'Only metal liquid at room temperature', uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
-            Pb: { desc: 'Dense, soft metal once used in pipes & paint', uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
-            Sn: { desc: 'Soft, silvery metal used since the Bronze Age', uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
-            W: { desc: 'Has the highest melting point of all metals', uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
+            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
+            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas — does not form compounds)'] },
+            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
+            Be: { desc: t('stem.periodic.rare_toxic_metal_that_is'), uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
+            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
+            C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
+            N: { desc: t('stem.periodic.makes_up_78_of_earth')s atmosphere', uses: ['Fertilizers', 'Explosives (TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O (Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
+            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant')s crust', uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O (Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃ (Rust)', 'O₃ (Ozone)'] },
+            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
+            Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
+            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
+            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
+            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth')s crust', uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃ (Aluminum Chloride)'] },
+            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
+            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
+            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
+            Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
+            Ar: { desc: t('stem.periodic.third_most_abundant_gas_in'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
+            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
+            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
+            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
+            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
+            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
+            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
+            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
+            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
+            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
+            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
+            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
+            Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
+            I: { desc: t('stem.periodic.essential_trace_element_for_thyroid'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
+            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
+            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
+            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
+            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
+            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
+            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
           };
           const getElementDetail = (sym) => ELEMENT_DETAILS[sym] || null;
           const getElementCompounds = (sym) => COMPOUNDS.filter(c => Object.keys(c.recipe).includes(sym));
@@ -6228,26 +6694,26 @@
           ];
           // ── Compound Recipes ──
           const COMPOUNDS = [
-            { name: 'Water', formula: 'H\u2082O', recipe: { H: 2, O: 1 }, desc: 'Essential for life', emoji: '\uD83D\uDCA7' },
-            { name: 'Carbon Dioxide', formula: 'CO\u2082', recipe: { C: 1, O: 2 }, desc: 'Greenhouse gas', emoji: '\uD83C\uDF2B\uFE0F' },
-            { name: 'Table Salt', formula: 'NaCl', recipe: { Na: 1, Cl: 1 }, desc: 'Sodium chloride', emoji: '\uD83E\uDDC2' },
-            { name: 'Ammonia', formula: 'NH\u2083', recipe: { N: 1, H: 3 }, desc: 'Cleaning agent', emoji: '\uD83E\uDDEA' },
-            { name: 'Methane', formula: 'CH\u2084', recipe: { C: 1, H: 4 }, desc: 'Natural gas', emoji: '\uD83D\uDD25' },
-            { name: 'Hydrogen Peroxide', formula: 'H\u2082O\u2082', recipe: { H: 2, O: 2 }, desc: 'Disinfectant', emoji: '\uD83E\uDE79' },
-            { name: 'Ethanol', formula: 'C\u2082H\u2085OH', recipe: { C: 2, H: 6, O: 1 }, desc: 'Alcohol', emoji: '\uD83C\uDF7A' },
-            { name: 'Sulfuric Acid', formula: 'H\u2082SO\u2084', recipe: { H: 2, S: 1, O: 4 }, desc: 'Battery acid', emoji: '\u26A0\uFE0F' },
-            { name: 'Glucose', formula: 'C\u2086H\u2081\u2082O\u2086', recipe: { C: 6, H: 12, O: 6 }, desc: 'Blood sugar', emoji: '\uD83C\uDF6C' },
-            { name: 'Baking Soda', formula: 'NaHCO\u2083', recipe: { Na: 1, H: 1, C: 1, O: 3 }, desc: 'Sodium bicarbonate', emoji: '\uD83E\uDDC1' },
-            { name: 'Calcium Carbonate', formula: 'CaCO\u2083', recipe: { Ca: 1, C: 1, O: 3 }, desc: 'Chalk & marble', emoji: '\uD83E\uDEA8' },
-            { name: 'Iron Oxide', formula: 'Fe\u2082O\u2083', recipe: { Fe: 2, O: 3 }, desc: 'Rust', emoji: '\uD83D\uDFE5' },
-            { name: 'Sodium Hydroxide', formula: 'NaOH', recipe: { Na: 1, O: 1, H: 1 }, desc: 'Lye / caustic soda', emoji: '\uD83E\uDDEA' },
-            { name: 'Hydrochloric Acid', formula: 'HCl', recipe: { H: 1, Cl: 1 }, desc: 'Stomach acid', emoji: '\uD83E\uDE79' },
-            { name: 'Acetic Acid', formula: 'CH\u2083COOH', recipe: { C: 2, H: 4, O: 2 }, desc: 'Vinegar', emoji: '\uD83E\uDD4B' },
-            { name: 'Nitrogen Dioxide', formula: 'NO\u2082', recipe: { N: 1, O: 2 }, desc: 'Brown smog gas', emoji: '\uD83C\uDF2B\uFE0F' },
-            { name: 'Sulfur Dioxide', formula: 'SO\u2082', recipe: { S: 1, O: 2 }, desc: 'Acid rain precursor', emoji: '\uD83C\uDF27\uFE0F' },
-            { name: 'Ozone', formula: 'O\u2083', recipe: { O: 3 }, desc: 'UV shield', emoji: '\uD83D\uDEE1\uFE0F' },
-            { name: 'Laughing Gas', formula: 'N\u2082O', recipe: { N: 2, O: 1 }, desc: 'Nitrous oxide', emoji: '\uD83D\uDE02' },
-            { name: 'Silicon Dioxide', formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: 'Sand & glass', emoji: '\uD83C\uDFD6\uFE0F' },
+            { name: t('stem.chem_balance.water'), formula: t('stem.periodic.hu2082o'), recipe: { H: 2, O: 1 }, desc: t('stem.periodic.essential_for_life'), emoji: '\uD83D\uDCA7' },
+            { name: t('stem.periodic.carbon_dioxide'), formula: t('stem.periodic.cou2082'), recipe: { C: 1, O: 2 }, desc: t('stem.periodic.greenhouse_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
+            { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), recipe: { Na: 1, Cl: 1 }, desc: t('stem.periodic.sodium_chloride'), emoji: '\uD83E\uDDC2' },
+            { name: t('stem.chem_balance.ammonia'), formula: t('stem.periodic.nhu2083'), recipe: { N: 1, H: 3 }, desc: t('stem.periodic.cleaning_agent'), emoji: '\uD83E\uDDEA' },
+            { name: t('stem.periodic.methane'), formula: t('stem.periodic.chu2084'), recipe: { C: 1, H: 4 }, desc: t('stem.periodic.natural_gas'), emoji: '\uD83D\uDD25' },
+            { name: t('stem.periodic.hydrogen_peroxide'), formula: 'H\u2082O\u2082', recipe: { H: 2, O: 2 }, desc: t('stem.periodic.disinfectant'), emoji: '\uD83E\uDE79' },
+            { name: t('stem.periodic.ethanol'), formula: 'C\u2082H\u2085OH', recipe: { C: 2, H: 6, O: 1 }, desc: t('stem.periodic.alcohol'), emoji: '\uD83C\uDF7A' },
+            { name: t('stem.periodic.sulfuric_acid'), formula: 'H\u2082SO\u2084', recipe: { H: 2, S: 1, O: 4 }, desc: t('stem.periodic.battery_acid'), emoji: '\u26A0\uFE0F' },
+            { name: t('stem.periodic.glucose'), formula: 'C\u2086H\u2081\u2082O\u2086', recipe: { C: 6, H: 12, O: 6 }, desc: t('stem.periodic.blood_sugar'), emoji: '\uD83C\uDF6C' },
+            { name: t('stem.periodic.baking_soda'), formula: 'NaHCO\u2083', recipe: { Na: 1, H: 1, C: 1, O: 3 }, desc: t('stem.periodic.sodium_bicarbonate'), emoji: '\uD83E\uDDC1' },
+            { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCO\u2083', recipe: { Ca: 1, C: 1, O: 3 }, desc: t('stem.periodic.chalk_marble'), emoji: '\uD83E\uDEA8' },
+            { name: t('stem.chem_balance.iron_oxide'), formula: 'Fe\u2082O\u2083', recipe: { Fe: 2, O: 3 }, desc: t('stem.periodic.rust'), emoji: '\uD83D\uDFE5' },
+            { name: t('stem.periodic.sodium_hydroxide'), formula: 'NaOH', recipe: { Na: 1, O: 1, H: 1 }, desc: t('stem.periodic.lye_caustic_soda'), emoji: '\uD83E\uDDEA' },
+            { name: t('stem.periodic.hydrochloric_acid'), formula: 'HCl', recipe: { H: 1, Cl: 1 }, desc: t('stem.periodic.stomach_acid'), emoji: '\uD83E\uDE79' },
+            { name: t('stem.periodic.acetic_acid'), formula: 'CH\u2083COOH', recipe: { C: 2, H: 4, O: 2 }, desc: t('stem.periodic.vinegar'), emoji: '\uD83E\uDD4B' },
+            { name: t('stem.periodic.nitrogen_dioxide'), formula: 'NO\u2082', recipe: { N: 1, O: 2 }, desc: t('stem.periodic.brown_smog_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
+            { name: t('stem.periodic.sulfur_dioxide'), formula: 'SO\u2082', recipe: { S: 1, O: 2 }, desc: t('stem.periodic.acid_rain_precursor'), emoji: '\uD83C\uDF27\uFE0F' },
+            { name: t('stem.periodic.ozone'), formula: 'O\u2083', recipe: { O: 3 }, desc: t('stem.periodic.uv_shield'), emoji: '\uD83D\uDEE1\uFE0F' },
+            { name: t('stem.periodic.laughing_gas'), formula: 'N\u2082O', recipe: { N: 2, O: 1 }, desc: t('stem.periodic.nitrous_oxide'), emoji: '\uD83D\uDE02' },
+            { name: t('stem.periodic.silicon_dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: t('stem.periodic.sand_glass'), emoji: '\uD83C\uDFD6\uFE0F' },
           ];
           const selectedEls = d.selectedElements || {};
           const discovered = d.discoveredCompounds || [];
@@ -6271,11 +6737,11 @@
           const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
           // ── Molecule Viewer presets ──
           const viewerPresets = [
-            { name: 'H\u2082O', atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H2O' },
-            { name: 'CO\u2082', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO2' },
-            { name: 'CH\u2084', atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH4' },
-            { name: 'NaCl', atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: 'NaCl' },
-            { name: 'NH\u2083', atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH3' },
+            { name: t('stem.periodic.hu2082o'), atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H2O' },
+            { name: t('stem.periodic.cou2082'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO2' },
+            { name: t('stem.periodic.chu2084'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH4' },
+            { name: t('stem.periodic.nacl'), atoms: [{ el: 'Na', x: 160, y: 150, color: '#a855f7' }, { el: 'Cl', x: 240, y: 150, color: '#22c55e' }], bonds: [[0, 1]], formula: t('stem.periodic.nacl') },
+            { name: t('stem.periodic.nhu2083'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: '#94a3b8' }, { el: 'H', x: 200, y: 210, color: '#94a3b8' }, { el: 'H', x: 260, y: 185, color: '#94a3b8' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH3' },
           ];
           return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
             // Header
@@ -6417,10 +6883,49 @@
               ),
               // Legend
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3 justify-center" },
-                [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', 'Lanthanide'], ['actinide', 'Actinide']].map(([cat, label]) =>
+                [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', t('stem.periodic.lanthanide')], ['actinide', t('stem.periodic.actinide')]].map(([cat, label]) =>
                   React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[9px] font-bold border " + (catColors[cat] || '') }, label)
                 )
-              )
+              ),
+              // ── Quiz: Element Hunt ──
+              (() => {
+                var elQuiz = d.elQuiz || null;
+                var elScore = d.elScore || 0;
+                var elStreak = d.elStreak || 0;
+                function makeElQuiz() {
+                  var quizTypes = [
+                    function () { var el = ELEMENTS[Math.floor(Math.random() * 36)]; return { text: 'Which element has the symbol "' + el.s + '"?', answer: el.name, opts: [el.name].concat(ELEMENTS.filter(function (e) { return e.name !== el.name; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3).map(function (e) { return e.name; })).sort(function () { return Math.random() - 0.5; }) }; },
+                    function () { var el = ELEMENTS[Math.floor(Math.random() * 36)]; return { text: 'What is the atomic number of ' + el.name + '?', answer: String(el.n), opts: [String(el.n), String(el.n + 2), String(el.n > 3 ? el.n - 2 : el.n + 4), String(el.n + 7)].sort(function () { return Math.random() - 0.5; }) }; },
+                    function () { var cats = ['alkali', 'noble', 'halogen', 'transition', 'nonmetal']; var catLabels = { alkali: 'Alkali Metal', noble: 'Noble Gas', halogen: 'Halogen', transition: 'Transition Metal', nonmetal: 'Nonmetal' }; var cat = cats[Math.floor(Math.random() * cats.length)]; var ex = ELEMENTS.filter(function (e) { return e.cat === cat; }); var el = ex[Math.floor(Math.random() * ex.length)]; return { text: 'What category does ' + el.name + ' (' + el.s + ') belong to?', answer: catLabels[cat], opts: Object.values(catLabels).sort(function () { return Math.random() - 0.5; }).slice(0, 4) }; },
+                  ];
+                  var gen = quizTypes[Math.floor(Math.random() * quizTypes.length)];
+                  var q = gen(); q.answered = false;
+                  if (q.opts.indexOf(q.answer) < 0) q.opts[0] = q.answer;
+                  return q;
+                }
+                return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("button", { onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-600 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
+                    elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + elScore + ' | 🔥 ' + elStreak)
+                  ),
+                  elQuiz && !elQuiz.answered && React.createElement("div", { className: "bg-cyan-50 rounded-xl p-3 border border-cyan-200" },
+                    React.createElement("p", { className: "text-sm font-bold text-cyan-800 mb-2" }, elQuiz.text),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                      elQuiz.opts.map(function (opt) {
+                        return React.createElement("button", {
+                          key: opt, onClick: function () {
+                            var correct = opt === elQuiz.answer;
+                            upd('elQuiz', Object.assign({}, elQuiz, { answered: true, chosen: opt }));
+                            upd('elScore', elScore + (correct ? 1 : 0)); upd('elStreak', correct ? elStreak + 1 : 0);
+                            if (correct) addToast(t('stem.periodic.correct'), 'success'); else addToast(t('stem.periodic.answer') + elQuiz.answer, 'error');
+                          }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 transition-all"
+                        }, opt);
+                      })
+                    )
+                  ),
+                  elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + elQuiz.answer)
+                );
+              })()
             )
           )
         })(),
@@ -6434,15 +6939,15 @@
           const d = labToolData.solarSystem;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
           const PLANETS = [
-            { name: 'Mercury', emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
-            { name: 'Venus', emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
-            { name: 'Earth', emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.', gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
-            { name: 'Mars', emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
-            { name: 'Jupiter', emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
-            { name: 'Saturn', emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
-            { name: 'Uranus', emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
-            { name: 'Neptune', emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
-            { name: 'Pluto', emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
+            { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
+            { name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
+            { name: t('stem.solar_sys.earth'), emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.', gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
+            { name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
+            { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: 'Largest planet. The Great Red Spot is a storm larger than Earth!', gravity: '2.34g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: 'Its rings are made of ice and rock. Could float in a giant bathtub!', hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
+            { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: 'Rotates on its side! An ice giant with methane atmosphere.', gravity: '0.92g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.', gravity: '1.19g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
+            { name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.', gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
           ];
           const sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
           const simSpeed = d.simSpeed || 1;
@@ -7195,7 +7700,7 @@
                           var partColor = sel.terrainType === 'volcanic' ? 0xff6600 : 0xc9a06a;
                           scene.add(new THREE.Points(partGeo, new THREE.PointsMaterial({ color: partColor, size: 0.05, transparent: true, opacity: 0.4 })));
                         }
-                        if (sel.terrainType === 'icegiant' || sel.name === 'Uranus') {
+                        if (sel.terrainType === 'icegiant' || sel.name === t('stem.solar_sys.uranus')) {
                           // Diamond rain
                           var drCount = 100;
                           var drGeo = new THREE.BufferGeometry();
@@ -7258,10 +7763,10 @@
                         var hudStaticHTML =
                           '<div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#7dd3fc;letter-spacing:1px" id="hud-mode">' + modeLabel + '</div>' +
                           '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-bottom:4px">' +
-                          '<span style="color:#64748b">Planet</span><span style="color:#e2e8f0;font-weight:bold">' + sel.name + ' ' + sel.emoji + '</span>' +
-                          '<span style="color:#64748b">Gravity</span><span>' + gravLabel + '</span>' +
-                          '<span style="color:#64748b">Temp</span><span>' + sel.temp + '</span>' +
-                          '<span style="color:#64748b">Atmos</span><span style="font-size:9px">' + atmosLabel + '</span>' +
+                          '<span style="color:#64748b">{t('stem.planet_view.planet')}</span><span style="color:#e2e8f0;font-weight:bold">' + sel.name + ' ' + sel.emoji + '</span>' +
+                          '<span style="color:#64748b">{t('stem.planet_view.gravity')}</span><span>' + gravLabel + '</span>' +
+                          '<span style="color:#64748b">{t('stem.planet_view.temp')}</span><span>' + sel.temp + '</span>' +
+                          '<span style="color:#64748b">{t('stem.planet_view.atmos')}</span><span style="font-size:9px">' + atmosLabel + '</span>' +
                           '</div>' +
                           '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
                           '<span style="color:#64748b">\uD83D\uDCCF Alt</span><span id="hud-alt" style="color:#67e8f9">0 m</span>' +
@@ -7280,15 +7785,15 @@
                         var hazardEl = document.createElement('div');
                         hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.85);backdrop-filter:blur(4px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,100,100,0.4);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px';
                         var hazardMsgs = {
-                          'Venus': ['\u26A0 SURFACE TEMP 462\u00B0C \u2014 exceeds hull tolerance', '\u26A0 ATMOSPHERIC PRESSURE: 90x Earth \u2014 structural warning', '\u26A0 SULFURIC ACID CLOUDS DETECTED overhead'],
-                          'Jupiter': ['\u26A0 RADIATION: 20 Sv/day \u2014 lethal exposure zone', '\u26A0 WIND SHEAR: 360 km/h crosswind detected', '\u26A0 AMMONIA ICE CRYSTALS impacting sensors'],
-                          'Saturn': ['\u26A0 RING DEBRIS: micro-meteoroid risk elevated', '\u26A0 WIND SPEED: 1,800 km/h at equatorial band'],
-                          'Mars': ['\u26A0 DUST STORM APPROACHING \u2014 visibility dropping', '\u26A0 UV RADIATION: no magnetic shield \u2014 high exposure', '\u26A0 THIN ATMOSPHERE: suit pressure critical'],
-                          'Mercury': ['\u26A0 SOLAR RADIATION ALERT \u2014 no magnetic shielding', '\u26A0 SURFACE TEMP SWING: -180\u00B0C to 430\u00B0C across terminator'],
-                          'Pluto': ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
-                          'Uranus': ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
-                          'Neptune': ['\u26A0 WIND SPEED: 2,100 km/h \u2014 fastest in solar system', '\u26A0 GREAT DARK SPOT: storm system ahead'],
-                          'Earth': ['\u2139 All systems nominal \u2014 home sweet home']
+                          t('stem.solar_sys.venus'): ['\u26A0 SURFACE TEMP 462\u00B0C \u2014 exceeds hull tolerance', '\u26A0 ATMOSPHERIC PRESSURE: 90x Earth \u2014 structural warning', '\u26A0 SULFURIC ACID CLOUDS DETECTED overhead'],
+                          t('stem.solar_sys.jupiter'): ['\u26A0 RADIATION: 20 Sv/day \u2014 lethal exposure zone', '\u26A0 WIND SHEAR: 360 km/h crosswind detected', '\u26A0 AMMONIA ICE CRYSTALS impacting sensors'],
+                          t('stem.solar_sys.saturn'): ['\u26A0 RING DEBRIS: micro-meteoroid risk elevated', '\u26A0 WIND SPEED: 1,800 km/h at equatorial band'],
+                          t('stem.solar_sys.mars'): ['\u26A0 DUST STORM APPROACHING \u2014 visibility dropping', '\u26A0 UV RADIATION: no magnetic shield \u2014 high exposure', '\u26A0 THIN ATMOSPHERE: suit pressure critical'],
+                          t('stem.periodic.mercury'): ['\u26A0 SOLAR RADIATION ALERT \u2014 no magnetic shielding', '\u26A0 SURFACE TEMP SWING: -180\u00B0C to 430\u00B0C across terminator'],
+                          t('stem.solar_sys.pluto'): ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
+                          t('stem.solar_sys.uranus'): ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
+                          t('stem.solar_sys.neptune'): ['\u26A0 WIND SPEED: 2,100 km/h \u2014 fastest in solar system', '\u26A0 GREAT DARK SPOT: storm system ahead'],
+                          t('stem.solar_sys.earth'): ['\u2139 All systems nominal \u2014 home sweet home']
                         };
                         var planetHazards = hazardMsgs[sel.name] || ['\u26A0 Environmental data unavailable'];
                         var hazardIdx = 0;
@@ -7297,7 +7802,7 @@
                           hazardEl.style.opacity = '0';
                           setTimeout(function () {
                             hazardEl.textContent = planetHazards[hazardIdx % planetHazards.length];
-                            hazardEl.style.background = sel.name === 'Earth' ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
+                            hazardEl.style.background = sel.name === t('stem.solar_sys.earth') ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
                             hazardEl.style.opacity = '1';
                             hazardIdx++;
                           }, 500);
@@ -7306,7 +7811,7 @@
                         // Show first warning after 2s
                         setTimeout(function () {
                           hazardEl.textContent = planetHazards[0];
-                          hazardEl.style.background = sel.name === 'Earth' ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
+                          hazardEl.style.background = sel.name === t('stem.solar_sys.earth') ? 'rgba(34,197,94,0.8)' : 'rgba(220,38,38,0.85)';
                           hazardEl.style.opacity = '1';
                           hazardIdx = 1;
                           setTimeout(function () { hazardEl.style.opacity = '0'; }, 4500);
@@ -7314,52 +7819,52 @@
 
                         // ── Discovery System (POI landmarks) ──
                         var POI_DATA = {
-                          'Mercury': [
-                            { x: 15, z: -10, name: 'Caloris Basin', desc: 'One of the largest impact craters in the solar system (1,550 km wide).', fact: 'The impact was so powerful it created chaotic terrain on the opposite side of Mercury.' },
-                            { x: -20, z: 8, name: 'Ice Deposits', desc: 'Permanently shadowed craters at the poles contain water ice.', fact: 'Despite being closest to the Sun, Mercury has ice because some craters never see sunlight.' },
-                            { x: 30, z: 25, name: 'Scarps & Cliffs', desc: 'Mercury shrank as its iron core cooled, creating massive cliff-like wrinkles.', fact: 'These scarps can be hundreds of km long and over 1 km tall.' }
+                          t('stem.periodic.mercury'): [
+                            { x: 15, z: -10, name: t('stem.planet_view.caloris_basin'), desc: 'One of the largest impact craters in the solar system (1,550 km wide).', fact: 'The impact was so powerful it created chaotic terrain on the opposite side of Mercury.' },
+                            { x: -20, z: 8, name: t('stem.planet_view.ice_deposits'), desc: t('stem.planet_view.permanently_shadowed_craters_at_the'), fact: 'Despite being closest to the Sun, Mercury has ice because some craters never see sunlight.' },
+                            { x: 30, z: 25, name: t('stem.planet_view.scarps_cliffs'), desc: 'Mercury shrank as its iron core cooled, creating massive cliff-like wrinkles.', fact: 'These scarps can be hundreds of km long and over 1 km tall.' }
                           ],
-                          'Venus': [
-                            { x: 12, z: -15, name: 'Maxwell Montes', desc: 'Highest mountain on Venus at 11 km \u2014 taller than Everest.', fact: 'The summit is coated with a metallic "snow" made from lead sulfide and bismuth sulfide.' },
-                            { x: -18, z: 20, name: 'Pancake Dome', desc: 'Flat-topped volcanic domes unique to Venus, up to 65 km across.', fact: 'Extremely viscous lava oozed out and spread like thick pancake batter.' },
-                            { x: 25, z: 5, name: 'Venera 13 Landing Site', desc: 'Soviet lander that survived 127 minutes on the surface in 1982.', fact: 'Venera 13 took the first color photos of Venus\u2019s surface before being crushed by pressure.' }
+                          t('stem.solar_sys.venus'): [
+                            { x: 12, z: -15, name: t('stem.planet_view.maxwell_montes'), desc: 'Highest mountain on Venus at 11 km \u2014 taller than Everest.', fact: 'The summit is coated with a metallic "snow" made from lead sulfide and bismuth sulfide.' },
+                            { x: -18, z: 20, name: t('stem.planet_view.pancake_dome'), desc: 'Flat-topped volcanic domes unique to Venus, up to 65 km across.', fact: 'Extremely viscous lava oozed out and spread like thick pancake batter.' },
+                            { x: 25, z: 5, name: t('stem.planet_view.venera_13_landing_site'), desc: 'Soviet lander that survived 127 minutes on the surface in 1982.', fact: 'Venera 13 took the first color photos of Venus\u2019s surface before being crushed by pressure.' }
                           ],
-                          'Earth': [
-                            { x: 10, z: -12, name: 'Mariana Trench', desc: 'Deepest point on Earth at 10,994 m below sea level.', fact: 'More people have walked on the Moon than have been to the bottom of the Mariana Trench.' },
-                            { x: -22, z: 15, name: 'Mid-Atlantic Ridge', desc: 'Underwater mountain range where tectonic plates spread apart.', fact: 'The Atlantic Ocean grows about 2.5 cm wider every year.' },
-                            { x: 28, z: -8, name: 'Great Barrier Reef', desc: 'Largest living structure on Earth \u2014 visible from space.', fact: 'The reef is made of 2,900 individual reef systems and supports 1,500+ species of fish.' }
+                          t('stem.solar_sys.earth'): [
+                            { x: 10, z: -12, name: t('stem.planet_view.mariana_trench'), desc: t('stem.planet_view.deepest_point_on_earth_at'), fact: 'More people have walked on the Moon than have been to the bottom of the Mariana Trench.' },
+                            { x: -22, z: 15, name: t('stem.planet_view.midatlantic_ridge'), desc: t('stem.planet_view.underwater_mountain_range_where_tectonic'), fact: 'The Atlantic Ocean grows about 2.5 cm wider every year.' },
+                            { x: 28, z: -8, name: t('stem.planet_view.great_barrier_reef'), desc: t('stem.planet_view.largest_living_structure_on_earth'), fact: 'The reef is made of 2,900 individual reef systems and supports 1,500+ species of fish.' }
                           ],
-                          'Mars': [
-                            { x: 20, z: -18, name: 'Olympus Mons Base', desc: 'Base of the tallest volcano in the solar system (21.9 km).', fact: 'Olympus Mons is so wide (624 km) that standing on its edge, you couldn\u2019t see the summit \u2014 it curves beyond the horizon.' },
-                            { x: -25, z: 12, name: 'Valles Marineris Rim', desc: 'A canyon system 4,000 km long and up to 7 km deep.', fact: 'It would stretch from New York to Los Angeles and is 5x deeper than the Grand Canyon.' },
-                            { x: 8, z: 30, name: 'Polar Ice Cap', desc: 'Layered ice deposits of frozen CO\u2082 and water ice.', fact: 'If all of Mars\u2019s polar ice melted, it could cover the entire planet in 11 meters of water.' },
-                            { x: -15, z: -25, name: 'Perseverance Rover Site', desc: 'Jezero Crater \u2014 where NASA\u2019s rover searches for signs of ancient life.', fact: 'Perseverance arrived Feb 2021 and has driven 28+ km, collecting rock samples for future return to Earth.' }
+                          t('stem.solar_sys.mars'): [
+                            { x: 20, z: -18, name: t('stem.planet_view.olympus_mons_base'), desc: t('stem.planet_view.base_of_the_tallest_volcano'), fact: 'Olympus Mons is so wide (624 km) that standing on its edge, you couldn\u2019t see the summit \u2014 it curves beyond the horizon.' },
+                            { x: -25, z: 12, name: t('stem.planet_view.valles_marineris_rim'), desc: t('stem.planet_view.a_canyon_system_4000_km'), fact: 'It would stretch from New York to Los Angeles and is 5x deeper than the Grand Canyon.' },
+                            { x: 8, z: 30, name: t('stem.planet_view.polar_ice_cap'), desc: t('stem.planet_view.layered_ice_deposits_of_frozen'), fact: 'If all of Mars\u2019s polar ice melted, it could cover the entire planet in 11 meters of water.' },
+                            { x: -15, z: -25, name: t('stem.planet_view.perseverance_rover_site'), desc: 'Jezero Crater \u2014 where NASA\u2019s rover searches for signs of ancient life.', fact: 'Perseverance arrived Feb 2021 and has driven 28+ km, collecting rock samples for future return to Earth.' }
                           ],
-                          'Jupiter': [
-                            { x: 18, z: -20, name: 'Great Red Spot Eye', desc: 'An anticyclonic storm raging for 350+ years, larger than Earth.', fact: 'Wind speeds at the edge reach 680 km/h \u2014 twice the speed of the strongest Earth hurricane.' },
-                            { x: -15, z: 15, name: 'Ammonia Crystal Layer', desc: 'Upper cloud layer made of frozen ammonia crystals at -145\u00B0C.', fact: 'Below this layer are ammonium hydrosulfide clouds, and below those, water clouds. Jupiter has weather 3 layers deep.' },
-                            { x: 25, z: 8, name: 'Lightning Alley', desc: 'Zones between cloud bands where convection drives massive lightning storms.', fact: 'Jupiter\u2019s lightning is 10x more powerful than Earth\u2019s and occurs mostly at the poles and deep clouds.' },
-                            { x: -8, z: -28, name: 'Metallic Hydrogen Zone', desc: 'Deep below the clouds, pressure turns hydrogen into liquid metal.', fact: 'This metallic hydrogen ocean generates Jupiter\u2019s magnetic field \u2014 20,000x stronger than Earth\u2019s.' }
+                          t('stem.solar_sys.jupiter'): [
+                            { x: 18, z: -20, name: t('stem.planet_view.great_red_spot_eye'), desc: 'An anticyclonic storm raging for 350+ years, larger than Earth.', fact: 'Wind speeds at the edge reach 680 km/h \u2014 twice the speed of the strongest Earth hurricane.' },
+                            { x: -15, z: 15, name: t('stem.planet_view.ammonia_crystal_layer'), desc: 'Upper cloud layer made of frozen ammonia crystals at -145\u00B0C.', fact: 'Below this layer are ammonium hydrosulfide clouds, and below those, water clouds. Jupiter has weather 3 layers deep.' },
+                            { x: 25, z: 8, name: t('stem.planet_view.lightning_alley'), desc: 'Zones between cloud bands where convection drives massive lightning storms.', fact: 'Jupiter\u2019s lightning is 10x more powerful than Earth\u2019s and occurs mostly at the poles and deep clouds.' },
+                            { x: -8, z: -28, name: t('stem.planet_view.metallic_hydrogen_zone'), desc: 'Deep below the clouds, pressure turns hydrogen into liquid metal.', fact: 'This metallic hydrogen ocean generates Jupiter\u2019s magnetic field \u2014 20,000x stronger than Earth\u2019s.' }
                           ],
-                          'Saturn': [
-                            { x: 20, z: -15, name: 'Hexagonal Polar Vortex', desc: 'A persistent hexagonal cloud pattern at Saturn\u2019s north pole.', fact: 'Each side of the hexagon is about 14,500 km long \u2014 wider than Earth\u2019s diameter.' },
-                            { x: -18, z: 22, name: 'Ring Shadow Zone', desc: 'Area where Saturn\u2019s rings cast shadows on the cloud tops.', fact: 'Saturn\u2019s rings are only about 10 m thick despite being 282,000 km wide \u2014 thinner than a razor blade proportionally.' },
-                            { x: 12, z: 10, name: 'Titan Flyby Path', desc: 'The orbital zone of Titan, Saturn\u2019s largest moon.', fact: 'Titan has lakes of liquid methane and a thicker atmosphere than Earth \u2014 the only moon with a substantial atmosphere.' }
+                          t('stem.solar_sys.saturn'): [
+                            { x: 20, z: -15, name: t('stem.planet_view.hexagonal_polar_vortex'), desc: 'A persistent hexagonal cloud pattern at Saturn\u2019s north pole.', fact: 'Each side of the hexagon is about 14,500 km long \u2014 wider than Earth\u2019s diameter.' },
+                            { x: -18, z: 22, name: t('stem.planet_view.ring_shadow_zone'), desc: 'Area where Saturn\u2019s rings cast shadows on the cloud tops.', fact: 'Saturn\u2019s rings are only about 10 m thick despite being 282,000 km wide \u2014 thinner than a razor blade proportionally.' },
+                            { x: 12, z: 10, name: t('stem.planet_view.titan_flyby_path'), desc: t('stem.planet_view.the_orbital_zone_of_titan'), fact: 'Titan has lakes of liquid methane and a thicker atmosphere than Earth \u2014 the only moon with a substantial atmosphere.' }
                           ],
-                          'Uranus': [
-                            { x: 15, z: -18, name: 'Diamond Rain Zone', desc: 'At 8,000 km depth, extreme pressure crushes carbon into diamonds.', fact: 'These diamonds may be as large as millions of carats and rain down to form a diamond layer around the core.' },
-                            { x: -20, z: 14, name: 'Magnetic Pole Shift', desc: 'Uranus\u2019s magnetic field is tilted 59\u00B0 from its rotation axis.', fact: 'Combined with the 98\u00B0 axial tilt, Uranus\u2019s magnetosphere tumbles chaotically through space.' },
-                            { x: 25, z: -5, name: 'Cloud Band Transition', desc: 'Faint methane cloud bands where wind patterns change direction.', fact: 'Uranus appears featureless but Hubble revealed complex cloud systems moving at 900 km/h.' }
+                          t('stem.solar_sys.uranus'): [
+                            { x: 15, z: -18, name: t('stem.planet_view.diamond_rain_zone'), desc: 'At 8,000 km depth, extreme pressure crushes carbon into diamonds.', fact: 'These diamonds may be as large as millions of carats and rain down to form a diamond layer around the core.' },
+                            { x: -20, z: 14, name: t('stem.planet_view.magnetic_pole_shift'), desc: 'Uranus\u2019s magnetic field is tilted 59\u00B0 from its rotation axis.', fact: 'Combined with the 98\u00B0 axial tilt, Uranus\u2019s magnetosphere tumbles chaotically through space.' },
+                            { x: 25, z: -5, name: t('stem.planet_view.cloud_band_transition'), desc: 'Faint methane cloud bands where wind patterns change direction.', fact: 'Uranus appears featureless but Hubble revealed complex cloud systems moving at 900 km/h.' }
                           ],
-                          'Neptune': [
-                            { x: 18, z: -22, name: 'Great Dark Spot Region', desc: 'A massive storm system similar to Jupiter\u2019s Great Red Spot.', fact: 'Unlike Jupiter\u2019s spot, Neptune\u2019s dark spots appear and disappear within years \u2014 the planet is surprisingly dynamic.' },
-                            { x: -14, z: 16, name: 'Supersonic Wind Belt', desc: 'Equatorial winds reaching 2,100 km/h \u2014 faster than the speed of sound.', fact: 'Neptune generates more heat than it receives from the Sun, driving these extreme winds from internal energy.' },
-                            { x: 22, z: 10, name: 'Triton Orbital Cross', desc: 'The path of Triton \u2014 the only large moon that orbits backwards.', fact: 'Triton is likely a captured Kuiper Belt object. Its nitrogen geysers shoot plumes 8 km high.' }
+                          t('stem.solar_sys.neptune'): [
+                            { x: 18, z: -22, name: t('stem.planet_view.great_dark_spot_region'), desc: 'A massive storm system similar to Jupiter\u2019s Great Red Spot.', fact: 'Unlike Jupiter\u2019s spot, Neptune\u2019s dark spots appear and disappear within years \u2014 the planet is surprisingly dynamic.' },
+                            { x: -14, z: 16, name: t('stem.planet_view.supersonic_wind_belt'), desc: 'Equatorial winds reaching 2,100 km/h \u2014 faster than the speed of sound.', fact: 'Neptune generates more heat than it receives from the Sun, driving these extreme winds from internal energy.' },
+                            { x: 22, z: 10, name: t('stem.planet_view.triton_orbital_cross'), desc: 'The path of Triton \u2014 the only large moon that orbits backwards.', fact: 'Triton is likely a captured Kuiper Belt object. Its nitrogen geysers shoot plumes 8 km high.' }
                           ],
-                          'Pluto': [
-                            { x: 12, z: -14, name: 'Tombaugh Regio', desc: 'The famous heart-shaped glacier made of nitrogen and carbon monoxide ice.', fact: 'The left lobe (Sputnik Planitia) is a vast ice plain with convection cells that slowly churn the ice.' },
-                            { x: -16, z: 18, name: 'Ice Mountains', desc: 'Mountains of water ice rising 2\u20133 km above the nitrogen plains.', fact: 'Because water ice is less dense than nitrogen ice at Pluto\u2019s temperatures, these mountains literally float.' },
-                            { x: 20, z: 5, name: 'Cthulhu Macula', desc: 'A dark equatorial region 2,990 km long covered in tholins.', fact: 'Tholins are complex organic molecules created when methane is irradiated \u2014 they give Pluto its reddish-brown color.' }
+                          t('stem.solar_sys.pluto'): [
+                            { x: 12, z: -14, name: t('stem.planet_view.tombaugh_regio'), desc: 'The famous heart-shaped glacier made of nitrogen and carbon monoxide ice.', fact: 'The left lobe (Sputnik Planitia) is a vast ice plain with convection cells that slowly churn the ice.' },
+                            { x: -16, z: 18, name: t('stem.planet_view.ice_mountains'), desc: 'Mountains of water ice rising 2\u20133 km above the nitrogen plains.', fact: 'Because water ice is less dense than nitrogen ice at Pluto\u2019s temperatures, these mountains literally float.' },
+                            { x: 20, z: 5, name: t('stem.planet_view.cthulhu_macula'), desc: t('stem.planet_view.a_dark_equatorial_region_2990'), fact: 'Tholins are complex organic molecules created when methane is irradiated \u2014 they give Pluto its reddish-brown color.' }
                           ]
                         };
                         var pois = POI_DATA[sel.name] || [];
@@ -7421,7 +7926,7 @@
                         missionCard.innerHTML =
                           '<div style="text-align:center;margin-bottom:12px">' +
                           '<div style="font-size:32px;margin-bottom:4px">' + missionIcon + '</div>' +
-                          '<div style="font-weight:bold;font-size:16px;color:#7dd3fc;letter-spacing:1px">MISSION BRIEFING</div>' +
+                          '<div style="font-weight:bold;font-size:16px;color:#7dd3fc;letter-spacing:1px">{t('stem.planet_view.mission_briefing')}</div>' +
                           '<div style="color:#94a3b8;font-size:11px">' + missionType + ' \u2014 ' + sel.name + '</div>' +
                           '</div>' +
                           '<div style="background:rgba(56,189,248,0.1);border-radius:10px;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.15)">' +
@@ -7433,12 +7938,12 @@
                           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
                           '<div style="background:rgba(251,191,36,0.1);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid rgba(251,191,36,0.15)">' +
                           '<div style="color:#fbbf24;font-weight:bold;font-size:14px" id="mission-disc-count">0/' + totalPOIs + '</div>' +
-                          '<div style="color:#94a3b8;font-size:9px">Discoveries</div></div>' +
+                          '<div style="color:#94a3b8;font-size:9px">{t('stem.planet_quiz.discoveries')}</div></div>' +
                           '<div style="background:rgba(52,211,153,0.1);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid rgba(52,211,153,0.15)">' +
                           '<div style="color:#34d399;font-weight:bold;font-size:14px" id="mission-xp-count">0</div>' +
-                          '<div style="color:#94a3b8;font-size:9px">XP Earned</div></div>' +
+                          '<div style="color:#94a3b8;font-size:9px">{t('stem.planet_quiz.xp_earned')}</div></div>' +
                           '</div>' +
-                          '<div style="text-align:center;color:#64748b;font-size:10px">Press <span style="color:#38bdf8;font-weight:bold">M</span> to close \u2022 <span style="color:#38bdf8;font-weight:bold">WASD</span> to move \u2022 <span style="color:#38bdf8;font-weight:bold">V</span> to toggle view</div>';
+                          '<div style="text-align:center;color:#64748b;font-size:10px">Press <span style="color:#38bdf8;font-weight:bold">M</span> to close \u2022 <span style="color:#38bdf8;font-weight:bold">{t('stem.planet_quiz.wasd')}</span> to move \u2022 <span style="color:#38bdf8;font-weight:bold">V</span> to toggle view</div>';
                         canvasEl.parentElement.appendChild(missionCard);
                         var missionVisible = false;
 
@@ -7460,17 +7965,17 @@
                           '\uD83C\uDF21 A day on ' + sel.name + ' lasts ' + (sel.dayLen || '?') + '. A year lasts ' + (sel.yearLen || '?') + '.',
                           '\uD83C\uDF21 Gravity on ' + sel.name + ' is ' + gravLabel + ' compared to Earth\u2019s 1.0g.',
                           // Scale comparisons
-                          '\uD83C\uDF0D ' + sel.name + '\u2019s diameter is ' + (sel.diameter || '?') + (sel.name !== 'Earth' ? ' (Earth: 12,742 km).' : '.'),
+                          '\uD83C\uDF0D ' + sel.name + '\u2019s diameter is ' + (sel.diameter || '?') + (sel.name !== t('stem.solar_sys.earth') ? ' (Earth: 12,742 km).' : '.'),
                           // Gas vs rocky
                           isGas ? '\uD83E\uDEA8 Gas giants have no solid surface \u2014 you would fall forever through ever-denser gas layers.' : '\uD83E\uDEA8 The terrain is generated from real-world elevation science for ' + sel.terrainType + ' surfaces.',
                           isGas ? '\uD83C\uDF21 If you parachuted into ' + sel.name + ', you would never touch ground \u2014 just endless clouds.' : '\uD83E\uDEA8 The surface of ' + sel.name + ' is made of ' + (sel.surface || 'rock and dust') + '.',
                           // Planet-specific unique facts
-                          sel.name === 'Mercury' ? '\uD83D\uDE80 MESSENGER orbited Mercury 2011\u20132015, mapping the entire surface and discovering ice in polar craters.' : sel.name === 'Venus' ? '\uD83D\uDE80 Soviet Venera 13 survived 127 minutes on Venus\u2019s surface in 1982 \u2014 still a record.' : sel.name === 'Earth' ? '\uD83D\uDE80 The ISS orbits Earth every 90 minutes at 27,600 km/h, 408 km above us.' : sel.name === 'Mars' ? '\uD83D\uDE80 Perseverance landed Feb 2021 in Jezero Crater, searching for signs of ancient microbial life.' : sel.name === 'Jupiter' ? '\uD83D\uDE80 Juno has been orbiting Jupiter since 2016, peering beneath the cloud tops with microwave sensors.' : sel.name === 'Saturn' ? '\uD83D\uDE80 Cassini orbited Saturn for 13 years (2004\u20132017) before its grand finale plunge into the atmosphere.' : sel.name === 'Uranus' ? '\uD83D\uDE80 Only Voyager 2 has visited Uranus, flying by in January 1986 and discovering 10 new moons.' : sel.name === 'Neptune' ? '\uD83D\uDE80 Voyager 2 is the only spacecraft to visit Neptune, flying by in August 1989.' : '\uD83D\uDE80 NASA\u2019s New Horizons flew past Pluto in July 2015, revealing a geologically active world.',
+                          sel.name === t('stem.periodic.mercury') ? '\uD83D\uDE80 MESSENGER orbited Mercury 2011\u20132015, mapping the entire surface and discovering ice in polar craters.' : sel.name === t('stem.solar_sys.venus') ? '\uD83D\uDE80 Soviet Venera 13 survived 127 minutes on Venus\u2019s surface in 1982 \u2014 still a record.' : sel.name === t('stem.solar_sys.earth') ? '\uD83D\uDE80 The ISS orbits Earth every 90 minutes at 27,600 km/h, 408 km above us.' : sel.name === t('stem.solar_sys.mars') ? '\uD83D\uDE80 Perseverance landed Feb 2021 in Jezero Crater, searching for signs of ancient microbial life.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83D\uDE80 Juno has been orbiting Jupiter since 2016, peering beneath the cloud tops with microwave sensors.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83D\uDE80 Cassini orbited Saturn for 13 years (2004\u20132017) before its grand finale plunge into the atmosphere.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83D\uDE80 Only Voyager 2 has visited Uranus, flying by in January 1986 and discovering 10 new moons.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83D\uDE80 Voyager 2 is the only spacecraft to visit Neptune, flying by in August 1989.' : '\uD83D\uDE80 NASA\u2019s New Horizons flew past Pluto in July 2015, revealing a geologically active world.',
                           // More planet-specific facts
-                          sel.name === 'Mars' ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === 'Venus' ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === 'Jupiter' ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === 'Saturn' ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === 'Uranus' ? '\uD83C\uDF21 Uranus was knocked on its side by an ancient collision with an Earth-sized object.' : sel.name === 'Neptune' ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === 'Pluto' ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === 'Mercury' ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
+                          sel.name === t('stem.solar_sys.mars') ? '\uD83C\uDF21 Mars has the largest dust storms in the solar system \u2014 they can engulf the entire planet for months.' : sel.name === t('stem.solar_sys.venus') ? '\uD83C\uDF21 Venus rotates backwards (retrograde) so slowly that its day is longer than its year.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDEA8 Jupiter\u2019s core may be a fuzzy mix of metallic hydrogen and dissolved rocky material.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83C\uDF0D Saturn\u2019s density is 0.687 g/cm\u00B3 \u2014 it would float in a bathtub big enough to hold it.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83C\uDF21 Uranus was knocked on its side by an ancient collision with an Earth-sized object.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDEA8 Neptune radiates 2.6x more energy than it receives from the Sun \u2014 its own internal heat drives supersonic winds.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83C\uDF0D Pluto and its moon Charon are tidally locked \u2014 they always show the same face to each other.' : sel.name === t('stem.periodic.mercury') ? '\uD83C\uDF0D Mercury has virtually no atmosphere \u2014 just a thin exosphere of atoms blasted off the surface by solar wind.' : '\uD83E\uDDE0 Every atom in your body was forged inside a star.',
                           // Chemistry / science
                           '\uD83E\uDDEA Atmosphere: ' + atmosLabel,
-                          sel.name === 'Mars' ? '\uD83E\uDDEA Mars\u2019s red color comes from iron oxide (rust) in its soil \u2014 the entire planet is literally rusty.' : sel.name === 'Venus' ? '\uD83E\uDDEA Venus\u2019s clouds contain sulfuric acid droplets \u2014 rain evaporates before reaching the surface.' : sel.name === 'Jupiter' ? '\uD83E\uDDEA Jupiter\u2019s interior contains metallic hydrogen \u2014 hydrogen so compressed it conducts electricity like a metal.' : sel.name === 'Saturn' ? '\uD83E\uDDEA Titan\u2019s thick atmosphere is mostly nitrogen, like Earth\u2019s, but with methane playing the role of water.' : sel.name === 'Uranus' ? '\uD83E\uDDEA Methane in Uranus\u2019s upper atmosphere absorbs red light, giving it that distinctive blue-green color.' : sel.name === 'Neptune' ? '\uD83E\uDDEA Neptune\u2019s vivid blue is from methane \u2014 but a still-unknown compound makes it bluer than Uranus.' : sel.name === 'Pluto' ? '\uD83E\uDDEA Tholins on Pluto\u2019s surface are complex organic molecules \u2014 building blocks for prebiotic chemistry.' : sel.name === 'Earth' ? '\uD83E\uDDEA Earth\u2019s ozone layer (O\u2083) absorbs 97\u201399% of the Sun\u2019s UV radiation, making life on land possible.' : '\uD83E\uDDEA Mercury\u2019s exosphere contains sodium, pumped off the surface by solar photons.'
+                          sel.name === t('stem.solar_sys.mars') ? '\uD83E\uDDEA Mars\u2019s red color comes from iron oxide (rust) in its soil \u2014 the entire planet is literally rusty.' : sel.name === t('stem.solar_sys.venus') ? '\uD83E\uDDEA Venus\u2019s clouds contain sulfuric acid droplets \u2014 rain evaporates before reaching the surface.' : sel.name === t('stem.solar_sys.jupiter') ? '\uD83E\uDDEA Jupiter\u2019s interior contains metallic hydrogen \u2014 hydrogen so compressed it conducts electricity like a metal.' : sel.name === t('stem.solar_sys.saturn') ? '\uD83E\uDDEA Titan\u2019s thick atmosphere is mostly nitrogen, like Earth\u2019s, but with methane playing the role of water.' : sel.name === t('stem.solar_sys.uranus') ? '\uD83E\uDDEA Methane in Uranus\u2019s upper atmosphere absorbs red light, giving it that distinctive blue-green color.' : sel.name === t('stem.solar_sys.neptune') ? '\uD83E\uDDEA Neptune\u2019s vivid blue is from methane \u2014 but a still-unknown compound makes it bluer than Uranus.' : sel.name === t('stem.solar_sys.pluto') ? '\uD83E\uDDEA Tholins on Pluto\u2019s surface are complex organic molecules \u2014 building blocks for prebiotic chemistry.' : sel.name === t('stem.solar_sys.earth') ? '\uD83E\uDDEA Earth\u2019s ozone layer (O\u2083) absorbs 97\u201399% of the Sun\u2019s UV radiation, making life on land possible.' : '\uD83E\uDDEA Mercury\u2019s exosphere contains sodium, pumped off the surface by solar photons.'
                         ].filter(Boolean);
                         var factIdx = 0;
                         ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[0];
@@ -7678,16 +8183,16 @@
                       React.createElement("button", {
                         onClick: () => {
                           const QUIZ_QS = [
-                            { q: 'Which planet is the hottest?', a: 'Venus', opts: ['Mercury', 'Venus', 'Mars', 'Jupiter'], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!' },
-                            { q: 'Which planet has the most moons?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], tip: 'Saturn has 146 known moons as of 2024!' },
-                            { q: 'Which planet rotates on its side?', a: 'Uranus', opts: ['Neptune', 'Uranus', 'Saturn', 'Pluto'], tip: 'Uranus has an axial tilt of 97.77\u00B0!' },
-                            { q: 'Which is the smallest planet?', a: 'Mercury', opts: ['Mercury', 'Mars', 'Pluto', 'Venus'], tip: 'Mercury is only 4,879 km in diameter.' },
-                            { q: 'Which planet has the longest year?', a: 'Pluto', opts: ['Neptune', 'Pluto', 'Uranus', 'Saturn'], tip: 'Pluto takes 248 Earth years to orbit the Sun!' },
-                            { q: 'Which planet has the shortest day?', a: 'Jupiter', opts: ['Jupiter', 'Saturn', 'Earth', 'Mars'], tip: 'Jupiter rotates in just 10 hours!' },
-                            { q: 'Which planet is known as the Red Planet?', a: 'Mars', opts: ['Venus', 'Mars', 'Mercury', 'Jupiter'], tip: 'Iron oxide (rust) gives Mars its red color.' },
-                            { q: 'Which planet could float in water?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Neptune', 'Uranus'], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!' },
-                            { q: 'Where is the tallest volcano in the solar system?', a: 'Mars', opts: ['Earth', 'Venus', 'Mars', 'Jupiter'], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!' },
-                            { q: 'Which planet has the strongest winds?', a: 'Neptune', opts: ['Jupiter', 'Saturn', 'Neptune', 'Uranus'], tip: 'Neptune\u2019s winds reach 2,100 km/h!' },
+                            { q: 'Which planet is the hottest?', a: t('stem.solar_sys.venus'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Venus has a runaway greenhouse effect reaching 462\u00B0C!' },
+                            { q: 'Which planet has the most moons?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.uranus'), t('stem.solar_sys.neptune')], tip: 'Saturn has 146 known moons as of 2024!' },
+                            { q: 'Which planet rotates on its side?', a: t('stem.solar_sys.uranus'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn'), t('stem.solar_sys.pluto')], tip: 'Uranus has an axial tilt of 97.77\u00B0!' },
+                            { q: 'Which is the smallest planet?', a: t('stem.periodic.mercury'), opts: [t('stem.periodic.mercury'), t('stem.solar_sys.mars'), t('stem.solar_sys.pluto'), t('stem.solar_sys.venus')], tip: 'Mercury is only 4,879 km in diameter.' },
+                            { q: 'Which planet has the longest year?', a: t('stem.solar_sys.pluto'), opts: [t('stem.solar_sys.neptune'), t('stem.solar_sys.pluto'), t('stem.solar_sys.uranus'), t('stem.solar_sys.saturn')], tip: 'Pluto takes 248 Earth years to orbit the Sun!' },
+                            { q: 'Which planet has the shortest day?', a: t('stem.solar_sys.jupiter'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.earth'), t('stem.solar_sys.mars')], tip: 'Jupiter rotates in just 10 hours!' },
+                            { q: 'Which planet is known as the Red Planet?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.periodic.mercury'), t('stem.solar_sys.jupiter')], tip: 'Iron oxide (rust) gives Mars its red color.' },
+                            { q: 'Which planet could float in water?', a: t('stem.solar_sys.saturn'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Saturn\u2019s density is less than water (0.687 g/cm\u00B3)!' },
+                            { q: 'Where is the tallest volcano in the solar system?', a: t('stem.solar_sys.mars'), opts: [t('stem.solar_sys.earth'), t('stem.solar_sys.venus'), t('stem.solar_sys.mars'), t('stem.solar_sys.jupiter')], tip: 'Olympus Mons on Mars is 21.9 km high \u2014 nearly 3x Everest!' },
+                            { q: 'Which planet has the strongest winds?', a: t('stem.solar_sys.neptune'), opts: [t('stem.solar_sys.jupiter'), t('stem.solar_sys.saturn'), t('stem.solar_sys.neptune'), t('stem.solar_sys.uranus')], tip: 'Neptune\u2019s winds reach 2,100 km/h!' },
                           ];
                           const q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
                           upd('quiz', { ...q, answered: false, correct: null, score: d.quiz?.score || 0, streak: d.quiz?.streak || 0 });
@@ -7706,8 +8211,8 @@
                             key: opt, disabled: d.quiz.answered, onClick: function () {
                               var correct = opt === d.quiz.a;
                               upd('quiz', Object.assign({}, d.quiz, { answered: true, correct: correct, chosen: opt, score: d.quiz.score + (correct ? 1 : 0), streak: correct ? d.quiz.streak + 1 : 0 }));
-                              if (correct) addToast('\u2705 Correct! ' + d.quiz.tip, 'success');
-                              else addToast('\u274C The answer is ' + d.quiz.a + '. ' + d.quiz.tip, 'error');
+                              if (correct) addToast(t('stem.planet_quiz.u2705_correct') + d.quiz.tip, 'success');
+                              else addToast(t('stem.planet_quiz.u274c_the_answer_is') + d.quiz.a + '. ' + d.quiz.tip, 'error');
                             }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
                           }, opt);
                         })
@@ -7747,7 +8252,7 @@
                   ),
                 ),
               ),
-              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.planet_quiz.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           );
         })(),
@@ -7767,55 +8272,55 @@
 
           // ── Star type data (OBAFGKM Harvard classification) ──
           var STAR_TYPES = [
-            { id: 'O', label: 'O-type', color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', whyItMatters: 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
-            { id: 'B', label: 'B-type', color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', whyItMatters: 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
-            { id: 'A', label: 'A-type', color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', whyItMatters: 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
-            { id: 'F', label: 'F-type', color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', whyItMatters: 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
-            { id: 'G', label: 'G-type', color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', whyItMatters: 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
-            { id: 'K', label: 'K-type', color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', whyItMatters: 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
-            { id: 'M', label: 'M-type', color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', whyItMatters: 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
+            { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.', whyItMatters: 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.', luminosity: '30,000-1,000,000x Sun', mass: '16-150 M\u2609', lifetime: '1-10 Myr' },
+            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Rigel', desc: 'Blue-white giants. Often found in young OB associations and spiral arms.', whyItMatters: 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.', luminosity: '25-30,000x Sun', mass: '2.1-16 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: 'White stars with strong hydrogen absorption lines. Many are binary systems.', whyItMatters: 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.', luminosity: '5-25x Sun', mass: '1.4-2.1 M\u2609', lifetime: '1-2 Gyr' },
+            { id: 'F', label: t('stem.galaxy.ftype'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: 'Yellow-white. Transition zone where convection begins in the outer layer.', whyItMatters: 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.', luminosity: '1.5-5x Sun', mass: '1.04-1.4 M\u2609', lifetime: '2-4 Gyr' },
+            { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.', whyItMatters: 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.', luminosity: '0.6-1.5x Sun', mass: '0.8-1.04 M\u2609', lifetime: '10 Gyr' },
+            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: 'Arcturus', desc: 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.', whyItMatters: 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.', luminosity: '0.08-0.6x Sun', mass: '0.45-0.8 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'M', label: t('stem.galaxy.mtype'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).', whyItMatters: 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!', luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
           ];
 
           // ── Nebulae + deep-sky objects (expanded from 4 to 8) ──
           var NEBULAE = [
-            { name: 'Orion Nebula', x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.' },
-            { name: 'Eagle Nebula', x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.' },
-            { name: 'Crab Nebula', x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
-            { name: 'Carina Nebula', x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.' },
-            { name: 'Helix Nebula', x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.' },
-            { name: 'Ring Nebula', x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.' },
-            { name: 'Horsehead Nebula', x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.' },
-            { name: 'Lagoon Nebula', x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.' }
+            { name: t('stem.galaxy.orion_nebula'), x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.' },
+            { name: t('stem.galaxy.eagle_nebula'), x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.' },
+            { name: t('stem.galaxy.crab_nebula'), x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.' },
+            { name: t('stem.galaxy.carina_nebula'), x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.' },
+            { name: t('stem.galaxy.helix_nebula'), x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.' },
+            { name: t('stem.galaxy.ring_nebula'), x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.' },
+            { name: t('stem.galaxy.horsehead_nebula'), x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.' },
+            { name: t('stem.galaxy.lagoon_nebula'), x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.' }
           ];
 
           // ── Galaxy type definitions ──
           var GALAXY_TYPES = {
-            barredSpiral: { label: 'Barred Spiral', icon: '\uD83C\uDF00', desc: 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.', example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
-            grandDesign: { label: 'Grand Design Spiral', icon: '\uD83C\uDF00', desc: 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.', example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
-            elliptical: { label: 'Elliptical', icon: '\u2B2D\uFE0F', desc: 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.', example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
-            irregular: { label: 'Irregular', icon: '\u2728', desc: 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.', example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
+            barredSpiral: { label: t('stem.galaxy.barred_spiral'), icon: '\uD83C\uDF00', desc: 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.', example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.15, windTightness: 2.5 },
+            grandDesign: { label: t('stem.galaxy.grand_design_spiral'), icon: '\uD83C\uDF00', desc: 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.', example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
+            elliptical: { label: t('stem.galaxy.elliptical'), icon: '\u2B2D\uFE0F', desc: 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.', example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
+            irregular: { label: t('stem.galaxy.irregular'), icon: '\u2728', desc: 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.', example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
           };
           var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
 
           // ── Warp points ──
           var WARP_POINTS = [
-            { label: 'Galactic Core', x: 0, y: 0, z: 0, zoom: 2 },
-            { label: 'Orion Arm (Us)', x: 0.35, y: 0, z: 0.1, zoom: 4, desc: 'Our Solar System is here, about 26,000 light-years from the center.' },
-            { label: 'Perseus Arm', x: 0.5, y: 0, z: -0.2, zoom: 3, desc: 'The next spiral arm outward from us. Contains many young, hot stars.' },
-            { label: 'Sagittarius Arm', x: -0.15, y: 0, z: 0.35, zoom: 3, desc: 'The next arm inward toward the galactic center.' },
-            { label: 'Overview', x: 0, y: 0.8, z: 0, zoom: 0.8, desc: 'Full view of the galaxy from above.' }
+            { label: t('stem.galaxy.galactic_core'), x: 0, y: 0, z: 0, zoom: 2 },
+            { label: t('stem.galaxy.orion_arm_us'), x: 0.35, y: 0, z: 0.1, zoom: 4, desc: 'Our Solar System is here, about 26,000 light-years from the center.' },
+            { label: t('stem.galaxy.perseus_arm'), x: 0.5, y: 0, z: -0.2, zoom: 3, desc: 'The next spiral arm outward from us. Contains many young, hot stars.' },
+            { label: t('stem.galaxy.sagittarius_arm'), x: -0.15, y: 0, z: 0.35, zoom: 3, desc: t('stem.galaxy.the_next_arm_inward_toward') },
+            { label: t('stem.galaxy.overview'), x: 0, y: 0.8, z: 0, zoom: 0.8, desc: t('stem.galaxy.full_view_of_the_galaxy') }
           ];
 
           // ── Quiz bank (expanded from 10 to 15) ──
           var QUIZ_BANK = [
-            { q: 'What type of star is our Sun?', a: 'G-type', options: ['O-type', 'A-type', 'G-type', 'M-type'] },
-            { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', 'Nebula'] },
-            { q: 'Which star type is the hottest?', a: 'O-type', options: ['M-type', 'G-type', 'A-type', 'O-type'] },
-            { q: 'Which spiral arm contains our Solar System?', a: 'Orion Arm', options: ['Perseus Arm', 'Orion Arm', 'Sagittarius Arm', 'Norma Arm'] },
+            { q: 'What type of star is our Sun?', a: t('stem.galaxy.gtype'), options: [t('stem.galaxy.otype'), t('stem.galaxy.atype'), t('stem.galaxy.gtype'), t('stem.galaxy.mtype')] },
+            { q: 'What is at the center of the Milky Way?', a: 'Supermassive black hole', options: ['Supermassive black hole', 'Giant star', 'Neutron star', t('stem.galaxy.nebula')] },
+            { q: 'Which star type is the hottest?', a: t('stem.galaxy.otype'), options: [t('stem.galaxy.mtype'), t('stem.galaxy.gtype'), t('stem.galaxy.atype'), t('stem.galaxy.otype')] },
+            { q: 'Which spiral arm contains our Solar System?', a: 'Orion Arm', options: [t('stem.galaxy.perseus_arm'), 'Orion Arm', t('stem.galaxy.sagittarius_arm'), 'Norma Arm'] },
             { q: 'What percentage of stars are M-type red dwarfs?', a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
             { q: 'What is a nebula?', a: 'A cloud of gas and dust', options: ['A dead star', 'A cloud of gas and dust', 'A type of galaxy', 'A black hole'] },
             { q: 'How many stars are in the Milky Way?', a: '100-400 billion', options: ['1 million', '100 million', '100-400 billion', '1 trillion'] },
-            { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: ['Elliptical', 'Irregular', 'Spiral', 'Barred spiral'] },
+            { q: 'What type of galaxy is the Milky Way?', a: 'Barred spiral', options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), 'Spiral', 'Barred spiral'] },
             { q: 'Which star is closest to our Sun?', a: 'Proxima Centauri', options: ['Sirius', 'Proxima Centauri', 'Alpha Centauri A', 'Barnards Star'] },
             { q: 'What color are the hottest stars?', a: 'Blue', options: ['Red', 'Yellow', 'White', 'Blue'] },
             { q: 'What is a planetary nebula?', a: 'Outer layers shed by a dying star', options: ['A nebula with planets', 'Outer layers shed by a dying star', 'Gas around a planet', 'A type of dark matter'] },
@@ -7827,24 +8332,24 @@
 
           // ── Scale data ──
           var SCALE_INFO = [
-            { label: 'Galaxy Diameter', value: '~100,000 light-years' },
-            { label: 'Disk Thickness', value: '~2,000 light-years' },
-            { label: 'Central Bulge', value: '~10,000 light-years' },
-            { label: 'Sun to Center', value: '~26,000 light-years' },
-            { label: 'Stars', value: '100\u2013400 billion' },
+            { label: t('stem.galaxy.galaxy_diameter'), value: '~100,000 light-years' },
+            { label: t('stem.galaxy.disk_thickness'), value: '~2,000 light-years' },
+            { label: t('stem.galaxy.central_bulge'), value: '~10,000 light-years' },
+            { label: t('stem.galaxy.sun_to_center'), value: '~26,000 light-years' },
+            { label: t('stem.galaxy.stars'), value: '100\u2013400 billion' },
             { label: 'Age', value: '~13.6 billion years' }
           ];
 
           // ── Epoch narration for time-lapse ──
           var EPOCH_NARRATION = [
-            { age: 0.1, title: 'Cosmic Dawn', emoji: '\u2728', desc: 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.' },
-            { age: 0.4, title: 'First Galaxies', emoji: '\uD83C\uDF0C', desc: 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.' },
-            { age: 1.0, title: 'Galaxy Assembly', emoji: '\uD83C\uDF00', desc: 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.' },
-            { age: 4.6, title: 'Milky Way Forms', emoji: '\uD83C\uDF1F', desc: 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.' },
-            { age: 9.2, title: 'Sun Is Born', emoji: '\u2600\uFE0F', desc: 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.' },
-            { age: 10.0, title: 'Mature Galaxy', emoji: '\uD83D\uDD2D', desc: 'The Milky Way settles into its current form with 200-400 billion stars. Star formation slows as gas reserves deplete.' },
-            { age: 13.0, title: 'Present Era', emoji: '\uD83C\uDF0D', desc: 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.' },
-            { age: 13.8, title: 'Right Now', emoji: '\uD83D\uDE80', desc: 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.' }
+            { age: 0.1, title: t('stem.galaxy.cosmic_dawn'), emoji: '\u2728', desc: 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.' },
+            { age: 0.4, title: t('stem.galaxy.first_galaxies'), emoji: '\uD83C\uDF0C', desc: 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.' },
+            { age: 1.0, title: t('stem.galaxy.galaxy_assembly'), emoji: '\uD83C\uDF00', desc: 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.' },
+            { age: 4.6, title: t('stem.galaxy.milky_way_forms'), emoji: '\uD83C\uDF1F', desc: 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.' },
+            { age: 9.2, title: t('stem.galaxy.sun_is_born'), emoji: '\u2600\uFE0F', desc: 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.' },
+            { age: 10.0, title: t('stem.galaxy.mature_galaxy'), emoji: '\uD83D\uDD2D', desc: 'The Milky Way settles into its current form with 200-400 billion stars. Star formation slows as gas reserves deplete.' },
+            { age: 13.0, title: t('stem.galaxy.present_era'), emoji: '\uD83C\uDF0D', desc: 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.' },
+            { age: 13.8, title: t('stem.galaxy.right_now'), emoji: '\uD83D\uDE80', desc: 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.' }
           ];
           function getEpochNarration(age) {
             var best = null;
@@ -7873,19 +8378,19 @@
           // ── Stellar lifecycle data ──
           var LIFECYCLE = {
             stages: [
-              { name: 'Nebula', emoji: '\u2601\uFE0F', desc: 'A vast cloud of gas & dust collapses under gravity.', color: '#a855f7' },
-              { name: 'Protostar', emoji: '\uD83D\uDFE0', desc: 'Core heats up from gravitational compression. Not yet fusing.', color: '#fb923c' },
-              { name: 'Main Sequence', emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for millions to billions of years.', color: '#fbbf24' },
-              { name: 'Red Giant', emoji: '\uD83D\uDD34', desc: 'Core contracts, outer layers expand. Helium fusion begins.', color: '#ef4444' }
+              { name: t('stem.galaxy.nebula'), emoji: '\u2601\uFE0F', desc: t('stem.galaxy.a_vast_cloud_of_gas'), color: '#a855f7' },
+              { name: t('stem.galaxy.protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational'), color: '#fb923c' },
+              { name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for millions to billions of years.', color: '#fbbf24' },
+              { name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' }
             ],
             lowMass: [
-              { name: 'Planetary Nebula', emoji: '\uD83D\uDFE3', desc: 'Outer layers shed gently into space.', color: '#818cf8' },
-              { name: 'White Dwarf', emoji: '\u26AA', desc: 'Dense stellar core slowly cools. Size of Earth, mass of Sun.', color: '#e2e8f0' }
+              { name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' },
+              { name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: '#e2e8f0' }
             ],
             highMass: [
-              { name: 'Supernova', emoji: '\uD83D\uDCA5', desc: 'Core collapses! A catastrophic explosion outshining entire galaxies.', color: '#fbbf24' },
-              { name: 'Neutron Star', emoji: '\u2B50', desc: 'Ultra-dense remnant. A teaspoon weighs billions of tons.', color: '#38bdf8', maxMass: 25 },
-              { name: 'Black Hole', emoji: '\uD83D\uDD73\uFE0F', desc: 'Gravity so strong nothing escapes. Spacetime itself warps.', color: '#1e1b4b', minMass: 25 }
+              { name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: 'Core collapses! A catastrophic explosion outshining entire galaxies.', color: '#fbbf24' },
+              { name: t('stem.galaxy.neutron_star'), emoji: '\u2B50', desc: t('stem.galaxy.ultradense_remnant_a_teaspoon_weighs'), color: '#38bdf8', maxMass: 25 },
+              { name: t('stem.galaxy.black_hole'), emoji: '\uD83D\uDD73\uFE0F', desc: t('stem.galaxy.gravity_so_strong_nothing_escapes'), color: '#1e1b4b', minMass: 25 }
             ]
           };
 
@@ -8021,8 +8526,9 @@
                 'uniform float uPR;',
                 'void main() {',
                 '  vSC = color;',
-                '  float sz = 14.0 - aStarType * 1.7;',
-                '  vA = 0.7 + 0.3 * sin(uTime * 1.5 + aPhase * 6.283);',
+                '  float sz = 20.0 - aStarType * 3.0;',
+                '  float twinkleSpeed = 1.2 + aStarType * 0.5;',
+                '  vA = 0.5 + 0.5 * sin(uTime * twinkleSpeed + aPhase * 6.283);',
                 '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
                 '  gl_PointSize = sz * uPR * (200.0 / max(-mv.z, 0.1));',
                 '  gl_Position = projectionMatrix * mv;',
@@ -8143,7 +8649,7 @@
             if (THREE.EffectComposer && THREE.RenderPass && THREE.UnrealBloomPass) {
               composer = new THREE.EffectComposer(renderer);
               composer.addPass(new THREE.RenderPass(scene, camera));
-              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 0.7, 0.3, 0.85);
+              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 1.0, 0.4, 0.8);
               composer.addPass(bloomPass);
               canvasEl._bloomPass = bloomPass;
             }
@@ -8199,6 +8705,8 @@
               camera.lookAt(0, 0, 0);
             }
             updateCamera();
+            canvasEl._galaxyOrbit = spherical;
+            canvasEl._galaxyUpdateCam = updateCamera;
             function onGalDown(e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; }
             function onGalMove(e) {
               if (!isDragging) return;
@@ -8240,8 +8748,9 @@
               if (armGroup.visible) armGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
               nebulaSprites.forEach(function (s, i) { s.material.opacity = Math.max(0.1, s.material.opacity + 0.002 * Math.sin(elapsed + i * 1.5)); });
               if (bhGroup.visible) {
-                rings.forEach(function (r, ri) { r.rotation.z += 0.005 - ri * 0.001; });
-                bhGlow.material.opacity = 0.5 + 0.2 * Math.sin(elapsed * 0.8);
+                rings.forEach(function (r, ri) { r.rotation.z += 0.005 - ri * 0.001; r.material.opacity = ringColors[ri][3] * (0.8 + 0.2 * Math.sin(elapsed * 1.2 + ri)); });
+                bhGlow.material.opacity = 0.6 + 0.3 * Math.sin(elapsed * 0.8);
+                bhGlow.scale.set(0.12 + 0.01 * Math.sin(elapsed * 1.5), 0.12 + 0.01 * Math.sin(elapsed * 1.5), 1);
               }
               // Animate supernovae
               for (var sni = supernovae.length - 1; sni >= 0; sni--) {
@@ -8286,16 +8795,17 @@
           };
 
           var LAYER_TOGGLES = [
-            { key: 'arms', icon: '\uD83C\uDF00', label: 'Spiral Arms' },
-            { key: 'bulge', icon: '\uD83D\uDFE1', label: 'Central Bulge' },
-            { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: 'Black Hole' },
-            { key: 'nebulae', icon: '\u2728', label: 'Nebulae' },
-            { key: 'bgStars', icon: '\uD83C\uDF0C', label: 'Background' },
-            { key: 'grid', icon: '\uD83D\uDCCF', label: 'Scale Grid' },
-            { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: 'Labels' }
+            { key: 'arms', icon: '\uD83C\uDF00', label: t('stem.galaxy.spiral_arms') },
+            { key: 'bulge', icon: '\uD83D\uDFE1', label: t('stem.galaxy.central_bulge') },
+            { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: t('stem.galaxy.black_hole') },
+            { key: 'nebulae', icon: '\u2728', label: t('stem.galaxy.nebulae') },
+            { key: 'bgStars', icon: '\uD83C\uDF0C', label: t('stem.galaxy.background') },
+            { key: 'grid', icon: '\uD83D\uDCCF', label: t('stem.galaxy.scale_grid') },
+            { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels') }
           ];
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+            renderTutorial('galaxy', _tutGalaxy),
             // ── Header ──
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
               React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
@@ -8337,7 +8847,19 @@
 
             // ── 3D Canvas ──
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
-              React.createElement("canvas", { "data-galaxy-canvas": "true", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, style: { width: '100%', height: '100%', cursor: 'grab' } }),
+              React.createElement("canvas", {
+                "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
+                  var cv = e.target; if (!cv || !cv._galaxyOrbit) return;
+                  var orb = cv._galaxyOrbit, upCam = cv._galaxyUpdateCam;
+                  if (e.key === 'ArrowLeft') { e.preventDefault(); orb.theta -= 0.1; upCam(); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); orb.theta += 0.1; upCam(); }
+                  else if (e.key === 'ArrowUp') { e.preventDefault(); orb.phi = Math.max(0.1, orb.phi - 0.1); upCam(); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); orb.phi = Math.min(Math.PI - 0.1, orb.phi + 0.1); upCam(); }
+                  else if (e.key === '+' || e.key === '=') { e.preventDefault(); orb.r = Math.max(0.2, orb.r * 0.9); upCam(); }
+                  else if (e.key === '-') { e.preventDefault(); orb.r = Math.min(3, orb.r * 1.1); upCam(); }
+                  else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = 1.2; upCam(); }
+                }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' }
+              }),
               // Star type legend
               React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
                 React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
@@ -8430,10 +8952,10 @@
               // Milestone labels
               React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
                 [
-                  { age: 0.4, label: "First stars" },
-                  { age: 1, label: "Galaxies form" },
-                  { age: 4.6, label: "Milky Way" },
-                  { age: 9.2, label: "Sun born" },
+                  { age: 0.4, label: t('stem.galaxy.first_stars') },
+                  { age: 1, label: t('stem.galaxy.galaxies_form') },
+                  { age: 4.6, label: t('stem.galaxy.milky_way') },
+                  { age: 9.2, label: t('stem.galaxy.sun_born') },
                   { age: 13.8, label: "Now" }
                 ].map(function (m) {
                   return React.createElement("span", {
@@ -8471,7 +8993,7 @@
               React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                 React.createElement("span", { className: "text-[10px] text-slate-400 whitespace-nowrap" }, "\u2696 Mass:"),
                 React.createElement("input", {
-                  type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass,
+                  type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass, "aria-label": "Star mass in solar masses",
                   onChange: function (e) { upd("lifecycleMass", parseFloat(e.target.value)); },
                   className: "flex-1 h-1.5 accent-amber-400"
                 }),
@@ -8543,12 +9065,12 @@
               React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
               React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
                 [
-                  { label: 'Temperature', val: selStar.temp + ' K' },
+                  { label: t('stem.galaxy.temperature'), val: selStar.temp + ' K' },
                   { label: '% of Stars', val: selStar.pct + '%' },
-                  { label: 'Luminosity', val: selStar.luminosity },
-                  { label: 'Mass', val: selStar.mass || '?' },
-                  { label: 'Lifetime', val: selStar.lifetime || '?' },
-                  { label: 'Example', val: selStar.example }
+                  { label: t('stem.galaxy.luminosity'), val: selStar.luminosity },
+                  { label: t('stem.galaxy.mass'), val: selStar.mass || '?' },
+                  { label: t('stem.galaxy.lifetime'), val: selStar.lifetime || '?' },
+                  { label: t('stem.galaxy.example'), val: selStar.example }
                 ].map(function (item) {
                   return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
                     React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
@@ -8571,7 +9093,7 @@
             selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
               React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
               React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
-                React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || 'Nebula'),
+                React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || t('stem.galaxy.nebula')),
                 selNeb.dist && React.createElement("span", { className: "text-slate-500" }, "\uD83D\uDCCD " + selNeb.dist)
               ),
               React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
@@ -8608,7 +9130,7 @@
 
             // ── Snapshot button ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: 'Galaxy' + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Galaxy snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(t('stem.galaxy.ud83dudcf8_galaxy_snapshot_saved'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           )
         })(),
@@ -8625,63 +9147,63 @@
           // ── Cosmic epochs (enhanced) ──
           var EPOCHS = [
             {
-              t: 0, name: 'The Big Bang', emoji: '\uD83D\uDCA5', color: '#1a0a00', border: '#f59e0b', sky: '#ffffff',
+              t: 0, name: t('stem.universe.the_big_bang'), emoji: '\uD83D\uDCA5', color: '#1a0a00', border: '#f59e0b', sky: '#ffffff',
               temp: '10\u00B3\u00B2 K (infinite)', scale: 'Smaller than a proton',
               keyEvent: 'All four fundamental forces unified as one',
               desc: 'All matter, energy, space, and time erupt from an infinitely dense singularity in the most violent event in cosmic history. Within 10\u207B\u00B3\u00B2 seconds, the universe undergoes exponential inflation, expanding faster than light. Temperature: trillions upon trillions of degrees. The four fundamental forces (gravity, electromagnetism, strong & weak nuclear) separate within the first second. Quarks condense into protons and neutrons within 3 minutes.',
               facts: ['The entire observable universe was smaller than a subatomic particle', 'Temperature exceeded 10 trillion degrees Celsius', 'Matter and antimatter annihilated in almost equal amounts \u2014 a tiny surplus of matter (1 in a billion) is everything we see today', 'Inflation expanded the universe by a factor of 10\u00B2\u2076 in 10\u207B\u00B3\u00B2 seconds', 'Within 3 minutes, protons and neutrons fused into the first atomic nuclei (hydrogen, helium, tiny amounts of lithium)', 'This is called Big Bang Nucleosynthesis \u2014 it set the universe\'s H/He ratio at roughly 75%/25% by mass']
             },
             {
-              t: 0.38, name: 'Recombination', emoji: '\uD83C\uDF1F', color: '#1a1000', border: '#eab308', sky: '#ff6b35',
+              t: 0.38, name: t('stem.universe.recombination'), emoji: '\uD83C\uDF1F', color: '#1a1000', border: '#eab308', sky: '#ff6b35',
               temp: '~3,000 K', scale: '~1,000x smaller than today',
               keyEvent: 'Light breaks free \u2014 the universe becomes transparent',
               desc: 'The universe cools enough for electrons to bind with protons, forming the first neutral atoms (mostly hydrogen and helium). For the first time, photons can travel freely without scattering off charged particles. This released light is the Cosmic Microwave Background (CMB) \u2014 the oldest light in the universe, still detectable today at 2.725 K after being stretched by 13.8 billion years of expansion.',
               facts: ['This occurred ~380,000 years after the Big Bang', 'The CMB was accidentally discovered in 1965 by Penzias and Wilson, earning them a Nobel Prize', 'The CMB has been redshifted from ~3,000 K to 2.725 K by cosmic expansion', 'Tiny temperature fluctuations in the CMB (1 part in 100,000) are the seeds of all cosmic structure', 'The universe went from an opaque plasma to transparent gas in a geologically brief period', 'COBE, WMAP, and Planck satellites mapped the CMB with increasing precision']
             },
             {
-              t: 0.4, name: 'The Dark Ages', emoji: '\uD83C\uDF11', color: '#08061a', border: '#4338ca', sky: '#0a0a1a',
+              t: 0.4, name: t('stem.universe.the_dark_ages'), emoji: '\uD83C\uDF11', color: '#08061a', border: '#4338ca', sky: '#0a0a1a',
               temp: '60 K \u2192 ~20 K', scale: 'Expanding but starless',
               keyEvent: 'Total cosmic darkness \u2014 no light sources exist',
               desc: 'The most silent era in cosmic history. No stars, no galaxies, no light. The universe is filled with cold neutral hydrogen gas in absolute darkness. Yet gravity is silently at work: dark matter filaments pull ordinary matter into denser clumps, building the scaffolding for everything to come. This era ends when the first stars ignite.',
               facts: ['Lasted roughly 100\u2013200 million years', 'Dark matter formed a vast cosmic web of filaments and nodes', 'Ordinary matter fell into dark matter gravitational wells, seeding future galaxies', 'The 21-cm hydrogen line may let future radio telescopes observe this era directly', 'No electromagnetic radiation was produced \u2014 only gravitational interactions', 'This is the least understood era in cosmology \u2014 no direct observations exist yet']
             },
             {
-              t: 0.5, name: 'First Stars (Cosmic Dawn)', emoji: '\u2B50', color: '#0a1020', border: '#3b82f6', sky: '#0a1628',
+              t: 0.5, name: t('stem.universe.first_stars_cosmic_dawn'), emoji: '\u2B50', color: '#0a1020', border: '#3b82f6', sky: '#0a1628',
               temp: '~15 K (gas) / millions K (star cores)', scale: 'First light in 200 million years',
               keyEvent: 'Population III stars ignite \u2014 cosmic reionization begins',
               desc: 'The first stars ignite in the darkness \u2014 Population III stars, composed entirely of hydrogen and helium. These primordial giants were 100\u20131,000 times more massive than our Sun, blazing blue-white and living only a few million years before exploding as hypernovae. Their deaths forged the first heavy elements (carbon, oxygen, iron, gold) and scattered them across space, enriching the gas for future generations of stars. Their UV radiation began reionizing the neutral hydrogen, ending the Dark Ages.',
               facts: ['Population III stars have never been directly observed \u2014 they are predicted by models', 'They were made of pure hydrogen and helium (zero metals)', 'Their surface temperatures exceeded 100,000 K \u2014 far hotter than our Sun\'s 5,778 K', 'Some may have collapsed directly into black holes without supernovae', 'Their supernovae created the first carbon, oxygen, silicon, and iron in the universe', 'The James Webb Space Telescope is actively searching for evidence of these first stars']
             },
             {
-              t: 1.0, name: 'First Galaxies', emoji: '\uD83C\uDF0C', color: '#0c0a20', border: '#6366f1', sky: '#0f0f2e',
+              t: 1.0, name: t('stem.galaxy.first_galaxies'), emoji: '\uD83C\uDF0C', color: '#0c0a20', border: '#6366f1', sky: '#0f0f2e',
               temp: 'Varied (millions K in quasars)', scale: 'Protogalaxies: ~1,000 light-years',
               keyEvent: 'Supermassive black holes form \u2014 quasars blaze',
               desc: 'Gravity pulls gas and dark matter into the first protogalaxies \u2014 small, chaotic, intensely star-forming clumps. Supermassive black holes form at their centers, devouring surrounding gas and shining as quasars \u2014 the most luminous objects in the universe. The cosmic web of dark matter filaments connects galaxy clusters with bridges of gas spanning millions of light-years. Galaxy mergers are violent and frequent.',
               facts: ['The first galaxies were 100x smaller than the Milky Way', 'Quasars can outshine their entire host galaxy by 100x', 'JWST discovered galaxies existing just 300 million years after the Big Bang \u2014 earlier than expected', 'Supermassive black holes grew to billions of solar masses surprisingly quickly', 'The cosmic web structure is like a sponge \u2014 galaxies along filaments, voids between them', 'Reionization completed around this time \u2014 the universe became fully transparent again']
             },
             {
-              t: 4.6, name: 'Milky Way Forms', emoji: '\uD83C\uDF00', color: '#0d0a22', border: '#8b5cf6', sky: '#0d0d2a',
+              t: 4.6, name: t('stem.galaxy.milky_way_forms'), emoji: '\uD83C\uDF00', color: '#0d0a22', border: '#8b5cf6', sky: '#0d0d2a',
               temp: 'Cold gas clouds (~10 K) to hot stellar cores', scale: '100,000 light-years across',
               keyEvent: 'Our home galaxy assembles through hierarchical merging',
               desc: 'Our Milky Way galaxy assembles over billions of years by merging with dozens of smaller galaxies. A central bar forms, majestic spiral arms develop, and 200\u2013400 billion stars settle into orbits around a supermassive black hole (Sagittarius A*, 4 million solar masses). The galactic disk, halo, and bulge take shape. Heavy elements from generations of stellar deaths accumulate, making rocky planets possible.',
               facts: ['The Milky Way consumed the Gaia-Enceladus dwarf galaxy ~10 billion years ago', 'Our galaxy contains 200\u2013400 billion stars and at least 100 billion planets', 'The central black hole (Sgr A*) has 4 million times the Sun\'s mass', 'The galaxy is ~13.6 billion years old, nearly as old as the universe itself', 'The Milky Way\'s spiral arms are density waves, not permanent structures', 'Our galaxy will collide with Andromeda in ~4.5 billion years (Milkomeda)']
             },
             {
-              t: 9.2, name: 'Our Sun Is Born', emoji: '\u2600\uFE0F', color: '#1a1520', border: '#f59e0b', sky: '#1a1a35',
+              t: 9.2, name: t('stem.universe.our_sun_is_born'), emoji: '\u2600\uFE0F', color: '#1a1520', border: '#f59e0b', sky: '#1a1a35',
               temp: '15 million K (core) / 5,778 K (surface)', scale: 'Solar System: ~9 billion km across',
               keyEvent: 'A molecular cloud collapses \u2014 our Solar System forms',
               desc: 'A molecular cloud in the Orion Arm collapses \u2014 possibly triggered by a nearby supernova shockwave. Our Sun ignites as a main-sequence G2V star. The remaining disk of gas and dust coalesces into 8 planets, dwarf planets, asteroids, and comets. Within 100 million years, Earth forms and is struck by a Mars-sized body (Theia), creating the Moon. Within a billion years, the first microbial life appears in Earth\'s oceans.',
               facts: ['Our Sun is a 3rd-generation star: it contains elements forged in at least two previous stellar generations', 'The Solar System formed 4.6 billion years ago from a collapsing molecular cloud', 'The Moon formed from the debris of a giant impact with proto-Earth (the Theia hypothesis)', 'Jupiter\'s gravity sculpted the asteroid belt and protected inner planets from bombardment', 'Earth\'s magnetic field, generated by its molten iron core, shields life from solar radiation', 'The oldest confirmed microfossils on Earth are ~3.5 billion years old']
             },
             {
-              t: 13.0, name: 'Present Day', emoji: '\uD83C\uDF0D', color: '#0a1518', border: '#10b981', sky: '#0a0a28',
+              t: 13.0, name: t('stem.universe.present_day'), emoji: '\uD83C\uDF0D', color: '#0a1518', border: '#10b981', sky: '#0a0a28',
               temp: '2.725 K (CMB background) / 5,778 K (Sun)', scale: 'Observable universe: 93 billion light-years',
               keyEvent: 'Humanity reaches space \u2014 the universe accelerates',
               desc: 'The universe is 13.8 billion years old. Humans have walked on the Moon, landed rovers on Mars, sent Voyager beyond the Solar System, detected gravitational waves from colliding black holes, and photographed a black hole\'s shadow. The James Webb Space Telescope peers back to the first galaxies. Meanwhile, dark energy is accelerating the expansion of the universe \u2014 galaxies beyond our Local Group are receding ever faster.',
               facts: ['The observable universe contains roughly 2 trillion galaxies', 'Dark energy (68%), dark matter (27%), and ordinary matter (5%) make up the cosmic budget', 'JWST observes galaxies from 13.4+ billion years ago in infrared light', 'Gravitational waves were first detected in 2015 by LIGO (Nobel Prize 2017)', 'We have discovered 5,500+ confirmed exoplanets, including potentially habitable ones', 'Voyager 1, launched in 1977, is over 24 billion km from Earth \u2014 in interstellar space']
             },
             {
-              t: 13.8, name: 'The Far Future', emoji: '\uD83D\uDD2E', color: '#060610', border: '#6366f1', sky: '#050510',
+              t: 13.8, name: t('stem.universe.the_far_future'), emoji: '\uD83D\uDD2E', color: '#060610', border: '#6366f1', sky: '#050510',
               temp: 'Approaching absolute zero', scale: 'Expanding toward infinity',
               keyEvent: 'Heat death \u2014 maximum entropy, eternal darkness',
               desc: 'Stars exhaust their nuclear fuel one by one. Red dwarfs \u2014 the longest-lived stars \u2014 will be the last to shine, burning for up to 10 trillion years. After that: white dwarfs cool to black dwarfs, neutron stars fade, and even black holes slowly evaporate through Hawking radiation over 10\u00B9\u2070\u2070 years. The universe reaches maximum entropy \u2014 no temperature gradients, no usable energy, no structure. An eternal, featureless void.',
@@ -9020,7 +9542,7 @@
             ),
             // Snapshot button
             React.createElement("div", { className: "flex mt-3" },
-              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: 'Universe: ' + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Universe snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(t('stem.universe.ud83dudcf8_universe_snapshot_saved'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           );
         })(),
@@ -9032,87 +9554,87 @@
 
           // ── Rock type data ──
           const ROCK_TYPES = {
-            igneous: { label: 'Igneous', icon: '🌋', color: '#ef4444', desc: 'Formed from cooled magma or lava', process: 'Cooling & Crystallization' },
-            sedimentary: { label: 'Sedimentary', icon: '🏖️', color: '#f59e0b', desc: 'Formed from compressed layers of sediment', process: 'Compaction & Cementation' },
-            metamorphic: { label: 'Metamorphic', icon: '⛰️', color: '#8b5cf6', desc: 'Formed when existing rocks change under heat & pressure', process: 'Heat & Pressure' }
+            igneous: { label: t('stem.rocks.igneous'), icon: '🌋', color: '#ef4444', desc: t('stem.rocks.formed_from_cooled_magma_or'), process: 'Cooling & Crystallization' },
+            sedimentary: { label: t('stem.rocks.sedimentary'), icon: '🏖️', color: '#f59e0b', desc: t('stem.rocks.formed_from_compressed_layers_of'), process: 'Compaction & Cementation' },
+            metamorphic: { label: t('stem.rocks.metamorphic'), icon: '⛰️', color: '#8b5cf6', desc: t('stem.rocks.formed_when_existing_rocks_change'), process: t('stem.rock_cycle.heat_pressure') }
           };
 
           // ── Rock specimens ──
           const ROCKS = [
-            { id: 'granite', type: 'igneous', label: 'Granite', hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
-            { id: 'basalt', type: 'igneous', label: 'Basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock \u2014 the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
-            { id: 'obsidian', type: 'igneous', label: 'Obsidian', hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
-            { id: 'pumice', type: 'igneous', label: 'Pumice', hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
-            { id: 'rhyolite', type: 'igneous', label: 'Rhyolite', hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
-            { id: 'diorite', type: 'igneous', label: 'Diorite', hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
-            { id: 'andesite', type: 'igneous', label: 'Andesite', hardness: 6, texture: 'fine-grained', grainColors: ['#6b7280', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
-            { id: 'tuff', type: 'igneous', label: 'Tuff', hardness: 4, texture: 'vesicular', grainColors: ['#fde68a', '#d6d3d1', '#a8a29e', '#e7e5e4'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
-            { id: 'sandstone', type: 'sedimentary', label: 'Sandstone', hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
-            { id: 'limestone', type: 'sedimentary', label: 'Limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
-            { id: 'shale', type: 'sedimentary', label: 'Shale', hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
-            { id: 'conglom', type: 'sedimentary', label: 'Conglomerate', hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
-            { id: 'chalk', type: 'sedimentary', label: 'Chalk', hardness: 1, texture: 'bioclastic', grainColors: ['#fafafa', '#f5f5f4', '#e5e7eb', '#ffffff'], desc: 'Soft, white limestone made of microscopic plankton shells (coccoliths). The White Cliffs of Dover are chalk. Extremely fine-grained \u2014 each grain is a tiny fossil!', uses: 'Blackboard chalk, whiting, soil amendment, toothpaste' },
-            { id: 'travertine', type: 'sedimentary', label: 'Travertine', hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
-            { id: 'marble', type: 'metamorphic', label: 'Marble', hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
-            { id: 'slate', type: 'metamorphic', label: 'Slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation \u2014 splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
-            { id: 'quartzite', type: 'metamorphic', label: 'Quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard \u2014 even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
-            { id: 'gneiss', type: 'metamorphic', label: 'Gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
-            { id: 'schist', type: 'metamorphic', label: 'Schist', hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
-            { id: 'phyllite', type: 'metamorphic', label: 'Phyllite', hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#6b7280', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
+            { id: 'granite', type: 'igneous', label: t('stem.rocks.granite'), hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
+            { id: 'basalt', type: 'igneous', label: t('stem.rocks.basalt'), hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock \u2014 the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
+            { id: 'obsidian', type: 'igneous', label: t('stem.rocks.obsidian'), hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
+            { id: 'pumice', type: 'igneous', label: t('stem.rocks.pumice'), hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
+            { id: 'rhyolite', type: 'igneous', label: t('stem.rocks.rhyolite'), hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
+            { id: 'diorite', type: 'igneous', label: t('stem.rocks.diorite'), hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
+            { id: 'andesite', type: 'igneous', label: t('stem.rocks.andesite'), hardness: 6, texture: 'fine-grained', grainColors: ['#6b7280', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
+            { id: 'tuff', type: 'igneous', label: t('stem.rocks.tuff'), hardness: 4, texture: 'vesicular', grainColors: ['#fde68a', '#d6d3d1', '#a8a29e', '#e7e5e4'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
+            { id: 'sandstone', type: 'sedimentary', label: t('stem.rocks.sandstone'), hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
+            { id: 'limestone', type: 'sedimentary', label: t('stem.rocks.limestone'), hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
+            { id: 'shale', type: 'sedimentary', label: t('stem.rocks.shale'), hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
+            { id: 'conglom', type: 'sedimentary', label: t('stem.rocks.conglomerate'), hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
+            { id: 'chalk', type: 'sedimentary', label: t('stem.rocks.chalk'), hardness: 1, texture: 'bioclastic', grainColors: ['#fafafa', '#f5f5f4', '#e5e7eb', '#ffffff'], desc: 'Soft, white limestone made of microscopic plankton shells (coccoliths). The White Cliffs of Dover are chalk. Extremely fine-grained \u2014 each grain is a tiny fossil!', uses: 'Blackboard chalk, whiting, soil amendment, toothpaste' },
+            { id: 'travertine', type: 'sedimentary', label: t('stem.rocks.travertine'), hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
+            { id: 'marble', type: 'metamorphic', label: t('stem.rocks.marble'), hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
+            { id: 'slate', type: 'metamorphic', label: t('stem.rocks.slate'), hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation \u2014 splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
+            { id: 'quartzite', type: 'metamorphic', label: t('stem.rocks.quartzite'), hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard \u2014 even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
+            { id: 'gneiss', type: 'metamorphic', label: t('stem.rocks.gneiss'), hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
+            { id: 'schist', type: 'metamorphic', label: t('stem.rocks.schist'), hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
+            { id: 'phyllite', type: 'metamorphic', label: t('stem.rocks.phyllite'), hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#6b7280', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
           ];
 
           // ── Mineral data ──
           const MINERALS = [
-            { id: 'quartz', label: 'Quartz', hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric \u2014 when squeezed, it generates an electric charge. This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
-            { id: 'feldspar', label: 'Feldspar', hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', color: '#fce7f3', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
-            { id: 'mica', label: 'Mica (Muscovite)', hardness: 2.5, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia \u2014 hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
-            { id: 'calcite', label: 'Calcite', hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', color: '#f0fdf4', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage \u2014 always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
-            { id: 'halite', label: 'Halite', hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#ede9fe', formula: 'NaCl', desc: 'Common table salt! Forms perfect cubic crystals. Tastes salty (one of the few minerals safe to taste-test). Forms when shallow seas or salt lakes evaporate. Can be colorless, white, pink, blue, or red depending on impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'Roman soldiers were sometimes paid in salt \u2014 the word "salary" comes from the Latin "salarium" (salt money). The phrase "worth your salt" comes from this tradition!', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
-            { id: 'pyrite', label: 'Pyrite', hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#fef3c7', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
-            { id: 'talc', label: 'Talc', hardness: 1, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral \u2014 #1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
-            { id: 'diamond', label: 'Diamond', hardness: 10, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon \u2014 the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
-            { id: 'magnetite', label: 'Magnetite', hardness: 5.5, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
-            { id: 'hematite', label: 'Hematite', hardness: 5.5, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'The red color of Mars comes from hematite! NASA\u2019s rovers have confirmed that the Martian soil is rich in iron oxide. Hematite was also used by prehistoric humans as the first paint pigment \u2014 cave paintings from 40,000 years ago used ground hematite!', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
-            { id: 'garnet', label: 'Garnet', hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
-            { id: 'olivine', label: 'Olivine', hardness: 6.5, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine makes up most of the upper mantle of Earth! There is more olivine inside Earth than any other mineral. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
-            { id: 'fluorite', label: 'Fluorite', hardness: 4, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world" \u2014 comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England \u2014 "Blue John"), and Illinois (USA).' },
-            { id: 'galena', label: 'Galena', hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#6b7280', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage \u2014 fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA \u2014 largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
-            { id: 'gypsum', label: 'Gypsum', hardness: 2, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#faf5ff', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons \u2014 the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
-            { id: 'sulfur', label: 'Sulfur', hardness: 2, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color and rotten-egg smell when heated. Very light and brittle. Low melting point (115\u00B0C). Burns with a blue flame producing SO\u2082 gas. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
-            { id: 'corundum', label: 'Corundum', hardness: 9, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities \u2014 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
-            { id: 'topaz', label: 'Topaz', hardness: 8, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The largest uncut topaz crystal ever found (the "El-Dorado Topaz" from Brazil) weighs 6.2 kg (31,000 carats)! Imperial topaz (rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
+            { id: 'quartz', label: t('stem.rocks.quartz'), hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e0f2fe', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric \u2014 when squeezed, it generates an electric charge. This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
+            { id: 'feldspar', label: t('stem.rocks.feldspar'), hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', color: '#fce7f3', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
+            { id: 'mica', label: t('stem.rocks.mica_muscovite'), hardness: 2.5, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', color: '#fef9c3', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia \u2014 hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
+            { id: 'calcite', label: t('stem.rocks.calcite'), hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', color: '#f0fdf4', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage \u2014 always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
+            { id: 'halite', label: t('stem.rocks.halite'), hardness: 2.5, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#ede9fe', formula: t('stem.periodic.nacl'), desc: 'Common table salt! Forms perfect cubic crystals. Tastes salty (one of the few minerals safe to taste-test). Forms when shallow seas or salt lakes evaporate. Can be colorless, white, pink, blue, or red depending on impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'Roman soldiers were sometimes paid in salt \u2014 the word "salary" comes from the Latin "salarium" (salt money). The phrase "worth your salt" comes from this tradition!', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
+            { id: 'pyrite', label: t('stem.rocks.pyrite'), hardness: 6.5, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#fef3c7', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
+            { id: 'talc', label: t('stem.rocks.talc'), hardness: 1, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', color: '#f0fdf4', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral \u2014 #1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
+            { id: 'diamond', label: t('stem.rocks.diamond'), hardness: 10, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon \u2014 the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
+            { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
+            { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'The red color of Mars comes from hematite! NASA\u2019s rovers have confirmed that the Martian soil is rich in iron oxide. Hematite was also used by prehistoric humans as the first paint pigment \u2014 cave paintings from 40,000 years ago used ground hematite!', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
+            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
+            { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine makes up most of the upper mantle of Earth! There is more olivine inside Earth than any other mineral. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
+            { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world" \u2014 comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England \u2014 "Blue John"), and Illinois (USA).' },
+            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#6b7280', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage \u2014 fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA \u2014 largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
+            { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#faf5ff', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons \u2014 the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
+            { id: 'sulfur', label: t('stem.periodic.sulfur'), hardness: 2, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color and rotten-egg smell when heated. Very light and brittle. Low melting point (115\u00B0C). Burns with a blue flame producing SO\u2082 gas. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
+            { id: 'corundum', label: t('stem.rocks.corundum'), hardness: 9, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities \u2014 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
+            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The largest uncut topaz crystal ever found (the "El-Dorado Topaz" from Brazil) weighs 6.2 kg (31,000 carats)! Imperial topaz (rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
           ];
           // ── Quiz bank ──
           const QUIZ_BANK = [
-            { q: 'Which rock type forms from cooled magma?', a: 'Igneous', options: ['Igneous', 'Sedimentary', 'Metamorphic', 'Organic'] },
+            { q: 'Which rock type forms from cooled magma?', a: t('stem.rocks.igneous'), options: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic'), 'Organic'] },
             { q: 'What process turns sediment into sedimentary rock?', a: 'Compaction and cementation', options: ['Compaction and cementation', 'Melting', 'Cooling', 'Erosion'] },
-            { q: 'Marble is a metamorphic form of which rock?', a: 'Limestone', options: ['Limestone', 'Sandstone', 'Granite', 'Basalt'] },
-            { q: 'Which mineral is the hardest on the Mohs scale?', a: 'Diamond', options: ['Diamond', 'Quartz', 'Corundum', 'Topaz'] },
-            { q: 'What is the softest mineral?', a: 'Talc', options: ['Talc', 'Gypsum', 'Calcite', 'Halite'] },
+            { q: 'Marble is a metamorphic form of which rock?', a: t('stem.rocks.limestone'), options: [t('stem.rocks.limestone'), t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.basalt')] },
+            { q: 'Which mineral is the hardest on the Mohs scale?', a: t('stem.rocks.diamond'), options: [t('stem.rocks.diamond'), t('stem.rocks.quartz'), t('stem.rocks.corundum'), t('stem.rocks.topaz')] },
+            { q: 'What is the softest mineral?', a: t('stem.rocks.talc'), options: [t('stem.rocks.talc'), t('stem.rocks.gypsum'), t('stem.rocks.calcite'), t('stem.rocks.halite')] },
             { q: 'Obsidian forms when lava cools...', a: 'Very quickly', options: ['Very quickly', 'Very slowly', 'Underground', 'Underwater'] },
-            { q: 'Which rock can float on water?', a: 'Pumice', options: ['Pumice', 'Basalt', 'Marble', 'Granite'] },
-            { q: 'What type of rock is shale?', a: 'Sedimentary', options: ['Sedimentary', 'Igneous', 'Metamorphic', 'Mineral'] },
+            { q: 'Which rock can float on water?', a: t('stem.rocks.pumice'), options: [t('stem.rocks.pumice'), t('stem.rocks.basalt'), t('stem.rocks.marble'), t('stem.rocks.granite')] },
+            { q: 'What type of rock is shale?', a: t('stem.rocks.sedimentary'), options: [t('stem.rocks.sedimentary'), t('stem.rocks.igneous'), t('stem.rocks.metamorphic'), 'Mineral'] },
             { q: 'Pyrite is also known as...', a: "Fool's gold", options: ["Fool's gold", "White gold", "Rose gold", "Black gold"] },
-            { q: 'Which rock shows distinct banding?', a: 'Gneiss', options: ['Gneiss', 'Granite', 'Basalt', 'Slate'] },
-            { q: 'Limestone fizzes when you add...', a: 'Acid', options: ['Acid', 'Water', 'Salt', 'Oil'] },
-            { q: 'Quartzite is metamorphosed...', a: 'Sandstone', options: ['Sandstone', 'Limestone', 'Shale', 'Granite'] },
-            { q: 'Rhyolite is the extrusive equivalent of...', a: 'Granite', options: ['Granite', 'Basalt', 'Gabbro', 'Diorite'] },
-            { q: 'Which mineral is naturally magnetic?', a: 'Magnetite', options: ['Magnetite', 'Hematite', 'Pyrite', 'Galena'] },
-            { q: 'Ruby and sapphire are both varieties of...', a: 'Corundum', options: ['Corundum', 'Quartz', 'Diamond', 'Topaz'] },
+            { q: 'Which rock shows distinct banding?', a: t('stem.rocks.gneiss'), options: [t('stem.rocks.gneiss'), t('stem.rocks.granite'), t('stem.rocks.basalt'), t('stem.rocks.slate')] },
+            { q: 'Limestone fizzes when you add...', a: 'Acid', options: ['Acid', t('stem.chem_balance.water'), 'Salt', 'Oil'] },
+            { q: 'Quartzite is metamorphosed...', a: t('stem.rocks.sandstone'), options: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.shale'), t('stem.rocks.granite')] },
+            { q: 'Rhyolite is the extrusive equivalent of...', a: t('stem.rocks.granite'), options: [t('stem.rocks.granite'), t('stem.rocks.basalt'), 'Gabbro', t('stem.rocks.diorite')] },
+            { q: 'Which mineral is naturally magnetic?', a: t('stem.rocks.magnetite'), options: [t('stem.rocks.magnetite'), t('stem.rocks.hematite'), t('stem.rocks.pyrite'), t('stem.rocks.galena')] },
+            { q: 'Ruby and sapphire are both varieties of...', a: t('stem.rocks.corundum'), options: [t('stem.rocks.corundum'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.topaz')] },
             { q: 'What gives Mars its red color?', a: 'Hematite (iron oxide)', options: ['Hematite (iron oxide)', 'Rust from water', 'Red sand', 'Volcanic dust'] },
-            { q: 'The word "fluorescence" comes from which mineral?', a: 'Fluorite', options: ['Fluorite', 'Quartz', 'Diamond', 'Calcite'] },
+            { q: 'The word "fluorescence" comes from which mineral?', a: t('stem.rocks.fluorite'), options: [t('stem.rocks.fluorite'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.calcite')] },
             { q: 'Chalk is made of tiny shells from...', a: 'Microscopic plankton', options: ['Microscopic plankton', 'Snails', 'Clams', 'Coral'] },
             { q: 'Diorite has what distinctive appearance?', a: 'Salt and pepper', options: ['Salt and pepper', 'Solid black', 'Striped', 'Glassy'] },
-            { q: 'Which mineral was used in early crystal radios?', a: 'Galena', options: ['Galena', 'Quartz', 'Diamond', 'Pyrite'] },
-            { q: 'The green beaches of Hawaii are made of...', a: 'Olivine', options: ['Olivine', 'Emerald', 'Jade', 'Green glass'] },
+            { q: 'Which mineral was used in early crystal radios?', a: t('stem.rocks.galena'), options: [t('stem.rocks.galena'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.pyrite')] },
+            { q: 'The green beaches of Hawaii are made of...', a: t('stem.rocks.olivine'), options: [t('stem.rocks.olivine'), 'Emerald', 'Jade', 'Green glass'] },
             { q: 'Which building was made from travertine?', a: 'The Colosseum', options: ['The Colosseum', 'The Pyramids', 'Stonehenge', 'Taj Mahal'] },
             { q: 'Schist gets its sparkly appearance from...', a: 'Aligned mica flakes', options: ['Aligned mica flakes', 'Quartz crystals', 'Gold inclusions', 'Diamond dust'] },
             { q: 'What makes quartz watches accurate?', a: 'Piezoelectric effect', options: ['Piezoelectric effect', 'Magnetic field', 'Battery power', 'High density'] },
             { q: 'Where are the largest crystals ever found?', a: 'Naica Mine, Mexico', options: ['Naica Mine, Mexico', 'Mount Everest', 'Grand Canyon', 'Sahara Desert'] },
-            { q: 'The word "salary" comes from the Latin word for...', a: 'Salt', options: ['Salt', 'Silver', 'Gold', 'Stone'] },
+            { q: 'The word "salary" comes from the Latin word for...', a: 'Salt', options: ['Salt', t('stem.periodic.silver'), t('stem.periodic.gold'), 'Stone'] },
             { q: 'Andesite is named after...', a: 'The Andes Mountains', options: ['The Andes Mountains', 'Andean people', 'A scientist named Ande', 'An ancient city'] },
             { q: 'Tuff is made from consolidated...', a: 'Volcanic ash', options: ['Volcanic ash', 'River sand', 'Coral reef', 'Glacier ice'] },
-            { q: 'Which metamorphic rock comes between slate and schist?', a: 'Phyllite', options: ['Phyllite', 'Marble', 'Gneiss', 'Quartzite'] },
+            { q: 'Which metamorphic rock comes between slate and schist?', a: t('stem.rocks.phyllite'), options: [t('stem.rocks.phyllite'), t('stem.rocks.marble'), t('stem.rocks.gneiss'), t('stem.rocks.quartzite')] },
             { q: 'Garnet crystals commonly have how many sides?', a: '12 (dodecahedral)', options: ['12 (dodecahedral)', '4 (tetrahedral)', '6 (cubic)', '8 (octahedral)'] }
           ];
 
@@ -9312,7 +9834,7 @@
               ctx.fillText('Weathering', W * 0.36, H * 0.38);
               // Sedimentary → (heat/pressure) → Metamorphic
               ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.7); ctx.quadraticCurveTo(W * 0.72, H * 0.65, W * 0.76, H * 0.62); ctx.stroke();
-              ctx.fillText('Heat & Pressure', W * 0.66, H * 0.62);
+              ctx.fillText(t('stem.rock_cycle.heat_pressure'), W * 0.66, H * 0.62);
               // Metamorphic → (melting) → Igneous (magma)
               ctx.beginPath(); ctx.moveTo(W * 0.65, H * 0.85); ctx.quadraticCurveTo(W * 0.45, H * 0.88, W * 0.28, H * 0.78); ctx.stroke();
               ctx.fillText('Melting', W * 0.42, H * 0.9);
@@ -9603,9 +10125,9 @@
                 // Properties
                 React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-3" },
                   [
-                    { label: 'Hardness (Mohs)', value: selRock.hardness + '/10', icon: '💪' },
-                    { label: 'Texture', value: selRock.texture, icon: '🔍' },
-                    { label: 'Uses', value: selRock.uses, icon: '🏗️' }
+                    { label: t('stem.rocks.hardness_mohs'), value: selRock.hardness + '/10', icon: '💪' },
+                    { label: t('stem.rocks.texture'), value: selRock.texture, icon: '🔍' },
+                    { label: t('stem.rocks.uses'), value: selRock.uses, icon: '🏗️' }
                   ].map(function (prop) {
                     return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
                       React.createElement("p", { className: "text-[10px] text-slate-400 font-bold" }, prop.icon + " " + prop.label),
@@ -9655,9 +10177,9 @@
                 selMineral.desc && React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selMineral.desc),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                   [
-                    { label: 'Hardness', value: selMineral.hardness + ' / 10', icon: '\uD83D\uDCAA' },
-                    { label: 'Streak', value: selMineral.streak, icon: '\u270F\uFE0F' },
-                    { label: 'Luster', value: selMineral.luster, icon: '\u2728' },
+                    { label: t('stem.rocks.hardness'), value: selMineral.hardness + ' / 10', icon: '\uD83D\uDCAA' },
+                    { label: t('stem.rocks.streak'), value: selMineral.streak, icon: '\u270F\uFE0F' },
+                    { label: t('stem.rocks.luster'), value: selMineral.luster, icon: '\u2728' },
                     { label: 'Crystal System', value: selMineral.crystal, icon: '\uD83D\uDD37' }
                   ].map(function (prop) {
                     return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
@@ -9732,8 +10254,8 @@
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
               React.createElement("button", {
                 onClick: function () {
-                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: 'Rocks' + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
-                  addToast('\uD83D\uDCF8 Rocks snapshot saved!', 'success');
+                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: t('stem.rocks.rocks') + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
+                  addToast(t('stem.rocks.ud83dudcf8_rocks_snapshot_saved'), 'success');
                 }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
               }, "\uD83D\uDCF8 Snapshot")
             )
@@ -9748,12 +10270,12 @@
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
 
           const STAGES = [
-            { id: 'evaporation', label: 'Evaporation', emoji: '\u2600', color: '#f59e0b', desc: 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water. About 90% of evaporation comes from oceans.', funFact: 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!' },
-            { id: 'condensation', label: 'Condensation', emoji: '\u2601', color: '#64748b', desc: 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.', funFact: 'A typical cumulus cloud weighs about 500,000 kg \u2014 as heavy as 100 elephants!' },
-            { id: 'precipitation', label: 'Precipitation', emoji: '\uD83C\uDF27', color: '#3b82f6', desc: 'When cloud droplets combine and grow heavy enough, they fall as rain, snow, sleet, or hail. A raindrop falls at about 20 mph and contains about a million cloud droplets.', funFact: 'The wettest place on Earth is Mawsynram, India, with ~11,871 mm of rain per year.' },
-            { id: 'collection', label: 'Collection', emoji: '\uD83C\uDF0A', color: '#0ea5e9', desc: 'Water gathers in oceans, rivers, lakes, and underground aquifers. 97% of Earth\'s water is in the oceans. Only 3% is freshwater, and most of that is locked in ice caps.', funFact: 'If all of Earth\'s water fit in a gallon jug, fresh available water would be just one tablespoon.' },
-            { id: 'transpiration', label: 'Transpiration', emoji: '\uD83C\uDF3F', color: '#22c55e', desc: 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A single large oak tree can transpire 150,000 liters per year.', funFact: 'An acre of corn transpires about 11,400 liters of water per day!' },
-            { id: 'infiltration', label: 'Infiltration', emoji: '\uD83E\uDEB4', color: '#92400e', desc: 'Water soaks through soil and porous rock layers, replenishing underground aquifers that feed wells, springs, and rivers. This process naturally filters the water.', funFact: 'It can take hundreds or thousands of years for water to travel through an aquifer.' },
+            { id: 'evaporation', label: t('stem.water_cycle.evaporation'), emoji: '\u2600', color: '#f59e0b', desc: 'Heat from the sun causes water to change from liquid to gas (water vapor). Oceans, lakes, and rivers provide most of the evaporated water. About 90% of evaporation comes from oceans.', funFact: 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!' },
+            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: '#64748b', desc: 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.', funFact: 'A typical cumulus cloud weighs about 500,000 kg \u2014 as heavy as 100 elephants!' },
+            { id: 'precipitation', label: t('stem.water_cycle.precipitation'), emoji: '\uD83C\uDF27', color: '#3b82f6', desc: 'When cloud droplets combine and grow heavy enough, they fall as rain, snow, sleet, or hail. A raindrop falls at about 20 mph and contains about a million cloud droplets.', funFact: 'The wettest place on Earth is Mawsynram, India, with ~11,871 mm of rain per year.' },
+            { id: 'collection', label: t('stem.water_cycle.collection'), emoji: '\uD83C\uDF0A', color: '#0ea5e9', desc: 'Water gathers in oceans, rivers, lakes, and underground aquifers. 97% of Earth\'s water is in the oceans. Only 3% is freshwater, and most of that is locked in ice caps.', funFact: 'If all of Earth\'s water fit in a gallon jug, fresh available water would be just one tablespoon.' },
+            { id: 'transpiration', label: t('stem.water_cycle.transpiration'), emoji: '\uD83C\uDF3F', color: '#22c55e', desc: 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A single large oak tree can transpire 150,000 liters per year.', funFact: 'An acre of corn transpires about 11,400 liters of water per day!' },
+            { id: 'infiltration', label: t('stem.water_cycle.infiltration'), emoji: '\uD83E\uDEB4', color: '#92400e', desc: 'Water soaks through soil and porous rock layers, replenishing underground aquifers that feed wells, springs, and rivers. This process naturally filters the water.', funFact: 'It can take hundreds or thousands of years for water to travel through an aquifer.' },
           ];
           const sel = STAGES.find(s => s.id === (d.activeStage || 'evaporation'));
 
@@ -10106,7 +10628,7 @@
                 onClick: function () {
                   var WC_QS = [
                     { q: 'What drives evaporation?', a: 'Solar energy', opts: ['Wind', 'Solar energy', 'Gravity', 'Moon'] },
-                    { q: 'What forms clouds?', a: 'Condensation', opts: ['Evaporation', 'Precipitation', 'Condensation', 'Infiltration'] },
+                    { q: 'What forms clouds?', a: t('stem.water_cycle.condensation'), opts: [t('stem.water_cycle.evaporation'), t('stem.water_cycle.precipitation'), t('stem.water_cycle.condensation'), t('stem.water_cycle.infiltration')] },
                     { q: 'Where does most evaporation occur?', a: 'Oceans', opts: ['Lakes', 'Rivers', 'Oceans', 'Soil'] },
                     { q: 'What is transpiration?', a: 'Water release from plants', opts: ['Rain falling', 'Water release from plants', 'Snow melting', 'Rivers flowing'] },
                     { q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'] },
@@ -10137,7 +10659,7 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : 'Water Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.water_cycle.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
 
@@ -10150,7 +10672,7 @@
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, rockCycle: { ...prev.rockCycle, [key]: val } }));
           const ROCKS = [
             {
-              id: 'igneous', label: 'Igneous', emoji: '\uD83C\uDF0B', color: '#ef4444', glow: '#fca5a5',
+              id: 'igneous', label: t('stem.rocks.igneous'), emoji: '\uD83C\uDF0B', color: '#ef4444', glow: '#fca5a5',
               desc: 'Formed when magma or lava cools and solidifies. Intrusive igneous rocks (granite) cool slowly underground with large crystals. Extrusive rocks (basalt) cool quickly at the surface with fine grains.',
               examples: 'Granite, Basalt, Obsidian, Pumice, Rhyolite, Gabbro',
               hardness: '6\u20137 (Mohs)', crystals: 'Visible in intrusive; microscopic in extrusive',
@@ -10158,7 +10680,7 @@
               funFact: 'Obsidian fractures so cleanly it was used for Stone Age scalpels \u2014 sharper than modern steel!'
             },
             {
-              id: 'sedimentary', label: 'Sedimentary', emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a',
+              id: 'sedimentary', label: t('stem.rocks.sedimentary'), emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a',
               desc: 'Formed from layers of sediment (sand, mud, shells, organic matter) compressed and cemented over millions of years. The only rock type that commonly contains fossils, making it essential for paleontology.',
               examples: 'Sandstone, Limestone, Shale, Chalk, Conglomerate, Coal',
               hardness: '3\u20136 (Mohs)', crystals: 'Layered grain structure, not crystalline',
@@ -10166,7 +10688,7 @@
               funFact: 'The White Cliffs of Dover are chalk \u2014 made from trillions of microscopic coccolithophore shells!'
             },
             {
-              id: 'metamorphic', label: 'Metamorphic', emoji: '\uD83D\uDC8E', color: '#8b5cf6', glow: '#c4b5fd',
+              id: 'metamorphic', label: t('stem.rocks.metamorphic'), emoji: '\uD83D\uDC8E', color: '#8b5cf6', glow: '#c4b5fd',
               desc: 'Formed when existing rocks are transformed by extreme heat and/or pressure deep underground. The minerals recrystallize without melting, creating new textures and sometimes foliation (layered banding).',
               examples: 'Marble, Slate, Quartzite, Gneiss, Schist, Phyllite',
               hardness: '6\u20138 (Mohs)', crystals: 'Recrystallized; often banded (foliated)',
@@ -10175,12 +10697,12 @@
             },
           ];
           const PROCESSES = [
-            { from: 'igneous', to: 'sedimentary', label: 'Weathering & Erosion', emoji: '\uD83C\uDF2C\uFE0F', desc: 'Wind, water, ice, and biological activity break igneous rocks into sediments. Rivers carry fragments to basins where they settle in layers.' },
-            { from: 'sedimentary', to: 'metamorphic', label: 'Heat & Pressure', emoji: '\uD83D\uDD25', desc: 'Deep burial subjects sedimentary rock to intense heat (200\u2013800\u00B0C) and pressure, transforming its mineral structure without melting.' },
-            { from: 'metamorphic', to: 'igneous', label: 'Melting & Cooling', emoji: '\uD83C\uDF0B', desc: 'Extreme heat (>800\u00B0C) melts metamorphic rock into magma. When it cools \u2014 slowly underground or quickly at the surface \u2014 new igneous rock forms.' },
-            { from: 'igneous', to: 'metamorphic', label: 'Heat & Pressure', emoji: '\u2B07\uFE0F', desc: 'Igneous rock can be buried deep and subjected to extreme conditions, directly transforming into metamorphic rock.' },
-            { from: 'sedimentary', to: 'igneous', label: 'Melting & Cooling', emoji: '\uD83C\uDF0B', desc: 'Under extreme heat, sedimentary rock can melt into magma and re-solidify as igneous rock.' },
-            { from: 'metamorphic', to: 'sedimentary', label: 'Weathering & Erosion', emoji: '\uD83C\uDF2C\uFE0F', desc: 'Metamorphic rocks exposed at the surface weather and erode into sediments over time.' },
+            { from: 'igneous', to: 'sedimentary', label: t('stem.rock_cycle.weathering_erosion'), emoji: '\uD83C\uDF2C\uFE0F', desc: 'Wind, water, ice, and biological activity break igneous rocks into sediments. Rivers carry fragments to basins where they settle in layers.' },
+            { from: 'sedimentary', to: 'metamorphic', label: t('stem.rock_cycle.heat_pressure'), emoji: '\uD83D\uDD25', desc: 'Deep burial subjects sedimentary rock to intense heat (200\u2013800\u00B0C) and pressure, transforming its mineral structure without melting.' },
+            { from: 'metamorphic', to: 'igneous', label: t('stem.rock_cycle.melting_cooling'), emoji: '\uD83C\uDF0B', desc: 'Extreme heat (>800\u00B0C) melts metamorphic rock into magma. When it cools \u2014 slowly underground or quickly at the surface \u2014 new igneous rock forms.' },
+            { from: 'igneous', to: 'metamorphic', label: t('stem.rock_cycle.heat_pressure'), emoji: '\u2B07\uFE0F', desc: 'Igneous rock can be buried deep and subjected to extreme conditions, directly transforming into metamorphic rock.' },
+            { from: 'sedimentary', to: 'igneous', label: t('stem.rock_cycle.melting_cooling'), emoji: '\uD83C\uDF0B', desc: 'Under extreme heat, sedimentary rock can melt into magma and re-solidify as igneous rock.' },
+            { from: 'metamorphic', to: 'sedimentary', label: t('stem.rock_cycle.weathering_erosion'), emoji: '\uD83C\uDF2C\uFE0F', desc: 'Metamorphic rocks exposed at the surface weather and erode into sediments over time.' },
           ];
           const sel = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
 
@@ -10471,16 +10993,16 @@
               React.createElement("button", {
                 onClick: function () {
                   var RC_QS = [
-                    { q: 'Which rock type forms from cooled magma/lava?', a: 'Igneous', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
-                    { q: 'Which rock type often contains fossils?', a: 'Sedimentary', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
-                    { q: 'Which rock type forms under heat and pressure?', a: 'Metamorphic', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
-                    { q: 'Granite is an example of which rock type?', a: 'Igneous', opts: ['Igneous', 'Sedimentary', 'Metamorphic'] },
+                    { q: 'Which rock type forms from cooled magma/lava?', a: t('stem.rocks.igneous'), opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')] },
+                    { q: 'Which rock type often contains fossils?', a: t('stem.rocks.sedimentary'), opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')] },
+                    { q: 'Which rock type forms under heat and pressure?', a: t('stem.rocks.metamorphic'), opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')] },
+                    { q: 'Granite is an example of which rock type?', a: t('stem.rocks.igneous'), opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')] },
                     { q: 'Marble forms from which rock?', a: 'Limestone (sedimentary)', opts: ['Granite (igneous)', 'Limestone (sedimentary)', 'Basalt (igneous)'] },
                     { q: 'What breaks rocks into sediment?', a: 'Weathering & erosion', opts: ['Heat & pressure', 'Weathering & erosion', 'Melting'] },
                     { q: 'What must happen for metamorphic rock to become igneous?', a: 'It must melt, then cool', opts: ['It must be weathered', 'It must be compressed', 'It must melt, then cool'] },
                     { q: 'What is the Mohs scale used to measure?', a: 'Mineral hardness', opts: ['Rock age', 'Mineral hardness', 'Crystal size'] },
-                    { q: 'Which rock is used for countertops?', a: 'Granite', opts: ['Sandstone', 'Granite', 'Slate'] },
-                    { q: 'The White Cliffs of Dover are made of which sedimentary rock?', a: 'Chalk', opts: ['Sandstone', 'Limestone', 'Chalk'] },
+                    { q: 'Which rock is used for countertops?', a: t('stem.rocks.granite'), opts: [t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.slate')] },
+                    { q: 'The White Cliffs of Dover are made of which sedimentary rock?', a: t('stem.rocks.chalk'), opts: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.chalk')] },
                   ];
                   var q = RC_QS[Math.floor(Math.random() * RC_QS.length)];
                   upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
@@ -10505,7 +11027,7 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : 'Rock Cycle', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.rock_quiz.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
 
@@ -10931,7 +11453,7 @@
               })
             ),
             React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
-              [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83E\uDD8A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: 'Prey Birth', min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: 'Pred Death', min: 0.01, max: 0.5, step: 0.01 }].map(s =>
+              [{ k: 'prey0', label: '\uD83D\uDC07 Prey Start', min: 10, max: 200, step: 5 }, { k: 'pred0', label: '\uD83E\uDD8A Predators', min: 5, max: 100, step: 5 }, { k: 'preyBirth', label: t('stem.ecosystem.prey_birth'), min: 0.01, max: 0.5, step: 0.01 }, { k: 'predDeath', label: t('stem.ecosystem.pred_death'), min: 0.01, max: 0.5, step: 0.01 }].map(s =>
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
                   React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
                   React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k]),
@@ -10974,7 +11496,7 @@
               ),
               React.createElement("p", { className: "mt-2 text-xs text-slate-400 italic text-center" }, "\uD83D\uDCA1 Closed loops = stable Lotka-Volterra oscillations. Spiraling inward = damped; outward = unstable.")
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'eco-' + Date.now(), tool: 'ecosystem', label: 'Ecosystem', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'eco-' + Date.now(), tool: 'ecosystem', label: 'Ecosystem', data: { ...d }, timestamp: Date.now() }]); addToast(t('stem.ecosystem.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
 
@@ -11077,8 +11599,8 @@
             ),
             // Fraction inputs
             React.createElement("div", { className: "grid grid-cols-2 gap-6 mb-3" },
-              [{ label: 'Fraction A', num: d.num1, den: d.den1, nk: 'num1', dk: 'den1', color: '#3b82f6', sn: sn1, sd: sd1, val: val1 },
-              { label: 'Fraction B', num: d.num2, den: d.den2, nk: 'num2', dk: 'den2', color: '#ef4444', sn: sn2, sd: sd2, val: val2 }].map(frac =>
+              [{ label: t('stem.fractions.fraction_a'), num: d.num1, den: d.den1, nk: 'num1', dk: 'den1', color: '#3b82f6', sn: sn1, sd: sd1, val: val1 },
+              { label: t('stem.fractions.fraction_b'), num: d.num2, den: d.den2, nk: 'num2', dk: 'den2', color: '#ef4444', sn: sn2, sd: sd2, val: val2 }].map(frac =>
                 React.createElement("div", { key: frac.label, className: "bg-white rounded-xl border p-4" },
                   React.createElement("h4", { className: "text-sm font-bold text-slate-600 mb-2" }, frac.label),
                   React.createElement("div", { className: "flex items-center justify-center gap-2 mb-3" },
@@ -11191,10 +11713,217 @@
                 )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            // ── Quiz: Which Fraction is Larger? ──
+            (() => {
+              var fqQuiz = d.fqQuiz || null;
+              var fqScore = d.fqScore || 0;
+              var fqStreak = d.fqStreak || 0;
+              function makeFqQuiz() {
+                var n1 = Math.floor(Math.random() * 9) + 1, d1 = Math.floor(Math.random() * 8) + 2;
+                var n2 = Math.floor(Math.random() * 9) + 1, d2 = Math.floor(Math.random() * 8) + 2;
+                while (n1 / d1 === n2 / d2) { n2 = Math.floor(Math.random() * 9) + 1; d2 = Math.floor(Math.random() * 8) + 2; }
+                var answer = n1 / d1 > n2 / d2 ? n1 + '/' + d1 : n2 + '/' + d2;
+                var opts = [n1 + '/' + d1, n2 + '/' + d2, 'They are equal'];
+                return { n1: n1, d1: d1, n2: n2, d2: d2, answer: answer, opts: opts, answered: false };
+              }
+              return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("button", { onClick: function () { var q = makeFqQuiz(); upd('fqQuiz', q); upd('num1', q.n1); upd('den1', q.d1); upd('num2', q.n2); upd('den2', q.d2); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fqQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-600 text-white') + " hover:opacity-90 transition-all" }, fqQuiz ? '🔄 Next Round' : '⚡ Which is Larger?'),
+                  fqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + fqScore + ' | 🔥 ' + fqStreak)
+                ),
+                fqQuiz && !fqQuiz.answered && React.createElement("div", { className: "bg-orange-50 rounded-xl p-3 border border-orange-200" },
+                  React.createElement("p", { className: "text-sm font-bold text-orange-800 mb-2" }, 'Which fraction is larger?'),
+                  React.createElement("div", { className: "flex gap-2 justify-center" },
+                    fqQuiz.opts.map(function (opt) {
+                      return React.createElement("button", {
+                        key: opt, onClick: function () {
+                          var correct = opt === fqQuiz.answer;
+                          upd('fqQuiz', Object.assign({}, fqQuiz, { answered: true, chosen: opt }));
+                          upd('fqScore', fqScore + (correct ? 1 : 0)); upd('fqStreak', correct ? fqStreak + 1 : 0);
+                          if (correct) addToast(t('stem.fractions.correct') + fqQuiz.answer + ' is larger', 'success'); else addToast('❌ ' + fqQuiz.answer + ' is larger', 'error');
+                        }, className: "px-4 py-2 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all"
+                      }, opt);
+                    })
+                  )
+                ),
+                fqQuiz && fqQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold text-center " + (fqQuiz.chosen === fqQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, fqQuiz.chosen === fqQuiz.answer ? '✅ Correct! ' + fqQuiz.answer + ' ≈ ' + (fqQuiz.chosen === fqQuiz.n1 + '/' + fqQuiz.d1 ? (fqQuiz.n1 / fqQuiz.d1).toFixed(3) : (fqQuiz.n2 / fqQuiz.d2).toFixed(3)) : '❌ ' + fqQuiz.answer + ' is larger')
+              );
+            })(),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.fractions.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
 
+
+        // ═══════════════════════════════════════════════════════
+        // MATERIAL DECOMPOSER
+        // ═══════════════════════════════════════════════════════
+        stemLabTab === 'explore' && stemLabTool === 'decomposer' && (() => {
+          const d = labToolData.decomposer || {};
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, decomposer: { ...prev.decomposer, [key]: val } }));
+
+          // Material database with correct chemical formulas
+          const MATERIALS = [
+            { name: t('stem.chem_balance.water'), formula: 'H₂O', emoji: '💧', color: '#60a5fa', desc: 'The most essential molecule for life. Two hydrogen atoms bonded to one oxygen.', elements: [{ sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 2, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 1, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Liquid', molarMass: '18.015 g/mol', realUse: 'Covers 71% of Earth. Every living cell requires water.' },
+            { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), emoji: '🧂', color: '#a855f7', desc: 'Sodium chloride — an ionic crystal essential for nerve function.', elements: [{ sym: 'Na', name: t('stem.periodic.sodium'), num: 11, count: 1, color: '#a855f7', group: 'Alkali Metal', mass: '22.990' }, { sym: 'Cl', name: t('stem.periodic.chlorine'), num: 17, count: 1, color: '#22c55e', group: 'Halogen', mass: '35.453' }], bondType: 'Ionic', state: 'Solid', molarMass: '58.44 g/mol', realUse: 'Used in cooking, road de-icing, and IV fluids. Humans need ~5g daily.' },
+            { name: t('stem.decomposer.sugar_sucrose'), formula: 'C₁₂H₂₂O₁₁', emoji: '🍬', color: '#f59e0b', desc: 'A disaccharide made of glucose + fructose. 45 atoms in one molecule!', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 12, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 22, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 11, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Solid', molarMass: '342.30 g/mol', realUse: 'Plants make sucrose via photosynthesis. Your body breaks it into glucose for energy.' },
+            { name: t('stem.periodic.baking_soda'), formula: 'NaHCO₃', emoji: '🧁', color: '#fb923c', desc: 'Sodium bicarbonate — releases CO₂ when heated, making baked goods rise.', elements: [{ sym: 'Na', name: t('stem.periodic.sodium'), num: 11, count: 1, color: '#a855f7', group: 'Alkali Metal', mass: '22.990' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 1, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic + Covalent', state: 'Solid', molarMass: '84.01 g/mol', realUse: 'Used in baking, cleaning, antacids, and fire extinguishers.' },
+            { name: t('stem.periodic.rust'), formula: 'Fe₂O₃', emoji: '🟤', color: '#b45309', desc: 'Iron(III) oxide — what happens when iron reacts with oxygen and water.', elements: [{ sym: 'Fe', name: t('stem.periodic.iron'), num: 26, count: 2, color: '#fb923c', group: 'Transition Metal', mass: '55.845' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic', state: 'Solid', molarMass: '159.69 g/mol', realUse: 'Costs ~$7 billion/year in damage. Mars is red because of iron oxide on its surface!' },
+            { name: t('stem.periodic.carbon_dioxide'), formula: 'CO₂', emoji: '💨', color: '#94a3b8', desc: 'A greenhouse gas we exhale. Plants absorb it during photosynthesis.', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 2, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Gas', molarMass: '44.01 g/mol', realUse: 'Makes soda fizzy. Dry ice is solid CO₂ at -78.5°C. Key greenhouse gas.' },
+            { name: t('stem.chem_balance.ammonia'), formula: 'NH₃', emoji: '🧪', color: '#3b82f6', desc: t('stem.decomposer.a_pungent_compound_essential_for'), elements: [{ sym: 'N', name: t('stem.periodic.nitrogen'), num: 7, count: 1, color: '#3b82f6', group: 'Nonmetal', mass: '14.007' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 3, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }], bondType: 'Covalent', state: 'Gas', molarMass: '17.03 g/mol', realUse: 'Haber process makes 150M tons/year for fertilizer. Found in household cleaners.' },
+            { name: t('stem.periodic.glucose'), formula: 'C₆H₁₂O₆', emoji: '🩸', color: '#ef4444', desc: 'The primary energy source for cells. Your blood carries ~5g at all times.', elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 6, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 12, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 6, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Covalent', state: 'Solid', molarMass: '180.16 g/mol', realUse: 'Produced by photosynthesis. Cellular respiration breaks it for ATP energy.' },
+            { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCO₃', emoji: '🐚', color: '#fbbf24', desc: t('stem.decomposer.found_in_chalk_limestone_marble'), elements: [{ sym: 'Ca', name: t('stem.periodic.calcium'), num: 20, count: 1, color: '#f59e0b', group: 'Alkaline Earth Metal', mass: '40.078' }, { sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'O', name: t('stem.periodic.oxygen'), num: 8, count: 3, color: '#ef4444', group: 'Nonmetal', mass: '15.999' }], bondType: 'Ionic + Covalent', state: 'Solid', molarMass: '100.09 g/mol', realUse: 'Used in cement, antacids (Tums), and toothpaste. Coral reefs are made of this.' },
+            { name: t('stem.periodic.methane'), formula: 'CH₄', emoji: '🔥', color: '#22c55e', desc: t('stem.decomposer.the_simplest_hydrocarbon_natural_gas'), elements: [{ sym: 'C', name: t('stem.periodic.carbon'), num: 6, count: 1, color: '#1e293b', group: 'Nonmetal', mass: '12.011' }, { sym: 'H', name: t('stem.periodic.hydrogen'), num: 1, count: 4, color: '#60a5fa', group: 'Nonmetal', mass: '1.008' }], bondType: 'Covalent', state: 'Gas', molarMass: '16.04 g/mol', realUse: 'Burned for energy. Cow burps release ~100L/day. A potent greenhouse gas.' },
+          ];
+
+          var sel = MATERIALS.find(function (m) { return m.name === (d.selected || t('stem.chem_balance.water')); }) || MATERIALS[0];
+          var totalAtoms = sel.elements.reduce(function (s, e) { return s + e.count; }, 0);
+          var decomposed = d.decomposed || false;
+          var quizMode = d.quizMode || false;
+          var quizQ = d.quizQ || null;
+          var quizScore = d.quizScore || 0;
+          var quizStreak = d.quizStreak || 0;
+
+          // Generate quiz question
+          function makeQuiz() {
+            var types = ['formula', 'elements', 'count', 'bond'];
+            var type = types[Math.floor(Math.random() * types.length)];
+            var mat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
+            var q = {}, opts = [];
+            if (type === 'formula') {
+              q = { text: 'What is the chemical formula for ' + mat.name + '?', answer: mat.formula };
+              opts = [mat.formula];
+              while (opts.length < 4) { var r = MATERIALS[Math.floor(Math.random() * MATERIALS.length)].formula; if (opts.indexOf(r) < 0) opts.push(r); }
+            } else if (type === 'elements') {
+              var elNames = mat.elements.map(function (e) { return e.name; }).join(', ');
+              q = { text: mat.formula + ' contains which elements?', answer: elNames };
+              opts = [elNames];
+              while (opts.length < 4) { var rm = MATERIALS[Math.floor(Math.random() * MATERIALS.length)]; var rn = rm.elements.map(function (e) { return e.name; }).join(', '); if (opts.indexOf(rn) < 0) opts.push(rn); }
+            } else if (type === 'count') {
+              var tc = mat.elements.reduce(function (s, e) { return s + e.count; }, 0);
+              q = { text: 'How many total atoms in one molecule of ' + mat.formula + '?', answer: String(tc) };
+              opts = [String(tc)];
+              while (opts.length < 4) { var rv = String(tc + Math.floor(Math.random() * 10) - 4); if (rv !== String(tc) && parseInt(rv) > 0 && opts.indexOf(rv) < 0) opts.push(rv); }
+            } else {
+              q = { text: 'What type of bonding does ' + mat.name + ' have?', answer: mat.bondType };
+              opts = [mat.bondType]; var allBonds = ['Ionic', 'Covalent', 'Ionic + Covalent', 'Metallic'];
+              allBonds.forEach(function (b) { if (opts.indexOf(b) < 0 && opts.length < 4) opts.push(b); });
+            }
+            q.opts = opts.sort(function () { return Math.random() - 0.5; }); q.answered = false;
+            return q;
+          }
+
+          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "⚗️ Material Decomposer"),
+              React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, totalAtoms + " ATOMS")
+            ),
+            // Material selector chips
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
+              MATERIALS.map(function (m) {
+                return React.createElement("button", { key: m.name, onClick: function () { upd('selected', m.name); upd('decomposed', false); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (sel.name === m.name ? 'text-white shadow-md scale-105' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-amber-300'), style: sel.name === m.name ? { background: m.color } : {} }, m.emoji + ' ' + m.name);
+              })
+            ),
+            // Material info card
+            React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-amber-50 rounded-xl border-2 border-amber-200 p-4 mb-3" },
+              React.createElement("div", { className: "flex items-start gap-3 mb-3" },
+                React.createElement("span", { className: "text-4xl" }, sel.emoji),
+                React.createElement("div", { className: "flex-1" },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("h4", { className: "font-bold text-slate-800 text-lg" }, sel.name),
+                    React.createElement("span", { className: "px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-200 shadow-sm" }, sel.formula)
+                  ),
+                  React.createElement("p", { className: "text-xs text-slate-500 mt-1 leading-relaxed" }, sel.desc),
+                  React.createElement("div", { className: "flex gap-3 mt-2 text-[10px] font-bold" },
+                    React.createElement("span", { className: "text-cyan-600" }, "🔗 " + sel.bondType),
+                    React.createElement("span", { className: "text-indigo-600" }, "📊 " + sel.state),
+                    React.createElement("span", { className: "text-emerald-600" }, "⚖ " + sel.molarMass)
+                  )
+                )
+              ),
+              // Decompose button
+              React.createElement("button", { onClick: function () { upd('decomposed', !decomposed); }, className: "w-full py-2.5 rounded-xl text-sm font-bold transition-all " + (decomposed ? 'bg-amber-600 text-white shadow-lg' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md') }, decomposed ? "🔄 Reassemble" : "⚗️ Decompose into Elements"),
+              // Animated decomposition visual
+              React.createElement("div", { className: "mt-4 flex items-center justify-center gap-2 min-h-[80px] transition-all duration-500" },
+                decomposed ? sel.elements.map(function (el, i) {
+                  return React.createElement("div", { key: el.sym, className: "flex flex-col items-center animate-in zoom-in fade-in", style: { animationDelay: (i * 150) + 'ms', animationFillMode: 'both' } },
+                    React.createElement("div", { className: "w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg border-2 border-white/30", style: { background: el.color } },
+                      el.sym
+                    ),
+                    React.createElement("span", { className: "text-[10px] font-bold text-slate-600 mt-1" }, el.name),
+                    React.createElement("span", { className: "text-[10px] font-black px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full mt-0.5" }, "×" + el.count)
+                  );
+                }) : React.createElement("div", { className: "flex flex-col items-center" },
+                  React.createElement("div", { className: "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-lg border-2 border-amber-200", style: { background: 'linear-gradient(135deg, ' + sel.color + '22, ' + sel.color + '44)' } }, sel.emoji),
+                  React.createElement("span", { className: "mt-2 font-mono font-bold text-slate-700" }, sel.formula)
+                )
+              )
+            ),
+            // Element detail cards (shown when decomposed)
+            decomposed && React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3" },
+              sel.elements.map(function (el) {
+                return React.createElement("div", { key: el.sym, className: "bg-white rounded-xl border border-slate-200 p-3 hover:border-amber-300 transition-all hover:shadow-sm" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+                    React.createElement("div", { className: "w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-sm", style: { background: el.color } },
+                      React.createElement("div", { className: "text-center leading-tight" },
+                        React.createElement("div", { className: "text-[8px] opacity-70" }, el.num),
+                        React.createElement("div", { className: "text-base font-black" }, el.sym)
+                      )
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "font-bold text-sm text-slate-800" }, el.name),
+                      React.createElement("p", { className: "text-[10px] text-slate-400" }, el.group + " · " + el.mass + " u")
+                    ),
+                    React.createElement("span", { className: "ml-auto px-2 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold" }, "×" + el.count + " in " + sel.formula)
+                  ),
+                  // Atom count bar
+                  React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1" },
+                    React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.round(el.count / totalAtoms * 100) + '%', background: el.color } })
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, Math.round(el.count / totalAtoms * 100) + "% of atoms in this molecule")
+                );
+              })
+            ),
+            // Real-world fact
+            React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3" },
+              React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 uppercase tracking-wider mb-1" }, "🌍 Real World"),
+              React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.realUse)
+            ),
+            // Quiz mode
+            React.createElement("div", { className: "border-t border-slate-200 pt-3 mb-3" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("button", {
+                  onClick: function () {
+                    if (!quizMode) { upd('quizMode', true); upd('quizQ', makeQuiz()); }
+                    else { upd('quizQ', makeQuiz()); }
+                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (quizMode ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
+                }, quizMode ? "🔄 Next Question" : "🧠 Quiz Mode"),
+                quizScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "⭐ " + quizScore + " correct | 🔥 " + quizStreak + " streak")
+              ),
+              quizMode && quizQ && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200" },
+                React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, quizQ.text),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                  quizQ.opts.map(function (opt) {
+                    var isCorrect = opt === quizQ.answer;
+                    var wasChosen = quizQ.chosen === opt;
+                    var cls = !quizQ.answered ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50' : isCorrect ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : wasChosen && !isCorrect ? 'bg-red-100 text-red-800 border-red-300' : 'bg-slate-50 text-slate-400 border-slate-200';
+                    return React.createElement("button", {
+                      key: opt, disabled: quizQ.answered, onClick: function () {
+                        var correct = opt === quizQ.answer;
+                        upd('quizQ', Object.assign({}, quizQ, { answered: true, chosen: opt }));
+                        upd('quizScore', quizScore + (correct ? 1 : 0));
+                        upd('quizStreak', correct ? quizStreak + 1 : 0);
+                        if (correct) addToast(t('stem.decomposer.correct'), 'success');
+                        else addToast(t('stem.decomposer.the_answer_is') + quizQ.answer, 'error');
+                      }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
+                    }, opt);
+                  })
+                )
+              )
+            ),
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'dc-' + Date.now(), tool: 'decomposer', label: sel.name + ' (' + sel.formula + ')', data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.decomposer.snapshot_saved'), 'success'); }, className: "mt-1 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "📸 Snapshot")
+          );
+        })(),
 
         // ═══════════════════════════════════════════════════════
         // UNIT CONVERTER
@@ -11325,7 +12054,7 @@
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
                     var newHist = [entry].concat((history || []).slice(0, 4));
                     upd('history', newHist);
-                    addToast('\u2705 Saved to history!', 'success');
+                    addToast(t('stem.converter.u2705_saved_to_history'), 'success');
                   }, className: "px-4 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold hover:bg-indigo-100 transition-all"
                 }, "\uD83D\uDCBE Save")
               )
@@ -11383,7 +12112,7 @@
                 !d.quiz.answered
                   ? React.createElement("div", { className: "flex gap-2 items-center" },
                     React.createElement("input", {
-                      type: "number", placeholder: "Your answer...", className: "px-3 py-2 border border-cyan-200 rounded-lg font-mono text-sm w-32", onKeyDown: function (e) {
+                      type: "number", placeholder: t('stem.converter.your_answer'), className: "px-3 py-2 border border-cyan-200 rounded-lg font-mono text-sm w-32", onKeyDown: function (e) {
                         if (e.key === 'Enter') {
                           var ans = parseFloat(e.target.value);
                           var correct = Math.abs(ans - d.quiz.a) < 0.01;
@@ -11399,7 +12128,7 @@
                   )
               )
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'uc-' + Date.now(), tool: 'unitConvert', label: d.value + ' ' + d.fromUnit + ' to ' + d.toUnit, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'uc-' + Date.now(), tool: 'unitConvert', label: d.value + ' ' + d.fromUnit + ' to ' + d.toUnit, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.converter.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
 
@@ -11557,7 +12286,7 @@
                     React.createElement("span", { className: "w-14 text-right text-sm font-bold", style: { color: barColors[k] } }, d.mode === 'coin' ? (k === 'H' ? '\uD83E\uDE99 H' : '\uD83E\uDE99 T') : d.mode === 'dice' ? '\u2680 ' + k : '\u25CF ' + k),
                     React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-7 overflow-hidden relative" },
                       React.createElement("div", { style: { width: (count / maxCount * 100) + '%', backgroundColor: barColors[k], height: '100%', borderRadius: '9999px', transition: 'width 0.3s' } }),
-                      React.createElement("div", { style: { position: 'absolute', left: (expPct / (d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : 25) * (100 / Object.keys(expected).length)) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: '#1e293b80' }, title: 'Expected: ' + expPct.toFixed(1) + '%' })
+                      React.createElement("div", { style: { position: 'absolute', left: (expPct / (d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : 25) * (100 / Object.keys(expected).length)) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: '#1e293b80' }, title: t('stem.probability.expected') + expPct.toFixed(1) + '%' })
                     ),
                     React.createElement("span", { className: "w-24 text-xs font-mono text-slate-600 text-right" }, count + " (" + pct.toFixed(1) + "%)"),
                     React.createElement("span", { className: "w-16 text-[10px] font-bold " + (Math.abs(pct - expPct) < 3 ? 'text-emerald-500' : Math.abs(pct - expPct) < 8 ? 'text-amber-500' : 'text-red-500') }, (pct > expPct ? '+' : '') + (pct - expPct).toFixed(1) + '%')
@@ -11637,7 +12366,7 @@
                 return '\u25CF';
               }).join(' '))
             ),
-            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.probability.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
           );
         })(),
 
@@ -12021,41 +12750,41 @@
 
           // ═══ SCALE & CHORD DATA ═══
           var SCALES = {
-            'Major': { intervals: [0, 2, 4, 5, 7, 9, 11], desc: 'Happy, bright. The most common Western scale.', science: 'Built on the pattern W-W-H-W-W-W-H (Whole/Half steps). The Ionian mode. Its brightness comes from the major 3rd (4 semitones) and perfect 5th (7 semitones).' },
-            'Natural Minor': { intervals: [0, 2, 3, 5, 7, 8, 10], desc: 'Sad, dark, introspective.', science: 'Pattern: W-H-W-W-H-W-W. The Aeolian mode. The minor 3rd (3 semitones) creates a darker, more somber quality than major.' },
-            'Harmonic Minor': { intervals: [0, 2, 3, 5, 7, 8, 11], desc: 'Exotic, dramatic, classical.', science: 'Like natural minor but raises the 7th degree. Creates an augmented 2nd interval (3 semitones) between the 6th and 7th, giving it a Middle Eastern flavor.' },
-            'Melodic Minor': { intervals: [0, 2, 3, 5, 7, 9, 11], desc: 'Smooth, jazzy, sophisticated.', science: 'Raises both the 6th and 7th degrees of natural minor. Used ascending in classical; jazz uses it both ways. Foundation of many jazz modes.' },
-            'Pentatonic Major': { intervals: [0, 2, 4, 7, 9], desc: 'Universal, folk, rock.', science: 'A 5-note subset of the major scale, removing the 4th and 7th. Found in music worldwide because it avoids semitones, making any combination sound consonant.' },
-            'Pentatonic Minor': { intervals: [0, 3, 5, 7, 10], desc: 'Blues, rock, universal.', science: 'The most common scale for improvisation. 5 notes, no semitones. Guitar solos, Asian music, African music all use this scale extensively.' },
-            'Blues': { intervals: [0, 3, 5, 6, 7, 10], desc: 'Soulful, gritty, expressive.', science: 'Adds the "blue note" (\u266D5/\u266F4) to the minor pentatonic. This tritone creates tension and the characteristic blues sound. Bending notes is central to blues expression.' },
-            'Dorian': { intervals: [0, 2, 3, 5, 7, 9, 10], desc: 'Jazz, funk, sophisticated minor.', science: 'A minor mode with a raised 6th degree. Used heavily in jazz and funk (e.g., "So What" by Miles Davis). Has a "bright minor" quality.' },
-            'Mixolydian': { intervals: [0, 2, 4, 5, 7, 9, 10], desc: 'Rock, folk, dominant feel.', science: 'A major scale with a lowered 7th. The "dominant" sound. Used in rock (Grateful Dead), folk, and creates the V7 chord quality.' },
-            'Phrygian': { intervals: [0, 1, 3, 5, 7, 8, 10], desc: 'Spanish, flamenco, metal.', science: 'A minor mode with \u266D2. The half-step from root creates dramatic, dark tension. Central to flamenco guitar and heavy metal.' },
-            'Lydian': { intervals: [0, 2, 4, 6, 7, 9, 11], desc: 'Dreamy, ethereal, film scores.', science: 'A major scale with \u266F4. The raised 4th creates a "floating" quality. Used extensively in film scores (John Williams) and progressive rock.' },
-            'Whole Tone': { intervals: [0, 2, 4, 6, 8, 10], desc: 'Mysterious, ambiguous, dreamlike.', science: 'All whole steps, no half steps. No tonal center. Only 2 unique whole-tone scales exist. Used by Debussy and in mystery/dream sequences.' },
-            'Chromatic': { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], desc: 'All 12 notes. Complete but atonal.', science: 'Every semitone in the octave. No tonal hierarchy. The basis of 12-tone serialism (Schoenberg). Each note is equally spaced at 2^(1/12) \u2248 1.0595 frequency ratio.' },
+            'Major': { intervals: [0, 2, 4, 5, 7, 9, 11], desc: t('stem.synth.happy_bright_the_most_common'), science: 'Built on the pattern W-W-H-W-W-W-H (Whole/Half steps). The Ionian mode. Its brightness comes from the major 3rd (4 semitones) and perfect 5th (7 semitones).' },
+            'Natural Minor': { intervals: [0, 2, 3, 5, 7, 8, 10], desc: t('stem.synth.sad_dark_introspective'), science: 'Pattern: W-H-W-W-H-W-W. The Aeolian mode. The minor 3rd (3 semitones) creates a darker, more somber quality than major.' },
+            'Harmonic Minor': { intervals: [0, 2, 3, 5, 7, 8, 11], desc: t('stem.synth.exotic_dramatic_classical'), science: 'Like natural minor but raises the 7th degree. Creates an augmented 2nd interval (3 semitones) between the 6th and 7th, giving it a Middle Eastern flavor.' },
+            'Melodic Minor': { intervals: [0, 2, 3, 5, 7, 9, 11], desc: t('stem.synth.smooth_jazzy_sophisticated'), science: 'Raises both the 6th and 7th degrees of natural minor. Used ascending in classical; jazz uses it both ways. Foundation of many jazz modes.' },
+            'Pentatonic Major': { intervals: [0, 2, 4, 7, 9], desc: t('stem.synth.universal_folk_rock'), science: 'A 5-note subset of the major scale, removing the 4th and 7th. Found in music worldwide because it avoids semitones, making any combination sound consonant.' },
+            'Pentatonic Minor': { intervals: [0, 3, 5, 7, 10], desc: t('stem.synth.blues_rock_universal'), science: 'The most common scale for improvisation. 5 notes, no semitones. Guitar solos, Asian music, African music all use this scale extensively.' },
+            'Blues': { intervals: [0, 3, 5, 6, 7, 10], desc: t('stem.synth.soulful_gritty_expressive'), science: 'Adds the "blue note" (\u266D5/\u266F4) to the minor pentatonic. This tritone creates tension and the characteristic blues sound. Bending notes is central to blues expression.' },
+            'Dorian': { intervals: [0, 2, 3, 5, 7, 9, 10], desc: t('stem.synth.jazz_funk_sophisticated_minor'), science: 'A minor mode with a raised 6th degree. Used heavily in jazz and funk (e.g., "So What" by Miles Davis). Has a "bright minor" quality.' },
+            'Mixolydian': { intervals: [0, 2, 4, 5, 7, 9, 10], desc: t('stem.synth.rock_folk_dominant_feel'), science: 'A major scale with a lowered 7th. The "dominant" sound. Used in rock (Grateful Dead), folk, and creates the V7 chord quality.' },
+            'Phrygian': { intervals: [0, 1, 3, 5, 7, 8, 10], desc: t('stem.synth.spanish_flamenco_metal'), science: 'A minor mode with \u266D2. The half-step from root creates dramatic, dark tension. Central to flamenco guitar and heavy metal.' },
+            'Lydian': { intervals: [0, 2, 4, 6, 7, 9, 11], desc: t('stem.synth.dreamy_ethereal_film_scores'), science: 'A major scale with \u266F4. The raised 4th creates a "floating" quality. Used extensively in film scores (John Williams) and progressive rock.' },
+            'Whole Tone': { intervals: [0, 2, 4, 6, 8, 10], desc: t('stem.synth.mysterious_ambiguous_dreamlike'), science: 'All whole steps, no half steps. No tonal center. Only 2 unique whole-tone scales exist. Used by Debussy and in mystery/dream sequences.' },
+            'Chromatic': { intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], desc: t('stem.synth.all_12_notes_complete_but'), science: 'Every semitone in the octave. No tonal hierarchy. The basis of 12-tone serialism (Schoenberg). Each note is equally spaced at 2^(1/12) \u2248 1.0595 frequency ratio.' },
           };
 
           var CHORDS = {
-            'Major': { intervals: [0, 4, 7], symbol: '', desc: 'Happy, stable, resolved.', science: 'Root + Major 3rd (4 semitones) + Perfect 5th (7 semitones). Frequency ratio approximately 4:5:6. The most consonant triad.' },
-            'Minor': { intervals: [0, 3, 7], symbol: 'm', desc: 'Sad, introspective, dark.', science: 'Root + Minor 3rd (3 semitones) + Perfect 5th. The lowered 3rd creates a more somber quality. Ratio approximately 10:12:15.' },
-            'Diminished': { intervals: [0, 3, 6], symbol: 'dim', desc: 'Tense, unstable, needs to resolve.', science: 'Two minor 3rds stacked. The tritone (6 semitones) between root and 5th is the most dissonant interval, creating maximum tension.' },
-            'Augmented': { intervals: [0, 4, 8], symbol: 'aug', desc: 'Mysterious, unresolved, eerie.', science: 'Two major 3rds stacked. Divides the octave into 3 equal parts. Symmetrical \u2014 only 4 unique augmented triads exist.' },
-            'Maj7': { intervals: [0, 4, 7, 11], symbol: 'maj7', desc: 'Smooth, lush, jazzy.', science: 'Major triad + major 7th (11 semitones). The major 7th interval is nearly an octave, creating a sweet, complex resonance.' },
-            'Min7': { intervals: [0, 3, 7, 10], symbol: 'm7', desc: 'Cool, mellow, relaxed.', science: 'Minor triad + minor 7th (10 semitones). Very common in jazz. Less tense than dominant 7th, more complex than minor triad.' },
-            'Dom7': { intervals: [0, 4, 7, 10], symbol: '7', desc: 'Bluesy, restless, wants to resolve.', science: 'Major triad + minor 7th. The tritone between 3rd and \u266D7th creates tension that "pulls" toward resolution to a chord a 5th below (V7\u2192I).' },
-            'Sus2': { intervals: [0, 2, 7], symbol: 'sus2', desc: 'Open, modern, shimmering.', science: 'Replaces the 3rd with the 2nd. Neither major nor minor \u2014 ambiguous quality. Common in pop and ambient music.' },
-            'Sus4': { intervals: [0, 5, 7], symbol: 'sus4', desc: 'Suspended, yearning to resolve.', science: 'Replaces the 3rd with the 4th. The 4th wants to "suspend" down to the 3rd. Used since medieval music to create tension-release.' },
-            'Power': { intervals: [0, 7, 12], symbol: '5', desc: 'Raw, strong, genre-defining.', science: 'Just root + 5th (+ octave). No 3rd means no major/minor quality. Sounds huge with distortion because the simple 3:2 ratio stays clean when clipped.' },
+            'Major': { intervals: [0, 4, 7], symbol: '', desc: t('stem.synth.happy_stable_resolved'), science: 'Root + Major 3rd (4 semitones) + Perfect 5th (7 semitones). Frequency ratio approximately 4:5:6. The most consonant triad.' },
+            'Minor': { intervals: [0, 3, 7], symbol: 'm', desc: t('stem.synth.sad_introspective_dark'), science: 'Root + Minor 3rd (3 semitones) + Perfect 5th. The lowered 3rd creates a more somber quality. Ratio approximately 10:12:15.' },
+            'Diminished': { intervals: [0, 3, 6], symbol: 'dim', desc: t('stem.synth.tense_unstable_needs_to_resolve'), science: 'Two minor 3rds stacked. The tritone (6 semitones) between root and 5th is the most dissonant interval, creating maximum tension.' },
+            'Augmented': { intervals: [0, 4, 8], symbol: 'aug', desc: t('stem.synth.mysterious_unresolved_eerie'), science: 'Two major 3rds stacked. Divides the octave into 3 equal parts. Symmetrical \u2014 only 4 unique augmented triads exist.' },
+            'Maj7': { intervals: [0, 4, 7, 11], symbol: 'maj7', desc: t('stem.synth.smooth_lush_jazzy'), science: 'Major triad + major 7th (11 semitones). The major 7th interval is nearly an octave, creating a sweet, complex resonance.' },
+            'Min7': { intervals: [0, 3, 7, 10], symbol: 'm7', desc: t('stem.synth.cool_mellow_relaxed'), science: 'Minor triad + minor 7th (10 semitones). Very common in jazz. Less tense than dominant 7th, more complex than minor triad.' },
+            'Dom7': { intervals: [0, 4, 7, 10], symbol: '7', desc: t('stem.synth.bluesy_restless_wants_to_resolve'), science: 'Major triad + minor 7th. The tritone between 3rd and \u266D7th creates tension that "pulls" toward resolution to a chord a 5th below (V7\u2192I).' },
+            'Sus2': { intervals: [0, 2, 7], symbol: 'sus2', desc: t('stem.synth.open_modern_shimmering'), science: 'Replaces the 3rd with the 2nd. Neither major nor minor \u2014 ambiguous quality. Common in pop and ambient music.' },
+            'Sus4': { intervals: [0, 5, 7], symbol: 'sus4', desc: t('stem.synth.suspended_yearning_to_resolve'), science: 'Replaces the 3rd with the 4th. The 4th wants to "suspend" down to the 3rd. Used since medieval music to create tension-release.' },
+            t('stem.circuit.power'): { intervals: [0, 7, 12], symbol: '5', desc: t('stem.synth.raw_strong_genredefining'), science: 'Just root + 5th (+ octave). No 3rd means no major/minor quality. Sounds huge with distortion because the simple 3:2 ratio stays clean when clipped.' },
             // Extended voicings (MiniChord-inspired)
-            '6': { intervals: [0, 4, 7, 9], symbol: '6', desc: 'Warm, jazzy, classic.', science: 'Major triad + major 6th. Central to Barry Harris harmony. A sweet, sophisticated alternative to maj7.' },
-            'min6': { intervals: [0, 3, 7, 9], symbol: 'm6', desc: 'Sophisticated minor.', science: 'Minor triad + major 6th. Key chord in Barry Harris minor system. Creates smooth voice leading with dim7 passing chords.' },
-            'add9': { intervals: [0, 2, 4, 7], symbol: 'add9', desc: 'Bright, open, modern pop.', science: 'Major triad + 9th (2nd up an octave). No 7th. Clean, shimmering sound popular in contemporary pop and worship music.' },
-            '9': { intervals: [0, 4, 7, 10, 14], symbol: '9', desc: 'Rich, funky, bluesy.', science: 'Dominant 7th + 9th. Full, complex sound. Essential in funk, R&B, and blues. Hendrix made the 7\u266F9 famous.' },
-            'Maj9': { intervals: [0, 4, 7, 11, 14], symbol: 'maj9', desc: 'Dreamy, lush.', science: 'Major 7th + 9th. Maximum smoothness and warmth. Neo-soul and jazz ballads. The quintessential "beautiful" chord.' },
-            'Min9': { intervals: [0, 3, 7, 10, 14], symbol: 'm9', desc: 'Cool, sophisticated.', science: 'Minor 7th + 9th. The quintessential modern jazz minor chord. Creates a contemplative, introspective mood.' },
-            '13': { intervals: [0, 4, 7, 10, 14, 21], symbol: '13', desc: 'Full, orchestral, complex.', science: 'Dominant with 9th + 13th. Six notes! Used in jazz endings, gospel turnarounds, and orchestral voicings.' },
-            'dim7': { intervals: [0, 3, 6, 9], symbol: 'dim7', desc: 'Symmetrical, passing.', science: 'All minor 3rds stacked. Only 3 unique dim7 chords exist (due to symmetry). Used as passing chords in Barry Harris harmony for smooth voice leading.' },
+            '6': { intervals: [0, 4, 7, 9], symbol: '6', desc: t('stem.synth.warm_jazzy_classic'), science: 'Major triad + major 6th. Central to Barry Harris harmony. A sweet, sophisticated alternative to maj7.' },
+            'min6': { intervals: [0, 3, 7, 9], symbol: 'm6', desc: t('stem.synth.sophisticated_minor'), science: 'Minor triad + major 6th. Key chord in Barry Harris minor system. Creates smooth voice leading with dim7 passing chords.' },
+            'add9': { intervals: [0, 2, 4, 7], symbol: 'add9', desc: t('stem.synth.bright_open_modern_pop'), science: 'Major triad + 9th (2nd up an octave). No 7th. Clean, shimmering sound popular in contemporary pop and worship music.' },
+            '9': { intervals: [0, 4, 7, 10, 14], symbol: '9', desc: t('stem.synth.rich_funky_bluesy'), science: 'Dominant 7th + 9th. Full, complex sound. Essential in funk, R&B, and blues. Hendrix made the 7\u266F9 famous.' },
+            'Maj9': { intervals: [0, 4, 7, 11, 14], symbol: 'maj9', desc: t('stem.synth.dreamy_lush'), science: 'Major 7th + 9th. Maximum smoothness and warmth. Neo-soul and jazz ballads. The quintessential "beautiful" chord.' },
+            'Min9': { intervals: [0, 3, 7, 10, 14], symbol: 'm9', desc: t('stem.synth.cool_sophisticated'), science: 'Minor 7th + 9th. The quintessential modern jazz minor chord. Creates a contemplative, introspective mood.' },
+            '13': { intervals: [0, 4, 7, 10, 14, 21], symbol: '13', desc: t('stem.synth.full_orchestral_complex'), science: 'Dominant with 9th + 13th. Six notes! Used in jazz endings, gospel turnarounds, and orchestral voicings.' },
+            'dim7': { intervals: [0, 3, 6, 9], symbol: 'dim7', desc: t('stem.synth.symmetrical_passing'), science: 'All minor 3rds stacked. Only 3 unique dim7 chords exist (due to symmetry). Used as passing chords in Barry Harris harmony for smooth voice leading.' },
           };
 
           // Barry Harris harmony transformations
@@ -12091,28 +12820,28 @@
 
           // ═══ WAVEFORM INFO ═══
           var WAVE_INFO = {
-            sine: { emoji: '\u223F', desc: 'Pure tone, fundamental only', harmonics: 'Fundamental', science: 'A sine wave is the simplest sound \u2014 a single frequency with no overtones. All other waveforms are combinations of sine waves (Fourier theorem).' },
-            square: { emoji: '\u25A0', desc: 'Hollow, reed-like', harmonics: 'Odd only (1,3,5,7...)', science: 'Contains only odd harmonics. Sounds like a clarinet or old-school video games. Each harmonic\u2019s amplitude = 1/n.' },
-            sawtooth: { emoji: '\u25E2', desc: 'Bright, buzzy, rich', harmonics: 'All harmonics', science: 'Contains ALL harmonics (both odd and even), each at 1/n amplitude. Sounds like a violin or brass. The richest waveform for subtractive synthesis.' },
-            triangle: { emoji: '\u25B3', desc: 'Soft, flute-like', harmonics: 'Odd only, fading fast', science: 'Like square but softer \u2014 odd harmonics at 1/n\u00B2. Sounds between sine and square, similar to a flute or ocarina.' }
+            sine: { emoji: '\u223F', desc: t('stem.synth.pure_tone_fundamental_only'), harmonics: t('stem.synth.fundamental'), science: 'A sine wave is the simplest sound \u2014 a single frequency with no overtones. All other waveforms are combinations of sine waves (Fourier theorem).' },
+            square: { emoji: '\u25A0', desc: t('stem.synth.hollow_reedlike'), harmonics: 'Odd only (1,3,5,7...)', science: 'Contains only odd harmonics. Sounds like a clarinet or old-school video games. Each harmonic\u2019s amplitude = 1/n.' },
+            sawtooth: { emoji: '\u25E2', desc: t('stem.synth.bright_buzzy_rich'), harmonics: 'All harmonics', science: 'Contains ALL harmonics (both odd and even), each at 1/n amplitude. Sounds like a violin or brass. The richest waveform for subtractive synthesis.' },
+            triangle: { emoji: '\u25B3', desc: t('stem.synth.soft_flutelike'), harmonics: 'Odd only, fading fast', science: 'Like square but softer \u2014 odd harmonics at 1/n\u00B2. Sounds between sine and square, similar to a flute or ocarina.' }
           };
           var wInfo = WAVE_INFO[d.waveType || 'sine'];
 
           // ═══ INTERVALS ═══
           var INTERVALS = [
-            { name: 'Unison', semitones: 0, ratio: '1:1', song: 'Same note', quality: 'perfect' },
-            { name: 'Minor 2nd', semitones: 1, ratio: '16:15', song: 'Jaws theme', quality: 'dissonant' },
-            { name: 'Major 2nd', semitones: 2, ratio: '9:8', song: 'Happy Birthday (1st two notes)', quality: 'dissonant' },
-            { name: 'Minor 3rd', semitones: 3, ratio: '6:5', song: 'Greensleeves', quality: 'consonant' },
-            { name: 'Major 3rd', semitones: 4, ratio: '5:4', song: 'Oh When the Saints', quality: 'consonant' },
-            { name: 'Perfect 4th', semitones: 5, ratio: '4:3', song: 'Here Comes the Bride', quality: 'perfect' },
-            { name: 'Tritone', semitones: 6, ratio: '\u221A2:1', song: 'The Simpsons theme', quality: 'dissonant' },
-            { name: 'Perfect 5th', semitones: 7, ratio: '3:2', song: 'Star Wars opening', quality: 'perfect' },
-            { name: 'Minor 6th', semitones: 8, ratio: '8:5', song: 'Love Story theme', quality: 'consonant' },
-            { name: 'Major 6th', semitones: 9, ratio: '5:3', song: 'My Bonnie Lies Over the Ocean', quality: 'consonant' },
-            { name: 'Minor 7th', semitones: 10, ratio: '16:9', song: 'Star Trek theme', quality: 'dissonant' },
-            { name: 'Major 7th', semitones: 11, ratio: '15:8', song: 'Take On Me (chorus)', quality: 'dissonant' },
-            { name: 'Octave', semitones: 12, ratio: '2:1', song: 'Somewhere Over the Rainbow', quality: 'perfect' },
+            { name: t('stem.synth.unison'), semitones: 0, ratio: '1:1', song: 'Same note', quality: 'perfect' },
+            { name: t('stem.synth.minor_2nd'), semitones: 1, ratio: '16:15', song: 'Jaws theme', quality: 'dissonant' },
+            { name: t('stem.synth.major_2nd'), semitones: 2, ratio: '9:8', song: 'Happy Birthday (1st two notes)', quality: 'dissonant' },
+            { name: t('stem.synth.minor_3rd'), semitones: 3, ratio: '6:5', song: 'Greensleeves', quality: 'consonant' },
+            { name: t('stem.synth.major_3rd'), semitones: 4, ratio: '5:4', song: 'Oh When the Saints', quality: 'consonant' },
+            { name: t('stem.synth.perfect_4th'), semitones: 5, ratio: '4:3', song: 'Here Comes the Bride', quality: 'perfect' },
+            { name: t('stem.synth.tritone'), semitones: 6, ratio: '\u221A2:1', song: 'The Simpsons theme', quality: 'dissonant' },
+            { name: t('stem.synth.perfect_5th'), semitones: 7, ratio: '3:2', song: 'Star Wars opening', quality: 'perfect' },
+            { name: t('stem.synth.minor_6th'), semitones: 8, ratio: '8:5', song: 'Love Story theme', quality: 'consonant' },
+            { name: t('stem.synth.major_6th'), semitones: 9, ratio: '5:3', song: 'My Bonnie Lies Over the Ocean', quality: 'consonant' },
+            { name: t('stem.synth.minor_7th'), semitones: 10, ratio: '16:9', song: 'Star Trek theme', quality: 'dissonant' },
+            { name: t('stem.synth.major_7th'), semitones: 11, ratio: '15:8', song: 'Take On Me (chorus)', quality: 'dissonant' },
+            { name: t('stem.synth.octave'), semitones: 12, ratio: '2:1', song: 'Somewhere Over the Rainbow', quality: 'perfect' },
           ];
 
           // ═══ PRESETS (incl Plucked for K-S) ═══
@@ -12121,7 +12850,7 @@
             'Organ': { waveType: 'sine', attack: 0.01, decay: 0.05, sustain: 0.9, release: 0.1, volume: 0.5, chorusMix: 0.3, vibratoDepth: 0.2, vibratoRate: 6, synthEngine: 'standard' },
             'Strings': { waveType: 'sawtooth', attack: 0.3, decay: 0.1, sustain: 0.8, release: 0.6, volume: 0.4, filterCutoff: 3000, filterQ: 2, tremoloDepth: 0.15, tremoloRate: 5, synthEngine: 'standard' },
             'Bass': { waveType: 'sawtooth', attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2, volume: 0.7, filterCutoff: 800, filterQ: 5, synthEngine: 'standard' },
-            'Lead': { waveType: 'square', attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.15, volume: 0.5, distAmount: 15, vibratoDepth: 0.3, vibratoRate: 5.5, synthEngine: 'standard' },
+            t('stem.periodic.lead'): { waveType: 'square', attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.15, volume: 0.5, distAmount: 15, vibratoDepth: 0.3, vibratoRate: 5.5, synthEngine: 'standard' },
             'Pad': { waveType: 'sine', attack: 0.8, decay: 0.3, sustain: 0.7, release: 1.5, volume: 0.35, reverbMix: 0.6, chorusMix: 0.4, chorusRate: 0.8, synthEngine: 'standard' },
             'Plucked': { waveType: 'sawtooth', attack: 0.001, decay: 0.01, sustain: 0.01, release: 0.01, volume: 0.7, filterCutoff: 6000, filterQ: 1, synthEngine: 'plucked', ksBrightness: 0.8, ksDamping: 0.996 },
             'Guitar': { waveType: 'sawtooth', attack: 0.001, decay: 0.01, sustain: 0.01, release: 0.01, volume: 0.7, synthEngine: 'plucked', ksBrightness: 0.6, ksDamping: 0.998 },
@@ -12136,12 +12865,12 @@
 
           // ═══ PROGRESSIONS ═══
           var PROGRESSIONS = [
-            { name: 'I-IV-V-I (Classical)', degrees: [[0, 'Major'], [5, 'Major'], [7, 'Major'], [0, 'Major']], desc: 'The foundation of Western music.' },
-            { name: 'I-V-vi-IV (Pop)', degrees: [[0, 'Major'], [7, 'Major'], [9, 'Minor'], [5, 'Major']], desc: 'Used in thousands of pop songs.' },
-            { name: 'ii-V-I (Jazz)', degrees: [[2, 'Min7'], [7, 'Dom7'], [0, 'Maj7']], desc: 'The most important jazz progression.' },
-            { name: 'I-vi-IV-V (50s)', degrees: [[0, 'Major'], [9, 'Minor'], [5, 'Major'], [7, 'Major']], desc: 'Classic doo-wop progression.' },
-            { name: '12-Bar Blues', degrees: [[0, 'Dom7'], [0, 'Dom7'], [0, 'Dom7'], [0, 'Dom7'], [5, 'Dom7'], [5, 'Dom7'], [0, 'Dom7'], [0, 'Dom7'], [7, 'Dom7'], [5, 'Dom7'], [0, 'Dom7'], [7, 'Dom7']], desc: 'Foundation of blues, rock, and jazz.' },
-            { name: 'vi-IV-I-V (Emo/Alt)', degrees: [[9, 'Minor'], [5, 'Major'], [0, 'Major'], [7, 'Major']], desc: 'Common in alternative and emo.' }
+            { name: t('stem.synth.iivvi_classical'), degrees: [[0, 'Major'], [5, 'Major'], [7, 'Major'], [0, 'Major']], desc: t('stem.synth.the_foundation_of_western_music') },
+            { name: t('stem.synth.ivviiv_pop'), degrees: [[0, 'Major'], [7, 'Major'], [9, 'Minor'], [5, 'Major']], desc: t('stem.synth.used_in_thousands_of_pop') },
+            { name: 'ii-V-I (Jazz)', degrees: [[2, 'Min7'], [7, 'Dom7'], [0, 'Maj7']], desc: t('stem.synth.the_most_important_jazz_progression') },
+            { name: t('stem.synth.iviivv_50s'), degrees: [[0, 'Major'], [9, 'Minor'], [5, 'Major'], [7, 'Major']], desc: t('stem.synth.classic_doowop_progression') },
+            { name: '12-Bar Blues', degrees: [[0, 'Dom7'], [0, 'Dom7'], [0, 'Dom7'], [0, 'Dom7'], [5, 'Dom7'], [5, 'Dom7'], [0, 'Dom7'], [0, 'Dom7'], [7, 'Dom7'], [5, 'Dom7'], [0, 'Dom7'], [7, 'Dom7']], desc: t('stem.synth.foundation_of_blues_rock_and') },
+            { name: 'vi-IV-I-V (Emo/Alt)', degrees: [[9, 'Minor'], [5, 'Major'], [0, 'Major'], [7, 'Major']], desc: t('stem.synth.common_in_alternative_and_emo') }
           ];
 
           // ═══ CIRCLE OF FIFTHS ═══
@@ -12162,8 +12891,8 @@
 
           // ═══ HARMONIC SERIES ═══
           var HARMONICS_INFO = [
-            { n: 1, name: 'Fundamental', interval: 'Unison', ratio: '1x' },
-            { n: 2, name: '1st Overtone', interval: 'Octave', ratio: '2x' },
+            { n: 1, name: t('stem.synth.fundamental'), interval: t('stem.synth.unison'), ratio: '1x' },
+            { n: 2, name: '1st Overtone', interval: t('stem.synth.octave'), ratio: '2x' },
             { n: 3, name: '2nd Overtone', interval: 'P5 + Oct', ratio: '3x' },
             { n: 4, name: '3rd Overtone', interval: '2 Octaves', ratio: '4x' },
             { n: 5, name: '4th Overtone', interval: 'M3 + 2 Oct', ratio: '5x' },
@@ -12187,27 +12916,27 @@
 
           // ═══ EFFECT TOOLTIPS ═══
           var EFFECT_TIPS = {
-            adsr: { title: 'ADSR Envelope', text: 'Attack: time to reach full volume. Decay: time to fall to sustain. Sustain: held volume level. Release: fade-out time after key release.' },
-            scales: { title: 'Scales & Modes', text: 'A scale is an ordered set of pitches. Modes are rotations of the scale starting on different degrees. Each creates a different emotional mood.' },
-            chords: { title: 'Chord Theory', text: 'Chords are built by stacking intervals (3rds). Major uses a major 3rd + minor 3rd. Minor reverses them. Extended chords add 7ths, 9ths, and beyond.' },
-            drums: { title: 'Drum Synthesis', text: 'Kicks use a sine oscillator with a pitch sweep. Snares combine noise (filtered) + tone body. Hi-hats use high-pass filtered noise bursts.' },
-            timeSig: { title: 'Time Signatures', text: '4/4 = 4 quarter-note beats per bar (most common). 3/4 = waltz feel. 6/8 = compound duple. 5/4 and 7/8 create asymmetric, exotic grooves.' },
-            circleOfFifths: { title: 'Circle of Fifths', text: 'Keys arranged by ascending 5ths clockwise. Adjacent keys share 6 of 7 notes. Moving clockwise adds sharps; counter-clockwise adds flats.' },
-            harmonicSeries: { title: 'Harmonic Series', text: 'Every musical sound contains overtones above the fundamental. Their relative strengths determine timbre \u2014 why a trumpet sounds different from a flute at the same pitch.' },
-            intervals: { title: 'Musical Intervals', text: 'An interval is the distance between two pitches, measured in semitones. The frequency ratio determines consonance (simple ratios like 3:2 sound smooth).' },
-            arpeggiator: { title: 'Arpeggiator', text: 'Plays chord notes one at a time in sequence. Up = low to high, Down = high to low. Creates flowing patterns from static chords.' },
-            filter: { title: 'Resonant Filter', text: 'A filter removes frequencies above (lowpass), below (highpass), or around (bandpass) a cutoff frequency. Resonance (Q) amplifies frequencies near cutoff, creating a peak.' },
-            tremolo: { title: 'Tremolo & Vibrato', text: 'Tremolo: periodic volume changes (amplitude modulation). Vibrato: periodic pitch changes (frequency modulation). Both controlled by an LFO (Low Frequency Oscillator).' },
-            karplusStrong: { title: 'Karplus-Strong Synthesis', text: 'Discovered in 1983. A noise burst feeds into a very short delay line with feedback. The delay time determines pitch. A filter in the feedback loop controls brightness and decay. Naturally simulates plucked strings.' },
-            composition: { title: 'Music Composition', text: 'The sequencer is a composition tool. Each step represents a beat subdivision. The melody row sets pitched notes, drums add rhythm. Musical notation shows what you create.' },
-            notation: { title: 'Musical Notation', text: 'Notes on lines and spaces represent pitches. Duration is shown by note shape: whole (\u25CB), half (\u{1D15E}), quarter (\u2669), eighth (\u266A). The staff uses 5 lines.' }
+            adsr: { title: t('stem.synth.adsr_envelope'), text: 'Attack: time to reach full volume. Decay: time to fall to sustain. Sustain: held volume level. Release: fade-out time after key release.' },
+            scales: { title: t('stem.synth.scales_modes'), text: 'A scale is an ordered set of pitches. Modes are rotations of the scale starting on different degrees. Each creates a different emotional mood.' },
+            chords: { title: t('stem.synth.chord_theory'), text: 'Chords are built by stacking intervals (3rds). Major uses a major 3rd + minor 3rd. Minor reverses them. Extended chords add 7ths, 9ths, and beyond.' },
+            drums: { title: t('stem.synth.drum_synthesis'), text: 'Kicks use a sine oscillator with a pitch sweep. Snares combine noise (filtered) + tone body. Hi-hats use high-pass filtered noise bursts.' },
+            timeSig: { title: t('stem.synth.time_signatures'), text: '4/4 = 4 quarter-note beats per bar (most common). 3/4 = waltz feel. 6/8 = compound duple. 5/4 and 7/8 create asymmetric, exotic grooves.' },
+            circleOfFifths: { title: t('stem.synth.circle_of_fifths'), text: 'Keys arranged by ascending 5ths clockwise. Adjacent keys share 6 of 7 notes. Moving clockwise adds sharps; counter-clockwise adds flats.' },
+            harmonicSeries: { title: t('stem.synth.harmonic_series'), text: 'Every musical sound contains overtones above the fundamental. Their relative strengths determine timbre \u2014 why a trumpet sounds different from a flute at the same pitch.' },
+            intervals: { title: t('stem.synth.musical_intervals'), text: 'An interval is the distance between two pitches, measured in semitones. The frequency ratio determines consonance (simple ratios like 3:2 sound smooth).' },
+            arpeggiator: { title: t('stem.synth.arpeggiator'), text: 'Plays chord notes one at a time in sequence. Up = low to high, Down = high to low. Creates flowing patterns from static chords.' },
+            filter: { title: t('stem.synth.resonant_filter'), text: 'A filter removes frequencies above (lowpass), below (highpass), or around (bandpass) a cutoff frequency. Resonance (Q) amplifies frequencies near cutoff, creating a peak.' },
+            tremolo: { title: t('stem.synth.tremolo_vibrato'), text: 'Tremolo: periodic volume changes (amplitude modulation). Vibrato: periodic pitch changes (frequency modulation). Both controlled by an LFO (Low Frequency Oscillator).' },
+            karplusStrong: { title: t('stem.synth.karplusstrong_synthesis'), text: 'Discovered in 1983. A noise burst feeds into a very short delay line with feedback. The delay time determines pitch. A filter in the feedback loop controls brightness and decay. Naturally simulates plucked strings.' },
+            composition: { title: t('stem.synth.music_composition'), text: 'The sequencer is a composition tool. Each step represents a beat subdivision. The melody row sets pitched notes, drums add rhythm. Musical notation shows what you create.' },
+            notation: { title: t('stem.synth.musical_notation'), text: 'Notes on lines and spaces represent pitches. Duration is shown by note shape: whole (\u25CB), half (\u{1D15E}), quarter (\u2669), eighth (\u266A). The staff uses 5 lines.' }
           };
 
           // ═══ MUSIC QUIZ ═══
           var MUSIC_QUIZ = [
             { q: 'What waveform contains ONLY the fundamental frequency?', a: 'Sine', opts: ['Sine', 'Square', 'Sawtooth', 'Triangle'] },
             { q: 'What does ADSR stand for?', a: 'Attack Decay Sustain Release', opts: ['Attack Decay Sustain Release', 'Audio Digital Sound Router', 'Amplitude Duration Signal Response', 'Analog Delay Synth Reverb'] },
-            { q: 'Which interval has a 3:2 frequency ratio?', a: 'Perfect Fifth', opts: ['Perfect Fifth', 'Major Third', 'Octave', 'Perfect Fourth'] },
+            { q: 'Which interval has a 3:2 frequency ratio?', a: 'Perfect Fifth', opts: ['Perfect Fifth', 'Major Third', t('stem.synth.octave'), 'Perfect Fourth'] },
             { q: 'What key has NO sharps or flats?', a: 'C Major', opts: ['C Major', 'G Major', 'D Major', 'A Major'] },
             { q: 'How many semitones in an octave?', a: '12', opts: ['12', '8', '7', '10'] },
             { q: 'What makes a major chord sound \u201Chappy\u201D?', a: 'Major third interval', opts: ['Major third interval', 'More notes', 'Higher pitch', 'Louder volume'] },
@@ -12547,7 +13276,7 @@
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
               React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ id: 'play', icon: '\uD83C\uDFB9', label: 'Play' }, { id: 'scales', icon: '\uD83C\uDFB5', label: 'Scales' }, { id: 'chords', icon: '\uD83C\uDFB6', label: 'Chords' }, { id: 'omnichord', icon: '\uD83C\uDF1F', label: 'Omnichord' }, { id: 'theory', icon: '\uD83D\uDCDA', label: 'Theory' }].map(function (tab) {
+                [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'omnichord', icon: '\uD83C\uDF1F', label: t('stem.synth.omnichord') }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }].map(function (tab) {
                   return React.createElement("button", {
                     key: tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
@@ -12587,7 +13316,7 @@
                     key: name,
                     onClick: function () { applyPreset(name); },
                     className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.activePreset === name ? 'bg-purple-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                  }, (name === 'Plucked' ? '\uD83C\uDFB8' : name === 'Guitar' ? '\uD83C\uDFB8' : name === 'Strings' ? '\uD83C\uDFBB' : name === 'Organ' ? '\u26EA' : name === 'Bass' ? '\uD83C\uDFB8' : name === 'Pad' ? '\u2601\uFE0F' : name === 'Lead' ? '\u26A1' : name === 'Retro' ? '\uD83D\uDC7E' : name === 'Spooky' ? '\uD83D\uDC7B' : '\uD83C\uDFB9') + ' ' + name);
+                  }, (name === 'Plucked' ? '\uD83C\uDFB8' : name === 'Guitar' ? '\uD83C\uDFB8' : name === 'Strings' ? '\uD83C\uDFBB' : name === 'Organ' ? '\u26EA' : name === 'Bass' ? '\uD83C\uDFB8' : name === 'Pad' ? '\u2601\uFE0F' : name === t('stem.periodic.lead') ? '\u26A1' : name === 'Retro' ? '\uD83D\uDC7E' : name === 'Spooky' ? '\uD83D\uDC7B' : '\uD83C\uDFB9') + ' ' + name);
                 })
               ),
 
@@ -12716,7 +13445,7 @@
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
-                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6'] : ['Major', 'Minor', 'Diminished', 'Augmented', 'Sus2', 'Sus4', 'Power', 'Dom7', 'Maj7', 'Min7']).map(function (chType) {
+                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6'] : ['Major', 'Minor', 'Diminished', 'Augmented', 'Sus2', 'Sus4', t('stem.circuit.power'), 'Dom7', 'Maj7', 'Min7']).map(function (chType) {
                     var chord = CHORDS[chType]; if (!chord) return null;
                     return React.createElement("button", {
                       key: chType,
@@ -12805,10 +13534,10 @@
                     React.createElement("text", { x: 110, y: 58, className: "text-[8px] fill-slate-400" }, "S"),
                     React.createElement("text", { x: 165, y: 58, className: "text-[8px] fill-slate-400" }, "R")
                   ),
-                  [{ k: 'attack', label: 'Attack', min: 0.001, max: 2, step: 0.01, unit: 's' },
-                  { k: 'decay', label: 'Decay', min: 0.01, max: 1, step: 0.01, unit: 's' },
-                  { k: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, unit: '' },
-                  { k: 'release', label: 'Release', min: 0.01, max: 3, step: 0.01, unit: 's' }].map(function (param) {
+                  [{ k: 'attack', label: t('stem.synth.attack'), min: 0.001, max: 2, step: 0.01, unit: 's' },
+                  { k: 'decay', label: t('stem.synth.decay'), min: 0.01, max: 1, step: 0.01, unit: 's' },
+                  { k: 'sustain', label: t('stem.synth.sustain'), min: 0, max: 1, step: 0.01, unit: '' },
+                  { k: 'release', label: t('stem.synth.release'), min: 0.01, max: 3, step: 0.01, unit: 's' }].map(function (param) {
                     return React.createElement("div", { key: param.k, className: "flex items-center gap-2 mb-0.5" },
                       React.createElement("span", { className: "text-[9px] font-bold text-slate-500 w-12" }, param.label),
                       React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: d[param.k] || param.min, onChange: function (e) { upd(param.k, parseFloat(e.target.value)); }, className: "flex-1 accent-purple-600 h-1.5" }),
@@ -12838,8 +13567,8 @@
                       React.createElement("span", { className: "text-[10px] font-bold text-amber-700" }, "\uD83C\uDFB8 Karplus-Strong"),
                       React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.karplusStrong.text }, "\u2753")
                     ),
-                    [{ k: 'ksBrightness', label: 'Brightness', min: 0.1, max: 1, step: 0.01 },
-                    { k: 'ksDamping', label: 'Damping', min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
+                    [{ k: 'ksBrightness', label: t('stem.synth.brightness'), min: 0.1, max: 1, step: 0.01 },
+                    { k: 'ksDamping', label: t('stem.synth.damping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-[9px] font-bold text-slate-500 w-16" }, p.label),
                         React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500 h-1.5" }),
@@ -12867,7 +13596,7 @@
                         className: "ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-white border"
                       }, ['lowpass', 'highpass', 'bandpass'].map(function (ft) { return React.createElement("option", { key: ft, value: ft }, ft); }))
                     ),
-                    [{ k: 'filterCutoff', label: 'Cutoff', min: 100, max: 12000, step: 50, fmt: function (v) { return (v || 8000) > 1000 ? ((v || 8000) / 1000).toFixed(1) + 'k' : Math.round(v || 8000) + ''; } },
+                    [{ k: 'filterCutoff', label: t('stem.synth.cutoff'), min: 100, max: 12000, step: 50, fmt: function (v) { return (v || 8000) > 1000 ? ((v || 8000) / 1000).toFixed(1) + 'k' : Math.round(v || 8000) + ''; } },
                     { k: 'filterQ', label: 'Q', min: 0.1, max: 20, step: 0.1, fmt: function (v) { return (v || 1).toFixed(1); } }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-[9px] font-bold text-slate-500 w-10" }, p.label),
@@ -12882,10 +13611,10 @@
                       React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\u2728 Modulation"),
                       React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.tremolo.text }, "\u2753")
                     ),
-                    [{ k: 'tremoloDepth', label: 'Trem Dep', min: 0, max: 1, step: 0.01 },
-                    { k: 'tremoloRate', label: 'Trem Rate', min: 0.5, max: 20, step: 0.5 },
-                    { k: 'vibratoDepth', label: 'Vib Dep', min: 0, max: 1, step: 0.01 },
-                    { k: 'vibratoRate', label: 'Vib Rate', min: 0.5, max: 12, step: 0.5 }].map(function (p) {
+                    [{ k: 'tremoloDepth', label: t('stem.synth.trem_dep'), min: 0, max: 1, step: 0.01 },
+                    { k: 'tremoloRate', label: t('stem.synth.trem_rate'), min: 0.5, max: 20, step: 0.5 },
+                    { k: 'vibratoDepth', label: t('stem.synth.vib_dep'), min: 0, max: 1, step: 0.01 },
+                    { k: 'vibratoRate', label: t('stem.synth.vib_rate'), min: 0.5, max: 12, step: 0.5 }].map(function (p) {
                       return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-0.5" },
                         React.createElement("span", { className: "text-[9px] font-bold text-slate-500 w-14" }, p.label),
                         React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || 0, onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-pink-500 h-1.5" }),
@@ -12959,7 +13688,7 @@
                 React.createElement("div", { className: "flex items-center gap-1" },
                   React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "BPM"),
                   React.createElement("input", {
-                    type: "range", min: 60, max: 200, step: 1, value: d.bpm || 120,
+                    type: "range", min: 60, max: 200, step: 1, value: d.bpm || 120, "aria-label": "Beats per minute",
                     onChange: function (e) { upd('bpm', parseInt(e.target.value)); },
                     className: "w-24 accent-purple-600"
                   }),
@@ -13138,7 +13867,7 @@
                     },
                     className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
                   }, "\uD83D\uDCBE Save"),
-                  React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: 'Composition', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all" }, "\uD83D\uDCF8 Snapshot")
+                  React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth.composition'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(t('stem.synth.ud83dudcf8_snapshot_saved'), 'success'); }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all" }, "\uD83D\uDCF8 Snapshot")
                 ),
                 // Saved compositions list
                 (function () {
@@ -13263,7 +13992,7 @@
                   }, "\uD83C\uDFB7 Jazz Mode")
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
-                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6', 'add9'] : Object.keys(CHORDS).filter(function (k) { return ['Major', 'Minor', 'Diminished', 'Augmented', 'Maj7', 'Min7', 'Dom7', 'Sus2', 'Sus4', 'Power'].indexOf(k) !== -1; })).map(function (chType) {
+                  (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6', 'add9'] : Object.keys(CHORDS).filter(function (k) { return ['Major', 'Minor', 'Diminished', 'Augmented', 'Maj7', 'Min7', 'Dom7', 'Sus2', 'Sus4', t('stem.circuit.power')].indexOf(k) !== -1; })).map(function (chType) {
                     var chord = CHORDS[chType]; if (!chord) return null;
                     return React.createElement("button", {
                       key: chType,
@@ -13403,9 +14132,9 @@
 
                 // Voice selector
                 React.createElement("div", { className: "flex gap-2 mb-4" },
-                  [{ id: 'harp', label: '\uD83C\uDFB5 Harp', desc: 'Pure & clean' },
-                  { id: 'organ', label: '\u2728 Organ', desc: 'Warm chorus' },
-                  { id: 'pad', label: '\uD83C\uDF0A Pad', desc: 'Slow & lush' }].map(function (v) {
+                  [{ id: 'harp', label: '\uD83C\uDFB5 Harp', desc: t('stem.synth.pure_clean') },
+                  { id: 'organ', label: '\u2728 Organ', desc: t('stem.synth.warm_chorus') },
+                  { id: 'pad', label: '\uD83C\uDF0A Pad', desc: t('stem.synth.slow_lush') }].map(function (v) {
                     return React.createElement("button", {
                       key: v.id,
                       onClick: function () { upd('omniVoice', v.id); },
@@ -13657,8 +14386,8 @@
                     }, preset.label);
                   })
                 ),
-                [{ k: 'ksBrightness', label: 'Brightness', min: 0.1, max: 1, step: 0.01 },
-                { k: 'ksDamping', label: 'Sustain/Damping', min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
+                [{ k: 'ksBrightness', label: t('stem.synth.brightness'), min: 0.1, max: 1, step: 0.01 },
+                { k: 'ksDamping', label: t('stem.synth.sustaindamping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
                   return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-1" },
                     React.createElement("span", { className: "text-[10px] font-bold text-amber-700 w-24" }, p.label),
                     React.createElement("input", { type: "range", min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500" }),
@@ -13839,7 +14568,7 @@
 
             // ── Snapshot button (bottom) ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: 'Synth: ' + (d.waveType || 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Synthesizer snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth') + (d.waveType || 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(t('stem.synth_ui.ud83dudcf8_synthesizer_snapshot_saved'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           );
 
@@ -13853,113 +14582,113 @@
 
           var SYSTEMS = {
             skeletal: {
-              name: 'Skeletal', icon: '\uD83E\uDDB4', color: '#fef3c7', accent: '#b45309',
+              name: t('stem.synth_ui.skeletal'), icon: '\uD83E\uDDB4', color: '#fef3c7', accent: '#b45309',
               desc: '206 bones \u2014 support, protection, movement, mineral storage, hematopoiesis.',
               structures: [
-                { id: 'skull', name: 'Skull (Cranium)', x: 0.50, y: 0.06, v: 'b', fn: 'Protects the brain. 22 fused bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical: 'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and birth canal passage.', detail: 'Houses meninges, brain, and cranial nerve foramina. Sutures (coronal, sagittal, lambdoid) fuse by age 2.' },
-                { id: 'mandible', name: 'Mandible', x: 0.50, y: 0.10, v: 'a', fn: 'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical: 'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
-                { id: 'clavicle', name: 'Clavicle', x: 0.40, y: 0.155, v: 'a', fn: 'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical: 'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
-                { id: 'sternum', name: 'Sternum', x: 0.50, y: 0.22, v: 'a', fn: 'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical: 'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
-                { id: 'ribs', name: 'Ribs (1\u201312)', x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
-                { id: 'scapula', name: 'Scapula', x: 0.38, y: 0.22, v: 'p', fn: 'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical: 'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
-                { id: 'humerus', name: 'Humerus', x: 0.26, y: 0.27, v: 'a', fn: 'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical: 'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
-                { id: 'radius', name: 'Radius', x: 0.21, y: 0.36, v: 'a', fn: 'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical: 'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
-                { id: 'ulna', name: 'Ulna', x: 0.24, y: 0.36, v: 'a', fn: 'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical: 'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
-                { id: 'carpals', name: 'Carpals', x: 0.17, y: 0.44, v: 'a', fn: '8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical: 'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
-                { id: 'vertebral', name: 'Vertebral Column', x: 0.50, y: 0.30, v: 'p', fn: '33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical: 'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.' },
-                { id: 'pelvis', name: 'Pelvis', x: 0.50, y: 0.42, v: 'b', fn: 'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical: 'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.' },
-                { id: 'femur', name: 'Femur', x: 0.42, y: 0.57, v: 'a', fn: 'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical: 'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.' },
-                { id: 'patella', name: 'Patella', x: 0.43, y: 0.66, v: 'a', fn: 'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical: 'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
-                { id: 'tibia', name: 'Tibia', x: 0.42, y: 0.76, v: 'a', fn: 'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical: 'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
-                { id: 'fibula', name: 'Fibula', x: 0.46, y: 0.76, v: 'a', fn: 'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical: 'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
-                { id: 'tarsals', name: 'Tarsals', x: 0.42, y: 0.89, v: 'a', fn: '7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical: 'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
-                { id: 'sacrum', name: 'Sacrum & Coccyx', x: 0.50, y: 0.44, v: 'p', fn: 'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical: 'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' }
+                { id: 'skull', name: t('stem.synth_ui.skull_cranium'), x: 0.50, y: 0.06, v: 'b', fn: 'Protects the brain. 22 fused bones form the cranial vault (frontal, parietal\u00D72, temporal\u00D72, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).', clinical: 'Fractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and birth canal passage.', detail: 'Houses meninges, brain, and cranial nerve foramina. Sutures (coronal, sagittal, lambdoid) fuse by age 2.' },
+                { id: 'mandible', name: t('stem.synth_ui.mandible'), x: 0.50, y: 0.10, v: 'a', fn: 'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical: 'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
+                { id: 'clavicle', name: t('stem.synth_ui.clavicle'), x: 0.40, y: 0.155, v: 'a', fn: 'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical: 'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
+                { id: 'sternum', name: t('stem.synth_ui.sternum'), x: 0.50, y: 0.22, v: 'a', fn: 'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical: 'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
+                { id: 'ribs', name: t('stem.synth_ui.ribs_1u201312'), x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
+                { id: 'scapula', name: t('stem.synth_ui.scapula'), x: 0.38, y: 0.22, v: 'p', fn: 'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical: 'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
+                { id: 'humerus', name: t('stem.synth_ui.humerus'), x: 0.26, y: 0.27, v: 'a', fn: 'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical: 'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
+                { id: 'radius', name: t('stem.synth_ui.radius'), x: 0.21, y: 0.36, v: 'a', fn: 'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical: 'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
+                { id: 'ulna', name: t('stem.synth_ui.ulna'), x: 0.24, y: 0.36, v: 'a', fn: 'Medial forearm bone. Olecranon forms elbow point. Trochlear notch articulates with humerus for hinge motion.', clinical: 'Olecranon fractures from direct trauma. Monteggia fracture: proximal ulna + radial head dislocation.' },
+                { id: 'carpals', name: t('stem.synth_ui.carpals'), x: 0.17, y: 0.44, v: 'a', fn: '8 small bones in 2 rows: scaphoid, lunate, triquetrum, pisiform (proximal); trapezium, trapezoid, capitate, hamate (distal).', clinical: 'Scaphoid fracture: anatomical snuffbox tenderness. Avascular necrosis risk due to retrograde blood supply.' },
+                { id: 'vertebral', name: t('stem.synth_ui.vertebral_column'), x: 0.50, y: 0.30, v: 'p', fn: '33 vertebrae: 7 cervical, 12 thoracic, 5 lumbar, 5 sacral (fused), 4 coccygeal (fused). Protects spinal cord. Four curves provide spring-like shock absorption.', clinical: 'Herniated disc (L4\u2013L5, L5\u2013S1 most common). Scoliosis, kyphosis, lordosis. Spinal stenosis.' },
+                { id: 'pelvis', name: t('stem.synth_ui.pelvis'), x: 0.50, y: 0.42, v: 'b', fn: 'Ilium, ischium, pubis fused at acetabulum. Transfers weight from spine to lower limbs. Male pelvis narrower; female pelvis wider for childbirth.', clinical: 'Pelvic fractures \u2192 life-threatening hemorrhage from internal iliac vessels. Acetabular fractures require surgical fixation.' },
+                { id: 'femur', name: t('stem.synth_ui.femur'), x: 0.42, y: 0.57, v: 'a', fn: 'Longest, strongest bone. Head fits into acetabulum. Neck angled 125\u00B0. Supports 2\u20133\u00D7 body weight during walking.', clinical: 'Hip fractures in elderly have 20\u201330% one-year mortality. Femoral neck fractures may disrupt blood supply \u2192 avascular necrosis.' },
+                { id: 'patella', name: t('stem.synth_ui.patella'), x: 0.43, y: 0.66, v: 'a', fn: 'Largest sesamoid bone. Embedded in quadriceps tendon. Increases mechanical advantage of quadriceps by 30%.', clinical: 'Patellar fracture from direct trauma or forceful quad contraction. Patellofemoral syndrome ("runner\'s knee").' },
+                { id: 'tibia', name: t('stem.synth_ui.tibia'), x: 0.42, y: 0.76, v: 'a', fn: 'Main weight-bearing bone of the leg. Medial malleolus forms inner ankle. Tibial plateau articulates with femoral condyles.', clinical: 'Tibial plateau fractures from axial loading. Open fractures common (subcutaneous anterior surface). Compartment syndrome risk.' },
+                { id: 'fibula', name: t('stem.synth_ui.fibula'), x: 0.46, y: 0.76, v: 'a', fn: 'Non-weight-bearing lateral leg bone. Lateral malleolus forms outer ankle. Attachment for interosseous membrane and lateral compartment muscles.', clinical: 'Lateral malleolus fractures in ankle sprains. Maisonneuve fracture: proximal fibula + medial ankle injury.' },
+                { id: 'tarsals', name: t('stem.synth_ui.tarsals'), x: 0.42, y: 0.89, v: 'a', fn: '7 bones: talus, calcaneus, navicular, cuboid, 3 cuneiforms. Form longitudinal and transverse foot arches for shock absorption.', clinical: 'Calcaneal fractures from axial loading (falls from height). Talus fractures risk avascular necrosis.' },
+                { id: 'sacrum', name: t('stem.synth_ui.sacrum_coccyx'), x: 0.50, y: 0.44, v: 'p', fn: 'Sacrum: 5 fused vertebrae forming posterior pelvis. Sacral canal contains cauda equina. Coccyx: vestigial tail bone.', clinical: 'Sacral fractures in high-energy trauma. Coccydynia (tailbone pain) from falls or prolonged sitting.' }
               ]
             },
             muscular: {
-              name: 'Muscular', icon: '\uD83D\uDCAA', color: '#fce7f3', accent: '#be185d',
+              name: t('stem.synth_ui.muscular'), icon: '\uD83D\uDCAA', color: '#fce7f3', accent: '#be185d',
               desc: '600+ muscles \u2014 movement, posture, heat production, joint stabilization.',
               structures: [
-                { id: 'deltoid', name: 'Deltoid', x: 0.30, y: 0.18, v: 'a', fn: 'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin: 'Lateral third of clavicle, acromion, scapular spine', insertion: 'Deltoid tuberosity of humerus', clinical: 'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).' },
-                { id: 'pectoralis', name: 'Pectoralis Major', x: 0.42, y: 0.22, v: 'a', fn: 'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin: 'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion: 'Lateral lip of bicipital groove (humerus)', clinical: 'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
-                { id: 'biceps', name: 'Biceps Brachii', x: 0.24, y: 0.29, v: 'a', fn: 'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin: 'Short head: coracoid process; Long head: supraglenoid tubercle', insertion: 'Radial tuberosity and bicipital aponeurosis', clinical: 'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.' },
-                { id: 'triceps', name: 'Triceps Brachii', x: 0.73, y: 0.29, v: 'p', fn: 'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin: 'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion: 'Olecranon process of ulna', clinical: 'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
-                { id: 'rectus_ab', name: 'Rectus Abdominis', x: 0.50, y: 0.34, v: 'a', fn: 'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin: 'Pubic crest and symphysis', insertion: 'Xiphoid process, costal cartilages 5\u20137', clinical: 'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
-                { id: 'obliques', name: 'External Obliques', x: 0.58, y: 0.34, v: 'a', fn: 'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin: 'External surfaces of ribs 5\u201312', insertion: 'Linea alba, pubic tubercle, iliac crest', clinical: 'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
-                { id: 'quads', name: 'Quadriceps Femoris', x: 0.42, y: 0.55, v: 'a', fn: 'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin: 'Rectus femoris: AIIS; Vasti: femoral shaft', insertion: 'Tibial tuberosity via patellar tendon', clinical: 'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.' },
-                { id: 'hamstrings', name: 'Hamstrings', x: 0.58, y: 0.58, v: 'p', fn: 'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin: 'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion: 'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical: '"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.' },
-                { id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.58, y: 0.74, v: 'p', fn: 'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin: 'Medial and lateral femoral condyles', insertion: 'Calcaneus via Achilles tendon', clinical: 'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.' },
-                { id: 'trapezius', name: 'Trapezius', x: 0.50, y: 0.20, v: 'p', fn: 'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin: 'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion: 'Lateral third of clavicle, acromion, scapular spine', clinical: 'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
-                { id: 'lats', name: 'Latissimus Dorsi', x: 0.62, y: 0.32, v: 'p', fn: 'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin: 'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion: 'Floor of bicipital (intertubercular) groove', clinical: 'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
-                { id: 'glutes', name: 'Gluteus Maximus', x: 0.50, y: 0.44, v: 'p', fn: 'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin: 'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion: 'IT band and gluteal tuberosity of femur', clinical: 'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
-                { id: 'sartorius', name: 'Sartorius', x: 0.38, y: 0.52, v: 'a', fn: 'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin: 'Anterior superior iliac spine (ASIS)', insertion: 'Pes anserinus (medial proximal tibia)', clinical: 'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
-                { id: 'tibialis', name: 'Tibialis Anterior', x: 0.40, y: 0.76, v: 'a', fn: 'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin: 'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion: 'Medial cuneiform, base of 1st metatarsal', clinical: 'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
-                { id: 'soleus', name: 'Soleus', x: 0.58, y: 0.78, v: 'p', fn: 'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin: 'Soleal line and posterior proximal fibula', insertion: 'Calcaneus via Achilles tendon', clinical: 'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' }
+                { id: 'deltoid', name: t('stem.synth_ui.deltoid'), x: 0.30, y: 0.18, v: 'a', fn: 'Primary shoulder abductor (middle fibers). Anterior fibers flex/medially rotate; posterior fibers extend/laterally rotate the arm.', origin: 'Lateral third of clavicle, acromion, scapular spine', insertion: 'Deltoid tuberosity of humerus', clinical: 'Atrophy from axillary nerve injury (C5\u2013C6). IM injection site (avoid in children < 3 yrs).' },
+                { id: 'pectoralis', name: t('stem.synth_ui.pectoralis_major'), x: 0.42, y: 0.22, v: 'a', fn: 'Powerful arm adductor, flexor, and medial rotator. Clavicular head flexes; sternocostal head adducts and extends from flexed position.', origin: 'Clavicle, sternum, ribs 1\u20136, external oblique aponeurosis', insertion: 'Lateral lip of bicipital groove (humerus)', clinical: 'Rupture during bench press \u2014 "dropped pec" sign. Poland syndrome: congenital absence.' },
+                { id: 'biceps', name: t('stem.synth_ui.biceps_brachii'), x: 0.24, y: 0.29, v: 'a', fn: 'Powerful forearm supinator and elbow flexor. Long head stabilizes shoulder joint. Short head assists shoulder flexion.', origin: 'Short head: coracoid process; Long head: supraglenoid tubercle', insertion: 'Radial tuberosity and bicipital aponeurosis', clinical: 'Long head tendon rupture \u2192 "Popeye deformity." Biceps reflex tests C5\u2013C6 nerve roots.' },
+                { id: 'triceps', name: t('stem.synth_ui.triceps_brachii'), x: 0.73, y: 0.29, v: 'p', fn: 'Only elbow extensor. Three heads: long (crosses shoulder), lateral, and medial. Essential for pushing movements.', origin: 'Long: infraglenoid tubercle; Lateral/medial: posterior humerus', insertion: 'Olecranon process of ulna', clinical: 'Weakness in radial nerve palsy (C7 root). Triceps reflex tests C7\u2013C8 nerve roots.' },
+                { id: 'rectus_ab', name: t('stem.synth_ui.rectus_abdominis'), x: 0.50, y: 0.34, v: 'a', fn: 'Flexes trunk (sit-ups/crunches). Compresses abdominal contents. Assists forced expiration and stabilizes pelvis during walking.', origin: 'Pubic crest and symphysis', insertion: 'Xiphoid process, costal cartilages 5\u20137', clinical: 'Diastasis recti: midline separation (common in pregnancy). "Six-pack" \u2014 tendinous intersections create segmented appearance.' },
+                { id: 'obliques', name: t('stem.synth_ui.external_obliques'), x: 0.58, y: 0.34, v: 'a', fn: 'Trunk rotation (contralateral), lateral flexion, and abdominal compression. Largest and most superficial abdominal muscle.', origin: 'External surfaces of ribs 5\u201312', insertion: 'Linea alba, pubic tubercle, iliac crest', clinical: 'Strains from twisting sports. Inguinal ligament (lower border) is key landmark for hernia surgery.' },
+                { id: 'quads', name: t('stem.synth_ui.quadriceps_femoris'), x: 0.42, y: 0.55, v: 'a', fn: 'Four muscles (rectus femoris, vastus lateralis/medialis/intermedius). Primary knee extensor. Rectus femoris also flexes hip.', origin: 'Rectus femoris: AIIS; Vasti: femoral shaft', insertion: 'Tibial tuberosity via patellar tendon', clinical: 'Quadriceps tendon/patellar tendon rupture. VMO weakness \u2192 patellofemoral tracking issues.' },
+                { id: 'hamstrings', name: t('stem.synth_ui.hamstrings'), x: 0.58, y: 0.58, v: 'p', fn: 'Three muscles (biceps femoris, semitendinosus, semimembranosus). Flex knee and extend hip. Critical for deceleration in running.', origin: 'Ischial tuberosity (all three); biceps femoris short head: linea aspera', insertion: 'Biceps: fibular head; Semi-T: pes anserinus; Semi-M: posterior medial tibial condyle', clinical: '"Pulled hamstring" \u2014 most common muscle strain in athletes. Proximal avulsion in sprinters.' },
+                { id: 'gastrocnemius', name: t('stem.synth_ui.gastrocnemius'), x: 0.58, y: 0.74, v: 'p', fn: 'Superficial calf muscle. Powerful plantar flexor (push-off in gait) and weak knee flexor. Two heads span the knee joint.', origin: 'Medial and lateral femoral condyles', insertion: 'Calcaneus via Achilles tendon', clinical: 'Achilles tendon rupture (positive Thompson test). "Tennis leg" \u2014 medial head tear.' },
+                { id: 'trapezius', name: t('stem.synth_ui.trapezius'), x: 0.50, y: 0.20, v: 'p', fn: 'Large diamond-shaped muscle. Upper fibers elevate scapula (shrug); middle fibers retract; lower fibers depress and rotate scapula upward.', origin: 'External occipital protuberance, nuchal ligament, C7\u2013T12 spinous processes', insertion: 'Lateral third of clavicle, acromion, scapular spine', clinical: 'Spinal accessory nerve (CN XI) palsy \u2192 inability to shrug shoulder. Shoulder droop.' },
+                { id: 'lats', name: t('stem.synth_ui.latissimus_dorsi'), x: 0.62, y: 0.32, v: 'p', fn: 'Broadest back muscle. Powerful arm extensor, adductor, and medial rotator. Key muscle in swimming, climbing, and pull-ups.', origin: 'T6\u2013T12 spinous processes, thoracolumbar fascia, iliac crest, ribs 9\u201312', insertion: 'Floor of bicipital (intertubercular) groove', clinical: 'Used in reconstructive surgery (myocutaneous flaps). Thoracodorsal nerve (C6\u2013C8) innervation.' },
+                { id: 'glutes', name: t('stem.synth_ui.gluteus_maximus'), x: 0.50, y: 0.44, v: 'p', fn: 'Largest muscle in the body. Powerful hip extensor and lateral rotator. Essential for standing from seated position, climbing stairs, running.', origin: 'Posterior ilium, sacrum, coccyx, sacrotuberous ligament', insertion: 'IT band and gluteal tuberosity of femur', clinical: 'Weakness \u2192 Trendelenburg gait (compensatory trunk lean). Inferior gluteal nerve (L5\u2013S2).' },
+                { id: 'sartorius', name: t('stem.synth_ui.sartorius'), x: 0.38, y: 0.52, v: 'a', fn: 'Longest muscle in the body. Crosses hip and knee. Produces the "tailor\'s position" (cross-legged sitting): hip flexion, abduction, lateral rotation + knee flexion.', origin: 'Anterior superior iliac spine (ASIS)', insertion: 'Pes anserinus (medial proximal tibia)', clinical: 'Pes anserinus bursitis causes medial knee pain. Landmark for femoral triangle.' },
+                { id: 'tibialis', name: t('stem.synth_ui.tibialis_anterior'), x: 0.40, y: 0.76, v: 'a', fn: 'Primary ankle dorsiflexor and foot inverter. Prevents foot slap during heel strike. Supports medial longitudinal arch.', origin: 'Lateral tibial condyle, upper 2/3 of lateral tibial surface', insertion: 'Medial cuneiform, base of 1st metatarsal', clinical: 'Foot drop from deep peroneal nerve injury. Shin splints (medial tibial stress syndrome).' },
+                { id: 'soleus', name: t('stem.synth_ui.soleus'), x: 0.58, y: 0.78, v: 'p', fn: 'Deep calf muscle beneath gastrocnemius. Plantar flexion (postural muscle \u2014 prevents forward falling while standing). Does not cross knee.', origin: 'Soleal line and posterior proximal fibula', insertion: 'Calcaneus via Achilles tendon', clinical: 'Soleus muscle pump aids venous return. DVT risk when immobile (long flights). Soleus strain in runners.' }
               ]
             },
             circulatory: {
-              name: 'Circulatory', icon: '\u2764\uFE0F', color: '#fee2e2', accent: '#dc2626',
+              name: t('stem.synth_ui.circulatory'), icon: '\u2764\uFE0F', color: '#fee2e2', accent: '#dc2626',
               desc: 'Heart, 60,000 miles of vessels, 5L of blood \u2014 delivers O\u2082, nutrients, hormones; removes waste.',
               structures: [
-                { id: 'heart', name: 'Heart', x: 0.48, y: 0.24, v: 'a', fn: 'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical: 'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.' },
-                { id: 'aorta', name: 'Aorta', x: 0.52, y: 0.22, v: 'a', fn: 'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical: 'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.' },
-                { id: 'sup_vena', name: 'Superior Vena Cava', x: 0.54, y: 0.20, v: 'a', fn: 'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical: 'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
-                { id: 'inf_vena', name: 'Inferior Vena Cava', x: 0.52, y: 0.36, v: 'a', fn: 'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical: 'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
-                { id: 'pulm_art', name: 'Pulmonary Arteries', x: 0.46, y: 0.22, v: 'a', fn: 'Carry deoxygenated blood from RV to lungs. Only arteries that carry deoxygenated blood. Bifurcates at T5.', clinical: 'Pulmonary embolism (PE): clot from DVT lodges in pulmonary arteries. Saddle PE is life-threatening.' },
-                { id: 'carotid', name: 'Carotid Arteries', x: 0.44, y: 0.12, v: 'a', fn: 'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical: 'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.' },
-                { id: 'jugular', name: 'Jugular Veins', x: 0.56, y: 0.12, v: 'a', fn: 'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical: 'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
-                { id: 'coronary', name: 'Coronary Arteries', x: 0.46, y: 0.25, v: 'a', fn: 'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical: 'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
-                { id: 'femoral_a', name: 'Femoral Artery', x: 0.44, y: 0.48, v: 'a', fn: 'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical: 'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
-                { id: 'brachial', name: 'Brachial Artery', x: 0.28, y: 0.30, v: 'a', fn: 'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical: 'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
-                { id: 'portal', name: 'Hepatic Portal Vein', x: 0.52, y: 0.32, v: 'a', fn: 'Carries nutrient-rich blood from GI tract and spleen to liver for processing. Formed by superior mesenteric and splenic veins. Portal circulation is unique.', clinical: 'Portal hypertension in cirrhosis \u2192 esophageal varices, caput medusae, hemorrhoids, splenomegaly.' }
+                { id: 'heart', name: t('stem.synth_ui.heart'), x: 0.48, y: 0.24, v: 'a', fn: 'Muscular pump. 4 chambers: RA/RV (pulmonary circuit), LA/LV (systemic circuit). Beats ~100,000\u00D7/day, pumps ~5L/min at rest.', clinical: 'MI (heart attack): coronary artery occlusion. Heart failure, arrhythmias, valvular disease. Leading cause of death worldwide.' },
+                { id: 'aorta', name: t('stem.synth_ui.aorta'), x: 0.52, y: 0.22, v: 'a', fn: 'Largest artery. Ascending aorta \u2192 aortic arch (brachiocephalic, left common carotid, left subclavian) \u2192 descending thoracic \u2192 abdominal aorta.', clinical: 'Aortic aneurysm (abdominal > 5.5cm \u2192 surgical repair). Aortic dissection: tearing chest pain, emergency.' },
+                { id: 'sup_vena', name: t('stem.synth_ui.superior_vena_cava'), x: 0.54, y: 0.20, v: 'a', fn: 'Returns deoxygenated blood from head, neck, upper limbs, and thorax to the right atrium. Formed by union of brachiocephalic veins.', clinical: 'SVC syndrome: obstruction (often by lung cancer/lymphoma) causes facial swelling, dyspnea, distended neck veins.' },
+                { id: 'inf_vena', name: t('stem.synth_ui.inferior_vena_cava'), x: 0.52, y: 0.36, v: 'a', fn: 'Largest vein. Returns blood from lower body to right atrium. Formed at L5 by union of common iliac veins. Passes through diaphragm at T8.', clinical: 'IVC filter placement for recurrent PE. IVC compression during pregnancy (supine hypotension syndrome).' },
+                { id: 'pulm_art', name: t('stem.synth_ui.pulmonary_arteries'), x: 0.46, y: 0.22, v: 'a', fn: 'Carry deoxygenated blood from RV to lungs. Only arteries that carry deoxygenated blood. Bifurcates at T5.', clinical: 'Pulmonary embolism (PE): clot from DVT lodges in pulmonary arteries. Saddle PE is life-threatening.' },
+                { id: 'carotid', name: t('stem.synth_ui.carotid_arteries'), x: 0.44, y: 0.12, v: 'a', fn: 'Common carotid bifurcates at C4 into internal (brain) and external (face/scalp). Internal carotid supplies anterior 2/3 of brain.', clinical: 'Carotid stenosis causes stroke/TIA. Carotid endarterectomy for >70% stenosis. Carotid body senses O\u2082/CO\u2082/pH.' },
+                { id: 'jugular', name: t('stem.synth_ui.jugular_veins'), x: 0.56, y: 0.12, v: 'a', fn: 'Internal jugular drains brain and face (runs with carotid in carotid sheath). External jugular visible on neck surface.', clinical: 'JVD (jugular venous distension) \u2192 sign of right heart failure, cardiac tamponade, tension pneumothorax.' },
+                { id: 'coronary', name: t('stem.synth_ui.coronary_arteries'), x: 0.46, y: 0.25, v: 'a', fn: 'LAD (left anterior descending) supplies anterior LV wall and septum ("widow maker"). LCx supplies lateral LV. RCA supplies RV and inferior LV.', clinical: 'LAD occlusion: anterior STEMI (most dangerous). RCA occlusion: inferior MI with possible heart block.' },
+                { id: 'femoral_a', name: t('stem.synth_ui.femoral_artery'), x: 0.44, y: 0.48, v: 'a', fn: 'Main blood supply to lower limb. Palpable at mid-inguinal point (midway ASIS to pubic symphysis). Becomes popliteal artery behind knee.', clinical: 'Femoral artery catheterization for angiography. Femoral artery laceration \u2192 rapid exsanguination.' },
+                { id: 'brachial', name: t('stem.synth_ui.brachial_artery'), x: 0.28, y: 0.30, v: 'a', fn: 'Continuation of axillary artery. Runs medially in arm. Blood pressure measured here (antecubital fossa). Bifurcates into radial and ulnar arteries.', clinical: 'BP cuff occludes brachial artery (Korotkoff sounds). Supracondylar fracture may damage brachial artery \u2192 Volkmann contracture.' },
+                { id: 'portal', name: t('stem.synth_ui.hepatic_portal_vein'), x: 0.52, y: 0.32, v: 'a', fn: 'Carries nutrient-rich blood from GI tract and spleen to liver for processing. Formed by superior mesenteric and splenic veins. Portal circulation is unique.', clinical: 'Portal hypertension in cirrhosis \u2192 esophageal varices, caput medusae, hemorrhoids, splenomegaly.' }
               ]
             },
             nervous: {
-              name: 'Nervous', icon: '\u26A1', color: '#ede9fe', accent: '#7c3aed',
+              name: t('stem.synth_ui.nervous'), icon: '\u26A1', color: '#ede9fe', accent: '#7c3aed',
               desc: 'CNS (brain + spinal cord) and PNS (31 spinal nerve pairs, 12 cranial nerve pairs, autonomic NS).',
               structures: [
-                { id: 'brain', name: 'Brain', x: 0.50, y: 0.05, v: 'b', fn: '~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082.', clinical: 'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy.' },
-                { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.30, v: 'p', fn: 'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical: 'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.' },
-                { id: 'vagus', name: 'Vagus Nerve (CN X)', x: 0.44, y: 0.14, v: 'a', fn: 'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical: 'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
-                { id: 'sciatic', name: 'Sciatic Nerve', x: 0.55, y: 0.50, v: 'p', fn: 'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical: 'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.' },
-                { id: 'brachial_plexus', name: 'Brachial Plexus', x: 0.34, y: 0.16, v: 'a', fn: 'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical: 'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
-                { id: 'median', name: 'Median Nerve', x: 0.22, y: 0.38, v: 'a', fn: 'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical: 'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
-                { id: 'ulnar_n', name: 'Ulnar Nerve', x: 0.78, y: 0.34, v: 'a', fn: 'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical: '"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
-                { id: 'femoral_n', name: 'Femoral Nerve', x: 0.40, y: 0.48, v: 'a', fn: 'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical: 'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
-                { id: 'sympathetic', name: 'Sympathetic Chain', x: 0.54, y: 0.30, v: 'p', fn: 'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical: 'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
-                { id: 'cranial_n', name: 'Cranial Nerves (I\u2013XII)', x: 0.50, y: 0.08, v: 'a', fn: '12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical: 'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
+                { id: 'brain', name: t('stem.synth_ui.brain'), x: 0.50, y: 0.05, v: 'b', fn: '~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O\u2082.', clinical: 'Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy.' },
+                { id: 'spinal_cord', name: t('stem.synth_ui.spinal_cord'), x: 0.50, y: 0.30, v: 'p', fn: 'Extends from foramen magnum to L1\u2013L2 (conus medullaris). Conducts sensory/motor signals. 31 segments, each with dorsal (sensory) and ventral (motor) roots.', clinical: 'Spinal cord injury: above C4 \u2192 quadriplegia + ventilator. Complete transection \u2192 loss of motor/sensory below level.' },
+                { id: 'vagus', name: t('stem.synth_ui.vagus_nerve_cn_x'), x: 0.44, y: 0.14, v: 'a', fn: 'Longest cranial nerve. Parasympathetic innervation to thoracic and abdominal viscera. Slows heart rate, increases GI motility, controls laryngeal muscles.', clinical: 'Vagal stimulation: carotid sinus massage, Valsalva maneuver for SVT. Vagus nerve stimulator for epilepsy/depression. Recurrent laryngeal nerve injury \u2192 hoarseness.' },
+                { id: 'sciatic', name: t('stem.synth_ui.sciatic_nerve'), x: 0.55, y: 0.50, v: 'p', fn: 'Largest/longest nerve in body. L4\u2013S3 roots. Exits pelvis through greater sciatic foramen below piriformis. Divides into tibial and common peroneal nerves above knee.', clinical: 'Sciatica: radiculopathy from herniated disc (L4\u2013S1). Piriformis syndrome mimics sciatica. IM injection site avoidance.' },
+                { id: 'brachial_plexus', name: t('stem.synth_ui.brachial_plexus'), x: 0.34, y: 0.16, v: 'a', fn: 'C5\u2013T1 nerve roots form trunks, divisions, cords, branches. Innervates entire upper limb. "Robert Taylor Drinks Cold Beer" (roots, trunks, divisions, cords, branches).', clinical: 'Erb-Duchenne palsy (C5\u2013C6): "waiter\'s tip" position. Klumpke palsy (C8\u2013T1): claw hand. Birth injuries, motorcycle accidents.' },
+                { id: 'median', name: t('stem.synth_ui.median_nerve'), x: 0.22, y: 0.38, v: 'a', fn: 'C5\u2013T1 via lateral and medial cords. Motor: forearm pronators, wrist/finger flexors, thenar muscles. Sensory: palmar lateral 3.5 digits.', clinical: 'Carpal tunnel syndrome: median nerve compression under flexor retinaculum. Hand of benediction (can\'t flex index/middle fingers).' },
+                { id: 'ulnar_n', name: t('stem.synth_ui.ulnar_nerve'), x: 0.78, y: 0.34, v: 'a', fn: 'C8\u2013T1 via medial cord. Motor: intrinsic hand muscles (interossei, hypothenar), FCU, medial FDP. Sensory: medial 1.5 digits.', clinical: '"Funny bone" \u2014 vulnerable at medial epicondyle. Cubital tunnel syndrome. Claw hand deformity. Froment sign.' },
+                { id: 'femoral_n', name: t('stem.synth_ui.femoral_nerve'), x: 0.40, y: 0.48, v: 'a', fn: 'L2\u2013L4 via lumbar plexus. Motor: quadriceps (knee extension), iliacus, sartorius. Sensory: anterior thigh, medial leg (saphenous branch).', clinical: 'Femoral neuropathy: difficulty climbing stairs, absent knee jerk. L4 radiculopathy mimics. Femoral nerve block for hip surgery.' },
+                { id: 'sympathetic', name: t('stem.synth_ui.sympathetic_chain'), x: 0.54, y: 0.30, v: 'p', fn: 'Paired paravertebral ganglia from C1 to coccyx. "Fight or flight": increases HR, dilates pupils, bronchodilation, vasoconstriction, inhibits GI.', clinical: 'Horner syndrome (sympathetic disruption): miosis, ptosis, anhidrosis. Sympathectomy for hyperhidrosis.' },
+                { id: 'cranial_n', name: t('stem.synth_ui.cranial_nerves_iu2013xii'), x: 0.50, y: 0.08, v: 'a', fn: '12 pairs: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, spinal accessory, hypoglossal.', clinical: 'CN III palsy: "down and out" eye, ptosis, dilated pupil. CN VII (Bell palsy): facial droop. CN XII: tongue deviates toward lesion.' }
               ]
             },
             lymphatic: {
-              name: 'Lymphatic', icon: '\uD83D\uDFE2', color: '#dcfce7', accent: '#16a34a',
+              name: t('stem.synth_ui.lymphatic'), icon: '\uD83D\uDFE2', color: '#dcfce7', accent: '#16a34a',
               desc: 'Returns interstitial fluid, absorbs dietary fat, immune surveillance \u2014 600\u2013700 lymph nodes, thymus, spleen.',
               structures: [
-                { id: 'thymus', name: 'Thymus', x: 0.50, y: 0.19, v: 'a', fn: 'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical: 'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.' },
-                { id: 'spleen', name: 'Spleen', x: 0.58, y: 0.30, v: 'a', fn: 'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical: 'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.' },
-                { id: 'tonsils', name: 'Tonsils (Waldeyer Ring)', x: 0.50, y: 0.11, v: 'a', fn: 'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical: 'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
-                { id: 'cervical_ln', name: 'Cervical Lymph Nodes', x: 0.56, y: 0.13, v: 'a', fn: 'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical: 'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
-                { id: 'axillary_ln', name: 'Axillary Lymph Nodes', x: 0.32, y: 0.22, v: 'a', fn: '5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical: 'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
-                { id: 'inguinal_ln', name: 'Inguinal Lymph Nodes', x: 0.44, y: 0.44, v: 'a', fn: 'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical: 'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
-                { id: 'thoracic_duct', name: 'Thoracic Duct', x: 0.48, y: 0.26, v: 'p', fn: 'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical: 'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
-                { id: 'bone_marrow', name: 'Bone Marrow', x: 0.42, y: 0.57, v: 'a', fn: 'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical: 'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
+                { id: 'thymus', name: t('stem.synth_ui.thymus'), x: 0.50, y: 0.19, v: 'a', fn: 'Primary lymphoid organ in anterior mediastinum. T-cell maturation and positive/negative selection. Largest in childhood, involutes after puberty (replaced by fat).', clinical: 'Thymoma: associated with myasthenia gravis (anti-AChR antibodies). DiGeorge syndrome: thymic aplasia \u2192 T-cell deficiency.' },
+                { id: 'spleen', name: t('stem.synth_ui.spleen'), x: 0.58, y: 0.30, v: 'a', fn: 'Largest lymphoid organ. Filters blood: removes old RBCs (red pulp), mounts immune responses to blood-borne antigens (white pulp). Stores 1/3 of platelets.', clinical: 'Splenomegaly in mono, malaria, leukemia. Splenic rupture from trauma \u2192 emergency splenectomy. Post-splenectomy: encapsulated bacteria risk.' },
+                { id: 'tonsils', name: t('stem.synth_ui.tonsils_waldeyer_ring'), x: 0.50, y: 0.11, v: 'a', fn: 'Pharyngeal (adenoids), palatine, tubal, and lingual tonsils form a lymphoid ring at the oropharyngeal entrance. First line of defense against inhaled/ingested pathogens.', clinical: 'Tonsillitis, peritonsillar abscess ("quinsy"). Adenoid hypertrophy \u2192 mouth breathing, sleep apnea in children.' },
+                { id: 'cervical_ln', name: t('stem.synth_ui.cervical_lymph_nodes'), x: 0.56, y: 0.13, v: 'a', fn: 'Drain head and neck including scalp, face, oral cavity, pharynx. Deep cervical chain runs along IJV. Virchow node (left supraclavicular) drains thoracic duct.', clinical: 'Enlarged: infection, lymphoma, metastatic cancer. Virchow node enlargement \u2192 suspect GI malignancy (Troisier sign).' },
+                { id: 'axillary_ln', name: t('stem.synth_ui.axillary_lymph_nodes'), x: 0.32, y: 0.22, v: 'a', fn: '5 groups draining upper limb, breast, chest wall. Sentinel lymph node biopsy in breast cancer staging.', clinical: 'Breast cancer staging depends on axillary LN involvement. Axillary dissection may cause lymphedema of arm.' },
+                { id: 'inguinal_ln', name: t('stem.synth_ui.inguinal_lymph_nodes'), x: 0.44, y: 0.44, v: 'a', fn: 'Superficial group drains lower limb, perineum, lower abdominal wall, external genitalia. Deep group drains along femoral vein.', clinical: 'Lymphadenopathy in STIs, lower limb infections, lymphoma. Buboes in lymphogranuloma venereum, plague.' },
+                { id: 'thoracic_duct', name: t('stem.synth_ui.thoracic_duct'), x: 0.48, y: 0.26, v: 'p', fn: 'Main lymphatic channel (40 cm). Drains \u00BE of body (everything except right upper quadrant). Empties into left subclavian/internal jugular junction (left venous angle).', clinical: 'Chylothorax from thoracic duct injury (trauma, surgery). Milky pleural effusion with high triglycerides.' },
+                { id: 'bone_marrow', name: t('stem.synth_ui.bone_marrow'), x: 0.42, y: 0.57, v: 'a', fn: 'Primary lymphoid organ. Red marrow produces all blood cells (hematopoiesis) including lymphocyte precursors. Adults: mainly in axial skeleton, proximal femur/humerus.', clinical: 'Leukemia (malignant WBC proliferation). Aplastic anemia. Bone marrow biopsy from posterior iliac crest. Bone marrow transplant.' }
               ]
             },
             organs: {
-              name: 'Organ Systems', icon: '\uD83C\uDFE5', color: '#e0f2fe', accent: '#0284c7',
+              name: t('stem.synth_ui.organ_systems'), icon: '\uD83C\uDFE5', color: '#e0f2fe', accent: '#0284c7',
               desc: 'Major visceral organs \u2014 respiration, digestion, filtration, endocrine regulation.',
               structures: [
-                { id: 'lungs', name: 'Lungs', x: 0.42, y: 0.24, v: 'a', fn: 'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical: 'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.' },
-                { id: 'liver', name: 'Liver', x: 0.56, y: 0.30, v: 'a', fn: 'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical: 'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.' },
-                { id: 'stomach', name: 'Stomach', x: 0.55, y: 0.33, v: 'a', fn: 'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical: 'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.' },
-                { id: 'kidneys', name: 'Kidneys', x: 0.58, y: 0.36, v: 'p', fn: 'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical: 'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.' },
-                { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.38, v: 'a', fn: '6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical: 'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
-                { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.40, v: 'a', fn: '1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical: 'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
-                { id: 'pancreas', name: 'Pancreas', x: 0.52, y: 0.34, v: 'a', fn: 'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical: 'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
-                { id: 'gallbladder', name: 'Gallbladder', x: 0.55, y: 0.31, v: 'a', fn: 'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical: 'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
-                { id: 'bladder', name: 'Urinary Bladder', x: 0.50, y: 0.44, v: 'a', fn: 'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical: 'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
-                { id: 'diaphragm', name: 'Diaphragm', x: 0.50, y: 0.27, v: 'a', fn: 'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical: 'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."' },
-                { id: 'thyroid', name: 'Thyroid Gland', x: 0.50, y: 0.135, v: 'a', fn: 'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical: 'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
-                { id: 'adrenals', name: 'Adrenal Glands', x: 0.56, y: 0.34, v: 'p', fn: 'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical: 'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
+                { id: 'lungs', name: t('stem.synth_ui.lungs'), x: 0.42, y: 0.24, v: 'a', fn: 'Right lung: 3 lobes (superior, middle, inferior). Left lung: 2 lobes + lingula (cardiac notch). ~300 million alveoli provide ~70 m\u00B2 surface area for gas exchange.', clinical: 'Pneumonia, COPD, asthma, lung cancer (#1 cancer killer). Pneumothorax. Right bronchus more vertical \u2192 foreign body aspiration.' },
+                { id: 'liver', name: t('stem.synth_ui.liver'), x: 0.56, y: 0.30, v: 'a', fn: 'Largest internal organ (1.5 kg). 2 anatomical lobes (right larger). Functions: bile production, detoxification, protein synthesis (albumin, clotting factors), glycogen storage, drug metabolism.', clinical: 'Hepatitis (viral A/B/C), cirrhosis, hepatocellular carcinoma. Liver failure: jaundice, coagulopathy, encephalopathy. Transplantation.' },
+                { id: 'stomach', name: t('stem.synth_ui.stomach'), x: 0.55, y: 0.33, v: 'a', fn: 'J-shaped muscular sac. Regions: cardia, fundus, body, antrum, pylorus. Produces HCl (pH 1\u20132), pepsin, intrinsic factor (B12 absorption). Capacity ~1L.', clinical: 'Peptic ulcer disease (H. pylori, NSAIDs). Gastric cancer. GERD. Gastrectomy may cause dumping syndrome, B12 deficiency.' },
+                { id: 'kidneys', name: t('stem.synth_ui.kidneys'), x: 0.58, y: 0.36, v: 'p', fn: 'Bean-shaped, retroperitoneal at T12\u2013L3. Each has ~1 million nephrons. Filter 180L/day, produce 1\u20132L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).', clinical: 'CKD, nephrotic/nephritic syndrome, kidney stones, renal cell carcinoma. Right kidney lower due to liver. Dialysis when GFR <15.' },
+                { id: 'sm_intestine', name: t('stem.synth_ui.small_intestine'), x: 0.50, y: 0.38, v: 'a', fn: '6m long: duodenum (25cm, C-shaped), jejunum (2.5m), ileum (3.5m). Primary site of nutrient absorption. Villi and microvilli increase surface area to ~200 m\u00B2.', clinical: 'Celiac disease (gluten sensitivity), Crohn disease (often terminal ileum), SBO (adhesions #1 cause), duodenal ulcers.' },
+                { id: 'lg_intestine', name: t('stem.synth_ui.large_intestine'), x: 0.50, y: 0.40, v: 'a', fn: '1.5m: cecum, ascending, transverse, descending, sigmoid colon, rectum. Absorbs water and electrolytes. Houses gut microbiome (~100 trillion bacteria). Forms and stores feces.', clinical: 'Colorectal cancer (3rd most common cancer). Diverticulosis/diverticulitis. Ulcerative colitis. Appendicitis (McBurney point).' },
+                { id: 'pancreas', name: t('stem.synth_ui.pancreas'), x: 0.52, y: 0.34, v: 'a', fn: 'Retroperitoneal organ. Exocrine (98%): digestive enzymes (lipase, amylase, trypsinogen) and bicarbonate. Endocrine (2%): islets of Langerhans \u2014 insulin (\u03B2), glucagon (\u03B1).', clinical: 'Acute pancreatitis (gallstones, alcohol). Pancreatic cancer (poor prognosis, 5-yr survival <10%). Type 1 diabetes (autoimmune \u03B2-cell destruction).' },
+                { id: 'gallbladder', name: t('stem.synth_ui.gallbladder'), x: 0.55, y: 0.31, v: 'a', fn: 'Pear-shaped sac on inferior liver surface. Stores and concentrates bile (5\u201310\u00D7). Contracts in response to CCK after fatty meals to release bile into duodenum.', clinical: 'Cholelithiasis (gallstones, 10\u201315% of adults). Cholecystitis. Murphy sign. Cholecystectomy is one of most common surgeries.' },
+                { id: 'bladder', name: t('stem.synth_ui.urinary_bladder'), x: 0.50, y: 0.44, v: 'a', fn: 'Distensible muscular sac. Stores 400\u2013600mL urine. Detrusor muscle contracts for micturition. Internal sphincter (involuntary), external sphincter (voluntary, pudendal nerve).', clinical: 'UTIs (more common in females due to short urethra). Bladder cancer (painless hematuria). Neurogenic bladder in spinal cord injury.' },
+                { id: 'diaphragm', name: t('stem.synth_ui.diaphragm'), x: 0.50, y: 0.27, v: 'a', fn: 'Primary muscle of respiration. Dome-shaped, separates thorax from abdomen. Contracts and flattens during inspiration \u2192 negative intrathoracic pressure. Three openings: T8 (IVC), T10 (esophagus), T12 (aorta).', clinical: 'Hiatal hernia (stomach through esophageal hiatus). Diaphragmatic paralysis from phrenic nerve injury (C3\u2013C5). "C3, 4, 5 keeps the diaphragm alive."' },
+                { id: 'thyroid', name: t('stem.synth_ui.thyroid_gland'), x: 0.50, y: 0.135, v: 'a', fn: 'Butterfly-shaped, anterior neck at C5\u2013T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.', clinical: 'Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos. Thyroid nodules/cancer.' },
+                { id: 'adrenals', name: t('stem.synth_ui.adrenal_glands'), x: 0.56, y: 0.34, v: 'p', fn: 'Suprarenal glands. Cortex (3 zones): zona glomerulosa (aldosterone), zona fasciculata (cortisol), zona reticularis (androgens). Medulla: epinephrine/norepinephrine.', clinical: 'Addison disease (cortical insufficiency): hypotension, hyperpigmentation. Cushing syndrome (cortisol excess). Pheochromocytoma (medullary tumor \u2192 episodic HTN).' }
               ]
             }
           };
@@ -14152,7 +14881,7 @@
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
-                [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
+                [{ v: 1, label: t('stem.synth_ui.ku20135'), tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
                   return React.createElement("button", {
                     key: lv.v, title: lv.tip + ' level',
                     onClick: function () { upd('complexity', lv.v); upd('selectedStructure', null); },
@@ -14280,51 +15009,51 @@
 
           var VIEWS = {
             lateral: {
-              name: 'Lateral', desc: 'Side view showing all four lobes, cerebellum, and brainstem',
+              name: t('stem.synth_ui.lateral'), desc: 'Side view showing all four lobes, cerebellum, and brainstem',
               regions: [
-                { id: 'frontal', name: 'Frontal Lobe', x: 0.28, y: 0.32, w: 0.22, fn: 'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann: 'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage: 'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
-                { id: 'prefrontal', name: 'Prefrontal Cortex', x: 0.18, y: 0.35, w: 0.12, fn: 'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann: 'BA 9, 10, 11, 12, 46, 47', blood: 'Anterior cerebral artery, middle cerebral artery', conditions: 'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage: 'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
-                { id: 'motor_cortex', name: 'Primary Motor Cortex', x: 0.42, y: 0.18, w: 0.08, fn: 'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann: 'BA 4', blood: 'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions: 'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage: 'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
-                { id: 'parietal', name: 'Parietal Lobe', x: 0.52, y: 0.22, w: 0.18, fn: 'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann: 'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage: 'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
-                { id: 'temporal', name: 'Temporal Lobe', x: 0.38, y: 0.58, w: 0.20, fn: 'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann: 'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood: 'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions: 'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage: 'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
-                { id: 'occipital', name: 'Occipital Lobe', x: 0.78, y: 0.32, w: 0.14, fn: 'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann: 'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood: 'Posterior cerebral artery', conditions: 'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage: 'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
-                { id: 'cerebellum', name: 'Cerebellum', x: 0.78, y: 0.62, w: 0.14, fn: 'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann: 'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood: 'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions: 'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage: 'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
+                { id: 'frontal', name: t('stem.synth_ui.frontal_lobe'), x: 0.28, y: 0.32, w: 0.22, fn: 'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann: 'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage: 'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
+                { id: 'prefrontal', name: t('stem.synth_ui.prefrontal_cortex'), x: 0.18, y: 0.35, w: 0.12, fn: 'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann: 'BA 9, 10, 11, 12, 46, 47', blood: 'Anterior cerebral artery, middle cerebral artery', conditions: 'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage: 'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
+                { id: 'motor_cortex', name: t('stem.synth_ui.primary_motor_cortex'), x: 0.42, y: 0.18, w: 0.08, fn: 'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann: 'BA 4', blood: 'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions: 'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage: 'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
+                { id: 'parietal', name: t('stem.synth_ui.parietal_lobe'), x: 0.52, y: 0.22, w: 0.18, fn: 'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann: 'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage: 'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
+                { id: 'temporal', name: t('stem.synth_ui.temporal_lobe'), x: 0.38, y: 0.58, w: 0.20, fn: 'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann: 'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood: 'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions: 'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage: 'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
+                { id: 'occipital', name: t('stem.synth_ui.occipital_lobe'), x: 0.78, y: 0.32, w: 0.14, fn: 'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann: 'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood: 'Posterior cerebral artery', conditions: 'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage: 'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
+                { id: 'cerebellum', name: t('stem.synth_ui.cerebellum'), x: 0.78, y: 0.62, w: 0.14, fn: 'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann: 'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood: 'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions: 'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage: 'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
                 { id: 'brainstem', name: 'Brainstem', x: 0.62, y: 0.68, w: 0.10, fn: 'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann: 'N/A', blood: 'Basilar artery, vertebral arteries, PICA, AICA', conditions: 'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage: 'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
-                { id: 'brocas', name: 'Broca\u2019s Area', x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
-                { id: 'wernickes', name: 'Wernicke\u2019s Area', x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' }
+                { id: 'brocas', name: t('stem.synth_ui.brocau2019s_area'), x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
+                { id: 'wernickes', name: t('stem.synth_ui.wernickeu2019s_area'), x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' }
               ]
             },
             medial: {
-              name: 'Medial (Sagittal)', desc: 'Midline cut revealing deep structures',
+              name: t('stem.synth_ui.medial_sagittal'), desc: t('stem.synth_ui.midline_cut_revealing_deep_structures'),
               regions: [
-                { id: 'corpus_callosum', name: 'Corpus Callosum', x: 0.48, y: 0.30, w: 0.20, fn: 'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann: 'N/A (white matter tract)', blood: 'Anterior cerebral artery (pericallosal branches)', conditions: 'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage: 'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
-                { id: 'thalamus', name: 'Thalamus', x: 0.52, y: 0.42, w: 0.10, fn: 'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann: 'N/A (diencephalon)', blood: 'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions: 'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage: 'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
-                { id: 'hypothalamus', name: 'Hypothalamus', x: 0.42, y: 0.52, w: 0.08, fn: 'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann: 'N/A (diencephalon)', blood: 'Circle of Willis branches, superior hypophyseal artery', conditions: 'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage: 'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
-                { id: 'cingulate', name: 'Cingulate Gyrus', x: 0.42, y: 0.22, w: 0.18, fn: 'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann: 'BA 23, 24, 25, 31, 32, 33', blood: 'Anterior cerebral artery (callosomarginal branches)', conditions: 'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage: 'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
-                { id: 'hippocampus', name: 'Hippocampus', x: 0.58, y: 0.55, w: 0.10, fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann: 'Archicortex (3-layered, not neocortical)', blood: 'Posterior cerebral artery (hippocampal branches)', conditions: 'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage: 'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
-                { id: 'amygdala', name: 'Amygdala', x: 0.38, y: 0.58, w: 0.08, fn: 'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann: 'N/A (subcortical)', blood: 'Anterior choroidal artery, middle cerebral artery branches', conditions: 'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage: 'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
-                { id: 'basal_ganglia', name: 'Basal Ganglia', x: 0.50, y: 0.38, w: 0.10, fn: 'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann: 'N/A (subcortical nuclei)', blood: 'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions: 'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage: 'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
+                { id: 'corpus_callosum', name: t('stem.synth_ui.corpus_callosum'), x: 0.48, y: 0.30, w: 0.20, fn: 'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann: 'N/A (white matter tract)', blood: 'Anterior cerebral artery (pericallosal branches)', conditions: 'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage: 'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
+                { id: 'thalamus', name: t('stem.synth_ui.thalamus'), x: 0.52, y: 0.42, w: 0.10, fn: 'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann: 'N/A (diencephalon)', blood: 'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions: 'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage: 'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
+                { id: 'hypothalamus', name: t('stem.synth_ui.hypothalamus'), x: 0.42, y: 0.52, w: 0.08, fn: 'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann: 'N/A (diencephalon)', blood: 'Circle of Willis branches, superior hypophyseal artery', conditions: 'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage: 'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
+                { id: 'cingulate', name: t('stem.synth_ui.cingulate_gyrus'), x: 0.42, y: 0.22, w: 0.18, fn: 'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann: 'BA 23, 24, 25, 31, 32, 33', blood: 'Anterior cerebral artery (callosomarginal branches)', conditions: 'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage: 'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
+                { id: 'hippocampus', name: t('stem.synth_ui.hippocampus'), x: 0.58, y: 0.55, w: 0.10, fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann: 'Archicortex (3-layered, not neocortical)', blood: 'Posterior cerebral artery (hippocampal branches)', conditions: 'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage: 'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
+                { id: 'amygdala', name: t('stem.synth_ui.amygdala'), x: 0.38, y: 0.58, w: 0.08, fn: 'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann: 'N/A (subcortical)', blood: 'Anterior choroidal artery, middle cerebral artery branches', conditions: 'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage: 'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
+                { id: 'basal_ganglia', name: t('stem.synth_ui.basal_ganglia'), x: 0.50, y: 0.38, w: 0.10, fn: 'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann: 'N/A (subcortical nuclei)', blood: 'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions: 'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage: 'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
                 { id: 'ventricles', name: 'Ventricular System', x: 0.50, y: 0.45, w: 0.10, fn: 'CSF-filled cavities: 2 lateral ventricles \u2192 interventricular foramina (Monro) \u2192 3rd ventricle \u2192 cerebral aqueduct (Sylvius) \u2192 4th ventricle. Choroid plexus produces ~500mL CSF/day. CSF cushions brain.', brodmann: 'N/A', blood: 'Choroid plexus supplied by choroidal arteries', conditions: 'Hydrocephalus: obstructive (non-communicating, e.g. aqueductal stenosis) or communicating (impaired absorption at arachnoid granulations). Normal pressure hydrocephalus: triad of dementia, gait ataxia, urinary incontinence ("wet, wacky, wobbly").', damage: 'Increased ICP from CSF obstruction \u2192 headache, nausea, papilledema, herniation if untreated.' }
               ]
             },
             superior: {
-              name: 'Superior (Top)', desc: 'View from above showing hemispheres and sulci',
+              name: t('stem.synth_ui.superior_top'), desc: t('stem.synth_ui.view_from_above_showing_hemispheres'),
               regions: [
-                { id: 'longitudinal', name: 'Longitudinal Fissure', x: 0.50, y: 0.50, w: 0.04, fn: 'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann: 'N/A (anatomical landmark)', blood: 'Superior sagittal sinus runs along its superior border', conditions: 'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage: 'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
-                { id: 'central_sulcus', name: 'Central Sulcus (Rolandic)', x: 0.50, y: 0.38, w: 0.30, fn: 'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann: 'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood: 'Middle cerebral artery branches', conditions: 'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage: 'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
-                { id: 'frontal_sup', name: 'Frontal Lobes (Superior View)', x: 0.35, y: 0.25, w: 0.15, fn: 'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann: 'BA 4, 6, 8, 9, 10, 46', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage: 'Executive dysfunction, personality changes, contralateral motor weakness.' },
-                { id: 'parietal_sup', name: 'Parietal Lobes (Superior View)', x: 0.55, y: 0.55, w: 0.15, fn: 'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann: 'BA 1,2,3,5,7,39,40', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage: 'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' }
+                { id: 'longitudinal', name: t('stem.synth_ui.longitudinal_fissure'), x: 0.50, y: 0.50, w: 0.04, fn: 'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann: 'N/A (anatomical landmark)', blood: 'Superior sagittal sinus runs along its superior border', conditions: 'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage: 'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
+                { id: 'central_sulcus', name: t('stem.synth_ui.central_sulcus_rolandic'), x: 0.50, y: 0.38, w: 0.30, fn: 'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann: 'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood: 'Middle cerebral artery branches', conditions: 'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage: 'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
+                { id: 'frontal_sup', name: t('stem.synth_ui.frontal_lobes_superior_view'), x: 0.35, y: 0.25, w: 0.15, fn: 'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann: 'BA 4, 6, 8, 9, 10, 46', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage: 'Executive dysfunction, personality changes, contralateral motor weakness.' },
+                { id: 'parietal_sup', name: t('stem.synth_ui.parietal_lobes_superior_view'), x: 0.55, y: 0.55, w: 0.15, fn: 'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann: 'BA 1,2,3,5,7,39,40', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage: 'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' }
               ]
             },
             inferior: {
-              name: 'Inferior (Bottom)', desc: 'View from below showing cranial nerves and base',
+              name: t('stem.synth_ui.inferior_bottom'), desc: t('stem.synth_ui.view_from_below_showing_cranial'),
               regions: [
-                { id: 'olfactory', name: 'Olfactory Bulbs/Tracts (CN I)', x: 0.50, y: 0.20, w: 0.10, fn: 'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann: 'N/A', blood: 'Anterior cerebral artery (olfactory branches)', conditions: 'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage: 'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
-                { id: 'optic_chiasm', name: 'Optic Chiasm (CN II)', x: 0.50, y: 0.32, w: 0.10, fn: 'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann: 'N/A', blood: 'Superior hypophyseal artery, ophthalmic artery', conditions: 'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage: 'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
-                { id: 'temporal_inf', name: 'Temporal Lobes (Inferior)', x: 0.40, y: 0.50, w: 0.15, fn: 'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann: 'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood: 'Posterior cerebral artery', conditions: 'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage: 'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
-                { id: 'cerebellum_inf', name: 'Cerebellum (Inferior)', x: 0.50, y: 0.72, w: 0.18, fn: 'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann: 'N/A', blood: 'PICA (posterior inferior cerebellar artery)', conditions: 'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage: 'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
-                { id: 'medulla_inf', name: 'Medulla Oblongata (Inferior)', x: 0.50, y: 0.60, w: 0.08, fn: 'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann: 'N/A', blood: 'Vertebral arteries, PICA', conditions: 'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage: 'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
-                { id: 'cn_nerves', name: 'Cranial Nerves (II\u2013XII)', x: 0.50, y: 0.45, w: 0.12, fn: 'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann: 'N/A', blood: 'Various branches of basilar and vertebral arteries', conditions: 'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage: 'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' }
+                { id: 'olfactory', name: t('stem.synth_ui.olfactory_bulbstracts_cn_i'), x: 0.50, y: 0.20, w: 0.10, fn: 'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann: 'N/A', blood: 'Anterior cerebral artery (olfactory branches)', conditions: 'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage: 'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
+                { id: 'optic_chiasm', name: t('stem.synth_ui.optic_chiasm_cn_ii'), x: 0.50, y: 0.32, w: 0.10, fn: 'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann: 'N/A', blood: 'Superior hypophyseal artery, ophthalmic artery', conditions: 'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage: 'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
+                { id: 'temporal_inf', name: t('stem.synth_ui.temporal_lobes_inferior'), x: 0.40, y: 0.50, w: 0.15, fn: 'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann: 'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood: 'Posterior cerebral artery', conditions: 'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage: 'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
+                { id: 'cerebellum_inf', name: t('stem.synth_ui.cerebellum_inferior'), x: 0.50, y: 0.72, w: 0.18, fn: 'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann: 'N/A', blood: 'PICA (posterior inferior cerebellar artery)', conditions: 'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage: 'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
+                { id: 'medulla_inf', name: t('stem.synth_ui.medulla_oblongata_inferior'), x: 0.50, y: 0.60, w: 0.08, fn: 'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann: 'N/A', blood: 'Vertebral arteries, PICA', conditions: 'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage: 'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
+                { id: 'cn_nerves', name: t('stem.synth_ui.cranial_nerves_iiu2013xii'), x: 0.50, y: 0.45, w: 0.12, fn: 'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann: 'N/A', blood: 'Various branches of basilar and vertebral arteries', conditions: 'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage: 'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' }
               ]
             }
           };
