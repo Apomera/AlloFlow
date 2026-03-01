@@ -5941,8 +5941,78 @@
 
                         var tick3d = 0;
                         var animId3d;
-                        function animate3d() {
-                          animId3d = requestAnimationFrame(animate3d);
+                        // animate3d is defined later as animate3dV2 with 3rd-person and compass support
+
+                        // ── Rich Educational HUD ──
+                        var hud = document.createElement('div');
+                        hud.className = 'rover-hud';
+                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);border-radius:10px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3);max-width:280px';
+                        var modeLabel = isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
+                        var atmosLabel = sel.atmosphere || 'No data';
+                        var gravLabel = sel.gravity || '?';
+                        var featList = (sel.notableFeatures || []).slice(0, 3).map(function (f) { return '<div style="color:#94a3b8;font-size:9px;padding-left:8px">\u2022 ' + f + '</div>'; }).join('');
+                        hud.innerHTML =
+                          '<div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#7dd3fc;letter-spacing:1px">' + modeLabel + '</div>' +
+                          '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-bottom:6px">' +
+                            '<span style="color:#64748b">Planet</span><span style="color:#e2e8f0;font-weight:bold">' + sel.name + ' ' + sel.emoji + '</span>' +
+                            '<span style="color:#64748b">Gravity</span><span>' + gravLabel + '</span>' +
+                            '<span style="color:#64748b">Temp</span><span>' + sel.temp + '</span>' +
+                            '<span style="color:#64748b">Atmos</span><span style="font-size:9px">' + atmosLabel + '</span>' +
+                            '<span style="color:#64748b">Diameter</span><span>' + (sel.diameter || '?') + '</span>' +
+                            '<span style="color:#64748b">Day</span><span>' + (sel.dayLen || '?') + '</span>' +
+                            '<span style="color:#64748b">Year</span><span>' + (sel.yearLen || '?') + '</span>' +
+                          '</div>' +
+                          (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.15);padding-top:4px;margin-bottom:4px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE FEATURES</span>' + featList + '</div>' : '') +
+                          '<div style="border-top:1px solid rgba(56,189,248,0.15);padding-top:4px;color:#94a3b8;font-size:9px">WASD move \u2022 Mouse look \u2022 Q/E alt \u2022 V view</div>';
+                        canvasEl.parentElement.appendChild(hud);
+
+                        // ── Science Fact Ticker (bottom of canvas) ──
+                        var ticker = document.createElement('div');
+                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.2);text-align:center;transition:opacity 0.5s';
+                        var scienceFacts = [
+                          sel.surfaceDesc || sel.fact,
+                          sel.fact,
+                          isGas ? 'Gas giants have no solid surface \u2014 you would fall forever through ever-denser gas layers.' : 'The terrain you see is generated from real elevation profiles.',
+                          sel.name === 'Mars' ? 'Olympus Mons is 2.5x taller than Mount Everest and as wide as France.' : sel.name === 'Venus' ? 'Venus has more volcanoes than any other planet \u2014 over 1,600 mapped.' : sel.name === 'Jupiter' ? 'Jupiter\u2019s Great Red Spot is a storm that has lasted over 350 years.' : sel.name === 'Saturn' ? 'Saturn\u2019s rings would stretch almost from Earth to the Moon.' : sel.name === 'Uranus' ? 'Under extreme pressure, carbon atoms compress into diamonds that rain down.' : sel.name === 'Neptune' ? 'Neptune\u2019s winds reach 2,100 km/h \u2014 the fastest in the solar system.' : sel.name === 'Pluto' ? 'Pluto\u2019s heart-shaped glacier Tombaugh Regio is made of nitrogen ice.' : sel.name === 'Earth' ? 'Earth is the only planet with liquid water on its surface \u2014 and the only one with plate tectonics.' : sel.name === 'Mercury' ? 'Despite being closest to the Sun, Mercury is not the hottest planet \u2014 Venus is!' : 'Every atom in your body was forged inside a star.',
+                          'A day on ' + sel.name + ' lasts ' + (sel.dayLen || '?') + '. A year lasts ' + (sel.yearLen || '?') + '.',
+                          'Gravity on ' + sel.name + ' is ' + gravLabel + ' compared to Earth\u2019s 1.0g.',
+                          isGas ? 'If you parachuted into ' + sel.name + ', you would never touch ground \u2014 just endless clouds getting denser and hotter.' : 'The surface of ' + sel.name + ' is made of ' + (sel.surface || 'rock and dust') + '.'
+                        ].filter(Boolean);
+                        var factIdx = 0;
+                        ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[0];
+                        canvasEl.parentElement.appendChild(ticker);
+                        var factTimer = setInterval(function () {
+                          factIdx = (factIdx + 1) % scienceFacts.length;
+                          ticker.style.opacity = '0';
+                          setTimeout(function () { ticker.innerHTML = '\uD83D\uDCA1 ' + scienceFacts[factIdx]; ticker.style.opacity = '1'; }, 400);
+                        }, 6000);
+
+                        // ── Compass / bearing indicator (top-right) ──
+                        var compass = document.createElement('div');
+                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
+                        compass.innerHTML = '\uD83E\uDDED';
+                        canvasEl.parentElement.appendChild(compass);
+
+                        // ── 3rd-person camera toggle (V key) ──
+                        var thirdPerson = false;
+                        var tpOffset = new THREE.Vector3(0, 3, 6);
+                        canvasEl.addEventListener('keydown', function (e) {
+                          if (e.key === 'v' || e.key === 'V') {
+                            thirdPerson = !thirdPerson;
+                            // Update HUD mode indicator
+                            var label = hud.querySelector('div');
+                            if (label) {
+                              var viewLabel = thirdPerson ? ' [3RD PERSON]' : ' [1ST PERSON]';
+                              label.textContent = modeLabel + viewLabel;
+                            }
+                          }
+                        });
+
+                        // ── Patch animation loop for 3rd-person + compass ──
+                        var origAnimate = animate3d;
+                        cancelAnimationFrame(animId3d);
+                        function animate3dV2() {
+                          animId3d = requestAnimationFrame(animate3dV2);
                           tick3d++;
                           // Movement
                           var dir = new THREE.Vector3();
@@ -5957,12 +6027,19 @@
                           if (moveState.down) playerPos.y = Math.max(isGas ? 1 : 1.0, playerPos.y - speed3d);
                           if (!isGas) playerPos.y = Math.max(1.6, playerPos.y);
 
-                          camera.position.copy(playerPos);
-                          camera.rotation.order = 'YXZ';
-                          camera.rotation.y = yaw;
-                          camera.rotation.x = pitch;
+                          if (thirdPerson) {
+                            // 3rd person: camera behind and above
+                            var behind = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiplyScalar(6);
+                            camera.position.set(playerPos.x + behind.x, playerPos.y + 3, playerPos.z + behind.z);
+                            camera.lookAt(playerPos.x, playerPos.y, playerPos.z);
+                          } else {
+                            camera.position.copy(playerPos);
+                            camera.rotation.order = 'YXZ';
+                            camera.rotation.y = yaw;
+                            camera.rotation.x = pitch;
+                          }
 
-                          // Animate cloud layers for gas giants
+                          // Animate clouds
                           scene.children.forEach(function (c) {
                             if (c._cloudSpeed) {
                               c.position.x = Math.sin(tick3d * c._cloudSpeed) * 2;
@@ -5970,8 +6047,8 @@
                             }
                           });
 
-                          // Diamond rain animation
-                          if (diamonds) {
+                          // Diamond rain
+                          if (typeof diamonds !== 'undefined' && diamonds) {
                             var dArr = diamonds.geometry.attributes.position.array;
                             for (var dri = 0; dri < dArr.length; dri += 3) {
                               dArr[dri + 1] -= 0.05;
@@ -5980,21 +6057,14 @@
                             diamonds.geometry.attributes.position.needsUpdate = true;
                           }
 
+                          // Update compass bearing
+                          var deg = ((yaw * 180 / Math.PI) % 360 + 360) % 360;
+                          var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+                          compass.textContent = dirs[Math.round(deg / 45) % 8];
+
                           renderer.render(scene, camera);
                         }
-                        animId3d = requestAnimationFrame(animate3d);
-
-                        // HUD overlay via CSS
-                        var hud = document.createElement('div');
-                        hud.className = 'rover-hud';
-                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:8px;padding:8px 12px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
-                        var modeLabel = isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
-                        hud.innerHTML = '<div style="font-weight:bold;font-size:11px;margin-bottom:4px">' + modeLabel + '</div>' +
-                          '<div>Planet: ' + sel.name + '</div>' +
-                          '<div>Gravity: ' + (sel.gravity || '?') + '</div>' +
-                          '<div>Temp: ' + sel.temp + '</div>' +
-                          '<div style="color:#94a3b8;margin-top:4px;font-size:9px">WASD move \u2022 Mouse look \u2022 Q/E altitude</div>';
-                        canvasEl.parentElement.appendChild(hud);
+                        animId3d = requestAnimationFrame(animate3dV2);
 
                         // Resize handler
                         var ro3d = new ResizeObserver(function () {
@@ -6006,11 +6076,14 @@
 
                         canvasEl._droneCleanup = function () {
                           cancelAnimationFrame(animId3d);
+                          clearInterval(factTimer);
                           document.removeEventListener('mousemove', onMouseMove);
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                           ro3d.disconnect();
                           renderer.dispose();
                           if (hud.parentElement) hud.parentElement.removeChild(hud);
+                          if (ticker.parentElement) ticker.parentElement.removeChild(ticker);
+                          if (compass.parentElement) compass.parentElement.removeChild(compass);
                         };
                         canvasEl._droneRO = ro3d;
                       }
