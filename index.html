@@ -500,7 +500,7 @@
                         #slider-container {
                             width: 100%;
                             max-width: 1200px;
-                            height: 720px;
+                            height: 820px;
                             border-radius: 20px;
                             overflow: hidden;
                             position: relative;
@@ -526,7 +526,7 @@
                             padding: 2.5rem 3.5rem;
                             opacity: 0;
                             transform: translateX(50px);
-                            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
                             pointer-events: none;
                             display: flex;
                             align-items: center;
@@ -719,12 +719,12 @@
 
                         .slide-dots {
                             display: flex;
-                            gap: 5px;
+                            gap: 4px;
                         }
 
                         .slide-dots .dot {
-                            width: 7px;
-                            height: 7px;
+                            width: 5px;
+                            height: 5px;
                             border-radius: 50%;
                             background: #334155;
                             border: none;
@@ -3682,31 +3682,32 @@
                                 </div>
                                 <div class="slide-title-label" id="slide-title">Equity First — Universal Offline Access
                                 </div>
-                                <span class="slide-counter" id="slide-counter">1 / 19</span>
+                                <span class="slide-counter" id="slide-counter">Slide 1 of 19</span>
                             </div>
-                            <div class="slide-progress">
-                                <div class="slide-progress-bar" id="slide-progress" style="width: 5.26%"></div>
+
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <button class="btn" id="autoplay-toggle" aria-label="Auto-play slides"
+                                    title="Auto-play slides">
+                                    <svg id="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
+                                        stroke="none">
+                                        <polygon points="5,3 19,12 5,21" />
+                                    </svg>
+                                    <svg id="pause-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
+                                        stroke="none" style="display:none;">
+                                        <rect x="6" y="4" width="4" height="16" />
+                                        <rect x="14" y="4" width="4" height="16" />
+                                    </svg>
+                                </button>
+                                <button class="btn" id="next" aria-label="Next">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m9 18 6-6-6-6" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <button class="btn" id="autoplay-toggle" aria-label="Auto-play slides"
-                                title="Auto-play slides">
-                                <svg id="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
-                                    stroke="none">
-                                    <polygon points="5,3 19,12 5,21" />
-                                </svg>
-                                <svg id="pause-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
-                                    stroke="none" style="display:none;">
-                                    <rect x="6" y="4" width="4" height="16" />
-                                    <rect x="14" y="4" width="4" height="16" />
-                                </svg>
-                            </button>
-                            <button class="btn" id="next" aria-label="Next">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m9 18 6-6-6-6" />
-                                </svg>
-                            </button>
+                        <div id="progress-bar-container">
+                            <div id="progress-bar" style="width: 5.26%"></div>
                         </div>
                     </div>
                 </div>
@@ -3752,8 +3753,8 @@
                             titleLabel.textContent = slideTitles[cur];
                         }
                         const counter = document.getElementById('slide-counter');
-                        if (counter) counter.textContent = (cur + 1) + ' / ' + s.length;
-                        const progress = document.getElementById('slide-progress');
+                        if (counter) counter.textContent = 'Slide ' + (cur + 1) + ' of ' + s.length;
+                        const progress = document.getElementById('progress-bar');
                         if (progress) progress.style.width = ((cur + 1) / s.length * 100).toFixed(1) + '%';
                     }
 

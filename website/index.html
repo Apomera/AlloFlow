@@ -500,7 +500,7 @@
                         #slider-container {
                             width: 100%;
                             max-width: 1200px;
-                            height: 650px;
+                            height: 820px;
                             border-radius: 20px;
                             overflow: hidden;
                             position: relative;
@@ -526,7 +526,7 @@
                             padding: 2.5rem 3.5rem;
                             opacity: 0;
                             transform: translateX(50px);
-                            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
                             pointer-events: none;
                             display: flex;
                             align-items: center;
@@ -1591,7 +1591,7 @@
                                     <path d="m15 18-6-6 6-6" />
                                 </svg>
                             </button>
-                            <div id="indicator">1 / 8</div>
+                            <div id="indicator">Slide 1 of 8</div>
                             <button class="btn" id="next" aria-label="Next">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1610,7 +1610,7 @@
                                 if (i === cur) slide.classList.add('active');
                                 else if (i < cur) slide.classList.add('prev');
                             });
-                            document.getElementById('indicator').textContent = `${cur + 1} / ${s.length}`;
+                            document.getElementById('indicator').textContent = `Slide ${cur + 1} of ${s.length}`;
                         }
                         document.getElementById('prev').onclick = () => { if (cur > 0) { cur--; update(); } };
                         document.getElementById('next').onclick = () => { if (cur < s.length - 1) { cur++; update(); } };
