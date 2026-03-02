@@ -12115,55 +12115,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
             ),
           ),
-          isProbeMode &&
-            /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-inner",
-            },
-              /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex items-center gap-3" },
-                /*#__PURE__*/ React.createElement(
-                "span",
-                { className: "bg-white/20 px-2 py-0.5 rounded-full text-xs" },
-                "\uD83D\uDCCA PROBE MODE",
-              ),
-                /*#__PURE__*/ React.createElement(
-                "span",
-                null,
-                "Word ",
-                wordSoundsScore.total + 1,
-                " of ",
-                wordSoundsSessionGoal,
-              ),
-            ),
-              /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex items-center gap-3" },
-                /*#__PURE__*/ React.createElement(
-                "span",
-                null,
-                wordSoundsScore.correct,
-                " correct / ",
-                wordSoundsScore.total,
-                " total",
-              ),
-              probeStartTimeRef.current &&
-                  /*#__PURE__*/ React.createElement(
-                "span",
-                {
-                  className:
-                    "bg-white/20 px-2 py-0.5 rounded-full tabular-nums",
-                },
-                "\u23F1 ",
-                Math.floor(probeElapsed / 60),
-                ":",
-                String(probeElapsed % 60).padStart(2, "0"),
-              ),
-            ),
-          ),
           /*#__PURE__*/ React.createElement(
             "div",
             { className: "flex-1 overflow-y-auto p-6" },
@@ -12307,11 +12258,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             loadPsychometricProbes();
           }
         }, []);
-        React.useEffect(() => {
-          if (typeof loadPsychometricProbes === "function") {
-            loadPsychometricProbes();
-          }
-        }, []);
+
         const [importProgress, setImportProgress] = React.useState({
           current: 0,
           total: 0,
@@ -12352,27 +12299,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setMnProbeActive(false);
           }
         }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
-        React.useEffect(() => {
-          if (
-            mnProbeActive &&
-            mnProbeTimer === 0 &&
-            mnProbeTimerRef.current === null &&
-            mnProbeProblems.length > 0 &&
-            !mnProbeResults
-          ) {
-            const answered = mnProbeProblems.filter(
-              (p) => p.studentAnswer !== null,
-            );
-            const correct = answered.filter((p) => p.correct).length;
-            setMnProbeResults({
-              correct,
-              total: answered.length,
-              problems: mnProbeProblems,
-              type: "missing_number",
-            });
-            setMnProbeActive(false);
-          }
-        }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
+
         const [qdProbeActive, setQdProbeActive] = React.useState(false);
         const [qdProbeProblems, setQdProbeProblems] = React.useState([]);
         const [qdProbeIndex, setQdProbeIndex] = React.useState(0);
@@ -12400,27 +12327,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setQdProbeActive(false);
           }
         }, [qdProbeTimer, qdProbeActive, qdProbeProblems, qdProbeResults]);
-        React.useEffect(() => {
-          if (
-            qdProbeActive &&
-            qdProbeTimer === 0 &&
-            qdProbeTimerRef.current === null &&
-            qdProbeProblems.length > 0 &&
-            !qdProbeResults
-          ) {
-            const answered = qdProbeProblems.filter(
-              (p) => p.studentAnswer !== null,
-            );
-            const correct = answered.filter((p) => p.correct).length;
-            setQdProbeResults({
-              correct,
-              total: answered.length,
-              problems: qdProbeProblems,
-              type: "quantity_discrimination",
-            });
-            setQdProbeActive(false);
-          }
-        }, [qdProbeTimer, qdProbeActive, qdProbeProblems, qdProbeResults]);
+
         const [reportStartDate, setReportStartDate] = React.useState("");
         const [reportEndDate, setReportEndDate] = React.useState("");
         const [safetyFlaggingVisible, setSafetyFlaggingVisible] =
