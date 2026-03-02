@@ -135,7 +135,11 @@
         handleGenerateMath,
         labToolData,
         setLabToolData,
-        gradeLevel
+        gradeLevel,
+        callGemini,
+        callTTS,
+        callImagen,
+        callGeminiVision
       } = props;
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
@@ -172,6 +176,120 @@
         return 100 - getStemXP(activityId);
       }
       var totalStemXP = stemXpData._total || 0;
+
+      // ── AI Helper Functions (powered by main app's callGemini/callTTS) ──
+      var _aiPending = {};
+      var _stemGrade = gradeLevel || '5th Grade';
+
+      function stemAIHint(tool, question, wrongAnswer, correctAnswer, feedbackSetter) {
+        if (!callGemini || _aiPending[tool + '_hint']) return;
+        _aiPending[tool + '_hint'] = true;
+        var prompt = 'You are a helpful STEM tutor for a ' + _stemGrade + ' student.\n' +
+          'Tool: ' + tool + '\n' +
+          'Question: ' + question + '\n' +
+          'Student answered: ' + wrongAnswer + '\n' +
+          'Correct answer: ' + correctAnswer + '\n' +
+          'Give a SHORT, encouraging hint (1-2 sentences max) that guides them toward the correct answer WITHOUT giving it away. ' +
+          'Use age-appropriate language. Focus only on this specific concept.';
+        callGemini(prompt).then(function(hint) {
+          _aiPending[tool + '_hint'] = false;
+          if (hint && feedbackSetter) feedbackSetter(hint);
+          else if (hint && addToast) addToast('💡 ' + hint, 'info');
+        }).catch(function() { _aiPending[tool + '_hint'] = false; });
+      }
+
+      function stemExplain(tool, concept, context, callback) {
+        if (!callGemini) { if (addToast) addToast(t('stem.ai.unavailable') || 'AI not available', 'error'); return; }
+        if (_aiPending[tool + '_explain']) return;
+        _aiPending[tool + '_explain'] = true;
+        if (addToast) addToast(t('stem.ai.thinking') || '🤖 Thinking...', 'info');
+        var prompt = 'You are a STEM tutor for a ' + _stemGrade + ' student.\n' +
+          'Tool: ' + tool + '\n' +
+          'Concept: ' + concept + '\n' +
+          (context ? 'Context: ' + context + '\n' : '') +
+          'Explain this concept in 2-3 SHORT sentences using age-appropriate language.\n' +
+          'Be engaging and use analogies if helpful. Stay focused on this specific topic only.';
+        callGemini(prompt).then(function(explanation) {
+          _aiPending[tool + '_explain'] = false;
+          if (callback) callback(explanation);
+          else if (addToast) addToast('🤖 ' + explanation, 'info');
+        }).catch(function() { _aiPending[tool + '_explain'] = false; if (addToast) addToast(t('stem.ai.error') || 'AI error', 'error'); });
+      }
+
+      function stemReadAloud(text) {
+        if (!callTTS) { if (addToast) addToast(t('stem.ai.tts_unavailable') || 'Voice not available', 'error'); return; }
+        callTTS(text);
+      }
+
+      var [stemAIResponse, setStemAIResponse] = React.useState(null);
+      var [stemAILoading, setStemAILoading] = React.useState(false);
+
+      // ── Reusable AI Toolbar: Explain + Read Aloud ──
+      function StemAIBar(toolName, conceptName, conceptText, extraContext) {
+        return React.createElement("div", { className: "flex gap-1.5 mt-2 flex-wrap" },
+          callGemini && React.createElement("button", {
+            onClick: function() {
+              setStemAILoading(true);
+              stemExplain(toolName, conceptName, (conceptText || '') + (extraContext ? '. ' + extraContext : ''), function(result) {
+                setStemAILoading(false);
+                setStemAIResponse({ tool: toolName, concept: conceptName, text: result });
+              });
+            },
+            disabled: stemAILoading,
+            className: "flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full transition-all " +
+              (stemAILoading ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 hover:shadow-sm")
+          }, stemAILoading ? "⏳" : "🤖", " ", t('stem.ai.explain') || "Explain This"),
+          callTTS && React.createElement("button", {
+            onClick: function() { stemReadAloud(conceptText || conceptName); },
+            className: "flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 hover:shadow-sm transition-all"
+          }, "🔊 ", t('stem.ai.read_aloud') || "Read Aloud")
+        );
+      }
+
+      // ── AI Response Display Panel ──
+      function StemAIResponsePanel(toolName) {
+        if (!stemAIResponse || stemAIResponse.tool !== toolName) return null;
+        return React.createElement("div", {
+          className: "mt-2 p-3 rounded-xl border text-xs leading-relaxed animate-in fade-in duration-300 " +
+            (isDark ? "bg-indigo-900/30 border-indigo-700 text-indigo-200" : "bg-indigo-50 border-indigo-200 text-indigo-800")
+        },
+          React.createElement("div", { className: "flex items-start justify-between gap-2" },
+            React.createElement("div", { className: "flex-1" },
+              React.createElement("span", { className: "font-bold text-indigo-600" }, "🤖 "),
+              stemAIResponse.text
+            ),
+            React.createElement("div", { className: "flex gap-1 shrink-0" },
+              callTTS && React.createElement("button", {
+                onClick: function() { stemReadAloud(stemAIResponse.text); },
+                className: "p-1 rounded-full hover:bg-indigo-200/50 text-indigo-500 transition-all",
+                title: t('stem.ai.read_aloud') || "Read aloud"
+              }, "🔊"),
+              React.createElement("button", {
+                onClick: function() { setStemAIResponse(null); },
+                className: "p-1 rounded-full hover:bg-indigo-200/50 text-indigo-400 transition-all",
+                title: t('common.close') || "Close"
+              }, "✕")
+            )
+          )
+        );
+      }
+
+      // ── AI Hint for Challenge Feedback ──
+      function StemAIHintButton(toolName, question, wrongAnswer, correctAnswer) {
+        if (!callGemini || !wrongAnswer) return null;
+        return React.createElement("button", {
+          onClick: function() {
+            setStemAILoading(true);
+            stemAIHint(toolName, question, wrongAnswer, correctAnswer, function(hint) {
+              setStemAILoading(false);
+              setStemAIResponse({ tool: toolName, concept: 'hint', text: hint });
+            });
+          },
+          disabled: stemAILoading,
+          className: "flex items-center gap-1 px-2.5 py-1 mt-1 text-[10px] font-bold rounded-full transition-all " +
+            (stemAILoading ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200")
+        }, stemAILoading ? "⏳" : "💡", " ", t('stem.ai.get_hint') || "Get a Hint");
+      }
 
       // ── Theme Detection (reads DOM class from parent app) ──
       var _stemTheme = 'light';
@@ -1668,7 +1786,7 @@
                     msg: '✅ Correct! ' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ' = ' + cubeChallenge.answer
                   } : {
                     correct: false,
-                    msg: '❌ Try V = L × W × H'
+                    msg: '❌ Try V = L × W × H', _wrongAnswer: cubeAnswer, _correctAnswer: cubeChallenge.answer, _question: 'Volume of ' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ' prism'
                   });
                   setExploreScore(prev => ({
                     correct: prev.correct + (ok ? 1 : 0),
@@ -1705,7 +1823,7 @@
               className: "px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-sm disabled:opacity-40"
             }, "Check")), cubeFeedback && /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold mt-2 " + (cubeFeedback.correct ? "text-green-600" : "text-red-600")
-            }, cubeFeedback.msg)), !isSlider && cubeBuilderChallenge && /*#__PURE__*/React.createElement("div", {
+            }, cubeFeedback.msg, !cubeFeedback.correct && StemAIHintButton('Volume Builder', cubeFeedback._question || 'Volume challenge', cubeFeedback._wrongAnswer || '', cubeFeedback._correctAnswer || ''), StemAIResponsePanel('Volume Builder'))), !isSlider && cubeBuilderChallenge && /*#__PURE__*/React.createElement("div", {
               className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
             }, /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold text-indigo-800 mb-2"
@@ -4679,7 +4797,9 @@
               React.createElement("div", { className: "flex items-start justify-between" },
                 React.createElement("div", null,
                   React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selDef.color } }, selDef.icon + " " + selDef.label),
-                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selDef.desc)
+                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selDef.desc),
+                  StemAIBar('Cell Lab', selDef.label, selDef.desc, 'Organism type: ' + selDef.id),
+                  StemAIResponsePanel('Cell Lab')
                 ),
                 d.mode === 'play' && React.createElement("button", {
                   onClick: function () {
@@ -10146,7 +10266,9 @@
             React.createElement("div", { className: "flex-1" },
               React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
               React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
-              React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc)
+              React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc),
+              StemAIBar('Rock Explorer', selRock.label, selRock.desc, 'Type: ' + selRock.type + '. Hardness: ' + selRock.hardness + '. Uses: ' + selRock.uses),
+              StemAIResponsePanel('Rock Explorer')
             )
           ),
           // Properties
