@@ -1108,7 +1108,7 @@
             {
               id: 'artStudio', icon: '🎨', label: t('stem.tools_menu.art_design_studio'),
               desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
-              color: 'rose', ready: true
+              color: 'rose', ready: false
             },
 
           ].map(tool => tool.category
@@ -7717,7 +7717,7 @@
                           var camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 500);
                           camera.position.set(0, isGas ? 5 : 1.6, 0);
                           var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
-                          renderer.setSize(W, H, false); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(W, H);
                           renderer.setClearColor(new THREE.Color(sel.skyColor || '#000000'));
 
                           // ── Sky dome ──
@@ -8415,7 +8415,7 @@
                           // Resize handler
                           var ro3d = new ResizeObserver(function () {
                             W = canvasEl.clientWidth; H = canvasEl.clientHeight;
-                            if (W && H) { camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H, false); }
+                            if (W && H) { camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); }
                           });
                           ro3d.observe(canvasEl);
 
