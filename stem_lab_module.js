@@ -301,6 +301,53 @@
       var isDark = _stemTheme === 'dark';
       var isContrast = _stemTheme === 'contrast';
       // Palette shortcuts for canvas rendering
+      // ── Keyboard Accessibility ──
+      React.useEffect(function() {
+        function handleKeyDown(e) {
+          // Escape to close STEM Lab
+          if (e.key === 'Escape') {
+            // If a tool is open, close the tool first
+            if (stemLabTool) {
+              e.preventDefault();
+              setStemLabTool(null);
+              announceToSR('Tool closed');
+              return;
+            }
+            // Otherwise close STEM Lab
+            e.preventDefault();
+            if (typeof setShowStemLab === 'function') setShowStemLab(false);
+          }
+          // Tab key focus trapping within dialog
+          if (e.key === 'Tab') {
+            var root = document.querySelector('[data-stem-lab]');
+            if (!root) return;
+            var focusable = root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length === 0) return;
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+              if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+            } else {
+              if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+          }
+          // Keyboard shortcuts (with Alt key)
+          if (e.altKey) {
+            if (e.key === '1') { e.preventDefault(); setStemLabTab('explore'); announceToSR('Switched to Explore tab'); }
+            else if (e.key === '2') { e.preventDefault(); setStemLabTab('create'); announceToSR('Switched to Create tab'); }
+            else if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); setStemLabTool(null); announceToSR('Returned to tool grid'); }
+          }
+        }
+        document.addEventListener('keydown', handleKeyDown);
+        // Auto-focus the dialog on mount
+        var root = document.querySelector('[data-stem-lab]');
+        if (root) {
+          var firstBtn = root.querySelector('button');
+          if (firstBtn) firstBtn.focus();
+        }
+        return function() { document.removeEventListener('keydown', handleKeyDown); };
+      }, [stemLabTool, stemLabTab]);
+
       // ── Accessibility: Runtime A11Y Enhancer ──
       React.useEffect(function() {
         try {
@@ -458,6 +505,10 @@
         className: "flex items-center gap-1.5 bg-white/15 backdrop-blur rounded-full px-3 py-1 text-xs font-bold",
         title: t('stem.solver.total_stem_lab_xp_earned')
       }, React.createElement("span", null, "⭐"), React.createElement("span", null, totalStemXP + " XP")),
+      React.createElement("div", {
+        className: "hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[9px] font-medium text-white/70",
+        title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Tab = navigate, Arrow keys = orbit 3D views"
+      }, React.createElement("span", null, "\u2328\uFE0F"), React.createElement("span", null, "Keyboard accessible")),
       /*#__PURE__*/React.createElement("div", {
         className: "bg-white/20 p-2 rounded-lg"
       }, /*#__PURE__*/React.createElement(Calculator, {
