@@ -1309,6 +1309,11 @@
               color: 'amber', ready: true
             },
             {
+              id: 'graphCalc', icon: '📈', label: 'Graphing Calculator',
+              desc: 'Type equations, plot functions, explore data. Learn what every button really does.',
+              color: 'indigo', ready: true
+            },
+            {
               id: 'probability', icon: '\uD83C\uDFB2', label: t('stem.tools_menu.probability'),
               desc: 'Coin flips, dice rolls, and spinners. Visualize outcomes and explore chance.',
               color: 'sky', ready: true
@@ -12473,19 +12478,6 @@
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.fractions.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             );
           })(),
-          React.createElement("div", {
-            key: "graphCalc",
-            style: { background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)", borderRadius: "16px", padding: "20px", color: "white", display: "flex", flexDirection: "column", gap: "10px", minHeight: "170px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", boxShadow: "0 4px 15px rgba(67,56,202,0.3)" },
-            onClick: function () { setStemLabTool("graphCalc"); },
-            onMouseEnter: function (e) { e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(67,56,202,0.5)"; },
-            onMouseLeave: function (e) { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 15px rgba(67,56,202,0.3)"; },
-            role: "button", tabIndex: 0, "aria-label": "Graphing Calculator"
-          },
-            React.createElement("div", { style: { fontSize: "36px", marginBottom: "2px" } }, "\uD83D\uDCC8"),
-            React.createElement("div", { style: { fontWeight: "bold", fontSize: "14px", letterSpacing: "0.5px" } }, "Graphing Calculator"),
-            React.createElement("div", { style: { fontSize: "11px", opacity: 0.85, lineHeight: 1.4 } }, "Type equations, plot functions, explore data. Learn what every button really does."),
-            React.createElement("button", { onClick: function (e) { e.stopPropagation(); setStemLabTool("graphCalc"); }, className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors mt-auto self-start", "aria-label": "Open Graphing Calculator" }, "\uD83D\uDD0D Explore")),
-
 
           // ═══════════════════════════════════════════════════════
           // MATERIAL DECOMPOSER
