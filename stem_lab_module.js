@@ -12089,34 +12089,79 @@
           stemLabTab === 'explore' && stemLabTool === 'probability' && (() => {
             const d = labToolData.probability;
             const upd = (key, val) => setLabToolData(prev => ({ ...prev, probability: { ...prev.probability, [key]: val } }));
+
+            // ── Sports Scenarios ──
+            var SPORTS = [
+              { id: 'freethrow', label: '\uD83C\uDFC0 Free Throws', icon: '\uD83C\uDFC0', desc: 'NBA average free throw percentage is ~77%', outcomes: ['Make', 'Miss'], probs: [0.77, 0.23], colors: ['#22c55e', '#ef4444'], emoji: ['\uD83C\uDFC0', '\u274C'] },
+              { id: 'threepoint', label: '\uD83C\uDFC0 3-Pointers', icon: '\uD83C\uDFC0', desc: 'NBA average 3-point percentage is ~36%', outcomes: ['Swish', 'Miss'], probs: [0.36, 0.64], colors: ['#3b82f6', '#ef4444'], emoji: ['\uD83D\uDCAB', '\u274C'] },
+              { id: 'penalty', label: '\u26BD Penalty Kicks', icon: '\u26BD', desc: 'Soccer penalty kick conversion rate is ~76%', outcomes: ['Goal', 'Save'], probs: [0.76, 0.24], colors: ['#22c55e', '#f59e0b'], emoji: ['\u26BD', '\uD83E\uDDE4'] },
+              { id: 'batting', label: '\u26BE Batting Average', icon: '\u26BE', desc: 'MLB average batting average is ~.250 (hit 1 in 4)', outcomes: ['Hit', 'Out'], probs: [0.250, 0.750], colors: ['#8b5cf6', '#94a3b8'], emoji: ['\uD83D\uDCA5', '\u2796'] },
+              { id: 'fieldgoal', label: '\uD83C\uDFC8 Field Goals', icon: '\uD83C\uDFC8', desc: 'NFL field goal success rate is ~84%', outcomes: ['Good', 'No Good'], probs: [0.84, 0.16], colors: ['#22c55e', '#ef4444'], emoji: ['\uD83C\uDFC8', '\u274C'] },
+              { id: 'tennis', label: '\uD83C\uDFBE First Serves', icon: '\uD83C\uDFBE', desc: 'Pro tennis first serve success rate is ~62%', outcomes: ['In', 'Fault'], probs: [0.62, 0.38], colors: ['#06b6d4', '#f97316'], emoji: ['\uD83C\uDFBE', '\u2716'] },
+              { id: 'hockey', label: '\uD83C\uDFD2 Shots on Goal', icon: '\uD83C\uDFD2', desc: 'NHL average shooting percentage is ~10%', outcomes: ['Goal', 'Save'], probs: [0.10, 0.90], colors: ['#ef4444', '#64748b'], emoji: ['\uD83D\uDEA8', '\uD83E\uDDE4'] }
+            ];
+            var activeSport = SPORTS.find(function(s) { return s.id === (d.sportType || 'freethrow'); }) || SPORTS[0];
+
+            // ── Custom mode outcomes ──
+            var customOutcomes = d.customOutcomes || [{ label: 'A', prob: 0.5, color: '#3b82f6' }, { label: 'B', prob: 0.5, color: '#ef4444' }];
+
+            // ── Run trials ──
             const runTrial = (n) => {
               const results = [...d.results];
               for (let i = 0; i < n; i++) {
                 if (d.mode === 'coin') results.push(Math.random() < 0.5 ? 'H' : 'T');
                 else if (d.mode === 'dice') results.push(Math.floor(Math.random() * 6) + 1);
-                else results.push(['Red', 'Blue', 'Green', 'Yellow'][Math.floor(Math.random() * 4)]);
+                else if (d.mode === 'spinner') results.push(['Red', 'Blue', 'Green', 'Yellow'][Math.floor(Math.random() * 4)]);
+                else if (d.mode === 'sports') {
+                  var r = Math.random(), cumulative = 0;
+                  for (var si = 0; si < activeSport.outcomes.length; si++) {
+                    cumulative += activeSport.probs[si];
+                    if (r < cumulative) { results.push(activeSport.outcomes[si]); break; }
+                  }
+                  if (results.length === d.results.length + i) results.push(activeSport.outcomes[activeSport.outcomes.length - 1]);
+                }
+                else if (d.mode === 'custom') {
+                  var cr = Math.random(), ccum = 0;
+                  for (var ci = 0; ci < customOutcomes.length; ci++) {
+                    ccum += customOutcomes[ci].prob;
+                    if (cr < ccum) { results.push(customOutcomes[ci].label); break; }
+                  }
+                  if (results.length === d.results.length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
+                }
               }
               upd('results', results);
               upd('trials', results.length);
-              // Track convergence history (sample every batch)
               var hist = d.convergenceHistory || [];
               var total = results.length;
               if (total > 0) {
-                var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : 'Red';
+                var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : customOutcomes[0].label;
                 var cnt = results.filter(function (r) { return r === firstKey; }).length;
                 hist = hist.concat([{ t: total, pct: cnt / total * 100 }]);
                 if (hist.length > 50) hist = hist.slice(-50);
                 upd('convergenceHistory', hist);
               }
-              // Store last result for animation
               upd('lastResult', results[results.length - 1]);
               upd('animTick', (d.animTick || 0) + 1);
             };
+
+            // ── Compute expected & counts ──
             const counts = {};
             d.results.forEach(r => { counts[r] = (counts[r] || 0) + 1; });
-            const expected = d.mode === 'coin' ? { H: 0.5, T: 0.5 } : d.mode === 'dice' ? { 1: 1 / 6, 2: 1 / 6, 3: 1 / 6, 4: 1 / 6, 5: 1 / 6, 6: 1 / 6 } : { Red: 0.25, Blue: 0.25, Green: 0.25, Yellow: 0.25 };
+            var expected;
+            if (d.mode === 'coin') expected = { H: 0.5, T: 0.5 };
+            else if (d.mode === 'dice') expected = { 1: 1/6, 2: 1/6, 3: 1/6, 4: 1/6, 5: 1/6, 6: 1/6 };
+            else if (d.mode === 'spinner') expected = { Red: 0.25, Blue: 0.25, Green: 0.25, Yellow: 0.25 };
+            else if (d.mode === 'sports') {
+              expected = {};
+              activeSport.outcomes.forEach(function(o, i) { expected[o] = activeSport.probs[i]; });
+            } else {
+              expected = {};
+              customOutcomes.forEach(function(o) { expected[o.label] = o.prob; });
+            }
             const maxCount = Math.max(...Object.values(counts), 1);
-            const barColors = { H: '#3b82f6', T: '#ef4444', 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e', 5: '#3b82f6', 6: '#8b5cf6', Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e', Yellow: '#eab308' };
+            var barColors = { H: '#3b82f6', T: '#ef4444', 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e', 5: '#3b82f6', 6: '#8b5cf6', Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e', Yellow: '#eab308' };
+            if (d.mode === 'sports') { activeSport.outcomes.forEach(function(o, i) { barColors[o] = activeSport.colors[i]; }); }
+            if (d.mode === 'custom') { customOutcomes.forEach(function(o) { barColors[o.label] = o.color; }); }
 
             // Chi-squared
             var chiSq = 0;
@@ -12124,19 +12169,17 @@
               Object.keys(expected).forEach(function (k) {
                 var obs = counts[k] || 0;
                 var exp = expected[k] * d.trials;
-                chiSq += Math.pow(obs - exp, 2) / exp;
+                if (exp > 0) chiSq += Math.pow(obs - exp, 2) / exp;
               });
             }
             var df = Object.keys(expected).length - 1;
-            // Critical values: df=1→3.84, df=5→11.07, df=3→7.81
-            var chiCritical = df === 1 ? 3.84 : df === 3 ? 7.81 : 11.07;
+            var chiCritical = df === 1 ? 3.84 : df === 3 ? 7.81 : df === 5 ? 11.07 : df === 2 ? 5.99 : df === 6 ? 12.59 : 11.07;
             var chiPass = chiSq < chiCritical;
 
-            // Convergence history
             var convHist = d.convergenceHistory || [];
-            var convExpected = d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : 25;
+            var convExpected = d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : d.mode === 'spinner' ? 25 : d.mode === 'sports' ? activeSport.probs[0] * 100 : customOutcomes[0].prob * 100;
 
-            // Dice face SVG helper
+            // Dice face SVG
             var diceFace = function (val, size) {
               var s = size || 60;
               var dotPositions = {
@@ -12160,25 +12203,16 @@
             var spinnerSvg = function (result, tick) {
               var colors = { Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e', Yellow: '#eab308' };
               var keys = ['Red', 'Blue', 'Green', 'Yellow'];
-              var size = 100;
-              var r = 42;
-              var arrowAngle = result ? (keys.indexOf(result) * 90 + 45 + (tick || 0) * 0) : 0;
+              var size = 100; var r = 42;
+              var arrowAngle = result ? (keys.indexOf(result) * 90 + 45) : 0;
               return React.createElement("svg", { viewBox: "0 0 " + size + " " + size, width: size, height: size },
                 keys.map(function (k, i) {
                   var startA = (i * 90 - 90) * Math.PI / 180;
                   var endA = ((i + 1) * 90 - 90) * Math.PI / 180;
-                  var x1 = 50 + r * Math.cos(startA);
-                  var y1 = 50 + r * Math.sin(startA);
-                  var x2 = 50 + r * Math.cos(endA);
-                  var y2 = 50 + r * Math.sin(endA);
-                  return React.createElement("path", {
-                    key: k,
-                    d: "M 50 50 L " + x1 + " " + y1 + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2 + " Z",
-                    fill: colors[k],
-                    stroke: 'white', strokeWidth: 1.5, opacity: result === k ? 1 : 0.6
-                  });
+                  var x1 = 50 + r * Math.cos(startA), y1 = 50 + r * Math.sin(startA);
+                  var x2 = 50 + r * Math.cos(endA), y2 = 50 + r * Math.sin(endA);
+                  return React.createElement("path", { key: k, d: "M 50 50 L " + x1 + " " + y1 + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2 + " Z", fill: colors[k], stroke: 'white', strokeWidth: 1.5, opacity: result === k ? 1 : 0.6 });
                 }),
-                // Arrow
                 React.createElement("g", { transform: "rotate(" + arrowAngle + ", 50, 50)" },
                   React.createElement("polygon", { points: "50,12 47,50 53,50", fill: "#1e293b", stroke: "white", strokeWidth: 1 })
                 ),
@@ -12187,12 +12221,23 @@
             };
 
             // Coin SVG
-            var coinSvg = function (result, tick) {
-              var isHeads = result === 'H';
+            var coinSvg = function (result) {
+              var isH = result === 'H';
               return React.createElement("svg", { viewBox: "0 0 80 80", width: 80, height: 80 },
-                React.createElement("circle", { cx: 40, cy: 40, r: 36, fill: isHeads ? '#fbbf24' : '#94a3b8', stroke: isHeads ? '#92400e' : '#64748b', strokeWidth: 3 }),
-                React.createElement("text", { x: 40, y: 46, textAnchor: "middle", style: { fontSize: '22px', fontWeight: 'bold' }, fill: isHeads ? '#92400e' : '#f8fafc' }, isHeads ? 'H' : 'T'),
-                isHeads && React.createElement("text", { x: 40, y: 26, textAnchor: "middle", style: { fontSize: '10px' }, fill: '#92400e' }, '\uD83E\uDE99')
+                React.createElement("circle", { cx: 40, cy: 40, r: 36, fill: isH ? '#fbbf24' : '#94a3b8', stroke: isH ? '#92400e' : '#64748b', strokeWidth: 3 }),
+                React.createElement("text", { x: 40, y: 46, textAnchor: "middle", style: { fontSize: '22px', fontWeight: 'bold' }, fill: isH ? '#92400e' : '#f8fafc' }, isH ? 'H' : 'T'),
+                isH && React.createElement("text", { x: 40, y: 26, textAnchor: "middle", style: { fontSize: '10px' }, fill: '#92400e' }, '\uD83E\uDE99')
+              );
+            };
+
+            // Sports result visual
+            var sportVisual = function (result) {
+              var idx = activeSport.outcomes.indexOf(result);
+              var emoji = idx >= 0 ? activeSport.emoji[idx] : '\u2753';
+              var color = idx >= 0 ? activeSport.colors[idx] : '#94a3b8';
+              return React.createElement("div", { className: "flex flex-col items-center gap-1" },
+                React.createElement("span", { style: { fontSize: '48px', filter: idx === 0 ? 'none' : 'grayscale(50%)' } }, emoji),
+                React.createElement("span", { className: "text-xs font-bold", style: { color: color } }, result || '?')
               );
             };
 
@@ -12204,23 +12249,82 @@
               ),
               React.createElement("p", { className: "text-xs text-slate-400 italic -mt-1 mb-3" }, "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values."),
               // Mode selector
-              React.createElement("div", { className: "flex gap-2 mb-3" },
-                [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner']].map(([m, label]) =>
+              React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
+                [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['custom', '\u2699\uFE0F Custom']].map(([m, label]) =>
                   React.createElement("button", { key: m, onClick: () => { upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.mode === m ? 'bg-violet-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, label)
                 )
               ),
+
+              // ── Sports scenario selector ──
+              d.mode === 'sports' && React.createElement("div", { className: "mb-4 bg-gradient-to-r from-emerald-50 to-sky-50 rounded-xl border border-emerald-200 p-3" },
+                React.createElement("p", { className: "text-xs font-bold text-emerald-700 mb-2" }, "\uD83C\uDFC6 Choose a Sport"),
+                React.createElement("div", { className: "flex flex-wrap gap-2" },
+                  SPORTS.map(function(s) {
+                    return React.createElement("button", {
+                      key: s.id,
+                      onClick: function() { upd('sportType', s.id); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); },
+                      className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.sportType || 'freethrow') === s.id ? 'bg-white shadow-md border-2 border-emerald-400 text-emerald-700' : 'bg-white/50 text-slate-600 hover:bg-white border border-slate-200')
+                    }, s.icon + ' ' + s.label.replace(/^.*? /, ''));
+                  })
+                ),
+                React.createElement("p", { className: "text-xs text-slate-500 mt-2 italic" }, activeSport.desc + ' \u2014 P(' + activeSport.outcomes[0] + ') = ' + (activeSport.probs[0] * 100).toFixed(0) + '%')
+              ),
+
+              // ── Custom mode config ──
+              d.mode === 'custom' && React.createElement("div", { className: "mb-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
+                React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, "\u2699\uFE0F Define Your Outcomes"),
+                React.createElement("div", { className: "space-y-2" },
+                  customOutcomes.map(function(o, i) {
+                    return React.createElement("div", { key: i, className: "flex items-center gap-2" },
+                      React.createElement("input", { type: "color", value: o.color, onChange: function(e) { var co = customOutcomes.slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), onChange: function(e) { var co = customOutcomes.slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-200 text-sm font-bold" }),
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), onChange: function(e) {
+                          var newProb = parseInt(e.target.value) / 100;
+                          var co = customOutcomes.slice();
+                          co[i] = Object.assign({}, co[i], { prob: newProb });
+                          var remaining = 1 - newProb;
+                          var otherTotal = co.reduce(function(s, c, j) { return j === i ? s : s + c.prob; }, 0);
+                          if (otherTotal > 0) { co.forEach(function(c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); }
+                          upd('customOutcomes', co);
+                        }, className: "w-20 accent-amber-600" }),
+                        React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
+                      ),
+                      customOutcomes.length > 2 && React.createElement("button", { onClick: function() { var co = customOutcomes.filter(function(_, j) { return j !== i; }); var total = co.reduce(function(s, c) { return s + c.prob; }, 0); co = co.map(function(c) { return Object.assign({}, c, { prob: c.prob / total }); }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
+                    );
+                  })
+                ),
+                customOutcomes.length < 8 && React.createElement("button", {
+                  onClick: function() {
+                    var newOuts = customOutcomes.concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, color: ['#3b82f6','#ef4444','#22c55e','#eab308','#8b5cf6','#f97316','#06b6d4','#ec4899'][customOutcomes.length % 8] }]);
+                    var prob = 1 / newOuts.length;
+                    newOuts = newOuts.map(function(o) { return Object.assign({}, o, { prob: prob }); });
+                    upd('customOutcomes', newOuts); upd('results', []); upd('trials', 0); upd('convergenceHistory', []);
+                  },
+                  className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors"
+                }, "+ Add Outcome"),
+                React.createElement("p", { className: "text-[10px] text-amber-500 mt-1" }, "\uD83D\uDCA1 Total: " + Math.round(customOutcomes.reduce(function(s, o) { return s + o.prob; }, 0) * 100) + "% (should be 100%)")
+              ),
+
               // Visual result display
               React.createElement("div", { className: "flex items-center justify-center gap-6 mb-4 py-4 bg-gradient-to-b from-violet-50 to-white rounded-xl border-2 border-violet-200" },
-                d.mode === 'coin' && coinSvg(d.lastResult || 'H', d.animTick),
+                d.mode === 'coin' && coinSvg(d.lastResult || 'H'),
                 d.mode === 'dice' && diceFace(d.lastResult || 1, 80),
                 d.mode === 'spinner' && spinnerSvg(d.lastResult, d.animTick),
+                d.mode === 'sports' && sportVisual(d.lastResult),
+                d.mode === 'custom' && React.createElement("div", { className: "flex flex-col items-center gap-1" },
+                  React.createElement("div", { style: { width: 48, height: 48, borderRadius: '50%', background: barColors[d.lastResult] || '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                    React.createElement("span", { style: { fontSize: '20px', fontWeight: 'bold', color: '#fff' } }, d.lastResult ? d.lastResult[0] : '?')
+                  ),
+                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, d.lastResult || '?')
+                ),
                 React.createElement("div", { className: "text-center" },
                   React.createElement("p", { className: "text-3xl font-black text-violet-700 mb-1" }, d.lastResult != null ? String(d.lastResult) : '?'),
                   React.createElement("p", { className: "text-xs text-slate-400" }, d.lastResult != null ? 'Last result' : 'Click to start!')
                 )
               ),
               // Trial buttons
-              React.createElement("div", { className: "flex gap-2 mb-4 justify-center" },
+              React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
                 [1, 10, 50, 100, 500].map(n => React.createElement("button", { key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
                 React.createElement("button", { onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset")
               ),
@@ -12233,10 +12337,15 @@
                     const pct = d.trials > 0 ? (count / d.trials * 100) : 0;
                     const expPct = expected[k] * 100;
                     return React.createElement("div", { key: k, className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "w-14 text-right text-sm font-bold", style: { color: barColors[k] } }, d.mode === 'coin' ? (k === 'H' ? '\uD83E\uDE99 H' : '\uD83E\uDE99 T') : d.mode === 'dice' ? '\u2680 ' + k : '\u25CF ' + k),
+                      React.createElement("span", { className: "w-14 text-right text-sm font-bold", style: { color: barColors[k] || '#6366f1' } },
+                        d.mode === 'coin' ? (k === 'H' ? '\uD83E\uDE99 H' : '\uD83E\uDE99 T') :
+                        d.mode === 'dice' ? '\u2680 ' + k :
+                        d.mode === 'sports' ? (activeSport.emoji[activeSport.outcomes.indexOf(k)] || '') + ' ' + k :
+                        '\u25CF ' + k
+                      ),
                       React.createElement("div", { className: "flex-1 bg-slate-100 rounded-full h-7 overflow-hidden relative" },
-                        React.createElement("div", { style: { width: (count / maxCount * 100) + '%', backgroundColor: barColors[k], height: '100%', borderRadius: '9999px', transition: 'width 0.3s' } }),
-                        React.createElement("div", { style: { position: 'absolute', left: (expPct / (d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : 25) * (100 / Object.keys(expected).length)) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: '#1e293b80' }, title: t('stem.probability.expected') + expPct.toFixed(1) + '%' })
+                        React.createElement("div", { style: { width: (count / maxCount * 100) + '%', backgroundColor: barColors[k] || '#6366f1', height: '100%', borderRadius: '9999px', transition: 'width 0.3s' } }),
+                        React.createElement("div", { style: { position: 'absolute', left: Math.min(expPct / (expected[k] > 0 ? expected[k] : 0.01) / Object.keys(expected).length, 100) + '%', top: 0, bottom: 0, width: '2px', backgroundColor: '#1e293b80' }, title: 'Expected: ' + expPct.toFixed(1) + '%' })
                       ),
                       React.createElement("span", { className: "w-24 text-xs font-mono text-slate-600 text-right" }, count + " (" + pct.toFixed(1) + "%)"),
                       React.createElement("span", { className: "w-16 text-[10px] font-bold " + (Math.abs(pct - expPct) < 3 ? 'text-emerald-500' : Math.abs(pct - expPct) < 8 ? 'text-amber-500' : 'text-red-500') }, (pct > expPct ? '+' : '') + (pct - expPct).toFixed(1) + '%')
@@ -12246,12 +12355,12 @@
               ),
               // Convergence chart
               convHist.length > 1 && React.createElement("div", { className: "bg-white rounded-xl border border-violet-200 p-3 mb-3" },
-                React.createElement("p", { className: "text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-2" }, "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(Heads)=50%' : d.mode === 'dice' ? 'P(1)=16.7%' : 'P(Red)=25%') + ")"),
+                React.createElement("p", { className: "text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-2" },
+                  "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=16.7%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : d.mode === 'custom' ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
+                ),
                 React.createElement("svg", { viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
-                  // Expected line
                   React.createElement("line", { x1: 0, y1: 100 - convExpected, x2: 400, y2: 100 - convExpected, stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 2" }),
                   React.createElement("text", { x: 2, y: 100 - convExpected - 3, fill: "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(0) + '% expected'),
-                  // Convergence line
                   React.createElement("polyline", {
                     fill: "none", stroke: "#8b5cf6", strokeWidth: 2,
                     points: convHist.map(function (h, i) {
@@ -12260,7 +12369,6 @@
                       return x + ',' + y;
                     }).join(' ')
                   }),
-                  // Dots on last few points
                   convHist.slice(-5).map(function (h, i) {
                     var idx = convHist.length - 5 + i;
                     if (idx < 0) return null;
@@ -12268,12 +12376,11 @@
                     var y = 100 - Math.min(h.pct, 100);
                     return React.createElement("circle", { key: i, cx: x, cy: y, r: 2.5, fill: "#8b5cf6" });
                   }),
-                  // Axes
                   React.createElement("line", { x1: 0, y1: 100, x2: 400, y2: 100, stroke: "#e2e8f0", strokeWidth: 1 }),
                   React.createElement("text", { x: 380, y: 97, fill: "#94a3b8", style: { fontSize: '7px' }, textAnchor: "end" }, d.trials + ' trials')
                 )
               ),
-              // Statistical analysis + chi-squared
+              // Statistical analysis
               d.trials >= 10 && React.createElement("div", { className: "bg-violet-50 rounded-xl border border-violet-200 p-3 mb-3" },
                 React.createElement("p", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Statistical Analysis"),
                 React.createElement("div", { className: "grid grid-cols-4 gap-2 text-center" },
@@ -12313,12 +12420,14 @@
                 React.createElement("p", { className: "text-xs text-slate-400" }, "Last 10: " + d.results.slice(-10).map(function (r) {
                   if (d.mode === 'coin') return r === 'H' ? '\uD83E\uDE99' : '\u25CB';
                   if (d.mode === 'dice') return ['\u2680', '\u2681', '\u2682', '\u2683', '\u2684', '\u2685'][r - 1] || r;
+                  if (d.mode === 'sports') { var sidx = activeSport.outcomes.indexOf(r); return sidx >= 0 ? activeSport.emoji[sidx] : r; }
                   return '\u25CF';
                 }).join(' '))
               ),
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.probability.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             );
           })(),
+
 
 
 
