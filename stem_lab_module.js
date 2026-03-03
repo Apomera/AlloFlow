@@ -148,6 +148,8 @@
       // ── STEM Lab XP System (per-activity cap: 100 XP) ──
       var stemXpData = (labToolData && labToolData._stemXP) || {};
       function awardStemXP(activityId, points, reason) {
+        var _awardedPts = Math.min(points, Math.max(0, 100 - getStemXP(activityId)));
+        if (_awardedPts <= 0) return;
         setLabToolData(function (prev) {
           var xpState = Object.assign({}, (prev && prev._stemXP) || {});
           var actData = Object.assign({}, xpState[activityId] || { earned: 0, log: [] });
@@ -168,8 +170,8 @@
           xpState._total = total;
           return Object.assign({}, prev, { _stemXP: xpState });
         });
-        if (addToast) addToast(t('stem.common.u2b50') + Math.min(points, 100) + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
-        announceToSR('Earned ' + awarded + ' XP for ' + (reason || 'STEM activity'));
+        if (addToast) addToast(t('stem.common.u2b50') + _awardedPts + ' XP: ' + (reason || 'STEM activity') + '!', 'success');
+        announceToSR('Earned ' + _awardedPts + ' XP for ' + (reason || 'STEM activity'));
       }
       function getStemXP(activityId) {
         return (stemXpData[activityId] && stemXpData[activityId].earned) || 0;
@@ -441,10 +443,25 @@
           return Object.assign({}, prev, { _tutorialSeen: seen });
         });
       }
+      // Track whether tutorial needs auto-completion (deferred to useEffect to avoid setState-during-render)
+      var [_tutorialAutoComplete, _setTutorialAutoComplete] = React.useState(null);
+      React.useEffect(function () {
+        if (_tutorialAutoComplete) {
+          markTutorialSeen(_tutorialAutoComplete);
+          setLabToolData(function (p) { return Object.assign({}, p, { _tutorialStep: 0 }); });
+          _setTutorialAutoComplete(null);
+        }
+      }, [_tutorialAutoComplete]);
       function renderTutorial(toolId, steps) {
         if (_tutorialSeen[toolId]) return null;
         var step = labToolData._tutorialStep || 0;
-        if (step >= steps.length) { markTutorialSeen(toolId); return null; }
+        if (step >= steps.length) {
+          // Defer the setState to useEffect to avoid setState-during-render
+          if (_tutorialAutoComplete !== toolId) {
+            Promise.resolve().then(function () { _setTutorialAutoComplete(toolId); });
+          }
+          return null;
+        }
         var s = steps[step];
         // Theme-aware styles (inline to survive parent .theme-contrast [class*="bg-"] override)
         var _tutBg = isContrast ? { backgroundColor: '#000', color: '#fff', border: '3px solid #fbbf24' }
@@ -14892,719 +14909,722 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(view === 'anterior' ? 'ANTERIOR VIEW' : 'POSTERIOR VIEW', W * 0.5, H - 6);
                 ctx.restore();
+
+                // Continue animation
+                canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
               };
+              drawAnatomyFrame();
+            };
+            var handleClick = function (e) {
+              var rect = e.target.getBoundingClientRect();
+              var cx = (e.clientX - rect.left) / rect.width;
+              var cy = (e.clientY - rect.top) / rect.height;
+              var closest = null, minD = 0.06;
+              filtered.forEach(function (st) {
+                var dist = Math.sqrt(Math.pow(st.x - cx, 2) + Math.pow(st.y - cy, 2));
+                if (dist < minD) { minD = dist; closest = st; }
+              });
+              if (closest) upd('selectedStructure', closest.id);
+            };
 
-              // Canvas click handler
-              canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
-            }
-            drawAnatomyFrame();
-          };
-      var handleClick = function (e) {
-        var rect = e.target.getBoundingClientRect();
-        var cx = (e.clientX - rect.left) / rect.width;
-        var cy = (e.clientY - rect.top) / rect.height;
-        var closest = null, minD = 0.06;
-        filtered.forEach(function (st) {
-          var dist = Math.sqrt(Math.pow(st.x - cx, 2) + Math.pow(st.y - cy, 2));
-          if (dist < minD) { minD = dist; closest = st; }
-        });
-        if (closest) upd('selectedStructure', closest.id);
-      };
-
-      return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-        // Header
-        React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-          React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-          React.createElement("div", null,
-            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEC0 Human Anatomy Explorer"),
-            React.createElement("p", { className: "text-xs text-slate-400" }, sys.desc)
-          )
-        ),
-        // System tabs
-        React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-          Object.keys(SYSTEMS).map(function (key) {
-            var s = SYSTEMS[key];
-            return React.createElement("button", {
-              key: key,
-              onClick: function () { upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', ''); },
-              className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'),
-              style: sysKey === key ? { background: s.accent } : {}
-            }, s.icon + ' ' + s.name);
-          })
-        ),
-        // Controls: view toggle, search, quiz
-        React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
-          React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
-            ['anterior', 'posterior'].map(function (v) {
-              return React.createElement("button", {
-                key: v,
-                onClick: function () { upd('view', v); upd('selectedStructure', null); },
-                className: "px-3 py-1 text-xs font-bold transition-all " + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
-              }, v.charAt(0).toUpperCase() + v.slice(1));
-            })
-          ),
-          React.createElement("input", {
-            type: "text", placeholder: "\uD83D\uDD0D Search structures...",
-            value: d.search || '',
-            onChange: function (e) { upd('search', e.target.value); },
-            className: "flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
-          }),
-          React.createElement("button", {
-            onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-            className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
-          }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
-          React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
-            [{ v: 1, label: t('stem.synth_ui.ku20135'), tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
-              return React.createElement("button", {
-                key: lv.v, title: lv.tip + ' level',
-                onClick: function () { upd('complexity', lv.v); upd('selectedStructure', null); },
-                className: "px-2 py-1 text-[10px] font-bold transition-all " + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
-              }, lv.label);
-            })
-          ),
-          React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' structures')
-        ),
-        // Main content: canvas + detail panel
-        React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
-          // Canvas
-          React.createElement("div", { className: "flex-shrink-0" },
-            React.createElement("canvas", {
-              ref: canvasRef, width: 360, height: 520,
-              onClick: handleClick,
-              className: "rounded-xl border-2 cursor-crosshair",
-              style: { borderColor: sys.accent + '30', background: '#fafaf9' }
-            })
-          ),
-          // Right panel
-          React.createElement("div", { className: "flex-1 min-w-0" },
-            d.quizMode ? (
-              // Quiz panel
-              quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
-                React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                  React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDEA Anatomy Quiz"),
-                  React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0) + "/" + Math.min((d.quizIdx || 0) + 1, quizPool.length))
-                ),
-                React.createElement("p", { className: "text-sm text-slate-800 font-bold leading-relaxed" }, "Which structure has this function?"),
-                React.createElement("p", { className: "text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic" }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : '')),
-                React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
-                  quizOptions.map(function (opt) {
-                    var fb = d.quizFeedback;
-                    var isCorrect = opt.id === quizQ.id;
-                    var wasChosen = fb && fb.chosen === opt.id;
-                    var showResult = fb !== null && fb !== undefined;
-                    return React.createElement("button", {
-                      key: opt.id,
-                      disabled: showResult,
-                      onClick: function () {
-                        var correct = opt.id === quizQ.id;
-                        upd('quizFeedback', { chosen: opt.id, correct: correct });
-                        if (correct) upd('quizScore', (d.quizScore || 0) + 1);
-                      },
-                      className: "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 " +
-                        (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                          showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                            'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
-                    }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
-                  })
-                ),
-                d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                  React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizQ.name),
-                  React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
-                  quizQ.clinical && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\u26A0 Clinical: "), quizQ.clinical)
-                ),
-                d.quizFeedback && React.createElement("button", {
-                  onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                  className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-all"
-                }, "Next Question \u2192")
-              ) : React.createElement("p", { className: "text-sm text-slate-500 italic" }, "No quiz questions available.")
-            ) : (
-              sel ? (
-                // Detail panel
-                React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 space-y-3", style: { borderColor: sys.accent + '40' } },
-                  React.createElement("div", { className: "flex items-start justify-between" },
-                    React.createElement("h4", { className: "text-base font-black", style: { color: sys.accent } }, sel.name),
-                    React.createElement("button", { onClick: function () { upd('selectedStructure', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
-                  ),
-                  React.createElement("div", { className: "space-y-2.5" },
-                    React.createElement("div", null,
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
-                      React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
-                    ),
-                    sel.origin && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                      React.createElement("div", null,
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Origin"),
-                        React.createElement("p", { className: "text-xs text-slate-600" }, sel.origin)
-                      ),
-                      React.createElement("div", null,
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Insertion"),
-                        React.createElement("p", { className: "text-xs text-slate-600" }, sel.insertion)
-                      )
-                    ),
-                    React.createElement("div", null,
-                      React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\u26A0 Clinical Significance"),
-                      React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.clinical)
-                    ),
-                    sel.detail && React.createElement("div", null,
-                      React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Detail"),
-                      React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, sel.detail)
-                    )
-                  )
+            return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+              // Header
+              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("div", null,
+                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEC0 Human Anatomy Explorer"),
+                  React.createElement("p", { className: "text-xs text-slate-400" }, sys.desc)
                 )
-              ) : (
-                // Structure list
-                React.createElement("div", { className: "space-y-1 max-h-[460px] overflow-y-auto pr-1" },
-                  filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No structures match your search."),
-                  filtered.map(function (st) {
-                    return React.createElement("button", {
-                      key: st.id,
-                      onClick: function () { upd('selectedStructure', st.id); },
-                      className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
-                        (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-200'),
-                      style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
-                    },
-                      React.createElement("div", { className: "font-bold text-slate-800" }, st.name),
-                      React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
-                    );
-                  })
-                )
-              )
-            )
-          )
-        )
-      );
-    }) (),
-
-      // ═══════════════════════════════════════════════════════
-      // BRAIN ATLAS EXPLORER
-      stemLabTab === 'explore' && stemLabTool === 'brainAtlas' && (() => {
-        var d = labToolData.brainAtlas || {};
-        var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
-
-        var VIEWS = {
-          lateral: {
-            name: t('stem.synth_ui.lateral'), desc: 'Side view showing all four lobes, cerebellum, and brainstem',
-            regions: [
-              { id: 'frontal', name: t('stem.synth_ui.frontal_lobe'), x: 0.28, y: 0.32, w: 0.22, fn: 'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann: 'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage: 'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
-              { id: 'prefrontal', name: t('stem.synth_ui.prefrontal_cortex'), x: 0.18, y: 0.35, w: 0.12, fn: 'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann: 'BA 9, 10, 11, 12, 46, 47', blood: 'Anterior cerebral artery, middle cerebral artery', conditions: 'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage: 'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
-              { id: 'motor_cortex', name: t('stem.synth_ui.primary_motor_cortex'), x: 0.42, y: 0.18, w: 0.08, fn: 'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann: 'BA 4', blood: 'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions: 'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage: 'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
-              { id: 'parietal', name: t('stem.synth_ui.parietal_lobe'), x: 0.52, y: 0.22, w: 0.18, fn: 'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann: 'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage: 'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
-              { id: 'temporal', name: t('stem.synth_ui.temporal_lobe'), x: 0.38, y: 0.58, w: 0.20, fn: 'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann: 'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood: 'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions: 'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage: 'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
-              { id: 'occipital', name: t('stem.synth_ui.occipital_lobe'), x: 0.78, y: 0.32, w: 0.14, fn: 'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann: 'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood: 'Posterior cerebral artery', conditions: 'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage: 'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
-              { id: 'cerebellum', name: t('stem.synth_ui.cerebellum'), x: 0.78, y: 0.62, w: 0.14, fn: 'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann: 'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood: 'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions: 'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage: 'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
-              { id: 'brainstem', name: 'Brainstem', x: 0.62, y: 0.68, w: 0.10, fn: 'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann: 'N/A', blood: 'Basilar artery, vertebral arteries, PICA, AICA', conditions: 'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage: 'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
-              { id: 'brocas', name: t('stem.synth_ui.brocau2019s_area'), x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
-              { id: 'wernickes', name: t('stem.synth_ui.wernickeu2019s_area'), x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' },
-              { id: 'insular', name: 'Insular Cortex (Insula)', x: 0.42, y: 0.45, w: 0.10, fn: 'Hidden deep to lateral sulcus, covered by opercula. Integrates interoceptive awareness (body state), taste (gustatory cortex), pain, empathy, disgust, addiction craving. Anterior insula: subjective emotional experience. Posterior insula: somatosensory integration.', brodmann: 'BA 13, 14, 15, 16', blood: 'Middle cerebral artery (insular branches, M2 segment)', conditions: 'Insular stroke: gustatory dysfunction, autonomic dysregulation (cardiac arrhythmias), loss of interoceptive awareness. Insular involvement in addiction: damage reduces nicotine craving. Temporal lobe epilepsy often involves insula. Role in anxiety and panic disorder.', damage: 'Loss of taste, impaired interoception, autonomic instability, reduced empathy, altered pain perception, disrupted addiction circuits.' },
-              { id: 'angular_gyrus', name: 'Angular Gyrus', x: 0.68, y: 0.38, w: 0.08, fn: 'Posterior parietal cortex (inferior parietal lobule). Multimodal integration hub: reading (visual word form \u2192 language), arithmetic, spatial cognition, semantic processing, attention, theory of mind. Cross-modal association area. Left angular gyrus critical for reading comprehension.', brodmann: 'BA 39', blood: 'Middle cerebral artery (angular branch) and posterior cerebral artery', conditions: 'Gerstmann syndrome (left angular gyrus lesion): agraphia, acalculia, finger agnosia, left-right disorientation. Alexia with agraphia. Angular gyrus syndrome may mimic Wernicke aphasia. Part of default mode network.', damage: 'Reading comprehension deficits, calculation errors, spatial disorientation, impaired semantic processing, anomia.' },
-              { id: 'supramarginal', name: 'Supramarginal Gyrus', x: 0.62, y: 0.32, w: 0.08, fn: 'Anterior inferior parietal lobule, wraps around posterior end of lateral sulcus. Phonological processing, tactile object recognition, empathy, language (repetition: connects Wernicke to Broca via arcuate fasciculus). Non-dominant: spatial awareness and attention.', brodmann: 'BA 40', blood: 'Middle cerebral artery (posterior parietal branches)', conditions: 'Conduction aphasia: impaired repetition with intact comprehension and fluency (arcuate fasciculus damage at supramarginal gyrus). Non-dominant lesion: hemispatial neglect (overlaps with parietal neglect). Ideomotor apraxia.', damage: 'Impaired repetition (conduction aphasia), phonological processing deficits, tactile agnosia, ideomotor apraxia, contralateral neglect (non-dominant).' }
-            ]
-          },
-          medial: {
-            name: t('stem.synth_ui.medial_sagittal'), desc: t('stem.synth_ui.midline_cut_revealing_deep_structures'),
-            regions: [
-              { id: 'corpus_callosum', name: t('stem.synth_ui.corpus_callosum'), x: 0.48, y: 0.30, w: 0.20, fn: 'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann: 'N/A (white matter tract)', blood: 'Anterior cerebral artery (pericallosal branches)', conditions: 'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage: 'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
-              { id: 'thalamus', name: t('stem.synth_ui.thalamus'), x: 0.52, y: 0.42, w: 0.10, fn: 'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann: 'N/A (diencephalon)', blood: 'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions: 'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage: 'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
-              { id: 'hypothalamus', name: t('stem.synth_ui.hypothalamus'), x: 0.42, y: 0.52, w: 0.08, fn: 'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann: 'N/A (diencephalon)', blood: 'Circle of Willis branches, superior hypophyseal artery', conditions: 'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage: 'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
-              { id: 'cingulate', name: t('stem.synth_ui.cingulate_gyrus'), x: 0.42, y: 0.22, w: 0.18, fn: 'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann: 'BA 23, 24, 25, 31, 32, 33', blood: 'Anterior cerebral artery (callosomarginal branches)', conditions: 'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage: 'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
-              { id: 'hippocampus', name: t('stem.synth_ui.hippocampus'), x: 0.58, y: 0.55, w: 0.10, fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann: 'Archicortex (3-layered, not neocortical)', blood: 'Posterior cerebral artery (hippocampal branches)', conditions: 'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage: 'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
-              { id: 'amygdala', name: t('stem.synth_ui.amygdala'), x: 0.38, y: 0.58, w: 0.08, fn: 'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann: 'N/A (subcortical)', blood: 'Anterior choroidal artery, middle cerebral artery branches', conditions: 'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage: 'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
-              { id: 'basal_ganglia', name: t('stem.synth_ui.basal_ganglia'), x: 0.50, y: 0.38, w: 0.10, fn: 'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann: 'N/A (subcortical nuclei)', blood: 'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions: 'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage: 'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
-              { id: 'ventricles', name: 'Ventricular System', x: 0.50, y: 0.45, w: 0.10, fn: 'CSF-filled cavities: 2 lateral ventricles \u2192 interventricular foramina (Monro) \u2192 3rd ventricle \u2192 cerebral aqueduct (Sylvius) \u2192 4th ventricle. Choroid plexus produces ~500mL CSF/day. CSF cushions brain.', brodmann: 'N/A', blood: 'Choroid plexus supplied by choroidal arteries', conditions: 'Hydrocephalus: obstructive (non-communicating, e.g. aqueductal stenosis) or communicating (impaired absorption at arachnoid granulations). Normal pressure hydrocephalus: triad of dementia, gait ataxia, urinary incontinence ("wet, wacky, wobbly").', damage: 'Increased ICP from CSF obstruction \u2192 headache, nausea, papilledema, herniation if untreated.' },
-              { id: 'pineal_brain', name: 'Pineal Gland', x: 0.68, y: 0.38, w: 0.06, fn: 'Small endocrine gland in epithalamus, posterior to third ventricle. Produces melatonin from serotonin (darkness-regulated). Contains pinealocytes and glial cells. Calcifies with age (visible on imaging as midline marker). Outside blood-brain barrier.', brodmann: 'N/A (endocrine gland)', blood: 'Posterior choroidal arteries', conditions: 'Pinealoma/pineal germinoma: may compress cerebral aqueduct \u2192 obstructive hydrocephalus. Parinaud syndrome (dorsal midbrain syndrome): upgaze palsy, convergence-retraction nystagmus, light-near dissociation. Pineal cysts (usually incidental). Precocious puberty (pineal tumors secreting hCG).', damage: 'Disrupted circadian rhythms, obstructive hydrocephalus from aqueductal compression, Parinaud dorsal midbrain syndrome.' },
-              { id: 'fornix', name: 'Fornix', x: 0.52, y: 0.34, w: 0.12, fn: 'Major white matter tract of limbic system. C-shaped bundle connecting hippocampus to mammillary bodies, septal nuclei, and hypothalamus. Carries output from hippocampal formation (subiculum). Columns of fornix pass through hypothalamus to mammillary bodies. Critical for memory circuit (Papez circuit).', brodmann: 'N/A (white matter tract)', blood: 'Branches of anterior cerebral artery and internal cerebral vein', conditions: 'Fornix damage (surgical, tumor, trauma): severe anterograde amnesia similar to hippocampal lesions. Colloid cyst of third ventricle can compress columns of fornix \u2192 acute memory loss. Forniceal involvement in MS may contribute to cognitive symptoms.', damage: 'Anterograde amnesia (inability to form new memories), disrupted spatial memory, impaired episodic memory encoding.' },
-              { id: 'mammillary', name: 'Mammillary Bodies', x: 0.45, y: 0.58, w: 0.06, fn: 'Paired nuclei on ventral surface of posterior hypothalamus. Part of Papez circuit (hippocampus \u2192 fornix \u2192 mammillary bodies \u2192 mammillothalamic tract \u2192 anterior thalamic nucleus \u2192 cingulate \u2192 hippocampus). Medial nucleus (larger): memory. Lateral nucleus: visceral reflexes.', brodmann: 'N/A (hypothalamic nuclei)', blood: 'Branches of posterior cerebral artery and posterior communicating artery', conditions: 'Wernicke encephalopathy: thiamine (B1) deficiency \u2192 mammillary body necrosis/hemorrhage + ataxia + ophthalmoplegia + confusion. If untreated \u2192 Korsakoff syndrome: permanent confabulation, anterograde/retrograde amnesia. Most common in chronic alcoholism. MRI shows mammillary body atrophy.', damage: 'Severe memory impairment (especially anterograde), confabulation (Korsakoff syndrome), disrupted spatial navigation.' },
-              { id: 'septum_pell', name: 'Septum Pellucidum', x: 0.40, y: 0.30, w: 0.06, fn: 'Thin membrane of two laminae separating the two lateral ventricles. Contains septal nuclei (part of limbic system). Septal nuclei project to hippocampus (medial septum: cholinergic/GABAergic input for theta rhythm), hypothalamus, and brainstem. Connected to nucleus accumbens (pleasure).', brodmann: 'N/A (septal region)', blood: 'Anterior cerebral artery branches', conditions: 'Cavum septum pellucidum (CSP): persistent fluid-filled cavity between laminae, normal variant in ~20% of adults, more common in boxers and TBI patients. Septal lesions can cause rage reactions (septal rage syndrome in animal models). CSP associated with schizophrenia in some studies.', damage: 'Septal lesion effects include emotional dysregulation, hyperemotionality, and impaired pleasure/reward processing.' }
-            ]
-          },
-          superior: {
-            name: t('stem.synth_ui.superior_top'), desc: t('stem.synth_ui.view_from_above_showing_hemispheres'),
-            regions: [
-              { id: 'longitudinal', name: t('stem.synth_ui.longitudinal_fissure'), x: 0.50, y: 0.50, w: 0.04, fn: 'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann: 'N/A (anatomical landmark)', blood: 'Superior sagittal sinus runs along its superior border', conditions: 'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage: 'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
-              { id: 'central_sulcus', name: t('stem.synth_ui.central_sulcus_rolandic'), x: 0.50, y: 0.38, w: 0.30, fn: 'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann: 'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood: 'Middle cerebral artery branches', conditions: 'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage: 'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
-              { id: 'frontal_sup', name: t('stem.synth_ui.frontal_lobes_superior_view'), x: 0.35, y: 0.25, w: 0.15, fn: 'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann: 'BA 4, 6, 8, 9, 10, 46', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage: 'Executive dysfunction, personality changes, contralateral motor weakness.' },
-              { id: 'parietal_sup', name: t('stem.synth_ui.parietal_lobes_superior_view'), x: 0.55, y: 0.55, w: 0.15, fn: 'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann: 'BA 1,2,3,5,7,39,40', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage: 'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' },
-              { id: 'sma', name: 'Supplementary Motor Area', x: 0.42, y: 0.35, w: 0.10, fn: 'Medial surface of frontal lobe, anterior to primary motor cortex. Plans complex motor sequences, coordinates bimanual movements, internally generated movements (vs externally cued). Pre-SMA involved in motor planning and decision-making. Contains somatotopic organization.', brodmann: 'BA 6 (medial)', blood: 'Anterior cerebral artery', conditions: 'SMA syndrome (post-surgical): transient contralateral akinesia and mutism after SMA resection (recovers in weeks due to compensation). SMA seizures: bilateral tonic posturing, preserved consciousness. Alien limb syndrome (medial frontal variant).', damage: 'Transient contralateral motor neglect, difficulty initiating voluntary movement, impaired bimanual coordination, speech initiation problems.' }
-            ]
-          },
-          inferior: {
-            name: t('stem.synth_ui.inferior_bottom'), desc: t('stem.synth_ui.view_from_below_showing_cranial'),
-            regions: [
-              { id: 'olfactory', name: t('stem.synth_ui.olfactory_bulbstracts_cn_i'), x: 0.50, y: 0.20, w: 0.10, fn: 'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann: 'N/A', blood: 'Anterior cerebral artery (olfactory branches)', conditions: 'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage: 'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
-              { id: 'optic_chiasm', name: t('stem.synth_ui.optic_chiasm_cn_ii'), x: 0.50, y: 0.32, w: 0.10, fn: 'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann: 'N/A', blood: 'Superior hypophyseal artery, ophthalmic artery', conditions: 'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage: 'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
-              { id: 'temporal_inf', name: t('stem.synth_ui.temporal_lobes_inferior'), x: 0.40, y: 0.50, w: 0.15, fn: 'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann: 'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood: 'Posterior cerebral artery', conditions: 'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage: 'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
-              { id: 'cerebellum_inf', name: t('stem.synth_ui.cerebellum_inferior'), x: 0.50, y: 0.72, w: 0.18, fn: 'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann: 'N/A', blood: 'PICA (posterior inferior cerebellar artery)', conditions: 'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage: 'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
-              { id: 'medulla_inf', name: t('stem.synth_ui.medulla_oblongata_inferior'), x: 0.50, y: 0.60, w: 0.08, fn: 'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann: 'N/A', blood: 'Vertebral arteries, PICA', conditions: 'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage: 'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
-              { id: 'cn_nerves', name: t('stem.synth_ui.cranial_nerves_iiu2013xii'), x: 0.50, y: 0.45, w: 0.12, fn: 'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann: 'N/A', blood: 'Various branches of basilar and vertebral arteries', conditions: 'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage: 'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' },
-              { id: 'pituitary_brain', name: 'Pituitary Gland', x: 0.50, y: 0.38, w: 0.06, fn: 'Pea-sized master endocrine gland in sella turcica of sphenoid bone. Anterior lobe (adenohypophysis): GH, ACTH, TSH, FSH, LH, prolactin. Posterior lobe (neurohypophysis): stores oxytocin and ADH. Connected to hypothalamus by infundibulum (pituitary stalk). Hypophyseal portal system links hypothalamus to anterior pituitary.', brodmann: 'N/A (endocrine gland)', blood: 'Superior and inferior hypophyseal arteries from internal carotid artery', conditions: 'Pituitary adenoma (most common: prolactinoma) \u2192 visual field defects (bitemporal hemianopia), hormonal excess/deficiency. Pituitary apoplexy: hemorrhage into adenoma \u2192 sudden headache, visual loss, hypopituitarism. Sheehan syndrome: postpartum pituitary necrosis. Craniopharyngioma.', damage: 'Hormonal imbalance (multiple endocrine deficiencies), visual field defects from optic chiasm compression, diabetes insipidus if posterior pituitary affected.' },
-              { id: 'circle_willis_brain', name: 'Circle of Willis', x: 0.50, y: 0.50, w: 0.14, fn: 'Arterial anastomotic ring at base of brain forming a polygon. Components: anterior communicating artery (AComm), bilateral A1 segments of ACA, bilateral ICA, bilateral PComm, bilateral P1 segments of PCA. Complete circle in only ~25% of population. Provides collateral circulation if one artery is occluded.', brodmann: 'N/A (vascular)', blood: 'Internal carotid arteries (anterior circulation) + basilar artery (posterior circulation)', conditions: 'Berry (saccular) aneurysms: most common at AComm junction (30\u201335%). Rupture \u2192 subarachnoid hemorrhage (thunderclap headache, worst headache of life). Risk: hypertension, smoking, polycystic kidney disease, Ehlers-Danlos, coarctation of aorta. Variants may reduce collateral flow \u2192 increased stroke risk.', damage: 'Aneurysm rupture causes subarachnoid hemorrhage with high mortality; occlusion of feeding vessels causes ischemic stroke in the territory of the affected branch.' }
-            ]
-          },
-          neurotransmitters: {
-            name: '\u26A1 Neurotransmitters', desc: 'Complete reference: synthesis, receptors, pathways, functions, pharmacology',
-            isNT: true,
-            regions: [
-              { id: 'dopamine', name: 'Dopamine (DA)', x: 0.30, y: 0.35, w: 0.08, category: 'Catecholamine (Monoamine)', synthesis: 'Tyrosine \u2192 L-DOPA (tyrosine hydroxylase, rate-limiting) \u2192 Dopamine (DOPA decarboxylase). Stored in synaptic vesicles via VMAT2.', receptors: 'D1-like (D1, D5): Gs-coupled, excitatory, increase cAMP. D2-like (D2, D3, D4): Gi-coupled, inhibitory, decrease cAMP. D2 autoreceptors regulate release.', pathways: 'Mesolimbic (VTA \u2192 nucleus accumbens): reward/motivation. Mesocortical (VTA \u2192 PFC): cognition/executive function. Nigrostriatal (substantia nigra \u2192 striatum): motor control. Tuberoinfundibular (hypothalamus \u2192 pituitary): inhibits prolactin.', fn: 'Reward and pleasure signaling, motivation, motor control, executive function, working memory, attention, hormonal regulation (prolactin inhibition).', conditions: 'Parkinson disease: nigrostriatal DA depletion. Schizophrenia: mesolimbic DA excess (positive symptoms), mesocortical DA deficit (negative symptoms). ADHD: prefrontal DA/NE dysregulation. Addiction: mesolimbic hijacking.', drugs: 'L-DOPA/carbidopa (Parkinson). Antipsychotics: D2 blockers (haloperidol, risperidone). Stimulants: methylphenidate, amphetamine (block DAT/increase release). Cocaine blocks DAT. Pramipexole (D2/D3 agonist).', damage: 'Loss of dopamine neurons leads to bradykinesia, rigidity, and tremor in Parkinson disease; excess dopamine activity causes psychosis and hallucinations.' },
-              { id: 'serotonin', name: 'Serotonin (5-HT)', x: 0.50, y: 0.60, w: 0.08, category: 'Indolamine (Monoamine)', synthesis: 'Tryptophan \u2192 5-hydroxytryptophan (tryptophan hydroxylase, rate-limiting) \u2192 Serotonin (aromatic amino acid decarboxylase). 90% in gut enterochromaffin cells; only 2% in brain (raphe nuclei).', receptors: '7 families (5-HT1\u20137), 14+ subtypes. 5-HT1A: anxiolytic target (buspirone). 5-HT2A: psychedelic target, antipsychotic target. 5-HT3: ionotropic (ondansetron target, antiemetic). 5-HT4: GI motility.', pathways: 'Raphe nuclei (dorsal and median) project widely to cortex, limbic system, basal ganglia, hypothalamus, brainstem, spinal cord. Most widespread monoamine projection system in brain.', fn: 'Mood regulation, anxiety modulation, sleep-wake cycle, appetite, pain perception, thermoregulation, GI motility, platelet aggregation, nausea/vomiting control.', conditions: 'Depression: monoamine hypothesis (5-HT deficit). Anxiety disorders. OCD (5-HT circuit dysfunction). Migraine (5-HT vasoconstriction). Carcinoid syndrome: serotonin-secreting tumor (flushing, diarrhea, wheezing). Serotonin syndrome: excess 5-HT (hyperthermia, rigidity, clonus).', drugs: 'SSRIs (fluoxetine, sertraline): block SERT. SNRIs (venlafaxine). TCAs (amitriptyline). MAOIs (phenelzine). Triptans (5-HT1B/1D agonists for migraine). Ondansetron (5-HT3 antagonist, antiemetic). Buspirone (5-HT1A partial agonist). LSD/psilocybin (5-HT2A agonists).', damage: 'Serotonin depletion contributes to depression, insomnia, impulsivity, and increased pain sensitivity; excess causes serotonin syndrome with potentially fatal hyperthermia.' },
-              { id: 'norepinephrine', name: 'Norepinephrine (NE)', x: 0.40, y: 0.30, w: 0.08, category: 'Catecholamine (Monoamine)', synthesis: 'Tyrosine \u2192 L-DOPA \u2192 Dopamine \u2192 Norepinephrine (dopamine \u03B2-hydroxylase, in synaptic vesicles). NE is the immediate precursor to epinephrine in the adrenal medulla.', receptors: '\u03B11: Gq, vasoconstriction, mydriasis. \u03B12: Gi, presynaptic autoreceptor (inhibits NE release), central sedation. \u03B21: Gs, increases heart rate/contractility. \u03B22: Gs, bronchodilation, vasodilation. \u03B23: Gs, lipolysis.', pathways: 'Locus coeruleus (LC) in dorsal pons projects to entire cerebral cortex, hippocampus, amygdala, cerebellum, spinal cord. Primary arousal/alertness center. Lateral tegmental system: autonomic regulation.', fn: 'Arousal, alertness, attention, vigilance, stress response (fight-or-flight), mood regulation, blood pressure regulation, pain modulation, memory consolidation during emotional events.', conditions: 'Depression (NE deficit). PTSD (NE hyperactivity, hyperarousal). Orthostatic hypotension (NE insufficiency). Pheochromocytoma: NE/epinephrine-secreting adrenal tumor \u2192 episodic hypertension, tachycardia, headache, diaphoresis.', drugs: 'SNRIs (duloxetine, venlafaxine). NRIs (atomoxetine for ADHD). TCAs (desipramine: NE-selective). Clonidine (\u03B12 agonist, central sympatholytic). Prazosin (\u03B11 blocker, PTSD nightmares). Propranolol (\u03B2-blocker). Phenylephrine (\u03B11 agonist, decongestant).', damage: 'Norepinephrine dysregulation causes attention deficits, autonomic dysfunction, depression, and impaired stress response.' },
-              { id: 'acetylcholine', name: 'Acetylcholine (ACh)', x: 0.55, y: 0.40, w: 0.08, category: 'Cholinergic (Ester)', synthesis: 'Choline + Acetyl-CoA \u2192 ACh (choline acetyltransferase, ChAT). Degraded in synaptic cleft by acetylcholinesterase (AChE). Choline recycled via high-affinity choline transporter.', receptors: 'Nicotinic (nAChR): ligand-gated ion channels. NMJ type (\u03B11)2\u03B21\u03B4\u03B5: muscle contraction. CNS types (\u03B14\u03B22, \u03B17): cognition, attention. Muscarinic (mAChR): G-protein coupled. M1 (Gq): cognition. M2 (Gi): heart (slows HR). M3 (Gq): smooth muscle, glands.', pathways: 'Basal nucleus of Meynert \u2192 cortex (cognition/memory). Pedunculopontine nucleus \u2192 thalamus (arousal/REM sleep). Medial septum \u2192 hippocampus (memory). Motor neurons \u2192 NMJ (voluntary movement). Preganglionic autonomic neurons.', fn: 'Muscle contraction at NMJ, memory formation and retrieval, attention, arousal, REM sleep, autonomic function (parasympathetic: rest-and-digest), learning and cortical plasticity.', conditions: 'Alzheimer disease: loss of cholinergic neurons from nucleus basalis of Meynert. Myasthenia gravis: anti-nAChR antibodies at NMJ. Lambert-Eaton: anti-VGCC antibodies (presynaptic). Organophosphate poisoning: AChE inhibition \u2192 cholinergic crisis.', drugs: 'Donepezil, rivastigmine (AChE inhibitors for Alzheimer). Atropine (muscarinic antagonist). Pilocarpine (muscarinic agonist, glaucoma). Succinylcholine (depolarizing NMJ blocker). Neostigmine (AChE inhibitor for myasthenia). Nicotine (nAChR agonist). Botulinum toxin (blocks ACh release).', damage: 'ACh depletion causes memory loss, cognitive decline, and is the primary neurochemical deficit in Alzheimer disease; NMJ dysfunction causes muscle weakness.' },
-              { id: 'gaba', name: 'GABA (\u03B3-Aminobutyric Acid)', x: 0.60, y: 0.25, w: 0.08, category: 'Amino Acid (Inhibitory)', synthesis: 'Glutamate \u2192 GABA (glutamic acid decarboxylase/GAD, requires vitamin B6/pyridoxal phosphate as cofactor). Degraded by GABA transaminase (GABA-T). Most abundant inhibitory NT in CNS (~40% of synapses).', receptors: 'GABA-A: ligand-gated Cl\u207B channel (fast inhibition). Has binding sites for benzodiazepines (\u03B1/\u03B3 subunit interface), barbiturates, ethanol, neurosteroids, propofol. GABA-B: Gi/Go-coupled GPCR (slow, prolonged inhibition). Baclofen target.', pathways: 'Ubiquitous inhibitory interneurons throughout cortex, hippocampus, basal ganglia, cerebellum (Purkinje cells), thalamus. Striatal medium spiny neurons (GABAergic output of basal ganglia). Reticular thalamic nucleus gates thalamic relay.', fn: 'Primary inhibitory neurotransmission, reduces neuronal excitability, prevents seizures, regulates muscle tone, anxiolysis, sleep induction, motor coordination, thalamic gating of sensory information.', conditions: 'Epilepsy (GABA/glutamate imbalance). Anxiety disorders (insufficient GABAergic tone). Huntington disease (loss of GABAergic MSNs in striatum). Hepatic encephalopathy (excess GABA-like substances). Status epilepticus. Stiff-person syndrome (anti-GAD antibodies).', drugs: 'Benzodiazepines (diazepam, lorazepam): positive allosteric modulators of GABA-A. Barbiturates (phenobarbital): prolong Cl\u207B channel opening. Vigabatrin (irreversible GABA-T inhibitor). Tiagabine (GABA reuptake inhibitor). Baclofen (GABA-B agonist, spasticity). Zolpidem (\u03B11-selective, sleep). Propofol, ethanol (GABA-A modulation).', damage: 'GABA deficiency leads to seizures, anxiety, and movement disorders; excessive GABAergic activity causes sedation, coma, and respiratory depression.' },
-              { id: 'glutamate', name: 'Glutamate (Glu)', x: 0.45, y: 0.20, w: 0.08, category: 'Amino Acid (Excitatory)', synthesis: 'From glutamine (glutaminase in neurons), \u03B1-ketoglutarate (transamination), or recycled from synaptic cleft by astrocytes (glutamate-glutamine cycle). Most abundant excitatory NT in CNS (~90% of excitatory synapses).', receptors: 'Ionotropic: NMDA (Na\u207A/Ca\u00B2\u207A, voltage-dependent Mg\u00B2\u207A block, requires glycine co-agonist \u2014 critical for LTP/memory). AMPA (Na\u207A, fast excitation). Kainate (Na\u207A). Metabotropic: mGluR1\u20138 (Gq or Gi coupled, modulatory).', pathways: 'Virtually all excitatory projection neurons in cortex, hippocampus, thalamus, brainstem. Corticospinal, corticothalamic, thalamocortical, hippocampal trisynaptic circuit (perforant path \u2192 DG \u2192 CA3 \u2192 CA1). Cerebellar granule cells.', fn: 'Primary excitatory neurotransmission, learning and memory (LTP via NMDA receptors), synaptic plasticity, brain development, sensory processing, motor control, cognition.', conditions: 'Excitotoxicity: excessive glutamate \u2192 neuronal death (stroke, TBI, neurodegeneration). ALS: glutamate excitotoxicity (riluzole reduces). Epilepsy (glutamate/GABA imbalance). NMDA receptor encephalitis (anti-NMDAR antibodies). Hepatic encephalopathy.', drugs: 'Memantine (NMDA antagonist, moderate-severe Alzheimer). Riluzole (reduces glutamate release, ALS). Ketamine (NMDA antagonist, anesthesia, rapid-acting antidepressant). PCP (NMDA antagonist, psychosis). Lamotrigine (reduces glutamate release, epilepsy/bipolar). Topiramate (blocks AMPA/kainate).', damage: 'Excess glutamate causes excitotoxic neuronal death in stroke and neurodegeneration; NMDA dysfunction impairs memory formation and synaptic plasticity.' },
-              { id: 'glycine', name: 'Glycine', x: 0.55, y: 0.70, w: 0.08, category: 'Amino Acid (Inhibitory)', synthesis: 'From serine (serine hydroxymethyltransferase) or dietary intake. Simplest amino acid. Dual role: inhibitory NT in spinal cord/brainstem, and obligatory co-agonist at NMDA receptors in brain.', receptors: 'Glycine receptors (GlyR): ligand-gated Cl\u207B channels, primarily in spinal cord and brainstem. Strychnine-sensitive. Also binds glycine site on NMDA receptor (strychnine-insensitive). GlyT1/GlyT2 transporters for reuptake.', pathways: 'Renshaw cell inhibition in spinal cord (recurrent inhibition of motor neurons). Brainstem auditory and vestibular nuclei. Retinal amacrine cells. NMDA receptor co-agonism throughout cortex.', fn: 'Inhibitory neurotransmission in spinal cord and brainstem, motor neuron regulation, pain modulation, NMDA receptor co-activation for synaptic plasticity, auditory/visual processing.', conditions: 'Hyperekplexia (startle disease): glycine receptor mutations. Glycine encephalopathy (nonketotic hyperglycinemia): neonatal seizures. Strychnine poisoning: GlyR antagonism \u2192 unopposed excitation \u2192 convulsions, opisthotonus.', drugs: 'Strychnine (GlyR antagonist, poison). D-serine and sarcosine (GlyT1 inhibitors, investigated for schizophrenia as NMDA enhancers). Glycine supplementation studied for schizophrenia negative symptoms.', damage: 'Glycine receptor dysfunction causes excessive startle reflexes, spasticity, and convulsions; as NMDA co-agonist, glycine modulation affects learning and memory.' },
-              { id: 'histamine', name: 'Histamine', x: 0.35, y: 0.25, w: 0.08, category: 'Monoamine (Imidazole)', synthesis: 'Histidine \u2192 Histamine (histidine decarboxylase). In CNS: tuberomammillary nucleus (TMN) of posterior hypothalamus. Also in mast cells (immune), ECL cells of stomach (acid secretion). Degraded by histamine N-methyltransferase (HNMT) in brain.', receptors: 'H1: Gq, wakefulness, allergic response, smooth muscle contraction. H2: Gs, gastric acid secretion, cardiac contractility. H3: Gi/Go, presynaptic autoreceptor (CNS), regulates histamine/other NT release. H4: Gi, immune cells, inflammation.', pathways: 'TMN of posterior hypothalamus projects to entire cerebral cortex, thalamus, basal ganglia, hippocampus, amygdala, brainstem. Part of ascending arousal system. Active during wakefulness, silent during sleep.', fn: 'Wakefulness and arousal, circadian rhythm regulation, attention, learning, gastric acid secretion, immune and allergic responses, appetite regulation, thermoregulation.', conditions: 'Narcolepsy type 2 (partial histamine deficiency). Allergic responses (mast cell histamine release). Peptic ulcer disease (H2-mediated acid hypersecretion). Systemic mastocytosis. Scombroid fish poisoning (histamine toxicity).', drugs: 'H1 antihistamines: diphenhydramine, cetirizine (allergy). First-gen H1 blockers: sedating (cross BBB). H2 blockers: ranitidine, famotidine (acid reflux). H3 antagonists/inverse agonists: pitolisant (narcolepsy, promotes wakefulness). Betahistine (vertigo).', damage: 'Histamine deficiency impairs wakefulness and causes excessive sleepiness; excess release causes allergic inflammation, bronchoconstriction, and anaphylaxis.' },
-              { id: 'endorphins', name: 'Endorphins (\u03B2-Endorphin)', x: 0.50, y: 0.15, w: 0.08, category: 'Opioid Peptide (Neuropeptide)', synthesis: 'Pro-opiomelanocortin (POMC) \u2192 cleaved into \u03B2-endorphin + ACTH + \u03B1-MSH. POMC expressed in arcuate nucleus of hypothalamus and NTS of brainstem. Also: met-/leu-enkephalin (from proenkephalin), dynorphins (from prodynorphin).', receptors: '\u03BC (mu, MOR): analgesia, euphoria, respiratory depression, constipation (primary opioid drug target). \u03B4 (delta, DOR): analgesia, mood. \u03BA (kappa, KOR): analgesia, dysphoria, diuresis. All Gi/Go-coupled, decrease cAMP, open K\u207A channels, close Ca\u00B2\u207A channels.', pathways: 'Descending pain modulation: PAG \u2192 RVM \u2192 dorsal horn (gate control). Arcuate nucleus projections to PAG, thalamus, amygdala, locus coeruleus. Enkephalin interneurons in dorsal horn. VTA reward circuits (disinhibit dopamine neurons).', fn: 'Endogenous pain modulation (analgesia), stress response, reward and euphoria (runner\u2019s high), immune regulation, mood elevation, appetite regulation, respiratory regulation.', conditions: 'Chronic pain syndromes (endorphin deficit). Opioid use disorder: exogenous opioids hijack endogenous system \u2192 tolerance, dependence, withdrawal. Congenital insensitivity to pain (rare). Stress-induced analgesia on the battlefield.', drugs: 'Morphine, fentanyl, oxycodone (\u03BC agonists, analgesia). Naloxone, naltrexone (\u03BC antagonists, overdose reversal/addiction treatment). Buprenorphine (\u03BC partial agonist, opioid use disorder). Methadone (full \u03BC agonist, maintenance therapy). Tramadol (\u03BC agonist + SNRI).', damage: 'Endorphin system disruption leads to chronic pain, mood disorders, and vulnerability to opioid addiction; excessive opioid receptor activation causes respiratory depression.' },
-              { id: 'substance_p', name: 'Substance P', x: 0.65, y: 0.55, w: 0.08, category: 'Tachykinin (Neuropeptide)', synthesis: 'Encoded by TAC1 gene (preprotachykinin A). 11-amino acid peptide. Stored in large dense-core vesicles. Co-released with glutamate from C-fiber nociceptive neurons. Also found in gut enteric neurons and immune cells.', receptors: 'NK1 (neurokinin-1) receptor: Gq-coupled, primary target. NK2, NK3 receptors (lower affinity). NK1 receptors abundant in dorsal horn, brainstem emesis center, amygdala, hypothalamus, striatum.', pathways: 'C-fiber nociceptors \u2192 dorsal horn (laminae I and II) for pain transmission. Trigeminal system for head/face pain. Brainstem vomiting center. Striatum (mood/anxiety). Enteric nervous system (GI motility/inflammation).', fn: 'Pain transmission (especially slow, burning pain from C-fibers), neurogenic inflammation (vasodilation, plasma extravasation, mast cell degranulation), emesis, mood and stress regulation, GI motility.', conditions: 'Chronic pain and fibromyalgia (elevated CSF substance P). Migraine (trigeminovascular substance P release). Chemotherapy-induced nausea/vomiting. Inflammatory bowel disease. Depression and anxiety (elevated substance P).', drugs: 'Aprepitant (NK1 antagonist, antiemetic for chemotherapy-induced nausea). Capsaicin cream (depletes substance P from C-fibers, topical pain relief). NK1 antagonists investigated for depression and anxiety.', damage: 'Excess substance P amplifies pain perception, causes neurogenic inflammation, and triggers nausea; depletion impairs pain signaling and protective reflexes.' },
-              { id: 'oxytocin', name: 'Oxytocin', x: 0.42, y: 0.10, w: 0.08, category: 'Peptide Hormone/Neurotransmitter', synthesis: '9-amino acid peptide synthesized in paraventricular nucleus (PVN) and supraoptic nucleus (SON) of hypothalamus. Transported via neurophysin I to posterior pituitary for systemic release. Also released centrally from dendrites and axon terminals.', receptors: 'Oxytocin receptor (OXTR): Gq-coupled GPCR. Expressed in uterus, mammary glands, brain (amygdala, hippocampus, hypothalamus, nucleus accumbens, brainstem). Receptor density varies with reproductive state and social experience.', pathways: 'PVN/SON \u2192 posterior pituitary (endocrine release \u2192 blood). PVN \u2192 amygdala, hippocampus, nucleus accumbens, brainstem, spinal cord (central neuromodulation). Dense projections to social brain network.', fn: 'Uterine contractions during labor, milk ejection (let-down reflex), maternal bonding, pair bonding, social trust and recognition, stress reduction, anxiolysis, wound healing, sexual arousal.', conditions: 'Oxytocin deficiency: difficult labor, poor lactation. Williams syndrome (excess social behavior, possibly related to OXT system). Autism spectrum: oxytocin studied as potential treatment for social deficits. Postpartum depression may involve OXT dysregulation.', drugs: 'Pitocin (synthetic oxytocin, labor induction/augmentation, postpartum hemorrhage). Carbetocin (long-acting oxytocin agonist). Intranasal oxytocin (research for autism, social anxiety, PTSD). Atosiban (oxytocin receptor antagonist, preterm labor).', damage: 'Oxytocin deficiency impairs social bonding, lactation, and labor progression; excess can cause uterine hyperstimulation and fetal distress during labor.' },
-              { id: 'vasopressin', name: 'Vasopressin (ADH)', x: 0.58, y: 0.10, w: 0.08, category: 'Peptide Hormone/Neurotransmitter', synthesis: '9-amino acid peptide (differs from oxytocin by 2 amino acids). Synthesized in SON (primarily) and PVN of hypothalamus. Transported via neurophysin II to posterior pituitary. Release triggered by increased plasma osmolality (>285 mOsm) or decreased blood volume.', receptors: 'V1a: Gq, vascular smooth muscle vasoconstriction, hepatic glycogenolysis, platelet aggregation. V1b (V3): Gq, anterior pituitary ACTH release. V2: Gs, renal collecting duct (aquaporin-2 insertion for water reabsorption). Central V1a: social behavior.', pathways: 'SON/PVN \u2192 posterior pituitary (endocrine). PVN \u2192 brainstem autonomic centers. Central V1a projections to amygdala and septum (aggression, pair bonding in voles). Osmoreceptor feedback from OVLT and SFO (circumventricular organs).', fn: 'Water reabsorption in kidneys (antidiuretic effect), vasoconstriction, ACTH regulation (stress response), memory consolidation, social behavior (aggression, pair bonding), circadian rhythm, temperature regulation.', conditions: 'Diabetes insipidus: central (no ADH production) or nephrogenic (kidneys unresponsive to ADH) \u2192 polyuria/polydipsia. SIADH (excess ADH): hyponatremia, water retention. Causes: SCLC, CNS disease, drugs.', drugs: 'Desmopressin (V2 agonist: central DI, nocturnal enuresis, hemophilia A/vWD). Vasopressin/terlipressin (V1 agonist: variceal bleeding, vasodilatory shock). Conivaptan/tolvaptan (V2 antagonist, vaptans: SIADH, hyponatremia). Demeclocycline (induces nephrogenic DI for SIADH).', damage: 'ADH deficiency causes massive water loss and dehydration; excess causes dangerous hyponatremia with cerebral edema, seizures, and coma.' },
-              { id: 'melatonin', name: 'Melatonin', x: 0.50, y: 0.05, w: 0.08, category: 'Indolamine (Tryptophan derivative)', synthesis: 'Tryptophan \u2192 Serotonin \u2192 N-acetylserotonin (AANAT, rate-limiting, activated by darkness) \u2192 Melatonin (HIOMT). Produced in pineal gland. Synthesis controlled by SCN \u2192 SCG \u2192 pineal pathway. Peaks at 2\u20134 AM, suppressed by light (especially blue, 460nm).', receptors: 'MT1: Gi, sleep onset (inhibits SCN neuronal firing, promotes sleepiness). MT2: Gi, circadian phase-shifting (advances or delays clock). Both expressed in SCN, retina, cerebral arteries, immune cells. MT3/NQO2: enzyme, detoxification.', pathways: 'Pineal gland \u2192 CSF and blood (endocrine hormone). Acts on SCN (master circadian clock) to reinforce day-night rhythm. Also acts on immune cells, GI tract, skin, reproductive organs. Retinal melatonin for local circadian regulation.', fn: 'Circadian rhythm regulation (sleep-wake cycle entrainment), sleep onset facilitation, seasonal reproductive timing (photoperiodism), antioxidant properties, immune modulation, oncostatic effects, body temperature lowering.', conditions: 'Circadian rhythm disorders: delayed sleep phase, jet lag, shift-work disorder, non-24-hour sleep-wake disorder (blind individuals). Age-related melatonin decline \u2192 insomnia in elderly. Pineal tumors: altered melatonin production. Seasonal affective disorder.', drugs: 'Exogenous melatonin (OTC sleep aid, jet lag, circadian disorders). Ramelteon (MT1/MT2 agonist, insomnia). Tasimelteon (MT1/MT2 agonist, non-24-hour disorder in blind). Agomelatine (MT1/MT2 agonist + 5-HT2C antagonist, depression). Suvorexant (orexin antagonist, different mechanism).', damage: 'Melatonin disruption impairs sleep quality, circadian rhythms, and may increase cancer risk; chronic circadian misalignment is associated with metabolic and cardiovascular disease.' },
-              { id: 'nitric_oxide', name: 'Nitric Oxide (NO)', x: 0.70, y: 0.35, w: 0.08, category: 'Gaseous Neurotransmitter', synthesis: 'L-arginine \u2192 L-citrulline + NO (nitric oxide synthase: nNOS in neurons, eNOS in endothelium, iNOS in immune cells). Not stored in vesicles \u2014 synthesized on demand, diffuses freely across membranes. Half-life: seconds.', receptors: 'Not a classical receptor. Activates soluble guanylate cyclase (sGC) \u2192 increases cGMP \u2192 smooth muscle relaxation, vasodilation. Also: S-nitrosylation of proteins (post-translational modification). Acts as retrograde messenger at synapses.', pathways: 'Retrograde signaling at glutamatergic synapses (postsynaptic NMDA Ca\u00B2\u207A influx \u2192 nNOS activation \u2192 NO diffuses to presynaptic terminal \u2192 enhances glutamate release). Endothelial NO \u2192 vascular smooth muscle. Nitrergic neurons in enteric NS, penile cavernosal nerves.', fn: 'Vasodilation (blood pressure regulation), retrograde synaptic signaling (LTP), immune defense (macrophage killing of pathogens), GI motility (non-adrenergic non-cholinergic relaxation), penile erection, platelet aggregation inhibition.', conditions: 'Endothelial dysfunction: reduced NO \u2192 hypertension, atherosclerosis. Erectile dysfunction (insufficient cavernosal NO). Septic shock: iNOS overproduction \u2192 massive vasodilation. Migraine: excessive NO \u2192 cerebral vasodilation. Excitotoxicity: excess nNOS contributes to neuronal damage.', drugs: 'Nitroglycerin, isosorbide (NO donors, angina). Sildenafil/tadalafil (PDE5 inhibitors: prevent cGMP breakdown, prolong NO vasodilatory effect, erectile dysfunction and pulmonary hypertension). L-NAME (NOS inhibitor, research). Inhaled NO (pulmonary hypertension in neonates).', damage: 'NO deficiency causes hypertension and impaired synaptic plasticity; excess NO produces oxidative stress, contributes to neurodegeneration, and causes pathological vasodilation in septic shock.' },
-              { id: 'anandamide', name: 'Anandamide (AEA)', x: 0.30, y: 0.50, w: 0.08, category: 'Endocannabinoid (Lipid)', synthesis: 'N-arachidonoylphosphatidylethanolamine (NAPE) \u2192 Anandamide (NAPE-PLD). Also 2-AG: diacylglycerol \u2192 2-arachidonoylglycerol (DAGL). Synthesized on demand from membrane phospholipids (retrograde messengers). Degraded by FAAH (anandamide) and MAGL (2-AG).', receptors: 'CB1: Gi/Go, most abundant GPCR in brain (cortex, basal ganglia, hippocampus, cerebellum). Presynaptic: inhibits neurotransmitter release (both glutamate and GABA). CB2: Gi/Go, primarily immune cells, microglia, some neurons. Also TRPV1, PPARs.', pathways: 'Retrograde signaling: postsynaptic depolarization/Ca\u00B2\u207A \u2192 endocannabinoid synthesis \u2192 diffuses to presynaptic CB1 \u2192 inhibits NT release (depolarization-induced suppression of inhibition/excitation: DSI/DSE). Widespread modulatory system.', fn: 'Synaptic plasticity modulation (fine-tuning excitation/inhibition balance), pain modulation, appetite stimulation, mood regulation, neuroprotection, memory extinction (forgetting), nausea suppression, immune regulation.', conditions: 'Chronic pain (endocannabinoid deficiency hypothesis). Obesity (overactive endocannabinoid tone). PTSD (impaired fear extinction, CB1 link). Multiple sclerosis spasticity. Epilepsy (CBD-responsive: Dravet, Lennox-Gastaut syndromes). Cannabinoid hyperemesis syndrome.', drugs: 'THC (CB1/CB2 partial agonist, \u0394\u2079-tetrahydrocannabinol from cannabis). CBD (cannabidiol: allosteric modulator, anticonvulsant, Epidiolex for epilepsy). Dronabinol/nabilone (synthetic THC, antiemetic/appetite). Rimonabant (CB1 antagonist, withdrawn: depression risk). FAAH inhibitors (research).', damage: 'Endocannabinoid deficiency may contribute to chronic pain, migraine, and irritable bowel; excessive CB1 activation impairs short-term memory and motivation.' },
-              { id: 'atp_adenosine', name: 'ATP / Adenosine', x: 0.65, y: 0.45, w: 0.08, category: 'Purinergic (Purine)', synthesis: 'ATP: synthesized in mitochondria (oxidative phosphorylation) and cytoplasm (glycolysis). Stored in synaptic vesicles, often co-released with other NTs. Adenosine: produced from ATP degradation by ectonucleotidases (ATP \u2192 ADP \u2192 AMP \u2192 adenosine). Also from intracellular SAH hydrolysis.', receptors: 'P2X (ATP): ligand-gated cation channels (P2X1-7). P2X3: pain signaling. P2X7: microglial activation, inflammation. P2Y (ATP/ADP/UTP): GPCRs (P2Y1,2,4,6,11,12,13,14). P2Y12: platelet aggregation. Adenosine: A1 (Gi, inhibitory), A2A (Gs, excitatory), A2B (Gs), A3 (Gi).', pathways: 'Purinergic co-transmission at sympathetic, parasympathetic, and sensory nerve terminals. Adenosine: widespread inhibitory neuromodulation, especially active during prolonged wakefulness (homeostatic sleep drive). Basal ganglia A2A-D2 interaction. Glial purinergic signaling.', fn: 'Fast excitatory synaptic transmission (P2X), pain signaling, platelet aggregation, immune cell activation, sleep pressure (adenosine accumulation during wakefulness), vasodilation, neuroprotection, cardioprotection, modulation of other neurotransmitter systems.', conditions: 'Chronic pain (P2X3 overexpression). Thrombosis (P2Y12-mediated platelet activation). Gout (purine metabolism disorder). Migraine (purinergic signaling). Insomnia (adenosine dysregulation). Parkinson disease (A2A receptors on striatopallidal neurons modulate motor function).', drugs: 'Caffeine (A1/A2A adenosine receptor antagonist: promotes wakefulness by blocking sleep-promoting adenosine). Clopidogrel (P2Y12 antagonist, antiplatelet). Adenosine IV (supraventricular tachycardia, diagnostic). Istradefylline (A2A antagonist, Parkinson adjunct). Dipyridamole (inhibits adenosine reuptake). Regadenoson (A2A agonist, cardiac stress test).', damage: 'Excessive extracellular ATP triggers neuroinflammation and pain; adenosine accumulation causes drowsiness but is neuroprotective during ischemia; purinergic dysregulation contributes to chronic pain and neurodegeneration.' },
-              { id: 'neuropeptide_y', name: 'Neuropeptide Y (NPY)', x: 0.35, y: 0.15, w: 0.08, category: 'Neuropeptide (Pancreatic polypeptide family)', synthesis: '36-amino acid peptide, one of most abundant neuropeptides in brain. Prepro-NPY \u2192 pro-NPY \u2192 NPY (signal peptidase + carboxypeptidase). Stored in large dense-core vesicles, released during sustained high-frequency firing. Co-released with NE in sympathetic neurons.', receptors: 'Y1: Gi, anxiolysis, vasoconstriction, appetite. Y2: Gi, presynaptic autoreceptor (inhibits NPY and NE release), anxiolysis. Y4: Gi, GI satiety. Y5: Gi, appetite stimulation (feeding). Y6: pseudogene in humans. All GPCRs.', pathways: 'Arcuate nucleus \u2192 PVN (appetite/energy homeostasis, co-expressed with AgRP). Amygdala and hippocampus (stress resilience, anxiolysis). Sympathetic postganglionic neurons (co-released with NE for vasoconstriction). Cortical interneurons. Brainstem (autonomic regulation).', fn: 'Appetite stimulation (most potent orexigenic peptide), energy homeostasis, anxiolysis, stress resilience, vasoconstriction (potentiates NE), circadian rhythms, seizure modulation (anticonvulsant), bone formation, alcohol consumption.', conditions: 'Obesity (NPY overexpression in arcuate \u2192 hyperphagia). Anorexia nervosa (paradoxically elevated NPY). Anxiety and PTSD (low NPY \u2192 vulnerability; high NPY \u2192 resilience). Epilepsy (NPY is endogenous anticonvulsant). Hypertension (vascular NPY/NE co-release).', drugs: 'No FDA-approved NPY drugs yet. NPY Y1/Y5 receptor antagonists: investigated for obesity. NPY Y2 agonists: investigated for epilepsy and anxiety. NPY infusion: research for stress resilience in military populations. Gene therapy: NPY overexpression vectors for epilepsy (preclinical).', damage: 'NPY excess drives overeating and obesity; NPY deficiency reduces stress resilience, increases anxiety, and may lower seizure threshold.' },
-              { id: 'epinephrine', name: 'Epinephrine (Adrenaline)', x: 0.70, y: 0.20, w: 0.08, category: 'Catecholamine (Monoamine)', synthesis: 'Norepinephrine \u2192 Epinephrine (PNMT, phenylethanolamine N-methyltransferase, requires cortisol induction). Primarily from adrenal medulla chromaffin cells (80% epinephrine, 20% NE). Minor CNS presence in a few medullary neuron clusters.', receptors: 'Same adrenergic receptors as NE but higher \u03B22 affinity: \u03B11 (vasoconstriction), \u03B12 (feedback inhibition), \u03B21 (cardiac stimulation), \u03B22 (bronchodilation, vasodilation in skeletal muscle, glycogenolysis, relaxes uterine smooth muscle), \u03B23 (lipolysis).', pathways: 'Primarily endocrine (adrenal medulla \u2192 blood \u2192 systemic effects). Small CNS clusters in lateral tegmental area and medulla project to hypothalamus, thalamus, spinal cord. Adrenal medulla innervated by preganglionic sympathetic splanchnic nerves.', fn: 'Acute stress response (fight-or-flight hormone), increases heart rate and contractility, bronchodilation, increases blood glucose (glycogenolysis + gluconeogenesis), redirects blood flow to skeletal muscle, pupil dilation, enhances mental alertness.', conditions: 'Pheochromocytoma: catecholamine-secreting adrenal tumor (episodic HTN, headache, sweating, palpitations). Anaphylaxis: systemic allergic reaction requiring epinephrine. Cardiac arrest: epinephrine in ACLS protocol. Addison disease: decreased catecholamine response.', drugs: 'Epinephrine (EpiPen for anaphylaxis, ACLS, local anesthetic adjuvant to prolong duration via vasoconstriction). Racemic epinephrine (nebulized for croup). Isoproterenol (\u03B2 agonist). Albuterol (\u03B22 agonist, asthma). Ephedrine (indirect sympathomimetic).', damage: 'Epinephrine excess from pheochromocytoma causes hypertensive crises and cardiomyopathy; it is the critical rescue drug for anaphylaxis and cardiac arrest.' }
-            ]
-          }
-        };
-
-        var viewKey = d.view || 'lateral';
-        var currentView = VIEWS[viewKey];
-        var regions = currentView.regions;
-        var searchTerm = (d.search || '').toLowerCase();
-        var filtered = searchTerm ? regions.filter(function (r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
-        var sel = d.selectedRegion ? regions.find(function (r) { return r.id === d.selectedRegion; }) : null;
-
-        // Quiz logic — options memoized in state to prevent re-shuffle on render
-        var allRegions = []; Object.values(VIEWS).forEach(function (v) { v.regions.forEach(function (r) { if (!allRegions.find(function (a) { return a.id === r.id; })) allRegions.push(r); }); });
-        var quizPool = allRegions.filter(function (r) { return r.damage; });
-        var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
-        var brainQuizOpts = d._brainQuizOpts || [];
-        if (quizQ && d._brainQuizOptsFor !== d.quizIdx) {
-          var wrong = quizPool.filter(function (r) { return r.id !== quizQ.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
-          brainQuizOpts = wrong.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
-          upd('_brainQuizOpts', brainQuizOpts);
-          upd('_brainQuizOptsFor', d.quizIdx);
-        }
-
-        // Brain canvas — animated
-        var canvasRef = function (canvas) {
-          if (!canvas) return;
-          if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
-          var ctx = canvas.getContext('2d');
-          var W = canvas.width, H = canvas.height;
-          if (!canvas._neurons) {
-            canvas._neurons = [];
-            for (var ni = 0; ni < 30; ni++) {
-              canvas._neurons.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.6, vy: (Math.random() - 0.5) * 0.6, life: Math.random(), size: 1 + Math.random() * 1.5 });
-            }
-          }
-          var neurons = canvas._neurons;
-          var brainTick = 0;
-          function drawBrainFrame() {
-            brainTick++;
-            ctx.clearRect(0, 0, W, H);
-            ctx.save();
-
-            // Neurotransmitter synapse view
-            if (currentView.isNT) {
-              // Presynaptic terminal
-              ctx.fillStyle = '#f5f0f8'; ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
-              ctx.beginPath();
-              ctx.moveTo(W * 0.15, H * 0.05); ctx.lineTo(W * 0.85, H * 0.05);
-              ctx.quadraticCurveTo(W * 0.90, H * 0.05, W * 0.90, H * 0.10);
-              ctx.lineTo(W * 0.90, H * 0.32);
-              ctx.quadraticCurveTo(W * 0.85, H * 0.38, W * 0.70, H * 0.40);
-              ctx.lineTo(W * 0.30, H * 0.40);
-              ctx.quadraticCurveTo(W * 0.15, H * 0.38, W * 0.10, H * 0.32);
-              ctx.lineTo(W * 0.10, H * 0.10);
-              ctx.quadraticCurveTo(W * 0.10, H * 0.05, W * 0.15, H * 0.05);
-              ctx.fill(); ctx.stroke();
-              ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-              ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-              ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.15);
-              // Vesicles
-              var vesColors = ['#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'];
-              for (var vi = 0; vi < 8; vi++) {
-                var vx = W * 0.25 + (vi % 4) * W * 0.14, vy = H * 0.22 + Math.floor(vi / 4) * H * 0.06;
-                ctx.beginPath(); ctx.arc(vx, vy, 8, 0, Math.PI * 2);
-                ctx.fillStyle = vesColors[vi % 4] + '60'; ctx.fill();
-                ctx.strokeStyle = vesColors[vi % 4]; ctx.lineWidth = 1.5; ctx.stroke();
-                // NT dots inside vesicle
-                for (var di = 0; di < 3; di++) {
-                  ctx.beginPath(); ctx.arc(vx - 3 + di * 3, vy, 1.5, 0, Math.PI * 2);
-                  ctx.fillStyle = vesColors[vi % 4]; ctx.fill();
-                }
-              }
-              // Synaptic cleft
-              ctx.fillStyle = '#e2e8f040'; ctx.strokeStyle = '#94a3b8';
-              ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
-              ctx.fillRect(W * 0.08, H * 0.42, W * 0.84, H * 0.16);
-              ctx.strokeRect(W * 0.08, H * 0.42, W * 0.84, H * 0.16);
-              ctx.setLineDash([]);
-              ctx.font = '9px Inter, system-ui, sans-serif';
-              ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-              ctx.fillText('SYNAPTIC CLEFT', W * 0.5, H * 0.51);
-              // Animated NT particles in cleft
-              var t2 = brainTick * 0.03;
-              for (var pi = 0; pi < 12; pi++) {
-                var px2 = W * 0.15 + (pi * W * 0.06) + Math.sin(t2 + pi * 0.7) * 8;
-                var py2 = H * 0.44 + Math.abs(Math.sin(t2 * 0.8 + pi * 1.1)) * H * 0.12;
-                ctx.beginPath(); ctx.arc(px2, py2, 2.5, 0, Math.PI * 2);
-                ctx.fillStyle = 'hsl(' + ((pi * 30 + brainTick) % 360) + ', 70%, 55%)';
-                ctx.fill();
-              }
-              // Postsynaptic membrane
-              ctx.fillStyle = '#fef3c720'; ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
-              ctx.beginPath();
-              ctx.moveTo(W * 0.08, H * 0.60); ctx.lineTo(W * 0.92, H * 0.60);
-              ctx.quadraticCurveTo(W * 0.95, H * 0.62, W * 0.92, H * 0.64);
-              ctx.lineTo(W * 0.92, H * 0.95); ctx.lineTo(W * 0.08, H * 0.95);
-              ctx.lineTo(W * 0.08, H * 0.64);
-              ctx.quadraticCurveTo(W * 0.05, H * 0.62, W * 0.08, H * 0.60);
-              ctx.fill(); ctx.stroke();
-              ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-              ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-              ctx.fillText('POSTSYNAPTIC MEMBRANE', W * 0.5, H * 0.72);
-              // Receptors on postsynaptic
-              var recTypes = ['Ionotropic', 'Metabotropic', 'GPCR', 'Ion Channel'];
-              for (var ri = 0; ri < 6; ri++) {
-                var rx = W * 0.18 + ri * W * 0.12, ry = H * 0.60;
-                ctx.fillStyle = '#fde68a'; ctx.strokeStyle = '#b45309'; ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(rx - 5, ry); ctx.lineTo(rx - 8, ry + 14); ctx.lineTo(rx + 8, ry + 14); ctx.lineTo(rx + 5, ry);
-                ctx.fill(); ctx.stroke();
-                ctx.font = '7px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
-                ctx.fillText(recTypes[ri % 4], rx, ry + 25);
-              }
-              // Reuptake transporter
-              ctx.fillStyle = '#bbf7d060'; ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.5;
-              ctx.beginPath(); ctx.arc(W * 0.85, H * 0.40, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-              ctx.font = '7px Inter, system-ui, sans-serif';
-              ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
-              ctx.fillText('Reuptake', W * 0.85, H * 0.40 + 2);
-              // Enzyme (MAO/COMT)
-              ctx.fillStyle = '#fee2e260'; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
-              ctx.beginPath(); ctx.arc(W * 0.15, H * 0.50, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-              ctx.font = '7px Inter, system-ui, sans-serif';
-              ctx.fillStyle = '#dc2626';
-              ctx.fillText('Enzyme', W * 0.15, H * 0.50 + 2);
-              // Signal cascade arrow
-              ctx.strokeStyle = '#7c3aed80'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 2]);
-              ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.74); ctx.lineTo(W * 0.5, H * 0.88);
-              ctx.stroke(); ctx.setLineDash([]);
-              ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.88); ctx.lineTo(W * 0.47, H * 0.85); ctx.moveTo(W * 0.5, H * 0.88); ctx.lineTo(W * 0.53, H * 0.85); ctx.stroke();
-              ctx.font = '8px Inter, system-ui, sans-serif';
-              ctx.fillStyle = '#7c3aed'; ctx.fillText('Intracellular Signaling', W * 0.5, H * 0.93);
-              // View label
-              ctx.font = 'bold 10px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-              ctx.fillText('NEUROTRANSMITTER SYNAPSE', W * 0.5, H - 6);
-              canvas._brainAnim = requestAnimationFrame(drawBrainFrame); return;
-            }
-
-            // Brain outline per view
-            ctx.fillStyle = '#f5f0f8';
-            ctx.strokeStyle = '#a78bfa';
-            ctx.lineWidth = 2;
-            ctx.lineJoin = 'round';
-
-            if (viewKey === 'lateral') {
-              // Side view brain shape
-              ctx.beginPath();
-              ctx.moveTo(W * 0.15, H * 0.45);
-              ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
-              ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
-              ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
-              ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
-              ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
-              ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
-              ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
-              ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
-              ctx.fill(); ctx.stroke();
-              // Central sulcus (divides frontal/parietal)
-              ctx.beginPath(); ctx.setLineDash([4, 3]);
-              ctx.moveTo(W * 0.50, H * 0.12); ctx.lineTo(W * 0.42, H * 0.55);
-              ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
-              // Lateral sulcus (Sylvian fissure)
-              ctx.beginPath();
-              ctx.moveTo(W * 0.35, H * 0.50); ctx.quadraticCurveTo(W * 0.50, H * 0.48, W * 0.65, H * 0.42);
-              ctx.stroke();
-              ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
-              // Cerebellum (separate shape)
-              ctx.beginPath();
-              ctx.ellipse(W * 0.80, H * 0.65, W * 0.10, H * 0.08, 0, 0, Math.PI * 2);
-              ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
-              // Brainstem
-              ctx.beginPath();
-              ctx.moveTo(W * 0.62, H * 0.62); ctx.lineTo(W * 0.65, H * 0.78);
-              ctx.lineTo(W * 0.58, H * 0.78); ctx.lineTo(W * 0.55, H * 0.62);
-              ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
-            } else if (viewKey === 'medial') {
-              // Sagittal brain
-              ctx.beginPath();
-              ctx.moveTo(W * 0.20, H * 0.50);
-              ctx.quadraticCurveTo(W * 0.15, H * 0.22, W * 0.40, H * 0.12);
-              ctx.quadraticCurveTo(W * 0.60, H * 0.08, W * 0.78, H * 0.18);
-              ctx.quadraticCurveTo(W * 0.88, H * 0.32, W * 0.85, H * 0.50);
-              ctx.quadraticCurveTo(W * 0.82, H * 0.60, W * 0.72, H * 0.62);
-              ctx.lineTo(W * 0.60, H * 0.60);
-              ctx.quadraticCurveTo(W * 0.50, H * 0.58, W * 0.40, H * 0.60);
-              ctx.quadraticCurveTo(W * 0.25, H * 0.58, W * 0.20, H * 0.50);
-              ctx.fill(); ctx.stroke();
-              // Corpus callosum (arc)
-              ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = '#c084fc';
-              ctx.moveTo(W * 0.35, H * 0.38); ctx.quadraticCurveTo(W * 0.52, H * 0.28, W * 0.68, H * 0.35);
-              ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = '#a78bfa';
-              // Cerebellum
-              ctx.beginPath();
-              ctx.ellipse(W * 0.78, H * 0.68, W * 0.09, H * 0.08, 0, 0, Math.PI * 2);
-              ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
-              // Brainstem
-              ctx.beginPath();
-              ctx.moveTo(W * 0.58, H * 0.58); ctx.lineTo(W * 0.62, H * 0.78);
-              ctx.lineTo(W * 0.55, H * 0.78); ctx.lineTo(W * 0.50, H * 0.58);
-              ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
-            } else if (viewKey === 'superior') {
-              // Top-down: two hemispheres
-              ctx.beginPath();
-              ctx.ellipse(W * 0.35, H * 0.50, W * 0.20, H * 0.38, 0, 0, Math.PI * 2);
-              ctx.fill(); ctx.stroke();
-              ctx.beginPath();
-              ctx.ellipse(W * 0.65, H * 0.50, W * 0.20, H * 0.38, 0, 0, Math.PI * 2);
-              ctx.fill(); ctx.stroke();
-              // Longitudinal fissure
-              ctx.beginPath(); ctx.setLineDash([5, 3]);
-              ctx.moveTo(W * 0.50, H * 0.10); ctx.lineTo(W * 0.50, H * 0.90);
-              ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2; ctx.stroke();
-              // Central sulcus
-              ctx.beginPath();
-              ctx.moveTo(W * 0.20, H * 0.38); ctx.quadraticCurveTo(W * 0.50, H * 0.35, W * 0.80, H * 0.38);
-              ctx.stroke();
-              ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa';
-            } else if (viewKey === 'inferior') {
-              // Bottom view
-              ctx.beginPath();
-              ctx.ellipse(W * 0.50, H * 0.40, W * 0.30, H * 0.30, 0, 0, Math.PI * 2);
-              ctx.fill(); ctx.stroke();
-              // Cerebellum
-              ctx.beginPath();
-              ctx.ellipse(W * 0.50, H * 0.72, W * 0.22, H * 0.12, 0, 0, Math.PI * 2);
-              ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
-              // Brainstem
-              ctx.beginPath();
-              ctx.moveTo(W * 0.46, H * 0.55); ctx.lineTo(W * 0.48, H * 0.68);
-              ctx.lineTo(W * 0.52, H * 0.68); ctx.lineTo(W * 0.54, H * 0.55);
-              ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
-              // Optic chiasm X
-              ctx.beginPath(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
-              ctx.moveTo(W * 0.44, H * 0.30); ctx.lineTo(W * 0.56, H * 0.36);
-              ctx.moveTo(W * 0.56, H * 0.30); ctx.lineTo(W * 0.44, H * 0.36);
-              ctx.stroke(); ctx.strokeStyle = '#a78bfa';
-            }
-
-            ctx.restore();
-
-            // Draw region markers
-            filtered.forEach(function (r) {
-              var px = r.x * W, py = r.y * H;
-              var isSel = sel && sel.id === r.id;
-              var rad = isSel ? 10 : 6;
-              if (isSel) {
-                ctx.save();
-                ctx.shadowColor = '#7c3aed';
-                ctx.shadowBlur = 14;
-                ctx.beginPath(); ctx.arc(px, py, rad + 3, 0, Math.PI * 2);
-                ctx.fillStyle = '#7c3aed30';
-                ctx.fill();
-                ctx.restore();
-              }
-              ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2);
-              ctx.fillStyle = isSel ? '#7c3aed' : '#7c3aedaa';
-              ctx.fill();
-              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-              if (isSel) {
-                ctx.save();
-                ctx.font = 'bold 9px Inter, system-ui, sans-serif';
-                ctx.textAlign = px > W * 0.5 ? 'right' : 'left';
-                ctx.fillStyle = '#7c3aed';
-                ctx.fillText(r.name, px > W * 0.5 ? px - 15 : px + 15, py + 3);
-                ctx.restore();
-              }
-            });
-            // View label
-            ctx.save();
-            ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-            ctx.fillStyle = '#94a3b8';
-            ctx.textAlign = 'center';
-            ctx.fillText(currentView.name.toUpperCase() + ' VIEW', W * 0.5, H - 6);
-            ctx.restore();
-          };
-
-          var handleClick = function (e) {
-            var rect = e.target.getBoundingClientRect();
-            var cx = (e.clientX - rect.left) / rect.width;
-            var cy = (e.clientY - rect.top) / rect.height;
-            var closest = null, minD = 0.08;
-            filtered.forEach(function (r) {
-              var dist = Math.sqrt(Math.pow(r.x - cx, 2) + Math.pow(r.y - cy, 2));
-              if (dist < minD) { minD = dist; closest = r; }
-            });
-            if (closest) upd('selectedRegion', closest.id);
-          };
-
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-            // Header
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("div", null,
-                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
-                React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
-              )
-            ),
-            // View tabs
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-              Object.keys(VIEWS).map(function (key) {
-                var v = VIEWS[key];
-                return React.createElement("button", {
-                  key: key,
-                  onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-200')
-                }, v.name);
-              })
-            ),
-            // Controls
-            React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
-              React.createElement("input", {
-                type: "text", placeholder: "\uD83D\uDD0D Search regions, functions, conditions...",
-                value: d.search || '',
-                onChange: function (e) { upd('search', e.target.value); },
-                className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
-              }),
-              React.createElement("button", {
-                onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
-              }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
-              React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
-            ),
-            // Main: canvas + detail
-            React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
-              React.createElement("div", { className: "flex-shrink-0" },
-                React.createElement("canvas", {
-                  ref: canvasRef, width: 380, height: 460,
-                  onClick: handleClick,
-                  className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
-                  style: { background: '#faf8ff' }
+              ),
+              // System tabs
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+                Object.keys(SYSTEMS).map(function (key) {
+                  var s = SYSTEMS[key];
+                  return React.createElement("button", {
+                    key: key,
+                    onClick: function () { upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', ''); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'),
+                    style: sysKey === key ? { background: s.accent } : {}
+                  }, s.icon + ' ' + s.name);
                 })
               ),
-              React.createElement("div", { className: "flex-1 min-w-0" },
-                d.quizMode ? (
-                  quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
-                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                      React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
-                      React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
-                    ),
-                    React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
-                    React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
-                    React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
-                      brainQuizOpts.map(function (opt) {
-                        var fb = d.quizFeedback;
-                        var isCorrect = opt.id === quizQ.id;
-                        var wasChosen = fb && fb.chosen === opt.id;
-                        var showResult = fb !== null && fb !== undefined;
-                        return React.createElement("button", {
-                          key: opt.id, disabled: showResult,
-                          onClick: function () {
-                            var correct = opt.id === quizQ.id;
-                            upd('quizFeedback', { chosen: opt.id, correct: correct });
-                            if (correct) upd('quizScore', (d.quizScore || 0) + 1);
-                          },
-                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
-                            (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                              showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                                'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
-                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
-                      })
-                    ),
-                    d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                      React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
-                      React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
-                      quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
-                      quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
-                    ),
-                    d.quizFeedback && React.createElement("button", {
-                      onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
-                    }, "Next Question \u2192")
-                  ) : null
-                ) : (
-                  sel ? (
-                    React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
-                      React.createElement("div", { className: "flex items-start justify-between" },
-                        React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
-                        React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+              // Controls: view toggle, search, quiz
+              React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
+                React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
+                  ['anterior', 'posterior'].map(function (v) {
+                    return React.createElement("button", {
+                      key: v,
+                      onClick: function () { upd('view', v); upd('selectedStructure', null); },
+                      className: "px-3 py-1 text-xs font-bold transition-all " + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
+                    }, v.charAt(0).toUpperCase() + v.slice(1));
+                  })
+                ),
+                React.createElement("input", {
+                  type: "text", placeholder: "\uD83D\uDD0D Search structures...",
+                  value: d.search || '',
+                  onChange: function (e) { upd('search', e.target.value); },
+                  className: "flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+                }),
+                React.createElement("button", {
+                  onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
+                React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
+                  [{ v: 1, label: t('stem.synth_ui.ku20135'), tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
+                    return React.createElement("button", {
+                      key: lv.v, title: lv.tip + ' level',
+                      onClick: function () { upd('complexity', lv.v); upd('selectedStructure', null); },
+                      className: "px-2 py-1 text-[10px] font-bold transition-all " + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50')
+                    }, lv.label);
+                  })
+                ),
+                React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' structures')
+              ),
+              // Main content: canvas + detail panel
+              React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+                // Canvas
+                React.createElement("div", { className: "flex-shrink-0" },
+                  React.createElement("canvas", {
+                    ref: canvasRef, width: 360, height: 520,
+                    onClick: handleClick,
+                    className: "rounded-xl border-2 cursor-crosshair",
+                    style: { borderColor: sys.accent + '30', background: '#fafaf9' }
+                  })
+                ),
+                // Right panel
+                React.createElement("div", { className: "flex-1 min-w-0" },
+                  d.quizMode ? (
+                    // Quiz panel
+                    quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                      React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                        React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDEA Anatomy Quiz"),
+                        React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0) + "/" + Math.min((d.quizIdx || 0) + 1, quizPool.length))
                       ),
-                      React.createElement("div", { className: "space-y-2.5" },
-                        React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
-                          React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
+                      React.createElement("p", { className: "text-sm text-slate-800 font-bold leading-relaxed" }, "Which structure has this function?"),
+                      React.createElement("p", { className: "text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic" }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : '')),
+                      React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
+                        quizOptions.map(function (opt) {
+                          var fb = d.quizFeedback;
+                          var isCorrect = opt.id === quizQ.id;
+                          var wasChosen = fb && fb.chosen === opt.id;
+                          var showResult = fb !== null && fb !== undefined;
+                          return React.createElement("button", {
+                            key: opt.id,
+                            disabled: showResult,
+                            onClick: function () {
+                              var correct = opt.id === quizQ.id;
+                              upd('quizFeedback', { chosen: opt.id, correct: correct });
+                              if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                            },
+                            className: "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 " +
+                              (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                                showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                                  'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50')
+                          }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
+                        })
+                      ),
+                      d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                        React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizQ.name),
+                        React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                        quizQ.clinical && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\u26A0 Clinical: "), quizQ.clinical)
+                      ),
+                      d.quizFeedback && React.createElement("button", {
+                        onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                        className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 transition-all"
+                      }, "Next Question \u2192")
+                    ) : React.createElement("p", { className: "text-sm text-slate-500 italic" }, "No quiz questions available.")
+                  ) : (
+                    sel ? (
+                      // Detail panel
+                      React.createElement("div", { className: "bg-white rounded-xl border-2 p-4 space-y-3", style: { borderColor: sys.accent + '40' } },
+                        React.createElement("div", { className: "flex items-start justify-between" },
+                          React.createElement("h4", { className: "text-base font-black", style: { color: sys.accent } }, sel.name),
+                          React.createElement("button", { onClick: function () { upd('selectedStructure', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
                         ),
-                        sel.brodmann && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
-                          React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
-                        ),
-                        sel.blood && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
-                          React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
-                        ),
-                        sel.category && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
-                          React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
-                        ),
-                        sel.synthesis && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
-                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
-                        ),
-                        sel.receptors && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
-                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
-                        ),
-                        sel.pathways && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
-                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
-                        ),
-                        sel.drugs && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
-                          React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
-                        ),
-                        sel.conditions && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
-                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
-                        ),
-                        sel.damage && React.createElement("div", null,
-                          React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
-                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
+                        React.createElement("div", { className: "space-y-2.5" },
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                            React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
+                          ),
+                          sel.origin && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                            React.createElement("div", null,
+                              React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Origin"),
+                              React.createElement("p", { className: "text-xs text-slate-600" }, sel.origin)
+                            ),
+                            React.createElement("div", null,
+                              React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Insertion"),
+                              React.createElement("p", { className: "text-xs text-slate-600" }, sel.insertion)
+                            )
+                          ),
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\u26A0 Clinical Significance"),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.clinical)
+                          ),
+                          sel.detail && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Detail"),
+                            React.createElement("p", { className: "text-xs text-slate-500 leading-relaxed" }, sel.detail)
+                          )
                         )
                       )
-                    )
-                  ) : (
-                    React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
-                      filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
-                      filtered.map(function (r) {
-                        return React.createElement("button", {
-                          key: r.id,
-                          onClick: function () { upd('selectedRegion', r.id); },
-                          className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
-                            (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
-                        },
-                          React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
-                          React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
-                        );
-                      })
+                    ) : (
+                      // Structure list
+                      React.createElement("div", { className: "space-y-1 max-h-[460px] overflow-y-auto pr-1" },
+                        filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No structures match your search."),
+                        filtered.map(function (st) {
+                          return React.createElement("button", {
+                            key: st.id,
+                            onClick: function () { upd('selectedStructure', st.id); },
+                            className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
+                              (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-200'),
+                            style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
+                          },
+                            React.createElement("div", { className: "font-bold text-slate-800" }, st.name),
+                            React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                          );
+                        })
+                      )
                     )
                   )
                 )
               )
-            )
-          );
-        })(),
+            );
+          })(),
+
+          // ═══════════════════════════════════════════════════════
+          // BRAIN ATLAS EXPLORER
+          stemLabTab === 'explore' && stemLabTool === 'brainAtlas' && (() => {
+            var d = labToolData.brainAtlas || {};
+            var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () { var o = {}; o[k] = v; return o; })()) }); }); };
+
+            var VIEWS = {
+              lateral: {
+                name: t('stem.synth_ui.lateral'), desc: 'Side view showing all four lobes, cerebellum, and brainstem',
+                regions: [
+                  { id: 'frontal', name: t('stem.synth_ui.frontal_lobe'), x: 0.28, y: 0.32, w: 0.22, fn: 'Executive function, planning, decision-making, personality, voluntary motor control (precentral gyrus), speech production (Broca\u2019s area, left hemisphere).', brodmann: 'BA 4 (primary motor), BA 6 (premotor), BA 44\u201345 (Broca\u2019s)', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Broca\u2019s aphasia (non-fluent speech with intact comprehension), personality changes, disinhibition, abulia. Frontal lobe tumors may present with subtle personality changes before focal signs.', damage: 'Contralateral hemiparesis, impaired judgment, personality changes, motor aphasia (dominant hemisphere).' },
+                  { id: 'prefrontal', name: t('stem.synth_ui.prefrontal_cortex'), x: 0.18, y: 0.35, w: 0.12, fn: 'Highest-order cognitive functions: working memory, attention, abstract reasoning, social behavior, impulse control. Dorsolateral PFC for executive control; orbitofrontal for social/emotional regulation.', brodmann: 'BA 9, 10, 11, 12, 46, 47', blood: 'Anterior cerebral artery, middle cerebral artery', conditions: 'ADHD, schizophrenia (hypofrontality), OCD, frontotemporal dementia (Pick disease). Phineas Gage case demonstrated personality changes from prefrontal damage.', damage: 'Poor planning, impulsivity, flat affect, socially inappropriate behavior, difficulty with abstract thinking.' },
+                  { id: 'motor_cortex', name: t('stem.synth_ui.primary_motor_cortex'), x: 0.42, y: 0.18, w: 0.08, fn: 'Precentral gyrus. Contains motor homunculus \u2014 somatotopic map of body. Upper motor neurons project via corticospinal tract to spinal cord. Controls voluntary movement contralaterally.', brodmann: 'BA 4', blood: 'Middle cerebral artery (lateral face/arm), anterior cerebral artery (medial leg)', conditions: 'Stroke: contralateral hemiparesis. Upper motor neuron signs: spasticity, hyperreflexia, Babinski sign, clonus.', damage: 'Contralateral spastic paralysis. Face/arm (MCA stroke) vs leg (ACA stroke).' },
+                  { id: 'parietal', name: t('stem.synth_ui.parietal_lobe'), x: 0.52, y: 0.22, w: 0.18, fn: 'Somatosensory processing (postcentral gyrus), spatial awareness, visuomotor integration, mathematical calculation. Posterior parietal cortex integrates sensory input for motor planning.', brodmann: 'BA 1,2,3 (primary somatosensory), BA 5,7 (association), BA 39 (angular gyrus), BA 40 (supramarginal gyrus)', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Gerstmann syndrome (dominant): agraphia, acalculia, finger agnosia, left-right confusion. Hemispatial neglect (non-dominant): patient ignores contralateral space.', damage: 'Loss of sensation, neglect syndrome, apraxia, difficulty with spatial reasoning and navigation.' },
+                  { id: 'temporal', name: t('stem.synth_ui.temporal_lobe'), x: 0.38, y: 0.58, w: 0.20, fn: 'Auditory processing (superior temporal gyrus), language comprehension (Wernicke\u2019s area, left), memory formation (hippocampus), emotion (amygdala), face recognition (fusiform gyrus).', brodmann: 'BA 41,42 (primary auditory), BA 22 (Wernicke\u2019s), BA 20,21,37,38 (association)', blood: 'Middle cerebral artery (lateral), posterior cerebral artery (inferior/medial)', conditions: 'Wernicke\u2019s aphasia: fluent but nonsensical speech, poor comprehension. Temporal lobe epilepsy: aura (d\u00E9j\u00E0 vu, smell), automatisms. Prosopagnosia (face blindness).', damage: 'Language comprehension deficits (dominant), memory impairment, auditory agnosia, emotional changes.' },
+                  { id: 'occipital', name: t('stem.synth_ui.occipital_lobe'), x: 0.78, y: 0.32, w: 0.14, fn: 'Primary visual cortex (V1) along calcarine sulcus processes raw visual input. Association areas (V2\u2013V5) process color, motion, depth, and object recognition.', brodmann: 'BA 17 (V1 primary visual), BA 18 (V2), BA 19 (V3\u2013V5)', blood: 'Posterior cerebral artery', conditions: 'Cortical blindness with intact pupillary reflex (Anton syndrome: patient denies blindness). Homonymous hemianopia from unilateral lesion. Visual agnosia.', damage: 'Contralateral homonymous hemianopia, cortical blindness (bilateral), visual hallucinations, color blindness (achromatopsia).' },
+                  { id: 'cerebellum', name: t('stem.synth_ui.cerebellum'), x: 0.78, y: 0.62, w: 0.14, fn: 'Motor coordination, balance, motor learning, timing. Contains 50% of brain\u2019s neurons. Three functional divisions: vestibulocerebellum (balance), spinocerebellum (posture), cerebrocerebellum (planning).', brodmann: 'N/A (has its own cytoarchitecture: Purkinje cells, granule cells)', blood: 'Superior cerebellar, anterior inferior cerebellar (AICA), posterior inferior cerebellar (PICA) arteries', conditions: 'Cerebellar ataxia: wide-based gait, dysmetria (finger-to-nose test), intention tremor, dysdiadochokinesia. PICA stroke \u2192 Wallenberg syndrome.', damage: 'Ipsilateral ataxia (damage affects same side, unlike cerebrum). Nystagmus, scanning speech, hypotonia.' },
+                  { id: 'brainstem', name: 'Brainstem', x: 0.62, y: 0.68, w: 0.10, fn: 'Midbrain + pons + medulla oblongata. Contains cranial nerve nuclei (III\u2013XII), reticular activating system (consciousness), vital centers (cardiac, respiratory, vasomotor). All ascending/descending tracts pass through.', brodmann: 'N/A', blood: 'Basilar artery, vertebral arteries, PICA, AICA', conditions: 'Locked-in syndrome (ventral pons lesion): conscious but can only move eyes. Brainstem death = legal death criterion. Central pontine myelinolysis from rapid Na correction.', damage: 'Coma, cranial nerve palsies, respiratory failure, cardiovascular collapse. "Crossed" signs: ipsilateral CN deficit + contralateral body weakness.' },
+                  { id: 'brocas', name: t('stem.synth_ui.brocau2019s_area'), x: 0.25, y: 0.48, w: 0.08, fn: 'Left inferior frontal gyrus (pars opercularis + triangularis). Speech production and language processing. Part of larger language network connecting to Wernicke\u2019s via arcuate fasciculus.', brodmann: 'BA 44, 45', blood: 'Middle cerebral artery (superior division)', conditions: 'Broca\u2019s aphasia: non-fluent speech, telegraphic output ("want... water..."), intact comprehension, patient frustrated. Often accompanied by right hemiparesis (adjacent motor cortex).', damage: 'Expressive (motor) aphasia. Patient understands language but cannot produce fluent speech.' },
+                  { id: 'wernickes', name: t('stem.synth_ui.wernickeu2019s_area'), x: 0.55, y: 0.50, w: 0.10, fn: 'Left posterior superior temporal gyrus. Receptive language processing \u2014 comprehension of spoken and written language. Connected to Broca\u2019s area via arcuate fasciculus.', brodmann: 'BA 22 (posterior part)', blood: 'Middle cerebral artery (inferior division)', conditions: 'Wernicke\u2019s aphasia: fluent but meaningless speech (word salad/neologisms), severely impaired comprehension. Patient often unaware of deficit. Conduction aphasia if arcuate fasciculus damaged.', damage: 'Receptive (sensory) aphasia. Patient speaks fluently but output is meaningless; poor comprehension and repetition.' },
+                  { id: 'insular', name: 'Insular Cortex (Insula)', x: 0.42, y: 0.45, w: 0.10, fn: 'Hidden deep to lateral sulcus, covered by opercula. Integrates interoceptive awareness (body state), taste (gustatory cortex), pain, empathy, disgust, addiction craving. Anterior insula: subjective emotional experience. Posterior insula: somatosensory integration.', brodmann: 'BA 13, 14, 15, 16', blood: 'Middle cerebral artery (insular branches, M2 segment)', conditions: 'Insular stroke: gustatory dysfunction, autonomic dysregulation (cardiac arrhythmias), loss of interoceptive awareness. Insular involvement in addiction: damage reduces nicotine craving. Temporal lobe epilepsy often involves insula. Role in anxiety and panic disorder.', damage: 'Loss of taste, impaired interoception, autonomic instability, reduced empathy, altered pain perception, disrupted addiction circuits.' },
+                  { id: 'angular_gyrus', name: 'Angular Gyrus', x: 0.68, y: 0.38, w: 0.08, fn: 'Posterior parietal cortex (inferior parietal lobule). Multimodal integration hub: reading (visual word form \u2192 language), arithmetic, spatial cognition, semantic processing, attention, theory of mind. Cross-modal association area. Left angular gyrus critical for reading comprehension.', brodmann: 'BA 39', blood: 'Middle cerebral artery (angular branch) and posterior cerebral artery', conditions: 'Gerstmann syndrome (left angular gyrus lesion): agraphia, acalculia, finger agnosia, left-right disorientation. Alexia with agraphia. Angular gyrus syndrome may mimic Wernicke aphasia. Part of default mode network.', damage: 'Reading comprehension deficits, calculation errors, spatial disorientation, impaired semantic processing, anomia.' },
+                  { id: 'supramarginal', name: 'Supramarginal Gyrus', x: 0.62, y: 0.32, w: 0.08, fn: 'Anterior inferior parietal lobule, wraps around posterior end of lateral sulcus. Phonological processing, tactile object recognition, empathy, language (repetition: connects Wernicke to Broca via arcuate fasciculus). Non-dominant: spatial awareness and attention.', brodmann: 'BA 40', blood: 'Middle cerebral artery (posterior parietal branches)', conditions: 'Conduction aphasia: impaired repetition with intact comprehension and fluency (arcuate fasciculus damage at supramarginal gyrus). Non-dominant lesion: hemispatial neglect (overlaps with parietal neglect). Ideomotor apraxia.', damage: 'Impaired repetition (conduction aphasia), phonological processing deficits, tactile agnosia, ideomotor apraxia, contralateral neglect (non-dominant).' }
+                ]
+              },
+              medial: {
+                name: t('stem.synth_ui.medial_sagittal'), desc: t('stem.synth_ui.midline_cut_revealing_deep_structures'),
+                regions: [
+                  { id: 'corpus_callosum', name: t('stem.synth_ui.corpus_callosum'), x: 0.48, y: 0.30, w: 0.20, fn: 'Largest white matter commissure (~200 million axons). Connects left and right cerebral hemispheres. Regions: rostrum, genu, body, splenium. Enables interhemispheric communication.', brodmann: 'N/A (white matter tract)', blood: 'Anterior cerebral artery (pericallosal branches)', conditions: 'Split-brain syndrome after callosotomy: hemispheres cannot communicate. Alien hand syndrome. Agenesis of corpus callosum (developmental anomaly).', damage: 'Disconnection syndromes: inability to name objects in left visual field, left hand apraxia to verbal commands.' },
+                  { id: 'thalamus', name: t('stem.synth_ui.thalamus'), x: 0.52, y: 0.42, w: 0.10, fn: 'Relay station for all sensory input (except olfaction) to cortex. Specific nuclei: VPL (body sensation), VPM (face), LGN (vision), MGN (hearing). Also involved in consciousness, sleep, and memory.', brodmann: 'N/A (diencephalon)', blood: 'Posterior cerebral artery (thalamogeniculate, thalamoperforating branches)', conditions: 'Thalamic pain syndrome (Dejerine-Roussy): contralateral burning/tingling pain after thalamic stroke. Thalamic tumors cause sensory loss and altered consciousness.', damage: 'Contralateral sensory loss, pain syndromes, decreased consciousness, aphasia (dominant thalamus), neglect (non-dominant).' },
+                  { id: 'hypothalamus', name: t('stem.synth_ui.hypothalamus'), x: 0.42, y: 0.52, w: 0.08, fn: 'Master regulator of homeostasis. Controls: body temperature, hunger/thirst, circadian rhythm, autonomic NS, pituitary hormone release. "Four Fs": feeding, fighting, fleeing, reproduction.', brodmann: 'N/A (diencephalon)', blood: 'Circle of Willis branches, superior hypophyseal artery', conditions: 'Diabetes insipidus (ADH deficiency), SIADH (excess ADH), Kallmann syndrome (GnRH deficiency + anosmia). Craniopharyngioma: tumor compressing hypothalamus.', damage: 'Disrupted temperature regulation, sleep-wake cycle, hunger/satiety, hormonal imbalance, autonomic dysfunction.' },
+                  { id: 'cingulate', name: t('stem.synth_ui.cingulate_gyrus'), x: 0.42, y: 0.22, w: 0.18, fn: 'C-shaped cortex above corpus callosum. Anterior cingulate: emotion regulation, error detection, pain perception. Posterior cingulate: memory retrieval, default mode network.', brodmann: 'BA 23, 24, 25, 31, 32, 33', blood: 'Anterior cerebral artery (callosomarginal branches)', conditions: 'Anterior cingulate lesions: apathy, akinetic mutism (awake but no spontaneous movement/speech). Implicated in depression, OCD, chronic pain processing.', damage: 'Emotional blunting, apathy, reduced motivation, impaired error monitoring.' },
+                  { id: 'hippocampus', name: t('stem.synth_ui.hippocampus'), x: 0.58, y: 0.55, w: 0.10, fn: 'Seahorse-shaped structure in medial temporal lobe. Critical for converting short-term to long-term memory (consolidation). Spatial navigation (place cells). One of first areas affected in Alzheimer\u2019s.', brodmann: 'Archicortex (3-layered, not neocortical)', blood: 'Posterior cerebral artery (hippocampal branches)', conditions: 'Alzheimer\u2019s disease: hippocampal atrophy is earliest finding. Anterograde amnesia (HM patient: bilateral hippocampal removal). Temporal lobe epilepsy often originates here. Hippocampal sclerosis.', damage: 'Anterograde amnesia (cannot form new memories), spatial disorientation. Retrograde memory relatively preserved initially.' },
+                  { id: 'amygdala', name: t('stem.synth_ui.amygdala'), x: 0.38, y: 0.58, w: 0.08, fn: 'Almond-shaped nucleus in anterior medial temporal lobe. Fear conditioning, threat detection, emotional memory. Modulates hippocampal memory consolidation. Part of limbic system.', brodmann: 'N/A (subcortical)', blood: 'Anterior choroidal artery, middle cerebral artery branches', conditions: 'Kl\u00FCver-Bucy syndrome (bilateral amygdala damage): hyperorality, hypersexuality, visual agnosia, placidity. PTSD: hyperactive amygdala. Anxiety disorders.', damage: 'Impaired fear recognition, inability to detect threatening facial expressions, emotional blunting, hypersexuality (bilateral).' },
+                  { id: 'basal_ganglia', name: t('stem.synth_ui.basal_ganglia'), x: 0.50, y: 0.38, w: 0.10, fn: 'Caudate + putamen (=striatum) + globus pallidus. Movement modulation: direct pathway (facilitates movement) vs indirect pathway (inhibits movement). Also involved in reward, habit formation, procedural learning.', brodmann: 'N/A (subcortical nuclei)', blood: 'Middle cerebral artery (lenticulostriate arteries, "arteries of stroke")', conditions: 'Parkinson\u2019s disease (dopamine depletion in substantia nigra \u2192 striatum): resting tremor, rigidity, bradykinesia, postural instability. Huntington\u2019s disease (caudate atrophy): chorea, dementia, psychiatric symptoms.', damage: 'Hypokinesia (Parkinson\u2019s-like) or hyperkinesia (chorea, ballismus) depending on which pathway is affected.' },
+                  { id: 'ventricles', name: 'Ventricular System', x: 0.50, y: 0.45, w: 0.10, fn: 'CSF-filled cavities: 2 lateral ventricles \u2192 interventricular foramina (Monro) \u2192 3rd ventricle \u2192 cerebral aqueduct (Sylvius) \u2192 4th ventricle. Choroid plexus produces ~500mL CSF/day. CSF cushions brain.', brodmann: 'N/A', blood: 'Choroid plexus supplied by choroidal arteries', conditions: 'Hydrocephalus: obstructive (non-communicating, e.g. aqueductal stenosis) or communicating (impaired absorption at arachnoid granulations). Normal pressure hydrocephalus: triad of dementia, gait ataxia, urinary incontinence ("wet, wacky, wobbly").', damage: 'Increased ICP from CSF obstruction \u2192 headache, nausea, papilledema, herniation if untreated.' },
+                  { id: 'pineal_brain', name: 'Pineal Gland', x: 0.68, y: 0.38, w: 0.06, fn: 'Small endocrine gland in epithalamus, posterior to third ventricle. Produces melatonin from serotonin (darkness-regulated). Contains pinealocytes and glial cells. Calcifies with age (visible on imaging as midline marker). Outside blood-brain barrier.', brodmann: 'N/A (endocrine gland)', blood: 'Posterior choroidal arteries', conditions: 'Pinealoma/pineal germinoma: may compress cerebral aqueduct \u2192 obstructive hydrocephalus. Parinaud syndrome (dorsal midbrain syndrome): upgaze palsy, convergence-retraction nystagmus, light-near dissociation. Pineal cysts (usually incidental). Precocious puberty (pineal tumors secreting hCG).', damage: 'Disrupted circadian rhythms, obstructive hydrocephalus from aqueductal compression, Parinaud dorsal midbrain syndrome.' },
+                  { id: 'fornix', name: 'Fornix', x: 0.52, y: 0.34, w: 0.12, fn: 'Major white matter tract of limbic system. C-shaped bundle connecting hippocampus to mammillary bodies, septal nuclei, and hypothalamus. Carries output from hippocampal formation (subiculum). Columns of fornix pass through hypothalamus to mammillary bodies. Critical for memory circuit (Papez circuit).', brodmann: 'N/A (white matter tract)', blood: 'Branches of anterior cerebral artery and internal cerebral vein', conditions: 'Fornix damage (surgical, tumor, trauma): severe anterograde amnesia similar to hippocampal lesions. Colloid cyst of third ventricle can compress columns of fornix \u2192 acute memory loss. Forniceal involvement in MS may contribute to cognitive symptoms.', damage: 'Anterograde amnesia (inability to form new memories), disrupted spatial memory, impaired episodic memory encoding.' },
+                  { id: 'mammillary', name: 'Mammillary Bodies', x: 0.45, y: 0.58, w: 0.06, fn: 'Paired nuclei on ventral surface of posterior hypothalamus. Part of Papez circuit (hippocampus \u2192 fornix \u2192 mammillary bodies \u2192 mammillothalamic tract \u2192 anterior thalamic nucleus \u2192 cingulate \u2192 hippocampus). Medial nucleus (larger): memory. Lateral nucleus: visceral reflexes.', brodmann: 'N/A (hypothalamic nuclei)', blood: 'Branches of posterior cerebral artery and posterior communicating artery', conditions: 'Wernicke encephalopathy: thiamine (B1) deficiency \u2192 mammillary body necrosis/hemorrhage + ataxia + ophthalmoplegia + confusion. If untreated \u2192 Korsakoff syndrome: permanent confabulation, anterograde/retrograde amnesia. Most common in chronic alcoholism. MRI shows mammillary body atrophy.', damage: 'Severe memory impairment (especially anterograde), confabulation (Korsakoff syndrome), disrupted spatial navigation.' },
+                  { id: 'septum_pell', name: 'Septum Pellucidum', x: 0.40, y: 0.30, w: 0.06, fn: 'Thin membrane of two laminae separating the two lateral ventricles. Contains septal nuclei (part of limbic system). Septal nuclei project to hippocampus (medial septum: cholinergic/GABAergic input for theta rhythm), hypothalamus, and brainstem. Connected to nucleus accumbens (pleasure).', brodmann: 'N/A (septal region)', blood: 'Anterior cerebral artery branches', conditions: 'Cavum septum pellucidum (CSP): persistent fluid-filled cavity between laminae, normal variant in ~20% of adults, more common in boxers and TBI patients. Septal lesions can cause rage reactions (septal rage syndrome in animal models). CSP associated with schizophrenia in some studies.', damage: 'Septal lesion effects include emotional dysregulation, hyperemotionality, and impaired pleasure/reward processing.' }
+                ]
+              },
+              superior: {
+                name: t('stem.synth_ui.superior_top'), desc: t('stem.synth_ui.view_from_above_showing_hemispheres'),
+                regions: [
+                  { id: 'longitudinal', name: t('stem.synth_ui.longitudinal_fissure'), x: 0.50, y: 0.50, w: 0.04, fn: 'Deep midline cleft separating left and right cerebral hemispheres. Contains the falx cerebri (dural fold) and anterior cerebral arteries. Corpus callosum visible at its depth.', brodmann: 'N/A (anatomical landmark)', blood: 'Superior sagittal sinus runs along its superior border', conditions: 'Superior sagittal sinus thrombosis: headache, seizures, papilledema. Parasagittal meningiomas may compress motor cortex for lower limbs.', damage: 'Bilateral leg weakness if parasagittal tumor/thrombosis compresses medial motor cortex.' },
+                  { id: 'central_sulcus', name: t('stem.synth_ui.central_sulcus_rolandic'), x: 0.50, y: 0.38, w: 0.30, fn: 'Separates frontal lobe (anterior) from parietal lobe (posterior). Precentral gyrus (motor) lies anterior; postcentral gyrus (somatosensory) lies posterior. Key surgical landmark.', brodmann: 'Border between BA 4 (anterior) and BA 3,1,2 (posterior)', blood: 'Middle cerebral artery branches', conditions: 'Central sulcus is critical surgical landmark \u2014 must be identified to avoid motor/sensory cortex damage during neurosurgery. Functional MRI used for preoperative mapping.', damage: 'Lesions anterior \u2192 motor deficit; lesions posterior \u2192 sensory deficit on contralateral body.' },
+                  { id: 'frontal_sup', name: t('stem.synth_ui.frontal_lobes_superior_view'), x: 0.35, y: 0.25, w: 0.15, fn: 'Anterior to central sulcus. From above: superior, middle, and inferior frontal gyri visible. Prefrontal cortex dominates anterior portion. Supplementary motor area on medial surface.', brodmann: 'BA 4, 6, 8, 9, 10, 46', blood: 'Anterior cerebral artery (medial), middle cerebral artery (lateral)', conditions: 'Frontal lobe syndrome: disinhibition, poor judgment, abulia (lack of will). Meningiomas of the olfactory groove may compress frontal lobes bilaterally.', damage: 'Executive dysfunction, personality changes, contralateral motor weakness.' },
+                  { id: 'parietal_sup', name: t('stem.synth_ui.parietal_lobes_superior_view'), x: 0.55, y: 0.55, w: 0.15, fn: 'Posterior to central sulcus. Superior and inferior parietal lobules visible from above. Precuneus on medial surface (part of default mode network). Interhemispheric parietal areas for spatial integration.', brodmann: 'BA 1,2,3,5,7,39,40', blood: 'Middle cerebral artery, posterior cerebral artery', conditions: 'Balint syndrome (bilateral parietal): simultanagnosia, optic ataxia, oculomotor apraxia. Astereognosis: cannot identify objects by touch despite intact sensation.', damage: 'Sensory loss, neglect (non-dominant), apraxia, spatial disorientation, acalculia (dominant).' },
+                  { id: 'sma', name: 'Supplementary Motor Area', x: 0.42, y: 0.35, w: 0.10, fn: 'Medial surface of frontal lobe, anterior to primary motor cortex. Plans complex motor sequences, coordinates bimanual movements, internally generated movements (vs externally cued). Pre-SMA involved in motor planning and decision-making. Contains somatotopic organization.', brodmann: 'BA 6 (medial)', blood: 'Anterior cerebral artery', conditions: 'SMA syndrome (post-surgical): transient contralateral akinesia and mutism after SMA resection (recovers in weeks due to compensation). SMA seizures: bilateral tonic posturing, preserved consciousness. Alien limb syndrome (medial frontal variant).', damage: 'Transient contralateral motor neglect, difficulty initiating voluntary movement, impaired bimanual coordination, speech initiation problems.' }
+                ]
+              },
+              inferior: {
+                name: t('stem.synth_ui.inferior_bottom'), desc: t('stem.synth_ui.view_from_below_showing_cranial'),
+                regions: [
+                  { id: 'olfactory', name: t('stem.synth_ui.olfactory_bulbstracts_cn_i'), x: 0.50, y: 0.20, w: 0.10, fn: 'Receive input from olfactory epithelium via cribriform plate of ethmoid bone. Only sensory pathway that does NOT relay through thalamus \u2014 projects directly to olfactory cortex, amygdala, entorhinal cortex.', brodmann: 'N/A', blood: 'Anterior cerebral artery (olfactory branches)', conditions: 'Anosmia: loss of smell from head trauma (cribriform plate fracture), COVID-19, Parkinson\u2019s (early sign), Kallmann syndrome, olfactory groove meningioma.', damage: 'Unilateral or bilateral anosmia. Foster Kennedy syndrome: ipsilateral anosmia + optic atrophy + contralateral papilledema (olfactory groove meningioma).' },
+                  { id: 'optic_chiasm', name: t('stem.synth_ui.optic_chiasm_cn_ii'), x: 0.50, y: 0.32, w: 0.10, fn: 'Partial decussation of optic nerve fibers. Nasal fibers cross; temporal fibers remain ipsilateral. Sits above pituitary gland in sella turcica. Critical landmark for visual field deficits.', brodmann: 'N/A', blood: 'Superior hypophyseal artery, ophthalmic artery', conditions: 'Bitemporal hemianopia: classical visual field defect from pituitary adenoma compressing chiasm from below. Craniopharyngioma compresses from above.', damage: 'Bitemporal hemianopia (loss of both temporal visual fields). Pituitary tumors are most common cause.' },
+                  { id: 'temporal_inf', name: t('stem.synth_ui.temporal_lobes_inferior'), x: 0.40, y: 0.50, w: 0.15, fn: 'Inferior surface shows fusiform gyrus (face recognition), parahippocampal gyrus (memory encoding), uncus (olfactory processing). Contains hippocampus and amygdala internally.', brodmann: 'BA 20 (inferior temporal), BA 36,37 (fusiform)', blood: 'Posterior cerebral artery', conditions: 'Uncal herniation: life-threatening transtentorial herniation compresses CN III \u2192 ipsilateral fixed dilated pupil, contralateral hemiparesis, then coma. Neurosurgical emergency. Prosopagnosia from fusiform gyrus damage.', damage: 'Memory deficits, face perception problems, uncal herniation signs if mass effect present.' },
+                  { id: 'cerebellum_inf', name: t('stem.synth_ui.cerebellum_inferior'), x: 0.50, y: 0.72, w: 0.18, fn: 'Cerebellar tonsils visible inferiorly, flanking the foramen magnum. Vermis (midline) controls truncal balance; hemispheres control limb coordination. Flocculonodular lobe controls eye movements.', brodmann: 'N/A', blood: 'PICA (posterior inferior cerebellar artery)', conditions: 'Chiari malformation: cerebellar tonsils herniate through foramen magnum \u2192 headache, syringomyelia. Cerebellar tonsillar herniation is life-threatening (compresses brainstem). Medulloblastoma in children (vermis).', damage: 'Truncal ataxia (vermis lesion), limb ataxia (hemisphere lesion), nystagmus, dysarthria.' },
+                  { id: 'medulla_inf', name: t('stem.synth_ui.medulla_oblongata_inferior'), x: 0.50, y: 0.60, w: 0.08, fn: 'Most inferior brainstem structure. Contains: cardiovascular center, respiratory center, vomiting center, pyramids (corticospinal tracts that decussate here). CN IX, X, XI, XII nuclei.', brodmann: 'N/A', blood: 'Vertebral arteries, PICA', conditions: 'Lateral medullary (Wallenberg) syndrome: PICA occlusion \u2192 ipsilateral facial numbness, Horner syndrome, ataxia + contralateral body pain/temperature loss. Dysphagia from nucleus ambiguus involvement.', damage: 'Respiratory/cardiac arrest if bilateral lesion. Alternating hemiplegia, dysphagia, dysarthria, vertigo.' },
+                  { id: 'cn_nerves', name: t('stem.synth_ui.cranial_nerves_iiu2013xii'), x: 0.50, y: 0.45, w: 0.12, fn: 'Emerge from brainstem base. Key exits: CN V from pons (trigeminal), CN VII/VIII from pontomedullary junction (facial/vestibulocochlear), CN IX/X/XI from medulla (glossopharyngeal, vagus, spinal accessory), CN XII from medulla (hypoglossal).', brodmann: 'N/A', blood: 'Various branches of basilar and vertebral arteries', conditions: 'CN III palsy: "down and out" eye, ptosis, mydriasis. CN V: trigeminal neuralgia. CN VII: Bell palsy (LMN facial droop). CN VIII: acoustic neuroma (hearing loss, tinnitus). CN XII: tongue deviates toward lesion.', damage: 'Specific cranial nerve deficits depending on which nerve is affected. Multiple CN palsies suggest brainstem pathology or skull base disease.' },
+                  { id: 'pituitary_brain', name: 'Pituitary Gland', x: 0.50, y: 0.38, w: 0.06, fn: 'Pea-sized master endocrine gland in sella turcica of sphenoid bone. Anterior lobe (adenohypophysis): GH, ACTH, TSH, FSH, LH, prolactin. Posterior lobe (neurohypophysis): stores oxytocin and ADH. Connected to hypothalamus by infundibulum (pituitary stalk). Hypophyseal portal system links hypothalamus to anterior pituitary.', brodmann: 'N/A (endocrine gland)', blood: 'Superior and inferior hypophyseal arteries from internal carotid artery', conditions: 'Pituitary adenoma (most common: prolactinoma) \u2192 visual field defects (bitemporal hemianopia), hormonal excess/deficiency. Pituitary apoplexy: hemorrhage into adenoma \u2192 sudden headache, visual loss, hypopituitarism. Sheehan syndrome: postpartum pituitary necrosis. Craniopharyngioma.', damage: 'Hormonal imbalance (multiple endocrine deficiencies), visual field defects from optic chiasm compression, diabetes insipidus if posterior pituitary affected.' },
+                  { id: 'circle_willis_brain', name: 'Circle of Willis', x: 0.50, y: 0.50, w: 0.14, fn: 'Arterial anastomotic ring at base of brain forming a polygon. Components: anterior communicating artery (AComm), bilateral A1 segments of ACA, bilateral ICA, bilateral PComm, bilateral P1 segments of PCA. Complete circle in only ~25% of population. Provides collateral circulation if one artery is occluded.', brodmann: 'N/A (vascular)', blood: 'Internal carotid arteries (anterior circulation) + basilar artery (posterior circulation)', conditions: 'Berry (saccular) aneurysms: most common at AComm junction (30\u201335%). Rupture \u2192 subarachnoid hemorrhage (thunderclap headache, worst headache of life). Risk: hypertension, smoking, polycystic kidney disease, Ehlers-Danlos, coarctation of aorta. Variants may reduce collateral flow \u2192 increased stroke risk.', damage: 'Aneurysm rupture causes subarachnoid hemorrhage with high mortality; occlusion of feeding vessels causes ischemic stroke in the territory of the affected branch.' }
+                ]
+              },
+              neurotransmitters: {
+                name: '\u26A1 Neurotransmitters', desc: 'Complete reference: synthesis, receptors, pathways, functions, pharmacology',
+                isNT: true,
+                regions: [
+                  { id: 'dopamine', name: 'Dopamine (DA)', x: 0.30, y: 0.35, w: 0.08, category: 'Catecholamine (Monoamine)', synthesis: 'Tyrosine \u2192 L-DOPA (tyrosine hydroxylase, rate-limiting) \u2192 Dopamine (DOPA decarboxylase). Stored in synaptic vesicles via VMAT2.', receptors: 'D1-like (D1, D5): Gs-coupled, excitatory, increase cAMP. D2-like (D2, D3, D4): Gi-coupled, inhibitory, decrease cAMP. D2 autoreceptors regulate release.', pathways: 'Mesolimbic (VTA \u2192 nucleus accumbens): reward/motivation. Mesocortical (VTA \u2192 PFC): cognition/executive function. Nigrostriatal (substantia nigra \u2192 striatum): motor control. Tuberoinfundibular (hypothalamus \u2192 pituitary): inhibits prolactin.', fn: 'Reward and pleasure signaling, motivation, motor control, executive function, working memory, attention, hormonal regulation (prolactin inhibition).', conditions: 'Parkinson disease: nigrostriatal DA depletion. Schizophrenia: mesolimbic DA excess (positive symptoms), mesocortical DA deficit (negative symptoms). ADHD: prefrontal DA/NE dysregulation. Addiction: mesolimbic hijacking.', drugs: 'L-DOPA/carbidopa (Parkinson). Antipsychotics: D2 blockers (haloperidol, risperidone). Stimulants: methylphenidate, amphetamine (block DAT/increase release). Cocaine blocks DAT. Pramipexole (D2/D3 agonist).', damage: 'Loss of dopamine neurons leads to bradykinesia, rigidity, and tremor in Parkinson disease; excess dopamine activity causes psychosis and hallucinations.' },
+                  { id: 'serotonin', name: 'Serotonin (5-HT)', x: 0.50, y: 0.60, w: 0.08, category: 'Indolamine (Monoamine)', synthesis: 'Tryptophan \u2192 5-hydroxytryptophan (tryptophan hydroxylase, rate-limiting) \u2192 Serotonin (aromatic amino acid decarboxylase). 90% in gut enterochromaffin cells; only 2% in brain (raphe nuclei).', receptors: '7 families (5-HT1\u20137), 14+ subtypes. 5-HT1A: anxiolytic target (buspirone). 5-HT2A: psychedelic target, antipsychotic target. 5-HT3: ionotropic (ondansetron target, antiemetic). 5-HT4: GI motility.', pathways: 'Raphe nuclei (dorsal and median) project widely to cortex, limbic system, basal ganglia, hypothalamus, brainstem, spinal cord. Most widespread monoamine projection system in brain.', fn: 'Mood regulation, anxiety modulation, sleep-wake cycle, appetite, pain perception, thermoregulation, GI motility, platelet aggregation, nausea/vomiting control.', conditions: 'Depression: monoamine hypothesis (5-HT deficit). Anxiety disorders. OCD (5-HT circuit dysfunction). Migraine (5-HT vasoconstriction). Carcinoid syndrome: serotonin-secreting tumor (flushing, diarrhea, wheezing). Serotonin syndrome: excess 5-HT (hyperthermia, rigidity, clonus).', drugs: 'SSRIs (fluoxetine, sertraline): block SERT. SNRIs (venlafaxine). TCAs (amitriptyline). MAOIs (phenelzine). Triptans (5-HT1B/1D agonists for migraine). Ondansetron (5-HT3 antagonist, antiemetic). Buspirone (5-HT1A partial agonist). LSD/psilocybin (5-HT2A agonists).', damage: 'Serotonin depletion contributes to depression, insomnia, impulsivity, and increased pain sensitivity; excess causes serotonin syndrome with potentially fatal hyperthermia.' },
+                  { id: 'norepinephrine', name: 'Norepinephrine (NE)', x: 0.40, y: 0.30, w: 0.08, category: 'Catecholamine (Monoamine)', synthesis: 'Tyrosine \u2192 L-DOPA \u2192 Dopamine \u2192 Norepinephrine (dopamine \u03B2-hydroxylase, in synaptic vesicles). NE is the immediate precursor to epinephrine in the adrenal medulla.', receptors: '\u03B11: Gq, vasoconstriction, mydriasis. \u03B12: Gi, presynaptic autoreceptor (inhibits NE release), central sedation. \u03B21: Gs, increases heart rate/contractility. \u03B22: Gs, bronchodilation, vasodilation. \u03B23: Gs, lipolysis.', pathways: 'Locus coeruleus (LC) in dorsal pons projects to entire cerebral cortex, hippocampus, amygdala, cerebellum, spinal cord. Primary arousal/alertness center. Lateral tegmental system: autonomic regulation.', fn: 'Arousal, alertness, attention, vigilance, stress response (fight-or-flight), mood regulation, blood pressure regulation, pain modulation, memory consolidation during emotional events.', conditions: 'Depression (NE deficit). PTSD (NE hyperactivity, hyperarousal). Orthostatic hypotension (NE insufficiency). Pheochromocytoma: NE/epinephrine-secreting adrenal tumor \u2192 episodic hypertension, tachycardia, headache, diaphoresis.', drugs: 'SNRIs (duloxetine, venlafaxine). NRIs (atomoxetine for ADHD). TCAs (desipramine: NE-selective). Clonidine (\u03B12 agonist, central sympatholytic). Prazosin (\u03B11 blocker, PTSD nightmares). Propranolol (\u03B2-blocker). Phenylephrine (\u03B11 agonist, decongestant).', damage: 'Norepinephrine dysregulation causes attention deficits, autonomic dysfunction, depression, and impaired stress response.' },
+                  { id: 'acetylcholine', name: 'Acetylcholine (ACh)', x: 0.55, y: 0.40, w: 0.08, category: 'Cholinergic (Ester)', synthesis: 'Choline + Acetyl-CoA \u2192 ACh (choline acetyltransferase, ChAT). Degraded in synaptic cleft by acetylcholinesterase (AChE). Choline recycled via high-affinity choline transporter.', receptors: 'Nicotinic (nAChR): ligand-gated ion channels. NMJ type (\u03B11)2\u03B21\u03B4\u03B5: muscle contraction. CNS types (\u03B14\u03B22, \u03B17): cognition, attention. Muscarinic (mAChR): G-protein coupled. M1 (Gq): cognition. M2 (Gi): heart (slows HR). M3 (Gq): smooth muscle, glands.', pathways: 'Basal nucleus of Meynert \u2192 cortex (cognition/memory). Pedunculopontine nucleus \u2192 thalamus (arousal/REM sleep). Medial septum \u2192 hippocampus (memory). Motor neurons \u2192 NMJ (voluntary movement). Preganglionic autonomic neurons.', fn: 'Muscle contraction at NMJ, memory formation and retrieval, attention, arousal, REM sleep, autonomic function (parasympathetic: rest-and-digest), learning and cortical plasticity.', conditions: 'Alzheimer disease: loss of cholinergic neurons from nucleus basalis of Meynert. Myasthenia gravis: anti-nAChR antibodies at NMJ. Lambert-Eaton: anti-VGCC antibodies (presynaptic). Organophosphate poisoning: AChE inhibition \u2192 cholinergic crisis.', drugs: 'Donepezil, rivastigmine (AChE inhibitors for Alzheimer). Atropine (muscarinic antagonist). Pilocarpine (muscarinic agonist, glaucoma). Succinylcholine (depolarizing NMJ blocker). Neostigmine (AChE inhibitor for myasthenia). Nicotine (nAChR agonist). Botulinum toxin (blocks ACh release).', damage: 'ACh depletion causes memory loss, cognitive decline, and is the primary neurochemical deficit in Alzheimer disease; NMJ dysfunction causes muscle weakness.' },
+                  { id: 'gaba', name: 'GABA (\u03B3-Aminobutyric Acid)', x: 0.60, y: 0.25, w: 0.08, category: 'Amino Acid (Inhibitory)', synthesis: 'Glutamate \u2192 GABA (glutamic acid decarboxylase/GAD, requires vitamin B6/pyridoxal phosphate as cofactor). Degraded by GABA transaminase (GABA-T). Most abundant inhibitory NT in CNS (~40% of synapses).', receptors: 'GABA-A: ligand-gated Cl\u207B channel (fast inhibition). Has binding sites for benzodiazepines (\u03B1/\u03B3 subunit interface), barbiturates, ethanol, neurosteroids, propofol. GABA-B: Gi/Go-coupled GPCR (slow, prolonged inhibition). Baclofen target.', pathways: 'Ubiquitous inhibitory interneurons throughout cortex, hippocampus, basal ganglia, cerebellum (Purkinje cells), thalamus. Striatal medium spiny neurons (GABAergic output of basal ganglia). Reticular thalamic nucleus gates thalamic relay.', fn: 'Primary inhibitory neurotransmission, reduces neuronal excitability, prevents seizures, regulates muscle tone, anxiolysis, sleep induction, motor coordination, thalamic gating of sensory information.', conditions: 'Epilepsy (GABA/glutamate imbalance). Anxiety disorders (insufficient GABAergic tone). Huntington disease (loss of GABAergic MSNs in striatum). Hepatic encephalopathy (excess GABA-like substances). Status epilepticus. Stiff-person syndrome (anti-GAD antibodies).', drugs: 'Benzodiazepines (diazepam, lorazepam): positive allosteric modulators of GABA-A. Barbiturates (phenobarbital): prolong Cl\u207B channel opening. Vigabatrin (irreversible GABA-T inhibitor). Tiagabine (GABA reuptake inhibitor). Baclofen (GABA-B agonist, spasticity). Zolpidem (\u03B11-selective, sleep). Propofol, ethanol (GABA-A modulation).', damage: 'GABA deficiency leads to seizures, anxiety, and movement disorders; excessive GABAergic activity causes sedation, coma, and respiratory depression.' },
+                  { id: 'glutamate', name: 'Glutamate (Glu)', x: 0.45, y: 0.20, w: 0.08, category: 'Amino Acid (Excitatory)', synthesis: 'From glutamine (glutaminase in neurons), \u03B1-ketoglutarate (transamination), or recycled from synaptic cleft by astrocytes (glutamate-glutamine cycle). Most abundant excitatory NT in CNS (~90% of excitatory synapses).', receptors: 'Ionotropic: NMDA (Na\u207A/Ca\u00B2\u207A, voltage-dependent Mg\u00B2\u207A block, requires glycine co-agonist \u2014 critical for LTP/memory). AMPA (Na\u207A, fast excitation). Kainate (Na\u207A). Metabotropic: mGluR1\u20138 (Gq or Gi coupled, modulatory).', pathways: 'Virtually all excitatory projection neurons in cortex, hippocampus, thalamus, brainstem. Corticospinal, corticothalamic, thalamocortical, hippocampal trisynaptic circuit (perforant path \u2192 DG \u2192 CA3 \u2192 CA1). Cerebellar granule cells.', fn: 'Primary excitatory neurotransmission, learning and memory (LTP via NMDA receptors), synaptic plasticity, brain development, sensory processing, motor control, cognition.', conditions: 'Excitotoxicity: excessive glutamate \u2192 neuronal death (stroke, TBI, neurodegeneration). ALS: glutamate excitotoxicity (riluzole reduces). Epilepsy (glutamate/GABA imbalance). NMDA receptor encephalitis (anti-NMDAR antibodies). Hepatic encephalopathy.', drugs: 'Memantine (NMDA antagonist, moderate-severe Alzheimer). Riluzole (reduces glutamate release, ALS). Ketamine (NMDA antagonist, anesthesia, rapid-acting antidepressant). PCP (NMDA antagonist, psychosis). Lamotrigine (reduces glutamate release, epilepsy/bipolar). Topiramate (blocks AMPA/kainate).', damage: 'Excess glutamate causes excitotoxic neuronal death in stroke and neurodegeneration; NMDA dysfunction impairs memory formation and synaptic plasticity.' },
+                  { id: 'glycine', name: 'Glycine', x: 0.55, y: 0.70, w: 0.08, category: 'Amino Acid (Inhibitory)', synthesis: 'From serine (serine hydroxymethyltransferase) or dietary intake. Simplest amino acid. Dual role: inhibitory NT in spinal cord/brainstem, and obligatory co-agonist at NMDA receptors in brain.', receptors: 'Glycine receptors (GlyR): ligand-gated Cl\u207B channels, primarily in spinal cord and brainstem. Strychnine-sensitive. Also binds glycine site on NMDA receptor (strychnine-insensitive). GlyT1/GlyT2 transporters for reuptake.', pathways: 'Renshaw cell inhibition in spinal cord (recurrent inhibition of motor neurons). Brainstem auditory and vestibular nuclei. Retinal amacrine cells. NMDA receptor co-agonism throughout cortex.', fn: 'Inhibitory neurotransmission in spinal cord and brainstem, motor neuron regulation, pain modulation, NMDA receptor co-activation for synaptic plasticity, auditory/visual processing.', conditions: 'Hyperekplexia (startle disease): glycine receptor mutations. Glycine encephalopathy (nonketotic hyperglycinemia): neonatal seizures. Strychnine poisoning: GlyR antagonism \u2192 unopposed excitation \u2192 convulsions, opisthotonus.', drugs: 'Strychnine (GlyR antagonist, poison). D-serine and sarcosine (GlyT1 inhibitors, investigated for schizophrenia as NMDA enhancers). Glycine supplementation studied for schizophrenia negative symptoms.', damage: 'Glycine receptor dysfunction causes excessive startle reflexes, spasticity, and convulsions; as NMDA co-agonist, glycine modulation affects learning and memory.' },
+                  { id: 'histamine', name: 'Histamine', x: 0.35, y: 0.25, w: 0.08, category: 'Monoamine (Imidazole)', synthesis: 'Histidine \u2192 Histamine (histidine decarboxylase). In CNS: tuberomammillary nucleus (TMN) of posterior hypothalamus. Also in mast cells (immune), ECL cells of stomach (acid secretion). Degraded by histamine N-methyltransferase (HNMT) in brain.', receptors: 'H1: Gq, wakefulness, allergic response, smooth muscle contraction. H2: Gs, gastric acid secretion, cardiac contractility. H3: Gi/Go, presynaptic autoreceptor (CNS), regulates histamine/other NT release. H4: Gi, immune cells, inflammation.', pathways: 'TMN of posterior hypothalamus projects to entire cerebral cortex, thalamus, basal ganglia, hippocampus, amygdala, brainstem. Part of ascending arousal system. Active during wakefulness, silent during sleep.', fn: 'Wakefulness and arousal, circadian rhythm regulation, attention, learning, gastric acid secretion, immune and allergic responses, appetite regulation, thermoregulation.', conditions: 'Narcolepsy type 2 (partial histamine deficiency). Allergic responses (mast cell histamine release). Peptic ulcer disease (H2-mediated acid hypersecretion). Systemic mastocytosis. Scombroid fish poisoning (histamine toxicity).', drugs: 'H1 antihistamines: diphenhydramine, cetirizine (allergy). First-gen H1 blockers: sedating (cross BBB). H2 blockers: ranitidine, famotidine (acid reflux). H3 antagonists/inverse agonists: pitolisant (narcolepsy, promotes wakefulness). Betahistine (vertigo).', damage: 'Histamine deficiency impairs wakefulness and causes excessive sleepiness; excess release causes allergic inflammation, bronchoconstriction, and anaphylaxis.' },
+                  { id: 'endorphins', name: 'Endorphins (\u03B2-Endorphin)', x: 0.50, y: 0.15, w: 0.08, category: 'Opioid Peptide (Neuropeptide)', synthesis: 'Pro-opiomelanocortin (POMC) \u2192 cleaved into \u03B2-endorphin + ACTH + \u03B1-MSH. POMC expressed in arcuate nucleus of hypothalamus and NTS of brainstem. Also: met-/leu-enkephalin (from proenkephalin), dynorphins (from prodynorphin).', receptors: '\u03BC (mu, MOR): analgesia, euphoria, respiratory depression, constipation (primary opioid drug target). \u03B4 (delta, DOR): analgesia, mood. \u03BA (kappa, KOR): analgesia, dysphoria, diuresis. All Gi/Go-coupled, decrease cAMP, open K\u207A channels, close Ca\u00B2\u207A channels.', pathways: 'Descending pain modulation: PAG \u2192 RVM \u2192 dorsal horn (gate control). Arcuate nucleus projections to PAG, thalamus, amygdala, locus coeruleus. Enkephalin interneurons in dorsal horn. VTA reward circuits (disinhibit dopamine neurons).', fn: 'Endogenous pain modulation (analgesia), stress response, reward and euphoria (runner\u2019s high), immune regulation, mood elevation, appetite regulation, respiratory regulation.', conditions: 'Chronic pain syndromes (endorphin deficit). Opioid use disorder: exogenous opioids hijack endogenous system \u2192 tolerance, dependence, withdrawal. Congenital insensitivity to pain (rare). Stress-induced analgesia on the battlefield.', drugs: 'Morphine, fentanyl, oxycodone (\u03BC agonists, analgesia). Naloxone, naltrexone (\u03BC antagonists, overdose reversal/addiction treatment). Buprenorphine (\u03BC partial agonist, opioid use disorder). Methadone (full \u03BC agonist, maintenance therapy). Tramadol (\u03BC agonist + SNRI).', damage: 'Endorphin system disruption leads to chronic pain, mood disorders, and vulnerability to opioid addiction; excessive opioid receptor activation causes respiratory depression.' },
+                  { id: 'substance_p', name: 'Substance P', x: 0.65, y: 0.55, w: 0.08, category: 'Tachykinin (Neuropeptide)', synthesis: 'Encoded by TAC1 gene (preprotachykinin A). 11-amino acid peptide. Stored in large dense-core vesicles. Co-released with glutamate from C-fiber nociceptive neurons. Also found in gut enteric neurons and immune cells.', receptors: 'NK1 (neurokinin-1) receptor: Gq-coupled, primary target. NK2, NK3 receptors (lower affinity). NK1 receptors abundant in dorsal horn, brainstem emesis center, amygdala, hypothalamus, striatum.', pathways: 'C-fiber nociceptors \u2192 dorsal horn (laminae I and II) for pain transmission. Trigeminal system for head/face pain. Brainstem vomiting center. Striatum (mood/anxiety). Enteric nervous system (GI motility/inflammation).', fn: 'Pain transmission (especially slow, burning pain from C-fibers), neurogenic inflammation (vasodilation, plasma extravasation, mast cell degranulation), emesis, mood and stress regulation, GI motility.', conditions: 'Chronic pain and fibromyalgia (elevated CSF substance P). Migraine (trigeminovascular substance P release). Chemotherapy-induced nausea/vomiting. Inflammatory bowel disease. Depression and anxiety (elevated substance P).', drugs: 'Aprepitant (NK1 antagonist, antiemetic for chemotherapy-induced nausea). Capsaicin cream (depletes substance P from C-fibers, topical pain relief). NK1 antagonists investigated for depression and anxiety.', damage: 'Excess substance P amplifies pain perception, causes neurogenic inflammation, and triggers nausea; depletion impairs pain signaling and protective reflexes.' },
+                  { id: 'oxytocin', name: 'Oxytocin', x: 0.42, y: 0.10, w: 0.08, category: 'Peptide Hormone/Neurotransmitter', synthesis: '9-amino acid peptide synthesized in paraventricular nucleus (PVN) and supraoptic nucleus (SON) of hypothalamus. Transported via neurophysin I to posterior pituitary for systemic release. Also released centrally from dendrites and axon terminals.', receptors: 'Oxytocin receptor (OXTR): Gq-coupled GPCR. Expressed in uterus, mammary glands, brain (amygdala, hippocampus, hypothalamus, nucleus accumbens, brainstem). Receptor density varies with reproductive state and social experience.', pathways: 'PVN/SON \u2192 posterior pituitary (endocrine release \u2192 blood). PVN \u2192 amygdala, hippocampus, nucleus accumbens, brainstem, spinal cord (central neuromodulation). Dense projections to social brain network.', fn: 'Uterine contractions during labor, milk ejection (let-down reflex), maternal bonding, pair bonding, social trust and recognition, stress reduction, anxiolysis, wound healing, sexual arousal.', conditions: 'Oxytocin deficiency: difficult labor, poor lactation. Williams syndrome (excess social behavior, possibly related to OXT system). Autism spectrum: oxytocin studied as potential treatment for social deficits. Postpartum depression may involve OXT dysregulation.', drugs: 'Pitocin (synthetic oxytocin, labor induction/augmentation, postpartum hemorrhage). Carbetocin (long-acting oxytocin agonist). Intranasal oxytocin (research for autism, social anxiety, PTSD). Atosiban (oxytocin receptor antagonist, preterm labor).', damage: 'Oxytocin deficiency impairs social bonding, lactation, and labor progression; excess can cause uterine hyperstimulation and fetal distress during labor.' },
+                  { id: 'vasopressin', name: 'Vasopressin (ADH)', x: 0.58, y: 0.10, w: 0.08, category: 'Peptide Hormone/Neurotransmitter', synthesis: '9-amino acid peptide (differs from oxytocin by 2 amino acids). Synthesized in SON (primarily) and PVN of hypothalamus. Transported via neurophysin II to posterior pituitary. Release triggered by increased plasma osmolality (>285 mOsm) or decreased blood volume.', receptors: 'V1a: Gq, vascular smooth muscle vasoconstriction, hepatic glycogenolysis, platelet aggregation. V1b (V3): Gq, anterior pituitary ACTH release. V2: Gs, renal collecting duct (aquaporin-2 insertion for water reabsorption). Central V1a: social behavior.', pathways: 'SON/PVN \u2192 posterior pituitary (endocrine). PVN \u2192 brainstem autonomic centers. Central V1a projections to amygdala and septum (aggression, pair bonding in voles). Osmoreceptor feedback from OVLT and SFO (circumventricular organs).', fn: 'Water reabsorption in kidneys (antidiuretic effect), vasoconstriction, ACTH regulation (stress response), memory consolidation, social behavior (aggression, pair bonding), circadian rhythm, temperature regulation.', conditions: 'Diabetes insipidus: central (no ADH production) or nephrogenic (kidneys unresponsive to ADH) \u2192 polyuria/polydipsia. SIADH (excess ADH): hyponatremia, water retention. Causes: SCLC, CNS disease, drugs.', drugs: 'Desmopressin (V2 agonist: central DI, nocturnal enuresis, hemophilia A/vWD). Vasopressin/terlipressin (V1 agonist: variceal bleeding, vasodilatory shock). Conivaptan/tolvaptan (V2 antagonist, vaptans: SIADH, hyponatremia). Demeclocycline (induces nephrogenic DI for SIADH).', damage: 'ADH deficiency causes massive water loss and dehydration; excess causes dangerous hyponatremia with cerebral edema, seizures, and coma.' },
+                  { id: 'melatonin', name: 'Melatonin', x: 0.50, y: 0.05, w: 0.08, category: 'Indolamine (Tryptophan derivative)', synthesis: 'Tryptophan \u2192 Serotonin \u2192 N-acetylserotonin (AANAT, rate-limiting, activated by darkness) \u2192 Melatonin (HIOMT). Produced in pineal gland. Synthesis controlled by SCN \u2192 SCG \u2192 pineal pathway. Peaks at 2\u20134 AM, suppressed by light (especially blue, 460nm).', receptors: 'MT1: Gi, sleep onset (inhibits SCN neuronal firing, promotes sleepiness). MT2: Gi, circadian phase-shifting (advances or delays clock). Both expressed in SCN, retina, cerebral arteries, immune cells. MT3/NQO2: enzyme, detoxification.', pathways: 'Pineal gland \u2192 CSF and blood (endocrine hormone). Acts on SCN (master circadian clock) to reinforce day-night rhythm. Also acts on immune cells, GI tract, skin, reproductive organs. Retinal melatonin for local circadian regulation.', fn: 'Circadian rhythm regulation (sleep-wake cycle entrainment), sleep onset facilitation, seasonal reproductive timing (photoperiodism), antioxidant properties, immune modulation, oncostatic effects, body temperature lowering.', conditions: 'Circadian rhythm disorders: delayed sleep phase, jet lag, shift-work disorder, non-24-hour sleep-wake disorder (blind individuals). Age-related melatonin decline \u2192 insomnia in elderly. Pineal tumors: altered melatonin production. Seasonal affective disorder.', drugs: 'Exogenous melatonin (OTC sleep aid, jet lag, circadian disorders). Ramelteon (MT1/MT2 agonist, insomnia). Tasimelteon (MT1/MT2 agonist, non-24-hour disorder in blind). Agomelatine (MT1/MT2 agonist + 5-HT2C antagonist, depression). Suvorexant (orexin antagonist, different mechanism).', damage: 'Melatonin disruption impairs sleep quality, circadian rhythms, and may increase cancer risk; chronic circadian misalignment is associated with metabolic and cardiovascular disease.' },
+                  { id: 'nitric_oxide', name: 'Nitric Oxide (NO)', x: 0.70, y: 0.35, w: 0.08, category: 'Gaseous Neurotransmitter', synthesis: 'L-arginine \u2192 L-citrulline + NO (nitric oxide synthase: nNOS in neurons, eNOS in endothelium, iNOS in immune cells). Not stored in vesicles \u2014 synthesized on demand, diffuses freely across membranes. Half-life: seconds.', receptors: 'Not a classical receptor. Activates soluble guanylate cyclase (sGC) \u2192 increases cGMP \u2192 smooth muscle relaxation, vasodilation. Also: S-nitrosylation of proteins (post-translational modification). Acts as retrograde messenger at synapses.', pathways: 'Retrograde signaling at glutamatergic synapses (postsynaptic NMDA Ca\u00B2\u207A influx \u2192 nNOS activation \u2192 NO diffuses to presynaptic terminal \u2192 enhances glutamate release). Endothelial NO \u2192 vascular smooth muscle. Nitrergic neurons in enteric NS, penile cavernosal nerves.', fn: 'Vasodilation (blood pressure regulation), retrograde synaptic signaling (LTP), immune defense (macrophage killing of pathogens), GI motility (non-adrenergic non-cholinergic relaxation), penile erection, platelet aggregation inhibition.', conditions: 'Endothelial dysfunction: reduced NO \u2192 hypertension, atherosclerosis. Erectile dysfunction (insufficient cavernosal NO). Septic shock: iNOS overproduction \u2192 massive vasodilation. Migraine: excessive NO \u2192 cerebral vasodilation. Excitotoxicity: excess nNOS contributes to neuronal damage.', drugs: 'Nitroglycerin, isosorbide (NO donors, angina). Sildenafil/tadalafil (PDE5 inhibitors: prevent cGMP breakdown, prolong NO vasodilatory effect, erectile dysfunction and pulmonary hypertension). L-NAME (NOS inhibitor, research). Inhaled NO (pulmonary hypertension in neonates).', damage: 'NO deficiency causes hypertension and impaired synaptic plasticity; excess NO produces oxidative stress, contributes to neurodegeneration, and causes pathological vasodilation in septic shock.' },
+                  { id: 'anandamide', name: 'Anandamide (AEA)', x: 0.30, y: 0.50, w: 0.08, category: 'Endocannabinoid (Lipid)', synthesis: 'N-arachidonoylphosphatidylethanolamine (NAPE) \u2192 Anandamide (NAPE-PLD). Also 2-AG: diacylglycerol \u2192 2-arachidonoylglycerol (DAGL). Synthesized on demand from membrane phospholipids (retrograde messengers). Degraded by FAAH (anandamide) and MAGL (2-AG).', receptors: 'CB1: Gi/Go, most abundant GPCR in brain (cortex, basal ganglia, hippocampus, cerebellum). Presynaptic: inhibits neurotransmitter release (both glutamate and GABA). CB2: Gi/Go, primarily immune cells, microglia, some neurons. Also TRPV1, PPARs.', pathways: 'Retrograde signaling: postsynaptic depolarization/Ca\u00B2\u207A \u2192 endocannabinoid synthesis \u2192 diffuses to presynaptic CB1 \u2192 inhibits NT release (depolarization-induced suppression of inhibition/excitation: DSI/DSE). Widespread modulatory system.', fn: 'Synaptic plasticity modulation (fine-tuning excitation/inhibition balance), pain modulation, appetite stimulation, mood regulation, neuroprotection, memory extinction (forgetting), nausea suppression, immune regulation.', conditions: 'Chronic pain (endocannabinoid deficiency hypothesis). Obesity (overactive endocannabinoid tone). PTSD (impaired fear extinction, CB1 link). Multiple sclerosis spasticity. Epilepsy (CBD-responsive: Dravet, Lennox-Gastaut syndromes). Cannabinoid hyperemesis syndrome.', drugs: 'THC (CB1/CB2 partial agonist, \u0394\u2079-tetrahydrocannabinol from cannabis). CBD (cannabidiol: allosteric modulator, anticonvulsant, Epidiolex for epilepsy). Dronabinol/nabilone (synthetic THC, antiemetic/appetite). Rimonabant (CB1 antagonist, withdrawn: depression risk). FAAH inhibitors (research).', damage: 'Endocannabinoid deficiency may contribute to chronic pain, migraine, and irritable bowel; excessive CB1 activation impairs short-term memory and motivation.' },
+                  { id: 'atp_adenosine', name: 'ATP / Adenosine', x: 0.65, y: 0.45, w: 0.08, category: 'Purinergic (Purine)', synthesis: 'ATP: synthesized in mitochondria (oxidative phosphorylation) and cytoplasm (glycolysis). Stored in synaptic vesicles, often co-released with other NTs. Adenosine: produced from ATP degradation by ectonucleotidases (ATP \u2192 ADP \u2192 AMP \u2192 adenosine). Also from intracellular SAH hydrolysis.', receptors: 'P2X (ATP): ligand-gated cation channels (P2X1-7). P2X3: pain signaling. P2X7: microglial activation, inflammation. P2Y (ATP/ADP/UTP): GPCRs (P2Y1,2,4,6,11,12,13,14). P2Y12: platelet aggregation. Adenosine: A1 (Gi, inhibitory), A2A (Gs, excitatory), A2B (Gs), A3 (Gi).', pathways: 'Purinergic co-transmission at sympathetic, parasympathetic, and sensory nerve terminals. Adenosine: widespread inhibitory neuromodulation, especially active during prolonged wakefulness (homeostatic sleep drive). Basal ganglia A2A-D2 interaction. Glial purinergic signaling.', fn: 'Fast excitatory synaptic transmission (P2X), pain signaling, platelet aggregation, immune cell activation, sleep pressure (adenosine accumulation during wakefulness), vasodilation, neuroprotection, cardioprotection, modulation of other neurotransmitter systems.', conditions: 'Chronic pain (P2X3 overexpression). Thrombosis (P2Y12-mediated platelet activation). Gout (purine metabolism disorder). Migraine (purinergic signaling). Insomnia (adenosine dysregulation). Parkinson disease (A2A receptors on striatopallidal neurons modulate motor function).', drugs: 'Caffeine (A1/A2A adenosine receptor antagonist: promotes wakefulness by blocking sleep-promoting adenosine). Clopidogrel (P2Y12 antagonist, antiplatelet). Adenosine IV (supraventricular tachycardia, diagnostic). Istradefylline (A2A antagonist, Parkinson adjunct). Dipyridamole (inhibits adenosine reuptake). Regadenoson (A2A agonist, cardiac stress test).', damage: 'Excessive extracellular ATP triggers neuroinflammation and pain; adenosine accumulation causes drowsiness but is neuroprotective during ischemia; purinergic dysregulation contributes to chronic pain and neurodegeneration.' },
+                  { id: 'neuropeptide_y', name: 'Neuropeptide Y (NPY)', x: 0.35, y: 0.15, w: 0.08, category: 'Neuropeptide (Pancreatic polypeptide family)', synthesis: '36-amino acid peptide, one of most abundant neuropeptides in brain. Prepro-NPY \u2192 pro-NPY \u2192 NPY (signal peptidase + carboxypeptidase). Stored in large dense-core vesicles, released during sustained high-frequency firing. Co-released with NE in sympathetic neurons.', receptors: 'Y1: Gi, anxiolysis, vasoconstriction, appetite. Y2: Gi, presynaptic autoreceptor (inhibits NPY and NE release), anxiolysis. Y4: Gi, GI satiety. Y5: Gi, appetite stimulation (feeding). Y6: pseudogene in humans. All GPCRs.', pathways: 'Arcuate nucleus \u2192 PVN (appetite/energy homeostasis, co-expressed with AgRP). Amygdala and hippocampus (stress resilience, anxiolysis). Sympathetic postganglionic neurons (co-released with NE for vasoconstriction). Cortical interneurons. Brainstem (autonomic regulation).', fn: 'Appetite stimulation (most potent orexigenic peptide), energy homeostasis, anxiolysis, stress resilience, vasoconstriction (potentiates NE), circadian rhythms, seizure modulation (anticonvulsant), bone formation, alcohol consumption.', conditions: 'Obesity (NPY overexpression in arcuate \u2192 hyperphagia). Anorexia nervosa (paradoxically elevated NPY). Anxiety and PTSD (low NPY \u2192 vulnerability; high NPY \u2192 resilience). Epilepsy (NPY is endogenous anticonvulsant). Hypertension (vascular NPY/NE co-release).', drugs: 'No FDA-approved NPY drugs yet. NPY Y1/Y5 receptor antagonists: investigated for obesity. NPY Y2 agonists: investigated for epilepsy and anxiety. NPY infusion: research for stress resilience in military populations. Gene therapy: NPY overexpression vectors for epilepsy (preclinical).', damage: 'NPY excess drives overeating and obesity; NPY deficiency reduces stress resilience, increases anxiety, and may lower seizure threshold.' },
+                  { id: 'epinephrine', name: 'Epinephrine (Adrenaline)', x: 0.70, y: 0.20, w: 0.08, category: 'Catecholamine (Monoamine)', synthesis: 'Norepinephrine \u2192 Epinephrine (PNMT, phenylethanolamine N-methyltransferase, requires cortisol induction). Primarily from adrenal medulla chromaffin cells (80% epinephrine, 20% NE). Minor CNS presence in a few medullary neuron clusters.', receptors: 'Same adrenergic receptors as NE but higher \u03B22 affinity: \u03B11 (vasoconstriction), \u03B12 (feedback inhibition), \u03B21 (cardiac stimulation), \u03B22 (bronchodilation, vasodilation in skeletal muscle, glycogenolysis, relaxes uterine smooth muscle), \u03B23 (lipolysis).', pathways: 'Primarily endocrine (adrenal medulla \u2192 blood \u2192 systemic effects). Small CNS clusters in lateral tegmental area and medulla project to hypothalamus, thalamus, spinal cord. Adrenal medulla innervated by preganglionic sympathetic splanchnic nerves.', fn: 'Acute stress response (fight-or-flight hormone), increases heart rate and contractility, bronchodilation, increases blood glucose (glycogenolysis + gluconeogenesis), redirects blood flow to skeletal muscle, pupil dilation, enhances mental alertness.', conditions: 'Pheochromocytoma: catecholamine-secreting adrenal tumor (episodic HTN, headache, sweating, palpitations). Anaphylaxis: systemic allergic reaction requiring epinephrine. Cardiac arrest: epinephrine in ACLS protocol. Addison disease: decreased catecholamine response.', drugs: 'Epinephrine (EpiPen for anaphylaxis, ACLS, local anesthetic adjuvant to prolong duration via vasoconstriction). Racemic epinephrine (nebulized for croup). Isoproterenol (\u03B2 agonist). Albuterol (\u03B22 agonist, asthma). Ephedrine (indirect sympathomimetic).', damage: 'Epinephrine excess from pheochromocytoma causes hypertensive crises and cardiomyopathy; it is the critical rescue drug for anaphylaxis and cardiac arrest.' }
+                ]
+              }
+            };
+
+            var viewKey = d.view || 'lateral';
+            var currentView = VIEWS[viewKey];
+            var regions = currentView.regions;
+            var searchTerm = (d.search || '').toLowerCase();
+            var filtered = searchTerm ? regions.filter(function (r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
+            var sel = d.selectedRegion ? regions.find(function (r) { return r.id === d.selectedRegion; }) : null;
+
+            // Quiz logic — options memoized in state to prevent re-shuffle on render
+            var allRegions = []; Object.values(VIEWS).forEach(function (v) { v.regions.forEach(function (r) { if (!allRegions.find(function (a) { return a.id === r.id; })) allRegions.push(r); }); });
+            var quizPool = allRegions.filter(function (r) { return r.damage; });
+            var quizQ = d.quizMode && quizPool.length > 0 ? quizPool[d.quizIdx % quizPool.length] : null;
+            var brainQuizOpts = d._brainQuizOpts || [];
+            if (quizQ && d._brainQuizOptsFor !== d.quizIdx) {
+              var wrong = quizPool.filter(function (r) { return r.id !== quizQ.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+              brainQuizOpts = wrong.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
+              upd('_brainQuizOpts', brainQuizOpts);
+              upd('_brainQuizOptsFor', d.quizIdx);
+            }
+
+            // Brain canvas — animated
+            var canvasRef = function (canvas) {
+              if (!canvas) return;
+              if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
+              var ctx = canvas.getContext('2d');
+              var W = canvas.width, H = canvas.height;
+              if (!canvas._neurons) {
+                canvas._neurons = [];
+                for (var ni = 0; ni < 30; ni++) {
+                  canvas._neurons.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.6, vy: (Math.random() - 0.5) * 0.6, life: Math.random(), size: 1 + Math.random() * 1.5 });
+                }
+              }
+              var neurons = canvas._neurons;
+              var brainTick = 0;
+              function drawBrainFrame() {
+                brainTick++;
+                ctx.clearRect(0, 0, W, H);
+                ctx.save();
+
+                // Neurotransmitter synapse view
+                if (currentView.isNT) {
+                  // Presynaptic terminal
+                  ctx.fillStyle = '#f5f0f8'; ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.15, H * 0.05); ctx.lineTo(W * 0.85, H * 0.05);
+                  ctx.quadraticCurveTo(W * 0.90, H * 0.05, W * 0.90, H * 0.10);
+                  ctx.lineTo(W * 0.90, H * 0.32);
+                  ctx.quadraticCurveTo(W * 0.85, H * 0.38, W * 0.70, H * 0.40);
+                  ctx.lineTo(W * 0.30, H * 0.40);
+                  ctx.quadraticCurveTo(W * 0.15, H * 0.38, W * 0.10, H * 0.32);
+                  ctx.lineTo(W * 0.10, H * 0.10);
+                  ctx.quadraticCurveTo(W * 0.10, H * 0.05, W * 0.15, H * 0.05);
+                  ctx.fill(); ctx.stroke();
+                  ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
+                  ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.15);
+                  // Vesicles
+                  var vesColors = ['#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'];
+                  for (var vi = 0; vi < 8; vi++) {
+                    var vx = W * 0.25 + (vi % 4) * W * 0.14, vy = H * 0.22 + Math.floor(vi / 4) * H * 0.06;
+                    ctx.beginPath(); ctx.arc(vx, vy, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = vesColors[vi % 4] + '60'; ctx.fill();
+                    ctx.strokeStyle = vesColors[vi % 4]; ctx.lineWidth = 1.5; ctx.stroke();
+                    // NT dots inside vesicle
+                    for (var di = 0; di < 3; di++) {
+                      ctx.beginPath(); ctx.arc(vx - 3 + di * 3, vy, 1.5, 0, Math.PI * 2);
+                      ctx.fillStyle = vesColors[vi % 4]; ctx.fill();
+                    }
+                  }
+                  // Synaptic cleft
+                  ctx.fillStyle = '#e2e8f040'; ctx.strokeStyle = '#94a3b8';
+                  ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+                  ctx.fillRect(W * 0.08, H * 0.42, W * 0.84, H * 0.16);
+                  ctx.strokeRect(W * 0.08, H * 0.42, W * 0.84, H * 0.16);
+                  ctx.setLineDash([]);
+                  ctx.font = '9px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                  ctx.fillText('SYNAPTIC CLEFT', W * 0.5, H * 0.51);
+                  // Animated NT particles in cleft
+                  var t2 = brainTick * 0.03;
+                  for (var pi = 0; pi < 12; pi++) {
+                    var px2 = W * 0.15 + (pi * W * 0.06) + Math.sin(t2 + pi * 0.7) * 8;
+                    var py2 = H * 0.44 + Math.abs(Math.sin(t2 * 0.8 + pi * 1.1)) * H * 0.12;
+                    ctx.beginPath(); ctx.arc(px2, py2, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'hsl(' + ((pi * 30 + brainTick) % 360) + ', 70%, 55%)';
+                    ctx.fill();
+                  }
+                  // Postsynaptic membrane
+                  ctx.fillStyle = '#fef3c720'; ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.08, H * 0.60); ctx.lineTo(W * 0.92, H * 0.60);
+                  ctx.quadraticCurveTo(W * 0.95, H * 0.62, W * 0.92, H * 0.64);
+                  ctx.lineTo(W * 0.92, H * 0.95); ctx.lineTo(W * 0.08, H * 0.95);
+                  ctx.lineTo(W * 0.08, H * 0.64);
+                  ctx.quadraticCurveTo(W * 0.05, H * 0.62, W * 0.08, H * 0.60);
+                  ctx.fill(); ctx.stroke();
+                  ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
+                  ctx.fillText('POSTSYNAPTIC MEMBRANE', W * 0.5, H * 0.72);
+                  // Receptors on postsynaptic
+                  var recTypes = ['Ionotropic', 'Metabotropic', 'GPCR', 'Ion Channel'];
+                  for (var ri = 0; ri < 6; ri++) {
+                    var rx = W * 0.18 + ri * W * 0.12, ry = H * 0.60;
+                    ctx.fillStyle = '#fde68a'; ctx.strokeStyle = '#b45309'; ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(rx - 5, ry); ctx.lineTo(rx - 8, ry + 14); ctx.lineTo(rx + 8, ry + 14); ctx.lineTo(rx + 5, ry);
+                    ctx.fill(); ctx.stroke();
+                    ctx.font = '7px Inter, system-ui, sans-serif';
+                    ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
+                    ctx.fillText(recTypes[ri % 4], rx, ry + 25);
+                  }
+                  // Reuptake transporter
+                  ctx.fillStyle = '#bbf7d060'; ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.5;
+                  ctx.beginPath(); ctx.arc(W * 0.85, H * 0.40, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                  ctx.font = '7px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
+                  ctx.fillText('Reuptake', W * 0.85, H * 0.40 + 2);
+                  // Enzyme (MAO/COMT)
+                  ctx.fillStyle = '#fee2e260'; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
+                  ctx.beginPath(); ctx.arc(W * 0.15, H * 0.50, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                  ctx.font = '7px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#dc2626';
+                  ctx.fillText('Enzyme', W * 0.15, H * 0.50 + 2);
+                  // Signal cascade arrow
+                  ctx.strokeStyle = '#7c3aed80'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 2]);
+                  ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.74); ctx.lineTo(W * 0.5, H * 0.88);
+                  ctx.stroke(); ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.88); ctx.lineTo(W * 0.47, H * 0.85); ctx.moveTo(W * 0.5, H * 0.88); ctx.lineTo(W * 0.53, H * 0.85); ctx.stroke();
+                  ctx.font = '8px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#7c3aed'; ctx.fillText('Intracellular Signaling', W * 0.5, H * 0.93);
+                  // View label
+                  ctx.font = 'bold 10px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                  ctx.fillText('NEUROTRANSMITTER SYNAPSE', W * 0.5, H - 6);
+                  canvas._brainAnim = requestAnimationFrame(drawBrainFrame); return;
+                }
+
+                // Brain outline per view
+                ctx.fillStyle = '#f5f0f8';
+                ctx.strokeStyle = '#a78bfa';
+                ctx.lineWidth = 2;
+                ctx.lineJoin = 'round';
+
+                if (viewKey === 'lateral') {
+                  // Side view brain shape
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.15, H * 0.45);
+                  ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
+                  ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
+                  ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
+                  ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
+                  ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
+                  ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
+                  ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
+                  ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
+                  ctx.fill(); ctx.stroke();
+                  // Central sulcus (divides frontal/parietal)
+                  ctx.beginPath(); ctx.setLineDash([4, 3]);
+                  ctx.moveTo(W * 0.50, H * 0.12); ctx.lineTo(W * 0.42, H * 0.55);
+                  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
+                  // Lateral sulcus (Sylvian fissure)
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.35, H * 0.50); ctx.quadraticCurveTo(W * 0.50, H * 0.48, W * 0.65, H * 0.42);
+                  ctx.stroke();
+                  ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
+                  // Cerebellum (separate shape)
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.80, H * 0.65, W * 0.10, H * 0.08, 0, 0, Math.PI * 2);
+                  ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
+                  // Brainstem
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.62, H * 0.62); ctx.lineTo(W * 0.65, H * 0.78);
+                  ctx.lineTo(W * 0.58, H * 0.78); ctx.lineTo(W * 0.55, H * 0.62);
+                  ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
+                } else if (viewKey === 'medial') {
+                  // Sagittal brain
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.20, H * 0.50);
+                  ctx.quadraticCurveTo(W * 0.15, H * 0.22, W * 0.40, H * 0.12);
+                  ctx.quadraticCurveTo(W * 0.60, H * 0.08, W * 0.78, H * 0.18);
+                  ctx.quadraticCurveTo(W * 0.88, H * 0.32, W * 0.85, H * 0.50);
+                  ctx.quadraticCurveTo(W * 0.82, H * 0.60, W * 0.72, H * 0.62);
+                  ctx.lineTo(W * 0.60, H * 0.60);
+                  ctx.quadraticCurveTo(W * 0.50, H * 0.58, W * 0.40, H * 0.60);
+                  ctx.quadraticCurveTo(W * 0.25, H * 0.58, W * 0.20, H * 0.50);
+                  ctx.fill(); ctx.stroke();
+                  // Corpus callosum (arc)
+                  ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = '#c084fc';
+                  ctx.moveTo(W * 0.35, H * 0.38); ctx.quadraticCurveTo(W * 0.52, H * 0.28, W * 0.68, H * 0.35);
+                  ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = '#a78bfa';
+                  // Cerebellum
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.78, H * 0.68, W * 0.09, H * 0.08, 0, 0, Math.PI * 2);
+                  ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
+                  // Brainstem
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.58, H * 0.58); ctx.lineTo(W * 0.62, H * 0.78);
+                  ctx.lineTo(W * 0.55, H * 0.78); ctx.lineTo(W * 0.50, H * 0.58);
+                  ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
+                } else if (viewKey === 'superior') {
+                  // Top-down: two hemispheres
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.35, H * 0.50, W * 0.20, H * 0.38, 0, 0, Math.PI * 2);
+                  ctx.fill(); ctx.stroke();
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.65, H * 0.50, W * 0.20, H * 0.38, 0, 0, Math.PI * 2);
+                  ctx.fill(); ctx.stroke();
+                  // Longitudinal fissure
+                  ctx.beginPath(); ctx.setLineDash([5, 3]);
+                  ctx.moveTo(W * 0.50, H * 0.10); ctx.lineTo(W * 0.50, H * 0.90);
+                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2; ctx.stroke();
+                  // Central sulcus
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.20, H * 0.38); ctx.quadraticCurveTo(W * 0.50, H * 0.35, W * 0.80, H * 0.38);
+                  ctx.stroke();
+                  ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa';
+                } else if (viewKey === 'inferior') {
+                  // Bottom view
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.50, H * 0.40, W * 0.30, H * 0.30, 0, 0, Math.PI * 2);
+                  ctx.fill(); ctx.stroke();
+                  // Cerebellum
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.50, H * 0.72, W * 0.22, H * 0.12, 0, 0, Math.PI * 2);
+                  ctx.fillStyle = '#ede9fe'; ctx.fill(); ctx.stroke();
+                  // Brainstem
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.46, H * 0.55); ctx.lineTo(W * 0.48, H * 0.68);
+                  ctx.lineTo(W * 0.52, H * 0.68); ctx.lineTo(W * 0.54, H * 0.55);
+                  ctx.fillStyle = '#e0d6f8'; ctx.fill(); ctx.stroke();
+                  // Optic chiasm X
+                  ctx.beginPath(); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+                  ctx.moveTo(W * 0.44, H * 0.30); ctx.lineTo(W * 0.56, H * 0.36);
+                  ctx.moveTo(W * 0.56, H * 0.30); ctx.lineTo(W * 0.44, H * 0.36);
+                  ctx.stroke(); ctx.strokeStyle = '#a78bfa';
+                }
+
+                ctx.restore();
+
+                // Draw region markers
+                filtered.forEach(function (r) {
+                  var px = r.x * W, py = r.y * H;
+                  var isSel = sel && sel.id === r.id;
+                  var rad = isSel ? 10 : 6;
+                  if (isSel) {
+                    ctx.save();
+                    ctx.shadowColor = '#7c3aed';
+                    ctx.shadowBlur = 14;
+                    ctx.beginPath(); ctx.arc(px, py, rad + 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#7c3aed30';
+                    ctx.fill();
+                    ctx.restore();
+                  }
+                  ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2);
+                  ctx.fillStyle = isSel ? '#7c3aed' : '#7c3aedaa';
+                  ctx.fill();
+                  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+                  if (isSel) {
+                    ctx.save();
+                    ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                    ctx.textAlign = px > W * 0.5 ? 'right' : 'left';
+                    ctx.fillStyle = '#7c3aed';
+                    ctx.fillText(r.name, px > W * 0.5 ? px - 15 : px + 15, py + 3);
+                    ctx.restore();
+                  }
+                });
+                // View label
+                ctx.save();
+                ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.fillText(currentView.name.toUpperCase() + ' VIEW', W * 0.5, H - 6);
+                ctx.restore();
+
+                // Continue animation
+                canvas._brainAnim = requestAnimationFrame(drawBrainFrame);
+              };
+              drawBrainFrame();
+            };
+            var handleClick = function (e) {
+              var rect = e.target.getBoundingClientRect();
+              var cx = (e.clientX - rect.left) / rect.width;
+              var cy = (e.clientY - rect.top) / rect.height;
+              var closest = null, minD = 0.08;
+              filtered.forEach(function (r) {
+                var dist = Math.sqrt(Math.pow(r.x - cx, 2) + Math.pow(r.y - cy, 2));
+                if (dist < minD) { minD = dist; closest = r; }
+              });
+              if (closest) upd('selectedRegion', closest.id);
+            };
+
+            return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+              // Header
+              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("div", null,
+                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
+                  React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
+                )
+              ),
+              // View tabs
+              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+                Object.keys(VIEWS).map(function (key) {
+                  var v = VIEWS[key];
+                  return React.createElement("button", {
+                    key: key,
+                    onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-200')
+                  }, v.name);
+                })
+              ),
+              // Controls
+              React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
+                React.createElement("input", {
+                  type: "text", placeholder: "\uD83D\uDD0D Search regions, functions, conditions...",
+                  value: d.search || '',
+                  onChange: function (e) { upd('search', e.target.value); },
+                  className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+                }),
+                React.createElement("button", {
+                  onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
+                React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
+              ),
+              // Main: canvas + detail
+              React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+                React.createElement("div", { className: "flex-shrink-0" },
+                  React.createElement("canvas", {
+                    ref: canvasRef, width: 380, height: 460,
+                    onClick: handleClick,
+                    className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
+                    style: { background: '#faf8ff' }
+                  })
+                ),
+                React.createElement("div", { className: "flex-1 min-w-0" },
+                  d.quizMode ? (
+                    quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                      React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                        React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
+                        React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
+                      ),
+                      React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
+                      React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
+                      React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
+                        brainQuizOpts.map(function (opt) {
+                          var fb = d.quizFeedback;
+                          var isCorrect = opt.id === quizQ.id;
+                          var wasChosen = fb && fb.chosen === opt.id;
+                          var showResult = fb !== null && fb !== undefined;
+                          return React.createElement("button", {
+                            key: opt.id, disabled: showResult,
+                            onClick: function () {
+                              var correct = opt.id === quizQ.id;
+                              upd('quizFeedback', { chosen: opt.id, correct: correct });
+                              if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                            },
+                            className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
+                              (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                                showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                                  'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
+                          }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
+                        })
+                      ),
+                      d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                        React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
+                        React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                        quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
+                        quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
+                      ),
+                      d.quizFeedback && React.createElement("button", {
+                        onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                        className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                      }, "Next Question \u2192")
+                    ) : null
+                  ) : (
+                    sel ? (
+                      React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
+                        React.createElement("div", { className: "flex items-start justify-between" },
+                          React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
+                          React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                        ),
+                        React.createElement("div", { className: "space-y-2.5" },
+                          React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                            React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
+                          ),
+                          sel.brodmann && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
+                            React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
+                          ),
+                          sel.blood && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
+                            React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
+                          ),
+                          sel.category && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
+                            React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
+                          ),
+                          sel.synthesis && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
+                          ),
+                          sel.receptors && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
+                          ),
+                          sel.pathways && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
+                          ),
+                          sel.drugs && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
+                            React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
+                          ),
+                          sel.conditions && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
+                          ),
+                          sel.damage && React.createElement("div", null,
+                            React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
+                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
+                          )
+                        )
+                      )
+                    ) : (
+                      React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
+                        filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
+                        filtered.map(function (r) {
+                          return React.createElement("button", {
+                            key: r.id,
+                            onClick: function () { upd('selectedRegion', r.id); },
+                            className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
+                              (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
+                          },
+                            React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
+                            React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                          );
+                        })
+                      )
+                    )
+                  )
+                )
+              )
+            );
+          })(),
 
 
           stemLabTab === 'explore' && stemLabTool === 'artStudio' && (() => {
@@ -15925,6 +15945,6 @@
 
 
         )));
-      };
+    };
   }
 })();
