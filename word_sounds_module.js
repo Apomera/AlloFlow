@@ -1524,10 +1524,10 @@
             const phoneme = wordSoundsPhonemes?.phonemes?.[i];
             setBlendingProgress(i + 1);
             await handleAudio(phoneme);
-            await new Promise((r) => setTimeout(r, 900));
+            await new Promise((r) => setTimeout(r, 500));
           }
           setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
-          await new Promise((r) => setTimeout(r, 400));
+          await new Promise((r) => setTimeout(r, 200));
           const whichWordAudio =
             window.__ALLO_INSTRUCTION_AUDIO["which_word_did_you_hear"];
           if (whichWordAudio) {
@@ -1926,7 +1926,7 @@
                     for (let i = 0; i < opts.length; i++) {
                       setPlayingIndex(i);
                       const audioPromise = onPlayAudio(opts[i], true);
-                      const minDelay = new Promise((r) => setTimeout(r, 800));
+                      const minDelay = new Promise((r) => setTimeout(r, 550));
                       await Promise.all([audioPromise, minDelay]);
                     }
                     setPlayingIndex(null);
@@ -2307,7 +2307,7 @@
                   setFoundWords([]);
                   setIsComplete(false);
                   const playAllOptions = async () => {
-                    await new Promise((r) => setTimeout(r, 500));
+                    await new Promise((r) => setTimeout(r, 250));
                     for (let i = 0; i < mixed_shuffled.length; i++) {
                       if (!isMountedRef.current) break;
                       setActiveIndex(i);
@@ -2315,7 +2315,7 @@
                         await onPlayAudio(mixed_shuffled[i].text);
                       } catch (e) { }
                       setActiveIndex(null);
-                      await new Promise((r) => setTimeout(r, 300));
+                      await new Promise((r) => setTimeout(r, 200));
                     }
                   };
                   playAllOptions();
@@ -5830,6 +5830,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           lastWordForIsolation.current = currentWord;
           return;
         }
+        if (!isNewWord && isolationState?.isoOptions?.length > 0) {
+          return;
+        }
         if (isNewWord) {
           debugLog(
             "⚠️ Generating new isolation options (fallback - not pre-generated)",
@@ -6041,28 +6044,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const pos = Math.floor(Math.random() * phonemes.length);
           const correct = phonemes[pos] || currentWordSoundsWord[0] || "a";
           const dists = phonemes.filter((p) => p !== correct).slice(0, 5);
-          while (dists.length < 5)
-            dists.push(
-              [
-                "b",
-                "d",
-                "f",
-                "g",
-                "k",
-                "l",
-                "m",
-                "n",
-                "p",
-                "r",
-                "s",
-                "t",
-                "a",
-                "e",
-                "i",
-                "o",
-                "u",
-              ][Math.floor(Math.random() * 17)],
-            );
+          { const _pool = ["b","d","f","g","k","l","m","n","p","r","s","t","a","e","i","o","u"];
+          const _used = new Set([correct, ...dists].map(x => x?.toLowerCase()));
+          const _shuffled = [..._pool].sort(() => Math.random() - 0.5);
+          for (const _p of _shuffled) {
+            if (dists.length >= 5) break;
+            if (!_used.has(_p)) { dists.push(_p); _used.add(_p); }
+          }
+          while (dists.length < 5) {
+            const _fallback = _pool[Math.floor(Math.random() * _pool.length)];
+            if (!_used.has(_fallback)) { dists.push(_fallback); _used.add(_fallback); }
+          }
+        }
           setIsolationState({
             word: currentWordSoundsWord,
             currentPosition: pos,
@@ -6092,7 +6085,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   wordSoundsActivity === "isolation" &&
                   isolationState?.isoOptions?.length > 0
                 ) {
-                  await new Promise((r) => setTimeout(r, 600));
+                  await new Promise((r) => setTimeout(r, 350));
                   for (
                     let i = 0;
                     i < (isolationState?.isoOptions?.length || 0);
@@ -6100,7 +6093,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ) {
                     setHighlightedIsoIndex(i);
                     await handleAudio(isolationState.isoOptions[i]);
-                    await new Promise((r) => setTimeout(r, 450));
+                    await new Promise((r) => setTimeout(r, 300));
                   }
                   setHighlightedIsoIndex(null);
                 }
@@ -6110,13 +6103,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 rhymeOptionsRef.current &&
                 rhymeOptionsRef.current.length > 0
               ) {
-                await new Promise((r) => setTimeout(r, 300));
+                await new Promise((r) => setTimeout(r, 150));
                 for (let i = 0; i < rhymeOptionsRef.current.length; i++) {
                   setHighlightedRhymeIndex(i);
                   const opt = rhymeOptionsRef.current[i];
                   const text = typeof opt === "string" ? opt : opt.text;
                   await handleAudio(text);
-                  await new Promise((r) => setTimeout(r, 400));
+                  await new Promise((r) => setTimeout(r, 250));
                 }
                 setHighlightedRhymeIndex(null);
               }
@@ -6660,8 +6653,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   await handleAudio(
                     window.__ALLO_INSTRUCTION_AUDIO["sound_match_start"],
                   );
-                  await new Promise((r) => setTimeout(r, 300));
+                  await new Promise((r) => setTimeout(r, 200));
                   await handleAudio(targetSound);
+                  if (currentWordSoundsWord) {
+                    await new Promise((r) => setTimeout(r, 150));
+                    if (window.__ALLO_INSTRUCTION_AUDIO["as_in"]) {
+                      await handleAudio(window.__ALLO_INSTRUCTION_AUDIO["as_in"]);
+                    } else {
+                      await handleAudio("as in");
+                    }
+                    await new Promise((r) => setTimeout(r, 100));
+                    await handleAudio(currentWordSoundsWord);
+                  }
                 } else {
                   instructionText = `Find words that start with the ${targetSound} sound`;
                 }
@@ -6673,8 +6676,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   await handleAudio(
                     window.__ALLO_INSTRUCTION_AUDIO["sound_match_end"],
                   );
-                  await new Promise((r) => setTimeout(r, 300));
+                  await new Promise((r) => setTimeout(r, 200));
                   await handleAudio(targetSound);
+                  if (currentWordSoundsWord) {
+                    await new Promise((r) => setTimeout(r, 150));
+                    if (window.__ALLO_INSTRUCTION_AUDIO["as_in"]) {
+                      await handleAudio(window.__ALLO_INSTRUCTION_AUDIO["as_in"]);
+                    } else {
+                      await handleAudio("as in");
+                    }
+                    await new Promise((r) => setTimeout(r, 100));
+                    await handleAudio(currentWordSoundsWord);
+                  }
                 } else {
                   instructionText = `Find words that end with the ${targetSound} sound`;
                 }
@@ -6747,7 +6760,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               wordSoundsActivity === "blending" &&
               wordSoundsPhonemes?.phonemes
             ) {
-              await new Promise((r) => setTimeout(r, 400));
+              await new Promise((r) => setTimeout(r, 200));
               if (cancelled) return;
               await playBlending();
               let effectiveBlendingOptions = blendingOptionsRef.current;
@@ -6779,13 +6792,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ).catch(() => { }),
                   ),
                 );
-                await new Promise((r) => setTimeout(r, 600));
+                await new Promise((r) => setTimeout(r, 350));
                 for (let i = 0; i < effectiveBlendingOptions.length; i++) {
                   if (cancelled) break;
                   setHighlightedBlendIndex(i);
                   await handleAudio(effectiveBlendingOptions[i]);
                   if (cancelled) return;
-                  await new Promise((r) => setTimeout(r, 500));
+                  await new Promise((r) => setTimeout(r, 300));
                 }
                 setHighlightedBlendIndex(null);
               }
@@ -6803,13 +6816,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               rhymeOptionsRef.current &&
               rhymeOptionsRef.current.length > 0
             ) {
-              await new Promise((r) => setTimeout(r, 300));
+              await new Promise((r) => setTimeout(r, 200));
               for (let i = 0; i < rhymeOptionsRef.current.length; i++) {
                 if (cancelled) break;
                 setHighlightedRhymeIndex(i);
                 await handleAudio(rhymeOptionsRef.current[i]);
                 if (cancelled) return;
-                await new Promise((r) => setTimeout(r, 600));
+                await new Promise((r) => setTimeout(r, 350));
               }
               setHighlightedRhymeIndex(null);
             }
@@ -6818,7 +6831,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               if (cancelled) return;
               await handleAudio(currentWordSoundsWord);
               if (isolationState?.isoOptions?.length > 0) {
-                await new Promise((r) => setTimeout(r, 600));
+                await new Promise((r) => setTimeout(r, 300));
                 await Promise.all(
                   isolationState.isoOptions.map((o) =>
                     handleAudio(o, false).catch(() => { }),
@@ -11559,12 +11572,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   /*#__PURE__*/ React.createElement(
                     "h2",
                     { className: "text-xl font-bold" },
-                    ts("word_sounds.title"),
+                    "\uD83D\uDD24 Word Sounds Studio",
                   ),
                   /*#__PURE__*/ React.createElement(
                     "p",
                     { className: "text-violet-200 text-sm" },
-                    ts("word_sounds.subtitle"),
+                    "Choose an activity below to get started!",
                   ),
                 ),
               ),
