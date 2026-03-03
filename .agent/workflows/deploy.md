@@ -47,3 +47,11 @@ Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 8. Confirm the purge responses show `"status": "finished"` for all files.
 
 > **Note:** The local branch is `main` tracking `origin/main`. The app fetches `ui_strings.js`, `stem_lab_module.js`, and `word_sounds_module.js` from the `main` branch on GitHub via jsDelivr CDN at runtime. jsDelivr caches `@main` refs indefinitely — step 7 is required to bust the cache after every push.
+
+> **⚠️ CAUTION — CDN URLs MUST use `@main`, never pinned commit hashes:**
+> The `loadModule()` calls in `AlloFlowANTI.txt` reference files like:
+> `https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/stem_lab_module.js`
+>
+> If anyone changes `@main` to a pinned commit hash (e.g. `@47c3bab`), the CDN purge in step 7 will **silently stop working** — purge only clears `@main` refs, not pinned hashes. This causes a recurring "stale cache" bug where edits to `.js` files never appear in production.
+>
+> **Rule:** Always use `@main` in CDN URLs. If you see a pinned hash, fix it back to `@main`.
