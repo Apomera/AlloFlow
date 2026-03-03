@@ -486,6 +486,146 @@
         ctx.fillText('x', W - 14, (_win.ymin <= 0 && _win.ymax >= 0 ? toScreenY(0) : H / 2) - 6);
         ctx.fillText('y', (_win.xmin <= 0 && _win.xmax >= 0 ? toScreenX(0) : W / 2) + 6, 14);
       }, [stemLabTab, stemLabTool, labToolData]);
+      // ── Geometry Sandbox: Load Three.js on demand (MUST be at top level) ──
+      React.useEffect(function () {
+        if (stemLabTab !== 'explore' || stemLabTool !== 'geoSandbox') return;
+        if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js';
+        s.async = true;
+        s.onload = function () {
+          // Load OrbitControls after Three.js is ready
+          var s2 = document.createElement('script');
+          s2.src = 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js';
+          s2.async = true;
+          s2.onload = function () {
+            if (typeof addToast === 'function') addToast('\uD83D\uDD37 3D engine loaded', 'info');
+            setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); });
+          };
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s);
+      }, [stemLabTab, stemLabTool]);
+      // ── Geometry Sandbox: Scene init, render loop, shape updates (MUST be at top level) ──
+      React.useEffect(function () {
+        if (stemLabTab !== 'explore' || stemLabTool !== 'geoSandbox') return;
+        if (!window.THREE) return;
+        var cnv = document.getElementById('geo-sandbox-canvas');
+        if (!cnv) return;
+        var gd = (labToolData && labToolData.geoSandbox) || {};
+        var shapeType = gd.shape || 'box';
+        var dims = gd.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 };
+        var shapeColor = gd.color || '#60a5fa';
+        var wireframe = gd.wireframe || false;
+        var opacity = gd.opacity != null ? gd.opacity : 1;
+        var THREE = window.THREE;
+
+        // Init scene if not already
+        if (!window._geoScene) {
+          var scene = new THREE.Scene();
+          scene.background = new THREE.Color('#0f172a');
+          var camera = new THREE.PerspectiveCamera(50, cnv.clientWidth / cnv.clientHeight, 0.1, 1000);
+          camera.position.set(6, 5, 8);
+          camera.lookAt(0, 0, 0);
+          var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+          renderer.setSize(cnv.clientWidth, cnv.clientHeight);
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          // Lights
+          var ambient = new THREE.AmbientLight(0xffffff, 0.5);
+          scene.add(ambient);
+          var directional = new THREE.DirectionalLight(0xffffff, 0.8);
+          directional.position.set(5, 10, 7.5);
+          scene.add(directional);
+          var fillLight = new THREE.DirectionalLight(0xc7d2fe, 0.3);
+          fillLight.position.set(-5, 3, -5);
+          scene.add(fillLight);
+          // Ground grid
+          var gridHelper = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
+          scene.add(gridHelper);
+          // Orbit controls
+          var controls;
+          if (THREE.OrbitControls) {
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+            controls.minDistance = 2;
+            controls.maxDistance = 30;
+          }
+          // Animation loop
+          var animId;
+          var animate = function () {
+            animId = requestAnimationFrame(animate);
+            if (controls) controls.update();
+            renderer.render(scene, camera);
+          };
+          animate();
+          window._geoScene = { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null };
+        }
+
+        var gs = window._geoScene;
+        // Remove old mesh
+        if (gs.mesh) { gs.scene.remove(gs.mesh); gs.mesh.geometry.dispose(); if (gs.mesh.material) gs.mesh.material.dispose(); gs.mesh = null; }
+        // Create geometry based on shape type
+        var geometry;
+        switch (shapeType) {
+          case 'sphere': geometry = new THREE.SphereGeometry(dims.r || 1.5, dims.segs || 32, dims.segs || 32); break;
+          case 'cylinder': geometry = new THREE.CylinderGeometry(dims.rTop || 1.5, dims.rBot || 1.5, dims.h || 3, dims.segs || 32); break;
+          case 'cone': geometry = new THREE.ConeGeometry(dims.r || 1.5, dims.h || 3, dims.segs || 32); break;
+          case 'pyramid': geometry = new THREE.ConeGeometry(dims.r || 1.5, dims.h || 3, 4); break;
+          case 'torus': geometry = new THREE.TorusGeometry(dims.r || 1.5, dims.tube || 0.5, 16, dims.segs || 32); break;
+          case 'prism': {
+            var triShape = new THREE.Shape();
+            var bw = dims.w || 3;
+            triShape.moveTo(-bw / 2, 0);
+            triShape.lineTo(bw / 2, 0);
+            triShape.lineTo(0, dims.h || 3);
+            triShape.closePath();
+            geometry = new THREE.ExtrudeGeometry(triShape, { depth: dims.d || 3, bevelEnabled: false });
+            geometry.center();
+            break;
+          }
+          default: geometry = new THREE.BoxGeometry(dims.w || 3, dims.h || 3, dims.d || 3); break;
+        }
+        // Material
+        var material = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(shapeColor),
+          wireframe: wireframe,
+          transparent: opacity < 1,
+          opacity: opacity,
+          shininess: 60,
+          flatShading: false
+        });
+        var mesh = new THREE.Mesh(geometry, material);
+        // Position shape above ground
+        var bbox = new THREE.Box3().setFromObject(mesh);
+        mesh.position.y = -bbox.min.y;
+        gs.scene.add(mesh);
+        gs.mesh = mesh;
+
+        // Resize handler
+        var handleResize = function () {
+          if (!cnv || !gs.renderer) return;
+          gs.renderer.setSize(cnv.clientWidth, cnv.clientHeight);
+          gs.camera.aspect = cnv.clientWidth / cnv.clientHeight;
+          gs.camera.updateProjectionMatrix();
+        };
+        window.addEventListener('resize', handleResize);
+
+        return function () {
+          window.removeEventListener('resize', handleResize);
+        };
+      }, [stemLabTab, stemLabTool, labToolData]);
+      // ── Geometry Sandbox cleanup on exit ──
+      React.useEffect(function () {
+        return function () {
+          if (window._geoScene) {
+            cancelAnimationFrame(window._geoScene.animId);
+            if (window._geoScene.renderer) window._geoScene.renderer.dispose();
+            if (window._geoScene.controls) window._geoScene.controls.dispose();
+            window._geoScene = null;
+          }
+        };
+      }, [stemLabTool]);
       // ── Companion Planting: Day ticker loop (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'companionPlanting') return;
@@ -1278,6 +1418,11 @@
               desc: 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
               color: 'purple',
               ready: true
+            },
+            {
+              id: 'geoSandbox', icon: '\uD83D\uDD37', label: 'Geometry Sandbox',
+              desc: 'Build 3D shapes, measure properties, and export STL files for 3D printing.',
+              color: 'sky', ready: true
             },
             {
               id: 'multtable',
@@ -17865,6 +18010,354 @@
                 },
                 className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
               }, "📸 Snapshot")
+            );
+          })(),
+
+          // --- GEOMETRY SANDBOX ---
+          stemLabTab === 'explore' && stemLabTool === 'geoSandbox' && (() => {
+            const gd = (labToolData && labToolData.geoSandbox) || {};
+            const upd = (key, val) => setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox || {}), [key]: val } }));
+            const updDim = (key, val) => setLabToolData(prev => {
+              const g = prev.geoSandbox || {};
+              return { ...prev, geoSandbox: { ...g, dims: { ...(g.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 }), [key]: parseFloat(val) } } };
+            });
+            const shape = gd.shape || 'box';
+            const dims = gd.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 };
+            const shapeColor = gd.color || '#60a5fa';
+            const wireframe = gd.wireframe || false;
+            const opacity = gd.opacity != null ? gd.opacity : 1;
+
+            // --- Measurement calculations ---
+            const calcMeasurements = () => {
+              const PI = Math.PI;
+              switch (shape) {
+                case 'box': {
+                  const w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
+                  return { vol: w * h * d, sa: 2 * (w * h + w * d + h * d), faces: 6, edges: 12, vertices: 8, name: 'Rectangular Prism' };
+                }
+                case 'sphere': {
+                  const r = dims.r || 1.5;
+                  return { vol: (4 / 3) * PI * r * r * r, sa: 4 * PI * r * r, faces: 0, edges: 0, vertices: 0, name: 'Sphere', note: 'Curved surface — no flat faces' };
+                }
+                case 'cylinder': {
+                  const rT = dims.rTop || 1.5, rB = dims.rBot || 1.5, h = dims.h || 3;
+                  const sl = Math.sqrt(Math.pow(rT - rB, 2) + h * h);
+                  return { vol: (PI * h / 3) * (rT * rT + rB * rT + rB * rB), sa: PI * (rT * rT + rB * rB + (rT + rB) * sl), faces: 3, edges: 2, vertices: 0, name: rT === rB ? 'Cylinder' : 'Frustum' };
+                }
+                case 'cone': {
+                  const r = dims.r || 1.5, h = dims.h || 3;
+                  const sl = Math.sqrt(r * r + h * h);
+                  return { vol: (PI * r * r * h) / 3, sa: PI * r * (r + sl), faces: 2, edges: 1, vertices: 1, name: 'Cone' };
+                }
+                case 'pyramid': {
+                  const r = dims.r || 1.5, h = dims.h || 3;
+                  const base = 2 * r, baseA = base * base;
+                  const sl = Math.sqrt(r * r + h * h);
+                  return { vol: baseA * h / 3, sa: baseA + 4 * (0.5 * base * sl), faces: 5, edges: 8, vertices: 5, name: 'Square Pyramid' };
+                }
+                case 'torus': {
+                  const R = dims.r || 1.5, r = dims.tube || 0.5;
+                  return { vol: 2 * PI * PI * R * r * r, sa: 4 * PI * PI * R * r, faces: 0, edges: 0, vertices: 0, name: 'Torus', note: 'Donut shape — curved surface' };
+                }
+                case 'prism': {
+                  const w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
+                  const triA = 0.5 * w * h;
+                  const hyp = Math.sqrt((w / 2) * (w / 2) + h * h);
+                  return { vol: triA * d, sa: 2 * triA + w * d + 2 * hyp * d, faces: 5, edges: 9, vertices: 6, name: 'Triangular Prism' };
+                }
+                default: return { vol: 0, sa: 0, faces: 0, edges: 0, vertices: 0, name: 'Shape' };
+              }
+            };
+            const m = calcMeasurements();
+
+            // --- STL Export ---
+            const exportSTL = () => {
+              if (!window._geoScene || !window._geoScene.mesh || !window.THREE) return;
+              const mesh = window._geoScene.mesh;
+              const geo = mesh.geometry.clone();
+              geo.applyMatrix4(mesh.matrixWorld);
+              const pos = geo.attributes.position;
+              const idx = geo.index;
+              const triCount = idx ? idx.count / 3 : pos.count / 3;
+              const bufLen = 80 + 4 + triCount * 50;
+              var buf = new ArrayBuffer(bufLen);
+              var dv = new DataView(buf);
+              // Header (80 bytes)
+              var headerStr = 'AlloFlow Geometry Sandbox - ' + shape;
+              for (var hi = 0; hi < 80; hi++) dv.setUint8(hi, hi < headerStr.length ? headerStr.charCodeAt(hi) : 0);
+              dv.setUint32(80, triCount, true);
+              var offset = 84;
+              const _v = (i) => {
+                if (idx) return new window.THREE.Vector3(pos.getX(idx.getX(i)), pos.getY(idx.getX(i)), pos.getZ(idx.getX(i)));
+                return new window.THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
+              };
+              for (var t = 0; t < triCount; t++) {
+                const i0 = idx ? t * 3 : t * 3, i1 = i0 + 1, i2 = i0 + 2;
+                const v0 = _v(i0), v1 = _v(i1), v2 = _v(i2);
+                const edge1 = new window.THREE.Vector3().subVectors(v1, v0);
+                const edge2 = new window.THREE.Vector3().subVectors(v2, v0);
+                const normal = new window.THREE.Vector3().crossVectors(edge1, edge2).normalize();
+                // Normal
+                dv.setFloat32(offset, normal.x, true); offset += 4;
+                dv.setFloat32(offset, normal.y, true); offset += 4;
+                dv.setFloat32(offset, normal.z, true); offset += 4;
+                // Vertices
+                [v0, v1, v2].forEach(v => {
+                  dv.setFloat32(offset, v.x, true); offset += 4;
+                  dv.setFloat32(offset, v.y, true); offset += 4;
+                  dv.setFloat32(offset, v.z, true); offset += 4;
+                });
+                dv.setUint16(offset, 0, true); offset += 2;
+              }
+              geo.dispose();
+              const blob = new Blob([buf], { type: 'application/sla' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'geometry_sandbox_' + shape + '_' + Date.now() + '.stl';
+              a.click();
+              URL.revokeObjectURL(url);
+              if (typeof addToast === 'function') addToast('\u{1F4E6} STL exported — ready for 3D printing!', 'success');
+            };
+
+            // --- Shape palette config ---
+            const shapes = [
+              { id: 'box', icon: '\u{1F7E6}', label: 'Cube' },
+              { id: 'sphere', icon: '\u{26AA}', label: 'Sphere' },
+              { id: 'cylinder', icon: '\u{1F6E2}\uFE0F', label: 'Cylinder' },
+              { id: 'cone', icon: '\u{1F4D0}', label: 'Cone' },
+              { id: 'pyramid', icon: '\u{1F53A}', label: 'Pyramid' },
+              { id: 'torus', icon: '\u{1F369}', label: 'Torus' },
+              { id: 'prism', icon: '\u{1F4D0}', label: 'Prism' }
+            ];
+
+            // --- Slider configs per shape ---
+            const sliderConfigs = {
+              box: [
+                { key: 'w', label: 'Width', min: 0.5, max: 10, step: 0.1 },
+                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 },
+                { key: 'd', label: 'Depth', min: 0.5, max: 10, step: 0.1 }
+              ],
+              sphere: [
+                { key: 'r', label: 'Radius', min: 0.5, max: 5, step: 0.1 },
+                { key: 'segs', label: 'Smoothness', min: 8, max: 64, step: 4 }
+              ],
+              cylinder: [
+                { key: 'rTop', label: 'Top Radius', min: 0.1, max: 5, step: 0.1 },
+                { key: 'rBot', label: 'Bottom Radius', min: 0.1, max: 5, step: 0.1 },
+                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
+              ],
+              cone: [
+                { key: 'r', label: 'Base Radius', min: 0.5, max: 5, step: 0.1 },
+                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
+              ],
+              pyramid: [
+                { key: 'r', label: 'Base Size', min: 0.5, max: 5, step: 0.1 },
+                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
+              ],
+              torus: [
+                { key: 'r', label: 'Major Radius', min: 0.5, max: 5, step: 0.1 },
+                { key: 'tube', label: 'Tube Radius', min: 0.1, max: 2, step: 0.05 }
+              ],
+              prism: [
+                { key: 'w', label: 'Base Width', min: 0.5, max: 10, step: 0.1 },
+                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 },
+                { key: 'd', label: 'Depth', min: 0.5, max: 10, step: 0.1 }
+              ]
+            };
+
+            // --- Coach tips ---
+            const coachTips = {
+              box: { title: 'Rectangular Prism', tip: 'A prism with 6 rectangular faces. Every corner is a right angle. V = l \u00D7 w \u00D7 h', example: 'Shipping boxes, buildings, books — most structures start as rectangular prisms.' },
+              sphere: { title: 'Sphere', tip: 'Every point on the surface is the same distance from the center. V = \u2074\u2044\u2083\u03C0r\u00B3', example: 'Planets, basketballs, soap bubbles — nature prefers spheres because they minimize surface area.' },
+              cylinder: { title: 'Cylinder', tip: 'Two circular bases connected by a curved surface. V = \u03C0r\u00B2h', example: 'Cans, pipes, pillars — cylinders are strong under compression.' },
+              cone: { title: 'Cone', tip: 'A circular base that narrows to a point. V = \u2153\u03C0r\u00B2h', example: 'Ice cream cones, traffic cones, volcanoes — one-third the volume of a cylinder!' },
+              pyramid: { title: 'Square Pyramid', tip: '4 triangular faces meeting at an apex over a square base. V = \u2153Bh', example: 'The Great Pyramid of Giza has a 230m base and 146m height — over 2.3 million blocks.' },
+              torus: { title: 'Torus', tip: 'A donut shape — a circle rotated around an axis. V = 2\u03C0\u00B2Rr\u00B2', example: 'Donuts, bagels, tire inner tubes, and tokamak fusion reactors are all tori!' },
+              prism: { title: 'Triangular Prism', tip: '2 triangular faces + 3 rectangular faces. V = \u00BDbh \u00D7 depth', example: 'Roof trusses, Toblerone boxes, and optical prisms that split light into rainbows.' }
+            };
+            const ct = coachTips[shape] || coachTips.box;
+
+            // Color palette
+            const colorPalette = ['#60a5fa', '#f472b6', '#34d399', '#fbbf24', '#a78bfa', '#fb923c', '#f87171', '#e2e8f0'];
+
+            const currentSliders = sliderConfigs[shape] || sliderConfigs.box;
+
+            // ── Three.js not loaded yet? Show loading state ──
+            if (!labToolData._threeLoaded) {
+              return React.createElement('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
+                React.createElement('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
+                React.createElement('div', { className: 'text-slate-400 text-lg' }, 'Loading 3D engine...')
+              );
+            }
+
+            return React.createElement('div', { className: 'flex flex-col gap-3 animate-in fade-in duration-300' },
+              // Header row
+              React.createElement('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                React.createElement('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500 flex items-center gap-2' },
+                  '\uD83D\uDD37 Geometry Sandbox'
+                ),
+                React.createElement('div', { className: 'flex gap-2' },
+                  React.createElement('button', {
+                    onClick: exportSTL,
+                    className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
+                  }, '\uD83D\uDCE6 Export STL'),
+                  React.createElement('button', {
+                    onClick: () => { if (window._geoScene) { cancelAnimationFrame(window._geoScene.animId); if (window._geoScene.renderer) window._geoScene.renderer.dispose(); if (window._geoScene.controls) window._geoScene.controls.dispose(); window._geoScene = null; } setStemLabTool(null); },
+                    className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
+                  }, '\u2190 Back')
+                )
+              ),
+
+              // Main layout: sidebar + viewport
+              React.createElement('div', { className: 'flex flex-col md:flex-row gap-3', style: { minHeight: '480px' } },
+
+                // === LEFT SIDEBAR ===
+                React.createElement('div', { className: 'w-full md:w-64 flex-shrink-0 flex flex-col gap-3' },
+
+                  // Shape palette
+                  React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                    React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, 'Shapes'),
+                    React.createElement('div', { className: 'grid grid-cols-4 gap-1.5' },
+                      ...shapes.map(s =>
+                        React.createElement('button', {
+                          key: s.id,
+                          onClick: () => upd('shape', s.id),
+                          className: 'flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-xs transition-all ' +
+                            (shape === s.id ? 'bg-sky-500/30 border border-sky-400/50 text-sky-300 shadow-lg shadow-sky-500/10' : 'bg-slate-700/40 border border-slate-600/30 text-slate-400 hover:bg-slate-700/60 hover:text-slate-300')
+                        },
+                          React.createElement('span', { className: 'text-lg leading-none' }, s.icon),
+                          React.createElement('span', { className: 'text-[10px] leading-tight' }, s.label)
+                        )
+                      )
+                    )
+                  ),
+
+                  // Property sliders
+                  React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                    React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, 'Properties'),
+                    ...currentSliders.map(sl =>
+                      React.createElement('div', { key: sl.key, className: 'mb-2' },
+                        React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-400 mb-0.5' },
+                          React.createElement('span', null, sl.label),
+                          React.createElement('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
+                        ),
+                        React.createElement('input', {
+                          type: 'range',
+                          min: sl.min,
+                          max: sl.max,
+                          step: sl.step,
+                          value: dims[sl.key] || sl.min,
+                          onChange: e => updDim(sl.key, e.target.value),
+                          className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
+                        })
+                      )
+                    ),
+                    // Color picker
+                    React.createElement('div', { className: 'mt-3' },
+                      React.createElement('div', { className: 'text-[10px] text-slate-400 mb-1' }, 'Color'),
+                      React.createElement('div', { className: 'flex gap-1.5 flex-wrap' },
+                        ...colorPalette.map(c =>
+                          React.createElement('button', {
+                            key: c,
+                            onClick: () => upd('color', c),
+                            style: { backgroundColor: c },
+                            className: 'w-5 h-5 rounded-full transition-all border-2 ' +
+                              (shapeColor === c ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105 opacity-70 hover:opacity-100')
+                          })
+                        )
+                      )
+                    ),
+                    // Wireframe toggle
+                    React.createElement('div', { className: 'flex items-center gap-2 mt-3' },
+                      React.createElement('button', {
+                        onClick: () => upd('wireframe', !wireframe),
+                        className: 'w-8 h-4 rounded-full transition-all relative ' + (wireframe ? 'bg-sky-500' : 'bg-slate-600')
+                      },
+                        React.createElement('div', {
+                          className: 'w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ' + (wireframe ? 'left-4' : 'left-0.5')
+                        })
+                      ),
+                      React.createElement('span', { className: 'text-[10px] text-slate-400' }, 'Wireframe')
+                    ),
+                    // Opacity slider
+                    React.createElement('div', { className: 'mt-2' },
+                      React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-400 mb-0.5' },
+                        React.createElement('span', null, 'Opacity'),
+                        React.createElement('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
+                      ),
+                      React.createElement('input', {
+                        type: 'range', min: 0.1, max: 1, step: 0.05,
+                        value: opacity,
+                        onChange: e => upd('opacity', parseFloat(e.target.value)),
+                        className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
+                      })
+                    )
+                  ),
+
+                  // Measurements
+                  React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                    React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Measurements'),
+                    React.createElement('div', { className: 'space-y-1.5' },
+                      React.createElement('div', { className: 'flex justify-between text-xs' },
+                        React.createElement('span', { className: 'text-slate-400' }, 'Volume'),
+                        React.createElement('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
+                      ),
+                      React.createElement('div', { className: 'flex justify-between text-xs' },
+                        React.createElement('span', { className: 'text-slate-400' }, 'Surface Area'),
+                        React.createElement('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
+                      ),
+                      React.createElement('div', { className: 'flex justify-between text-xs' },
+                        React.createElement('span', { className: 'text-slate-400' }, 'Faces'),
+                        React.createElement('span', { className: 'text-amber-400 font-mono font-bold' }, m.faces)
+                      ),
+                      React.createElement('div', { className: 'flex justify-between text-xs' },
+                        React.createElement('span', { className: 'text-slate-400' }, 'Edges'),
+                        React.createElement('span', { className: 'text-purple-400 font-mono font-bold' }, m.edges)
+                      ),
+                      React.createElement('div', { className: 'flex justify-between text-xs' },
+                        React.createElement('span', { className: 'text-slate-400' }, 'Vertices'),
+                        React.createElement('span', { className: 'text-rose-400 font-mono font-bold' }, m.vertices)
+                      ),
+                      m.note && React.createElement('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, m.note)
+                    )
+                  )
+                ),
+
+                // === THREE.JS VIEWPORT ===
+                React.createElement('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
+                  React.createElement('canvas', {
+                    id: 'geo-sandbox-canvas',
+                    className: 'w-full h-full',
+                    style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
+                  }),
+                  // Controls hint overlay
+                  React.createElement('div', { className: 'absolute bottom-2 right-2 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md' },
+                    '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
+                  ),
+                  // Shape name overlay
+                  React.createElement('div', { className: 'absolute top-2 left-2 text-xs font-bold text-sky-400 bg-slate-900/80 px-2 py-1 rounded-md' },
+                    m.name
+                  )
+                )
+              ),
+
+              // Coach panel
+              React.createElement('div', { className: 'bg-gradient-to-r from-sky-900/30 to-blue-900/30 backdrop-blur-md rounded-xl p-3 border border-sky-700/30' },
+                React.createElement('div', { className: 'flex items-start gap-3' },
+                  React.createElement('div', { className: 'text-2xl flex-shrink-0' }, '\uD83D\uDCD0'),
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-sm font-bold text-sky-300 mb-1' }, ct.title),
+                    React.createElement('div', { className: 'text-xs text-slate-300 mb-1' }, ct.tip),
+                    React.createElement('div', { className: 'text-[10px] text-slate-400 italic' }, '\uD83C\uDF0D ' + ct.example)
+                  )
+                )
+              ),
+
+              // STL note
+              React.createElement('div', { className: 'text-[10px] text-slate-500 text-center' },
+                '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
+              )
             );
           })(),
 
