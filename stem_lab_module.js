@@ -429,15 +429,15 @@
               { growth: 0.6, pestRate: 0.4, moistureDecay: 1.0, ambientTemp: 15 },
               { growth: 0.0, pestRate: 0.1, moistureDecay: 0.5, ambientTemp: 4 }
             ][_si];
-            var _moist = Math.max(0, (typeof cp.moisture === 'number' ? cp.moisture : 60) - _sf.moistureDecay * 0.4);
+            var _moist = Math.max(0, (typeof cp.moisture === 'number' ? cp.moisture : 60) - _sf.moistureDecay * 0.15);
             var _nitro = typeof cp.nitrogenLevel === 'number' ? cp.nitrogenLevel : 35;
-            var beansNFix = cp.beansPlanted ? 0.3 : 0;
+            var beansNFix = cp.beansPlanted ? 0.6 : 0;
             _nitro = Math.max(0, _nitro - 0.5 + beansNFix);
             var _pest = typeof cp.pestPressure === 'number' ? cp.pestPressure : 10;
             _pest = Math.min(100, Math.max(0, _pest + _sf.pestRate * 0.5));
             if (cp.squashPlanted) _pest = Math.max(0, _pest - 0.3);
             var _weed = typeof cp.weedCover === 'number' ? cp.weedCover : 15;
-            _weed = Math.min(100, Math.max(0, _weed + 0.8));
+            _weed = Math.min(100, Math.max(0, _weed + 0.3));
             if (cp.squashPlanted) _weed = Math.max(0, _weed - 0.5);
             var _temp = typeof cp.soilTemp === 'number' ? cp.soilTemp : 20;
             _temp = _temp + (_sf.ambientTemp - _temp) * 0.05;
@@ -449,6 +449,10 @@
             if (_weed > 60) _hp = Math.max(0, _hp - 0.5);
             if (_nitro < 10) _hp = Math.max(0, _hp - 0.5);
             if (_temp < 5 || _temp > 38) _hp = Math.max(0, _hp - 1.0);
+            // Three Sisters synergy: baseline health recovery when all three are planted
+            if (cp.cornPlanted && cp.beansPlanted && cp.squashPlanted) _hp = Math.min(100, _hp + 0.2);
+            // Auto-rain safety net: if moisture critically low, simulate rain
+            if (_moist < 20 && (_day - (cp.lastRainDay || 0)) > 20) { _moist = Math.min(100, _moist + 15); cp.lastRainDay = _day; }
             var healthFactor = _hp / 100;
             var _syn = 1 + ((cp.synCornBeans || 0) / 500) + ((cp.synBeansSoil || 0) / 500) + ((cp.synSquashAll || 0) / 500);
             var growIncrement = 0.3 * _sf.growth * healthFactor * _syn * _speed;
@@ -491,7 +495,7 @@
               newPhase = 'plant';
               newGT = 0;
               _hp = 100;
-              _popup = { emoji: '💀', title: 'Plants Died!', lesson: 'Your plants couldn\'t survive. Watch the meters — keep moisture, nitrogen, and health above critical levels!' };
+              _popup = { emoji: '\uD83D\uDC80', title: 'Plants Died!', lesson: 'Your plants couldn\'t survive. Tip: Use the Water and Compost buttons to keep moisture and nitrogen up! Watch the gauges and act before they drop too low.' };
             }
             cp.day = _day; cp.moisture = _moist; cp.nitrogenLevel = _nitro;
             cp.pestPressure = _pest; cp.weedCover = _weed; cp.soilTemp = _temp;
@@ -8143,6 +8147,7 @@
 
                           var tick3d = 0;
                           var animId3d;
+                          var hudMode = 'full'; // 'simple' | 'standard' | 'full'
                           // animate3d is defined later as animate3dV2 with 3rd-person and compass support
 
                           // ── Rich Educational HUD (Enhanced) ──
@@ -8162,16 +8167,21 @@
                             '<span style="color:#64748b">' + t('stem.planet_view.temp') + '</span><span>' + sel.temp + '</span>' +
                             '<span style="color:#64748b">' + t('stem.planet_view.atmos') + '</span><span style="font-size:9px">' + atmosLabel + '</span>' +
                             '</div>' +
-                            '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
-                            '<span style="color:#64748b">\uD83D\uDCCF Alt</span><span id="hud-alt" style="color:#67e8f9">0 m</span>' +
-                            '<span style="color:#64748b">\uD83D\uDCA8 Spd</span><span id="hud-spd" style="color:#67e8f9">0 m/s</span>' +
-                            '<span style="color:#64748b">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
-                            '<span style="color:#64748b">\uD83D\uDCCD Pos</span><span id="hud-pos" style="color:#67e8f9;font-size:9px">0.0, 0.0</span>' +
-                            '<span style="color:#64748b">\uD83D\uDEB6 Dist</span><span id="hud-odo" style="color:#67e8f9">0 m</span>' +
-                            '<span style="color:#64748b">\uD83D\uDD2D Disc</span><span id="hud-disc" style="color:#fbbf24">0 / 0</span>' +
+                            '<div id="hud-simple-row" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
+                            '<span style="color:#64748b" title="Points of interest found">\uD83D\uDD2D Disc</span><span id="hud-disc" style="color:#fbbf24">0 / 0</span>' +
+                            '</div>' +
+                            '<div id="hud-standard-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
+                            '<span style="color:#64748b" title="Compass heading: 0=N, 90=E, 180=S, 270=W">\uD83E\uDDED Hdg</span><span id="hud-hdg" style="color:#67e8f9">N 0\u00B0</span>' +
+                            '<span style="color:#64748b" title="Cartesian grid position (X, Y)">\uD83D\uDCCD Pos</span><span id="hud-pos" style="color:#67e8f9;font-size:9px">0.0, 0.0</span>' +
+                            '<span style="color:#64748b" title="Current speed in m/s">\uD83D\uDCA8 Spd</span><span id="hud-spd" style="color:#67e8f9">0 m/s</span>' +
+                            '</div>' +
+                            '<div id="hud-full-rows" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:4px;margin-bottom:4px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px">' +
+                            '<span style="color:#64748b" title="Height above surface (radar altimeter)">\uD83D\uDCCF Alt</span><span id="hud-alt" style="color:#67e8f9">0 m</span>' +
+                            '<span style="color:#64748b" title="Total distance traveled">\uD83D\uDEB6 Dist</span><span id="hud-odo" style="color:#67e8f9">0 m</span>' +
+                            '<span style="color:#64748b" title="Navigation target distance">\uD83C\uDFAF Tgt</span><span id="hud-tgt" style="color:#a78bfa">-- m</span>' +
                             '</div>' +
                             (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
-                            '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">WASD move \u2022 Mouse look \u2022 Q/E alt \u2022 V view \u2022 M mission</div>';
+                            '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">WASD move \u2022 Mouse look \u2022 V view \u2022 M mission \u2022 <span style="color:#38bdf8">H</span> hud \u2022 <span style="color:#a78bfa">N</span> nav \u2022 <span style="color:#8b5cf6">P</span> plot</div>';
                           hud.innerHTML = hudStaticHTML;
                           canvasEl.parentElement.appendChild(hud);
 
@@ -8403,7 +8413,229 @@
                               missionCard.style.display = missionVisible ? 'block' : 'none';
                               setTimeout(function () { missionCard.style.opacity = missionVisible ? '1' : '0'; }, 10);
                             }
+                            if (e.key === 'h' || e.key === 'H') {
+                              var modes = ['simple', 'standard', 'full'];
+                              hudMode = modes[(modes.indexOf(hudMode) + 1) % modes.length];
+                              var stdRows = document.getElementById('hud-standard-rows');
+                              var fullRows = document.getElementById('hud-full-rows');
+                              if (stdRows) stdRows.style.display = (hudMode === 'standard' || hudMode === 'full') ? 'grid' : 'none';
+                              if (fullRows) fullRows.style.display = hudMode === 'full' ? 'grid' : 'none';
+                              var modeEl = document.getElementById('hud-mode');
+                              if (modeEl) { var icons = { simple: '\uD83D\uDFE2', standard: '\uD83D\uDFE1', full: '\uD83D\uDD34' }; modeEl.textContent = modeLabel + ' [' + icons[hudMode] + ' ' + hudMode.toUpperCase() + ']'; }
+                            }
+                            if (e.key === 'n' || e.key === 'N') {
+                              if (!navChallengeActive) { startNavChallenge(); } else { cancelNavChallenge(); }
+                            }
+                            if (e.key === 'p' || e.key === 'P') {
+                              plotterVisible = !plotterVisible;
+                              if (plotterPanel) { plotterPanel.style.display = plotterVisible ? 'block' : 'none'; setTimeout(function () { plotterPanel.style.opacity = plotterVisible ? '1' : '0'; }, 10); }
+                            }
+                            });
+
+                                                    // ── Trail Line (path history) ──
+                          var trailPositions = []; var trailLine = null; var trailMaxPoints = 500;
+                          function updateTrail() {
+                            trailPositions.push(new THREE.Vector3(playerPos.x, isGas ? playerPos.y - 0.3 : 0.15, playerPos.z));
+                            if (trailPositions.length > trailMaxPoints) trailPositions.shift();
+                            if (trailLine) scene.remove(trailLine);
+                            if (trailPositions.length > 1) {
+                              var geo = new THREE.BufferGeometry().setFromPoints(trailPositions);
+                              trailLine = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.5 }));
+                              scene.add(trailLine);
+                            }
+                          }
+
+                          // ── Navigation Challenge System (N key) ──
+                          var navChallengeActive = false, navTargetX = 0, navTargetZ = 0, navTargetMesh = null;
+                          var navCard = document.createElement('div');
+                          navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.4);max-width:280px;opacity:0;transition:opacity 0.4s;display:none';
+                          canvasEl.parentElement.appendChild(navCard);
+                          var NAV_CHALLENGES = [
+                            { type: 'cardinal', prompt: 'Navigate 20 meters NORTH from your current position.', dx: 0, dz: -2, skill: 'Spatial Awareness', badge: '\uD83E\uDDED' },
+                            { type: 'cardinal', prompt: 'Navigate 30 meters EAST from your current position.', dx: 3, dz: 0, skill: 'Dead Reckoning', badge: '\uD83E\uDDED' },
+                            { type: 'coord', prompt: 'Navigate to coordinates (150, -80) on the grid.', tx: 15, tz: -8, skill: 'Cartesian Navigation', badge: '\uD83D\uDCCD' },
+                            { type: 'coord', prompt: 'Navigate to coordinates (-120, 200) on the grid.', tx: -12, tz: 20, skill: 'Coordinate Systems', badge: '\uD83D\uDCCD' },
+                            { type: 'coord', prompt: 'Navigate to coordinates (250, 180) on the grid.', tx: 25, tz: 18, skill: 'Grid Navigation', badge: '\uD83D\uDCCD' },
+                            { type: 'distance', prompt: 'A relay beacon is 35m away at heading 045\u00B0 (NE). Calculate and navigate to its position.', bearing: 45, dist: 3.5, skill: 'Trigonometry & Bearing', badge: '\uD83D\uDCE1' },
+                            { type: 'distance', prompt: 'Mission control reports a sample site 50m away at heading 270\u00B0 (W). Navigate there.', bearing: 270, dist: 5, skill: 'Vector Navigation', badge: '\uD83D\uDCE1' },
+                            { type: 'distance', prompt: 'Emergency cache located 40m away at heading 180\u00B0 (S). Calculate coordinates and retrieve it.', bearing: 180, dist: 4, skill: 'Emergency Navigation', badge: '\u26A1' },
+                          ];
+                          var navChallengeIdx = 0, navCompletedCount = 0;
+                          function startNavChallenge() {
+                            var ch = NAV_CHALLENGES[navChallengeIdx % NAV_CHALLENGES.length];
+                            navChallengeActive = true;
+                            if (ch.type === 'cardinal') { navTargetX = playerPos.x + ch.dx; navTargetZ = playerPos.z + ch.dz; }
+                            else if (ch.type === 'coord') { navTargetX = ch.tx; navTargetZ = ch.tz; }
+                            else if (ch.type === 'distance') { var rad = ch.bearing * Math.PI / 180; navTargetX = playerPos.x + Math.sin(rad) * ch.dist; navTargetZ = playerPos.z - Math.cos(rad) * ch.dist; }
+                            // Place target beacon
+                            if (navTargetMesh) scene.remove(navTargetMesh);
+                            var beamGeo = new THREE.CylinderGeometry(0.15, 0.15, 8, 8);
+                            var beamMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.4 });
+                            navTargetMesh = new THREE.Mesh(beamGeo, beamMat);
+                            navTargetMesh.position.set(navTargetX, isGas ? 4 : 4, navTargetZ);
+                            scene.add(navTargetMesh);
+                            // Show challenge card
+                            navCard.innerHTML = '<div style="font-weight:bold;font-size:13px;color:#a78bfa;margin-bottom:6px">\uD83E\uDDED NAVIGATION CHALLENGE</div>' +
+                              '<div style="color:#e2e8f0;margin-bottom:6px;line-height:1.5">' + ch.prompt + '</div>' +
+                              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">' +
+                              '<div style="background:rgba(167,139,250,0.15);border-radius:6px;padding:4px 6px;text-align:center"><div style="color:#a78bfa;font-weight:bold;font-size:12px" id="nav-dist">-- m</div><div style="color:#94a3b8;font-size:8px">DIST TO TARGET</div></div>' +
+                              '<div style="background:rgba(167,139,250,0.15);border-radius:6px;padding:4px 6px;text-align:center"><div style="color:#a78bfa;font-weight:bold;font-size:12px" id="nav-bearing">--\u00B0</div><div style="color:#94a3b8;font-size:8px">BEARING</div></div>' +
+                              '</div>' +
+                              '<div style="margin-top:6px;color:#64748b;font-size:9px">\uD83C\uDF93 Skill: ' + ch.skill + ' \u2022 Press N to cancel</div>';
+                            navCard.style.display = 'block';
+                            setTimeout(function () { navCard.style.opacity = '1'; }, 10);
+                          }
+                          function cancelNavChallenge() {
+                            navChallengeActive = false;
+                            if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; }
+                            navCard.style.opacity = '0'; setTimeout(function () { navCard.style.display = 'none'; }, 400);
+                          }
+                          function checkNavCompletion() {
+                            if (!navChallengeActive) return;
+                            var ndx = playerPos.x - navTargetX, ndz = playerPos.z - navTargetZ;
+                            var nDist = Math.sqrt(ndx * ndx + ndz * ndz) * scaleFactor;
+                            var nBearing = ((Math.atan2(navTargetX - playerPos.x, -(navTargetZ - playerPos.z)) * 180 / Math.PI) % 360 + 360) % 360;
+                            var nDistEl = document.getElementById('nav-dist'); if (nDistEl) nDistEl.textContent = nDist.toFixed(0) + ' m';
+                            var nBearEl = document.getElementById('nav-bearing'); if (nBearEl) nBearEl.textContent = Math.round(nBearing) + '\u00B0';
+                            var tgtEl = document.getElementById('hud-tgt'); if (tgtEl) tgtEl.textContent = nDist.toFixed(0) + ' m';
+                            if (nDist < 150) { // within ~3 world units
+                              navCompletedCount++; navChallengeIdx++;
+                              var ch = NAV_CHALLENGES[(navChallengeIdx - 1) % NAV_CHALLENGES.length];
+                              navCard.innerHTML = '<div style="font-weight:bold;font-size:13px;color:#34d399;margin-bottom:4px">\u2705 TARGET REACHED!</div>' +
+                                '<div style="color:#e2e8f0;margin-bottom:4px">Skill demonstrated: <span style="color:#a78bfa;font-weight:bold">' + ch.skill + '</span></div>' +
+                                '<div style="color:#34d399;font-size:10px;font-weight:bold">\u2B50 +15 XP \u2022 ' + navCompletedCount + ' challenges completed</div>' +
+                                '<div style="margin-top:4px;color:#64748b;font-size:9px">Press N for next challenge</div>';
+                              if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 15);
+                              navChallengeActive = false;
+                              if (navTargetMesh) { navTargetMesh.material.color.setHex(0x34d399); navTargetMesh.material.opacity = 0.7; }
+                              setTimeout(function () { if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; } }, 3000);
+                            }
+                          }
+
+                          // ── Course Plotter System (P key) ──
+                          var plotterVisible = false, plotterWaypoints = [], plotterRouteLine = null, plotterActiveWP = 0;
+                          var plotterPanel = document.createElement('div');
+                          plotterPanel.style.cssText = 'position:absolute;top:50%;right:8px;transform:translateY(-50%);background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);border-radius:14px;padding:16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:auto;z-index:14;border:1px solid rgba(56,189,248,0.3);width:260px;opacity:0;transition:opacity 0.3s;display:none';
+                          plotterPanel.innerHTML = '<div style="font-weight:bold;font-size:14px;color:#38bdf8;margin-bottom:8px;letter-spacing:1px">\uD83D\uDDFA\uFE0F COURSE PLOTTER</div>' +
+                            '<div style="color:#94a3b8;font-size:10px;margin-bottom:10px">Plan your traverse route like a NASA flight director. Enter waypoint coordinates (X, Z) to create a flight plan.</div>' +
+                            '<div id="plotter-waypoints"></div>' +
+                            '<div style="display:flex;gap:6px;margin-top:8px">' +
+                            '<input id="wp-x" type="number" placeholder="X" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid rgba(56,189,248,0.3);background:rgba(56,189,248,0.1);color:#fff;font-size:11px;font-family:monospace" />' +
+                            '<input id="wp-z" type="number" placeholder="Z" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid rgba(56,189,248,0.3);background:rgba(56,189,248,0.1);color:#fff;font-size:11px;font-family:monospace" />' +
+                            '<button id="wp-add" style="padding:4px 10px;border-radius:6px;background:#38bdf8;color:#000;font-weight:bold;font-size:10px;border:none;cursor:pointer">+ Add</button>' +
+                            '</div>' +
+                            '<div style="display:flex;gap:6px;margin-top:8px">' +
+                            '<button id="wp-launch" style="flex:1;padding:5px;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-weight:bold;font-size:10px;border:none;cursor:pointer">\uD83D\uDE80 Launch Route</button>' +
+                            '<button id="wp-clear" style="padding:5px 10px;border-radius:6px;background:rgba(239,68,68,0.2);color:#f87171;font-weight:bold;font-size:10px;border:1px solid rgba(239,68,68,0.3);cursor:pointer">Clear</button>' +
+                            '</div>' +
+                            '<div id="plotter-stats" style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(56,189,248,0.12);color:#94a3b8;font-size:9px"></div>';
+                          canvasEl.parentElement.appendChild(plotterPanel);
+
+                          // Wire plotter buttons
+                          plotterPanel.querySelector('#wp-add').addEventListener('click', function () {
+                            var xIn = plotterPanel.querySelector('#wp-x'), zIn = plotterPanel.querySelector('#wp-z');
+                            var px = parseFloat(xIn.value), pz = parseFloat(zIn.value);
+                            if (isNaN(px) || isNaN(pz)) return;
+                            if (plotterWaypoints.length >= 5) return;
+                            plotterWaypoints.push({ x: px / 10, z: pz / 10 }); // convert grid coords to world coords
+                            xIn.value = ''; zIn.value = '';
+                            refreshPlotterUI();
                           });
+                          plotterPanel.querySelector('#wp-clear').addEventListener('click', function () {
+                            plotterWaypoints = []; plotterActiveWP = 0;
+                            if (plotterRouteLine) { scene.remove(plotterRouteLine); plotterRouteLine = null; }
+                            plotterWPMeshes.forEach(function (m) { scene.remove(m); }); plotterWPMeshes = [];
+                            refreshPlotterUI();
+                          });
+                          plotterPanel.querySelector('#wp-launch').addEventListener('click', function () {
+                            if (plotterWaypoints.length < 2) return;
+                            plotterActiveWP = 0;
+                            drawPlotterRoute();
+                            trailPositions = []; // reset trail for comparison
+                          });
+                          var plotterWPMeshes = [];
+                          function refreshPlotterUI() {
+                            var wpDiv = plotterPanel.querySelector('#plotter-waypoints');
+                            if (!wpDiv) return;
+                            wpDiv.innerHTML = plotterWaypoints.map(function (wp, i) {
+                              var label = i === 0 ? '\uD83D\uDFE2 START' : i === plotterWaypoints.length - 1 ? '\uD83D\uDD34 END' : '\uD83D\uDD35 WP' + i;
+                              return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(56,189,248,0.08)"><span style="color:#7dd3fc">' + label + '</span><span style="color:#e2e8f0;font-family:monospace">(' + (wp.x * 10).toFixed(0) + ', ' + (wp.z * 10).toFixed(0) + ')</span></div>';
+                            }).join('');
+                            // Calculate total distance
+                            var total = 0;
+                            for (var wi = 1; wi < plotterWaypoints.length; wi++) {
+                              var ddx = plotterWaypoints[wi].x - plotterWaypoints[wi-1].x, ddz = plotterWaypoints[wi].z - plotterWaypoints[wi-1].z;
+                              total += Math.sqrt(ddx * ddx + ddz * ddz) * scaleFactor;
+                            }
+                            var statsDiv = plotterPanel.querySelector('#plotter-stats');
+                            if (statsDiv) statsDiv.innerHTML = '\uD83D\uDCCF Total distance: <span style="color:#38bdf8">' + total.toFixed(0) + ' m</span> \u2022 Waypoints: ' + plotterWaypoints.length + '/5';
+                          }
+                          function drawPlotterRoute() {
+                            if (plotterRouteLine) scene.remove(plotterRouteLine);
+                            plotterWPMeshes.forEach(function (m) { scene.remove(m); }); plotterWPMeshes = [];
+                            var pts = plotterWaypoints.map(function (wp) { return new THREE.Vector3(wp.x, isGas ? 3 : 0.2, wp.z); });
+                            if (pts.length > 1) {
+                              var geo = new THREE.BufferGeometry().setFromPoints(pts);
+                              plotterRouteLine = new THREE.Line(geo, new THREE.LineDashedMaterial({ color: 0x8b5cf6, dashSize: 0.5, gapSize: 0.3, transparent: true, opacity: 0.7 }));
+                              plotterRouteLine.computeLineDistances();
+                              scene.add(plotterRouteLine);
+                            }
+                            // Place waypoint markers
+                            plotterWaypoints.forEach(function (wp, i) {
+                              var mpColor = i === 0 ? 0x34d399 : i === plotterWaypoints.length - 1 ? 0xef4444 : 0x60a5fa;
+                              var mpGeo = new THREE.SphereGeometry(0.25, 8, 8);
+                              var mp = new THREE.Mesh(mpGeo, new THREE.MeshBasicMaterial({ color: mpColor, transparent: true, opacity: 0.8 }));
+                              mp.position.set(wp.x, isGas ? 3 : 0.5, wp.z);
+                              scene.add(mp); plotterWPMeshes.push(mp);
+                            });
+                          }
+
+                          // ── Signal Triangulation System ──
+                          var beacons = [
+                            { x: 20, z: -15, name: 'Beacon Alpha', color: 0xff6b6b },
+                            { x: -18, z: 20, name: 'Beacon Beta', color: 0x4ecdc4 },
+                            { x: -15, z: -20, name: 'Beacon Gamma', color: 0xffd93d }
+                          ];
+                          var beaconMeshes = [];
+                          beacons.forEach(function (bc) {
+                            var tower = new THREE.Group();
+                            var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 4, 6), new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.6 }));
+                            pole.position.y = 2; tower.add(pole);
+                            var light = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: bc.color }));
+                            light.position.y = 4.2; tower.add(light);
+                            var ring = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.6, 16), new THREE.MeshBasicMaterial({ color: bc.color, transparent: true, opacity: 0.3, side: THREE.DoubleSide }));
+                            ring.rotation.x = -Math.PI / 2; ring.position.y = 0.1; tower.add(ring);
+                            tower.position.set(bc.x, 0, bc.z);
+                            scene.add(tower); beaconMeshes.push({ group: tower, light: light, data: bc });
+                          });
+                          function getBeaconSignals() {
+                            return beacons.map(function (bc) {
+                              var dx = playerPos.x - bc.x, dz = playerPos.z - bc.z;
+                              var dist = Math.sqrt(dx * dx + dz * dz);
+                              var signal = Math.max(0, Math.round(100 / (1 + dist * 0.3)));
+                              return { name: bc.name, signal: signal, dist: dist * scaleFactor, color: bc.color };
+                            });
+                          }
+
+                          // ── Skills Badge System ──
+                          var badges = {
+                            navigator: { name: '\uD83E\uDDED Navigator', desc: 'Complete 3 navigation challenges', req: function () { return navCompletedCount >= 3; }, earned: false },
+                            flightDirector: { name: '\uD83D\uDCCB Flight Director', desc: 'Complete a course with 3+ waypoints', req: function () { return plotterWaypoints.length >= 3 && plotterActiveWP >= plotterWaypoints.length; }, earned: false },
+                            fieldScientist: { name: '\uD83D\uDD2C Field Scientist', desc: 'Discover all points of interest', req: function () { return Object.keys(discoveredPOIs).length >= totalPOIs && totalPOIs > 0; }, earned: false },
+                            planetologist: { name: '\uD83E\uDE90 Planetologist', desc: 'Score 5+ on planet quiz', req: function () { return (d.quiz && d.quiz.score >= 5); }, earned: false },
+                            pilot: { name: '\u2708\uFE0F Pilot', desc: 'Travel 500+ meters total', req: function () { return odometer >= 500; }, earned: false },
+                            safetyOfficer: { name: '\u26A0\uFE0F Safety Officer', desc: 'Read 5+ hazard warnings', req: function () { return hazardIdx >= 5; }, earned: false }
+                          };
+                          function checkBadges() {
+                            Object.keys(badges).forEach(function (key) {
+                              var b = badges[key];
+                              if (!b.earned && b.req()) {
+                                b.earned = true;
+                                if (typeof addToast === 'function') addToast('\uD83C\uDFC5 Badge Earned: ' + b.name + ' \u2014 ' + b.desc, 'success');
+                                if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 25);
+                              }
+                            });
+                          }
 
                           // ── Animation loop with 3rd-person + compass ──
                           function animate3dV2() {
@@ -8500,6 +8732,14 @@
                               }
                             }
 
+                            // ── Feature updates (trail, nav, plotter, badges) ──
+                            if (tick3d % 5 === 0) updateTrail();
+                            if (tick3d % 10 === 0) { checkNavCompletion(); checkBadges(); }
+                            // Pulse beacon lights
+                            beaconMeshes.forEach(function (bm) { bm.light.material.opacity = 0.5 + Math.abs(Math.sin(tick3d * 0.05)) * 0.5; });
+                            // Pulse nav target
+                            if (navTargetMesh) { navTargetMesh.material.opacity = 0.2 + Math.abs(Math.sin(tick3d * 0.08)) * 0.5; navTargetMesh.rotation.y = tick3d * 0.02; }
+
                             // ── Pulse POI markers (animate opacity) ──
                             poiMeshes.forEach(function (m) {
                               if (m._pulsePhase !== undefined) {
@@ -8556,6 +8796,13 @@
                             if (discCard.parentElement) discCard.parentElement.removeChild(discCard);
                             if (missionCard.parentElement) missionCard.parentElement.removeChild(missionCard);
                             if (discTimeout) clearTimeout(discTimeout);
+                            if (navCard.parentElement) navCard.parentElement.removeChild(navCard);
+                            if (plotterPanel.parentElement) plotterPanel.parentElement.removeChild(plotterPanel);
+                            if (trailLine) scene.remove(trailLine);
+                            if (navTargetMesh) scene.remove(navTargetMesh);
+                            if (plotterRouteLine) scene.remove(plotterRouteLine);
+                            plotterWPMeshes.forEach(function (m) { scene.remove(m); });
+                            beaconMeshes.forEach(function (bm) { scene.remove(bm.group); });
                           };
                           canvasEl._droneRO = ro3d;
                         }
@@ -16446,6 +16693,7 @@
             var showSoilDetail = d.showSoilDetail || false;
             var quizActive = d.quizActive || false;
             var quizQ = d.quizQ || 0;
+            var showSciencePanel = d.showSciencePanel || false;
             var quizAnswer = d.quizAnswer || '';
             var quizFeedback = d.quizFeedback || '';
 
@@ -16521,11 +16769,11 @@
 
             // ── Action definitions ──
             var _ACTIONS = [
-              { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 8, tip: 'Irrigate the soil' },
-              { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 12, tip: 'Add organic compost' },
-              { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 6, tip: 'Remove weeds' },
-              { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 4, tip: 'Check for pests' },
-              { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 10, tip: 'Spread organic mulch' }
+              { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
+              { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
+              { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
+              { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
+              { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
             ];
 
             // ── Helper: apply effects dict ──
@@ -17415,10 +17663,77 @@
                 React.createElement("button", {
                   onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
                   className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
-                }, "🧠 Quiz")
+                }, "🧠 Quiz"),
+                React.createElement("button", {
+                  onClick: function () { upd('showSciencePanel', !showSciencePanel); },
+                  className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                }, "\uD83D\uDCDA Science")
               ),
 
               // ── Quiz Panel ──
+              showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
+                React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, "\uD83C\uDF3E The Three Sisters: Science of Companion Planting"),
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-3" },
+                  React.createElement("div", { className: "bg-yellow-50 rounded-lg p-3 border border-yellow-200" },
+                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3D"),
+                    React.createElement("h4", { className: "font-bold text-yellow-800" }, "Corn (Structural Support)"),
+                    React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles.")
+                  ),
+                  React.createElement("div", { className: "bg-green-50 rounded-lg p-3 border border-green-200" },
+                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3E"),
+                    React.createElement("h4", { className: "font-bold text-green-800" }, "Beans (Nitrogen Fixation)"),
+                    React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer.")
+                  ),
+                  React.createElement("div", { className: "bg-orange-50 rounded-lg p-3 border border-orange-200" },
+                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF83"),
+                    React.createElement("h4", { className: "font-bold text-orange-800" }, "Squash (Living Mulch)"),
+                    React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover.")
+                  )
+                ),
+                React.createElement("div", { className: "bg-amber-50 rounded-lg p-4 border border-amber-200" },
+                  React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, "\uD83E\uDDEA Underground Chemistry"),
+                  React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
+                    React.createElement("div", { className: "space-y-2" },
+                      React.createElement("div", { className: "flex items-start gap-2" },
+                        React.createElement("span", { className: "text-lg" }, "\uD83C\uDF44"),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Mycorrhizal Network"),
+                          React.createElement("p", { className: "text-xs text-amber-700" }, "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars.")
+                        )
+                      ),
+                      React.createElement("div", { className: "flex items-start gap-2" },
+                        React.createElement("span", { className: "text-lg" }, "\uD83E\uDDA0"),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Rhizobium Nodules"),
+                          React.createElement("p", { className: "text-xs text-amber-700" }, "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants.")
+                        )
+                      )
+                    ),
+                    React.createElement("div", { className: "space-y-2" },
+                      React.createElement("div", { className: "flex items-start gap-2" },
+                        React.createElement("span", { className: "text-lg" }, "\uD83D\uDCA7"),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Water Cycling"),
+                          React.createElement("p", { className: "text-xs text-amber-700" }, "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention.")
+                        )
+                      ),
+                      React.createElement("div", { className: "flex items-start gap-2" },
+                        React.createElement("span", { className: "text-lg" }, "\uD83C\uDF31"),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Nutrient Cycling"),
+                          React.createElement("p", { className: "text-xs text-amber-700" }, "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs.")
+                        )
+                      )
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "bg-violet-50 rounded-lg p-4 border border-violet-200" },
+                  React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, "\uD83C\uDFDB\uFE0F Cultural Heritage"),
+                  React.createElement("p", { className: "text-xs text-violet-800" }, "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology."),
+                  React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets.")
+                )
+              ),
+
               quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "🧠 Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
                 React.createElement("p", { className: "text-sm text-indigo-800" }, currentQuiz.q),
