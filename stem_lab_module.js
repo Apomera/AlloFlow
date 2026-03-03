@@ -718,6 +718,12 @@
         { text: 'Watch the Soil Dashboard — nitrogen, moisture, and temperature all change as the plants grow together.', top: '65%', left: '50%' },
         { text: 'Use the Compare button to see how the Three Sisters garden compares to a monoculture plot. Try the quiz to earn XP!', top: '80%', left: '50%' }
       ];
+      var _tutGraphCalc = [
+        { text: 'Welcome to the Graphing Calculator! Type a function like y = 2x + 3 in the expression panel and watch it appear on the graph.', top: '25%', left: '50%' },
+        { text: 'Use the Table view to see exact (x, y) values for your function. Great for checking homework answers!', top: '45%', left: '50%' },
+        { text: 'Zoom and pan the graph with mouse wheel and drag. Use Window settings to set exact axis ranges.', top: '65%', left: '50%' },
+        { text: 'The Coach panel explains every feature in plain English. Press the challenge button to practice with AI-generated problems!', top: '80%', left: '50%' }
+      ];
 
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
@@ -12391,6 +12397,18 @@
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.fractions.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             );
           })(),
+              React.createElement("div", {
+                key: "graphCalc",
+                style: { background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)", borderRadius: "16px", padding: "20px", color: "white", display: "flex", flexDirection: "column", gap: "10px", minHeight: "170px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", boxShadow: "0 4px 15px rgba(67,56,202,0.3)" },
+                onClick: function () { setStemLabTool("graphCalc"); },
+                onMouseEnter: function (e) { e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(67,56,202,0.5)"; },
+                onMouseLeave: function (e) { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 15px rgba(67,56,202,0.3)"; },
+                role: "button", tabIndex: 0, "aria-label": "Graphing Calculator"
+              },
+                React.createElement("div", { style: { fontSize: "36px", marginBottom: "2px" } }, "\uD83D\uDCC8"),
+                React.createElement("div", { style: { fontWeight: "bold", fontSize: "14px", letterSpacing: "0.5px" } }, "Graphing Calculator"),
+                React.createElement("div", { style: { fontSize: "11px", opacity: 0.85, lineHeight: 1.4 } }, "Type equations, plot functions, explore data. Learn what every button really does."),
+                React.createElement("button", { onClick: function (e) { e.stopPropagation(); setStemLabTool("graphCalc"); }, className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors mt-auto self-start", "aria-label": "Open Graphing Calculator" }, "\uD83D\uDD0D Explore")),
 
 
           // ═══════════════════════════════════════════════════════
@@ -17779,6 +17797,290 @@
                 },
                 className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
               }, "📸 Snapshot")
+            );
+          })(),
+
+          // --- GRAPHING CALCULATOR EMULATOR ---
+          stemLabTab === 'explore' && stemLabTool === 'graphCalc' && (() => {
+            const d = labToolData.graphCalc || {};
+            const upd = (key, val) => setLabToolData(prev => ({ ...prev, graphCalc: { ...(prev.graphCalc || {}), [key]: val } }));
+            const tier = d.tier || 'explorer';
+            const funcs = d.funcs || [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
+            const win = d.window || { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+            const showTable = d.showTable || false;
+            const showWindow = d.showWindow || false;
+            const showChallenge = d.showChallenge || false;
+            const tableX = d.tableX != null ? d.tableX : -5;
+            const tableStep = d.tableStep || 1;
+
+            // Load math.js on demand
+            React.useEffect(() => {
+              if (window.math) return;
+              const s = document.createElement('script');
+              s.src = 'https://cdn.jsdelivr.net/npm/mathjs@13.2.2/lib/browser/math.min.js';
+              s.async = true;
+              s.onload = () => { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); };
+              document.head.appendChild(s);
+            }, []);
+
+            // Render graph on Canvas
+            React.useEffect(() => {
+              const cv = document.getElementById('graph-calc-canvas');
+              if (!cv || !window.math) return;
+              const ctx = cv.getContext('2d');
+              const W = cv.width, H = cv.height;
+              const xr = win.xmax - win.xmin, yr = win.ymax - win.ymin;
+              const toScreenX = x => ((x - win.xmin) / xr) * W;
+              const toScreenY = y => H - ((y - win.ymin) / yr) * H;
+
+              // Clear
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+
+              // Grid
+              ctx.strokeStyle = 'rgba(56,189,248,0.08)'; ctx.lineWidth = 1;
+              const gridStep = Math.pow(10, Math.floor(Math.log10(xr / 5)));
+              for (let gx = Math.ceil(win.xmin / gridStep) * gridStep; gx <= win.xmax; gx += gridStep) {
+                const sx = toScreenX(gx); ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+              }
+              for (let gy = Math.ceil(win.ymin / gridStep) * gridStep; gy <= win.ymax; gy += gridStep) {
+                const sy = toScreenY(gy); ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+              }
+
+              // Axes
+              ctx.strokeStyle = 'rgba(148,163,184,0.5)'; ctx.lineWidth = 1.5;
+              if (win.ymin <= 0 && win.ymax >= 0) { const ay = toScreenY(0); ctx.beginPath(); ctx.moveTo(0, ay); ctx.lineTo(W, ay); ctx.stroke(); }
+              if (win.xmin <= 0 && win.xmax >= 0) { const ax = toScreenX(0); ctx.beginPath(); ctx.moveTo(ax, 0); ctx.lineTo(ax, H); ctx.stroke(); }
+
+              // Axis labels
+              ctx.font = '10px monospace'; ctx.fillStyle = '#64748b';
+              for (let gx = Math.ceil(win.xmin / gridStep) * gridStep; gx <= win.xmax; gx += gridStep) {
+                if (Math.abs(gx) > 0.001) { const sx = toScreenX(gx); const ay = win.ymin <= 0 && win.ymax >= 0 ? toScreenY(0) : H - 10; ctx.fillText(Number(gx.toPrecision(4)).toString(), sx + 2, ay - 3); }
+              }
+              for (let gy = Math.ceil(win.ymin / gridStep) * gridStep; gy <= win.ymax; gy += gridStep) {
+                if (Math.abs(gy) > 0.001) { const sy = toScreenY(gy); const ax = win.xmin <= 0 && win.xmax >= 0 ? toScreenX(0) : 10; ctx.fillText(Number(gy.toPrecision(4)).toString(), ax + 4, sy - 3); }
+              }
+
+              // Plot functions
+              funcs.forEach((fn, fi) => {
+                if (!fn.expr || !fn.expr.trim()) return;
+                try {
+                  let exprStr = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                  exprStr = exprStr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                  const compiled = math.compile(exprStr);
+                  ctx.strokeStyle = fn.color; ctx.lineWidth = 2.5; ctx.beginPath();
+                  let started = false;
+                  for (let px = 0; px <= W; px++) {
+                    const x = win.xmin + (px / W) * xr;
+                    try {
+                      const y = compiled.evaluate({ x: x });
+                      if (typeof y === 'number' && isFinite(y)) {
+                        const sy = toScreenY(y);
+                        if (!started) { ctx.moveTo(px, sy); started = true; }
+                        else if (sy > -500 && sy < H + 500) ctx.lineTo(px, sy);
+                        else { ctx.stroke(); ctx.beginPath(); started = false; }
+                      } else { ctx.stroke(); ctx.beginPath(); started = false; }
+                    } catch(e) { ctx.stroke(); ctx.beginPath(); started = false; }
+                  }
+                  ctx.stroke();
+                } catch(e) { /* invalid expression */ }
+              });
+
+              // Axis labels x and y
+              ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 11px sans-serif';
+              ctx.fillText('x', W - 14, (win.ymin <= 0 && win.ymax >= 0 ? toScreenY(0) : H / 2) - 6);
+              ctx.fillText('y', (win.xmin <= 0 && win.xmax >= 0 ? toScreenX(0) : W / 2) + 6, 14);
+            }, [funcs, win, d]);
+
+            const COACH_TIPS = {
+              explorer: [
+                { icon: '\uD83D\uDCA1', title: 'Entering Functions', text: 'Type y = mx + b where m is the slope (steepness) and b is where the line crosses the y-axis. Try: y = 2x + 3' },
+                { icon: '\uD83D\uDD0D', title: 'Zoom & Window', text: 'The window controls how much of the graph you see. If your graph disappeared, try resetting the window to Standard (-10 to 10).' },
+                { icon: '\uD83D\uDCCA', title: 'Reading the Table', text: 'The table shows exact y-values for each x. Use it to check calculations or find patterns in your function.' },
+                { icon: '\uD83C\uDFAF', title: 'Multiple Functions', text: 'Enter different equations in each slot to compare them. Where the lines cross is called an intersection!' }
+              ],
+              analyst: [
+                { icon: '\uD83D\uDCC8', title: 'Linear vs Quadratic', text: 'y = 2x + 1 is a straight line. y = x\u00B2 is a parabola. The exponent determines the shape!' },
+                { icon: '\uD83E\uDDEE', title: 'Finding Zeros', text: 'Where the graph crosses the x-axis, y = 0. These points are called zeros, roots, or x-intercepts.' },
+                { icon: '\uD83D\uDCCA', title: 'Slope Meaning', text: 'In y = mx + b, slope m tells you: for every 1 step right, the line goes up by m. Negative m = downhill.' },
+                { icon: '\u26A1', title: 'Transformations', text: 'y = (x-3)\u00B2 shifts the parabola right by 3. y = x\u00B2 + 5 shifts it up by 5. Try it!' }
+              ],
+              engineer: [
+                { icon: '\uD83E\uDDE9', title: 'Trig Functions', text: 'sin(x), cos(x), tan(x) create waves. The period of sin(x) is 2\u03C0 \u2248 6.28.' },
+                { icon: '\uD83D\uDD22', title: 'Logarithms', text: 'log(x) is the inverse of 10^x. ln(x) is the natural log (base e). They grow very slowly.' },
+                { icon: '\u221E', title: 'Asymptotes', text: 'Some functions approach a line but never touch it. y = 1/x has asymptotes at x=0 and y=0.' }
+              ],
+              researcher: [
+                { icon: '\uD83D\uDE80', title: 'Full Access', text: 'All features unlocked. You have the power of a full graphing calculator. Explore freely!' }
+              ]
+            };
+            const currentTips = [...(COACH_TIPS.explorer || []), ...(tier !== 'explorer' ? COACH_TIPS.analyst || [] : []), ...(tier === 'engineer' || tier === 'researcher' ? COACH_TIPS.engineer || [] : []), ...(tier === 'researcher' ? COACH_TIPS.researcher || [] : [])];
+            const coachIdx = d.coachIdx || 0;
+
+            const ZOOM_PRESETS = [
+              { name: 'Standard', xmin: -10, xmax: 10, ymin: -10, ymax: 10 },
+              { name: 'Trig', xmin: -6.28, xmax: 6.28, ymin: -2, ymax: 2 },
+              { name: 'Quadratic', xmin: -5, xmax: 5, ymin: -5, ymax: 25 },
+              { name: 'Wide', xmin: -50, xmax: 50, ymin: -50, ymax: 50 },
+              { name: 'Positive', xmin: 0, xmax: 20, ymin: 0, ymax: 20 }
+            ];
+
+            const PREMADE_CHALLENGES = [
+              { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = 3x - 2. What is the y-intercept? What is the slope?', hint: 'The y-intercept is where the line crosses the y-axis (x=0). The slope is the coefficient of x.' },
+              { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = -x + 5 and y = x - 1. Where do they intersect?', hint: 'The intersection is where both equations give the same y for the same x. Look at the table!' },
+              { tier: 'explorer', topic: 'Tables', prompt: 'Enter y = x^2. Look at the table. What pattern do you see in the y-values?', hint: 'Compare consecutive y-values. The differences between them increase by 2 each time!' },
+              { tier: 'analyst', topic: 'Quadratics', prompt: 'Graph y = x^2 - 4. Where are the zeros (x-intercepts)? Can you verify with the equation?', hint: 'Set y = 0: x^2 - 4 = 0, so x^2 = 4, so x = +/-2. Check the graph!' },
+              { tier: 'analyst', topic: 'Transformations', prompt: 'Graph y = x^2, then y = (x-3)^2, then y = (x+2)^2. How does the number inside affect the graph?', hint: '(x-h) shifts the graph RIGHT by h. (x+h) shifts LEFT by h.' },
+              { tier: 'analyst', topic: 'Slope', prompt: 'Graph y = 0.5x, y = x, y = 2x, and y = 5x. What happens as the slope gets bigger?', hint: 'Bigger slope = steeper line. Slope is the rise/run ratio.' },
+              { tier: 'engineer', topic: 'Trigonometry', prompt: 'Graph y = sin(x) and y = cos(x) using the Trig zoom preset. How are they related?', hint: 'cos(x) is sin(x) shifted left by pi/2. They have the same shape!' },
+              { tier: 'engineer', topic: 'Exponential', prompt: 'Graph y = 2^x and y = log(x)/log(2). What do you notice? These are inverse functions!', hint: 'Inverse functions are mirror images across the line y = x.' },
+              { tier: 'engineer', topic: 'Asymptotes', prompt: 'Graph y = 1/x. What happens near x = 0? What happens as x gets very large?', hint: 'The graph gets infinitely close to the axes but never touches them. These lines are asymptotes.' }
+            ];
+
+            const TIER_INFO = {
+              explorer: { icon: '\uD83D\uDFE2', name: 'Explorer', desc: 'Linear functions, basic graphing, tables', color: '#34d399' },
+              analyst: { icon: '\uD83D\uDFE1', name: 'Analyst', desc: 'Quadratics, transformations, intersections', color: '#fbbf24' },
+              engineer: { icon: '\uD83D\uDD35', name: 'Engineer', desc: 'Trig, logs, exponentials, advanced analysis', color: '#60a5fa' },
+              researcher: { icon: '\uD83D\uDFE3', name: 'Researcher', desc: 'Full access - all features unlocked', color: '#a78bfa' }
+            };
+            const tierInfo = TIER_INFO[tier] || TIER_INFO.explorer;
+
+            const availableChallenges = PREMADE_CHALLENGES.filter(c => {
+              if (tier === 'researcher') return true;
+              if (tier === 'engineer') return c.tier !== 'researcher';
+              if (tier === 'analyst') return c.tier === 'explorer' || c.tier === 'analyst';
+              return c.tier === 'explorer';
+            });
+
+            let tableRows = [];
+            if (showTable && funcs[0] && funcs[0].expr && window.math) {
+              try {
+                let tExpr = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                tExpr = tExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                const tCompiled = math.compile(tExpr);
+                for (let tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
+                  try { const ty = tCompiled.evaluate({ x: tx }); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
+                  catch(e) { tableRows.push({ x: tx, y: 'ERR' }); }
+                }
+              } catch(e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
+            }
+
+            return React.createElement('div', {
+              style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' }
+            },
+              React.createElement('div', {
+                style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' }
+              },
+                React.createElement('button', { onClick: () => setStemLabTool(null), style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }, 'aria-label': 'Back to STEM Lab tools' }, '\u2190 Back'),
+                React.createElement('div', { style: { fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.5px', color: '#c7d2fe' } }, '\uD83D\uDCC8 Graphing Calculator'),
+                React.createElement('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
+                  React.createElement('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
+                  React.createElement('select', { value: tier, onChange: e => upd('tier', e.target.value), style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' }, 'aria-label': 'Select skill tier' },
+                    React.createElement('option', { value: 'explorer' }, '\uD83D\uDFE2 Explorer'),
+                    React.createElement('option', { value: 'analyst' }, '\uD83D\uDFE1 Analyst'),
+                    React.createElement('option', { value: 'engineer' }, '\uD83D\uDD35 Engineer'),
+                    React.createElement('option', { value: 'researcher' }, '\uD83D\uDFE3 Researcher')
+                  )
+                )
+              ),
+
+              React.createElement('div', {
+                style: { display: 'flex', flex: 1, overflow: 'hidden' }
+              },
+                React.createElement('div', {
+                  style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' }
+                },
+                  React.createElement('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, '\uD83D\uDCDD FUNCTIONS'),
+                  React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+                    ...funcs.map((fn, i) => React.createElement('div', { key: 'f' + i, style: { marginBottom: '8px' } },
+                      React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
+                        React.createElement('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
+                        React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'y' + (i + 1) + ' =')
+                      ),
+                      React.createElement('input', {
+                        type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
+                        onChange: e => { const nf = [...funcs]; nf[i] = { ...nf[i], expr: e.target.value }; upd('funcs', nf); },
+                        style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' },
+                        'aria-label': 'Function y' + (i + 1) + ' expression'
+                      })
+                    ))
+                  ),
+
+                  React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                    React.createElement('button', { onClick: () => upd('showTable', !showTable), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
+                    React.createElement('button', { onClick: () => upd('showWindow', !showWindow), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
+                    React.createElement('button', { onClick: () => upd('showChallenge', !showChallenge), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
+                    React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear')
+                  ),
+
+                  React.createElement('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
+                    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
+                      ...ZOOM_PRESETS.map(z => React.createElement('button', { key: z.name, onClick: () => upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }), style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '9px', cursor: 'pointer' } }, z.name))
+                    )
+                  )
+                ),
+
+                React.createElement('div', {
+                  style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }
+                },
+                  React.createElement('canvas', {
+                    id: 'graph-calc-canvas', width: 600, height: 420,
+                    style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0' },
+                    'aria-label': 'Graphing calculator coordinate plane'
+                  }),
+
+                  showWindow && React.createElement('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+                    React.createElement('span', { style: { fontSize: '10px', color: '#818cf8', fontWeight: 'bold' } }, 'WINDOW:'),
+                    ...['xmin', 'xmax', 'ymin', 'ymax'].map(k => React.createElement('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#94a3b8' } },
+                      k + ':', React.createElement('input', { type: 'number', value: win[k], onChange: e => upd('window', { ...win, [k]: parseFloat(e.target.value) || 0 }), style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '10px' }, 'aria-label': k })
+                    ))
+                  ),
+
+                  showTable && React.createElement('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
+                      React.createElement('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, '\uD83D\uDCCA TABLE'),
+                      React.createElement('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', React.createElement('input', { type: 'number', value: tableX, onChange: e => upd('tableX', parseFloat(e.target.value) || 0), style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } })),
+                      React.createElement('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', React.createElement('input', { type: 'number', value: tableStep, onChange: e => upd('tableStep', parseFloat(e.target.value) || 1), style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } }))
+                    ),
+                    React.createElement('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
+                      React.createElement('thead', null, React.createElement('tr', null,
+                        React.createElement('th', { style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'),
+                        React.createElement('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081')
+                      )),
+                      React.createElement('tbody', null, ...tableRows.map((r, ri) => React.createElement('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } },
+                        React.createElement('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#94a3b8' } }, r.x),
+                        React.createElement('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#e2e8f0' } }, r.y)
+                      )))
+                    )
+                  )
+                ),
+
+                React.createElement('div', {
+                  style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' }
+                },
+                  React.createElement('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, showChallenge ? '\uD83C\uDFAF CHALLENGES' : '\uD83D\uDCA1 COACH'),
+                  !showChallenge && React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+                    ...currentTips.map((tip, i) => React.createElement('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
+                      React.createElement('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
+                      React.createElement('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#cbd5e1' } }, tip.text)
+                    ))
+                  ),
+
+                  showChallenge && React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+                    React.createElement('div', { style: { marginBottom: '10px' } },
+                      React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '8px' } },
+                        React.createElement('button', { onClick: () => upd('challengeSource', 'premade'), style: { flex: 1, padding: '5px', borderRadius: '6px', background: (d.challengeSource || 'premade') === 'premade' ? '#818cf8' : 'rgba(255,255,255,0.05)', color: (d.challengeSource || 'premade') === 'premade' ? '#fff' : '#94a3b8', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCDA Pre-made'),
+                        React.createElement('button', { onClick: () => { upd('challengeSource', 'ai'); if (typeof addToast === 'function') addToast('AI challenges use Gemini to generate custom problems', 'info'); }, style: { flex: 1, padding: '5px', borderRadius: '6px', background: d.challengeSource === 'ai' ? '#a78bfa' : 'rgba(255,255,255,0.05)', color: d.challengeSource === 'ai' ? '#fff' : '#94a3b8', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDD16 AI Generated')
+                      )
+                    ),
+                    ...availableChallenges.map((ch, ci) => React.createElement('div', { key: ci, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' }, onClick: () => upd('activeChallenge', d.activeChallenge === ci ? -1 : ci) },
+                      React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
+                      React.createElement('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
+                      d.activeChallenge === ci && React.createElement('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px', lineHeight: '1.4' } }, '\uD83D\uDCA1 Hint: ' + ch.hint)
+                    ))
+                  )
+                )
+              )
             );
           })(),
 
