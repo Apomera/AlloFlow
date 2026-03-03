@@ -382,6 +382,15 @@
           _setTutorialAutoComplete(null);
         }
       }, [_tutorialAutoComplete]);
+      // ── Synth Keyboard Hook (MUST be at top level to satisfy React Rules of Hooks) ──
+      React.useEffect(function () {
+        if (stemLabTab !== 'explore' || stemLabTool !== 'musicSynth') return;
+        function onKeyDown(e) { if (window._alloSynthKeyDown) window._alloSynthKeyDown(e); }
+        function onKeyUp(e) { if (window._alloSynthKeyUp) window._alloSynthKeyUp(e); }
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+        return function () { window.removeEventListener('keydown', onKeyDown); window.removeEventListener('keyup', onKeyUp); };
+      }, [stemLabTab, stemLabTool, labToolData]);
       function renderTutorial(toolId, steps) {
         if (_tutorialSeen[toolId]) return null;
         var step = labToolData._tutorialStep || 0;
@@ -13026,37 +13035,32 @@
               setTimeout(function () { playNoteFor(intervalGame.top, 'ear_top', 600); }, 700);
             }
 
-            // ═══ KEYBOARD HANDLER ═══
+            // ═══ KEYBOARD HANDLER (delegated to top-level useEffect via window refs) ═══
             var KEYBOARD_MAP = {
               'z': 0, 'x': 2, 'c': 4, 'v': 5, 'b': 7, 'n': 9, 'm': 11, ',': 12, '.': 14, '/': 16,
               's': 1, 'd': 3, 'g': 6, 'h': 8, 'j': 10, 'l': 13, ';': 15
             };
-            React.useEffect(function () {
-              function onKeyDown(e) {
-                if (e.repeat) return;
-                var semi = KEYBOARD_MAP[e.key.toLowerCase()];
-                if (semi !== undefined && synthTab === 'play') {
-                  var key = KEYS[semi];
-                  if (key) {
-                    var noteId = key.note + key.octave;
-                    if (scaleLock && !isInScale(key.semitone)) return;
-                    if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
-                    else { playNote(key.freq, noteId); }
-                    upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq);
-                  }
+            window._alloSynthKeyDown = function (e) {
+              if (e.repeat) return;
+              var semi = KEYBOARD_MAP[e.key.toLowerCase()];
+              if (semi !== undefined && synthTab === 'play') {
+                var key = KEYS[semi];
+                if (key) {
+                  var noteId = key.note + key.octave;
+                  if (scaleLock && !isInScale(key.semitone)) return;
+                  if (synthEngine === 'plucked') { playPlucked(key.freq, noteId, d.ksBrightness, d.ksDamping); }
+                  else { playNote(key.freq, noteId); }
+                  upd('activeKeys', (d.activeKeys || []).concat([noteId])); upd('lastNote', noteId); upd('lastFreq', key.freq);
                 }
               }
-              function onKeyUp(e) {
-                var semi = KEYBOARD_MAP[e.key.toLowerCase()];
-                if (semi !== undefined) {
-                  var key = KEYS[semi];
-                  if (key) { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); }
-                }
+            };
+            window._alloSynthKeyUp = function (e) {
+              var semi = KEYBOARD_MAP[e.key.toLowerCase()];
+              if (semi !== undefined) {
+                var key = KEYS[semi];
+                if (key) { var noteId = key.note + key.octave; stopNote(noteId); upd('activeKeys', (d.activeKeys || []).filter(function (x) { return x !== noteId; })); }
               }
-              window.addEventListener('keydown', onKeyDown);
-              window.addEventListener('keyup', onKeyUp);
-              return function () { window.removeEventListener('keydown', onKeyDown); window.removeEventListener('keyup', onKeyUp); };
-            }, [synthTab, scaleLock, synthEngine, d.octave]);
+            };
 
             // ═══ NOTATION HELPERS (for composition view) ═══
             var NOTE_TO_STAFF = { 'C': 0, 'D': 1, 'E': 2, 'F': 3, 'G': 4, 'A': 5, 'B': 6 };
