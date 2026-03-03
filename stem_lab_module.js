@@ -999,11 +999,7 @@
               desc: 'Coin flips, dice rolls, and spinners. Visualize outcomes and explore chance.',
               color: 'sky', ready: true
             },
-            {
-              id: 'fractions', icon: '\uD83C\uDF55', label: t('stem.tools_menu.fractions'),
-              desc: 'Visual fraction bars and circles. Compare, add, and simplify fractions.',
-              color: 'orange', ready: true
-            },
+
             {
               id: 'unitConvert', icon: '\uD83D\uDCCF', label: t('stem.tools_menu.unit_converter'),
               desc: 'Convert between metric and imperial units for length, mass, volume, and more.',
@@ -1112,7 +1108,7 @@
             {
               id: 'artStudio', icon: '🎨', label: t('stem.tools_menu.art_design_studio'),
               desc: 'Explore color theory, mix colors, draw pixel art, create symmetry patterns, and check accessibility contrast.',
-              color: 'rose', ready: false
+              color: 'rose', ready: true
             },
 
           ].map(tool => tool.category
@@ -3296,294 +3292,7 @@
                 setAreaAnswer('');
               },
               className: "text-xs text-amber-600 font-bold hover:underline"
-            }, t('explore.next_challenge'))))), stemLabTab === 'explore' && stemLabTool === 'fractions' && /*#__PURE__*/React.createElement("div", {
-              className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "flex items-center gap-3 mb-2"
-            }, /*#__PURE__*/React.createElement("button", {
-              onClick: () => setStemLabTool(null),
-              className: "p-1.5 hover:bg-slate-100 rounded-lg"
-            }, /*#__PURE__*/React.createElement(ArrowLeft, {
-              size: 18,
-              className: "text-slate-500"
-            })), /*#__PURE__*/React.createElement("h3", {
-              className: "text-lg font-bold text-rose-800"
-            }, "\uD83C\uDF55 Fraction Lab"),
-        /*#__PURE__*/React.createElement("div", { className: "flex gap-1 ml-auto" },
-              React.createElement("button", { onClick: () => setStemLabTool('fractionViz'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all" }, "\uD83D\uDD0D Compare"),
-              React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white" }, "\uD83C\uDFC6 Challenge")
-            )), /*#__PURE__*/React.createElement("div", {
-              className: "grid grid-cols-2 gap-3"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "bg-rose-50 rounded-lg p-3 border border-rose-100"
-            }, /*#__PURE__*/React.createElement("label", {
-              className: "block text-xs text-rose-700 mb-1 font-bold"
-            }, "Denominator (parts)"), /*#__PURE__*/React.createElement("input", {
-              type: "range",
-              min: "2",
-              max: "12",
-              value: fractionPieces.denominator,
-              onChange: e => setFractionPieces(prev => ({
-                ...prev,
-                denominator: parseInt(e.target.value),
-                numerator: Math.min(prev.numerator, parseInt(e.target.value))
-              })),
-              className: "w-full accent-rose-600"
-            }), /*#__PURE__*/React.createElement("div", {
-              className: "text-center text-lg font-bold text-rose-700"
-            }, fractionPieces.denominator)), /*#__PURE__*/React.createElement("div", {
-              className: "bg-rose-50 rounded-lg p-3 border border-rose-100"
-            }, /*#__PURE__*/React.createElement("label", {
-              className: "block text-xs text-rose-700 mb-1 font-bold"
-            }, "Numerator (selected)"), /*#__PURE__*/React.createElement("input", {
-              type: "range",
-              min: "0",
-              max: fractionPieces.denominator,
-              value: fractionPieces.numerator,
-              onChange: e => setFractionPieces(prev => ({
-                ...prev,
-                numerator: parseInt(e.target.value)
-              })),
-              className: "w-full accent-rose-600"
-            }), /*#__PURE__*/React.createElement("div", {
-              className: "text-center text-lg font-bold text-rose-700"
-            }, fractionPieces.numerator))), /*#__PURE__*/React.createElement("div", {
-              className: "bg-white rounded-xl border-2 border-rose-200 p-6 flex justify-center"
-            }, /*#__PURE__*/React.createElement("svg", {
-              width: "240",
-              height: "240",
-              viewBox: "-120 -120 240 240"
-            }, Array.from({
-              length: fractionPieces.denominator
-            }, (_, i) => {
-              const startAngle = i / fractionPieces.denominator * 2 * Math.PI - Math.PI / 2;
-              const endAngle = (i + 1) / fractionPieces.denominator * 2 * Math.PI - Math.PI / 2;
-              const x1 = 100 * Math.cos(startAngle);
-              const y1 = 100 * Math.sin(startAngle);
-              const x2 = 100 * Math.cos(endAngle);
-              const y2 = 100 * Math.sin(endAngle);
-              const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
-              const filled = i < fractionPieces.numerator;
-              return React.createElement('path', {
-                key: i,
-                d: `M 0 0 L ${x1} ${y1} A 100 100 0 ${largeArc} 1 ${x2} ${y2} Z`,
-                fill: filled ? `hsl(${340 + i * 8}, 70%, ${60 + i * 2}%)` : '#fecdd3',
-                stroke: '#e11d48',
-                strokeWidth: '2',
-                className: 'cursor-pointer hover:opacity-80 transition-opacity',
-                onClick: () => setFractionPieces(prev => ({
-                  ...prev,
-                  numerator: filled && prev.numerator === i + 1 ? i : i + 1
-                }))
-              });
-            }), /*#__PURE__*/React.createElement("circle", {
-              cx: "0",
-              cy: "0",
-              r: "3",
-              fill: "#e11d48"
-            }))), /*#__PURE__*/React.createElement("div", {
-              className: "bg-white rounded-xl border-2 border-rose-200 p-4"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "flex gap-[2px] h-12 rounded-lg overflow-hidden"
-            }, Array.from({
-              length: fractionPieces.denominator
-            }, (_, i) => React.createElement('div', {
-              key: i,
-              onClick: () => setFractionPieces(prev => ({
-                ...prev,
-                numerator: i < prev.numerator ? i : i + 1
-              })),
-              className: `flex-1 cursor-pointer transition-all ${i < fractionPieces.numerator ? 'bg-rose-500 hover:bg-rose-600' : 'bg-rose-100 hover:bg-rose-200'}`
-            })))), /*#__PURE__*/React.createElement("div", {
-              className: "bg-white rounded-xl p-4 border border-rose-100 text-center"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "inline-flex flex-col items-center"
-            }, /*#__PURE__*/React.createElement("span", {
-              className: "text-3xl font-bold text-rose-700 border-b-4 border-rose-400 px-4 pb-1"
-            }, fractionPieces.numerator), /*#__PURE__*/React.createElement("span", {
-              className: "text-3xl font-bold text-rose-700 px-4 pt-1"
-            }, fractionPieces.denominator)), /*#__PURE__*/React.createElement("div", {
-              className: "text-sm text-rose-600 mt-2"
-            }, "= ", (fractionPieces.numerator / fractionPieces.denominator * 100).toFixed(0), "%", fractionPieces.numerator > 0 && /*#__PURE__*/React.createElement("span", {
-              className: "text-slate-400 ml-2"
-            }, "\u2248 ", (fractionPieces.numerator / fractionPieces.denominator).toFixed(3))), fractionPieces.numerator === fractionPieces.denominator && /*#__PURE__*/React.createElement("div", {
-              className: "text-sm font-bold text-green-600 mt-1"
-            }, "= 1 whole! \uD83C\uDF89")), /*#__PURE__*/React.createElement("div", {
-              className: "flex flex-wrap gap-2"
-            }, [{
-              n: 1,
-              d: 2,
-              l: '½'
-            }, {
-              n: 1,
-              d: 3,
-              l: '⅓'
-            }, {
-              n: 1,
-              d: 4,
-              l: '¼'
-            }, {
-              n: 2,
-              d: 3,
-              l: '⅔'
-            }, {
-              n: 3,
-              d: 4,
-              l: '¾'
-            }, {
-              n: 3,
-              d: 8,
-              l: '⅜'
-            }, {
-              n: 5,
-              d: 6,
-              l: '⅚'
-            }].map(p => /*#__PURE__*/React.createElement("button", {
-              key: p.l,
-              onClick: () => setFractionPieces({
-                numerator: p.n,
-                denominator: p.d
-              }),
-              className: "px-3 py-1.5 text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all"
-            }, p.l))), /*#__PURE__*/React.createElement("div", {
-              className: "bg-rose-50 rounded-xl p-4 border border-rose-200 space-y-3"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "flex items-center justify-between"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "flex items-center gap-2"
-            }, /*#__PURE__*/React.createElement("h4", {
-              className: "text-sm font-bold text-rose-800"
-            }, "\uD83C\uDFAF Fraction Challenge"), /*#__PURE__*/React.createElement("div", {
-              className: "flex gap-0.5 ml-2"
-            }, ['easy', 'medium', 'hard'].map(d => /*#__PURE__*/React.createElement("button", {
-              key: d,
-              onClick: () => setExploreDifficulty(d),
-              className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
-            }, d)))), /*#__PURE__*/React.createElement("div", {
-              className: "flex items-center gap-2"
-            }, /*#__PURE__*/React.createElement("div", {
-              className: "text-xs font-bold text-rose-600"
-            }, exploreScore.correct, "/", exploreScore.total), exploreScore.total > 0 && /*#__PURE__*/React.createElement("button", {
-              onClick: submitExploreScore,
-              className: "text-[10px] font-bold bg-rose-600 text-white px-2 py-0.5 rounded-full hover:bg-rose-700"
-            }, "\uD83D\uDCBE Save"))), !fracChallenge ? /*#__PURE__*/React.createElement("button", {
-              onClick: () => {
-                const types = ['identify', 'equivalent', 'compare'];
-                const type = types[Math.floor(Math.random() * types.length)];
-                let ch;
-                if (type === 'identify') {
-                  const fdiff = getAdaptiveDifficulty();
-                  const dpool = fdiff === 'easy' ? [2, 3, 4] : fdiff === 'hard' ? [3, 4, 5, 6, 8, 10, 12] : [2, 3, 4, 5, 6, 8];
-                  const d = dpool[Math.floor(Math.random() * dpool.length)];
-                  const n = Math.floor(Math.random() * d) + 1;
-                  setFractionPieces({
-                    numerator: n,
-                    denominator: d
-                  });
-                  ch = {
-                    type,
-                    question: t('explore.frac_identify'),
-                    answer: n
-                  };
-                } else if (type === 'equivalent') {
-                  const d = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)];
-                  const n = Math.floor(Math.random() * (d - 1)) + 1;
-                  const mult = Math.floor(Math.random() * 3) + 2;
-                  ch = {
-                    type,
-                    question: t('explore.frac_equivalent', {
-                      n,
-                      d,
-                      target: d * mult
-                    }),
-                    answer: n * mult
-                  };
-                } else {
-                  const d1 = [2, 3, 4, 6][Math.floor(Math.random() * 4)];
-                  const n1 = Math.floor(Math.random() * d1) + 1;
-                  const d2 = [2, 3, 4, 6][Math.floor(Math.random() * 4)];
-                  const n2 = Math.floor(Math.random() * d2) + 1;
-                  const v1 = n1 / d1;
-                  const v2 = n2 / d2;
-                  ch = {
-                    type,
-                    question: t('explore.frac_compare', {
-                      n1,
-                      d1,
-                      n2,
-                      d2
-                    }),
-                    answer: v1 >= v2 ? n1 : n2
-                  };
-                }
-                setFracChallenge(ch);
-                setFracAnswer('');
-                setFracFeedback(null);
-              },
-              className: "w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md"
-            }, "\uD83C\uDFB2 Generate Challenge") : /*#__PURE__*/React.createElement("div", {
-              className: "space-y-2"
-            }, /*#__PURE__*/React.createElement("p", {
-              className: "text-sm font-bold text-rose-800"
-            }, fracChallenge.question), /*#__PURE__*/React.createElement("div", {
-              className: "flex gap-2"
-            }, /*#__PURE__*/React.createElement("input", {
-              type: "number",
-              value: fracAnswer,
-              onChange: e => setFracAnswer(e.target.value),
-              onKeyDown: e => {
-                if (e.key === 'Enter' && fracAnswer) {
-                  const ans = parseInt(fracAnswer);
-                  const ok = ans === fracChallenge.answer;
-                  announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
-                  setFracFeedback(ok ? {
-                    correct: true,
-                    msg: t('explore.correct')
-                  } : {
-                    correct: false,
-                    msg: t('explore.answer_was', {
-                      answer: fracChallenge.answer
-                    })
-                  });
-                  setExploreScore(prev => ({
-                    correct: prev.correct + (ok ? 1 : 0),
-                    total: prev.total + 1
-                  }));
-                }
-              },
-              placeholder: t('explore.answer_placeholder'),
-              className: "flex-1 px-3 py-2 border border-rose-300 rounded-lg text-sm font-mono"
-            }), /*#__PURE__*/React.createElement("button", {
-              onClick: () => {
-                const ans = parseInt(fracAnswer);
-                const ok = ans === fracChallenge.answer;
-                announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
-                setFracFeedback(ok ? {
-                  correct: true,
-                  msg: t('explore.correct')
-                } : {
-                  correct: false,
-                  msg: t('explore.answer_was', {
-                    answer: fracChallenge.answer
-                  })
-                });
-                setExploreScore(prev => ({
-                  correct: prev.correct + (ok ? 1 : 0),
-                  total: prev.total + 1
-                }));
-              },
-              className: "px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-sm hover:bg-rose-700"
-            }, "Check")), fracFeedback && /*#__PURE__*/React.createElement("p", {
-              className: "text-sm font-bold " + (fracFeedback.correct ? "text-green-600" : "text-red-600")
-            }, fracFeedback.msg), fracFeedback && /*#__PURE__*/React.createElement("button", {
-              onClick: () => {
-                setFracChallenge(null);
-                setFracFeedback(null);
-                setFracAnswer('');
-              },
-              className: "text-xs text-rose-600 font-bold hover:underline"
-            }, t('explore.next_challenge'))))),
-          // ═══════════════════════════════════════════════════════
+            }, t('explore.next_challenge'))))), // ═══════════════════════════════════════════════════════
           // TIER 3: Calculus Visualizer, Wave Simulator, Cell Diagram
           // ═══════════════════════════════════════════════════════
 
@@ -4296,8 +4005,17 @@
 
             // ── Canvas ref callback for simulation ──
             var canvasRefCb = function (canvasEl) {
-              if (!canvasEl || canvasEl._cellSimInit) return;
+              if (!canvasEl) {
+                if (canvasRefCb._lastCanvas && canvasRefCb._lastCanvas._cellSimAnim) {
+                  cancelAnimationFrame(canvasRefCb._lastCanvas._cellSimAnim);
+                  canvasRefCb._lastCanvas._cellSimInit = false;
+                }
+                canvasRefCb._lastCanvas = null;
+                return;
+              }
+              if (canvasEl._cellSimInit) return;
               canvasEl._cellSimInit = true;
+              canvasRefCb._lastCanvas = canvasEl;
               var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
               var H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
               var ctx = canvasEl.getContext('2d');
@@ -5598,7 +5316,7 @@
                     else if (e.key === ' ') {
                       e.preventDefault();
                       var cv = document.getElementById('physicsCanvas');
-                      if (cv && cv._launchProjectile) cv._launchProjectile();
+                      if (cv && cv._launch) cv._launch();
                     }
                   },
                   style: { width: "100%", height: "100%", display: "block", outline: "none" }
@@ -7212,7 +6930,7 @@
             const d = labToolData.solarSystem;
             const upd = (key, val) => setLabToolData(prev => ({ ...prev, solarSystem: { ...prev.solarSystem, [key]: val } }));
             const PLANETS = [
-              { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.' },
+              { name: t('stem.periodic.mercury'), emoji: '\u2638', color: '#94a3b8', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, tilt: 0.03, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: 'Smallest planet; no atmosphere to retain heat.', gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
               { name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, tilt: 2.64, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: 'Hottest planet due to runaway greenhouse effect. Rotates backwards!', gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
               { name: t('stem.solar_sys.earth'), emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, tilt: 0.41, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: 'Only known planet with liquid water and life.', gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
               { name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).', gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
@@ -11328,8 +11046,7 @@
                 pred = Math.min(500, Math.round(newPred));
                 data.push({ step: i, prey, pred });
               }
-              upd('data', data);
-              upd('steps', 100);
+              setLabToolData(prev => ({ ...prev, ecosystem: { ...prev.ecosystem, data: data, steps: 100 } }));
             };
             const W = 440, H = 250, pad = 40;
             const maxVal = d.data.length > 0 ? Math.max(...d.data.map(dp => Math.max(dp.prey, dp.pred)), 10) : 100;
@@ -15006,13 +14723,15 @@
               upd('_quizOptsFor', sysKey + '|' + d.quizIdx);
             }
 
-            // Body drawing on canvas
+            // Body drawing on canvas — animated
             var canvasRef = function (canvas) {
               if (!canvas) return;
-              if (canvas._anatomyDrawn === sysKey + view + d.selectedStructure + searchTerm) return;
-              canvas._anatomyDrawn = sysKey + view + d.selectedStructure + searchTerm;
+              if (canvas._anatomyAnim) { cancelAnimationFrame(canvas._anatomyAnim); canvas._anatomyAnim = null; }
               var ctx = canvas.getContext('2d');
               var W = canvas.width, H = canvas.height;
+              var anatTick = 0;
+              function drawAnatomyFrame() {
+              anatTick++;
               ctx.clearRect(0, 0, W, H);
 
               // Body silhouette
@@ -15107,6 +14826,10 @@
             };
 
             // Canvas click handler
+              canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
+              }
+              drawAnatomyFrame();
+            };
             var handleClick = function (e) {
               var rect = e.target.getBoundingClientRect();
               var cx = (e.clientX - rect.left) / rect.width;
@@ -15177,7 +14900,7 @@
                 // Canvas
                 React.createElement("div", { className: "flex-shrink-0" },
                   React.createElement("canvas", {
-                    ref: canvasRef, width: 280, height: 480,
+                    ref: canvasRef, width: 360, height: 520,
                     onClick: handleClick,
                     className: "rounded-xl border-2 cursor-crosshair",
                     style: { borderColor: sys.accent + '30', background: '#fafaf9' }
@@ -15358,13 +15081,22 @@
               upd('_brainQuizOptsFor', d.quizIdx);
             }
 
-            // Brain canvas
+            // Brain canvas — animated
             var canvasRef = function (canvas) {
               if (!canvas) return;
-              if (canvas._brainDrawn === viewKey + d.selectedRegion + searchTerm) return;
-              canvas._brainDrawn = viewKey + d.selectedRegion + searchTerm;
+              if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
               var ctx = canvas.getContext('2d');
               var W = canvas.width, H = canvas.height;
+              if (!canvas._neurons) {
+                canvas._neurons = [];
+                for (var ni = 0; ni < 30; ni++) {
+                  canvas._neurons.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random()-0.5)*0.6, vy: (Math.random()-0.5)*0.6, life: Math.random(), size: 1 + Math.random() * 1.5 });
+                }
+              }
+              var neurons = canvas._neurons;
+              var brainTick = 0;
+              function drawBrainFrame() {
+              brainTick++;
               ctx.clearRect(0, 0, W, H);
               ctx.save();
 
@@ -15556,7 +15288,7 @@
               React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
                 React.createElement("div", { className: "flex-shrink-0" },
                   React.createElement("canvas", {
-                    ref: canvasRef, width: 320, height: 400,
+                    ref: canvasRef, width: 380, height: 460,
                     onClick: handleClick,
                     className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
                     style: { background: '#faf8ff' }
@@ -15653,6 +15385,324 @@
               )
             );
           })(),
+
+
+          stemLabTab === 'explore' && stemLabTool === 'artStudio' && (() => {
+            const d = labToolData.artStudio || {};
+            const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
+            const tab = d.tab || 'colorWheel';
+
+            // Color Wheel Canvas
+            const wheelRef = function (canvas) {
+              if (!canvas) return;
+              if (canvas._wheelAnim) cancelAnimationFrame(canvas._wheelAnim);
+              var ctx = canvas.getContext('2d');
+              var W = canvas.width, H = canvas.height;
+              var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 20;
+              var tick = 0;
+              var hue = d.hue || 0, sat = d.sat !== undefined ? d.sat : 100, lit = d.lit !== undefined ? d.lit : 50;
+
+              function drawWheel() {
+                tick++;
+                ctx.clearRect(0, 0, W, H);
+                for (var a = 0; a < 360; a++) {
+                  var rad1 = (a - 90) * Math.PI / 180;
+                  var rad2 = (a - 89) * Math.PI / 180;
+                  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, rad1, rad2); ctx.closePath();
+                  ctx.fillStyle = 'hsl(' + a + ',' + sat + '%,' + lit + '%)'; ctx.fill();
+                }
+                ctx.beginPath(); ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
+                ctx.fillStyle = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)'; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+                var selRad = (hue - 90) * Math.PI / 180;
+                var sx = cx + Math.cos(selRad) * R * 0.75;
+                var sy = cy + Math.sin(selRad) * R * 0.75;
+                ctx.beginPath(); ctx.arc(sx, sy, 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff'; ctx.fill();
+                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.fillStyle = lit > 55 ? '#000' : '#fff';
+                ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('H:' + hue + '\u00B0', cx, cy - 8);
+                ctx.fillText('S:' + sat + '% L:' + lit + '%', cx, cy + 8);
+                var harmony = d.harmony || 'complementary';
+                var harmAngles = [];
+                if (harmony === 'complementary') harmAngles = [(hue + 180) % 360];
+                else if (harmony === 'triadic') harmAngles = [(hue + 120) % 360, (hue + 240) % 360];
+                else if (harmony === 'analogous') harmAngles = [(hue + 30) % 360, (hue - 30 + 360) % 360];
+                else if (harmony === 'split') harmAngles = [(hue + 150) % 360, (hue + 210) % 360];
+                harmAngles.forEach(function (ha) {
+                  var hr = (ha - 90) * Math.PI / 180;
+                  var hx = cx + Math.cos(hr) * R * 0.75, hy = cy + Math.sin(hr) * R * 0.75;
+                  ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+                  ctx.fillStyle = 'hsl(' + ha + ',' + sat + '%,' + lit + '%)'; ctx.fill();
+                  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                });
+                canvas._wheelAnim = requestAnimationFrame(drawWheel);
+              }
+              canvas.onmousedown = canvas.ontouchstart = function (e) {
+                var rect = canvas.getBoundingClientRect();
+                var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                var scaleX = W / rect.width, scaleY = H / rect.height;
+                ex *= scaleX; ey *= scaleY;
+                var dx = ex - cx, dy = ey - cy;
+                var dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < R && dist > R * 0.35) {
+                  var angle = Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360);
+                  hue = angle; upd('hue', angle);
+                }
+              };
+              drawWheel();
+            };
+
+            // Pixel Art Canvas
+            const pixelRef = function (canvas) {
+              if (!canvas) return;
+              var ctx = canvas.getContext('2d');
+              var W = canvas.width, H = canvas.height;
+              var gridSize = d.pixelGrid || 16;
+              var cellW = W / gridSize, cellH = H / gridSize;
+              var grid = d.pixelData || {};
+              var painting = false;
+              var currentColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+              function drawPixelGrid() {
+                ctx.clearRect(0, 0, W, H);
+                ctx.fillStyle = '#1e1e2e'; ctx.fillRect(0, 0, W, H);
+                Object.keys(grid).forEach(function (key) {
+                  var parts = key.split(',');
+                  ctx.fillStyle = grid[key];
+                  ctx.fillRect(parseInt(parts[0]) * cellW, parseInt(parts[1]) * cellH, cellW, cellH);
+                });
+                ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
+                for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
+                for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+              }
+              function paint(e) {
+                var rect = canvas.getBoundingClientRect();
+                var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                var gx = Math.floor(ex * (W / rect.width) / cellW);
+                var gy = Math.floor(ey * (H / rect.height) / cellH);
+                if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
+                  var key = gx + ',' + gy;
+                  if (d.pixelTool === 'eraser') delete grid[key]; else grid[key] = currentColor;
+                  upd('pixelData', Object.assign({}, grid));
+                  drawPixelGrid();
+                }
+              }
+              canvas.onmousedown = canvas.ontouchstart = function (e) { painting = true; paint(e); };
+              canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paint(e); };
+              canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
+              canvas.onmouseleave = function () { painting = false; };
+              drawPixelGrid();
+            };
+
+            // Symmetry Canvas
+            const symmetryRef = function (canvas) {
+              if (!canvas) return;
+              var ctx = canvas.getContext('2d');
+              var W = canvas.width, H = canvas.height;
+              var cx = W / 2, cy = H / 2;
+              var folds = d.symmetryFolds || 6;
+              var drawing = false;
+              var brushSize = d.brushSize || 3;
+              var brushColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+              if (!canvas._symInit) {
+                canvas._symInit = true;
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
+                for (var i = 0; i < folds; i++) {
+                  var angle = (i / folds) * Math.PI * 2;
+                  ctx.beginPath(); ctx.moveTo(cx, cy);
+                  ctx.lineTo(cx + Math.cos(angle) * Math.max(W, H), cy + Math.sin(angle) * Math.max(W, H));
+                  ctx.stroke();
+                }
+              }
+              function drawSymmetric(ex, ey) {
+                var dx = ex - cx, dy = ey - cy, dist = Math.sqrt(dx*dx + dy*dy);
+                var baseAngle = Math.atan2(dy, dx);
+                for (var i = 0; i < folds; i++) {
+                  var angle = baseAngle + (i / folds) * Math.PI * 2;
+                  ctx.beginPath(); ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, brushSize, 0, Math.PI * 2);
+                  ctx.fillStyle = brushColor; ctx.fill();
+                  var mirrorAngle = -baseAngle + (i / folds) * Math.PI * 2;
+                  ctx.beginPath(); ctx.arc(cx + Math.cos(mirrorAngle) * dist, cy + Math.sin(mirrorAngle) * dist, brushSize, 0, Math.PI * 2);
+                  ctx.fillStyle = brushColor; ctx.fill();
+                }
+              }
+              function handleDraw(e) {
+                var rect = canvas.getBoundingClientRect();
+                var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                drawSymmetric(ex * (W / rect.width), ey * (H / rect.height));
+              }
+              canvas.onmousedown = canvas.ontouchstart = function (e) { drawing = true; handleDraw(e); };
+              canvas.onmousemove = canvas.ontouchmove = function (e) { if (drawing) handleDraw(e); };
+              canvas.onmouseup = canvas.ontouchend = function () { drawing = false; };
+              canvas.onmouseleave = function () { drawing = false; };
+            };
+
+            // WCAG contrast helpers
+            function luminance(h, s, l) {
+              var c = (1 - Math.abs(2 * l / 100 - 1)) * s / 100;
+              var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+              var m = l / 100 - c / 2;
+              var r, g, b;
+              if (h < 60) { r=c; g=x; b=0; } else if (h < 120) { r=x; g=c; b=0; }
+              else if (h < 180) { r=0; g=c; b=x; } else if (h < 240) { r=0; g=x; b=c; }
+              else if (h < 300) { r=x; g=0; b=c; } else { r=c; g=0; b=x; }
+              r+=m; g+=m; b+=m;
+              var toL = function (v) { return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+              return 0.2126*toL(r) + 0.7152*toL(g) + 0.0722*toL(b);
+            }
+            function mixColors(c1, c2, ratio) {
+              var h1=c1.h, s1=c1.s, l1=c1.l, h2=c2.h, s2=c2.s, l2=c2.l;
+              var hDiff = h2-h1; if (Math.abs(hDiff)>180) { if (hDiff>0) h1+=360; else h2+=360; }
+              return { h: Math.round((h1 + (h2-h1)*ratio + 360) % 360), s: Math.round(s1+(s2-s1)*ratio), l: Math.round(l1+(l2-l1)*ratio) };
+            }
+            var mix1 = { h: d.mix1H||0, s: d.mix1S||100, l: d.mix1L||50 };
+            var mix2 = { h: d.mix2H||200, s: d.mix2S||100, l: d.mix2L||50 };
+            var mixRatio = d.mixRatio || 0.5;
+            var mixed = mixColors(mix1, mix2, mixRatio);
+            var fgH = d.fgH||0, fgS = d.fgS||0, fgL = d.fgL||0;
+            var bgH = d.bgH||0, bgS = d.bgS||0, bgL = d.bgL||100;
+            var l1c = luminance(fgH, fgS, fgL), l2c = luminance(bgH, bgS, bgL);
+            var contrastRatio = (Math.max(l1c,l2c)+0.05) / (Math.min(l1c,l2c)+0.05);
+            var passAA = contrastRatio >= 4.5, passAAA = contrastRatio >= 7, passAALarge = contrastRatio >= 3;
+
+            return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
+                React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE")
+              ),
+              React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200" },
+                [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
+                  return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
+                })
+              ),
+              tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+                  React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
+                  React.createElement("div", { className: "flex-1 space-y-3" },
+                    React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-200" },
+                      React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, "\uD83C\uDFAF Selected Color"),
+                      React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                        React.createElement("div", { style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue||0) + ',' + (d.sat||100) + '%,' + (d.lit||50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue||0) + ", " + (d.sat||100) + "%, " + (d.lit||50) + "%)"),
+                          React.createElement("p", { className: "text-[10px] text-slate-500" }, "Click the wheel to pick a hue")
+                        )
+                      ),
+                      [{ k: 'hue', label: 'Hue', min: 0, max: 360 }, { k: 'sat', label: 'Saturation %', min: 0, max: 100 }, { k: 'lit', label: 'Lightness %', min: 0, max: 100 }].map(function (s) {
+                        return React.createElement("div", { key: s.k, className: "mb-2" },
+                          React.createElement("label", { className: "text-[10px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
+                          React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
+                      React.createElement("p", { className: "text-[10px] font-bold text-pink-600 mb-2" }, "\uD83D\uDD17 Color Harmony"),
+                      React.createElement("div", { className: "flex gap-1" },
+                        ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
+                          return React.createElement("button", { key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
+                        })
+                      )
+                    )
+                  )
+                )
+              ),
+              tab === 'mixer' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("div", { className: "grid grid-cols-3 gap-4 items-center" },
+                  React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 text-center" },
+                    React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix1.h + ',' + mix1.s + '%,' + mix1.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                    React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-2" }, "Color A"),
+                    [{ k: 'mix1H', max: 360, val: mix1.h }, { k: 'mix1S', max: 100, val: mix1.s }, { k: 'mix1L', max: 100, val: mix1.l }].map(function (s) {
+                      return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-indigo-500 mb-1" });
+                    })
+                  ),
+                  React.createElement("div", { className: "text-center" },
+                    React.createElement("div", { style: { width: 100, height: 100, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mixed.h + ',' + mixed.s + '%,' + mixed.l + '%)', border: '4px solid white', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' } }),
+                    React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83C\uDFAF Result"),
+                    React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
+                    React.createElement("p", { className: "text-[10px] text-slate-500" }, Math.round((1-mixRatio)*100) + '% A + ' + Math.round(mixRatio*100) + '% B')
+                  ),
+                  React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 text-center" },
+                    React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix2.h + ',' + mix2.s + '%,' + mix2.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                    React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, "Color B"),
+                    [{ k: 'mix2H', max: 360, val: mix2.h }, { k: 'mix2S', max: 100, val: mix2.s }, { k: 'mix2L', max: 100, val: mix2.l }].map(function (s) {
+                      return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-rose-500 mb-1" });
+                    })
+                  )
+                )
+              ),
+              tab === 'pixel' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+                  React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + (d.hue||0) + ',' + (d.sat||100) + '%,' + (d.lit||50) + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Current color"),
+                  React.createElement("div", { className: "ml-auto flex gap-1" },
+                    [{ id: 'brush', icon: '\uD83D\uDD8C', label: 'Brush' }, { id: 'eraser', icon: '\uD83E\uDDFD', label: 'Eraser' }].map(function (t) {
+                      return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
+                    }),
+                    React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                    React.createElement("select", { value: d.pixelGrid || 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
+                      [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
+                  )
+                ),
+                React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
+              ),
+              tab === 'symmetry' && React.createElement("div", { className: "space-y-3" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2728 Folds:"),
+                  [4, 6, 8, 12, 16].map(function (f) {
+                    return React.createElement("button", { key: f, onClick: function () { upd('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
+                  }),
+                  React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
+                  React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
+                  React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
+                ),
+                React.createElement("canvas", { ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds||6) + '-' + (d.symmetryClear||0), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0f172a' } })
+              ),
+              tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
+                React.createElement("div", { className: "grid grid-cols-2 gap-4" },
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Foreground (Text)"),
+                    React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', marginBottom: 8 } }),
+                    [{ k: 'fgH', label: 'Hue', max: 360, val: fgH }, { k: 'fgS', label: 'Sat', max: 100, val: fgS }, { k: 'fgL', label: 'Light', max: 100, val: fgL }].map(function (s) {
+                      return React.createElement("div", { key: s.k, className: "mb-1" },
+                        React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
+                        React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                    React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Background"),
+                    React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', marginBottom: 8 } }),
+                    [{ k: 'bgH', label: 'Hue', max: 360, val: bgH }, { k: 'bgS', label: 'Sat', max: 100, val: bgS }, { k: 'bgL', label: 'Light', max: 100, val: bgL }].map(function (s) {
+                      return React.createElement("div", { key: s.k, className: "mb-1" },
+                        React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
+                        React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "rounded-xl border-2 p-6 text-center " + (passAA ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50') },
+                  React.createElement("div", { className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)' } },
+                    React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, "Sample Text"),
+                    React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 14 } }, "The quick brown fox jumps over the lazy dog")
+                  ),
+                  React.createElement("p", { className: "text-3xl font-bold " + (passAA ? 'text-green-700' : 'text-red-700') }, contrastRatio.toFixed(2) + ':1'),
+                  React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
+                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAALarge ? '\u2705' : '\u274C') + ' AA Large'),
+                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAA ? '\u2705' : '\u274C') + ' AA Normal'),
+                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAAA ? '\u2705' : '\u274C') + ' AAA')
+                  )
+                )
+              ),
+              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: 'Art Studio', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            );
+          })(),
+
 
         )));
     };
