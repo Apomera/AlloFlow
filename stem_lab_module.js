@@ -410,6 +410,82 @@
           cv.setAttribute('data-health', String(Math.round(typeof _cpd.plantHealth === 'number' ? _cpd.plantHealth : 100)));
         }
       }, [stemLabTab, stemLabTool, labToolData]);
+      // ── Graphing Calculator: Load math.js on demand (MUST be at top level) ──
+      React.useEffect(function () {
+        if (stemLabTab !== 'explore' || stemLabTool !== 'graphCalc') return;
+        if (window.math) return;
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/mathjs@13.2.2/lib/browser/math.min.js';
+        s.async = true;
+        s.onload = function () { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); };
+        document.head.appendChild(s);
+      }, [stemLabTab, stemLabTool]);
+      // ── Graphing Calculator: Render graph on Canvas (MUST be at top level) ──
+      React.useEffect(function () {
+        if (stemLabTab !== 'explore' || stemLabTool !== 'graphCalc') return;
+        var _gcd = (labToolData && labToolData.graphCalc) || {};
+        var _funcs = _gcd.funcs || [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
+        var _win = _gcd.window || { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+        var cv = document.getElementById('graph-calc-canvas');
+        if (!cv || !window.math) return;
+        var ctx = cv.getContext('2d');
+        var W = cv.width, H = cv.height;
+        var xr = _win.xmax - _win.xmin, yr = _win.ymax - _win.ymin;
+        var toScreenX = function (x) { return ((x - _win.xmin) / xr) * W; };
+        var toScreenY = function (y) { return H - ((y - _win.ymin) / yr) * H; };
+        // Clear
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+        // Grid
+        ctx.strokeStyle = 'rgba(56,189,248,0.08)'; ctx.lineWidth = 1;
+        var gridStep = Math.pow(10, Math.floor(Math.log10(xr / 5)));
+        var gx, gy;
+        for (gx = Math.ceil(_win.xmin / gridStep) * gridStep; gx <= _win.xmax; gx += gridStep) {
+          var sx = toScreenX(gx); ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+        }
+        for (gy = Math.ceil(_win.ymin / gridStep) * gridStep; gy <= _win.ymax; gy += gridStep) {
+          var sy = toScreenY(gy); ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+        }
+        // Axes
+        ctx.strokeStyle = 'rgba(148,163,184,0.5)'; ctx.lineWidth = 1.5;
+        if (_win.ymin <= 0 && _win.ymax >= 0) { var ay = toScreenY(0); ctx.beginPath(); ctx.moveTo(0, ay); ctx.lineTo(W, ay); ctx.stroke(); }
+        if (_win.xmin <= 0 && _win.xmax >= 0) { var ax = toScreenX(0); ctx.beginPath(); ctx.moveTo(ax, 0); ctx.lineTo(ax, H); ctx.stroke(); }
+        // Axis labels
+        ctx.font = '10px monospace'; ctx.fillStyle = '#64748b';
+        for (gx = Math.ceil(_win.xmin / gridStep) * gridStep; gx <= _win.xmax; gx += gridStep) {
+          if (Math.abs(gx) > 0.001) { var _sx = toScreenX(gx); var _ay = _win.ymin <= 0 && _win.ymax >= 0 ? toScreenY(0) : H - 10; ctx.fillText(Number(gx.toPrecision(4)).toString(), _sx + 2, _ay - 3); }
+        }
+        for (gy = Math.ceil(_win.ymin / gridStep) * gridStep; gy <= _win.ymax; gy += gridStep) {
+          if (Math.abs(gy) > 0.001) { var _sy = toScreenY(gy); var _ax = _win.xmin <= 0 && _win.xmax >= 0 ? toScreenX(0) : 10; ctx.fillText(Number(gy.toPrecision(4)).toString(), _ax + 4, _sy - 3); }
+        }
+        // Plot functions
+        _funcs.forEach(function (fn) {
+          if (!fn.expr || !fn.expr.trim()) return;
+          try {
+            var exprStr = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+            exprStr = exprStr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+            var compiled = math.compile(exprStr);
+            ctx.strokeStyle = fn.color; ctx.lineWidth = 2.5; ctx.beginPath();
+            var started = false;
+            for (var px = 0; px <= W; px++) {
+              var x = _win.xmin + (px / W) * xr;
+              try {
+                var y = compiled.evaluate({ x: x });
+                if (typeof y === 'number' && isFinite(y)) {
+                  var py = toScreenY(y);
+                  if (!started) { ctx.moveTo(px, py); started = true; }
+                  else if (py > -500 && py < H + 500) ctx.lineTo(px, py);
+                  else { ctx.stroke(); ctx.beginPath(); started = false; }
+                } else { ctx.stroke(); ctx.beginPath(); started = false; }
+              } catch (e) { ctx.stroke(); ctx.beginPath(); started = false; }
+            }
+            ctx.stroke();
+          } catch (e) { /* invalid expression */ }
+        });
+        // Axis x/y labels
+        ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('x', W - 14, (_win.ymin <= 0 && _win.ymax >= 0 ? toScreenY(0) : H / 2) - 6);
+        ctx.fillText('y', (_win.xmin <= 0 && _win.xmax >= 0 ? toScreenX(0) : W / 2) + 6, 14);
+      }, [stemLabTab, stemLabTool, labToolData]);
       // ── Companion Planting: Day ticker loop (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'companionPlanting') return;
@@ -8436,9 +8512,9 @@
                               plotterVisible = !plotterVisible;
                               if (plotterPanel) { plotterPanel.style.display = plotterVisible ? 'block' : 'none'; setTimeout(function () { plotterPanel.style.opacity = plotterVisible ? '1' : '0'; }, 10); }
                             }
-                            });
+                          });
 
-                                                    // ── Trail Line (path history) ──
+                          // ── Trail Line (path history) ──
                           var trailPositions = []; var trailLine = null; var trailMaxPoints = 500;
                           function updateTrail() {
                             trailPositions.push(new THREE.Vector3(playerPos.x, isGas ? playerPos.y - 0.3 : 0.15, playerPos.z));
@@ -8570,7 +8646,7 @@
                             // Calculate total distance
                             var total = 0;
                             for (var wi = 1; wi < plotterWaypoints.length; wi++) {
-                              var ddx = plotterWaypoints[wi].x - plotterWaypoints[wi-1].x, ddz = plotterWaypoints[wi].z - plotterWaypoints[wi-1].z;
+                              var ddx = plotterWaypoints[wi].x - plotterWaypoints[wi - 1].x, ddz = plotterWaypoints[wi].z - plotterWaypoints[wi - 1].z;
                               total += Math.sqrt(ddx * ddx + ddz * ddz) * scaleFactor;
                             }
                             var statsDiv = plotterPanel.querySelector('#plotter-stats');
@@ -12397,18 +12473,18 @@
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.fractions.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             );
           })(),
-              React.createElement("div", {
-                key: "graphCalc",
-                style: { background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)", borderRadius: "16px", padding: "20px", color: "white", display: "flex", flexDirection: "column", gap: "10px", minHeight: "170px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", boxShadow: "0 4px 15px rgba(67,56,202,0.3)" },
-                onClick: function () { setStemLabTool("graphCalc"); },
-                onMouseEnter: function (e) { e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(67,56,202,0.5)"; },
-                onMouseLeave: function (e) { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 15px rgba(67,56,202,0.3)"; },
-                role: "button", tabIndex: 0, "aria-label": "Graphing Calculator"
-              },
-                React.createElement("div", { style: { fontSize: "36px", marginBottom: "2px" } }, "\uD83D\uDCC8"),
-                React.createElement("div", { style: { fontWeight: "bold", fontSize: "14px", letterSpacing: "0.5px" } }, "Graphing Calculator"),
-                React.createElement("div", { style: { fontSize: "11px", opacity: 0.85, lineHeight: 1.4 } }, "Type equations, plot functions, explore data. Learn what every button really does."),
-                React.createElement("button", { onClick: function (e) { e.stopPropagation(); setStemLabTool("graphCalc"); }, className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors mt-auto self-start", "aria-label": "Open Graphing Calculator" }, "\uD83D\uDD0D Explore")),
+          React.createElement("div", {
+            key: "graphCalc",
+            style: { background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)", borderRadius: "16px", padding: "20px", color: "white", display: "flex", flexDirection: "column", gap: "10px", minHeight: "170px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", boxShadow: "0 4px 15px rgba(67,56,202,0.3)" },
+            onClick: function () { setStemLabTool("graphCalc"); },
+            onMouseEnter: function (e) { e.currentTarget.style.transform = "translateY(-4px) scale(1.02)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(67,56,202,0.5)"; },
+            onMouseLeave: function (e) { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 15px rgba(67,56,202,0.3)"; },
+            role: "button", tabIndex: 0, "aria-label": "Graphing Calculator"
+          },
+            React.createElement("div", { style: { fontSize: "36px", marginBottom: "2px" } }, "\uD83D\uDCC8"),
+            React.createElement("div", { style: { fontWeight: "bold", fontSize: "14px", letterSpacing: "0.5px" } }, "Graphing Calculator"),
+            React.createElement("div", { style: { fontSize: "11px", opacity: 0.85, lineHeight: 1.4 } }, "Type equations, plot functions, explore data. Learn what every button really does."),
+            React.createElement("button", { onClick: function (e) { e.stopPropagation(); setStemLabTool("graphCalc"); }, className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors mt-auto self-start", "aria-label": "Open Graphing Calculator" }, "\uD83D\uDD0D Explore")),
 
 
           // ═══════════════════════════════════════════════════════
@@ -17813,83 +17889,9 @@
             const tableX = d.tableX != null ? d.tableX : -5;
             const tableStep = d.tableStep || 1;
 
-            // Load math.js on demand
-            React.useEffect(() => {
-              if (window.math) return;
-              const s = document.createElement('script');
-              s.src = 'https://cdn.jsdelivr.net/npm/mathjs@13.2.2/lib/browser/math.min.js';
-              s.async = true;
-              s.onload = () => { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); };
-              document.head.appendChild(s);
-            }, []);
-
-            // Render graph on Canvas
-            React.useEffect(() => {
-              const cv = document.getElementById('graph-calc-canvas');
-              if (!cv || !window.math) return;
-              const ctx = cv.getContext('2d');
-              const W = cv.width, H = cv.height;
-              const xr = win.xmax - win.xmin, yr = win.ymax - win.ymin;
-              const toScreenX = x => ((x - win.xmin) / xr) * W;
-              const toScreenY = y => H - ((y - win.ymin) / yr) * H;
-
-              // Clear
-              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-
-              // Grid
-              ctx.strokeStyle = 'rgba(56,189,248,0.08)'; ctx.lineWidth = 1;
-              const gridStep = Math.pow(10, Math.floor(Math.log10(xr / 5)));
-              for (let gx = Math.ceil(win.xmin / gridStep) * gridStep; gx <= win.xmax; gx += gridStep) {
-                const sx = toScreenX(gx); ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
-              }
-              for (let gy = Math.ceil(win.ymin / gridStep) * gridStep; gy <= win.ymax; gy += gridStep) {
-                const sy = toScreenY(gy); ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
-              }
-
-              // Axes
-              ctx.strokeStyle = 'rgba(148,163,184,0.5)'; ctx.lineWidth = 1.5;
-              if (win.ymin <= 0 && win.ymax >= 0) { const ay = toScreenY(0); ctx.beginPath(); ctx.moveTo(0, ay); ctx.lineTo(W, ay); ctx.stroke(); }
-              if (win.xmin <= 0 && win.xmax >= 0) { const ax = toScreenX(0); ctx.beginPath(); ctx.moveTo(ax, 0); ctx.lineTo(ax, H); ctx.stroke(); }
-
-              // Axis labels
-              ctx.font = '10px monospace'; ctx.fillStyle = '#64748b';
-              for (let gx = Math.ceil(win.xmin / gridStep) * gridStep; gx <= win.xmax; gx += gridStep) {
-                if (Math.abs(gx) > 0.001) { const sx = toScreenX(gx); const ay = win.ymin <= 0 && win.ymax >= 0 ? toScreenY(0) : H - 10; ctx.fillText(Number(gx.toPrecision(4)).toString(), sx + 2, ay - 3); }
-              }
-              for (let gy = Math.ceil(win.ymin / gridStep) * gridStep; gy <= win.ymax; gy += gridStep) {
-                if (Math.abs(gy) > 0.001) { const sy = toScreenY(gy); const ax = win.xmin <= 0 && win.xmax >= 0 ? toScreenX(0) : 10; ctx.fillText(Number(gy.toPrecision(4)).toString(), ax + 4, sy - 3); }
-              }
-
-              // Plot functions
-              funcs.forEach((fn, fi) => {
-                if (!fn.expr || !fn.expr.trim()) return;
-                try {
-                  let exprStr = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                  exprStr = exprStr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                  const compiled = math.compile(exprStr);
-                  ctx.strokeStyle = fn.color; ctx.lineWidth = 2.5; ctx.beginPath();
-                  let started = false;
-                  for (let px = 0; px <= W; px++) {
-                    const x = win.xmin + (px / W) * xr;
-                    try {
-                      const y = compiled.evaluate({ x: x });
-                      if (typeof y === 'number' && isFinite(y)) {
-                        const sy = toScreenY(y);
-                        if (!started) { ctx.moveTo(px, sy); started = true; }
-                        else if (sy > -500 && sy < H + 500) ctx.lineTo(px, sy);
-                        else { ctx.stroke(); ctx.beginPath(); started = false; }
-                      } else { ctx.stroke(); ctx.beginPath(); started = false; }
-                    } catch(e) { ctx.stroke(); ctx.beginPath(); started = false; }
-                  }
-                  ctx.stroke();
-                } catch(e) { /* invalid expression */ }
-              });
-
-              // Axis labels x and y
-              ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 11px sans-serif';
-              ctx.fillText('x', W - 14, (win.ymin <= 0 && win.ymax >= 0 ? toScreenY(0) : H / 2) - 6);
-              ctx.fillText('y', (win.xmin <= 0 && win.xmax >= 0 ? toScreenX(0) : W / 2) + 6, 14);
-            }, [funcs, win, d]);
+            // NOTE: useEffect hooks for math.js loading and canvas rendering
+            // have been moved to the component body level (above) to satisfy
+            // React's Rules of Hooks. They guard internally with early returns.
 
             const COACH_TIPS = {
               explorer: [
@@ -17959,9 +17961,9 @@
                 const tCompiled = math.compile(tExpr);
                 for (let tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
                   try { const ty = tCompiled.evaluate({ x: tx }); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
-                  catch(e) { tableRows.push({ x: tx, y: 'ERR' }); }
+                  catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
                 }
-              } catch(e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
+              } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
             }
 
             return React.createElement('div', {
