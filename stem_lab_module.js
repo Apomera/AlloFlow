@@ -8759,8 +8759,9 @@
 
             // ── Three.js 3D Canvas ──
             const canvasRef = function (canvas) {
-              if (!canvas) { // cleanup on unmount
+              if (!canvas) { // cleanup on unmount — but skip if canvas is still alive (just a ref swap from re-render)
                 const prev = document.querySelector('.solar3d-canvas');
+                if (prev && prev._solarInit) return; // Still mounted, skip cleanup (React ref swap)
                 if (prev && prev._solarCleanup) { prev._solarCleanup(); prev._solarInit = false; }
                 return;
               }
@@ -8991,6 +8992,16 @@
                     mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
                   });
 
+                  // ── Handle camera reset signal from Reset View button ──
+                  if (canvas.dataset.resetCamera === 'true') {
+                    canvas.dataset.resetCamera = '';
+                    focusedPlanetIdx = -1;
+                    targetLookAt.set(0, 0, 0);
+                    targetDist = 55;
+                    camPhi = 1.0;
+                    camTheta = 0.5;
+                  }
+
                   // ── Smooth camera tracking ──
                   // If focused on a planet, update targetLookAt to follow it as it orbits
                   if (focusedPlanetIdx >= 0 && focusedPlanetIdx < planetMeshes.length) {
@@ -9106,7 +9117,7 @@
                     React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold min-w-[28px] text-right" }, simSpeed.toFixed(1) + "x")
                   ),
                   React.createElement("button", {
-                    onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c && c._solarInit) { /* reset camera via reinit — crude but works */ c._solarCleanup && c._solarCleanup(); c._solarInit = false; setTimeout(function () { canvasRef(c); }, 50); } },
+                    onClick: () => { upd('selectedPlanet', null); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
                     className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white/10 text-white/70 hover:bg-white/20 border border-white/10 backdrop-blur-sm transition-all"
                   }, "\uD83C\uDFE0 Reset View"),
                   React.createElement("span", { className: "text-[9px] text-white/40 ml-auto hidden sm:inline" }, "Drag to orbit \u2022 Scroll to zoom \u2022 Click a planet")
@@ -11269,9 +11280,32 @@
               if (!canvasEl || canvasEl._universeInit) return;
               canvasEl._universeInit = true;
               var dpr = window.devicePixelRatio || 1;
-              var W = canvasEl.width = canvasEl.offsetWidth * dpr;
-              var H = canvasEl.height = canvasEl.offsetHeight * dpr;
+              var ow = canvasEl.offsetWidth, oh = canvasEl.offsetHeight;
+              // Guard: if canvas has no layout yet, defer init
+              if (!ow || !oh) {
+                canvasEl._universeInit = false;
+                requestAnimationFrame(function () { canvasRefCb(canvasEl); });
+                return;
+              }
+              var W = canvasEl.width = ow * dpr;
+              var H = canvasEl.height = oh * dpr;
               var ctx = canvasEl.getContext('2d');
+              // roundRect polyfill for older browsers
+              if (!ctx.roundRect) {
+                ctx.roundRect = function (x, y, w, h, r) {
+                  if (typeof r === 'number') r = [r, r, r, r];
+                  ctx.moveTo(x + r[0], y);
+                  ctx.lineTo(x + w - r[1], y);
+                  ctx.arcTo(x + w, y, x + w, y + r[1], r[1]);
+                  ctx.lineTo(x + w, y + h - r[2]);
+                  ctx.arcTo(x + w, y + h, x + w - r[2], y + h, r[2]);
+                  ctx.lineTo(x + r[3], y + h);
+                  ctx.arcTo(x, y + h, x, y + h - r[3], r[3]);
+                  ctx.lineTo(x, y + r[0]);
+                  ctx.arcTo(x, y, x + r[0], y, r[0]);
+                  ctx.closePath();
+                };
+              }
               var tick = 0;
               var particles = [];
               for (var i = 0; i < 400; i++) {
@@ -11290,340 +11324,345 @@
                 nebulae.push({ x: Math.random(), y: Math.random(), size: 0.05 + Math.random() * 0.08, hue: ni % 4 === 0 ? '200,100,255' : ni % 4 === 1 ? '100,180,255' : ni % 4 === 2 ? '255,150,100' : '150,255,200', phase: Math.random() * Math.PI * 2 });
               }
               function draw() {
-                tick++;
-                var t = parseFloat(canvasEl.dataset.time || '0');
-                var ep = getCurrentEpoch(t);
-                ctx.clearRect(0, 0, W, H);
-                var cx = W / 2, cy = H / 2;
+                try {
+                  tick++;
+                  var t = parseFloat(canvasEl.dataset.time || '0');
+                  var ep = getCurrentEpoch(t);
+                  ctx.clearRect(0, 0, W, H);
+                  var cx = W / 2, cy = H / 2;
 
-                // ── Sky gradient (era-specific) ──
-                var skyGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.7);
-                if (t < 0.05) {
-                  // Singularity: blinding white core
-                  var intensity = Math.max(0, 1 - t / 0.05);
-                  skyGrad.addColorStop(0, 'rgba(255,255,255,' + intensity + ')');
-                  skyGrad.addColorStop(0.15, 'rgba(255,240,180,' + (intensity * 0.9) + ')');
-                  skyGrad.addColorStop(0.4, 'rgba(255,160,50,' + (intensity * 0.6) + ')');
-                  skyGrad.addColorStop(0.7, 'rgba(200,50,0,' + (intensity * 0.3) + ')');
-                  skyGrad.addColorStop(1, 'rgba(10,5,20,1)');
-                } else if (t < 0.2) {
-                  // Post-bang: fiery orange fading
-                  var cool = (t - 0.05) / 0.15;
-                  skyGrad.addColorStop(0, 'rgba(255,' + Math.round(200 - cool * 150) + ',' + Math.round(100 - cool * 80) + ',' + (0.8 - cool * 0.6) + ')');
-                  skyGrad.addColorStop(0.3, 'rgba(180,' + Math.round(80 - cool * 60) + ',20,' + (0.4 - cool * 0.3) + ')');
-                  skyGrad.addColorStop(1, 'rgba(10,8,25,1)');
-                } else if (t < 0.4) {
-                  // Dark Ages: deep indigo-black
-                  skyGrad.addColorStop(0, '#0c0a18'); skyGrad.addColorStop(0.5, '#060414'); skyGrad.addColorStop(1, '#020210');
-                } else if (t < 1.0) {
-                  // First stars: hints of blue
-                  var starGlow = (t - 0.4) / 0.6;
-                  skyGrad.addColorStop(0, 'rgba(15,15,' + Math.round(40 + starGlow * 15) + ',1)');
-                  skyGrad.addColorStop(1, 'rgba(5,5,' + Math.round(15 + starGlow * 5) + ',1)');
-                } else {
-                  // Galaxy era onward: deep cosmic blue-black
-                  skyGrad.addColorStop(0, '#0d0d28'); skyGrad.addColorStop(0.6, '#080818'); skyGrad.addColorStop(1, '#040410');
-                }
-                ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
-
-                // ── Big Bang: expanding shockwave rings ──
-                if (t < 0.3) {
-                  var bangPhase = t / 0.3;
-                  // Multiple expanding rings
-                  for (var ri = 0; ri < 5; ri++) {
-                    var ringT = bangPhase - ri * 0.15;
-                    if (ringT > 0 && ringT < 1) {
-                      var ringR = ringT * W * 0.55;
-                      var ringAlpha = (1 - ringT) * 0.6;
-                      ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-                      ctx.strokeStyle = 'rgba(255,' + Math.round(200 - ri * 30) + ',' + Math.round(100 - ri * 20) + ',' + ringAlpha + ')';
-                      ctx.lineWidth = (3 - ri * 0.4) * dpr;
-                      ctx.stroke();
-                    }
+                  // ── Sky gradient (era-specific) ──
+                  var skyGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.7);
+                  if (t < 0.05) {
+                    // Singularity: blinding white core
+                    var intensity = Math.max(0, 1 - t / 0.05);
+                    skyGrad.addColorStop(0, 'rgba(255,255,255,' + intensity + ')');
+                    skyGrad.addColorStop(0.15, 'rgba(255,240,180,' + (intensity * 0.9) + ')');
+                    skyGrad.addColorStop(0.4, 'rgba(255,160,50,' + (intensity * 0.6) + ')');
+                    skyGrad.addColorStop(0.7, 'rgba(200,50,0,' + (intensity * 0.3) + ')');
+                    skyGrad.addColorStop(1, 'rgba(10,5,20,1)');
+                  } else if (t < 0.2) {
+                    // Post-bang: fiery orange fading
+                    var cool = (t - 0.05) / 0.15;
+                    skyGrad.addColorStop(0, 'rgba(255,' + Math.round(200 - cool * 150) + ',' + Math.round(100 - cool * 80) + ',' + (0.8 - cool * 0.6) + ')');
+                    skyGrad.addColorStop(0.3, 'rgba(180,' + Math.round(80 - cool * 60) + ',20,' + (0.4 - cool * 0.3) + ')');
+                    skyGrad.addColorStop(1, 'rgba(10,8,25,1)');
+                  } else if (t < 0.4) {
+                    // Dark Ages: deep indigo-black
+                    skyGrad.addColorStop(0, '#0c0a18'); skyGrad.addColorStop(0.5, '#060414'); skyGrad.addColorStop(1, '#020210');
+                  } else if (t < 1.0) {
+                    // First stars: hints of blue
+                    var starGlow = (t - 0.4) / 0.6;
+                    skyGrad.addColorStop(0, 'rgba(15,15,' + Math.round(40 + starGlow * 15) + ',1)');
+                    skyGrad.addColorStop(1, 'rgba(5,5,' + Math.round(15 + starGlow * 5) + ',1)');
+                  } else {
+                    // Galaxy era onward: deep cosmic blue-black
+                    skyGrad.addColorStop(0, '#0d0d28'); skyGrad.addColorStop(0.6, '#080818'); skyGrad.addColorStop(1, '#040410');
                   }
-                  // Central plasma fireball
-                  var fireR = Math.min(bangPhase * 0.4, 0.35) * W;
-                  var fireGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, fireR);
-                  var coreAlpha = Math.max(0, 1 - bangPhase * 1.5);
-                  fireGrad.addColorStop(0, 'rgba(255,255,255,' + Math.min(1, coreAlpha + 0.3) + ')');
-                  fireGrad.addColorStop(0.2, 'rgba(255,255,200,' + coreAlpha + ')');
-                  fireGrad.addColorStop(0.4, 'rgba(255,200,80,' + (coreAlpha * 0.7) + ')');
-                  fireGrad.addColorStop(0.7, 'rgba(255,100,20,' + (coreAlpha * 0.4) + ')');
-                  fireGrad.addColorStop(1, 'rgba(200,30,0,0)');
-                  ctx.beginPath(); ctx.arc(cx, cy, fireR, 0, Math.PI * 2);
-                  ctx.fillStyle = fireGrad; ctx.fill();
+                  ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
 
-                  // Expanding plasma particles flying outward
-                  for (var ppi = 0; ppi < plasmaParticles.length; ppi++) {
-                    var pp2 = plasmaParticles[ppi];
-                    var ppDist = bangPhase * pp2.speed * W * 0.3;
-                    if (ppDist > W * 0.7) continue;
-                    var ppAlpha = Math.max(0, (1 - bangPhase) * pp2.life);
-                    var ppx = cx + Math.cos(pp2.angle) * ppDist;
-                    var ppy = cy + Math.sin(pp2.angle) * ppDist;
-                    var ppSize = pp2.size * dpr * (1 - bangPhase * 0.5);
-                    ctx.beginPath(); ctx.arc(ppx, ppy, ppSize, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,' + Math.round(200 + pp2.hue) + ',' + Math.round(100 + pp2.hue * 0.5) + ',' + ppAlpha + ')';
-                    ctx.fill();
-                  }
-                }
-
-                // ── CMB glow (recombination era: 0.2-1.0) ──
-                if (t > 0.15 && t < 1.0) {
-                  var cmbPhase = (t - 0.15) / 0.85;
-                  var cmbAlpha = Math.max(0, 0.35 * (1 - cmbPhase));
-                  // Mottled CMB pattern (simulated)
-                  for (var cmi = 0; cmi < 20; cmi++) {
-                    var cmx = ((cmi * 173 + 37) % (W / dpr)) * dpr;
-                    var cmy = ((cmi * 131 + 19) % (H / dpr)) * dpr;
-                    var cms = (15 + cmi * 7 % 20) * dpr;
-                    var cmGrad = ctx.createRadialGradient(cmx, cmy, 0, cmx, cmy, cms);
-                    var warmth = cmi % 2 === 0 ? '255,200,120' : '255,160,80';
-                    cmGrad.addColorStop(0, 'rgba(' + warmth + ',' + (cmbAlpha * 0.5) + ')');
-                    cmGrad.addColorStop(1, 'rgba(' + warmth + ',0)');
-                    ctx.beginPath(); ctx.arc(cmx, cmy, cms, 0, Math.PI * 2);
-                    ctx.fillStyle = cmGrad; ctx.fill();
-                  }
-                }
-
-                // ── Stars (appear after Dark Ages) ──
-                var starBrightness = t < 0.4 ? 0 : Math.min(1, (t - 0.4) / 0.8);
-                var starCount = Math.min(particles.length, Math.floor(starBrightness * particles.length));
-                for (var pi = 0; pi < starCount; pi++) {
-                  var p = particles[pi];
-                  p.x += p.vx; p.y += p.vy;
-                  if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-                  if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-                  var twinkle = 0.5 + 0.5 * Math.sin(tick * 0.03 + pi * 1.7);
-                  // Star color varies by era
-                  var hue;
-                  if (t < 1) hue = '180,200,255'; // early: blue-white Population III
-                  else if (p.c < 0.3) hue = '255,200,150'; // warm yellow
-                  else if (p.c < 0.6) hue = '200,210,255'; // cool blue
-                  else if (p.c < 0.85) hue = '255,240,220'; // white
-                  else hue = '255,160,120'; // red giant
-                  ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * twinkle, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * twinkle * 0.85) + ')';
-                  ctx.fill();
-                  // Glow around bright stars
-                  if (p.s > 1.8 && twinkle > 0.7) {
-                    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.s * dpr * 3);
-                    glow.addColorStop(0, 'rgba(' + hue + ',' + (twinkle * 0.15) + ')');
-                    glow.addColorStop(1, 'rgba(' + hue + ',0)');
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * 3, 0, Math.PI * 2);
-                    ctx.fillStyle = glow; ctx.fill();
-                  }
-                }
-
-                // ── Nebulae (after t > 2 Gyr, star-forming regions) ──
-                if (t > 2) {
-                  var nebAlpha = Math.min(0.3, (t - 2) * 0.03);
-                  for (var nbi = 0; nbi < nebulae.length; nbi++) {
-                    var nb = nebulae[nbi];
-                    var nbx = nb.x * W, nby = nb.y * H;
-                    var nbSize = nb.size * W * (1 + 0.1 * Math.sin(tick * 0.01 + nb.phase));
-                    var nbGrad = ctx.createRadialGradient(nbx, nby, 0, nbx, nby, nbSize);
-                    nbGrad.addColorStop(0, 'rgba(' + nb.hue + ',' + (nebAlpha * 0.6) + ')');
-                    nbGrad.addColorStop(0.4, 'rgba(' + nb.hue + ',' + (nebAlpha * 0.3) + ')');
-                    nbGrad.addColorStop(1, 'rgba(' + nb.hue + ',0)');
-                    ctx.beginPath(); ctx.arc(nbx, nby, nbSize, 0, Math.PI * 2);
-                    ctx.fillStyle = nbGrad; ctx.fill();
-                  }
-                }
-
-                // ── Galaxies (after t > 1 Gyr) with spiral hints ──
-                if (t > 1) {
-                  var galaxyCount = Math.min(16, Math.floor((t - 1) * 2.5));
-                  for (var gi = 0; gi < galaxyCount; gi++) {
-                    var gx = ((gi * 137 + 50) % (W / dpr)) * dpr;
-                    var gy = ((gi * 97 + 30) % (H / dpr)) * dpr;
-                    var gs = (10 + gi % 6 * 5) * dpr;
-                    // Core glow
-                    var galGrad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gs);
-                    var galHue = gi % 4 === 0 ? '180,160,255' : gi % 4 === 1 ? '255,200,150' : gi % 4 === 2 ? '150,200,255' : '255,220,180';
-                    galGrad.addColorStop(0, 'rgba(' + galHue + ',0.5)');
-                    galGrad.addColorStop(0.3, 'rgba(' + galHue + ',0.2)');
-                    galGrad.addColorStop(0.7, 'rgba(' + galHue + ',0.05)');
-                    galGrad.addColorStop(1, 'rgba(' + galHue + ',0)');
-                    ctx.beginPath(); ctx.arc(gx, gy, gs, 0, Math.PI * 2);
-                    ctx.fillStyle = galGrad; ctx.fill();
-                    // Spiral arm hints for larger galaxies
-                    if (gs > 12 * dpr && t > 3) {
-                      ctx.save();
-                      ctx.translate(gx, gy);
-                      ctx.rotate(gi * 1.3 + tick * 0.001);
-                      ctx.globalAlpha = 0.15;
-                      ctx.beginPath();
-                      for (var sa = 0; sa < Math.PI * 4; sa += 0.1) {
-                        var sr = sa * gs * 0.08;
-                        ctx.lineTo(Math.cos(sa) * sr, Math.sin(sa) * sr);
+                  // ── Big Bang: expanding shockwave rings ──
+                  if (t < 0.3) {
+                    var bangPhase = t / 0.3;
+                    // Multiple expanding rings
+                    for (var ri = 0; ri < 5; ri++) {
+                      var ringT = bangPhase - ri * 0.15;
+                      if (ringT > 0 && ringT < 1) {
+                        var ringR = ringT * W * 0.55;
+                        var ringAlpha = (1 - ringT) * 0.6;
+                        ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+                        ctx.strokeStyle = 'rgba(255,' + Math.round(200 - ri * 30) + ',' + Math.round(100 - ri * 20) + ',' + ringAlpha + ')';
+                        ctx.lineWidth = (3 - ri * 0.4) * dpr;
+                        ctx.stroke();
                       }
-                      ctx.strokeStyle = 'rgba(' + galHue + ',0.3)';
-                      ctx.lineWidth = 1.5 * dpr;
-                      ctx.stroke();
-                      ctx.globalAlpha = 1;
-                      ctx.restore();
+                    }
+                    // Central plasma fireball
+                    var fireR = Math.min(bangPhase * 0.4, 0.35) * W;
+                    var fireGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, fireR);
+                    var coreAlpha = Math.max(0, 1 - bangPhase * 1.5);
+                    fireGrad.addColorStop(0, 'rgba(255,255,255,' + Math.min(1, coreAlpha + 0.3) + ')');
+                    fireGrad.addColorStop(0.2, 'rgba(255,255,200,' + coreAlpha + ')');
+                    fireGrad.addColorStop(0.4, 'rgba(255,200,80,' + (coreAlpha * 0.7) + ')');
+                    fireGrad.addColorStop(0.7, 'rgba(255,100,20,' + (coreAlpha * 0.4) + ')');
+                    fireGrad.addColorStop(1, 'rgba(200,30,0,0)');
+                    ctx.beginPath(); ctx.arc(cx, cy, fireR, 0, Math.PI * 2);
+                    ctx.fillStyle = fireGrad; ctx.fill();
+
+                    // Expanding plasma particles flying outward
+                    for (var ppi = 0; ppi < plasmaParticles.length; ppi++) {
+                      var pp2 = plasmaParticles[ppi];
+                      var ppDist = bangPhase * pp2.speed * W * 0.3;
+                      if (ppDist > W * 0.7) continue;
+                      var ppAlpha = Math.max(0, (1 - bangPhase) * pp2.life);
+                      var ppx = cx + Math.cos(pp2.angle) * ppDist;
+                      var ppy = cy + Math.sin(pp2.angle) * ppDist;
+                      var ppSize = pp2.size * dpr * (1 - bangPhase * 0.5);
+                      ctx.beginPath(); ctx.arc(ppx, ppy, ppSize, 0, Math.PI * 2);
+                      ctx.fillStyle = 'rgba(255,' + Math.round(200 + pp2.hue) + ',' + Math.round(100 + pp2.hue * 0.5) + ',' + ppAlpha + ')';
+                      ctx.fill();
                     }
                   }
-                }
 
-                // ── Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) ──
-                if (t > 2) {
-                  var filAlpha = Math.min(0.12, (t - 2) * 0.01);
-                  var filGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
-                  ctx.save();
-                  ctx.globalAlpha = filAlpha;
-                  ctx.lineWidth = 1.2 * dpr;
-                  for (var fi = 0; fi < filGalCount; fi++) {
-                    var fx1 = ((fi * 137 + 50) % (W / dpr)) * dpr;
-                    var fy1 = ((fi * 97 + 30) % (H / dpr)) * dpr;
-                    // Connect to 2 nearest neighbors
-                    for (var fj = fi + 1; fj < Math.min(fi + 3, filGalCount); fj++) {
-                      var fx2 = ((fj * 137 + 50) % (W / dpr)) * dpr;
-                      var fy2 = ((fj * 97 + 30) % (H / dpr)) * dpr;
-                      var fDist = Math.sqrt((fx2 - fx1) * (fx2 - fx1) + (fy2 - fy1) * (fy2 - fy1));
-                      if (fDist > W * 0.6) continue;
-                      // Curved filament with glow
-                      var fmx = (fx1 + fx2) / 2 + Math.sin(fi * 2.3 + tick * 0.002) * 20;
-                      var fmy = (fy1 + fy2) / 2 + Math.cos(fj * 1.7 + tick * 0.002) * 20;
-                      var filGrad = ctx.createLinearGradient(fx1, fy1, fx2, fy2);
-                      filGrad.addColorStop(0, 'rgba(100,120,200,0)');
-                      filGrad.addColorStop(0.3, 'rgba(120,140,220,' + (filAlpha * 2) + ')');
-                      filGrad.addColorStop(0.7, 'rgba(120,140,220,' + (filAlpha * 2) + ')');
-                      filGrad.addColorStop(1, 'rgba(100,120,200,0)');
+                  // ── CMB glow (recombination era: 0.2-1.0) ──
+                  if (t > 0.15 && t < 1.0) {
+                    var cmbPhase = (t - 0.15) / 0.85;
+                    var cmbAlpha = Math.max(0, 0.35 * (1 - cmbPhase));
+                    // Mottled CMB pattern (simulated)
+                    for (var cmi = 0; cmi < 20; cmi++) {
+                      var cmx = ((cmi * 173 + 37) % (W / dpr)) * dpr;
+                      var cmy = ((cmi * 131 + 19) % (H / dpr)) * dpr;
+                      var cms = (15 + cmi * 7 % 20) * dpr;
+                      var cmGrad = ctx.createRadialGradient(cmx, cmy, 0, cmx, cmy, cms);
+                      var warmth = cmi % 2 === 0 ? '255,200,120' : '255,160,80';
+                      cmGrad.addColorStop(0, 'rgba(' + warmth + ',' + (cmbAlpha * 0.5) + ')');
+                      cmGrad.addColorStop(1, 'rgba(' + warmth + ',0)');
+                      ctx.beginPath(); ctx.arc(cmx, cmy, cms, 0, Math.PI * 2);
+                      ctx.fillStyle = cmGrad; ctx.fill();
+                    }
+                  }
+
+                  // ── Stars (appear after Dark Ages) ──
+                  var starBrightness = t < 0.4 ? 0 : Math.min(1, (t - 0.4) / 0.8);
+                  var starCount = Math.min(particles.length, Math.floor(starBrightness * particles.length));
+                  for (var pi = 0; pi < starCount; pi++) {
+                    var p = particles[pi];
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+                    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                    var twinkle = 0.5 + 0.5 * Math.sin(tick * 0.03 + pi * 1.7);
+                    // Star color varies by era
+                    var hue;
+                    if (t < 1) hue = '180,200,255'; // early: blue-white Population III
+                    else if (p.c < 0.3) hue = '255,200,150'; // warm yellow
+                    else if (p.c < 0.6) hue = '200,210,255'; // cool blue
+                    else if (p.c < 0.85) hue = '255,240,220'; // white
+                    else hue = '255,160,120'; // red giant
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * twinkle, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * twinkle * 0.85) + ')';
+                    ctx.fill();
+                    // Glow around bright stars
+                    if (p.s > 1.8 && twinkle > 0.7) {
+                      var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.s * dpr * 3);
+                      glow.addColorStop(0, 'rgba(' + hue + ',' + (twinkle * 0.15) + ')');
+                      glow.addColorStop(1, 'rgba(' + hue + ',0)');
+                      ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * 3, 0, Math.PI * 2);
+                      ctx.fillStyle = glow; ctx.fill();
+                    }
+                  }
+
+                  // ── Nebulae (after t > 2 Gyr, star-forming regions) ──
+                  if (t > 2) {
+                    var nebAlpha = Math.min(0.3, (t - 2) * 0.03);
+                    for (var nbi = 0; nbi < nebulae.length; nbi++) {
+                      var nb = nebulae[nbi];
+                      var nbx = nb.x * W, nby = nb.y * H;
+                      var nbSize = nb.size * W * (1 + 0.1 * Math.sin(tick * 0.01 + nb.phase));
+                      var nbGrad = ctx.createRadialGradient(nbx, nby, 0, nbx, nby, nbSize);
+                      nbGrad.addColorStop(0, 'rgba(' + nb.hue + ',' + (nebAlpha * 0.6) + ')');
+                      nbGrad.addColorStop(0.4, 'rgba(' + nb.hue + ',' + (nebAlpha * 0.3) + ')');
+                      nbGrad.addColorStop(1, 'rgba(' + nb.hue + ',0)');
+                      ctx.beginPath(); ctx.arc(nbx, nby, nbSize, 0, Math.PI * 2);
+                      ctx.fillStyle = nbGrad; ctx.fill();
+                    }
+                  }
+
+                  // ── Galaxies (after t > 1 Gyr) with spiral hints ──
+                  if (t > 1) {
+                    var galaxyCount = Math.min(16, Math.floor((t - 1) * 2.5));
+                    for (var gi = 0; gi < galaxyCount; gi++) {
+                      var gx = ((gi * 137 + 50) % (W / dpr)) * dpr;
+                      var gy = ((gi * 97 + 30) % (H / dpr)) * dpr;
+                      var gs = (10 + gi % 6 * 5) * dpr;
+                      // Core glow
+                      var galGrad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gs);
+                      var galHue = gi % 4 === 0 ? '180,160,255' : gi % 4 === 1 ? '255,200,150' : gi % 4 === 2 ? '150,200,255' : '255,220,180';
+                      galGrad.addColorStop(0, 'rgba(' + galHue + ',0.5)');
+                      galGrad.addColorStop(0.3, 'rgba(' + galHue + ',0.2)');
+                      galGrad.addColorStop(0.7, 'rgba(' + galHue + ',0.05)');
+                      galGrad.addColorStop(1, 'rgba(' + galHue + ',0)');
+                      ctx.beginPath(); ctx.arc(gx, gy, gs, 0, Math.PI * 2);
+                      ctx.fillStyle = galGrad; ctx.fill();
+                      // Spiral arm hints for larger galaxies
+                      if (gs > 12 * dpr && t > 3) {
+                        ctx.save();
+                        ctx.translate(gx, gy);
+                        ctx.rotate(gi * 1.3 + tick * 0.001);
+                        ctx.globalAlpha = 0.15;
+                        ctx.beginPath();
+                        for (var sa = 0; sa < Math.PI * 4; sa += 0.1) {
+                          var sr = sa * gs * 0.08;
+                          ctx.lineTo(Math.cos(sa) * sr, Math.sin(sa) * sr);
+                        }
+                        ctx.strokeStyle = 'rgba(' + galHue + ',0.3)';
+                        ctx.lineWidth = 1.5 * dpr;
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                        ctx.restore();
+                      }
+                    }
+                  }
+
+                  // ── Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) ──
+                  if (t > 2) {
+                    var filAlpha = Math.min(0.12, (t - 2) * 0.01);
+                    var filGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
+                    ctx.save();
+                    ctx.globalAlpha = filAlpha;
+                    ctx.lineWidth = 1.2 * dpr;
+                    for (var fi = 0; fi < filGalCount; fi++) {
+                      var fx1 = ((fi * 137 + 50) % (W / dpr)) * dpr;
+                      var fy1 = ((fi * 97 + 30) % (H / dpr)) * dpr;
+                      // Connect to 2 nearest neighbors
+                      for (var fj = fi + 1; fj < Math.min(fi + 3, filGalCount); fj++) {
+                        var fx2 = ((fj * 137 + 50) % (W / dpr)) * dpr;
+                        var fy2 = ((fj * 97 + 30) % (H / dpr)) * dpr;
+                        var fDist = Math.sqrt((fx2 - fx1) * (fx2 - fx1) + (fy2 - fy1) * (fy2 - fy1));
+                        if (fDist > W * 0.6) continue;
+                        // Curved filament with glow
+                        var fmx = (fx1 + fx2) / 2 + Math.sin(fi * 2.3 + tick * 0.002) * 20;
+                        var fmy = (fy1 + fy2) / 2 + Math.cos(fj * 1.7 + tick * 0.002) * 20;
+                        var filGrad = ctx.createLinearGradient(fx1, fy1, fx2, fy2);
+                        filGrad.addColorStop(0, 'rgba(100,120,200,0)');
+                        filGrad.addColorStop(0.3, 'rgba(120,140,220,' + (filAlpha * 2) + ')');
+                        filGrad.addColorStop(0.7, 'rgba(120,140,220,' + (filAlpha * 2) + ')');
+                        filGrad.addColorStop(1, 'rgba(100,120,200,0)');
+                        ctx.beginPath();
+                        ctx.moveTo(fx1, fy1);
+                        ctx.quadraticCurveTo(fmx, fmy, fx2, fy2);
+                        ctx.strokeStyle = filGrad;
+                        ctx.stroke();
+                      }
+                    }
+                    ctx.restore();
+                  }
+
+                  // ── Dark Matter Halos (subtle glow behind galaxies) ──
+                  if (t > 1.5) {
+                    var dmGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
+                    ctx.save();
+                    for (var dmi = 0; dmi < dmGalCount; dmi++) {
+                      var dmx = ((dmi * 137 + 50) % (W / dpr)) * dpr;
+                      var dmy = ((dmi * 97 + 30) % (H / dpr)) * dpr;
+                      var dms = (10 + dmi % 6 * 5) * dpr;
+                      var dmHaloR = dms * 2.2;
+                      var dmAlpha = Math.min(0.06, (t - 1.5) * 0.01);
+                      var dmGrad = ctx.createRadialGradient(dmx, dmy, dms * 0.3, dmx, dmy, dmHaloR);
+                      dmGrad.addColorStop(0, 'rgba(80,60,180,' + dmAlpha + ')');
+                      dmGrad.addColorStop(0.5, 'rgba(60,40,160,' + (dmAlpha * 0.5) + ')');
+                      dmGrad.addColorStop(1, 'rgba(40,20,140,0)');
+                      ctx.beginPath(); ctx.arc(dmx, dmy, dmHaloR, 0, Math.PI * 2);
+                      ctx.fillStyle = dmGrad; ctx.fill();
+                    }
+                    ctx.restore();
+                  }
+
+                  // ── Shooting Stars / Meteor Streaks (after t > 9, Solar System era) ──
+                  if (t > 9) {
+                    ctx.save();
+                    var meteorSeed = Math.floor(tick / 80);
+                    var meteorPhase = (tick % 80) / 80;
+                    for (var mti = 0; mti < 2; mti++) {
+                      var mtHash = (meteorSeed * 73 + mti * 41) % 1000;
+                      if (mtHash > 300) continue; // Only ~30% chance per slot
+                      var mtx1 = (mtHash * 7 % (W / dpr)) * dpr;
+                      var mty1 = (mtHash * 3 % Math.floor(H * 0.5 / dpr)) * dpr;
+                      var mtAngle = 0.3 + (mtHash % 5) * 0.15;
+                      var mtLen = (40 + mtHash % 60) * dpr;
+                      var mtx2 = mtx1 + Math.cos(mtAngle) * mtLen * meteorPhase;
+                      var mty2 = mty1 + Math.sin(mtAngle) * mtLen * meteorPhase;
+                      var mtAlpha = meteorPhase < 0.3 ? meteorPhase / 0.3 : (1 - meteorPhase) / 0.7;
+                      mtAlpha *= 0.7;
+                      ctx.globalAlpha = mtAlpha;
+                      var mtGrad = ctx.createLinearGradient(mtx1, mty1, mtx2, mty2);
+                      mtGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                      mtGrad.addColorStop(0.6, 'rgba(255,240,200,' + mtAlpha + ')');
+                      mtGrad.addColorStop(1, 'rgba(255,255,255,' + mtAlpha + ')');
+                      ctx.beginPath(); ctx.moveTo(mtx1, mty1); ctx.lineTo(mtx2, mty2);
+                      ctx.strokeStyle = mtGrad; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                      // Bright head
+                      ctx.beginPath(); ctx.arc(mtx2, mty2, 2 * dpr, 0, Math.PI * 2);
+                      ctx.fillStyle = 'rgba(255,255,240,' + (mtAlpha * 0.8) + ')'; ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                    ctx.restore();
+                  }
+
+                  // ── Protoplanetary Disk (near Sun formation, t ≈ 9.0–9.5) ──
+                  if (t > 8.5 && t < 10) {
+                    var ppAlpha = t < 9.0 ? (t - 8.5) / 0.5 : t > 9.5 ? Math.max(0, 1 - (t - 9.5) / 0.5) : 1;
+                    ppAlpha *= 0.6;
+                    var ppx = W * 0.78, ppy = H * 0.25;
+                    ctx.save();
+                    ctx.translate(ppx, ppy);
+                    ctx.rotate(tick * 0.003);
+                    ctx.globalAlpha = ppAlpha;
+                    // Concentric dust rings
+                    var ppRings = [
+                      { r: 18, w: 4, color: '255,200,100' },
+                      { r: 26, w: 3, color: '220,170,80' },
+                      { r: 34, w: 5, color: '180,140,70' },
+                      { r: 44, w: 3, color: '140,120,80' }
+                    ];
+                    for (var pri = 0; pri < ppRings.length; pri++) {
+                      var ppr = ppRings[pri];
+                      var rr = ppr.r * dpr;
                       ctx.beginPath();
-                      ctx.moveTo(fx1, fy1);
-                      ctx.quadraticCurveTo(fmx, fmy, fx2, fy2);
-                      ctx.strokeStyle = filGrad;
+                      ctx.ellipse(0, 0, rr, rr * 0.3, 0, 0, Math.PI * 2);
+                      ctx.strokeStyle = 'rgba(' + ppr.color + ',' + (ppAlpha * 0.5) + ')';
+                      ctx.lineWidth = ppr.w * dpr;
                       ctx.stroke();
                     }
+                    // Central protostar glow
+                    var psGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12 * dpr);
+                    psGrad.addColorStop(0, 'rgba(255,230,150,' + ppAlpha + ')');
+                    psGrad.addColorStop(0.4, 'rgba(255,180,60,' + (ppAlpha * 0.6) + ')');
+                    psGrad.addColorStop(1, 'rgba(255,120,20,0)');
+                    ctx.beginPath(); ctx.arc(0, 0, 12 * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = psGrad; ctx.fill();
+                    // Planetesimal dots orbiting
+                    for (var pli = 0; pli < 5; pli++) {
+                      var plAngle = pli * Math.PI * 2 / 5 + tick * 0.008 * (1 + pli * 0.3);
+                      var plR = (22 + pli * 6) * dpr;
+                      var plpx = Math.cos(plAngle) * plR;
+                      var plpy = Math.sin(plAngle) * plR * 0.3;
+                      ctx.beginPath(); ctx.arc(plpx, plpy, (1.5 + pli * 0.3) * dpr, 0, Math.PI * 2);
+                      ctx.fillStyle = 'rgba(200,180,140,' + (ppAlpha * 0.8) + ')'; ctx.fill();
+                    }
+                    ctx.restore();
+                    // Label
+                    ctx.save();
+                    ctx.globalAlpha = ppAlpha * 0.8;
+                    ctx.font = (7 * dpr) + 'px sans-serif';
+                    ctx.fillStyle = 'rgba(255,200,100,' + ppAlpha + ')';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Protoplanetary Disk', ppx, ppy + 55 * dpr);
+                    ctx.restore();
                   }
-                  ctx.restore();
-                }
 
-                // ── Dark Matter Halos (subtle glow behind galaxies) ──
-                if (t > 1.5) {
-                  var dmGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
-                  ctx.save();
-                  for (var dmi = 0; dmi < dmGalCount; dmi++) {
-                    var dmx = ((dmi * 137 + 50) % (W / dpr)) * dpr;
-                    var dmy = ((dmi * 97 + 30) % (H / dpr)) * dpr;
-                    var dms = (10 + dmi % 6 * 5) * dpr;
-                    var dmHaloR = dms * 2.2;
-                    var dmAlpha = Math.min(0.06, (t - 1.5) * 0.01);
-                    var dmGrad = ctx.createRadialGradient(dmx, dmy, dms * 0.3, dmx, dmy, dmHaloR);
-                    dmGrad.addColorStop(0, 'rgba(80,60,180,' + dmAlpha + ')');
-                    dmGrad.addColorStop(0.5, 'rgba(60,40,160,' + (dmAlpha * 0.5) + ')');
-                    dmGrad.addColorStop(1, 'rgba(40,20,140,0)');
-                    ctx.beginPath(); ctx.arc(dmx, dmy, dmHaloR, 0, Math.PI * 2);
-                    ctx.fillStyle = dmGrad; ctx.fill();
-                  }
-                  ctx.restore();
-                }
+                  // ── Epoch label overlay (bottom-left HUD) ──
+                  // Dark backdrop for readability
+                  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                  var labelW = 220 * dpr, labelH = 48 * dpr;
+                  ctx.beginPath();
+                  ctx.roundRect(6 * dpr, H - (54 * dpr), labelW, labelH, 8 * dpr);
+                  ctx.fill();
+                  // Epoch name
+                  ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold ' + (12 * dpr) + 'px sans-serif';
+                  ctx.fillText(ep.emoji + ' ' + ep.name, 14 * dpr, H - (20 * dpr));
+                  // Time
+                  ctx.fillStyle = 'rgba(160,200,255,0.8)'; ctx.font = (9 * dpr) + 'px sans-serif';
+                  var timeStr = t < 0.001 ? 'T = 0 (Singularity)' : t < 1 ? (t * 1000).toFixed(0) + ' million years' : t.toFixed(1) + ' billion years';
+                  ctx.fillText(timeStr, 14 * dpr, H - (34 * dpr));
 
-                // ── Shooting Stars / Meteor Streaks (after t > 9, Solar System era) ──
-                if (t > 9) {
-                  ctx.save();
-                  var meteorSeed = Math.floor(tick / 80);
-                  var meteorPhase = (tick % 80) / 80;
-                  for (var mti = 0; mti < 2; mti++) {
-                    var mtHash = (meteorSeed * 73 + mti * 41) % 1000;
-                    if (mtHash > 300) continue; // Only ~30% chance per slot
-                    var mtx1 = (mtHash * 7 % (W / dpr)) * dpr;
-                    var mty1 = (mtHash * 3 % Math.floor(H * 0.5 / dpr)) * dpr;
-                    var mtAngle = 0.3 + (mtHash % 5) * 0.15;
-                    var mtLen = (40 + mtHash % 60) * dpr;
-                    var mtx2 = mtx1 + Math.cos(mtAngle) * mtLen * meteorPhase;
-                    var mty2 = mty1 + Math.sin(mtAngle) * mtLen * meteorPhase;
-                    var mtAlpha = meteorPhase < 0.3 ? meteorPhase / 0.3 : (1 - meteorPhase) / 0.7;
-                    mtAlpha *= 0.7;
-                    ctx.globalAlpha = mtAlpha;
-                    var mtGrad = ctx.createLinearGradient(mtx1, mty1, mtx2, mty2);
-                    mtGrad.addColorStop(0, 'rgba(255,255,255,0)');
-                    mtGrad.addColorStop(0.6, 'rgba(255,240,200,' + mtAlpha + ')');
-                    mtGrad.addColorStop(1, 'rgba(255,255,255,' + mtAlpha + ')');
-                    ctx.beginPath(); ctx.moveTo(mtx1, mty1); ctx.lineTo(mtx2, mty2);
-                    ctx.strokeStyle = mtGrad; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                    // Bright head
-                    ctx.beginPath(); ctx.arc(mtx2, mty2, 2 * dpr, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,255,240,' + (mtAlpha * 0.8) + ')'; ctx.fill();
-                  }
-                  ctx.globalAlpha = 1;
-                  ctx.restore();
-                }
-
-                // ── Protoplanetary Disk (near Sun formation, t ≈ 9.0–9.5) ──
-                if (t > 8.5 && t < 10) {
-                  var ppAlpha = t < 9.0 ? (t - 8.5) / 0.5 : t > 9.5 ? Math.max(0, 1 - (t - 9.5) / 0.5) : 1;
-                  ppAlpha *= 0.6;
-                  var ppx = W * 0.78, ppy = H * 0.25;
-                  ctx.save();
-                  ctx.translate(ppx, ppy);
-                  ctx.rotate(tick * 0.003);
-                  ctx.globalAlpha = ppAlpha;
-                  // Concentric dust rings
-                  var ppRings = [
-                    { r: 18, w: 4, color: '255,200,100' },
-                    { r: 26, w: 3, color: '220,170,80' },
-                    { r: 34, w: 5, color: '180,140,70' },
-                    { r: 44, w: 3, color: '140,120,80' }
-                  ];
-                  for (var pri = 0; pri < ppRings.length; pri++) {
-                    var ppr = ppRings[pri];
-                    var rr = ppr.r * dpr;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, rr, rr * 0.3, 0, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(' + ppr.color + ',' + (ppAlpha * 0.5) + ')';
-                    ctx.lineWidth = ppr.w * dpr;
-                    ctx.stroke();
-                  }
-                  // Central protostar glow
-                  var psGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12 * dpr);
-                  psGrad.addColorStop(0, 'rgba(255,230,150,' + ppAlpha + ')');
-                  psGrad.addColorStop(0.4, 'rgba(255,180,60,' + (ppAlpha * 0.6) + ')');
-                  psGrad.addColorStop(1, 'rgba(255,120,20,0)');
-                  ctx.beginPath(); ctx.arc(0, 0, 12 * dpr, 0, Math.PI * 2);
-                  ctx.fillStyle = psGrad; ctx.fill();
-                  // Planetesimal dots orbiting
-                  for (var pli = 0; pli < 5; pli++) {
-                    var plAngle = pli * Math.PI * 2 / 5 + tick * 0.008 * (1 + pli * 0.3);
-                    var plR = (22 + pli * 6) * dpr;
-                    var plpx = Math.cos(plAngle) * plR;
-                    var plpy = Math.sin(plAngle) * plR * 0.3;
-                    ctx.beginPath(); ctx.arc(plpx, plpy, (1.5 + pli * 0.3) * dpr, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(200,180,140,' + (ppAlpha * 0.8) + ')'; ctx.fill();
-                  }
-                  ctx.restore();
-                  // Label
-                  ctx.save();
-                  ctx.globalAlpha = ppAlpha * 0.8;
-                  ctx.font = (7 * dpr) + 'px sans-serif';
-                  ctx.fillStyle = 'rgba(255,200,100,' + ppAlpha + ')';
-                  ctx.textAlign = 'center';
-                  ctx.fillText('Protoplanetary Disk', ppx, ppy + 55 * dpr);
-                  ctx.restore();
-                }
-
-                // ── Epoch label overlay (bottom-left HUD) ──
-                // Dark backdrop for readability
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                var labelW = 220 * dpr, labelH = 48 * dpr;
-                ctx.beginPath();
-                ctx.roundRect(6 * dpr, H - (54 * dpr), labelW, labelH, 8 * dpr);
-                ctx.fill();
-                // Epoch name
-                ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold ' + (12 * dpr) + 'px sans-serif';
-                ctx.fillText(ep.emoji + ' ' + ep.name, 14 * dpr, H - (20 * dpr));
-                // Time
-                ctx.fillStyle = 'rgba(160,200,255,0.8)'; ctx.font = (9 * dpr) + 'px sans-serif';
-                var timeStr = t < 0.001 ? 'T = 0 (Singularity)' : t < 1 ? (t * 1000).toFixed(0) + ' million years' : t.toFixed(1) + ' billion years';
-                ctx.fillText(timeStr, 14 * dpr, H - (34 * dpr));
-
-                canvasEl._animId = requestAnimationFrame(draw);
+                  canvasEl._animId = requestAnimationFrame(draw);
+                } catch (e) { console.error('Universe draw error:', e); canvasEl._animId = requestAnimationFrame(draw); }
               }
               canvasEl._animId = requestAnimationFrame(draw);
               canvasEl._universeCleanup = function () { cancelAnimationFrame(canvasEl._animId); canvasEl._universeInit = false; };
-              var ro = new ResizeObserver(function () { W = canvasEl.width = canvasEl.offsetWidth * dpr; H = canvasEl.height = canvasEl.offsetHeight * dpr; });
+              var ro = new ResizeObserver(function () {
+                var newW = canvasEl.offsetWidth, newH = canvasEl.offsetHeight;
+                if (newW && newH) { W = canvasEl.width = newW * dpr; H = canvasEl.height = newH * dpr; }
+              });
               ro.observe(canvasEl); canvasEl._ro = ro;
             };
 
@@ -14559,6 +14598,138 @@
                 );
               })(),
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fv-' + Date.now(), tool: 'fractionViz', label: d.num1 + '/' + d.den1 + ' vs ' + d.num2 + '/' + d.den2, data: Object.assign({}, d), timestamp: Date.now() }]); addToast(t('stem.fractions.ud83dudcf8_snapshot_saved'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            );
+          })(),
+
+          // ═══════════════════════════════════════════════════════
+          // FRACTION TILES + CHALLENGE MODE
+          // ═══════════════════════════════════════════════════════
+          stemLabTab === 'explore' && stemLabTool === 'fractions' && (() => {
+            // Difficulty-adaptive denominator pools (expanded for higher denominators)
+            var fdiff = exploreDifficulty || 'medium';
+            var dpool = fdiff === 'easy' ? [2, 3, 4] : fdiff === 'hard' ? [3, 4, 5, 6, 8, 10, 12, 15, 16, 20] : [2, 3, 4, 5, 6, 8, 10, 12];
+
+            return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200" },
+              // Header with back + navigation
+              React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("h3", { className: "text-lg font-bold text-rose-800" }, "\uD83C\uDF55 Fraction Practice"),
+                React.createElement("div", { className: "flex gap-1 ml-auto" },
+                  React.createElement("button", { onClick: () => setStemLabTool('fractionViz'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-all" }, "\uD83D\uDD0D Compare"),
+                  React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white" }, "\uD83C\uDFC6 Practice")
+                )
+              ),
+              // Denominator control
+              React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                React.createElement("div", { className: "bg-rose-50 rounded-lg p-3 border border-rose-100" },
+                  React.createElement("label", { className: "block text-xs text-rose-700 mb-1 font-bold" }, "Denominator (parts)"),
+                  React.createElement("input", { type: "range", min: "2", max: "20", value: fractionPieces.denominator, onChange: function (e) { setFractionPieces(function (prev) { return { denominator: parseInt(e.target.value), numerator: Math.min(prev.numerator, parseInt(e.target.value)) }; }); }, className: "w-full accent-rose-600" }),
+                  React.createElement("div", { className: "text-center text-lg font-bold text-rose-700" }, fractionPieces.denominator)
+                ),
+                React.createElement("div", { className: "bg-rose-50 rounded-lg p-3 border border-rose-100" },
+                  React.createElement("label", { className: "block text-xs text-rose-700 mb-1 font-bold" }, "Numerator (selected)"),
+                  React.createElement("input", { type: "range", min: "0", max: fractionPieces.denominator, value: fractionPieces.numerator, onChange: function (e) { setFractionPieces(function (prev) { return { denominator: prev.denominator, numerator: parseInt(e.target.value) }; }); }, className: "w-full accent-rose-600" }),
+                  React.createElement("div", { className: "text-center text-lg font-bold text-rose-700" }, fractionPieces.numerator)
+                )
+              ),
+              // Pie chart visualization
+              React.createElement("div", { className: "bg-white rounded-xl border-2 border-rose-200 p-6 flex justify-center" },
+                React.createElement("svg", { width: "240", height: "240", viewBox: "-120 -120 240 240" },
+                  Array.from({ length: fractionPieces.denominator }, function (_, i) {
+                    var startAngle = i / fractionPieces.denominator * 2 * Math.PI - Math.PI / 2;
+                    var endAngle = (i + 1) / fractionPieces.denominator * 2 * Math.PI - Math.PI / 2;
+                    var x1 = 100 * Math.cos(startAngle), y1 = 100 * Math.sin(startAngle);
+                    var x2 = 100 * Math.cos(endAngle), y2 = 100 * Math.sin(endAngle);
+                    var largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
+                    var filled = i < fractionPieces.numerator;
+                    return React.createElement('path', { key: i, d: 'M 0 0 L ' + x1 + ' ' + y1 + ' A 100 100 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z', fill: filled ? 'hsl(' + (340 + i * 8) + ', 70%, ' + (60 + i * 2) + '%)' : '#fecdd3', stroke: '#e11d48', strokeWidth: '2', className: 'cursor-pointer hover:opacity-80 transition-opacity', onClick: function () { setFractionPieces(function (prev) { return { denominator: prev.denominator, numerator: (filled && prev.numerator === i + 1) ? i : i + 1 }; }); } });
+                  }),
+                  React.createElement("circle", { cx: "0", cy: "0", r: "3", fill: "#e11d48" })
+                )
+              ),
+              // Bar visualization
+              React.createElement("div", { className: "bg-white rounded-xl border-2 border-rose-200 p-4" },
+                React.createElement("div", { className: "flex gap-[2px] h-12 rounded-lg overflow-hidden" },
+                  Array.from({ length: fractionPieces.denominator }, function (_, i) {
+                    return React.createElement('div', { key: i, onClick: function () { setFractionPieces(function (prev) { return { denominator: prev.denominator, numerator: i < prev.numerator ? i : i + 1 }; }); }, className: 'flex-1 cursor-pointer transition-all ' + (i < fractionPieces.numerator ? 'bg-rose-500 hover:bg-rose-600' : 'bg-rose-100 hover:bg-rose-200') });
+                  })
+                )
+              ),
+              // Fraction value display
+              React.createElement("div", { className: "bg-white rounded-xl p-4 border border-rose-100 text-center" },
+                React.createElement("div", { className: "inline-flex flex-col items-center" },
+                  React.createElement("span", { className: "text-3xl font-bold text-rose-700 border-b-4 border-rose-400 px-4 pb-1" }, fractionPieces.numerator),
+                  React.createElement("span", { className: "text-3xl font-bold text-rose-700 px-4 pt-1" }, fractionPieces.denominator)
+                ),
+                React.createElement("div", { className: "text-sm text-rose-600 mt-2" }, "= " + (fractionPieces.numerator / fractionPieces.denominator * 100).toFixed(0) + "%",
+                  fractionPieces.numerator > 0 && React.createElement("span", { className: "text-slate-400 ml-2" }, "\u2248 " + (fractionPieces.numerator / fractionPieces.denominator).toFixed(3))
+                ),
+                fractionPieces.numerator === fractionPieces.denominator && React.createElement("div", { className: "text-sm font-bold text-green-600 mt-1" }, "= 1 whole! \uD83C\uDF89")
+              ),
+              // Preset buttons (including higher denominators)
+              React.createElement("div", { className: "flex flex-wrap gap-2" },
+                [{ n: 1, d: 2, l: '\u00BD' }, { n: 1, d: 3, l: '\u2153' }, { n: 1, d: 4, l: '\u00BC' }, { n: 2, d: 3, l: '\u2154' }, { n: 3, d: 4, l: '\u00BE' }, { n: 3, d: 8, l: '\u215C' }, { n: 5, d: 6, l: '\u215A' }, { n: 7, d: 12, l: '7/12' }, { n: 11, d: 16, l: '11/16' }, { n: 13, d: 20, l: '13/20' }].map(function (p) { return React.createElement("button", { key: p.l, onClick: function () { setFractionPieces({ numerator: p.n, denominator: p.d }); }, className: "px-3 py-1.5 text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all" }, p.l); })
+              ),
+              // Challenge section
+              React.createElement("div", { className: "bg-rose-50 rounded-xl p-4 border border-rose-200 space-y-3" },
+                React.createElement("div", { className: "flex items-center justify-between" },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, "\uD83C\uDFAF Fraction Practice"),
+                    React.createElement("div", { className: "flex gap-0.5 ml-2" },
+                      ['easy', 'medium', 'hard'].map(function (d) { return React.createElement("button", { key: d, onClick: function () { setExploreDifficulty(d); }, className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-500 text-white' : d === 'hard' ? 'bg-red-500 text-white' : 'bg-rose-500 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200') }, d); })
+                    )
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("div", { className: "text-xs font-bold text-rose-600" }, exploreScore.correct + "/" + exploreScore.total),
+                    exploreScore.total > 0 && React.createElement("button", { onClick: submitExploreScore, className: "text-[10px] font-bold bg-rose-600 text-white px-2 py-0.5 rounded-full hover:bg-rose-700" }, "\uD83D\uDCBE Save")
+                  )
+                ),
+                !fracChallenge ? React.createElement("button", {
+                  onClick: function () {
+                    var types = ['identify', 'equivalent', 'compare'];
+                    var type = types[Math.floor(Math.random() * types.length)];
+                    var ch;
+                    if (type === 'identify') {
+                      var _d = dpool[Math.floor(Math.random() * dpool.length)];
+                      var _n = Math.floor(Math.random() * _d) + 1;
+                      setFractionPieces({ numerator: _n, denominator: _d });
+                      ch = { type: type, question: 'Look at the shaded pieces. How many pieces are filled?', answer: _n };
+                    } else if (type === 'equivalent') {
+                      var _d2 = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)];
+                      var _n2 = Math.floor(Math.random() * (_d2 - 1)) + 1;
+                      var mult = Math.floor(Math.random() * 3) + 2;
+                      ch = { type: type, question: _n2 + '/' + _d2 + ' = ?/' + (_d2 * mult) + '  \u2014 What is the missing numerator?', answer: _n2 * mult };
+                    } else {
+                      var da = [2, 3, 4, 6, 8][Math.floor(Math.random() * 5)];
+                      var na = Math.floor(Math.random() * da) + 1;
+                      var db = [2, 3, 4, 6, 8][Math.floor(Math.random() * 5)];
+                      var nb = Math.floor(Math.random() * db) + 1;
+                      var va = na / da, vb = nb / db;
+                      ch = { type: type, question: 'Which is larger: ' + na + '/' + da + ' or ' + nb + '/' + db + '? Enter the numerator of the larger fraction.', answer: va >= vb ? na : nb };
+                    }
+                    setFracChallenge(ch);
+                    setFracAnswer('');
+                    setFracFeedback(null);
+                  },
+                  className: "w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md"
+                }, "\uD83C\uDFB2 Generate Challenge") : React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-sm font-bold text-rose-800" }, fracChallenge.question),
+                  React.createElement("div", { className: "flex gap-2" },
+                    React.createElement("input", {
+                      type: "number", value: fracAnswer, onChange: function (e) { setFracAnswer(e.target.value); },
+                      onKeyDown: function (e) { if (e.key === 'Enter' && fracAnswer) { var ans = parseInt(fracAnswer); var ok = ans === fracChallenge.answer; setFracFeedback(ok ? { correct: true, msg: '\u2705 Correct!' } : { correct: false, msg: '\u274C The answer was ' + fracChallenge.answer }); setExploreScore(function (prev) { return { correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }; }); if (ok) awardStemXP('fractionChallenge', 10, 'Correct fraction answer'); } },
+                      placeholder: "Your answer...", className: "flex-1 px-3 py-2 border border-rose-300 rounded-lg text-sm font-mono"
+                    }),
+                    React.createElement("button", {
+                      onClick: function () { var ans = parseInt(fracAnswer); var ok = ans === fracChallenge.answer; setFracFeedback(ok ? { correct: true, msg: '\u2705 Correct!' } : { correct: false, msg: '\u274C The answer was ' + fracChallenge.answer }); setExploreScore(function (prev) { return { correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 }; }); if (ok) awardStemXP('fractionChallenge', 10, 'Correct fraction answer'); },
+                      className: "px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-sm hover:bg-rose-700"
+                    }, "Check")
+                  ),
+                  fracFeedback && React.createElement("p", { className: "text-sm font-bold " + (fracFeedback.correct ? "text-green-600" : "text-red-600") }, fracFeedback.msg),
+                  fracFeedback && !fracFeedback.correct && StemAIHintButton && React.createElement(StemAIHintButton, 'fractions', fracChallenge.question, fracAnswer, String(fracChallenge.answer)),
+                  fracFeedback && React.createElement("button", { onClick: function () { setFracChallenge(null); setFracFeedback(null); setFracAnswer(''); }, className: "text-xs text-rose-600 font-bold hover:underline" }, "\u27A1\uFE0F Next Challenge")
+                )
+              )
             );
           })(),
 
