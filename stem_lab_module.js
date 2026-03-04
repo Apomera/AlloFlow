@@ -4996,48 +4996,108 @@
                     a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
                   }
                   ctx.closePath();
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  // Gradient body fill
+                  var aGrad = ctx.createRadialGradient(-sz * 0.3, -sz * 0.3, 0, 0, 0, sz * 1.2);
+                  aGrad.addColorStop(0, 'rgba(196,181,253,0.65)');
+                  aGrad.addColorStop(0.5, def.bodyColor);
+                  aGrad.addColorStop(1, 'rgba(124,58,237,0.25)');
+                  ctx.fillStyle = aGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                  // Nucleus
+                  // Food vacuoles
+                  [[-0.4, 0.3, 0.12], [0.35, -0.25, 0.1], [-0.15, -0.45, 0.08]].forEach(function (v) {
+                    ctx.beginPath(); ctx.arc(sz * v[0], sz * v[1], sz * v[2], 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fill();
+                    ctx.strokeStyle = 'rgba(34,197,94,0.3)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
+                  });
+                  // Nucleus with nucleolus
                   ctx.beginPath(); ctx.arc(0, 0, sz * 0.3, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(139,92,246,0.5)'; ctx.fill();
+                  var nGrad = ctx.createRadialGradient(-sz * 0.05, -sz * 0.05, 0, 0, 0, sz * 0.3);
+                  nGrad.addColorStop(0, 'rgba(167,139,250,0.7)');
+                  nGrad.addColorStop(1, 'rgba(124,58,237,0.4)');
+                  ctx.fillStyle = nGrad; ctx.fill();
+                  ctx.strokeStyle = 'rgba(124,58,237,0.5)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                  // Nucleolus
+                  ctx.beginPath(); ctx.arc(sz * 0.05, -sz * 0.05, sz * 0.1, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(91,33,182,0.6)'; ctx.fill();
                 } else if (def.id === 'paramecium') {
-                  // Oval with cilia
+                  // Oval body with gradient
                   ctx.beginPath(); ctx.ellipse(0, 0, sz * 1.4, sz * 0.7, 0, 0, Math.PI * 2);
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var pGrad = ctx.createRadialGradient(-sz * 0.3, -sz * 0.15, 0, 0, 0, sz * 1.4);
+                  pGrad.addColorStop(0, 'rgba(165,243,252,0.7)');
+                  pGrad.addColorStop(0.5, def.bodyColor);
+                  pGrad.addColorStop(1, 'rgba(6,182,212,0.2)');
+                  ctx.fillStyle = pGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                  // Cilia
-                  for (var ci = 0; ci < 16; ci++) {
-                    var ca = (ci / 16) * Math.PI * 2;
-                    var cx2 = Math.cos(ca) * sz * 1.5, cy2 = Math.sin(ca) * sz * 0.8;
-                    var wave = Math.sin(world.tick * 0.15 + ci) * 3 * dpr;
-                    ctx.beginPath(); ctx.moveTo(cx2, cy2);
-                    ctx.lineTo(cx2 + wave, cy2 + Math.sign(cy2) * 4 * dpr);
-                    ctx.strokeStyle = 'rgba(6,182,212,0.5)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                  // Pellicle ridges
+                  for (var pri = 0; pri < 5; pri++) {
+                    var ry = sz * (-0.4 + pri * 0.2);
+                    ctx.beginPath(); ctx.moveTo(-sz * 1.2, ry); ctx.quadraticCurveTo(0, ry + sz * 0.05, sz * 1.2, ry);
+                    ctx.strokeStyle = 'rgba(6,182,212,0.12)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
                   }
-                  // Oral groove
+                  // Cilia (more, with metachronal wave)
+                  for (var ci = 0; ci < 24; ci++) {
+                    var ca = (ci / 24) * Math.PI * 2;
+                    var cx2 = Math.cos(ca) * sz * 1.5, cy2 = Math.sin(ca) * sz * 0.78;
+                    var wave = Math.sin(world.tick * 0.18 + ci * 0.5) * 4 * dpr;
+                    var wave2 = Math.cos(world.tick * 0.12 + ci * 0.3) * 2 * dpr;
+                    ctx.beginPath(); ctx.moveTo(cx2, cy2);
+                    ctx.quadraticCurveTo(cx2 + wave, cy2 + Math.sign(cy2) * 3 * dpr, cx2 + wave2, cy2 + Math.sign(cy2) * 6 * dpr);
+                    ctx.strokeStyle = 'rgba(6,182,212,0.4)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
+                  }
+                  // Oral groove with food vacuole path
                   ctx.beginPath(); ctx.ellipse(sz * 0.4, 0, sz * 0.3, sz * 0.15, 0.3, 0, Math.PI * 2);
                   ctx.strokeStyle = 'rgba(6,182,212,0.7)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                  // Contractile vacuoles (pulsing)
+                  var cvPulse = 0.08 + 0.04 * Math.sin(world.tick * 0.06);
+                  ctx.beginPath(); ctx.arc(-sz * 0.8, 0, sz * cvPulse, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(165,243,252,0.5)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(6,182,212,0.5)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
+                  ctx.beginPath(); ctx.arc(sz * 0.8, 0, sz * cvPulse * 0.8, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(165,243,252,0.4)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(6,182,212,0.4)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
+                  // Macronucleus
+                  ctx.beginPath(); ctx.ellipse(-sz * 0.1, 0, sz * 0.35, sz * 0.18, 0.2, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(124,58,237,0.35)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(124,58,237,0.4)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
                 } else if (def.id === 'euglena') {
-                  // Teardrop
+                  // Teardrop body
                   ctx.beginPath();
                   ctx.moveTo(sz * 1.5, 0);
                   ctx.quadraticCurveTo(sz * 0.5, -sz * 0.6, -sz, -sz * 0.3);
                   ctx.quadraticCurveTo(-sz * 1.3, 0, -sz, sz * 0.3);
                   ctx.quadraticCurveTo(sz * 0.5, sz * 0.6, sz * 1.5, 0);
                   ctx.closePath();
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var eGrad = ctx.createRadialGradient(-sz * 0.2, -sz * 0.15, 0, 0, 0, sz * 1.5);
+                  eGrad.addColorStop(0, 'rgba(187,247,208,0.8)');
+                  eGrad.addColorStop(0.5, def.bodyColor);
+                  eGrad.addColorStop(1, 'rgba(22,163,74,0.2)');
+                  ctx.fillStyle = eGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                  // Eyespot
-                  ctx.beginPath(); ctx.arc(sz * 0.8, -sz * 0.15, sz * 0.15, 0, Math.PI * 2);
-                  ctx.fillStyle = '#ef4444'; ctx.fill();
-                  // Flagellum
+                  // Pellicle stripes
+                  for (var epi = 0; epi < 4; epi++) {
+                    var epy = sz * (-0.3 + epi * 0.2);
+                    ctx.beginPath();
+                    ctx.moveTo(-sz * 0.8, epy); ctx.quadraticCurveTo(sz * 0.3, epy + sz * 0.03, sz * 1.2, epy * 0.5);
+                    ctx.strokeStyle = 'rgba(22,163,74,0.12)'; ctx.lineWidth = 0.4 * dpr; ctx.stroke();
+                  }
+                  // Chloroplasts
+                  [[-0.2, -0.15, 0.14], [0.3, 0.1, 0.12], [-0.5, 0.05, 0.1], [0.1, -0.3, 0.09]].forEach(function (cp) {
+                    ctx.beginPath(); ctx.ellipse(sz * cp[0], sz * cp[1], sz * cp[2], sz * cp[2] * 0.6, Math.random() * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(34,197,94,0.35)'; ctx.fill();
+                  });
+                  // Eyespot (stigma) with iris detail
+                  ctx.beginPath(); ctx.arc(sz * 0.8, -sz * 0.15, sz * 0.17, 0, Math.PI * 2);
+                  var eyeGrad = ctx.createRadialGradient(sz * 0.78, -sz * 0.17, 0, sz * 0.8, -sz * 0.15, sz * 0.17);
+                  eyeGrad.addColorStop(0, '#fca5a5'); eyeGrad.addColorStop(0.5, '#ef4444'); eyeGrad.addColorStop(1, '#b91c1c');
+                  ctx.fillStyle = eyeGrad; ctx.fill();
+                  // Flagellum (undulating)
                   ctx.beginPath(); ctx.moveTo(sz * 1.5, 0);
                   var fl = Math.sin(world.tick * 0.2 + o.phase) * 8 * dpr;
-                  ctx.quadraticCurveTo(sz * 2 + fl, -4 * dpr, sz * 2.5, fl);
-                  ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                  var fl2 = Math.sin(world.tick * 0.25 + o.phase + 1) * 5 * dpr;
+                  ctx.bezierCurveTo(sz * 1.8, -3 * dpr + fl, sz * 2.2 + fl2, 3 * dpr - fl, sz * 2.8, fl);
+                  ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.2 * dpr; ctx.lineCap = 'round'; ctx.stroke();
                 } else if (def.id === 'wbc') {
-                  // Irregular shape
+                  // Irregular shape with gradient
                   ctx.beginPath();
                   for (var a = 0; a < Math.PI * 2; a += 0.2) {
                     var wobble = sz * (1 + 0.15 * Math.sin(a * 4 + world.tick * 0.04));
@@ -5045,45 +5105,108 @@
                     a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
                   }
                   ctx.closePath();
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var wGrad = ctx.createRadialGradient(-sz * 0.25, -sz * 0.2, 0, 0, 0, sz * 1.15);
+                  wGrad.addColorStop(0, 'rgba(254,202,202,0.6)');
+                  wGrad.addColorStop(0.5, def.bodyColor);
+                  wGrad.addColorStop(1, 'rgba(239,68,68,0.15)');
+                  ctx.fillStyle = wGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                  // Lobular nucleus
+                  // Cytoplasmic granules
+                  [[-0.5, 0.4], [0.55, -0.35], [-0.3, -0.55], [0.45, 0.5], [-0.6, -0.1]].forEach(function (g) {
+                    ctx.beginPath(); ctx.arc(sz * g[0], sz * g[1], sz * 0.04, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fill();
+                  });
+                  // Multi-lobed nucleus
                   ctx.beginPath(); ctx.ellipse(-sz * 0.2, -sz * 0.1, sz * 0.35, sz * 0.2, 0.5, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(239,68,68,0.4)'; ctx.fill();
+                  var wn1Grad = ctx.createRadialGradient(-sz * 0.25, -sz * 0.15, 0, -sz * 0.2, -sz * 0.1, sz * 0.35);
+                  wn1Grad.addColorStop(0, 'rgba(252,165,165,0.55)'); wn1Grad.addColorStop(1, 'rgba(239,68,68,0.25)');
+                  ctx.fillStyle = wn1Grad; ctx.fill();
+                  ctx.strokeStyle = 'rgba(239,68,68,0.3)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
                   ctx.beginPath(); ctx.ellipse(sz * 0.15, sz * 0.1, sz * 0.25, sz * 0.2, -0.3, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(239,68,68,0.4)'; ctx.fill();
+                  ctx.fillStyle = 'rgba(239,68,68,0.35)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(239,68,68,0.25)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
                 } else if (def.id === 'bacterium') {
-                  // Rod shape
+                  // Rod shape with gradient
                   var rw = sz * 1.8, rh = sz * 0.8;
                   ctx.beginPath();
                   ctx.ellipse(0, 0, rw, rh, 0, 0, Math.PI * 2);
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var bGrad = ctx.createRadialGradient(-rw * 0.2, -rh * 0.3, 0, 0, 0, rw);
+                  bGrad.addColorStop(0, 'rgba(253,230,138,0.7)');
+                  bGrad.addColorStop(0.5, def.bodyColor);
+                  bGrad.addColorStop(1, 'rgba(245,158,11,0.15)');
+                  ctx.fillStyle = bGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
-                  // Flagella
+                  // DNA nucleoid region
+                  ctx.beginPath(); ctx.ellipse(0, 0, rw * 0.4, rh * 0.5, 0.3, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(245,158,11,0.15)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(245,158,11,0.2)'; ctx.lineWidth = 0.5 * dpr;
+                  ctx.setLineDash([2 * dpr, 2 * dpr]); ctx.stroke(); ctx.setLineDash([]);
+                  // Pili (short hair-like)
+                  for (var pili = 0; pili < 6; pili++) {
+                    var pa = (pili / 6) * Math.PI * 2;
+                    var ppx = Math.cos(pa) * rw * 0.95, ppy = Math.sin(pa) * rh * 0.95;
+                    ctx.beginPath(); ctx.moveTo(ppx, ppy);
+                    ctx.lineTo(ppx + Math.cos(pa) * sz * 0.2, ppy + Math.sin(pa) * sz * 0.2);
+                    ctx.strokeStyle = 'rgba(245,158,11,0.25)'; ctx.lineWidth = 0.4 * dpr; ctx.stroke();
+                  }
+                  // Flagella (undulating)
                   ctx.beginPath(); ctx.moveTo(-rw, 0);
                   var fl2 = Math.sin(world.tick * 0.25 + o.phase) * 5 * dpr;
-                  ctx.bezierCurveTo(-rw - 8 * dpr, fl2, -rw - 14 * dpr, -fl2, -rw - 20 * dpr, fl2);
-                  ctx.strokeStyle = 'rgba(245,158,11,0.6)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                  var fl3 = Math.cos(world.tick * 0.2 + o.phase) * 3 * dpr;
+                  ctx.bezierCurveTo(-rw - 8 * dpr, fl2, -rw - 14 * dpr, -fl2, -rw - 20 * dpr, fl3);
+                  ctx.strokeStyle = 'rgba(245,158,11,0.6)'; ctx.lineWidth = 0.8 * dpr; ctx.lineCap = 'round'; ctx.stroke();
                 } else if (def.id === 'plantcell') {
-                  // Rectangular
+                  // Rectangular with gradient fill
                   var hw = sz * 1.6, hh = sz * 1.2;
-                  ctx.strokeStyle = '#65a30d'; ctx.lineWidth = 3 * dpr;
-                  ctx.strokeRect(-hw, -hh, hw * 2, hh * 2);
-                  ctx.fillStyle = 'rgba(209,250,229,0.4)'; ctx.fillRect(-hw, -hh, hw * 2, hh * 2);
-                  // Central vacuole
+                  // Cell wall (thicker double line)
+                  ctx.strokeStyle = '#65a30d'; ctx.lineWidth = 4 * dpr;
+                  ctx.strokeRect(-hw - 1, -hh - 1, (hw + 1) * 2, (hh + 1) * 2);
+                  ctx.strokeStyle = '#86efac'; ctx.lineWidth = 1 * dpr;
+                  ctx.strokeRect(-hw + 2, -hh + 2, (hw - 2) * 2, (hh - 2) * 2);
+                  // Gradient cytoplasm
+                  var pcGrad = ctx.createRadialGradient(-hw * 0.2, -hh * 0.2, 0, 0, 0, Math.max(hw, hh) * 1.1);
+                  pcGrad.addColorStop(0, 'rgba(220,252,231,0.6)');
+                  pcGrad.addColorStop(0.5, 'rgba(209,250,229,0.4)');
+                  pcGrad.addColorStop(1, 'rgba(187,247,208,0.2)');
+                  ctx.fillStyle = pcGrad; ctx.fillRect(-hw, -hh, hw * 2, hh * 2);
+                  // ER strands
+                  ctx.beginPath();
+                  ctx.moveTo(-hw * 0.6, -hh * 0.7); ctx.quadraticCurveTo(-hw * 0.2, -hh * 0.3, hw * 0.1, -hh * 0.5);
+                  ctx.moveTo(-hw * 0.4, hh * 0.3); ctx.quadraticCurveTo(hw * 0.1, hh * 0.5, hw * 0.6, hh * 0.2);
+                  ctx.strokeStyle = 'rgba(101,163,13,0.12)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                  // Central vacuole with gradient
                   ctx.beginPath(); ctx.ellipse(0, 0, hw * 0.6, hh * 0.5, 0, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(167,139,250,0.25)'; ctx.fill();
+                  var cvGrad = ctx.createRadialGradient(-hw * 0.1, -hh * 0.08, 0, 0, 0, hw * 0.6);
+                  cvGrad.addColorStop(0, 'rgba(196,181,253,0.3)');
+                  cvGrad.addColorStop(1, 'rgba(167,139,250,0.12)');
+                  ctx.fillStyle = cvGrad; ctx.fill();
                   ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1 * dpr; ctx.stroke();
-                  // Chloroplasts
-                  [-0.5, 0.3, -0.2].forEach(function (off, i) {
-                    ctx.beginPath(); ctx.ellipse(hw * off, hh * (i * 0.4 - 0.4), sz * 0.25, sz * 0.15, 0.3 * i, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(34,197,94,0.5)'; ctx.fill();
+                  // Chloroplasts (with thylakoid detail)
+                  [[-0.5, -0.4, 0.25], [0.3, 0, 0.22], [-0.2, 0.4, 0.2], [0.5, -0.5, 0.18], [-0.55, 0.25, 0.15]].forEach(function (cp, i) {
+                    ctx.beginPath(); ctx.ellipse(hw * cp[0], hh * cp[1], sz * cp[2], sz * cp[2] * 0.6, 0.3 * i, 0, Math.PI * 2);
+                    var cpGrad = ctx.createRadialGradient(hw * cp[0] - sz * 0.05, hh * cp[1] - sz * 0.05, 0, hw * cp[0], hh * cp[1], sz * cp[2]);
+                    cpGrad.addColorStop(0, 'rgba(74,222,128,0.6)'); cpGrad.addColorStop(1, 'rgba(34,197,94,0.3)');
+                    ctx.fillStyle = cpGrad; ctx.fill();
+                    // Thylakoid line
+                    ctx.beginPath(); ctx.moveTo(hw * cp[0] - sz * cp[2] * 0.5, hh * cp[1]);
+                    ctx.lineTo(hw * cp[0] + sz * cp[2] * 0.5, hh * cp[1]);
+                    ctx.strokeStyle = 'rgba(22,163,74,0.25)'; ctx.lineWidth = 0.4 * dpr; ctx.stroke();
                   });
-                  // Nucleus
+                  // Mitochondria
+                  ctx.beginPath(); ctx.ellipse(hw * 0.55, hh * 0.45, sz * 0.12, sz * 0.06, 0.5, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(251,146,60,0.35)'; ctx.fill();
+                  ctx.strokeStyle = 'rgba(249,115,22,0.3)'; ctx.lineWidth = 0.4 * dpr; ctx.stroke();
+                  // Nucleus with envelope
                   ctx.beginPath(); ctx.arc(hw * 0.3, -hh * 0.3, sz * 0.22, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(124,58,237,0.4)'; ctx.fill();
+                  var pnGrad = ctx.createRadialGradient(hw * 0.28, -hh * 0.32, 0, hw * 0.3, -hh * 0.3, sz * 0.22);
+                  pnGrad.addColorStop(0, 'rgba(167,139,250,0.55)'); pnGrad.addColorStop(1, 'rgba(124,58,237,0.25)');
+                  ctx.fillStyle = pnGrad; ctx.fill();
+                  ctx.strokeStyle = 'rgba(124,58,237,0.4)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                  // Nucleolus
+                  ctx.beginPath(); ctx.arc(hw * 0.32, -hh * 0.28, sz * 0.07, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(91,33,182,0.5)'; ctx.fill();
                 } else if (def.id === 'diatom') {
-                  // Hexagonal silica shell
+                  // Hexagonal silica shell with gradient
                   ctx.beginPath();
                   for (var hi = 0; hi < 6; hi++) {
                     var ha = (hi / 6) * Math.PI * 2 - Math.PI / 6;
@@ -5091,83 +5214,175 @@
                     hi === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
                   }
                   ctx.closePath();
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var dGrad = ctx.createRadialGradient(-sz * 0.2, -sz * 0.2, 0, 0, 0, sz * 1.2);
+                  dGrad.addColorStop(0, 'rgba(186,230,253,0.5)');
+                  dGrad.addColorStop(0.4, def.bodyColor);
+                  dGrad.addColorStop(1, 'rgba(14,165,233,0.1)');
+                  ctx.fillStyle = dGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 2 * dpr; ctx.stroke();
-                  // Internal radial pattern (raphe)
+                  // Silica frustule ornate pattern (concentric hex)
+                  for (var ch = 0; ch < 2; ch++) {
+                    ctx.beginPath();
+                    var cscale = 0.6 - ch * 0.2;
+                    for (var hi2 = 0; hi2 < 6; hi2++) {
+                      var ha2 = (hi2 / 6) * Math.PI * 2 - Math.PI / 6;
+                      var hx2 = Math.cos(ha2) * sz * 1.2 * cscale, hy2 = Math.sin(ha2) * sz * 1.2 * cscale;
+                      hi2 === 0 ? ctx.moveTo(hx2, hy2) : ctx.lineTo(hx2, hy2);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = 'rgba(14,165,233,' + (0.15 - ch * 0.05) + ')'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
+                  }
+                  // Ornate radial raphe
                   for (var ri2 = 0; ri2 < 6; ri2++) {
                     var ra = (ri2 / 6) * Math.PI * 2;
-                    ctx.beginPath(); ctx.moveTo(0, 0);
-                    ctx.lineTo(Math.cos(ra) * sz * 0.8, Math.sin(ra) * sz * 0.8);
-                    ctx.strokeStyle = 'rgba(14,165,233,0.3)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(Math.cos(ra) * sz * 0.25, Math.sin(ra) * sz * 0.25);
+                    ctx.lineTo(Math.cos(ra) * sz * 1.0, Math.sin(ra) * sz * 1.0);
+                    ctx.strokeStyle = 'rgba(14,165,233,0.2)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
                   }
-                  // Central node
+                  // Areolae (tiny pores along raphe lines)
+                  for (var ri3 = 0; ri3 < 6; ri3++) {
+                    var ra3 = (ri3 / 6) * Math.PI * 2;
+                    for (var ar = 0.4; ar < 0.9; ar += 0.2) {
+                      ctx.beginPath(); ctx.arc(Math.cos(ra3) * sz * 1.2 * ar, Math.sin(ra3) * sz * 1.2 * ar, sz * 0.03, 0, Math.PI * 2);
+                      ctx.fillStyle = 'rgba(14,165,233,0.2)'; ctx.fill();
+                    }
+                  }
+                  // Central node (glowing)
                   ctx.beginPath(); ctx.arc(0, 0, sz * 0.2, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(14,165,233,0.5)'; ctx.fill();
+                  var dnGrad = ctx.createRadialGradient(-sz * 0.03, -sz * 0.03, 0, 0, 0, sz * 0.2);
+                  dnGrad.addColorStop(0, 'rgba(125,211,252,0.7)'); dnGrad.addColorStop(1, 'rgba(14,165,233,0.35)');
+                  ctx.fillStyle = dnGrad; ctx.fill();
+                  ctx.strokeStyle = 'rgba(14,165,233,0.4)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
                 } else if (def.id === 'volvox') {
-                  // Hollow sphere colony
+                  // Hollow sphere colony with gradient
                   ctx.beginPath(); ctx.arc(0, 0, sz, 0, Math.PI * 2);
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var vGrad = ctx.createRadialGradient(-sz * 0.25, -sz * 0.25, 0, 0, 0, sz);
+                  vGrad.addColorStop(0, 'rgba(187,247,208,0.5)');
+                  vGrad.addColorStop(0.5, def.bodyColor);
+                  vGrad.addColorStop(1, 'rgba(16,185,129,0.2)');
+                  ctx.fillStyle = vGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 2 * dpr; ctx.stroke();
-                  // Surface cells (rotating dots)
-                  for (var vi = 0; vi < 12; vi++) {
-                    var va = (vi / 12) * Math.PI * 2 + world.tick * 0.02;
+                  // Surface cells (more, with flagella)
+                  for (var vi = 0; vi < 18; vi++) {
+                    var va = (vi / 18) * Math.PI * 2 + world.tick * 0.02;
                     var vcx = Math.cos(va) * sz * 0.85, vcy = Math.sin(va) * sz * 0.85;
-                    ctx.beginPath(); ctx.arc(vcx, vcy, sz * 0.08, 0, Math.PI * 2);
+                    ctx.beginPath(); ctx.arc(vcx, vcy, sz * 0.07, 0, Math.PI * 2);
                     ctx.fillStyle = '#22c55e'; ctx.fill();
+                    // Tiny flagella
+                    var vfl = Math.sin(world.tick * 0.2 + vi) * 2 * dpr;
+                    ctx.beginPath(); ctx.moveTo(vcx, vcy);
+                    ctx.lineTo(vcx + Math.cos(va) * sz * 0.15, vcy + Math.sin(va) * sz * 0.15 + vfl);
+                    ctx.strokeStyle = 'rgba(34,197,94,0.4)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
                   }
-                  // Daughter colony inside
-                  ctx.beginPath(); ctx.arc(sz * 0.2, -sz * 0.15, sz * 0.25, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(16,185,129,0.35)'; ctx.fill();
+                  // Inner ring of cells
+                  for (var vi2 = 0; vi2 < 8; vi2++) {
+                    var va2 = (vi2 / 8) * Math.PI * 2 + world.tick * 0.015 + 0.3;
+                    ctx.beginPath(); ctx.arc(Math.cos(va2) * sz * 0.55, Math.sin(va2) * sz * 0.55, sz * 0.05, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(34,197,94,0.5)'; ctx.fill();
+                  }
+                  // Daughter colony inside (glowing)
+                  ctx.beginPath(); ctx.arc(sz * 0.15, -sz * 0.1, sz * 0.22, 0, Math.PI * 2);
+                  var dcGrad = ctx.createRadialGradient(sz * 0.13, -sz * 0.12, 0, sz * 0.15, -sz * 0.1, sz * 0.22);
+                  dcGrad.addColorStop(0, 'rgba(74,222,128,0.5)');
+                  dcGrad.addColorStop(1, 'rgba(16,185,129,0.15)');
+                  ctx.fillStyle = dcGrad; ctx.fill();
                   ctx.strokeStyle = 'rgba(16,185,129,0.5)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
                 } else if (def.id === 'stentor') {
-                  // Trumpet / cone shape
+                  // Trumpet / cone shape with gradient
                   ctx.beginPath();
                   ctx.moveTo(-sz * 0.3, sz * 1.2);
                   ctx.quadraticCurveTo(-sz * 0.1, 0, -sz * 1.0, -sz * 0.8);
                   ctx.lineTo(sz * 1.0, -sz * 0.8);
                   ctx.quadraticCurveTo(sz * 0.1, 0, sz * 0.3, sz * 1.2);
                   ctx.closePath();
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var stGrad = ctx.createRadialGradient(-sz * 0.15, -sz * 0.2, 0, 0, 0, sz * 1.2);
+                  stGrad.addColorStop(0, 'rgba(216,180,254,0.55)');
+                  stGrad.addColorStop(0.5, def.bodyColor);
+                  stGrad.addColorStop(1, 'rgba(168,85,247,0.1)');
+                  ctx.fillStyle = stGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                  // Cilia crown at wide end
-                  for (var sci = 0; sci < 8; sci++) {
-                    var scx = -sz * 0.9 + (sci / 7) * sz * 1.8;
-                    var scWave = Math.sin(world.tick * 0.15 + sci * 0.8) * 4 * dpr;
+                  // Myonemes (contractile fibers running length of body)
+                  for (var mi = 0; mi < 4; mi++) {
+                    var mx = sz * (-0.15 + mi * 0.1);
+                    ctx.beginPath(); ctx.moveTo(mx, sz * 1.1);
+                    ctx.quadraticCurveTo(mx - sz * 0.3 * (mi - 1.5), sz * 0.3, mx * 2.5, -sz * 0.75);
+                    ctx.strokeStyle = 'rgba(168,85,247,0.1)'; ctx.lineWidth = 0.4 * dpr; ctx.stroke();
+                  }
+                  // Membranellar band (elaborate cilia crown)
+                  for (var sci = 0; sci < 14; sci++) {
+                    var scx = -sz * 0.9 + (sci / 13) * sz * 1.8;
+                    var scWave = Math.sin(world.tick * 0.18 + sci * 0.6) * 5 * dpr;
+                    var scWave2 = Math.cos(world.tick * 0.12 + sci * 0.4) * 3 * dpr;
                     ctx.beginPath(); ctx.moveTo(scx, -sz * 0.8);
-                    ctx.lineTo(scx + scWave, -sz * 1.1);
-                    ctx.strokeStyle = 'rgba(168,85,247,0.5)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                    ctx.quadraticCurveTo(scx + scWave, -sz * 0.95, scx + scWave2, -sz * 1.15);
+                    ctx.strokeStyle = 'rgba(168,85,247,0.45)'; ctx.lineWidth = 0.7 * dpr; ctx.lineCap = 'round'; ctx.stroke();
                   }
-                  // Bead-like macronucleus
+                  // Bead-like macronucleus (with gradient)
                   for (var ni = 0; ni < 3; ni++) {
-                    ctx.beginPath(); ctx.arc(0, sz * (0.3 - ni * 0.35), sz * 0.12, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(168,85,247,0.5)'; ctx.fill();
+                    var ny = sz * (0.3 - ni * 0.35);
+                    ctx.beginPath(); ctx.arc(0, ny, sz * 0.12, 0, Math.PI * 2);
+                    var snGrad = ctx.createRadialGradient(-sz * 0.02, ny - sz * 0.02, 0, 0, ny, sz * 0.12);
+                    snGrad.addColorStop(0, 'rgba(192,132,252,0.65)'); snGrad.addColorStop(1, 'rgba(168,85,247,0.3)');
+                    ctx.fillStyle = snGrad; ctx.fill();
+                    ctx.strokeStyle = 'rgba(168,85,247,0.3)'; ctx.lineWidth = 0.4 * dpr; ctx.stroke();
                   }
+                  // Food vacuoles inside
+                  ctx.beginPath(); ctx.arc(sz * 0.2, -sz * 0.3, sz * 0.08, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fill();
                 } else if (def.id === 'tardigrade') {
-                  // Plump body
+                  // Plump segmented body with gradient
                   ctx.beginPath(); ctx.ellipse(0, 0, sz * 1.3, sz * 0.9, 0, 0, Math.PI * 2);
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var tGrad = ctx.createRadialGradient(-sz * 0.3, -sz * 0.2, 0, 0, 0, sz * 1.3);
+                  tGrad.addColorStop(0, 'rgba(245,208,254,0.5)');
+                  tGrad.addColorStop(0.5, def.bodyColor);
+                  tGrad.addColorStop(1, 'rgba(217,70,239,0.1)');
+                  ctx.fillStyle = tGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
-                  // Head bump
+                  // Body segment lines
+                  [-0.5, -0.1, 0.3, 0.65].forEach(function (sx) {
+                    ctx.beginPath(); ctx.moveTo(sz * sx, -sz * 0.85); ctx.lineTo(sz * sx, sz * 0.85);
+                    ctx.strokeStyle = 'rgba(217,70,239,0.12)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
+                  });
+                  // Head bump with gradient
                   ctx.beginPath(); ctx.arc(sz * 1.1, 0, sz * 0.4, 0, Math.PI * 2);
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
+                  var thGrad = ctx.createRadialGradient(sz * 1.05, -sz * 0.05, 0, sz * 1.1, 0, sz * 0.4);
+                  thGrad.addColorStop(0, 'rgba(245,208,254,0.5)'); thGrad.addColorStop(1, 'rgba(217,70,239,0.15)');
+                  ctx.fillStyle = thGrad; ctx.fill();
                   ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
-                  // 8 legs (4 per side) with tiny claws
+                  // Mouth stylets
+                  ctx.beginPath(); ctx.moveTo(sz * 1.45, -sz * 0.05); ctx.lineTo(sz * 1.6, -sz * 0.08);
+                  ctx.moveTo(sz * 1.45, sz * 0.05); ctx.lineTo(sz * 1.6, sz * 0.08);
+                  ctx.strokeStyle = 'rgba(217,70,239,0.4)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
+                  // 8 legs (4 per side) with claws
                   [[-0.8, 0.7], [-0.2, 0.8], [0.3, 0.75], [0.8, 0.6]].forEach(function (leg, li) {
                     var phase2 = Math.sin(world.tick * 0.08 + li * 1.5) * 3 * dpr;
-                    // Top leg
+                    // Top leg with claw detail
                     ctx.beginPath(); ctx.moveTo(sz * leg[0], -sz * leg[1]);
-                    ctx.lineTo(sz * leg[0] + phase2, -sz * (leg[1] + 0.35));
-                    ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
-                    // Bottom leg
+                    ctx.quadraticCurveTo(sz * leg[0] + phase2 * 0.5, -sz * (leg[1] + 0.15), sz * leg[0] + phase2, -sz * (leg[1] + 0.35));
+                    ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.lineCap = 'round'; ctx.stroke();
+                    // Tiny claw hooks
+                    var clawX = sz * leg[0] + phase2, clawY = -sz * (leg[1] + 0.35);
+                    ctx.beginPath(); ctx.moveTo(clawX - 1 * dpr, clawY); ctx.lineTo(clawX - 2 * dpr, clawY - 2 * dpr);
+                    ctx.moveTo(clawX + 1 * dpr, clawY); ctx.lineTo(clawX + 2 * dpr, clawY - 2 * dpr);
+                    ctx.strokeStyle = 'rgba(217,70,239,0.5)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
+                    // Bottom leg with claw detail
                     ctx.beginPath(); ctx.moveTo(sz * leg[0], sz * leg[1]);
-                    ctx.lineTo(sz * leg[0] - phase2, sz * (leg[1] + 0.35));
-                    ctx.strokeStyle = def.color; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                    ctx.quadraticCurveTo(sz * leg[0] - phase2 * 0.5, sz * (leg[1] + 0.15), sz * leg[0] - phase2, sz * (leg[1] + 0.35));
+                    ctx.strokeStyle = def.color; ctx.lineWidth = 1.5 * dpr; ctx.lineCap = 'round'; ctx.stroke();
+                    var clawX2 = sz * leg[0] - phase2, clawY2 = sz * (leg[1] + 0.35);
+                    ctx.beginPath(); ctx.moveTo(clawX2 - 1 * dpr, clawY2); ctx.lineTo(clawX2 - 2 * dpr, clawY2 + 2 * dpr);
+                    ctx.moveTo(clawX2 + 1 * dpr, clawY2); ctx.lineTo(clawX2 + 2 * dpr, clawY2 + 2 * dpr);
+                    ctx.strokeStyle = 'rgba(217,70,239,0.5)'; ctx.lineWidth = 0.5 * dpr; ctx.stroke();
                   });
-                  // Eyes
-                  ctx.beginPath(); ctx.arc(sz * 1.2, -sz * 0.12, sz * 0.08, 0, Math.PI * 2);
-                  ctx.fillStyle = '#000'; ctx.fill();
-                  ctx.beginPath(); ctx.arc(sz * 1.2, sz * 0.12, sz * 0.08, 0, Math.PI * 2);
-                  ctx.fillStyle = '#000'; ctx.fill();
+                  // Eyes with specular highlight
+                  ctx.beginPath(); ctx.arc(sz * 1.2, -sz * 0.12, sz * 0.09, 0, Math.PI * 2);
+                  ctx.fillStyle = '#1e1b4b'; ctx.fill();
+                  ctx.beginPath(); ctx.arc(sz * 1.18, -sz * 0.14, sz * 0.03, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
+                  ctx.beginPath(); ctx.arc(sz * 1.2, sz * 0.12, sz * 0.09, 0, Math.PI * 2);
+                  ctx.fillStyle = '#1e1b4b'; ctx.fill();
+                  ctx.beginPath(); ctx.arc(sz * 1.18, sz * 0.1, sz * 0.03, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
                 } else if (def.id === 'spirillum') {
                   // Corkscrew spiral
                   ctx.beginPath();
@@ -5177,7 +5392,7 @@
                     sp === -sz * 2 ? ctx.moveTo(spx, spy) : ctx.lineTo(spx, spy);
                   }
                   ctx.strokeStyle = def.color; ctx.lineWidth = sz * 0.4 * dpr / 5; ctx.lineCap = 'round'; ctx.stroke();
-                  // Body fill along the spiral
+                  // Body fill along the spiral with gradient
                   ctx.beginPath();
                   for (var sp = -sz * 2; sp < sz * 2; sp += 1) {
                     var spx = sp;
@@ -5190,16 +5405,26 @@
                     ctx.lineTo(spx, spy + sz * 0.15);
                   }
                   ctx.closePath();
-                  ctx.fillStyle = def.bodyColor; ctx.fill();
-                  // Flagella tufts at both ends
-                  var ftip1 = Math.sin(world.tick * 0.3) * 4 * dpr;
-                  ctx.beginPath(); ctx.moveTo(-sz * 2, 0);
-                  ctx.bezierCurveTo(-sz * 2.5, ftip1, -sz * 3, -ftip1, -sz * 3.2, ftip1);
-                  ctx.strokeStyle = 'rgba(249,115,22,0.5)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
-                  var ftip2 = Math.sin(world.tick * 0.3 + Math.PI) * 4 * dpr;
-                  ctx.beginPath(); ctx.moveTo(sz * 2, 0);
-                  ctx.bezierCurveTo(sz * 2.5, ftip2, sz * 3, -ftip2, sz * 3.2, ftip2);
-                  ctx.strokeStyle = 'rgba(249,115,22,0.5)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
+                  var spGrad = ctx.createLinearGradient(-sz * 2, -sz * 0.5, sz * 2, sz * 0.5);
+                  spGrad.addColorStop(0, 'rgba(254,215,170,0.5)');
+                  spGrad.addColorStop(0.5, def.bodyColor);
+                  spGrad.addColorStop(1, 'rgba(249,115,22,0.15)');
+                  ctx.fillStyle = spGrad; ctx.fill();
+                  // Flagella tufts at both ends (multiple strands)
+                  for (var fti = 0; fti < 3; fti++) {
+                    var ftip1 = Math.sin(world.tick * 0.3 + fti * 0.8) * 4 * dpr;
+                    var ftOff = (fti - 1) * 2 * dpr;
+                    ctx.beginPath(); ctx.moveTo(-sz * 2, ftOff);
+                    ctx.bezierCurveTo(-sz * 2.5, ftip1 + ftOff, -sz * 3, -ftip1 + ftOff, -sz * 3.2, ftip1 + ftOff);
+                    ctx.strokeStyle = 'rgba(249,115,22,' + (0.4 - fti * 0.1) + ')'; ctx.lineWidth = (0.7 - fti * 0.1) * dpr; ctx.lineCap = 'round'; ctx.stroke();
+                  }
+                  for (var fti2 = 0; fti2 < 3; fti2++) {
+                    var ftip2 = Math.sin(world.tick * 0.3 + Math.PI + fti2 * 0.8) * 4 * dpr;
+                    var ftOff2 = (fti2 - 1) * 2 * dpr;
+                    ctx.beginPath(); ctx.moveTo(sz * 2, ftOff2);
+                    ctx.bezierCurveTo(sz * 2.5, ftip2 + ftOff2, sz * 3, -ftip2 + ftOff2, sz * 3.2, ftip2 + ftOff2);
+                    ctx.strokeStyle = 'rgba(249,115,22,' + (0.4 - fti2 * 0.1) + ')'; ctx.lineWidth = (0.7 - fti2 * 0.1) * dpr; ctx.lineCap = 'round'; ctx.stroke();
+                  }
                 }
                 ctx.restore();
               }
@@ -5321,17 +5546,32 @@
 
               function render() {
                 ctx.clearRect(0, 0, W, H);
-                // Background - petri dish
-                ctx.fillStyle = '#f0fdf4'; ctx.fillRect(0, 0, W, H);
-                // Dish circle
                 var center = toScreen(WORLD_W / 2, WORLD_H / 2);
                 var dishR = Math.max(WORLD_W, WORLD_H) * 0.55 * cam.zoom * dpr;
-                ctx.beginPath(); ctx.arc(center.x, center.y, dishR, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(209,250,229,0.15)'; ctx.fill();
-                ctx.strokeStyle = 'rgba(16,185,129,0.3)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
 
-                // Grid lines (microscope crosshair)
-                ctx.strokeStyle = 'rgba(148,163,184,0.15)'; ctx.lineWidth = 0.5 * dpr;
+                // ── Microscope slide background ──
+                var bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+                bgGrad.addColorStop(0, '#f0fdf4');
+                bgGrad.addColorStop(0.6, '#ecfdf5');
+                bgGrad.addColorStop(1, '#d1fae5');
+                ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+
+                // Petri dish with subtle depth ring
+                ctx.save();
+                ctx.beginPath(); ctx.arc(center.x, center.y, dishR, 0, Math.PI * 2);
+                var dishGrad = ctx.createRadialGradient(center.x, center.y, dishR * 0.85, center.x, center.y, dishR);
+                dishGrad.addColorStop(0, 'rgba(209,250,229,0)');
+                dishGrad.addColorStop(0.7, 'rgba(16,185,129,0.06)');
+                dishGrad.addColorStop(1, 'rgba(16,185,129,0.18)');
+                ctx.fillStyle = dishGrad; ctx.fill();
+                ctx.strokeStyle = 'rgba(16,185,129,0.25)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
+                // Inner rim highlight
+                ctx.beginPath(); ctx.arc(center.x - dishR * 0.08, center.y - dishR * 0.08, dishR * 0.96, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 3 * dpr; ctx.stroke();
+                ctx.restore();
+
+                // ── Fine grid lines ──
+                ctx.strokeStyle = 'rgba(148,163,184,0.1)'; ctx.lineWidth = 0.5 * dpr;
                 for (var gx = 0; gx < WORLD_W; gx += 50) {
                   var p1 = toScreen(gx, 0), p2 = toScreen(gx, WORLD_H);
                   ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
@@ -5340,46 +5580,127 @@
                   var p1 = toScreen(0, gy), p2 = toScreen(WORLD_W, gy);
                   ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
                 }
+                // Center crosshair
+                ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.lineWidth = 1 * dpr;
+                ctx.beginPath(); ctx.moveTo(center.x - 12 * dpr, center.y); ctx.lineTo(center.x + 12 * dpr, center.y); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(center.x, center.y - 12 * dpr); ctx.lineTo(center.x, center.y + 12 * dpr); ctx.stroke();
 
-                // Light zones
+                // ── Floating out-of-focus debris (depth-of-field) ──
+                if (!world._debris) {
+                  world._debris = [];
+                  for (var di = 0; di < 20; di++) {
+                    world._debris.push({ x: Math.random() * WORLD_W, y: Math.random() * WORLD_H, r: 1.5 + Math.random() * 3, dx: (Math.random() - 0.5) * 0.15, dy: (Math.random() - 0.5) * 0.1, alpha: 0.06 + Math.random() * 0.1 });
+                  }
+                }
+                world._debris.forEach(function (db) {
+                  db.x += db.dx; db.y += db.dy;
+                  if (db.x < 0) db.x += WORLD_W; if (db.x > WORLD_W) db.x -= WORLD_W;
+                  if (db.y < 0) db.y += WORLD_H; if (db.y > WORLD_H) db.y -= WORLD_H;
+                  var dp = toScreen(db.x, db.y);
+                  var dr = db.r * cam.zoom * dpr;
+                  ctx.beginPath(); ctx.arc(dp.x, dp.y, dr, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(120,160,130,' + db.alpha + ')'; ctx.fill();
+                });
+
+                // ── Light zones (warm glow) ──
                 world.lightZones.forEach(function (lz) {
                   var p = toScreen(lz.x, lz.y);
                   var r = lz.r * cam.zoom * dpr;
                   var grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-                  grad.addColorStop(0, 'rgba(250,240,137,0.35)');
+                  grad.addColorStop(0, 'rgba(250,240,137,0.4)');
+                  grad.addColorStop(0.5, 'rgba(250,240,137,0.15)');
                   grad.addColorStop(1, 'rgba(250,240,137,0)');
                   ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
                   ctx.fillStyle = grad; ctx.fill();
-                  ctx.strokeStyle = 'rgba(234,179,8,0.2)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                  // Soft pulsing ring
+                  ctx.strokeStyle = 'rgba(234,179,8,' + (0.15 + 0.1 * Math.sin(world.tick * 0.02)) + ')';
+                  ctx.lineWidth = 1.5 * dpr; ctx.stroke();
                 });
 
-                // Food particles
+                // ── Food particles (organic gradient) ──
                 world.food.forEach(function (f) {
                   if (f.eaten) return;
                   var p = toScreen(f.x, f.y);
                   var sz = f.size * cam.zoom * dpr;
+                  var fGrad = ctx.createRadialGradient(p.x - sz * 0.2, p.y - sz * 0.2, 0, p.x, p.y, sz);
+                  fGrad.addColorStop(0, 'rgba(74,222,128,0.85)');
+                  fGrad.addColorStop(0.6, 'rgba(34,197,94,0.6)');
+                  fGrad.addColorStop(1, 'rgba(22,163,74,0.3)');
                   ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(34,197,94,0.6)'; ctx.fill();
+                  ctx.fillStyle = fGrad; ctx.fill();
+                  // Tiny specular dot
+                  ctx.beginPath(); ctx.arc(p.x - sz * 0.25, p.y - sz * 0.25, sz * 0.2, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fill();
                 });
 
                 // Organisms
                 world.organisms.forEach(function (o) { drawOrganism(o); });
 
-                // Magnification label
-                ctx.font = (10 * dpr) + 'px monospace';
-                ctx.fillStyle = 'rgba(100,116,139,0.7)';
-                var mag = Math.round(40 * cam.zoom);
-                ctx.fillText(mag + 'x', 8 * dpr, H - 8 * dpr);
+                // ── Circular vignette overlay ──
+                var vigGrad = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.6);
+                vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                vigGrad.addColorStop(0.7, 'rgba(0,0,0,0)');
+                vigGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
+                ctx.fillStyle = vigGrad; ctx.fillRect(0, 0, W, H);
 
-                // Player energy bar
+                // ── Magnification label (glassmorphic) ──
+                var mag = Math.round(40 * cam.zoom);
+                ctx.save();
+                var mlx = 6 * dpr, mly = H - 22 * dpr, mlw = 48 * dpr, mlh = 16 * dpr;
+                ctx.fillStyle = 'rgba(15,23,42,0.45)';
+                ctx.beginPath();
+                ctx.moveTo(mlx + 4 * dpr, mly); ctx.lineTo(mlx + mlw - 4 * dpr, mly);
+                ctx.arcTo(mlx + mlw, mly, mlx + mlw, mly + 4 * dpr, 4 * dpr);
+                ctx.lineTo(mlx + mlw, mly + mlh - 4 * dpr);
+                ctx.arcTo(mlx + mlw, mly + mlh, mlx + mlw - 4 * dpr, mly + mlh, 4 * dpr);
+                ctx.lineTo(mlx + 4 * dpr, mly + mlh);
+                ctx.arcTo(mlx, mly + mlh, mlx, mly + mlh - 4 * dpr, 4 * dpr);
+                ctx.lineTo(mlx, mly + 4 * dpr);
+                ctx.arcTo(mlx, mly, mlx + 4 * dpr, mly, 4 * dpr);
+                ctx.closePath(); ctx.fill();
+                ctx.font = 'bold ' + (8 * dpr) + 'px monospace';
+                ctx.fillStyle = '#a7f3d0'; ctx.textAlign = 'center';
+                ctx.fillText(mag + 'x', mlx + mlw / 2, mly + mlh - 4 * dpr);
+                ctx.restore();
+
+                // ── Player energy bar (enhanced) ──
                 if (playAsOrg) {
-                  var bx = 8 * dpr, by = 8 * dpr, bw = 80 * dpr, bh = 8 * dpr;
-                  ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(bx, by, bw, bh);
-                  ctx.fillStyle = playAsOrg.energy > 30 ? '#22c55e' : '#ef4444';
-                  ctx.fillRect(bx, by, bw * (playAsOrg.energy / 100), bh);
-                  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bw, bh);
-                  ctx.fillStyle = '#fff'; ctx.font = (7 * dpr) + 'px sans-serif';
-                  ctx.fillText('Energy: ' + Math.round(playAsOrg.energy), bx + 2 * dpr, by + 6.5 * dpr);
+                  ctx.save();
+                  var bx = 8 * dpr, by = 8 * dpr, bw = 90 * dpr, bh = 10 * dpr, br = 5 * dpr;
+                  // Background pill
+                  ctx.fillStyle = 'rgba(15,23,42,0.55)';
+                  ctx.beginPath();
+                  ctx.moveTo(bx + br, by); ctx.lineTo(bx + bw - br, by);
+                  ctx.arcTo(bx + bw, by, bx + bw, by + br, br);
+                  ctx.lineTo(bx + bw, by + bh - br);
+                  ctx.arcTo(bx + bw, by + bh, bx + bw - br, by + bh, br);
+                  ctx.lineTo(bx + br, by + bh);
+                  ctx.arcTo(bx, by + bh, bx, by + bh - br, br);
+                  ctx.lineTo(bx, by + br);
+                  ctx.arcTo(bx, by, bx + br, by, br);
+                  ctx.closePath(); ctx.fill();
+                  // Energy fill gradient
+                  var eFill = bw * (playAsOrg.energy / 100);
+                  if (eFill > br * 2) {
+                    var eGrad = ctx.createLinearGradient(bx, 0, bx + eFill, 0);
+                    var eOk = playAsOrg.energy > 30;
+                    eGrad.addColorStop(0, eOk ? '#22c55e' : '#ef4444');
+                    eGrad.addColorStop(1, eOk ? '#4ade80' : '#f87171');
+                    ctx.fillStyle = eGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(bx + br, by + 1); ctx.lineTo(bx + eFill - br, by + 1);
+                    ctx.arcTo(bx + eFill, by + 1, bx + eFill, by + br, br - 1);
+                    ctx.lineTo(bx + eFill, by + bh - br);
+                    ctx.arcTo(bx + eFill, by + bh - 1, bx + eFill - br, by + bh - 1, br - 1);
+                    ctx.lineTo(bx + br, by + bh - 1);
+                    ctx.arcTo(bx + 1, by + bh - 1, bx + 1, by + bh - br, br - 1);
+                    ctx.lineTo(bx + 1, by + br);
+                    ctx.arcTo(bx + 1, by + 1, bx + br, by + 1, br - 1);
+                    ctx.closePath(); ctx.fill();
+                  }
+                  ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
+                  ctx.fillText('\u26A1 ' + Math.round(playAsOrg.energy) + '%', bx + 4 * dpr, by + 7.5 * dpr);
+                  ctx.restore();
                 }
               }
 
@@ -5956,6 +6277,51 @@
                 ctx.fillStyle = skyGrad;
                 ctx.fillRect(0, 0, cW, cH);
 
+                // ── Twinkling stars ──
+                if (!canvasEl._stars) {
+                  canvasEl._stars = [];
+                  for (var si = 0; si < 60; si++) {
+                    canvasEl._stars.push({
+                      x: Math.random() * cW, y: Math.random() * cH * 0.35,
+                      r: 0.4 + Math.random() * 1.2, phase: Math.random() * Math.PI * 2
+                    });
+                  }
+                }
+                canvasEl._stars.forEach(function (s) {
+                  var twinkle = 0.3 + 0.7 * Math.abs(Math.sin(tick * 0.02 + s.phase));
+                  ctx.globalAlpha = twinkle * (1 - s.y / (cH * 0.35));
+                  ctx.fillStyle = '#fff';
+                  ctx.beginPath(); ctx.arc(s.x, s.y, s.r * dpr, 0, Math.PI * 2); ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+
+                // ── Sun glow ──
+                var sunX = cW * 0.82, sunY = cH * 0.28;
+                var sunG = ctx.createRadialGradient(sunX, sunY, 6 * dpr, sunX, sunY, 60 * dpr);
+                sunG.addColorStop(0, 'rgba(255,250,200,0.9)');
+                sunG.addColorStop(0.3, 'rgba(255,220,100,0.4)');
+                sunG.addColorStop(0.7, 'rgba(255,180,60,0.1)');
+                sunG.addColorStop(1, 'rgba(255,140,0,0)');
+                ctx.fillStyle = sunG;
+                ctx.beginPath(); ctx.arc(sunX, sunY, 60 * dpr, 0, Math.PI * 2); ctx.fill();
+                // Sun core
+                ctx.fillStyle = '#fffbe6';
+                ctx.beginPath(); ctx.arc(sunX, sunY, 8 * dpr, 0, Math.PI * 2); ctx.fill();
+
+                // ── Drifting clouds ──
+                var cloudDrift = tick * 0.15;
+                function drawCloud(cx, cy, sz) {
+                  ctx.save(); ctx.globalAlpha = 0.35;
+                  ctx.fillStyle = '#fff';
+                  [[0, 0, sz], [-sz * 0.7, sz * 0.15, sz * 0.7], [sz * 0.6, sz * 0.1, sz * 0.65], [-sz * 0.3, -sz * 0.3, sz * 0.5], [sz * 0.25, -sz * 0.25, sz * 0.55]].forEach(function (b) {
+                    ctx.beginPath(); ctx.arc(cx + b[0], cy + b[1], b[2], 0, Math.PI * 2); ctx.fill();
+                  });
+                  ctx.restore();
+                }
+                drawCloud(((cloudDrift + cW * 0.25) % (cW + 100)) - 50, cH * 0.38, 18 * dpr);
+                drawCloud(((cloudDrift * 0.7 + cW * 0.6) % (cW + 120)) - 60, cH * 0.42, 14 * dpr);
+                drawCloud(((cloudDrift * 0.5 + cW * 0.1) % (cW + 80)) - 40, cH * 0.33, 12 * dpr);
+
                 // Distant mountains silhouette
                 ctx.fillStyle = 'rgba(30,58,95,0.3)';
                 ctx.beginPath(); ctx.moveTo(0, cH * 0.72);
@@ -6022,16 +6388,30 @@
                   ctx.fillText(tgt.label, tx, groundY - 30 * dpr);
                 });
 
-                // ── Trails with speed-based color ──
+                // ── Trails with glow & speed-based color ──
                 trails.forEach(function (trail, idx) {
                   if (trail.length < 2) return;
                   var isActive = idx === trails.length - 1;
-                  var alpha = isActive ? 1 : 0.2;
+                  var alpha = isActive ? 1 : 0.18;
+                  // Glow layer for active trail
+                  if (isActive) {
+                    ctx.save();
+                    ctx.lineWidth = 6 * dpr;
+                    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                    ctx.globalAlpha = 0.25;
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.beginPath(); ctx.moveTo(trail[0].x * dpr, trail[0].y * dpr);
+                    for (var tg = 1; tg < trail.length; tg++) {
+                      ctx.lineTo(trail[tg].x * dpr, trail[tg].y * dpr);
+                    }
+                    ctx.stroke(); ctx.restore();
+                  }
+                  // Main speed-colored segments
                   ctx.lineWidth = (isActive ? 2.5 : 1.5) * dpr;
+                  ctx.lineCap = 'round';
                   ctx.setLineDash(isActive ? [] : [4, 3]);
                   for (var ti = 1; ti < trail.length; ti++) {
                     var p0 = trail[ti - 1], p1 = trail[ti];
-                    // Speed-based color
                     var speed = Math.sqrt(Math.pow(p1.vx || 0, 2) + Math.pow(p1.vy || 0, 2));
                     var speedNorm = Math.min(1, speed / 60);
                     var r, g, b;
@@ -6041,6 +6421,20 @@
                     ctx.beginPath(); ctx.moveTo(p0.x * dpr, p0.y * dpr); ctx.lineTo(p1.x * dpr, p1.y * dpr); ctx.stroke();
                   }
                   ctx.setLineDash([]);
+                  // Draw dotted apex marker for completed trails
+                  if (!isActive && trail.length > 2) {
+                    var apexPt = trail[0], apexIdx = 0;
+                    trail.forEach(function (pt, pti) { if (pt.y < apexPt.y) { apexPt = pt; apexIdx = pti; } });
+                    ctx.save(); ctx.globalAlpha = 0.35;
+                    ctx.setLineDash([2, 4]);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(apexPt.x * dpr, apexPt.y * dpr); ctx.lineTo(apexPt.x * dpr, groundY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = (4 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText('apex', apexPt.x * dpr, (apexPt.y - 6) * dpr);
+                    ctx.restore();
+                  }
                 });
 
                 // ── Animate ball ──
@@ -6057,11 +6451,25 @@
                   ball.speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
                   if (trails.length > 0) trails[trails.length - 1].push({ x: ball.x, y: ball.y, vx: ball.vx, vy: ball.vy });
 
-                  // Ball with motion blur
+                  // ── Metallic cannonball ──
                   ctx.save();
-                  ctx.beginPath(); ctx.arc(ball.x * dpr, ball.y * dpr, 7 * dpr, 0, Math.PI * 2);
-                  ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 15 * dpr; ctx.fill(); ctx.shadowBlur = 0;
-                  ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                  var bx = ball.x * dpr, by = ball.y * dpr, br = 7 * dpr;
+                  // Outer glow
+                  ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 18 * dpr;
+                  ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2);
+                  var ballGrad = ctx.createRadialGradient(bx - br * 0.3, by - br * 0.3, br * 0.1, bx, by, br);
+                  ballGrad.addColorStop(0, '#e2e8f0');
+                  ballGrad.addColorStop(0.35, '#94a3b8');
+                  ballGrad.addColorStop(0.7, '#475569');
+                  ballGrad.addColorStop(1, '#1e293b');
+                  ctx.fillStyle = ballGrad; ctx.fill();
+                  ctx.shadowBlur = 0;
+                  // Specular highlight
+                  ctx.beginPath(); ctx.arc(bx - br * 0.25, by - br * 0.25, br * 0.35, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+                  // Rim stroke
+                  ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2);
+                  ctx.strokeStyle = 'rgba(30,41,59,0.6)'; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
                   ctx.restore();
 
                   // Velocity vector arrow
@@ -6104,98 +6512,228 @@
                       var maxY = Math.min.apply(null, trails[trails.length - 1].map(function (p) { return p.y; }));
                       canvasEl.dataset.lastMaxH = ((cH / dpr - 40 - maxY) / scale).toFixed(1);
                     }
-                    // Spawn explosion particles
-                    for (var ep = 0; ep < 20; ep++) {
+                    // Spawn enhanced explosion particles
+                    for (var ep = 0; ep < 35; ep++) {
                       var epAngle = Math.random() * Math.PI;
-                      var epSpeed = 1 + Math.random() * 4;
+                      var epSpeed = 1 + Math.random() * 5;
+                      var pType = Math.random();
                       impactParticles.push({
                         x: ball.x, y: ball.y,
                         vx: Math.cos(epAngle) * epSpeed * (Math.random() > 0.5 ? 1 : -1),
                         vy: -Math.sin(epAngle) * epSpeed,
-                        life: 0.8 + Math.random() * 0.5,
-                        size: 1 + Math.random() * 2.5,
-                        isDebris: Math.random() > 0.5
+                        life: 0.7 + Math.random() * 0.6,
+                        size: pType < 0.3 ? 0.5 + Math.random() * 1 : 1 + Math.random() * 2.5,
+                        type: pType < 0.3 ? 'spark' : pType < 0.65 ? 'debris' : 'smoke'
                       });
                     }
-                    // Landing marker
-                    landingMarkers.push({ x: ball.x, alpha: 1 });
+                    // Landing marker with distance
+                    var lmDist = ((ball.x - 40) / scale).toFixed(1);
+                    landingMarkers.push({ x: ball.x, alpha: 1, ring: 1, dist: lmDist });
                   }
                 }
 
-                // ── Impact particles ──
+                // ── Impact particles (multi-type) ──
                 for (var ipi = impactParticles.length - 1; ipi >= 0; ipi--) {
                   var ip = impactParticles[ipi];
-                  ip.x += ip.vx; ip.y += ip.vy; ip.vy += 0.15; ip.life -= 0.02;
+                  ip.x += ip.vx; ip.y += ip.vy;
+                  ip.vy += (ip.type === 'smoke' ? 0.02 : 0.15);
+                  if (ip.type === 'smoke') { ip.vy -= 0.08; ip.vx *= 0.97; }
+                  ip.life -= (ip.type === 'smoke' ? 0.012 : 0.02);
                   if (ip.life <= 0) { impactParticles.splice(ipi, 1); continue; }
-                  ctx.beginPath();
-                  ctx.arc(ip.x * dpr, ip.y * dpr, ip.size * dpr, 0, Math.PI * 2);
-                  if (ip.isDebris) {
-                    ctx.fillStyle = 'rgba(146,64,14,' + ip.life + ')';
+                  ctx.save();
+                  if (ip.type === 'spark') {
+                    // Bright spark with tail
+                    ctx.globalAlpha = ip.life;
+                    ctx.strokeStyle = 'hsla(' + Math.round(30 + ip.life * 30) + ',100%,70%,' + ip.life + ')';
+                    ctx.lineWidth = ip.size * dpr;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo((ip.x - ip.vx * 1.5) * dpr, (ip.y - ip.vy * 1.5) * dpr);
+                    ctx.lineTo(ip.x * dpr, ip.y * dpr);
+                    ctx.stroke();
+                  } else if (ip.type === 'debris') {
+                    ctx.globalAlpha = ip.life;
+                    ctx.beginPath(); ctx.arc(ip.x * dpr, ip.y * dpr, ip.size * dpr, 0, Math.PI * 2);
+                    var debrisGrad = ctx.createRadialGradient(ip.x * dpr, ip.y * dpr, 0, ip.x * dpr, ip.y * dpr, ip.size * dpr);
+                    debrisGrad.addColorStop(0, 'rgba(180,100,30,' + ip.life + ')');
+                    debrisGrad.addColorStop(1, 'rgba(80,40,10,' + (ip.life * 0.5) + ')');
+                    ctx.fillStyle = debrisGrad; ctx.fill();
                   } else {
-                    var ipHue = Math.round(ip.life * 60);
-                    ctx.fillStyle = 'hsla(' + ipHue + ',100%,60%,' + ip.life + ')';
+                    // Smoke puff
+                    ctx.globalAlpha = ip.life * 0.4;
+                    ctx.beginPath(); ctx.arc(ip.x * dpr, ip.y * dpr, (ip.size + (1 - ip.life) * 4) * dpr, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(120,120,120,' + (ip.life * 0.35) + ')'; ctx.fill();
                   }
-                  ctx.fill();
+                  ctx.restore();
                 }
 
-                // ── Landing markers ──
+                // ── Landing markers (crater + label) ──
                 landingMarkers.forEach(function (lm) {
                   lm.alpha *= 0.995;
-                  if (lm.alpha < 0.05) return;
-                  ctx.beginPath();
-                  ctx.arc(lm.x * dpr, (cH / dpr - 40) * dpr, 4 * dpr, 0, Math.PI * 2);
-                  ctx.fillStyle = 'rgba(251,191,36,' + lm.alpha + ')';
-                  ctx.fill();
+                  if (lm.ring > 0) lm.ring = Math.max(0, lm.ring - 0.015);
+                  if (lm.alpha < 0.03) return;
+                  var lmx = lm.x * dpr, lmy = groundY;
+                  // Shockwave ring
+                  if (lm.ring > 0.2) {
+                    ctx.save(); ctx.globalAlpha = lm.ring * 0.5;
+                    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5 * dpr;
+                    var ringR = (1 - lm.ring) * 30 * dpr;
+                    ctx.beginPath(); ctx.ellipse(lmx, lmy, ringR, ringR * 0.25, 0, 0, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                  }
+                  // Crater scorch mark
+                  ctx.save(); ctx.globalAlpha = lm.alpha * 0.7;
+                  var crGrad = ctx.createRadialGradient(lmx, lmy, 0, lmx, lmy, 6 * dpr);
+                  crGrad.addColorStop(0, 'rgba(40,20,5,0.6)');
+                  crGrad.addColorStop(0.5, 'rgba(80,50,20,0.3)');
+                  crGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                  ctx.fillStyle = crGrad;
+                  ctx.beginPath(); ctx.ellipse(lmx, lmy, 6 * dpr, 2.5 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+                  ctx.restore();
+                  // Distance label
+                  if (lm.dist) {
+                    ctx.save(); ctx.globalAlpha = Math.min(lm.alpha, 0.7);
+                    ctx.font = 'bold ' + (4.5 * dpr) + 'px sans-serif';
+                    ctx.fillStyle = '#fbbf24'; ctx.textAlign = 'center';
+                    ctx.fillText(lm.dist + 'm', lmx, lmy + 10 * dpr);
+                    ctx.restore();
+                  }
                 });
 
-                // ── Launcher cannon ──
+                // ── Enhanced Launcher Cannon ──
                 var angle = parseFloat(canvasEl.dataset.angle || '45');
                 var rad = angle * Math.PI / 180;
-                // Base
+                var cxC = 40, cyC = cH / dpr - 40;
+
+                // Wheel / carriage
+                ctx.save();
+                ctx.strokeStyle = '#78350f'; ctx.lineWidth = 3 * dpr;
+                ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 10 * dpr, 0, Math.PI * 2); ctx.stroke();
+                // Wheel spokes
+                for (var ws = 0; ws < 6; ws++) {
+                  var wa = ws * Math.PI / 3 + tick * 0.005;
+                  ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1.5 * dpr;
+                  ctx.beginPath();
+                  ctx.moveTo(cxC * dpr, cyC * dpr);
+                  ctx.lineTo((cxC + Math.cos(wa) * 9) * dpr, (cyC + Math.sin(wa) * 9) * dpr);
+                  ctx.stroke();
+                }
+                // Wheel hub
                 ctx.fillStyle = '#475569';
-                ctx.beginPath(); ctx.arc(40 * dpr, (cH / dpr - 40) * dpr, 8 * dpr, Math.PI, 0); ctx.fill();
-                // Barrel
-                ctx.strokeStyle = '#64748b';
-                ctx.lineWidth = 6 * dpr;
-                ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(40 * dpr, (cH / dpr - 40) * dpr);
-                ctx.lineTo((40 + Math.cos(rad) * 35) * dpr, (cH / dpr - 40 - Math.sin(rad) * 35) * dpr); ctx.stroke();
-                ctx.lineCap = 'butt';
+                ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 3 * dpr, 0, Math.PI * 2); ctx.fill();
+
+                // Barrel with metallic gradient
+                ctx.save();
+                ctx.translate(cxC * dpr, cyC * dpr);
+                ctx.rotate(-rad);
+                var barrelLen = 38 * dpr;
+                var barrelW = 5 * dpr;
+                var mbGrad = ctx.createLinearGradient(0, -barrelW, 0, barrelW);
+                mbGrad.addColorStop(0, '#94a3b8');
+                mbGrad.addColorStop(0.3, '#cbd5e1');
+                mbGrad.addColorStop(0.5, '#f1f5f9');
+                mbGrad.addColorStop(0.7, '#cbd5e1');
+                mbGrad.addColorStop(1, '#64748b');
+                ctx.fillStyle = mbGrad;
+                ctx.beginPath();
+                ctx.moveTo(4 * dpr, -barrelW);
+                ctx.lineTo(barrelLen, -barrelW * 0.8);
+                ctx.lineTo(barrelLen, barrelW * 0.8);
+                ctx.lineTo(4 * dpr, barrelW);
+                ctx.closePath(); ctx.fill();
+                // Muzzle ring
+                ctx.strokeStyle = '#475569'; ctx.lineWidth = 2 * dpr;
+                ctx.beginPath(); ctx.moveTo(barrelLen, -barrelW * 0.9); ctx.lineTo(barrelLen, barrelW * 0.9); ctx.stroke();
+                // Barrel bands (decorative)
+                ctx.strokeStyle = 'rgba(71,85,105,0.5)'; ctx.lineWidth = 1 * dpr;
+                ctx.beginPath(); ctx.moveTo(barrelLen * 0.35, -barrelW * 0.9); ctx.lineTo(barrelLen * 0.35, barrelW * 0.9); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(barrelLen * 0.65, -barrelW * 0.85); ctx.lineTo(barrelLen * 0.65, barrelW * 0.85); ctx.stroke();
+                ctx.restore();
+
+                // Cannon base / housing
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.moveTo((cxC - 14) * dpr, cyC * dpr);
+                ctx.quadraticCurveTo(cxC * dpr, (cyC - 16) * dpr, (cxC + 14) * dpr, cyC * dpr);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+                // Rivet dots
+                ctx.fillStyle = '#94a3b8';
+                [[-8, -3], [8, -3], [0, -10]].forEach(function (rv) {
+                  ctx.beginPath(); ctx.arc((cxC + rv[0]) * dpr, (cyC + rv[1]) * dpr, 1.5 * dpr, 0, Math.PI * 2); ctx.fill();
+                });
+
+                // Fuse spark
+                var sparkX = (cxC - 6) * dpr, sparkY = (cyC - 14) * dpr;
+                ctx.fillStyle = 'rgba(251,191,36,' + (0.5 + 0.5 * Math.sin(tick * 0.3)) + ')';
+                ctx.beginPath(); ctx.arc(sparkX, sparkY, (2 + Math.sin(tick * 0.4)) * dpr, 0, Math.PI * 2); ctx.fill();
+
+                ctx.restore();
+
                 // Angle arc
                 ctx.strokeStyle = 'rgba(251,191,36,0.4)';
                 ctx.lineWidth = 1.5 * dpr;
-                ctx.beginPath(); ctx.arc(40 * dpr, (cH / dpr - 40) * dpr, 20 * dpr, -rad, 0); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 20 * dpr, -rad, 0); ctx.stroke();
                 ctx.font = (5 * dpr) + 'px sans-serif';
                 ctx.fillStyle = '#fbbf24';
                 ctx.textAlign = 'left';
-                ctx.fillText(angle + '\u00B0', (40 + 22) * dpr, (cH / dpr - 40 - 5) * dpr);
+                ctx.fillText(angle + '\u00B0', (cxC + 22) * dpr, (cyC - 5) * dpr);
 
-                // ── HUD ──
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(4 * dpr, 4 * dpr, 140 * dpr, 44 * dpr);
+                // ── Glassmorphic HUD ──
+                ctx.save();
+                var hudX = 4 * dpr, hudY = 4 * dpr, hudW = 150 * dpr, hudH = 50 * dpr, hudR = 8 * dpr;
+                ctx.fillStyle = 'rgba(15,23,42,0.7)';
+                ctx.beginPath();
+                ctx.moveTo(hudX + hudR, hudY); ctx.lineTo(hudX + hudW - hudR, hudY);
+                ctx.arcTo(hudX + hudW, hudY, hudX + hudW, hudY + hudR, hudR);
+                ctx.lineTo(hudX + hudW, hudY + hudH - hudR);
+                ctx.arcTo(hudX + hudW, hudY + hudH, hudX + hudW - hudR, hudY + hudH, hudR);
+                ctx.lineTo(hudX + hudR, hudY + hudH);
+                ctx.arcTo(hudX, hudY + hudH, hudX, hudY + hudH - hudR, hudR);
+                ctx.lineTo(hudX, hudY + hudR);
+                ctx.arcTo(hudX, hudY, hudX + hudR, hudY, hudR);
+                ctx.closePath(); ctx.fill();
+                // Border glow
+                ctx.strokeStyle = 'rgba(251,191,36,0.3)'; ctx.lineWidth = 1; ctx.stroke();
                 ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillStyle = '#fbbf24';
-                ctx.fillText('\u26A1 ' + angle + '\u00B0  v=' + (canvasEl.dataset.velocity || '25') + 'm/s', 8 * dpr, 16 * dpr);
-                ctx.fillStyle = '#94a3b8';
-                ctx.fillText('g=' + (canvasEl.dataset.gravity || '9.8') + 'm/s\u00B2', 8 * dpr, 28 * dpr);
+                ctx.fillText('\u26A1 ' + angle + '\u00B0  v=' + (canvasEl.dataset.velocity || '25') + 'm/s', 10 * dpr, 18 * dpr);
+                ctx.fillStyle = '#94a3b8'; ctx.font = (6 * dpr) + 'px sans-serif';
+                ctx.fillText('g=' + (canvasEl.dataset.gravity || '9.8') + 'm/s\u00B2', 10 * dpr, 30 * dpr);
                 if (canvasEl.dataset.airResist === 'true') {
-                  ctx.fillStyle = '#f97316';
-                  ctx.fillText('\uD83C\uDF2C\uFE0F Air Drag ON', 8 * dpr, 40 * dpr);
+                  ctx.fillStyle = '#f97316'; ctx.font = 'bold ' + (5.5 * dpr) + 'px sans-serif';
+                  ctx.fillText('\uD83C\uDF2C\uFE0F Drag ON', 10 * dpr, 42 * dpr);
                 }
-                // Trail color legend
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect((cW / dpr - 90) * dpr, 4 * dpr, 86 * dpr, 18 * dpr);
+                // Shot counter
+                ctx.fillStyle = 'rgba(148,163,184,0.6)'; ctx.font = (5 * dpr) + 'px sans-serif'; ctx.textAlign = 'right';
+                ctx.fillText('Shots: ' + trails.length, (hudX + hudW - 6 * dpr) / dpr * dpr, 42 * dpr);
+                ctx.restore();
+
+                // ── Trail color legend (glassmorphic) ──
+                ctx.save();
+                var legX = (cW / dpr - 94) * dpr, legY = 4 * dpr, legW = 90 * dpr, legH = 20 * dpr;
+                ctx.fillStyle = 'rgba(15,23,42,0.6)';
+                ctx.beginPath();
+                ctx.moveTo(legX + 6 * dpr, legY); ctx.lineTo(legX + legW - 6 * dpr, legY);
+                ctx.arcTo(legX + legW, legY, legX + legW, legY + 6 * dpr, 6 * dpr);
+                ctx.lineTo(legX + legW, legY + legH - 6 * dpr);
+                ctx.arcTo(legX + legW, legY + legH, legX + legW - 6 * dpr, legY + legH, 6 * dpr);
+                ctx.lineTo(legX + 6 * dpr, legY + legH);
+                ctx.arcTo(legX, legY + legH, legX, legY + legH - 6 * dpr, 6 * dpr);
+                ctx.lineTo(legX, legY + 6 * dpr);
+                ctx.arcTo(legX, legY, legX + 6 * dpr, legY, 6 * dpr);
+                ctx.closePath(); ctx.fill();
                 ctx.font = (5 * dpr) + 'px sans-serif';
-                ctx.fillStyle = '#22c55e'; ctx.fillText('SLOW', (cW / dpr - 86) * dpr, 15 * dpr);
-                // Gradient bar
-                var lgw = 40 * dpr;
-                var lgx = (cW / dpr - 60) * dpr;
+                ctx.fillStyle = '#22c55e'; ctx.textAlign = 'left'; ctx.fillText('SLOW', legX + 4 * dpr, legY + 14 * dpr);
+                var lgw = 36 * dpr;
+                var lgx = legX + 28 * dpr;
                 var lg = ctx.createLinearGradient(lgx, 0, lgx + lgw, 0);
                 lg.addColorStop(0, '#22c55e'); lg.addColorStop(0.5, '#eab308'); lg.addColorStop(1, '#ef4444');
                 ctx.fillStyle = lg;
-                ctx.fillRect(lgx, 9 * dpr, lgw, 4 * dpr);
-                ctx.fillStyle = '#ef4444'; ctx.textAlign = 'right'; ctx.fillText('FAST', (cW / dpr - 8) * dpr, 15 * dpr);
+                ctx.fillRect(lgx, legY + 9 * dpr, lgw, 4 * dpr);
+                ctx.fillStyle = '#ef4444'; ctx.textAlign = 'right'; ctx.fillText('FAST', legX + legW - 4 * dpr, legY + 14 * dpr);
+                ctx.restore();
 
                 canvasEl._physAnim = requestAnimationFrame(draw);
               }
@@ -16424,43 +16962,72 @@
                 ctx.globalAlpha = 1.0;
                 ctx.restore();
 
-                // Draw structure markers
+                // ── Enhanced Structure Markers ──
                 filtered.forEach(function (st) {
                   var px = st.x * W, py = st.y * H;
                   var isSel = sel && sel.id === st.id;
                   var r = isSel ? 9 : 5;
-                  // Glow for selected
+                  // Animated pulsing ring for selected
                   if (isSel) {
+                    var pulse = 1.0 + Math.sin(tick * 0.06) * 0.3;
                     ctx.save();
-                    ctx.shadowColor = sys.accent;
-                    ctx.shadowBlur = 12;
-                    ctx.beginPath(); ctx.arc(px, py, r + 2, 0, Math.PI * 2);
-                    ctx.fillStyle = sys.accent + '40';
-                    ctx.fill();
+                    ctx.globalAlpha = 0.3 - pulse * 0.1;
+                    ctx.beginPath(); ctx.arc(px, py, r + 6 + pulse * 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = sys.accent; ctx.lineWidth = 1.5; ctx.stroke();
+                    ctx.restore();
+                    // Inner glow
+                    ctx.save();
+                    var sGlow = ctx.createRadialGradient(px, py, r * 0.3, px, py, r + 4);
+                    sGlow.addColorStop(0, sys.accent + '50');
+                    sGlow.addColorStop(1, sys.accent + '00');
+                    ctx.beginPath(); ctx.arc(px, py, r + 4, 0, Math.PI * 2);
+                    ctx.fillStyle = sGlow; ctx.fill();
                     ctx.restore();
                   }
+                  // Marker dot (gradient sphere)
+                  var mG = ctx.createRadialGradient(px - 1, py - 1, 1, px, py, r);
+                  mG.addColorStop(0, isSel ? sys.accent + 'cc' : sys.accent + '88');
+                  mG.addColorStop(1, sys.accent);
                   ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2);
-                  ctx.fillStyle = isSel ? sys.accent : sys.accent + '99';
-                  ctx.fill();
+                  ctx.fillStyle = mG; ctx.fill();
                   ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-                  // Label for selected
+                  // Label with leader line + tooltip pill
                   if (isSel) {
                     ctx.save();
-                    ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                    ctx.textAlign = px > W * 0.5 ? 'right' : 'left';
-                    ctx.fillStyle = sys.accent;
-                    var lx = px > W * 0.5 ? px - 14 : px + 14;
-                    ctx.fillText(st.name, lx, py + 3);
+                    var isRight = px > W * 0.5;
+                    var labelX = isRight ? px - 18 : px + 18;
+                    ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                    var tw = ctx.measureText(st.name).width;
+                    var pillX = isRight ? labelX - tw - 8 : labelX - 4;
+                    var pillY = py - 7;
+                    // Leader line
+                    ctx.beginPath();
+                    ctx.moveTo(px + (isRight ? -r - 2 : r + 2), py);
+                    ctx.lineTo(isRight ? pillX + tw + 8 : pillX, py);
+                    ctx.strokeStyle = sys.accent + '60'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
+                    // Tooltip pill
+                    ctx.beginPath();
+                    ctx.roundRect(pillX, pillY, tw + 10, 15, 4);
+                    ctx.fillStyle = sys.accent; ctx.fill();
+                    ctx.shadowColor = sys.accent + '40'; ctx.shadowBlur = 4;
+                    // Label text
+                    ctx.textAlign = isRight ? 'right' : 'left';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(st.name, isRight ? pillX + tw + 5 : pillX + 5, py + 3);
                     ctx.restore();
                   }
                 });
-
-                // View label
+                // ── Styled View Label ──
                 ctx.save();
-                ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#94a3b8';
-                ctx.textAlign = 'center';
-                ctx.fillText(view === 'anterior' ? 'ANTERIOR VIEW' : 'POSTERIOR VIEW', W * 0.5, H - 6);
+                var viewLbl = view === 'anterior' ? 'ANTERIOR VIEW' : 'POSTERIOR VIEW';
+                ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                var vW = ctx.measureText(viewLbl).width + 16;
+                ctx.beginPath();
+                ctx.roundRect(W * 0.5 - vW / 2, H - 18, vW, 14, 4);
+                ctx.fillStyle = '#f8fafc'; ctx.fill();
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5; ctx.stroke();
+                ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                ctx.fillText(viewLbl, W * 0.5, H - 8);
                 ctx.restore();
 
                 // Continue animation
@@ -16772,10 +17339,18 @@
                 ctx.clearRect(0, 0, W, H);
                 ctx.save();
 
-                // Neurotransmitter synapse view
+                // ── Enhanced Neurotransmitter Synapse View ──
                 if (currentView.isNT) {
-                  // Presynaptic terminal
-                  ctx.fillStyle = '#f5f0f8'; ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
+                  var tNT = brainTick * 0.02;
+                  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+                  // ── Presynaptic Terminal (gradient fill + shadow) ──
+                  ctx.save();
+                  ctx.shadowColor = 'rgba(124,58,237,0.12)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+                  var preGrad = ctx.createLinearGradient(W * 0.1, H * 0.05, W * 0.1, H * 0.40);
+                  preGrad.addColorStop(0, '#f3eefc');
+                  preGrad.addColorStop(0.5, '#ede5f8');
+                  preGrad.addColorStop(1, '#e4d9f0');
                   ctx.beginPath();
                   ctx.moveTo(W * 0.15, H * 0.05); ctx.lineTo(W * 0.85, H * 0.05);
                   ctx.quadraticCurveTo(W * 0.90, H * 0.05, W * 0.90, H * 0.10);
@@ -16785,87 +17360,338 @@
                   ctx.quadraticCurveTo(W * 0.15, H * 0.38, W * 0.10, H * 0.32);
                   ctx.lineTo(W * 0.10, H * 0.10);
                   ctx.quadraticCurveTo(W * 0.10, H * 0.05, W * 0.15, H * 0.05);
-                  ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = preGrad; ctx.fill();
+                  ctx.restore();
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.15, H * 0.05); ctx.lineTo(W * 0.85, H * 0.05);
+                  ctx.quadraticCurveTo(W * 0.90, H * 0.05, W * 0.90, H * 0.10);
+                  ctx.lineTo(W * 0.90, H * 0.32);
+                  ctx.quadraticCurveTo(W * 0.85, H * 0.38, W * 0.70, H * 0.40);
+                  ctx.lineTo(W * 0.30, H * 0.40);
+                  ctx.quadraticCurveTo(W * 0.15, H * 0.38, W * 0.10, H * 0.32);
+                  ctx.lineTo(W * 0.10, H * 0.10);
+                  ctx.quadraticCurveTo(W * 0.10, H * 0.05, W * 0.15, H * 0.05);
+                  ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
+
+                  // Phospholipid bilayer texture on presynaptic membrane bottom
+                  ctx.save(); ctx.globalAlpha = 0.22;
+                  for (var pli = 0; pli < 16; pli++) {
+                    var plx = W * 0.18 + pli * W * 0.045;
+                    var plBaseY = H * 0.38 + (pli < 4 || pli > 12 ? -H * 0.02 : 0);
+                    // Lipid heads (circles)
+                    ctx.beginPath(); ctx.arc(plx, plBaseY, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#a78bfa'; ctx.fill();
+                    // Lipid tails (wavy lines)
+                    ctx.beginPath();
+                    ctx.moveTo(plx, plBaseY - 3);
+                    ctx.quadraticCurveTo(plx - 1.5, plBaseY - 8, plx, plBaseY - 12);
+                    ctx.strokeStyle = '#c4b5d8'; ctx.lineWidth = 0.8; ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(plx + 1, plBaseY - 3);
+                    ctx.quadraticCurveTo(plx + 2.5, plBaseY - 8, plx + 1, plBaseY - 12);
+                    ctx.stroke();
+                  }
+                  ctx.restore();
+
+                  // Label
                   ctx.font = 'bold 10px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-                  ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.15);
-                  // Vesicles
+                  ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.10);
+
+                  // ── Mitochondria (energy source) ──
+                  ctx.save(); ctx.globalAlpha = 0.35;
+                  ctx.beginPath(); ctx.ellipse(W * 0.78, H * 0.12, W * 0.06, H * 0.025, 0.2, 0, Math.PI * 2);
+                  ctx.fillStyle = '#fde68a'; ctx.fill();
+                  ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1; ctx.stroke();
+                  // Cristae folds
+                  for (var cr = 0; cr < 4; cr++) {
+                    var crx = W * 0.74 + cr * W * 0.022;
+                    ctx.beginPath();
+                    ctx.moveTo(crx, H * 0.10); ctx.quadraticCurveTo(crx + W * 0.005, H * 0.12, crx, H * 0.14);
+                    ctx.strokeStyle = '#b4590080'; ctx.lineWidth = 0.6; ctx.stroke();
+                  }
+                  ctx.font = '6px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#b45900'; ctx.textAlign = 'center';
+                  ctx.fillText('Mitochondria', W * 0.78, H * 0.155);
+                  ctx.restore();
+
+                  // ── Calcium channel (animated glow on membrane edge) ──
+                  var caGlow = 0.4 + Math.sin(tNT * 2.5) * 0.3;
+                  ctx.save();
+                  ctx.globalAlpha = caGlow;
+                  ctx.beginPath(); ctx.arc(W * 0.42, H * 0.39, 7, 0, Math.PI * 2);
+                  var caGrad = ctx.createRadialGradient(W * 0.42, H * 0.39, 1, W * 0.42, H * 0.39, 7);
+                  caGrad.addColorStop(0, '#22d3ee');
+                  caGrad.addColorStop(1, '#22d3ee00');
+                  ctx.fillStyle = caGrad; ctx.fill();
+                  ctx.restore();
+                  ctx.beginPath(); ctx.arc(W * 0.42, H * 0.39, 4, 0, Math.PI * 2);
+                  ctx.fillStyle = '#06b6d4'; ctx.fill();
+                  ctx.strokeStyle = '#0891b2'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.font = '6px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#0e7490'; ctx.textAlign = 'center';
+                  ctx.fillText('Ca²⁺', W * 0.42, H * 0.39 + 2);
+
+                  // ── Vesicles with glow + one fusing ──
                   var vesColors = ['#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'];
                   for (var vi = 0; vi < 8; vi++) {
-                    var vx = W * 0.25 + (vi % 4) * W * 0.14, vy = H * 0.22 + Math.floor(vi / 4) * H * 0.06;
-                    ctx.beginPath(); ctx.arc(vx, vy, 8, 0, Math.PI * 2);
-                    ctx.fillStyle = vesColors[vi % 4] + '60'; ctx.fill();
-                    ctx.strokeStyle = vesColors[vi % 4]; ctx.lineWidth = 1.5; ctx.stroke();
-                    // NT dots inside vesicle
-                    for (var di = 0; di < 3; di++) {
-                      ctx.beginPath(); ctx.arc(vx - 3 + di * 3, vy, 1.5, 0, Math.PI * 2);
-                      ctx.fillStyle = vesColors[vi % 4]; ctx.fill();
+                    var vx = W * 0.22 + (vi % 4) * W * 0.15, vy = H * 0.20 + Math.floor(vi / 4) * H * 0.064;
+                    var isFusing = vi === 5; // One vesicle animates toward membrane
+                    var vRadius = 9;
+                    var vyAnim = vy;
+                    if (isFusing) {
+                      vyAnim = vy + Math.abs(Math.sin(tNT * 1.2)) * H * 0.08;
+                      vRadius = 9 - Math.abs(Math.sin(tNT * 1.2)) * 3;
+                    }
+                    // Vesicle glow
+                    ctx.save();
+                    var vesGlow = ctx.createRadialGradient(vx, vyAnim, 2, vx, vyAnim, vRadius + 5);
+                    vesGlow.addColorStop(0, vesColors[vi % 4] + '40');
+                    vesGlow.addColorStop(1, vesColors[vi % 4] + '00');
+                    ctx.beginPath(); ctx.arc(vx, vyAnim, vRadius + 5, 0, Math.PI * 2);
+                    ctx.fillStyle = vesGlow; ctx.fill();
+                    ctx.restore();
+                    // Vesicle body (gradient sphere)
+                    var vesBody = ctx.createRadialGradient(vx - 2, vyAnim - 2, 1, vx, vyAnim, vRadius);
+                    vesBody.addColorStop(0, '#f0e6ff');
+                    vesBody.addColorStop(0.5, vesColors[vi % 4] + '80');
+                    vesBody.addColorStop(1, vesColors[vi % 4]);
+                    ctx.beginPath(); ctx.arc(vx, vyAnim, vRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = vesBody; ctx.fill();
+                    ctx.strokeStyle = vesColors[vi % 4]; ctx.lineWidth = 1; ctx.stroke();
+                    // NT molecules inside (small dots)
+                    if (!isFusing || vRadius > 5) {
+                      for (var di = 0; di < 4; di++) {
+                        var da = (di / 4) * Math.PI * 2 + tNT * 0.5;
+                        var dr = vRadius * 0.4;
+                        ctx.beginPath(); ctx.arc(vx + Math.cos(da) * dr, vyAnim + Math.sin(da) * dr, 1.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff'; ctx.fill();
+                      }
                     }
                   }
-                  // Synaptic cleft
-                  ctx.fillStyle = '#e2e8f040'; ctx.strokeStyle = '#94a3b8';
-                  ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
-                  ctx.fillRect(W * 0.08, H * 0.42, W * 0.84, H * 0.16);
-                  ctx.strokeRect(W * 0.08, H * 0.42, W * 0.84, H * 0.16);
+
+                  // ── Synaptic Cleft (gradient + depth) ──
+                  ctx.save();
+                  var cleftGrad = ctx.createLinearGradient(0, H * 0.41, 0, H * 0.59);
+                  cleftGrad.addColorStop(0, '#ede5f810');
+                  cleftGrad.addColorStop(0.3, '#e8f4f812');
+                  cleftGrad.addColorStop(0.7, '#e8f4f812');
+                  cleftGrad.addColorStop(1, '#fef3c710');
+                  ctx.fillStyle = cleftGrad;
+                  ctx.fillRect(W * 0.06, H * 0.41, W * 0.88, H * 0.18);
+                  ctx.restore();
+                  // Cleft borders
+                  ctx.setLineDash([5, 3]);
+                  ctx.strokeStyle = '#94a3b830'; ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.moveTo(W * 0.06, H * 0.41); ctx.lineTo(W * 0.94, H * 0.41); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.06, H * 0.59); ctx.lineTo(W * 0.94, H * 0.59); ctx.stroke();
                   ctx.setLineDash([]);
-                  ctx.font = '9px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-                  ctx.fillText('SYNAPTIC CLEFT', W * 0.5, H * 0.51);
-                  // Animated NT particles in cleft
-                  var t2 = brainTick * 0.03;
-                  for (var pi = 0; pi < 12; pi++) {
-                    var px2 = W * 0.15 + (pi * W * 0.06) + Math.sin(t2 + pi * 0.7) * 8;
-                    var py2 = H * 0.44 + Math.abs(Math.sin(t2 * 0.8 + pi * 1.1)) * H * 0.12;
-                    ctx.beginPath(); ctx.arc(px2, py2, 2.5, 0, Math.PI * 2);
-                    ctx.fillStyle = 'hsl(' + ((pi * 30 + brainTick) % 360) + ', 70%, 55%)';
-                    ctx.fill();
-                  }
-                  // Postsynaptic membrane
-                  ctx.fillStyle = '#fef3c720'; ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2;
+                  // Cleft label with background
+                  ctx.save();
+                  var cleftLabelW = 80;
+                  ctx.fillStyle = '#f1f5f9'; ctx.globalAlpha = 0.7;
                   ctx.beginPath();
-                  ctx.moveTo(W * 0.08, H * 0.60); ctx.lineTo(W * 0.92, H * 0.60);
-                  ctx.quadraticCurveTo(W * 0.95, H * 0.62, W * 0.92, H * 0.64);
-                  ctx.lineTo(W * 0.92, H * 0.95); ctx.lineTo(W * 0.08, H * 0.95);
-                  ctx.lineTo(W * 0.08, H * 0.64);
-                  ctx.quadraticCurveTo(W * 0.05, H * 0.62, W * 0.08, H * 0.60);
-                  ctx.fill(); ctx.stroke();
-                  ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-                  ctx.fillText('POSTSYNAPTIC MEMBRANE', W * 0.5, H * 0.72);
-                  // Receptors on postsynaptic
-                  var recTypes = ['Ionotropic', 'Metabotropic', 'GPCR', 'Ion Channel'];
-                  for (var ri = 0; ri < 6; ri++) {
-                    var rx = W * 0.18 + ri * W * 0.12, ry = H * 0.60;
-                    ctx.fillStyle = '#fde68a'; ctx.strokeStyle = '#b45309'; ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.moveTo(rx - 5, ry); ctx.lineTo(rx - 8, ry + 14); ctx.lineTo(rx + 8, ry + 14); ctx.lineTo(rx + 5, ry);
-                    ctx.fill(); ctx.stroke();
-                    ctx.font = '7px Inter, system-ui, sans-serif';
-                    ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
-                    ctx.fillText(recTypes[ri % 4], rx, ry + 25);
+                  ctx.roundRect(W * 0.5 - cleftLabelW / 2, H * 0.485, cleftLabelW, 14, 4);
+                  ctx.fill();
+                  ctx.restore();
+                  ctx.font = 'bold 8px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
+                  ctx.fillText('SYNAPTIC CLEFT (~20nm)', W * 0.5, H * 0.50);
+
+                  // ── Animated NT particles (glowing with trails) ──
+                  for (var pi = 0; pi < 14; pi++) {
+                    var px2 = W * 0.14 + (pi * W * 0.055) + Math.sin(tNT * 1.5 + pi * 0.8) * 10;
+                    var py2 = H * 0.43 + Math.abs(Math.sin(tNT * 1.0 + pi * 1.3)) * H * 0.14;
+                    // Glow
+                    ctx.save();
+                    var ptGlow = ctx.createRadialGradient(px2, py2, 0.5, px2, py2, 6);
+                    ptGlow.addColorStop(0, 'hsla(' + ((pi * 25 + brainTick) % 360) + ', 80%, 65%, 0.6)');
+                    ptGlow.addColorStop(1, 'hsla(' + ((pi * 25 + brainTick) % 360) + ', 80%, 65%, 0)');
+                    ctx.beginPath(); ctx.arc(px2, py2, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = ptGlow; ctx.fill();
+                    ctx.restore();
+                    // Particle core
+                    ctx.beginPath(); ctx.arc(px2, py2, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'hsl(' + ((pi * 25 + brainTick) % 360) + ', 80%, 58%)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'hsl(' + ((pi * 25 + brainTick) % 360) + ', 80%, 45%)';
+                    ctx.lineWidth = 0.5; ctx.stroke();
                   }
-                  // Reuptake transporter
-                  ctx.fillStyle = '#bbf7d060'; ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.5;
-                  ctx.beginPath(); ctx.arc(W * 0.85, H * 0.40, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                  ctx.font = '7px Inter, system-ui, sans-serif';
+
+                  // ── Postsynaptic Membrane (gradient + shadow) ──
+                  ctx.save();
+                  ctx.shadowColor = 'rgba(124,58,237,0.10)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = -3;
+                  var postGrad = ctx.createLinearGradient(0, H * 0.59, 0, H * 0.96);
+                  postGrad.addColorStop(0, '#fef9ee');
+                  postGrad.addColorStop(0.3, '#fdf3e0');
+                  postGrad.addColorStop(1, '#fcecd0');
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.06, H * 0.59); ctx.lineTo(W * 0.94, H * 0.59);
+                  ctx.quadraticCurveTo(W * 0.96, H * 0.61, W * 0.94, H * 0.63);
+                  ctx.lineTo(W * 0.94, H * 0.96); ctx.lineTo(W * 0.06, H * 0.96);
+                  ctx.lineTo(W * 0.06, H * 0.63);
+                  ctx.quadraticCurveTo(W * 0.04, H * 0.61, W * 0.06, H * 0.59);
+                  ctx.fillStyle = postGrad; ctx.fill();
+                  ctx.restore();
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.06, H * 0.59); ctx.lineTo(W * 0.94, H * 0.59);
+                  ctx.quadraticCurveTo(W * 0.96, H * 0.61, W * 0.94, H * 0.63);
+                  ctx.lineTo(W * 0.94, H * 0.96); ctx.lineTo(W * 0.06, H * 0.96);
+                  ctx.lineTo(W * 0.06, H * 0.63);
+                  ctx.quadraticCurveTo(W * 0.04, H * 0.61, W * 0.06, H * 0.59);
+                  ctx.strokeStyle = '#b49370'; ctx.lineWidth = 1.5; ctx.stroke();
+
+                  // Phospholipid bilayer on postsynaptic top
+                  ctx.save(); ctx.globalAlpha = 0.18;
+                  for (var pli2 = 0; pli2 < 18; pli2++) {
+                    var plx2 = W * 0.10 + pli2 * W * 0.046;
+                    var plBaseY2 = H * 0.60;
+                    ctx.beginPath(); ctx.arc(plx2, plBaseY2, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#d97706'; ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(plx2, plBaseY2 + 3);
+                    ctx.quadraticCurveTo(plx2 - 1.5, plBaseY2 + 8, plx2, plBaseY2 + 12);
+                    ctx.strokeStyle = '#e8c48a'; ctx.lineWidth = 0.8; ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(plx2 + 1, plBaseY2 + 3);
+                    ctx.quadraticCurveTo(plx2 + 2.5, plBaseY2 + 8, plx2 + 1, plBaseY2 + 12);
+                    ctx.stroke();
+                  }
+                  ctx.restore();
+
+                  ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
+                  ctx.fillText('POSTSYNAPTIC DENSITY', W * 0.5, H * 0.70);
+
+                  // ── Enhanced Receptors (varied shapes) ──
+                  var recData = [
+                    { name: 'AMPA', type: 'ion', color: '#3b82f6' },
+                    { name: 'NMDA', type: 'ion', color: '#8b5cf6' },
+                    { name: 'mGluR', type: 'meta', color: '#f59e0b' },
+                    { name: 'GABA-A', type: 'ion', color: '#22c55e' },
+                    { name: 'GABA-B', type: 'meta', color: '#14b8a6' },
+                    { name: 'nACh', type: 'ion', color: '#ef4444' }
+                  ];
+                  for (var ri = 0; ri < 6; ri++) {
+                    var rx = W * 0.14 + ri * W * 0.135, ry = H * 0.59;
+                    var rd = recData[ri];
+                    if (rd.type === 'ion') {
+                      // Y-shaped ionotropic receptor
+                      ctx.beginPath();
+                      ctx.moveTo(rx, ry + 16); ctx.lineTo(rx, ry + 6);
+                      ctx.moveTo(rx, ry + 6); ctx.lineTo(rx - 5, ry - 2);
+                      ctx.moveTo(rx, ry + 6); ctx.lineTo(rx + 5, ry - 2);
+                      ctx.strokeStyle = rd.color; ctx.lineWidth = 2.5; ctx.stroke();
+                      // Pore opening
+                      ctx.beginPath(); ctx.arc(rx, ry + 3, 2, 0, Math.PI * 2);
+                      ctx.fillStyle = '#fff'; ctx.fill();
+                      ctx.strokeStyle = rd.color; ctx.lineWidth = 1; ctx.stroke();
+                    } else {
+                      // Serpentine metabotropic receptor (7TM-like wavy)
+                      ctx.beginPath();
+                      ctx.moveTo(rx - 4, ry - 2);
+                      ctx.quadraticCurveTo(rx - 2, ry + 4, rx, ry + 2);
+                      ctx.quadraticCurveTo(rx + 2, ry, rx + 1, ry + 6);
+                      ctx.quadraticCurveTo(rx, ry + 10, rx - 1, ry + 14);
+                      ctx.lineTo(rx + 3, ry + 16);
+                      ctx.strokeStyle = rd.color; ctx.lineWidth = 2; ctx.stroke();
+                      // G-protein bulge
+                      ctx.beginPath(); ctx.ellipse(rx + 2, ry + 15, 4, 2.5, 0, 0, Math.PI * 2);
+                      ctx.fillStyle = rd.color + '30'; ctx.fill();
+                      ctx.strokeStyle = rd.color; ctx.lineWidth = 0.8; ctx.stroke();
+                    }
+                    ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                    ctx.fillStyle = rd.color; ctx.textAlign = 'center';
+                    ctx.fillText(rd.name, rx, ry + 26);
+                  }
+
+                  // ── Reuptake Pump (animated spinning arrows) ──
+                  ctx.save();
+                  ctx.translate(W * 0.88, H * 0.41);
+                  // Pump body
+                  var pumpGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 14);
+                  pumpGrad.addColorStop(0, '#d1fae5');
+                  pumpGrad.addColorStop(1, '#86efac');
+                  ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2);
+                  ctx.fillStyle = pumpGrad; ctx.fill();
+                  ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Spinning arrow
+                  ctx.rotate(tNT * 2);
+                  ctx.beginPath();
+                  ctx.moveTo(0, -8); ctx.lineTo(4, -3); ctx.lineTo(-4, -3);
+                  ctx.fillStyle = '#16a34a'; ctx.fill();
+                  ctx.beginPath();
+                  ctx.moveTo(0, 8); ctx.lineTo(-4, 3); ctx.lineTo(4, 3);
+                  ctx.fill();
+                  ctx.restore();
+                  ctx.font = 'bold 6px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
-                  ctx.fillText('Reuptake', W * 0.85, H * 0.40 + 2);
-                  // Enzyme (MAO/COMT)
-                  ctx.fillStyle = '#fee2e260'; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
-                  ctx.beginPath(); ctx.arc(W * 0.15, H * 0.50, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                  ctx.font = '7px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#dc2626';
-                  ctx.fillText('Enzyme', W * 0.15, H * 0.50 + 2);
-                  // Signal cascade arrow
-                  ctx.strokeStyle = '#7c3aed80'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 2]);
-                  ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.74); ctx.lineTo(W * 0.5, H * 0.88);
-                  ctx.stroke(); ctx.setLineDash([]);
-                  ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.88); ctx.lineTo(W * 0.47, H * 0.85); ctx.moveTo(W * 0.5, H * 0.88); ctx.lineTo(W * 0.53, H * 0.85); ctx.stroke();
-                  ctx.font = '8px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#7c3aed'; ctx.fillText('Intracellular Signaling', W * 0.5, H * 0.93);
-                  // View label
-                  ctx.font = 'bold 10px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-                  ctx.fillText('NEUROTRANSMITTER SYNAPSE', W * 0.5, H - 6);
+                  ctx.fillText('Reuptake', W * 0.88, H * 0.41 + 20);
+                  ctx.fillText('Transporter', W * 0.88, H * 0.41 + 27);
+
+                  // ── Enzyme (MAO/COMT) with scissor icon ──
+                  ctx.save();
+                  var enzGrad = ctx.createRadialGradient(W * 0.12, H * 0.50, 2, W * 0.12, H * 0.50, 12);
+                  enzGrad.addColorStop(0, '#fef2f2');
+                  enzGrad.addColorStop(1, '#fecaca');
+                  ctx.beginPath(); ctx.arc(W * 0.12, H * 0.50, 12, 0, Math.PI * 2);
+                  ctx.fillStyle = enzGrad; ctx.fill();
+                  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Scissor lines
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.12 - 5, H * 0.50 - 5); ctx.lineTo(W * 0.12 + 5, H * 0.50 + 5);
+                  ctx.moveTo(W * 0.12 + 5, H * 0.50 - 5); ctx.lineTo(W * 0.12 - 5, H * 0.50 + 5);
+                  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.restore();
+                  ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = '#dc2626'; ctx.textAlign = 'center';
+                  ctx.fillText('MAO/COMT', W * 0.12, H * 0.50 + 18);
+                  ctx.fillText('Enzyme', W * 0.12, H * 0.50 + 25);
+
+                  // ── Signal Cascade (multi-stage with arrows) ──
+                  ctx.save();
+                  // cAMP / IP3 cascade stages
+                  var cascadeY = [H * 0.73, H * 0.79, H * 0.85, H * 0.91];
+                  var cascadeLabels = ['G-protein', 'cAMP / IP₃', 'Protein Kinase', 'Gene Expression'];
+                  var cascadeColors = ['#7c3aed', '#6d28d9', '#5b21b6', '#4c1d95'];
+                  for (var ci = 0; ci < 4; ci++) {
+                    // Arrow
+                    if (ci > 0) {
+                      ctx.beginPath();
+                      ctx.moveTo(W * 0.5, cascadeY[ci - 1] + 4);
+                      ctx.lineTo(W * 0.5, cascadeY[ci] - 4);
+                      ctx.strokeStyle = cascadeColors[ci] + '60'; ctx.lineWidth = 1.5;
+                      ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
+                      // Arrowhead
+                      ctx.beginPath();
+                      ctx.moveTo(W * 0.5, cascadeY[ci] - 2);
+                      ctx.lineTo(W * 0.49, cascadeY[ci] - 5);
+                      ctx.moveTo(W * 0.5, cascadeY[ci] - 2);
+                      ctx.lineTo(W * 0.51, cascadeY[ci] - 5);
+                      ctx.strokeStyle = cascadeColors[ci]; ctx.lineWidth = 1; ctx.stroke();
+                    }
+                    // Label pill
+                    var pillW = ctx.measureText ? 70 : 70;
+                    ctx.beginPath();
+                    ctx.roundRect(W * 0.5 - pillW / 2, cascadeY[ci] - 5, pillW, 11, 3);
+                    ctx.fillStyle = cascadeColors[ci] + '15'; ctx.fill();
+                    ctx.strokeStyle = cascadeColors[ci] + '40'; ctx.lineWidth = 0.5; ctx.stroke();
+                    ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                    ctx.fillStyle = cascadeColors[ci]; ctx.textAlign = 'center';
+                    ctx.fillText(cascadeLabels[ci], W * 0.5, cascadeY[ci] + 2);
+                  }
+                  ctx.restore();
+
+                  // ── View Label (styled) ──
+                  ctx.save();
+                  ctx.beginPath();
+                  ctx.roundRect(W * 0.5 - 80, H - 18, 160, 14, 4);
+                  ctx.fillStyle = '#f8fafc'; ctx.fill();
+                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5; ctx.stroke();
+                  ctx.font = 'bold 9px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                  ctx.fillText('NEUROTRANSMITTER SYNAPSE', W * 0.5, H - 8);
+                  ctx.restore();
+
                   canvas._brainAnim = requestAnimationFrame(drawBrainFrame); return;
                 }
 
@@ -17313,39 +18139,72 @@
 
                 ctx.restore();
 
-                // Draw region markers
+                // ── Enhanced Region Markers ──
                 filtered.forEach(function (r) {
                   var px = r.x * W, py = r.y * H;
                   var isSel = sel && sel.id === r.id;
-                  var rad = isSel ? 10 : 6;
+                  var rad = isSel ? 10 : 5;
+                  // Animated pulsing ring for selected
                   if (isSel) {
+                    var pulse = 1.0 + Math.sin(brainTick * 0.06) * 0.3;
                     ctx.save();
-                    ctx.shadowColor = '#7c3aed';
-                    ctx.shadowBlur = 14;
-                    ctx.beginPath(); ctx.arc(px, py, rad + 3, 0, Math.PI * 2);
-                    ctx.fillStyle = '#7c3aed30';
-                    ctx.fill();
+                    ctx.globalAlpha = 0.3 - pulse * 0.1;
+                    ctx.beginPath(); ctx.arc(px, py, rad + 6 + pulse * 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1.5; ctx.stroke();
+                    ctx.restore();
+                    // Inner glow
+                    ctx.save();
+                    var selGlow = ctx.createRadialGradient(px, py, rad * 0.3, px, py, rad + 4);
+                    selGlow.addColorStop(0, '#7c3aed50');
+                    selGlow.addColorStop(1, '#7c3aed00');
+                    ctx.beginPath(); ctx.arc(px, py, rad + 4, 0, Math.PI * 2);
+                    ctx.fillStyle = selGlow; ctx.fill();
                     ctx.restore();
                   }
+                  // Marker dot (gradient sphere)
+                  var mGrad = ctx.createRadialGradient(px - 1, py - 1, 1, px, py, rad);
+                  mGrad.addColorStop(0, isSel ? '#a78bfa' : '#c4b5fd');
+                  mGrad.addColorStop(1, isSel ? '#7c3aed' : '#8b5cf6');
                   ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2);
-                  ctx.fillStyle = isSel ? '#7c3aed' : '#7c3aedaa';
-                  ctx.fill();
+                  ctx.fillStyle = mGrad; ctx.fill();
                   ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Label with leader line + tooltip pill
                   if (isSel) {
                     ctx.save();
+                    var isRight = px > W * 0.5;
+                    var labelX = isRight ? px - 18 : px + 18;
                     ctx.font = 'bold 9px Inter, system-ui, sans-serif';
-                    ctx.textAlign = px > W * 0.5 ? 'right' : 'left';
-                    ctx.fillStyle = '#7c3aed';
-                    ctx.fillText(r.name, px > W * 0.5 ? px - 15 : px + 15, py + 3);
+                    var tw = ctx.measureText(r.name).width;
+                    var pillX = isRight ? labelX - tw - 8 : labelX - 4;
+                    var pillY = py - 7;
+                    // Leader line
+                    ctx.beginPath();
+                    ctx.moveTo(px + (isRight ? -rad - 2 : rad + 2), py);
+                    ctx.lineTo(isRight ? pillX + tw + 8 : pillX, py);
+                    ctx.strokeStyle = '#7c3aed60'; ctx.lineWidth = 1; ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
+                    // Tooltip pill background
+                    ctx.beginPath();
+                    ctx.roundRect(pillX, pillY, tw + 10, 15, 4);
+                    ctx.fillStyle = '#7c3aed'; ctx.fill();
+                    ctx.shadowColor = 'rgba(124,58,237,0.25)'; ctx.shadowBlur = 4;
+                    // Label text
+                    ctx.textAlign = isRight ? 'right' : 'left';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(r.name, isRight ? pillX + tw + 5 : pillX + 5, py + 3);
                     ctx.restore();
                   }
                 });
-                // View label
+                // ── Styled View Label ──
                 ctx.save();
-                ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#94a3b8';
-                ctx.textAlign = 'center';
-                ctx.fillText(currentView.name.toUpperCase() + ' VIEW', W * 0.5, H - 6);
+                var viewLabel = currentView.name.toUpperCase() + ' VIEW';
+                ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                var vlW = ctx.measureText(viewLabel).width + 16;
+                ctx.beginPath();
+                ctx.roundRect(W * 0.5 - vlW / 2, H - 18, vlW, 14, 4);
+                ctx.fillStyle = '#f8fafc'; ctx.fill();
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5; ctx.stroke();
+                ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                ctx.fillText(viewLabel, W * 0.5, H - 8);
                 ctx.restore();
 
                 // Continue animation
