@@ -23823,7 +23823,7 @@
                 updates.waterChem = newChem;
               }
               // Award XP
-              if (choice.xp && typeof awardXP === 'function') awardXP(choice.xp, 'AI Event: ' + aiEvent.title);
+              if (choice.xp && typeof awardStemXP === 'function') awardStemXP('aquarium', choice.xp, 'AI Event: ' + aiEvent.title);
               // Log the resolved event
               var historyEntry = { title: aiEvent.title, icon: aiEvent.icon, choice: choice.label, outcome: choice.outcome, day: simDay, xp: choice.xp || 0 };
               updates.aiEventHistory = aiEventHistory.concat([historyEntry]).slice(-20);
@@ -24051,7 +24051,7 @@
                 getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
                 getChemStatus('pH', newChem.pH) === 'ok';
               if (allOk && tankFish.length > 0 && newTick % 5 === 0) {
-                awardXP(2, 'Healthy tank maintenance');
+                awardStemXP('aquarium', 2, 'Healthy tank maintenance');
               }
               updMulti({ waterChem: newChem, simTick: newTick, eventLog: newLog.slice(-20) });
             };
@@ -24140,7 +24140,7 @@
                 if (addToast) addToast('🚨 Fish stock collapse! Populations have crashed below sustainable levels.', 'error');
               }
               if (!collapsed && newYear % 5 === 0) {
-                awardXP(3, 'Sustainable fishing for 5 years');
+                awardStemXP('ocean', 3, 'Sustainable fishing for 5 years');
               }
             };
 
@@ -24384,7 +24384,7 @@
                     // XP button
                     React.createElement("button", {
                       onClick: function () {
-                        awardXP(2, 'Studied anatomy of ' + sp.name);
+                        awardStemXP('aquarium', 2, 'Studied anatomy of ' + sp.name);
                         if (addToast) addToast('\uD83E\uDDAC +2 XP for studying ' + sp.name + ' anatomy!', 'success');
                       },
                       className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
