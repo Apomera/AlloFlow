@@ -23423,6 +23423,69 @@
               octopus: 'cephalopod', nautilus: 'cephalopod', coelacanth: 'fish'
             };
 
+            // Per-species colors for unique anatomy close-ups
+            var SPECIES_COLORS = {
+              // ── Freshwater ──
+              neon: '#38bdf8',     // electric blue stripe
+              guppy: '#f97316',    // orange/rainbow
+              cory: '#a78bfa',     // pale lavender
+              angel: '#fbbf24',    // gold/silver
+              platy: '#fb923c',    // orange-red
+              molly: '#1e293b',    // dark/black
+              // ── Planted ──
+              cardinal: '#dc2626', // deep red stripe
+              rummy: '#ef4444',    // red nose accent
+              oto: '#84cc16',      // olive/green
+              shrimp: '#e11d48',   // cherry red
+              betta: '#7c3aed',    // royal purple
+              // ── Reef ──
+              clown: '#f97316',    // orange clownfish
+              tang: '#3b82f6',     // royal blue
+              goby: '#14b8a6',     // teal/aqua
+              anemone: '#ec4899',  // pink/magenta
+              cleaner: '#ef4444',  // red/white stripe
+              // ── Predator ──
+              oscar: '#b45309',    // dark orange/brown tiger
+              pike: '#4d7c0f',     // forest green
+              pleco: '#57534e',    // dark brown armor
+              // ── Turtle & Reptile ──
+              slider: '#16a34a',   // green shell
+              turtle: '#15803d',   // deep green
+              goldfish: '#f59e0b', // classic gold
+              // ── Invertebrate Reef ──
+              crab: '#dc2626',     // red crab
+              urchin: '#6b21a8',   // dark purple spines
+              starfish: '#f97316', // orange starfish
+              seastar: '#ef4444',  // red seastar
+              // ── Cold Water ──
+              rockfish: '#9f1239', // vermillion rockfish
+              kelp: '#15803d',     // dark green
+              // ── Brackish ──
+              archer: '#c2410c',   // amber/brown bands
+              puffer: '#eab308',   // yellow puffer
+              mudskip: '#713f12',  // muddy brown
+              // ── Marine Science species ──
+              clownfish: '#f97316',  // orange
+              dolphin: '#64748b',   // grey
+              jellyfish: '#c084fc', // translucent purple
+              squid: '#ec4899',     // pink/bioluminescent
+              hatchetfish: '#94a3b8', // silver
+              swordfish: '#475569', // steel blue-grey
+              anglerfish: '#1c1917', // deep black
+              gulpereel: '#292524', // near-black
+              giantsquid: '#881337', // dark crimson
+              tubeworms: '#dc2626', // red plume
+              snailfish: '#cbd5e1', // pale/translucent
+              mantaray: '#1e293b', // dark navy
+              bluewhale: '#3b82f6', // blue
+              seahorse: '#f59e0b', // golden yellow
+              octopus: '#7c3aed',  // purple
+              nautilus: '#b45309', // amber/brown shell
+              coelacanth: '#1e3a5f', // deep steel blue
+              amphipod: '#f87171',  // pale red
+              seacucumber: '#854d0e' // brown
+            };
+
             // Species-specific anatomy overrides and extra info
             var SPECIES_ANATOMY = {
               mudskip: { override: 'Modified pectoral fins act as legs. Can breathe through skin and oral lining when on land.', locomotion: 'Uses pectoral fins to "walk" and "skip" across mud. Can also climb roots.' },
@@ -23982,7 +24045,7 @@
                   React.createElement("div", { className: "relative bg-gradient-to-b from-slate-800/50 to-slate-900/50 rounded-xl p-4 mb-4 border border-slate-700/30" },
                     // Render SVG diagram
                     React.createElement("div", {
-                      dangerouslySetInnerHTML: { __html: plan.svg(400, 250) },
+                      dangerouslySetInnerHTML: { __html: plan.svg(400, 250, SPECIES_COLORS[viewingAnatomy]) },
                       className: "max-w-sm mx-auto",
                       style: { filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }
                     }),
