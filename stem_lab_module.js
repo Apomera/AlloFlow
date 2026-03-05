@@ -19462,6 +19462,19 @@
               upd('_brainQuizOptsFor', d.quizIdx);
             }
 
+            // ── Neurotransmitter Simulation System ──
+            var SIM_SCENARIOS = [
+              { id: 'normal', name: 'Normal', icon: '\u2705', color: '#22c55e', desc: 'Baseline neurotransmission: neurotransmitters are released, bind receptors, and are cleared by reuptake and enzymatic degradation.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 1, receptorBoost: null, receptorDim: null, vesicleRate: 1 },
+              { id: 'ssri', name: 'SSRI', icon: '\uD83D\uDC8A', color: '#3b82f6', desc: 'Selective Serotonin Reuptake Inhibitor (e.g., Fluoxetine/Prozac): blocks the serotonin transporter (SERT), increasing 5-HT concentration in the synaptic cleft. Used for depression and anxiety.', reuptakeBlocked: true, enzymeBlocked: false, particleMult: 2.5, receptorBoost: null, receptorDim: null, vesicleRate: 1 },
+              { id: 'snri', name: 'SNRI', icon: '\uD83D\uDC8A', color: '#8b5cf6', desc: 'Serotonin-Norepinephrine Reuptake Inhibitor (e.g., Venlafaxine/Effexor): blocks both SERT and NET, increasing serotonin AND norepinephrine in the cleft. Used for depression, anxiety, and chronic pain.', reuptakeBlocked: true, enzymeBlocked: false, particleMult: 2.8, receptorBoost: null, receptorDim: null, vesicleRate: 1.2 },
+              { id: 'benzo', name: 'Benzodiazepine', icon: '\uD83D\uDC8A', color: '#14b8a6', desc: 'Positive allosteric modulator of GABA-A receptors (e.g., Diazepam/Valium): increases Cl\u207B channel opening frequency, enhancing inhibitory neurotransmission. Used for anxiety, seizures, and insomnia. Risk: dependence.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 1, receptorBoost: 'GABA-A', receptorDim: null, vesicleRate: 0.7 },
+              { id: 'cocaine', name: 'Cocaine', icon: '\u26A0\uFE0F', color: '#ef4444', desc: 'Blocks DAT, NET, and SERT reuptake transporters non-selectively. Massive dopamine accumulation in mesolimbic pathway \u2192 intense euphoria. Highly addictive. Cardiotoxic: causes vasoconstriction, arrhythmias, MI, and stroke.', reuptakeBlocked: true, enzymeBlocked: false, particleMult: 4, receptorBoost: null, receptorDim: null, vesicleRate: 2 },
+              { id: 'opioid', name: 'Opioid', icon: '\u26A0\uFE0F', color: '#f59e0b', desc: 'Mu-receptor agonist (e.g., Morphine, Fentanyl): activates endogenous opioid receptors \u2192 analgesia, euphoria, respiratory depression. Hijacks VTA reward circuit. Tolerance and physical dependence develop rapidly. Overdose: fatal respiratory arrest.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 1.3, receptorBoost: '\u03BC-opioid', receptorDim: null, vesicleRate: 0.6 },
+              { id: 'alcohol', name: 'Alcohol', icon: '\u26A0\uFE0F', color: '#d946ef', desc: 'Dual mechanism: enhances GABA-A receptor activity (sedation) AND blocks NMDA glutamate receptors (reduces excitation). Results in CNS depression, impaired judgment, ataxia. Chronic use: neuroadaptation, tolerance, and life-threatening withdrawal seizures.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 0.8, receptorBoost: 'GABA-A', receptorDim: 'NMDA', vesicleRate: 0.5 }
+            ];
+            var simScenario = d.simScenario || 'normal';
+            var activeSim = SIM_SCENARIOS.find(function (s) { return s.id === simScenario; }) || SIM_SCENARIOS[0];
+
             // Brain canvas — animated
             var canvasRef = function (canvas) {
               if (!canvas) return;
@@ -19536,7 +19549,7 @@
                   ctx.restore();
 
                   // Label
-                  ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold 13px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
                   ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.10);
 
@@ -19552,7 +19565,7 @@
                     ctx.moveTo(crx, H * 0.10); ctx.quadraticCurveTo(crx + W * 0.005, H * 0.12, crx, H * 0.14);
                     ctx.strokeStyle = '#b4590080'; ctx.lineWidth = 0.6; ctx.stroke();
                   }
-                  ctx.font = '6px Inter, system-ui, sans-serif';
+                  ctx.font = '9px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#b45900'; ctx.textAlign = 'center';
                   ctx.fillText('Mitochondria', W * 0.78, H * 0.155);
                   ctx.restore();
@@ -19570,13 +19583,14 @@
                   ctx.beginPath(); ctx.arc(W * 0.42, H * 0.39, 4, 0, Math.PI * 2);
                   ctx.fillStyle = '#06b6d4'; ctx.fill();
                   ctx.strokeStyle = '#0891b2'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.font = '6px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold 9px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#0e7490'; ctx.textAlign = 'center';
-                  ctx.fillText('Ca²⁺', W * 0.42, H * 0.39 + 2);
+                  ctx.fillText('Ca\u00B2\u207A', W * 0.42, H * 0.39 + 2);
 
                   // ── Vesicles with glow + one fusing ──
                   var vesColors = ['#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'];
-                  for (var vi = 0; vi < 8; vi++) {
+                  var vesicleCount = Math.round(8 * activeSim.vesicleRate);
+                  for (var vi = 0; vi < vesicleCount; vi++) {
                     var vx = W * 0.22 + (vi % 4) * W * 0.15, vy = H * 0.20 + Math.floor(vi / 4) * H * 0.064;
                     var isFusing = vi === 5; // One vesicle animates toward membrane
                     var vRadius = 9;
@@ -19636,13 +19650,14 @@
                   ctx.roundRect(W * 0.5 - cleftLabelW / 2, H * 0.485, cleftLabelW, 14, 4);
                   ctx.fill();
                   ctx.restore();
-                  ctx.font = 'bold 8px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold 11px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
                   ctx.fillText('SYNAPTIC CLEFT (~20nm)', W * 0.5, H * 0.50);
 
                   // ── Animated NT particles (glowing with trails) ──
-                  for (var pi = 0; pi < 14; pi++) {
-                    var px2 = W * 0.14 + (pi * W * 0.055) + Math.sin(tNT * 1.5 + pi * 0.8) * 10;
+                  var ntParticleCount = Math.round(14 * activeSim.particleMult);
+                  for (var pi = 0; pi < ntParticleCount; pi++) {
+                    var px2 = W * 0.14 + ((pi % 14) * W * 0.055) + Math.sin(tNT * 1.5 + pi * 0.8) * 10;
                     var py2 = H * 0.43 + Math.abs(Math.sin(tNT * 1.0 + pi * 1.3)) * H * 0.14;
                     // Glow
                     ctx.save();
@@ -19701,7 +19716,7 @@
                   }
                   ctx.restore();
 
-                  ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold 12px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
                   ctx.fillText('POSTSYNAPTIC DENSITY', W * 0.5, H * 0.70);
 
@@ -19742,7 +19757,31 @@
                       ctx.fillStyle = rd.color + '30'; ctx.fill();
                       ctx.strokeStyle = rd.color; ctx.lineWidth = 0.8; ctx.stroke();
                     }
-                    ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                    // Receptor boost/dim effects from simulation
+                    if (activeSim.receptorBoost && rd.name === activeSim.receptorBoost) {
+                      ctx.save();
+                      var boostGlow = ctx.createRadialGradient(rx, ry + 8, 2, rx, ry + 8, 18);
+                      boostGlow.addColorStop(0, rd.color + '60');
+                      boostGlow.addColorStop(1, rd.color + '00');
+                      ctx.beginPath(); ctx.arc(rx, ry + 8, 18 + Math.sin(tNT * 3) * 4, 0, Math.PI * 2);
+                      ctx.fillStyle = boostGlow; ctx.fill();
+                      ctx.restore();
+                      ctx.font = 'bold 7px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
+                      ctx.fillText('\u2B06 ENHANCED', rx, ry + 34);
+                    }
+                    if (activeSim.receptorDim && rd.name === activeSim.receptorDim) {
+                      ctx.save();
+                      ctx.globalAlpha = 0.3 + Math.sin(tNT * 2) * 0.1;
+                      ctx.beginPath(); ctx.moveTo(rx - 10, ry - 4); ctx.lineTo(rx + 10, ry + 18);
+                      ctx.moveTo(rx + 10, ry - 4); ctx.lineTo(rx - 10, ry + 18);
+                      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.stroke();
+                      ctx.restore();
+                      ctx.font = 'bold 7px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center';
+                      ctx.fillText('\u2B07 BLOCKED', rx, ry + 34);
+                    }
+                    ctx.font = 'bold 9px Inter, system-ui, sans-serif';
                     ctx.fillStyle = rd.color; ctx.textAlign = 'center';
                     ctx.fillText(rd.name, rx, ry + 26);
                   }
@@ -19752,24 +19791,41 @@
                   ctx.translate(W * 0.88, H * 0.41);
                   // Pump body
                   var pumpGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 14);
-                  pumpGrad.addColorStop(0, '#d1fae5');
-                  pumpGrad.addColorStop(1, '#86efac');
+                  if (activeSim.reuptakeBlocked) {
+                    pumpGrad.addColorStop(0, '#fef2f2');
+                    pumpGrad.addColorStop(1, '#fecaca');
+                  } else {
+                    pumpGrad.addColorStop(0, '#d1fae5');
+                    pumpGrad.addColorStop(1, '#86efac');
+                  }
                   ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2);
                   ctx.fillStyle = pumpGrad; ctx.fill();
-                  ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.5; ctx.stroke();
-                  // Spinning arrow
-                  ctx.rotate(tNT * 2);
-                  ctx.beginPath();
-                  ctx.moveTo(0, -8); ctx.lineTo(4, -3); ctx.lineTo(-4, -3);
-                  ctx.fillStyle = '#16a34a'; ctx.fill();
-                  ctx.beginPath();
-                  ctx.moveTo(0, 8); ctx.lineTo(-4, 3); ctx.lineTo(4, 3);
-                  ctx.fill();
+                  ctx.strokeStyle = activeSim.reuptakeBlocked ? '#ef4444' : '#16a34a'; ctx.lineWidth = 1.5; ctx.stroke();
+                  if (activeSim.reuptakeBlocked) {
+                    // Blocked: red X overlay with pulsing glow
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(239,68,68,0.5)';
+                    ctx.shadowBlur = 6 + Math.sin(tNT * 3) * 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-7, -7); ctx.lineTo(7, 7);
+                    ctx.moveTo(7, -7); ctx.lineTo(-7, 7);
+                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
+                    ctx.restore();
+                  } else {
+                    // Spinning arrow (normal operation)
+                    ctx.rotate(tNT * 2);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -8); ctx.lineTo(4, -3); ctx.lineTo(-4, -3);
+                    ctx.fillStyle = '#16a34a'; ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(0, 8); ctx.lineTo(-4, 3); ctx.lineTo(4, 3);
+                    ctx.fill();
+                  }
                   ctx.restore();
-                  ctx.font = 'bold 6px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
-                  ctx.fillText('Reuptake', W * 0.88, H * 0.41 + 20);
-                  ctx.fillText('Transporter', W * 0.88, H * 0.41 + 27);
+                  ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = activeSim.reuptakeBlocked ? '#ef4444' : '#16a34a'; ctx.textAlign = 'center';
+                  ctx.fillText(activeSim.reuptakeBlocked ? 'BLOCKED' : 'Reuptake', W * 0.88, H * 0.41 + 20);
+                  ctx.fillText(activeSim.reuptakeBlocked ? 'Reuptake' : 'Transporter', W * 0.88, H * 0.41 + 29);
 
                   // ── Enzyme (MAO/COMT) with scissor icon ──
                   ctx.save();
@@ -19785,7 +19841,7 @@
                   ctx.moveTo(W * 0.12 + 5, H * 0.50 - 5); ctx.lineTo(W * 0.12 - 5, H * 0.50 + 5);
                   ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
                   ctx.restore();
-                  ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold 9px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#dc2626'; ctx.textAlign = 'center';
                   ctx.fillText('MAO/COMT', W * 0.12, H * 0.50 + 18);
                   ctx.fillText('Enzyme', W * 0.12, H * 0.50 + 25);
@@ -20400,6260 +20456,6292 @@
                 }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
                 React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
               ),
-              // Main: canvas + detail
-              React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
-                React.createElement("div", { className: "flex-shrink-0" },
-                  React.createElement("canvas", {
-                    ref: canvasRef, width: 380, height: 460,
-                    onClick: handleClick,
-                    className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
-                    style: { background: '#faf8ff' }
+              // Main: canvas (full width) + detail below
+              React.createElement("div", { className: "space-y-3" },
+                // ─── Simulation scenario buttons (NT view only) ───
+                currentView.isNT && React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                  SIM_SCENARIOS.map(function (s) {
+                    var isActive = simScenario === s.id;
+                    return React.createElement("button", {
+                      key: s.id,
+                      onClick: function () { upd('simScenario', s.id); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2 " +
+                        (isActive ? 'text-white shadow-lg' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'),
+                      style: isActive ? { background: s.color, borderColor: s.color } : {}
+                    }, s.icon + ' ' + s.name);
                   })
                 ),
-                React.createElement("div", { className: "flex-1 min-w-0" },
-                  d.quizMode ? (
-                    quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
-                      React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                        React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
-                        React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
-                      ),
-                      React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
-                      React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
-                      React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
-                        brainQuizOpts.map(function (opt) {
-                          var fb = d.quizFeedback;
-                          var isCorrect = opt.id === quizQ.id;
-                          var wasChosen = fb && fb.chosen === opt.id;
-                          var showResult = fb !== null && fb !== undefined;
-                          return React.createElement("button", {
-                            key: opt.id, disabled: showResult,
-                            onClick: function () {
-                              var correct = opt.id === quizQ.id;
-                              upd('quizFeedback', { chosen: opt.id, correct: correct });
-                              if (correct) upd('quizScore', (d.quizScore || 0) + 1);
-                            },
-                            className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
-                              (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                                showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                                  'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
-                          }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
-                        })
-                      ),
-                      d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                        React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
-                        React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
-                        quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
-                        quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
-                      ),
-                      d.quizFeedback && React.createElement("button", {
-                        onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                        className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
-                      }, "Next Question \u2192")
-                    ) : null
-                  ) : (
-                    sel ? (
-                      React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
-                        React.createElement("div", { className: "flex items-start justify-between" },
-                          React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
-                          React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
-                        ),
-                        React.createElement("div", { className: "space-y-2.5" },
-                          React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
-                            React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
-                          ),
-                          sel.brodmann && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
-                            React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
-                          ),
-                          sel.blood && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
-                            React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
-                          ),
-                          sel.category && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
-                            React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
-                          ),
-                          sel.synthesis && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
-                          ),
-                          sel.receptors && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
-                          ),
-                          sel.pathways && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
-                          ),
-                          sel.drugs && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
-                            React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
-                          ),
-                          sel.conditions && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
-                          ),
-                          sel.damage && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
-                          )
-                        )
-                      )
-                    ) : (
-                      React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
-                        filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
-                        filtered.map(function (r) {
-                          return React.createElement("button", {
-                            key: r.id,
-                            onClick: function () { upd('selectedRegion', r.id); },
-                            className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
-                              (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
-                          },
-                            React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
-                            React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
-                          );
-                        })
-                      )
-                    )
-                  )
-                )
-              )
-            );
-          })(),
-
-
-          stemLabTab === 'explore' && stemLabTool === 'artStudio' && (() => {
-            const d = labToolData.artStudio || {};
-            const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
-            const tab = d.tab || 'colorWheel';
-
-            // Color Wheel Canvas
-            const wheelRef = function (canvas) {
-              if (!canvas) return;
-              if (canvas._wheelAnim) cancelAnimationFrame(canvas._wheelAnim);
-              var ctx = canvas.getContext('2d');
-              var W = canvas.width, H = canvas.height;
-              var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 20;
-              var tick = 0;
-              var hue = d.hue || 0, sat = d.sat !== undefined ? d.sat : 100, lit = d.lit !== undefined ? d.lit : 50;
-
-              function drawWheel() {
-                tick++;
-                ctx.clearRect(0, 0, W, H);
-                for (var a = 0; a < 360; a++) {
-                  var rad1 = (a - 90) * Math.PI / 180;
-                  var rad2 = (a - 89) * Math.PI / 180;
-                  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, rad1, rad2); ctx.closePath();
-                  ctx.fillStyle = 'hsl(' + a + ',' + sat + '%,' + lit + '%)'; ctx.fill();
-                }
-                ctx.beginPath(); ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
-                ctx.fillStyle = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)'; ctx.fill();
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
-                var selRad = (hue - 90) * Math.PI / 180;
-                var sx = cx + Math.cos(selRad) * R * 0.75;
-                var sy = cy + Math.sin(selRad) * R * 0.75;
-                ctx.beginPath(); ctx.arc(sx, sy, 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
-                ctx.fillStyle = '#fff'; ctx.fill();
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
-                ctx.fillStyle = lit > 55 ? '#000' : '#fff';
-                ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText('H:' + hue + '\u00B0', cx, cy - 8);
-                ctx.fillText('S:' + sat + '% L:' + lit + '%', cx, cy + 8);
-                var harmony = d.harmony || 'complementary';
-                var harmAngles = [];
-                if (harmony === 'complementary') harmAngles = [(hue + 180) % 360];
-                else if (harmony === 'triadic') harmAngles = [(hue + 120) % 360, (hue + 240) % 360];
-                else if (harmony === 'analogous') harmAngles = [(hue + 30) % 360, (hue - 30 + 360) % 360];
-                else if (harmony === 'split') harmAngles = [(hue + 150) % 360, (hue + 210) % 360];
-                harmAngles.forEach(function (ha) {
-                  var hr = (ha - 90) * Math.PI / 180;
-                  var hx = cx + Math.cos(hr) * R * 0.75, hy = cy + Math.sin(hr) * R * 0.75;
-                  ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2);
-                  ctx.fillStyle = 'hsl(' + ha + ',' + sat + '%,' + lit + '%)'; ctx.fill();
-                  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-                });
-                canvas._wheelAnim = requestAnimationFrame(drawWheel);
-              }
-              canvas.onmousedown = canvas.ontouchstart = function (e) {
-                var rect = canvas.getBoundingClientRect();
-                var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                var scaleX = W / rect.width, scaleY = H / rect.height;
-                ex *= scaleX; ey *= scaleY;
-                var dx = ex - cx, dy = ey - cy;
-                var dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < R && dist > R * 0.35) {
-                  var angle = Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360);
-                  hue = angle; upd('hue', angle);
-                }
-              };
-              drawWheel();
-            };
-
-            // Pixel Art Canvas
-            const pixelRef = function (canvas) {
-              if (!canvas) return;
-              var ctx = canvas.getContext('2d');
-              var W = canvas.width, H = canvas.height;
-              var gridSize = d.pixelGrid || 16;
-              var cellW = W / gridSize, cellH = H / gridSize;
-              var grid = d.pixelData || {};
-              var painting = false;
-              var currentColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
-              function drawPixelGrid() {
-                ctx.clearRect(0, 0, W, H);
-                ctx.fillStyle = '#1e1e2e'; ctx.fillRect(0, 0, W, H);
-                Object.keys(grid).forEach(function (key) {
-                  var parts = key.split(',');
-                  ctx.fillStyle = grid[key];
-                  ctx.fillRect(parseInt(parts[0]) * cellW, parseInt(parts[1]) * cellH, cellW, cellH);
-                });
-                ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
-                for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
-                for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
-              }
-              function paint(e) {
-                var rect = canvas.getBoundingClientRect();
-                var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                var gx = Math.floor(ex * (W / rect.width) / cellW);
-                var gy = Math.floor(ey * (H / rect.height) / cellH);
-                if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
-                  var key = gx + ',' + gy;
-                  if (d.pixelTool === 'eraser') delete grid[key]; else grid[key] = currentColor;
-                  upd('pixelData', Object.assign({}, grid));
-                  drawPixelGrid();
-                }
-              }
-              canvas.onmousedown = canvas.ontouchstart = function (e) { painting = true; paint(e); };
-              canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paint(e); };
-              canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
-              canvas.onmouseleave = function () { painting = false; };
-              drawPixelGrid();
-            };
-
-            // Symmetry Canvas
-            const symmetryRef = function (canvas) {
-              if (!canvas) return;
-              var ctx = canvas.getContext('2d');
-              var W = canvas.width, H = canvas.height;
-              var cx = W / 2, cy = H / 2;
-              var folds = d.symmetryFolds || 6;
-              var drawing = false;
-              var brushSize = d.brushSize || 3;
-              var brushColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
-              if (!canvas._symInit) {
-                canvas._symInit = true;
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-                ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
-                for (var i = 0; i < folds; i++) {
-                  var angle = (i / folds) * Math.PI * 2;
-                  ctx.beginPath(); ctx.moveTo(cx, cy);
-                  ctx.lineTo(cx + Math.cos(angle) * Math.max(W, H), cy + Math.sin(angle) * Math.max(W, H));
-                  ctx.stroke();
-                }
-              }
-              function drawSymmetric(ex, ey) {
-                var dx = ex - cx, dy = ey - cy, dist = Math.sqrt(dx * dx + dy * dy);
-                var baseAngle = Math.atan2(dy, dx);
-                for (var i = 0; i < folds; i++) {
-                  var angle = baseAngle + (i / folds) * Math.PI * 2;
-                  ctx.beginPath(); ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, brushSize, 0, Math.PI * 2);
-                  ctx.fillStyle = brushColor; ctx.fill();
-                  var mirrorAngle = -baseAngle + (i / folds) * Math.PI * 2;
-                  ctx.beginPath(); ctx.arc(cx + Math.cos(mirrorAngle) * dist, cy + Math.sin(mirrorAngle) * dist, brushSize, 0, Math.PI * 2);
-                  ctx.fillStyle = brushColor; ctx.fill();
-                }
-              }
-              function handleDraw(e) {
-                var rect = canvas.getBoundingClientRect();
-                var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                drawSymmetric(ex * (W / rect.width), ey * (H / rect.height));
-              }
-              canvas.onmousedown = canvas.ontouchstart = function (e) { drawing = true; handleDraw(e); };
-              canvas.onmousemove = canvas.ontouchmove = function (e) { if (drawing) handleDraw(e); };
-              canvas.onmouseup = canvas.ontouchend = function () { drawing = false; };
-              canvas.onmouseleave = function () { drawing = false; };
-            };
-
-            // WCAG contrast helpers
-            function luminance(h, s, l) {
-              var c = (1 - Math.abs(2 * l / 100 - 1)) * s / 100;
-              var x = c * (1 - Math.abs((h / 60) % 2 - 1));
-              var m = l / 100 - c / 2;
-              var r, g, b;
-              if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
-              else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
-              else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
-              r += m; g += m; b += m;
-              var toL = function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-              return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
-            }
-            function mixColors(c1, c2, ratio) {
-              var h1 = c1.h, s1 = c1.s, l1 = c1.l, h2 = c2.h, s2 = c2.s, l2 = c2.l;
-              var hDiff = h2 - h1; if (Math.abs(hDiff) > 180) { if (hDiff > 0) h1 += 360; else h2 += 360; }
-              return { h: Math.round((h1 + (h2 - h1) * ratio + 360) % 360), s: Math.round(s1 + (s2 - s1) * ratio), l: Math.round(l1 + (l2 - l1) * ratio) };
-            }
-            var mix1 = { h: d.mix1H || 0, s: d.mix1S || 100, l: d.mix1L || 50 };
-            var mix2 = { h: d.mix2H || 200, s: d.mix2S || 100, l: d.mix2L || 50 };
-            var mixRatio = d.mixRatio || 0.5;
-            var mixed = mixColors(mix1, mix2, mixRatio);
-            var fgH = d.fgH || 0, fgS = d.fgS || 0, fgL = d.fgL || 0;
-            var bgH = d.bgH || 0, bgS = d.bgS || 0, bgL = d.bgL || 100;
-            var l1c = luminance(fgH, fgS, fgL), l2c = luminance(bgH, bgS, bgL);
-            var contrastRatio = (Math.max(l1c, l2c) + 0.05) / (Math.min(l1c, l2c) + 0.05);
-            var passAA = contrastRatio >= 4.5, passAAA = contrastRatio >= 7, passAALarge = contrastRatio >= 3;
-
-            return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
-                React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE")
-              ),
-              React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200" },
-                [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
-                  return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
-                })
-              ),
-              tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
-                React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
-                  React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
-                  React.createElement("div", { className: "flex-1 space-y-3" },
-                    React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-200" },
-                      React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, "\uD83C\uDFAF Selected Color"),
-                      React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                        React.createElement("div", { style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
-                        React.createElement("div", null,
-                          React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat || 100) + "%, " + (d.lit || 50) + "%)"),
-                          React.createElement("p", { className: "text-[10px] text-slate-500" }, "Click the wheel to pick a hue")
-                        )
-                      ),
-                      [{ k: 'hue', label: 'Hue', min: 0, max: 360 }, { k: 'sat', label: 'Saturation %', min: 0, max: 100 }, { k: 'lit', label: 'Lightness %', min: 0, max: 100 }].map(function (s) {
-                        return React.createElement("div", { key: s.k, className: "mb-2" },
-                          React.createElement("label", { className: "text-[10px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
-                          React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
-                        );
-                      })
-                    ),
-                    React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-pink-600 mb-2" }, "\uD83D\uDD17 Color Harmony"),
-                      React.createElement("div", { className: "flex gap-1" },
-                        ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
-                          return React.createElement("button", { key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
-                        })
-                      )
-                    )
-                  )
-                )
-              ),
-              tab === 'mixer' && React.createElement("div", { className: "space-y-4" },
-                React.createElement("div", { className: "grid grid-cols-3 gap-4 items-center" },
-                  React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 text-center" },
-                    React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix1.h + ',' + mix1.s + '%,' + mix1.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
-                    React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-2" }, "Color A"),
-                    [{ k: 'mix1H', max: 360, val: mix1.h }, { k: 'mix1S', max: 100, val: mix1.s }, { k: 'mix1L', max: 100, val: mix1.l }].map(function (s) {
-                      return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-indigo-500 mb-1" });
-                    })
-                  ),
-                  React.createElement("div", { className: "text-center" },
-                    React.createElement("div", { style: { width: 100, height: 100, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mixed.h + ',' + mixed.s + '%,' + mixed.l + '%)', border: '4px solid white', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' } }),
-                    React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83C\uDFAF Result"),
-                    React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
-                    React.createElement("p", { className: "text-[10px] text-slate-500" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
-                  ),
-                  React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 text-center" },
-                    React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix2.h + ',' + mix2.s + '%,' + mix2.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
-                    React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, "Color B"),
-                    [{ k: 'mix2H', max: 360, val: mix2.h }, { k: 'mix2S', max: 100, val: mix2.s }, { k: 'mix2L', max: 100, val: mix2.l }].map(function (s) {
-                      return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-rose-500 mb-1" });
-                    })
-                  )
-                )
-              ),
-              tab === 'pixel' && React.createElement("div", { className: "space-y-3" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
-                  React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
-                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Current color"),
-                  React.createElement("div", { className: "ml-auto flex gap-1" },
-                    [{ id: 'brush', icon: '\uD83D\uDD8C', label: 'Brush' }, { id: 'eraser', icon: '\uD83E\uDDFD', label: 'Eraser' }].map(function (t) {
-                      return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
-                    }),
-                    React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                    React.createElement("select", { 'aria-label': 'Grid size', value: d.pixelGrid || 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
-                      [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
-                  )
-                ),
-                React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
-              ),
-              tab === 'symmetry' && React.createElement("div", { className: "space-y-3" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
-                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2728 Folds:"),
-                  [4, 6, 8, 12, 16].map(function (f) {
-                    return React.createElement("button", { key: f, onClick: function () { upd('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
-                  }),
-                  React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
-                  React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
-                  React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
-                ),
-                React.createElement("canvas", { ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0f172a' } })
-              ),
-              tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
-                React.createElement("div", { className: "grid grid-cols-2 gap-4" },
-                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
-                    React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Foreground (Text)"),
-                    React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', marginBottom: 8 } }),
-                    [{ k: 'fgH', label: 'Hue', max: 360, val: fgH }, { k: 'fgS', label: 'Sat', max: 100, val: fgS }, { k: 'fgL', label: 'Light', max: 100, val: fgL }].map(function (s) {
-                      return React.createElement("div", { key: s.k, className: "mb-1" },
-                        React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
-                        React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
-                      );
-                    })
-                  ),
-                  React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
-                    React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Background"),
-                    React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', marginBottom: 8 } }),
-                    [{ k: 'bgH', label: 'Hue', max: 360, val: bgH }, { k: 'bgS', label: 'Sat', max: 100, val: bgS }, { k: 'bgL', label: 'Light', max: 100, val: bgL }].map(function (s) {
-                      return React.createElement("div", { key: s.k, className: "mb-1" },
-                        React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
-                        React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
-                      );
-                    })
-                  )
-                ),
-                React.createElement("div", { className: "rounded-xl border-2 p-6 text-center " + (passAA ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50') },
-                  React.createElement("div", { className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)' } },
-                    React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, "Sample Text"),
-                    React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 14 } }, "The quick brown fox jumps over the lazy dog")
-                  ),
-                  React.createElement("p", { className: "text-3xl font-bold " + (passAA ? 'text-green-700' : 'text-red-700') }, contrastRatio.toFixed(2) + ':1'),
-                  React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
-                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAALarge ? '\u2705' : '\u274C') + ' AA Large'),
-                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAA ? '\u2705' : '\u274C') + ' AA Normal'),
-                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAAA ? '\u2705' : '\u274C') + ' AAA')
-                  )
-                )
-              ),
-              React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: 'Art Studio', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-            );
-          })(),
-
-
-          // ═══════════════════════════════════════════════════════
-          // COMPANION PLANTING LAB — Canvas2D Animated Garden
-          // ═══════════════════════════════════════════════════════
-          stemLabTab === 'explore' && stemLabTool === 'companionPlanting' && (() => {
-            var d = (labToolData.companionPlanting) || {};
-            var upd = function (key, val) { var _k = {}; _k[key] = val; setLabToolData(function (prev) { return Object.assign({}, prev, { companionPlanting: Object.assign({}, prev.companionPlanting || {}, _k) }); }); };
-
-            // ── State defaults ──
-            var phase = d.phase || 'plant';  // 'plant' | 'grow' | 'harvest'
-            var growthTime = d.growthTime || 0;   // 0-100
-            var growSpeed = d.growSpeed || 1;  // 1, 2, or 5
-            var cornPlanted = d.cornPlanted || false;
-            var beansPlanted = d.beansPlanted || false;
-            var squashPlanted = d.squashPlanted || false;
-            var compareMode = d.compareMode || false;
-            var showCulture = d.showCulture || false;
-            var showSoilDetail = d.showSoilDetail || false;
-            var quizActive = d.quizActive || false;
-            var quizQ = d.quizQ || 0;
-            var showSciencePanel = d.showSciencePanel || false;
-            var quizAnswer = d.quizAnswer || '';
-            var quizFeedback = d.quizFeedback || '';
-
-            // ── Sims-style needs/meters ──
-            var day = d.day || 0;
-            var moisture = typeof d.moisture === 'number' ? d.moisture : 60;
-            var nitrogenLevel = typeof d.nitrogenLevel === 'number' ? d.nitrogenLevel : 35;
-            var pestPressure = typeof d.pestPressure === 'number' ? d.pestPressure : 10;
-            var weedCover = typeof d.weedCover === 'number' ? d.weedCover : 15;
-            var soilTemp = typeof d.soilTemp === 'number' ? d.soilTemp : 20;
-            var plantHealth = typeof d.plantHealth === 'number' ? d.plantHealth : 100;
-            var actionCooldowns = d.actionCooldowns || {};    // { water: 0, compost: 0, weed: 0, inspect: 0, mulch: 0 }
-            var eventLog = d.eventLog || [];
-            var eventPopup = d.eventPopup || null;
-            var synCornBeans = typeof d.synCornBeans === 'number' ? d.synCornBeans : 0;
-            var synBeansSoil = typeof d.synBeansSoil === 'number' ? d.synBeansSoil : 0;
-            var synSquashAll = typeof d.synSquashAll === 'number' ? d.synSquashAll : 0;
-            var seasonScore = d.seasonScore || 0;
-            var totalScore = d.totalScore || 0;
-            var harvestCount = d.harvestCount || 0;
-            var lastEventDay = d.lastEventDay || 0;
-            var nitrogenCarryover = d.nitrogenCarryover || 0;
-
-            // ── Season calculation ──
-            var DAYS_PER_SEASON = 30;
-            var seasonIndex = Math.floor((day % 120) / DAYS_PER_SEASON);  // 0=spring, 1=summer, 2=autumn, 3=winter
-            var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
-            var seasonName = seasonNames[seasonIndex];
-            var dayInSeason = (day % 120) % DAYS_PER_SEASON;
-            var seasonFactors = [
-              { growth: 1.0, pestRate: 0.6, moistureDecay: 1.5, ambientTemp: 18 },  // spring
-              { growth: 1.4, pestRate: 1.3, moistureDecay: 2.5, ambientTemp: 30 },  // summer
-              { growth: 0.6, pestRate: 0.4, moistureDecay: 1.0, ambientTemp: 15 },  // autumn
-              { growth: 0.0, pestRate: 0.1, moistureDecay: 0.5, ambientTemp: 4 }    // winter
-            ];
-            var sf = seasonFactors[seasonIndex];
-
-            // ── Computed values from meters ──
-            var allPlanted = cornPlanted && beansPlanted && squashPlanted;
-            var soilHealth = Math.round(Math.max(0, Math.min(100,
-              (Math.min(nitrogenLevel, 100) * 0.25) +
-              (Math.min(moisture, 100) * 0.25) +
-              ((100 - Math.min(pestPressure, 100)) * 0.2) +
-              ((100 - Math.min(weedCover, 100)) * 0.15) +
-              (plantHealth * 0.15)
-            )));
-
-            // Synergy bonuses
-            var synergyBonus = 1 + (synCornBeans / 500) + (synBeansSoil / 500) + (synSquashAll / 500);
-
-            // Monoculture comparison (simulated decline)
-            var t_norm = growthTime / 100;
-            var monoN = Math.max(5, 30 - 25 * t_norm);
-            var monoH2O = Math.max(15, 40 - 25 * t_norm);
-            var monoWeeds = Math.min(95, 30 + 65 * t_norm);
-            var monoHealth = Math.round((monoN + monoH2O + (100 - monoWeeds)) / 3);
-
-            // Legacy aliases for gauge display
-            var nitrogen = nitrogenLevel;
-            var weedPressure = weedCover;
-            var temperature = soilTemp;
-
-            // ── Random Events Table ──
-            var _EVENTS = [
-              { id: 'rain', emoji: '🌧️', title: 'Heavy Rain', desc: 'A downpour soaks the soil! Nitrogen leaches with runoff.', effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
-              { id: 'aphids', emoji: '🐛', title: 'Aphid Outbreak', desc: 'Aphids swarm the garden!', effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
-              { id: 'pollinators', emoji: '🐝', title: 'Pollinator Visit', desc: 'Bees and butterflies visit the garden!', effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
-              { id: 'wind', emoji: '🌪️', title: 'Wind Storm', desc: 'Strong winds stress the plants.', effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
-              { id: 'ladybugs', emoji: '🐞', title: 'Ladybug Arrival', desc: 'Ladybugs colonize the garden!', effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
-              { id: 'heatwave', emoji: '☀️', title: 'Heat Wave', desc: 'Scorching heat dries the soil.', effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
-              { id: 'mycorrhiza', emoji: '🍄', title: 'Mycorrhizal Bloom', desc: 'Beneficial fungi spread through the root zone!', effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
-            ];
-
-            // ── Action definitions ──
-            var _ACTIONS = [
-              { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
-              { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
-              { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
-              { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
-              { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
-            ];
-
-            // ── Helper: apply effects dict ──
-            function applyEffects(efx) {
-              setLabToolData(function (prev) {
-                var cp = Object.assign({}, prev.companionPlanting || {});
-                Object.keys(efx).forEach(function (k) {
-                  var cur = typeof cp[k] === 'number' ? cp[k] : 0;
-                  cp[k] = Math.max(0, Math.min(100, cur + efx[k]));
-                });
-                return Object.assign({}, prev, { companionPlanting: cp });
-              });
-            }
-
-            // ── Perform action ──
-            function doAction(actionDef) {
-              var efx = actionDef.effect();
-              applyEffects(efx);
-              // Set cooldown
-              var newCD = Object.assign({}, actionCooldowns);
-              newCD[actionDef.id] = day + actionDef.cooldownDays;
-              upd('actionCooldowns', newCD);
-              awardStemXP('companion_action_' + actionDef.id, 5, actionDef.label + ' action');
-              if (addToast) addToast(actionDef.emoji + ' ' + actionDef.label + '! ' + actionDef.tip, 'success');
-            }
-
-            // ── Quiz data ──
-            var quizzes = [
-              { q: 'Which plant fixes atmospheric nitrogen into the soil?', opts: ['Corn', 'Beans', 'Squash'], correct: 'Beans', explain: 'Bean roots house Rhizobium bacteria that convert N₂ gas into ammonia (NH₃), enriching the soil for all three plants.' },
-              { q: 'What role do squash leaves play in the Three Sisters system?', opts: ['Structural support', 'Living mulch', 'Nitrogen fixation'], correct: 'Living mulch', explain: 'Squash\'s large leaves shade the soil, retaining moisture, cooling roots, and suppressing weed growth — acting as living mulch.' },
-              { q: 'Why are beans planted around the corn stalks?', opts: ['For shade', 'To climb the stalks', 'For color'], correct: 'To climb the stalks', explain: 'Corn provides a natural trellis for bean vines to climb, replacing the need for artificial supports.' },
-              { q: 'The milpa system originated approximately how many years ago?', opts: ['500 years', '2,000 years', '7,000+ years'], correct: '7,000+ years', explain: 'Archaeological evidence traces the milpa companion planting system to Mesoamerica over 7,000 years ago.' },
-              { q: 'Corn and beans together provide a complete protein because:', opts: ['They taste good together', 'Their amino acid profiles complement each other', 'They grow at the same rate'], correct: 'Their amino acid profiles complement each other', explain: 'Corn is rich in methionine but low in lysine; beans are rich in lysine but low in methionine. Together they form a complete protein.' },
-              { q: 'What organisms in bean root nodules actually fix nitrogen?', opts: ['Mycorrhizal fungi', 'Rhizobium bacteria', 'Earthworms'], correct: 'Rhizobium bacteria', explain: 'Rhizobium bacteria form a symbiotic relationship with legume roots, converting atmospheric N₂ into plant-usable ammonia through nitrogenase enzyme.' },
-              { q: 'How do prickly squash stems help the garden?', opts: ['They attract pollinators', 'They deter pests like raccoons and deer', 'They provide nutrients'], correct: 'They deter pests like raccoons and deer', explain: 'The spiny, prickly stems and vines of many squash varieties create a natural barrier that discourages animals from entering the garden.' },
-              { q: 'What is the Haudenosaunee name for the Three Sisters?', opts: ['Milpa', 'De-oh-há-ko', 'Teosinte'], correct: 'De-oh-há-ko', explain: 'De-oh-há-ko means "they sustain us" — the Haudenosaunee view the Three Sisters as inseparable spiritual beings, not merely crops.' }
-            ];
-            var currentQuiz = quizzes[quizQ % quizzes.length];
-
-            // ── Canvas Renderer ──
-            var _lastGardenCanvas = null;
-            var canvasRef = function (canvasEl) {
-              if (!canvasEl) {
-                if (_lastGardenCanvas && _lastGardenCanvas._gardenAnim) {
-                  cancelAnimationFrame(_lastGardenCanvas._gardenAnim);
-                  _lastGardenCanvas._gardenInit = false;
-                }
-                _lastGardenCanvas = null;
-                return;
-              }
-              _lastGardenCanvas = canvasEl;
-              if (canvasEl._gardenInit) return;
-              canvasEl._gardenInit = true;
-              var cW = canvasEl.width = canvasEl.offsetWidth * 2;
-              var cH = canvasEl.height = canvasEl.offsetHeight * 2;
-              var ctx = canvasEl.getContext('2d');
-              var dpr = 2;
-              var tick = 0;
-              var _gt = growthTime;
-
-              // Listen for growth updates via data attribute
-              canvasEl.setAttribute('data-growth', growthTime);
-              canvasEl.setAttribute('data-corn', cornPlanted ? '1' : '0');
-              canvasEl.setAttribute('data-beans', beansPlanted ? '1' : '0');
-              canvasEl.setAttribute('data-squash', squashPlanted ? '1' : '0');
-              canvasEl.setAttribute('data-compare', compareMode ? '1' : '0');
-
-              // Garden entities
-              var particles = [];
-              for (var pi = 0; pi < 40; pi++) {
-                particles.push({ x: Math.random() * cW / dpr, y: Math.random() * cH * 0.3 / dpr, vx: (Math.random() - 0.5) * 0.3, vy: -0.1 - Math.random() * 0.2, life: Math.random() * 200, type: pi < 15 ? 'pollen' : pi < 25 ? 'butterfly' : 'n2' });
-              }
-
-              function drawMound(cx, cy, w, h, label, _corn, _beans, _squash, _growth, isMono) {
-                var gt = _growth / 100;
-
-                // ── Underground soil layers ──
-                // Subsoil
-                ctx.fillStyle = '#8B6914';
-                ctx.beginPath();
-                ctx.ellipse(cx, cy + h * 0.7, w * 1.2, h * 0.5, 0, 0, Math.PI * 2);
-                ctx.fill();
-                // Topsoil / mound
-                var moundGrad = ctx.createRadialGradient(cx, cy - h * 0.1, 0, cx, cy, w);
-                moundGrad.addColorStop(0, '#5C4033');
-                moundGrad.addColorStop(0.6, '#3E2723');
-                moundGrad.addColorStop(1, '#2E1A0E');
-                ctx.fillStyle = moundGrad;
-                ctx.beginPath();
-                ctx.ellipse(cx, cy, w, h, 0, 0, Math.PI * 2);
-                ctx.fill();
-                // Topsoil highlights
-                ctx.fillStyle = 'rgba(139,109,60,0.3)';
-                ctx.beginPath();
-                ctx.ellipse(cx - w * 0.2, cy - h * 0.3, w * 0.3, h * 0.2, -0.3, 0, Math.PI * 2);
-                ctx.fill();
-
-                // ── Root systems underground ──
-                if (_corn && gt > 0.1) {
-                  ctx.strokeStyle = 'rgba(255,235,180,0.25)';
-                  ctx.lineWidth = 1.5;
-                  for (var ri = 0; ri < 5; ri++) {
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy + h * 0.2);
-                    var rx = cx + (ri - 2) * w * 0.15;
-                    var ry = cy + h * (0.5 + gt * 0.4);
-                    ctx.quadraticCurveTo(cx + (ri - 2) * w * 0.08, cy + h * 0.4, rx, ry);
-                    ctx.stroke();
-                  }
-                }
-                // Bean root nodules (nitrogen-fixing!)
-                if (_beans && gt > 0.2) {
-                  var noduleGlow = 0.3 + 0.4 * Math.sin(tick * 0.03);
-                  for (var ni = 0; ni < 6; ni++) {
-                    var nx = cx + (Math.random() - 0.5) * w * 0.8;
-                    var ny = cy + h * (0.3 + Math.random() * 0.4);
-                    ctx.fillStyle = 'rgba(120,255,180,' + (noduleGlow * gt) + ')';
-                    ctx.beginPath();
-                    ctx.arc(nx, ny, 2 + gt * 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    // N₂ label near nodule
-                    if (ni < 2 && gt > 0.5) {
-                      ctx.fillStyle = 'rgba(100,255,160,' + (noduleGlow * 0.7) + ')';
-                      ctx.font = (8 + gt * 4) + 'px monospace';
-                      ctx.fillText('N₂→NH₃', nx + 5, ny - 3);
-                    }
-                  }
-                }
-                // ── Mycorrhizal fungal network (connecting all root systems) ──
-                if ((_corn && _beans || _corn && _squash || _beans && _squash) && gt > 0.25) {
-                  var netAlpha = Math.min(0.5, (gt - 0.25) * 0.8) * (0.5 + 0.5 * Math.sin(tick * 0.015));
-                  ctx.strokeStyle = 'rgba(180,140,255,' + netAlpha + ')';
-                  ctx.lineWidth = 0.8;
-                  // Draw branching fungal threads across the underground zone
-                  var netY0 = cy + h * 0.3;
-                  var netY1 = cy + h * 0.7;
-                  var netSpanX = w * 0.9;
-                  for (var fi = 0; fi < 8; fi++) {
-                    var fx0 = cx - netSpanX * 0.5 + fi * netSpanX * 0.14;
-                    var fy0 = netY0 + (fi % 3) * (netY1 - netY0) * 0.3;
-                    var fx1 = fx0 + netSpanX * 0.18 + Math.sin(tick * 0.008 + fi) * 5;
-                    var fy1 = fy0 + (netY1 - netY0) * 0.2 + Math.cos(tick * 0.01 + fi * 2) * 4;
-                    ctx.beginPath();
-                    ctx.moveTo(fx0, fy0);
-                    ctx.bezierCurveTo(fx0 + 8, fy0 - 4, fx1 - 6, fy1 + 3, fx1, fy1);
-                    ctx.stroke();
-                    // Branch nodes (hyphal tips / arbuscules)
-                    if (fi % 2 === 0) {
-                      ctx.fillStyle = 'rgba(200,160,255,' + (netAlpha * 0.8) + ')';
-                      ctx.beginPath(); ctx.arc(fx1, fy1, 1.5 + gt, 0, Math.PI * 2); ctx.fill();
-                    }
-                  }
-                  // Nutrient transfer indicators (small dots flowing along threads)
-                  if (gt > 0.5) {
-                    for (var nd = 0; nd < 4; nd++) {
-                      var ndFrac = ((tick * 0.01 + nd * 0.25) % 1);
-                      var ndX = cx - netSpanX * 0.4 + ndFrac * netSpanX * 0.8;
-                      var ndY = netY0 + (netY1 - netY0) * 0.3 + Math.sin(ndFrac * Math.PI * 2 + nd) * 6;
-                      ctx.fillStyle = 'rgba(255,215,100,' + (0.3 + 0.4 * Math.sin(tick * 0.04 + nd)) + ')';
-                      ctx.beginPath(); ctx.arc(ndX, ndY, 1.8, 0, Math.PI * 2); ctx.fill();
-                    }
-                  }
-                }
-
-                // ── Corn stalks (enhanced with segments, leaf midribs, silk, husks) ──
-                if (_corn) {
-                  var cornH = gt * h * 2.2;
-                  var sway = Math.sin(tick * 0.015) * 3 * gt;
-                  for (var ci = 0; ci < 3; ci++) {
-                    var cornX = cx + (ci - 1) * w * 0.15;
-                    // Stalk with segments
-                    var segCount = Math.floor(3 + gt * 5);
-                    for (var seg = 0; seg < segCount; seg++) {
-                      var segFrac0 = seg / segCount;
-                      var segFrac1 = (seg + 1) / segCount;
-                      var sx0 = cornX + sway * segFrac0;
-                      var sy0 = cy - h * 0.2 - cornH * segFrac0;
-                      var sx1 = cornX + sway * segFrac1;
-                      var sy1 = cy - h * 0.2 - cornH * segFrac1;
-                      var segWidth = 3 + gt * 3 - seg * 0.3;
-                      // Alternating segment shading for realism
-                      ctx.strokeStyle = seg % 2 === 0 ? '#2E7D32' : '#388E3C';
-                      ctx.lineWidth = Math.max(1.5, segWidth);
-                      ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
-                      // Node joint ring
-                      if (seg > 0 && seg < segCount - 1) {
-                        ctx.beginPath();
-                        ctx.arc(sx0, sy0, segWidth * 0.6, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(27,94,32,0.4)';
-                        ctx.fill();
-                      }
-                    }
-                    // Corn leaves with midrib
-                    if (gt > 0.3) {
-                      for (var li = 0; li < 4; li++) {
-                        var ly = cy - h * 0.2 - cornH * (0.25 + li * 0.2);
-                        var leafSway = Math.sin(tick * 0.02 + li + ci) * 5;
-                        var leafDir = (li % 2 === 0 ? 1 : -1);
-                        var leafLen = 30 + gt * 10 - li * 3;
-                        var leafTipX = cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen + leafSway;
-                        var leafTipY = ly + 8;
-                        // Leaf blade
-                        ctx.beginPath();
-                        ctx.moveTo(cornX + sway * (0.25 + li * 0.2), ly);
-                        ctx.quadraticCurveTo(
-                          cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen * 0.6 + leafSway * 0.5, ly - 6,
-                          leafTipX, leafTipY
-                        );
-                        ctx.strokeStyle = '#43A047';
-                        ctx.lineWidth = 2.5;
-                        ctx.stroke();
-                        // Fill leaf shape
-                        ctx.beginPath();
-                        ctx.moveTo(cornX + sway * (0.25 + li * 0.2), ly);
-                        ctx.quadraticCurveTo(
-                          cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen * 0.6 + leafSway * 0.5, ly - 8,
-                          leafTipX, leafTipY
-                        );
-                        ctx.quadraticCurveTo(
-                          cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen * 0.5 + leafSway * 0.3, ly + 3,
-                          cornX + sway * (0.25 + li * 0.2), ly
-                        );
-                        ctx.fillStyle = 'rgba(76,175,80,' + (0.3 + gt * 0.2) + ')';
-                        ctx.fill();
-                        // Midrib line
-                        ctx.beginPath();
-                        ctx.moveTo(cornX + sway * (0.25 + li * 0.2), ly);
-                        ctx.lineTo(leafTipX, leafTipY);
-                        ctx.strokeStyle = 'rgba(27,94,32,0.4)';
-                        ctx.lineWidth = 0.8;
-                        ctx.stroke();
-                      }
-                    }
-                    // Corn tassels with silk threads
-                    if (gt > 0.7) {
-                      var tasselBase = cy - h * 0.2 - cornH;
-                      ctx.fillStyle = '#FDD835';
-                      for (var ti = 0; ti < 5; ti++) {
-                        var tAngle = (ti / 5) * Math.PI - Math.PI * 0.5;
-                        var tLen = 6 + gt * 4;
-                        ctx.beginPath();
-                        ctx.moveTo(cornX + sway * 1.3, tasselBase);
-                        ctx.lineTo(cornX + sway * 1.3 + Math.cos(tAngle) * tLen, tasselBase - Math.abs(Math.sin(tAngle)) * tLen * 0.8);
-                        ctx.strokeStyle = '#FDD835';
-                        ctx.lineWidth = 1.2;
-                        ctx.stroke();
-                        // Pollen dots at tips
-                        ctx.beginPath();
-                        ctx.arc(cornX + sway * 1.3 + Math.cos(tAngle) * tLen, tasselBase - Math.abs(Math.sin(tAngle)) * tLen * 0.8, 1.5, 0, Math.PI * 2);
-                        ctx.fill();
-                      }
-                    }
-                    // Corn ears with husk detail
-                    if (gt > 0.6) {
-                      var earY = cy - h * 0.2 - cornH * 0.55;
-                      var earX = cornX + sway * 0.5 + 8;
-                      // Husk (outer layers)
-                      ctx.beginPath();
-                      ctx.ellipse(earX - 1, earY, 6 + gt * 2, 10 + gt * 5, 0.3, 0, Math.PI * 2);
-                      ctx.fillStyle = '#8BC34A';
-                      ctx.fill();
-                      // Ear (inner yellow)
-                      ctx.beginPath();
-                      ctx.ellipse(earX, earY, 4, 8 + gt * 4, 0.3, 0, Math.PI * 2);
-                      ctx.fillStyle = '#FFB300';
-                      ctx.fill();
-                      // Kernel rows
-                      ctx.beginPath();
-                      ctx.ellipse(earX, earY, 3, 6 + gt * 3, 0.3, 0, Math.PI * 2);
-                      ctx.fillStyle = '#C8B900';
-                      ctx.fill();
-                      // Silk threads emerging from top of ear
-                      if (gt > 0.75) {
-                        for (var si2 = 0; si2 < 4; si2++) {
-                          ctx.beginPath();
-                          ctx.moveTo(earX, earY - 8 - gt * 4);
-                          ctx.quadraticCurveTo(
-                            earX + (si2 - 1.5) * 4 + Math.sin(tick * 0.03 + si2) * 2,
-                            earY - 12 - gt * 6,
-                            earX + (si2 - 1.5) * 6 + Math.sin(tick * 0.02 + si2) * 3,
-                            earY - 16 - gt * 5
-                          );
-                          ctx.strokeStyle = 'rgba(255,235,180,0.6)';
-                          ctx.lineWidth = 0.6;
-                          ctx.stroke();
-                        }
-                      }
-                    }
-                  }
-                }
-
-                // ── Bean vines climbing corn ──
-                if (_beans && _corn) {
-                  var beanH = gt * h * 1.8;
-                  for (var bi = 0; bi < 2; bi++) {
-                    var bx = cx + (bi === 0 ? -1 : 1) * w * 0.12;
-                    var bSway = Math.sin(tick * 0.02 + bi * 2) * 4;
-                    ctx.strokeStyle = '#1B5E20';
-                    ctx.lineWidth = 1.5 + gt;
-                    ctx.beginPath();
-                    ctx.moveTo(bx, cy - h * 0.1);
-                    // Spiral up corn stalk
-                    for (var bsi = 0; bsi < 10; bsi++) {
-                      var bsy = cy - h * 0.1 - beanH * bsi / 10;
-                      var bsx = bx + Math.sin(bsi * 0.8 + tick * 0.01) * (6 + gt * 4) + bSway * (bsi / 10);
-                      ctx.lineTo(bsx, bsy);
-                    }
-                    ctx.stroke();
-                    // Bean pods
-                    if (gt > 0.5) {
-                      ctx.fillStyle = '#4CAF50';
-                      for (var bpi = 0; bpi < 3; bpi++) {
-                        var bpy = cy - h * 0.1 - beanH * (0.3 + bpi * 0.2);
-                        var bpx = bx + Math.sin(bpi * 0.8 + tick * 0.01) * (6 + gt * 4) + bSway * (bpi * 0.3 / 3) + 6;
-                        ctx.beginPath();
-                        ctx.ellipse(bpx, bpy, 2, 5 + gt * 3, 0.5, 0, Math.PI * 2);
-                        ctx.fill();
-                      }
-                    }
-                  }
-                } else if (_beans && !_corn) {
-                  // Beans without corn — sprawling on ground
-                  ctx.strokeStyle = '#1B5E20';
-                  ctx.lineWidth = 1.5;
-                  for (var bgi = 0; bgi < 4; bgi++) {
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy - h * 0.1);
-                    ctx.quadraticCurveTo(cx + (bgi - 1.5) * w * 0.3, cy - h * 0.15 - gt * 15, cx + (bgi - 1.5) * w * 0.5, cy - h * 0.05);
-                    ctx.stroke();
-                  }
-                }
-
-                // ── Squash vines & leaves (enhanced with multi-lobed leaves, cross-veins, flowers, ribbed fruit) ──
-                if (_squash) {
-                  var sqSpread = gt * w * 1.3;
-                  for (var si = 0; si < 5; si++) {
-                    var angle = (si / 5) * Math.PI * 2 - Math.PI * 0.5;
-                    var sqx = cx + Math.cos(angle) * sqSpread * (0.5 + si * 0.12);
-                    var sqy = cy + Math.sin(angle) * h * 0.3 * gt + h * 0.1;
-                    var vineSway = Math.sin(tick * 0.01 + si) * 3;
-                    // Vine with tapered width
-                    ctx.strokeStyle = '#2E7D32';
-                    ctx.lineWidth = 2 + gt * 2;
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy);
-                    ctx.quadraticCurveTo(cx + (sqx - cx) * 0.5 + vineSway, sqy - 10, sqx, sqy);
-                    ctx.stroke();
-                    // Tendrils along vine
-                    if (gt > 0.3) {
-                      var midVX = cx + (sqx - cx) * 0.5 + vineSway;
-                      var midVY = sqy - 10;
-                      ctx.strokeStyle = 'rgba(46,125,50,0.5)';
-                      ctx.lineWidth = 0.8;
-                      for (var tn = 0; tn < 2; tn++) {
-                        var tnX = midVX + (tn === 0 ? -8 : 8);
-                        var tnY = midVY + tn * 5;
-                        ctx.beginPath(); ctx.moveTo(midVX + (sqx - cx) * 0.1 * tn, midVY + tn * 3);
-                        ctx.bezierCurveTo(tnX, tnY - 6, tnX + (tn === 0 ? -4 : 4), tnY - 8, tnX + (tn === 0 ? -2 : 2), tnY - 3);
-                        ctx.stroke();
-                      }
-                    }
-                    // Multi-lobed squash leaves
-                    if (gt > 0.2) {
-                      var leafSize = 8 + gt * 18;
-                      var leafAlpha = 0.6 + gt * 0.3;
-                      // Draw 5-lobed leaf shape
-                      ctx.save();
-                      ctx.translate(sqx + vineSway, sqy);
-                      ctx.rotate(angle + Math.sin(tick * 0.01) * 0.1);
-                      // Main leaf body
-                      ctx.beginPath();
-                      for (var lobe = 0; lobe < 5; lobe++) {
-                        var lobeAngle = (lobe / 5) * Math.PI * 2 - Math.PI / 2;
-                        var lobeR = leafSize * (lobe % 2 === 0 ? 1 : 0.7);
-                        if (lobe === 0) {
-                          ctx.moveTo(Math.cos(lobeAngle) * lobeR, Math.sin(lobeAngle) * lobeR * 0.6);
-                        } else {
-                          ctx.quadraticCurveTo(
-                            Math.cos(lobeAngle - 0.3) * leafSize * 0.4,
-                            Math.sin(lobeAngle - 0.3) * leafSize * 0.35,
-                            Math.cos(lobeAngle) * lobeR,
-                            Math.sin(lobeAngle) * lobeR * 0.6
-                          );
-                        }
-                      }
-                      ctx.closePath();
-                      ctx.fillStyle = 'rgba(76,175,80,' + leafAlpha + ')';
-                      ctx.fill();
-                      ctx.strokeStyle = 'rgba(46,125,50,0.4)';
-                      ctx.lineWidth = 0.6;
-                      ctx.stroke();
-                      // Central vein + cross veins
-                      ctx.strokeStyle = 'rgba(27,94,32,0.35)';
-                      ctx.lineWidth = 0.8;
-                      ctx.beginPath(); ctx.moveTo(-leafSize * 0.6, 0); ctx.lineTo(leafSize * 0.6, 0); ctx.stroke();
-                      ctx.beginPath(); ctx.moveTo(0, -leafSize * 0.4); ctx.lineTo(0, leafSize * 0.4); ctx.stroke();
-                      // Cross veins
-                      for (var cv = 0; cv < 3; cv++) {
-                        var cvX = (-0.4 + cv * 0.4) * leafSize;
-                        ctx.beginPath();
-                        ctx.moveTo(cvX, -leafSize * 0.25); ctx.lineTo(cvX + 2, leafSize * 0.25);
-                        ctx.strokeStyle = 'rgba(27,94,32,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
-                      }
-                      ctx.restore();
-                    }
-                    // Squash flower buds (before fruit)
-                    if (gt > 0.4 && gt < 0.7 && si < 3) {
-                      var flX = sqx + vineSway + 6;
-                      var flY = sqy - 3;
-                      ctx.beginPath();
-                      for (var petal = 0; petal < 5; petal++) {
-                        var petalAngle = (petal / 5) * Math.PI * 2;
-                        var petalR = 4 + gt * 3;
-                        ctx.ellipse(
-                          flX + Math.cos(petalAngle) * petalR * 0.5,
-                          flY + Math.sin(petalAngle) * petalR * 0.5,
-                          petalR * 0.4, petalR * 0.25, petalAngle, 0, Math.PI * 2
-                        );
-                      }
-                      ctx.fillStyle = 'rgba(255,193,7,0.7)';
-                      ctx.fill();
-                      // Flower center
-                      ctx.beginPath(); ctx.arc(flX, flY, 2, 0, Math.PI * 2);
-                      ctx.fillStyle = 'rgba(255,152,0,0.8)'; ctx.fill();
-                    }
-                    // Squash fruits with ribs
-                    if (gt > 0.65 && si < 3) {
-                      var frX = sqx + 5;
-                      var frY = sqy + 3;
-                      var frW = 6 + gt * 5;
-                      var frH = 4 + gt * 3;
-                      ctx.fillStyle = si === 0 ? '#FF8F00' : si === 1 ? '#F9A825' : '#FFB300';
-                      ctx.beginPath();
-                      ctx.ellipse(frX, frY, frW, frH, 0.2, 0, Math.PI * 2);
-                      ctx.fill();
-                      // Ribs
-                      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-                      ctx.lineWidth = 0.6;
-                      for (var rib = 0; rib < 4; rib++) {
-                        ctx.beginPath();
-                        var ribAngle = (rib / 4) * Math.PI;
-                        ctx.ellipse(frX, frY, frW * 0.95, frH * 0.3, 0.2 + ribAngle * 0.15, 0, Math.PI * 2);
-                        ctx.stroke();
-                      }
-                      // Shadow
-                      ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                      ctx.beginPath();
-                      ctx.ellipse(frX + 2, frY + frH * 0.7, frW * 0.8, frH * 0.3, 0.2, 0, Math.PI * 2);
-                      ctx.fill();
-                      // Stem nub
-                      ctx.fillStyle = '#558B2F';
-                      ctx.beginPath(); ctx.arc(frX - frW + 2, frY - 1, 2, 0, Math.PI * 2); ctx.fill();
-                    }
-                  }
-                  // Shade coverage indicator
-                  if (gt > 0.3) {
-                    ctx.fillStyle = 'rgba(76,175,80,0.08)';
-                    ctx.beginPath();
-                    ctx.ellipse(cx, cy + h * 0.1, sqSpread * 1.1, h * 0.5, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                  }
-                }
-
-                // ── Earthworms in soil ──
-                if (gt > 0.15) {
-                  for (var wi = 0; wi < 3; wi++) {
-                    var wormX = cx + (wi - 1) * w * 0.35;
-                    var wormY = cy + h * (0.25 + wi * 0.15);
-                    var wormPhase = tick * 0.03 + wi * 2;
-                    var wormAlpha = 0.3 + gt * 0.3;
-                    ctx.strokeStyle = 'rgba(205,133,110,' + wormAlpha + ')';
-                    ctx.lineWidth = 2;
-                    ctx.lineCap = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(wormX, wormY);
-                    for (var ws = 1; ws <= 6; ws++) {
-                      ctx.lineTo(
-                        wormX + ws * 4 + Math.sin(wormPhase + ws * 0.8) * 3,
-                        wormY + Math.cos(wormPhase + ws * 0.6) * 2
-                      );
-                    }
-                    ctx.stroke();
-                    // Worm head
-                    ctx.fillStyle = 'rgba(180,110,90,' + wormAlpha + ')';
-                    ctx.beginPath();
-                    ctx.arc(wormX + 24 + Math.sin(wormPhase + 4.8) * 3, wormY + Math.cos(wormPhase + 3.6) * 2, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                  }
-                }
-
-                // Mound label
-                if (label) {
-                  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                  ctx.font = 'bold ' + 11 + 'px system-ui';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(label, cx, cy + h + 16);
-                }
-              }
-
-              function draw() {
-                tick++;
-                // Read data attrs for latest state
-                _gt = parseFloat(canvasEl.getAttribute('data-growth') || '0');
-                var _corn = canvasEl.getAttribute('data-corn') === '1';
-                var _beans = canvasEl.getAttribute('data-beans') === '1';
-                var _squash = canvasEl.getAttribute('data-squash') === '1';
-                var _compare = canvasEl.getAttribute('data-compare') === '1';
-                var _season = parseInt(canvasEl.getAttribute('data-season') || '0', 10);
-                var _dayNum = parseInt(canvasEl.getAttribute('data-day') || '0', 10);
-                var _moistLvl = parseInt(canvasEl.getAttribute('data-moisture') || '60', 10);
-                var _pestLvl = parseInt(canvasEl.getAttribute('data-pest') || '0', 10);
-                var _weedLvl = parseInt(canvasEl.getAttribute('data-weed') || '0', 10);
-                var _healthLvl = parseInt(canvasEl.getAttribute('data-health') || '100', 10);
-
-                ctx.clearRect(0, 0, cW, cH);
-
-                // ── Season-aware Sky ──
-                var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
-                var seasonSkies = [
-                  { topH: 170, topS: 65, topL: 65, botH: 90, botS: 45, botL: 80 },   // spring — fresh blue-green
-                  { topH: 210, topS: 70, topL: 60, botH: 40, botS: 55, botL: 82 },   // summer — deep blue
-                  { topH: 220, topS: 35, topL: 50, botH: 25, botS: 60, botL: 70 },   // autumn — muted orange
-                  { topH: 215, topS: 25, topL: 40, botH: 220, botS: 15, botL: 65 }   // winter — gray-blue
-                ];
-                var ssky = seasonSkies[_season];
-                var skyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.45);
-                skyGrad.addColorStop(0, 'hsl(' + ssky.topH + ',' + Math.round(ssky.topS + dayPhase * 10) + '%,' + Math.round(ssky.topL + dayPhase * 10) + '%)');
-                skyGrad.addColorStop(1, 'hsl(' + ssky.botH + ',' + Math.round(ssky.botS + dayPhase * 15) + '%,' + Math.round(ssky.botL + dayPhase * 8) + '%)');
-                ctx.fillStyle = skyGrad;
-                ctx.fillRect(0, 0, cW, cH * 0.45);
-
-                // Sun (smaller in winter, bigger in summer)
-                var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
-                var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
-                var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
-                var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
-                sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
-                sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
-                sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
-                ctx.fillStyle = sunGlow;
-                ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
-                ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
-                ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
-
-                // Snowflakes in winter
-                if (_season === 3) {
-                  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                  for (var sfi = 0; sfi < 20; sfi++) {
-                    var sfx = ((tick * 0.5 + sfi * 53) % cW);
-                    var sfy = ((tick * 0.8 + sfi * 97) % (cH * 0.45));
-                    ctx.beginPath();
-                    ctx.arc(sfx / dpr, sfy / dpr, 1.5, 0, Math.PI * 2);
-                    ctx.fill();
-                  }
-                }
-
-                // Clouds
-                ctx.fillStyle = _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,255,255,0.6)';
-                for (var cli = 0; cli < 4; cli++) {
-                  var clx = ((tick * 0.15 + cli * cW / 4) % (cW + 80)) - 40;
-                  var cly = cH * (0.05 + cli * 0.06);
-                  ctx.beginPath();
-                  ctx.ellipse(clx, cly, 30 + cli * 8, 10 + cli * 3, 0, 0, Math.PI * 2);
-                  ctx.fill();
-                  ctx.beginPath();
-                  ctx.ellipse(clx + 20, cly - 5, 20 + cli * 5, 8 + cli * 2, 0, 0, Math.PI * 2);
-                  ctx.fill();
-                }
-
-                // ── Ground (season-tinted) ──
-                var groundColors = [
-                  ['#7CB342', '#558B2F', '#33691E'],  // spring
-                  ['#8BC34A', '#689F38', '#33691E'],  // summer
-                  ['#A1887F', '#795548', '#4E342E'],  // autumn
-                  ['#B0BEC5', '#78909C', '#546E7A']   // winter
-                ];
-                var gc = groundColors[_season];
-                var groundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
-                groundGrad.addColorStop(0, gc[0]);
-                groundGrad.addColorStop(0.3, gc[1]);
-                groundGrad.addColorStop(1, gc[2]);
-                ctx.fillStyle = groundGrad;
-                ctx.fillRect(0, cH * 0.4, cW, cH * 0.6);
-
-                // Grass blades (brown in autumn/winter)
-                for (var gi = 0; gi < 60; gi++) {
-                  var gx = (gi / 60) * cW;
-                  var gy = cH * 0.4 + 2;
-                  var gSway = Math.sin(tick * 0.015 + gi * 0.5) * 3;
-                  ctx.strokeStyle = _season >= 2 ? 'rgba(161,136,127,0.4)' : 'rgba(104,159,56,0.5)';
-                  ctx.lineWidth = 1;
-                  ctx.beginPath();
-                  ctx.moveTo(gx, gy);
-                  ctx.lineTo(gx + gSway, gy - 6 - Math.random() * 6);
-                  ctx.stroke();
-                }
-
-                // ── Draw garden mound(s) ──
-                if (_compare) {
-                  // Split view
-                  drawMound(cW * 0.27 / dpr, cH * 0.55 / dpr, 70, 25, 'Three Sisters (Milpa)', _corn, _beans, _squash, _gt, false);
-                  drawMound(cW * 0.73 / dpr, cH * 0.55 / dpr, 70, 25, 'Monoculture Corn', true, false, false, _gt, true);
-
-                  // Divider
-                  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                  ctx.setLineDash([6, 4]);
-                  ctx.lineWidth = 1;
-                  ctx.beginPath();
-                  ctx.moveTo(cW / 2, cH * 0.1);
-                  ctx.lineTo(cW / 2, cH * 0.95);
-                  ctx.stroke();
-                  ctx.setLineDash([]);
-
-                  // Labels
-                  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                  ctx.font = 'bold 10px system-ui';
-                  ctx.textAlign = 'center';
-                  ctx.fillText('COMPANION PLANTING', cW * 0.27 / dpr, cH * 0.92 / dpr);
-                  ctx.fillText('MONOCULTURE', cW * 0.73 / dpr, cH * 0.92 / dpr);
-                } else {
-                  drawMound(cW * 0.5 / dpr, cH * 0.58 / dpr, 100, 35, '', _corn, _beans, _squash, _gt, false);
-                }
-
-                // ── Floating particles (pollen, pollinators, N₂ symbols) ──
-                particles.forEach(function (p) {
-                  p.life++;
-                  p.x += p.vx + Math.sin(tick * 0.01 + p.life * 0.1) * 0.2;
-                  p.y += p.vy;
-                  if (p.y < -10 || p.life > 250) { p.y = cH * 0.35 / dpr; p.x = Math.random() * cW / dpr; p.life = 0; }
-                  var pAlpha = Math.min(1, p.life / 30) * (1 - Math.max(0, p.life - 200) / 50);
-                  if (p.type === 'pollen' && _gt > 50) {
-                    // Pollen with glow
-                    ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.5) + ')';
-                    ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
-                    // Pollen glow halo
-                    ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.15) + ')';
-                    ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill();
-                  } else if (p.type === 'butterfly' && _gt > 30) {
-                    // Enhanced butterfly with detailed wings
-                    var wingFlap = Math.sin(tick * 0.08 + p.life) * 0.5;
-                    var bfSize = 3.5;
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    // Left upper wing
-                    ctx.beginPath();
-                    ctx.ellipse(-bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, -0.2, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,152,0,' + (pAlpha * 0.7) + ')';
-                    ctx.fill();
-                    // Right upper wing
-                    ctx.beginPath();
-                    ctx.ellipse(bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, 0.2, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Left lower wing (smaller)
-                    ctx.beginPath();
-                    ctx.ellipse(-bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, -0.3, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,183,77,' + (pAlpha * 0.6) + ')';
-                    ctx.fill();
-                    // Right lower wing
-                    ctx.beginPath();
-                    ctx.ellipse(bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, 0.3, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Wing pattern spots
-                    ctx.fillStyle = 'rgba(230,100,0,' + (pAlpha * 0.4) + ')';
-                    ctx.beginPath(); ctx.arc(-bfSize * 0.6, -bfSize * 0.1, bfSize * 0.2, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.arc(bfSize * 0.6, -bfSize * 0.1, bfSize * 0.2, 0, Math.PI * 2); ctx.fill();
-                    // Body
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, bfSize * 0.08, bfSize * 0.45, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(40,40,40,' + pAlpha + ')';
-                    ctx.fill();
-                    // Head
-                    ctx.beginPath(); ctx.arc(0, -bfSize * 0.42, bfSize * 0.1, 0, Math.PI * 2);
-                    ctx.fill();
-                    // Antennae
-                    ctx.strokeStyle = 'rgba(40,40,40,' + (pAlpha * 0.6) + ')';
-                    ctx.lineWidth = 0.5;
-                    ctx.beginPath(); ctx.moveTo(0, -bfSize * 0.5); ctx.lineTo(-bfSize * 0.3, -bfSize * 0.75); ctx.stroke();
-                    ctx.beginPath(); ctx.moveTo(0, -bfSize * 0.5); ctx.lineTo(bfSize * 0.3, -bfSize * 0.75); ctx.stroke();
-                    // Antenna bulbs
-                    ctx.fillStyle = 'rgba(40,40,40,' + (pAlpha * 0.5) + ')';
-                    ctx.beginPath(); ctx.arc(-bfSize * 0.3, -bfSize * 0.75, 0.6, 0, Math.PI * 2); ctx.fill();
-                    ctx.beginPath(); ctx.arc(bfSize * 0.3, -bfSize * 0.75, 0.6, 0, Math.PI * 2); ctx.fill();
-                    ctx.restore();
-                  } else if (p.type === 'n2' && _beans && _gt > 20) {
-                    ctx.fillStyle = 'rgba(130,230,170,' + (pAlpha * 0.4) + ')';
-                    ctx.font = '8px monospace';
-                    ctx.fillText('N₂', p.x, p.y);
-                  }
-                });
-
-                // ── Rain effect (moisture indicator when squash is planted) ──
-                if (_squash && _gt > 10) {
-                  var rainIntensity = Math.min(1, _gt / 60);
-                  var rainCount = Math.floor(12 * rainIntensity);
-                  ctx.strokeStyle = 'rgba(100,180,255,' + (0.15 + rainIntensity * 0.2) + ')';
-                  ctx.lineWidth = 1;
-                  for (var ri = 0; ri < rainCount; ri++) {
-                    var rx = ((tick * 2 + ri * 73) % cW);
-                    var ryStart = ((tick * 3 + ri * 137) % (cH * 0.4));
-                    var ryLen = 6 + rainIntensity * 8;
-                    ctx.beginPath();
-                    ctx.moveTo(rx / dpr, ryStart / dpr);
-                    ctx.lineTo((rx - 1) / dpr, (ryStart + ryLen) / dpr);
-                    ctx.stroke();
-                    // Splash at ground level
-                    if (ryStart + ryLen > cH * 0.38) {
-                      ctx.fillStyle = 'rgba(100,180,255,' + (0.1 + rainIntensity * 0.15) + ')';
-                      ctx.beginPath();
-                      ctx.arc(rx / dpr, cH * 0.4 / dpr, 2, 0, Math.PI * 2);
-                      ctx.fill();
-                    }
-                  }
-                }
-
-                // ── Pest swarm overlay ──
-                if (_pestLvl > 40) {
-                  var pestAlpha = Math.min(0.6, (_pestLvl - 40) / 100);
-                  ctx.fillStyle = 'rgba(180,50,30,' + pestAlpha + ')';
-                  for (var pi2 = 0; pi2 < Math.floor(_pestLvl / 8); pi2++) {
-                    var px = ((tick * 1.5 + pi2 * 67) % cW) / dpr;
-                    var py = ((tick * 0.8 + pi2 * 89) % (cH * 0.35)) / dpr + cH * 0.1 / dpr;
-                    ctx.beginPath();
-                    ctx.arc(px, py, 2 + Math.sin(tick * 0.05 + pi2) * 1, 0, Math.PI * 2);
-                    ctx.fill();
-                  }
-                }
-
-                // ── Weed overlay ──
-                if (_weedLvl > 30) {
-                  var weedAlpha = Math.min(0.5, (_weedLvl - 30) / 140);
-                  ctx.strokeStyle = 'rgba(60,120,40,' + weedAlpha + ')';
-                  ctx.lineWidth = 1.5;
-                  for (var wi2 = 0; wi2 < Math.floor(_weedLvl / 10); wi2++) {
-                    var wx = ((wi2 * 83 + 30) % cW) / dpr;
-                    var wy = cH * 0.42 / dpr;
-                    var wSway = Math.sin(tick * 0.02 + wi2) * 4;
-                    ctx.beginPath();
-                    ctx.moveTo(wx, wy);
-                    ctx.quadraticCurveTo(wx + wSway, wy - 12, wx + wSway * 1.5, wy - 18 - wi2 % 4 * 3);
-                    ctx.stroke();
-                  }
-                }
-
-                // ── Wilting tint (low moisture) ──
-                if (_moistLvl < 25 && (_corn || _beans || _squash)) {
-                  ctx.fillStyle = 'rgba(180,150,50,' + (0.05 + (25 - _moistLvl) / 100) + ')';
-                  ctx.fillRect(0, cH * 0.1, cW, cH * 0.35);
-                }
-
-                // ── Day / Season HUD ──
-                if (_corn || _beans || _squash) {
-                  var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
-                  var hudText = seasonNames[_season] + '  Day ' + (_dayNum % 30 + 1) + '/30';
-                  ctx.save();
-                  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-                  var hudW = 150, hudH = 24;
-                  var hudX = 6, hudY = 6;
-                  ctx.beginPath();
-                  ctx.roundRect(hudX, hudY, hudW, hudH, 6);
-                  ctx.fill();
-                  ctx.fillStyle = '#fff';
-                  ctx.font = 'bold 11px system-ui';
-                  ctx.textAlign = 'left';
-                  ctx.fillText(hudText, hudX + 8, hudY + 16);
-                  ctx.restore();
-                }
-
-                canvasEl._gardenAnim = requestAnimationFrame(draw);
-              }
-              canvasEl._gardenAnim = requestAnimationFrame(draw);
-            };
-
-            // NOTE: Companion Planting hooks (canvas sync + day ticker) have been hoisted
-            // to top level of StemLabModal to satisfy React Rules of Hooks.
-            // See the top-level hooks near the Synth Keyboard Hook.
-
-            // ── Gauge helper (inline colors to avoid Tailwind JIT purge) ──
-            var _gaugeColors = {
-              emerald: { light: '#34d399', dark: '#059669', text: '#047857' },
-              blue: { light: '#60a5fa', dark: '#2563eb', text: '#1d4ed8' },
-              orange: { light: '#fb923c', dark: '#ea580c', text: '#c2410c' },
-              red: { light: '#f87171', dark: '#dc2626', text: '#b91c1c' }
-            };
-            function gauge(label, value, color, icon, unit) {
-              var c = _gaugeColors[color] || _gaugeColors.emerald;
-              return React.createElement("div", { className: "flex items-center gap-2" },
-                React.createElement("span", { className: "text-sm w-5 text-center" }, icon),
-                React.createElement("div", { className: "flex-1" },
-                  React.createElement("div", { className: "flex justify-between mb-0.5" },
-                    React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, label),
-                    React.createElement("span", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(value) + (unit || '%'))
-                  ),
-                  React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
-                    React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: { width: Math.round(value) + '%', background: 'linear-gradient(to right, ' + c.light + ', ' + c.dark + ')' } })
-                  )
-                )
-              );
-            }
-
-            return React.createElement("div", { className: "space-y-4 animate-in fade-in duration-200" },
-              // ── Tutorial ──
-              renderTutorial('companionPlanting', _tutCompanionPlanting),
-
-              // ── Header ──
-              React.createElement("div", { className: "flex items-center justify-between" },
-                React.createElement("div", { className: "flex items-center gap-3" },
-                  React.createElement("button", {
-                    onClick: function () { setStemLabTool(null); },
-                    className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": "Back to tools"
-                  }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-                  React.createElement("div", null,
-                    React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌱 Companion Planting Lab"),
-                    React.createElement("p", { className: "text-xs text-slate-400" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
-                  )
-                ),
-                React.createElement("div", { className: "flex items-center gap-2" },
-                  React.createElement("button", {
-                    onClick: function () { upd('showCulture', !showCulture); },
-                    className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
-                    "aria-label": "Cultural context"
-                  }, "📜 Origins"),
-                  React.createElement("button", {
-                    onClick: function () { upd('compareMode', !compareMode); },
-                    className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
-                  }, "🔬 Compare"),
-                  React.createElement("button", {
-                    onClick: function () { upd('showSoilDetail', !showSoilDetail); },
-                    className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
-                  }, "🧪 Soil Science")
-                )
-              ),
-
-              // ── Cultural Context Panel ──
-              showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
-                React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "📜 Cultural Origins & Living Knowledge"),
-                React.createElement("div", { className: "grid md:grid-cols-2 gap-3 text-xs text-amber-800 leading-relaxed" },
-                  React.createElement("div", { className: "space-y-2" },
-                    React.createElement("p", { className: "font-bold text-amber-900" }, "Mesoamerican Origins: The Milpa"),
-                    React.createElement("p", null, "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago."),
-                    React.createElement("p", null, "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America.")
-                  ),
-                  React.createElement("div", { className: "space-y-2" },
-                    React.createElement("p", { className: "font-bold text-amber-900" }, "Haudenosaunee Tradition: De-oh-há-ko"),
-                    React.createElement("p", null, "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants."),
-                    React.createElement("p", null, "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom.")
-                  )
-                ),
-                React.createElement("div", { className: "flex items-center gap-2 pt-1 flex-wrap" },
-                  React.createElement("span", { className: "text-[10px] font-bold text-amber-600" }, "Learn more:"),
-                  React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
-                  React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
-                  React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
-                  React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
-                  React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
-                )
-              ),
-
-              // ── Main Layout: Canvas + Dashboard ──
-              React.createElement("div", { className: "grid md:grid-cols-3 gap-4" },
-
-                // ── Canvas ──
-                React.createElement("div", { className: "md:col-span-2" },
+                // ─── Canvas ───
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'center' } },
                   React.createElement("canvas", {
                     ref: canvasRef,
-                    "data-companion-canvas": "true",
-                    className: "w-full rounded-xl border-2 border-emerald-200 shadow-lg",
-                    style: { height: 320, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
-                    role: "img", "aria-label": "Companion planting garden visualization showing corn, beans, and squash growing together"
+                    width: currentView.isNT ? 600 : 520,
+                    height: currentView.isNT ? 500 : 460,
+                    onClick: handleClick,
+                    className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
+                    style: { background: '#faf8ff', maxWidth: '100%' }
                   })
                 ),
-
-                // ── Soil Chemistry Dashboard ──
-                React.createElement("div", { className: "space-y-3" },
-                  React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3 space-y-2.5" },
-                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                      React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
-                      phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full" },
-                        seasonName + ' • Day ' + dayInSeason + '/30'
-                      )
-                    ),
-                    gauge('Moisture', moisture, 'blue', '💧', '%'),
-                    gauge('Nitrogen (N₂)', nitrogen, 'emerald', '🫘', '%'),
-                    gauge('Pest Pressure', pestPressure, 'red', '🐛', '%'),
-                    gauge('Weed Cover', weedPressure, 'orange', '🌿', '%'),
-                    gauge('Soil Temp', temperature, 'orange', '🌡️', '°C'),
-                    gauge('Plant Health', plantHealth, plantHealth > 60 ? 'emerald' : plantHealth > 30 ? 'orange' : 'red', '❤️', '%'),
-                    React.createElement("div", { className: "border-t border-emerald-200 pt-2 mt-2" },
-                      React.createElement("div", { className: "flex justify-between items-center" },
-                        React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "Overall Soil Health"),
-                        React.createElement("span", { className: "text-sm font-bold " + (soilHealth > 70 ? 'text-emerald-700' : soilHealth > 40 ? 'text-amber-600' : 'text-red-600') }, soilHealth + '%')
-                      )
-                    )
-                  ),
-
-                  // Comparison stats (visible when compare mode is on)
-                  compareMode && React.createElement("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-200 p-3 space-y-2" },
-                    React.createElement("h4", { className: "text-xs font-bold text-red-800" }, "🌽 Monoculture Comparison"),
-                    gauge('Nitrogen', monoN, 'red', '📉', '%'),
-                    gauge('Moisture', monoH2O, 'red', '📉', '%'),
-                    gauge('Weeds', monoWeeds, 'red', '📈', '%'),
-                    React.createElement("div", { className: "border-t border-red-200 pt-2" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-red-700" }, "Soil Health: " + monoHealth + "%")
-                    ),
-                    growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-600 bg-red-100 rounded-lg p-2 mt-1" },
-                      "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
-                    )
-                  ),
-
-                  // Soil detail panel
-                  showSoilDetail && React.createElement("div", { className: "bg-gradient-to-br from-stone-50 to-amber-50 rounded-xl border border-stone-200 p-3 text-[10px] text-stone-700 space-y-2 leading-relaxed" },
-                    React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, "🔬 The Science"),
-                    React.createElement("p", null, React.createElement("b", null, "Nitrogen Fixation:"), " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers."),
-                    React.createElement("p", null, React.createElement("b", null, "Living Mulch:"), " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight."),
-                    React.createElement("p", null, React.createElement("b", null, "Structural Symbiosis:"), " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear."),
-                    React.createElement("p", null, React.createElement("b", null, "Nutritional Complementarity:"), " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden.")
-                  )
-                )
-              ),
-
-              // ── Event Popup ──
-              eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
-                React.createElement("div", { className: "flex items-center justify-between" },
-                  React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
-                  React.createElement("button", {
-                    onClick: function () { upd('eventPopup', null); },
-                    className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
-                  }, "✕")
-                ),
-                React.createElement("p", { className: "text-xs text-indigo-800 leading-relaxed bg-white/50 rounded-lg p-2" },
-                  "🔬 ", React.createElement("b", null, "Science: "), eventPopup.lesson
-                )
-              ),
-
-              // ── Controls Bar ──
-              React.createElement("div", { className: "space-y-3" },
-
-                // Seed buttons (planting phase)
-                phase === 'plant' && React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                  React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2" },
-                    React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase px-1" }, "Plant:"),
-                    React.createElement("button", {
-                      onClick: function () {
-                        upd('cornPlanted', !cornPlanted);
-                        if (!cornPlanted) {
-                          awardStemXP('companion_planting_corn', 10, 'Planted corn');
-                          if (addToast) addToast('🌽 Corn planted! Tall stalks provide a trellis for beans.', 'success');
-                        }
-                      },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-200')
-                    }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
-                    React.createElement("button", {
-                      onClick: function () {
-                        upd('beansPlanted', !beansPlanted);
-                        if (!beansPlanted) {
-                          awardStemXP('companion_planting_beans', 10, 'Planted beans');
-                          if (addToast) addToast('🫘 Beans planted! Rhizobium bacteria fix nitrogen.', 'success');
-                        }
-                      },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-200')
-                    }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
-                    React.createElement("button", {
-                      onClick: function () {
-                        upd('squashPlanted', !squashPlanted);
-                        if (!squashPlanted) {
-                          awardStemXP('companion_planting_squash', 10, 'Planted squash');
-                          if (addToast) addToast('🎃 Squash planted! Leaves shade soil and trap moisture.', 'success');
-                        }
-                      },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-200')
-                    }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
-                  ),
-                  allPlanted && React.createElement("button", {
-                    onClick: function () { upd('phase', 'grow'); awardStemXP('companion_planting_grow', 15, 'Started growth simulation'); },
-                    className: "px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-700 transition-all flex items-center gap-1.5"
-                  }, "▶ Grow!"),
-                  !allPlanted && React.createElement("span", { className: "text-[10px] text-slate-400 italic" }, "Plant all three seeds to begin")
-                ),
-
-                // ── Action Toolbar (grow phase) ──
-                phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3" },
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                    React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, "🎮 Actions"),
-                    React.createElement("div", { className: "flex-1" }),
-                    // Speed controls
-                    React.createElement("div", { className: "flex items-center gap-1" },
-                      React.createElement("span", { className: "text-[10px] text-emerald-600 font-bold mr-1" }, "Speed:"),
-                      [1, 2, 5].map(function (s) {
-                        return React.createElement("button", {
-                          key: s,
-                          onClick: function () { upd('growSpeed', s); },
-                          className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
-                        }, s + '×');
-                      })
-                    ),
-                    React.createElement("span", { className: "text-[10px] font-bold text-emerald-700 ml-2" }, Math.round(growthTime) + "% grown")
-                  ),
-                  React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                    // Action buttons with cooldowns
-                    [
-                      { id: 'water', emoji: '💧', label: 'Water', tip: 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.' },
-                      { id: 'compost', emoji: '🧪', label: 'Compost', tip: 'Composting adds organic nitrogen and beneficial microbes.' },
-                      { id: 'weed', emoji: '🌿', label: 'Weed', tip: 'Weeding removes competition for light, water, and nutrients.' },
-                      { id: 'inspect', emoji: '🔍', label: 'Inspect', tip: 'Inspecting reveals plant condition and early pest signs.' },
-                      { id: 'mulch', emoji: '🍂', label: 'Mulch', tip: 'Mulching regulates soil temperature and retains moisture.' }
-                    ].map(function (action) {
-                      var cd = (actionCooldowns && actionCooldowns[action.id]) || 0;
-                      var onCooldown = cd > day;
-                      var pct = onCooldown ? Math.min(100, Math.round(((cd - day) / 5) * 100)) : 0;
-                      return React.createElement("button", {
-                        key: action.id,
-                        disabled: onCooldown,
-                        title: action.tip,
-                        onClick: function () {
-                          setLabToolData(function (prev) {
-                            var cp = Object.assign({}, prev.companionPlanting || {});
-                            var cds = Object.assign({}, cp.actionCooldowns || {});
-                            cds[action.id] = (cp.day || 0) + 5;
-                            if (action.id === 'water') cp.moisture = Math.min(100, (cp.moisture || 60) + 30);
-                            else if (action.id === 'compost') cp.nitrogenLevel = Math.min(100, (cp.nitrogenLevel || 35) + 20);
-                            else if (action.id === 'weed') cp.weedCover = Math.max(0, (cp.weedCover || 15) - 25);
-                            else if (action.id === 'inspect') {
-                              cp.plantHealth = Math.min(100, (cp.plantHealth || 100) + 5);
-                              cp.pestPressure = Math.max(0, (cp.pestPressure || 10) - 10);
-                            }
-                            else if (action.id === 'mulch') {
-                              cp.soilTemp = cp.soilTemp + (22 - cp.soilTemp) * 0.3;
-                              cp.moisture = Math.min(100, (cp.moisture || 60) + 10);
-                            }
-                            cp.actionCooldowns = cds;
-                            return Object.assign({}, prev, { companionPlanting: cp });
-                          });
-                          if (addToast) addToast(action.emoji + ' ' + action.tip, 'success');
-                          awardStemXP('companion_action_' + action.id, 5, action.label);
-                        },
-                        className: "relative px-3 py-2 rounded-xl text-xs font-bold transition-all border " + (
-                          onCooldown
-                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                            : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
-                        ),
-                        style: onCooldown ? { background: 'linear-gradient(to top, rgba(209,250,229,' + pct / 100 + ') ' + pct + '%, #f1f5f9 ' + pct + '%)' } : {}
-                      }, action.emoji + ' ' + action.label + (onCooldown ? ' (' + (cd - day) + 'd)' : ''));
-                    })
-                  )
-                ),
-
-                // ── Synergy Panel (grow phase) ──
-                phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200 p-3 space-y-2" },
-                  React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, "🤝 Companion Synergies"),
-                  React.createElement("div", { className: "grid grid-cols-3 gap-3" },
-                    [
-                      { label: 'Corn ↔ Beans', val: synCornBeans, desc: 'Structural support & N-fixation', color: 'emerald' },
-                      { label: 'Beans → Soil', val: synBeansSoil, desc: 'Rhizobium nitrogen enrichment', color: 'blue' },
-                      { label: 'Squash → All', val: synSquashAll, desc: 'Living mulch & pest deterrent', color: 'orange' }
-                    ].map(function (syn) {
-                      var c = _gaugeColors[syn.color] || _gaugeColors.emerald;
-                      var unlocked = syn.val >= 50;
-                      return React.createElement("div", { key: syn.label, className: "text-center space-y-1" },
-                        React.createElement("div", { className: "text-[10px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-500') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
-                        React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
-                          React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.round(syn.val) + '%', background: 'linear-gradient(to right, ' + c.light + ', ' + c.dark + ')' } })
-                        ),
-                        React.createElement("div", { className: "text-[9px] text-slate-400" }, syn.desc),
-                        React.createElement("div", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
-                      );
-                    })
-                  )
-                ),
-
-                // ── Harvest Panel ──
-                phase === 'harvest' && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 p-4 space-y-3 shadow-lg" },
-                  React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "🌾 Season " + (seasonIndex + 1) + " Harvest Report"),
-                  React.createElement("div", { className: "grid grid-cols-3 gap-3 text-center" },
-                    React.createElement("div", { className: "bg-white rounded-lg p-2" },
-                      React.createElement("div", { className: "text-lg font-bold text-emerald-700" }, Math.round(plantHealth)),
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, "Health Score")
-                    ),
-                    React.createElement("div", { className: "bg-white rounded-lg p-2" },
-                      React.createElement("div", { className: "text-lg font-bold text-blue-700" }, Math.round((synCornBeans + synBeansSoil + synSquashAll) / 3)),
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, "Avg Synergy")
-                    ),
-                    React.createElement("div", { className: "bg-white rounded-lg p-2" },
-                      React.createElement("div", { className: "text-lg font-bold text-amber-700" }, seasonScore),
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, "Season Score")
-                    )
-                  ),
-                  React.createElement("div", { className: "flex items-center justify-between bg-amber-100 rounded-lg p-2" },
-                    React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "🏆 Total Score: " + totalScore),
-                    React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "🌾 Harvests: " + harvestCount)
-                  ),
-                  React.createElement("button", {
-                    onClick: function () {
-                      var _carry = Math.min(30, nitrogenLevel * 0.3);
-                      awardStemXP('companion_planting_harvest', 20, 'Completed harvest');
-                      setLabToolData(function (prev) {
-                        var cp = Object.assign({}, prev.companionPlanting || {});
-                        cp.phase = 'plant';
-                        cp.growthTime = 0;
-                        cp.cornPlanted = false; cp.beansPlanted = false; cp.squashPlanted = false;
-                        cp.moisture = 60; cp.pestPressure = 10; cp.weedCover = 15;
-                        cp.plantHealth = 100;
-                        cp.nitrogenLevel = 35 + _carry; // nitrogen carryover from good management
-                        cp.nitrogenCarryover = _carry;
-                        cp.synCornBeans = 0; cp.synBeansSoil = 0; cp.synSquashAll = 0;
-                        cp.totalScore = (cp.totalScore || 0) + (cp.seasonScore || 0);
-                        cp.harvestCount = (cp.harvestCount || 0) + 1;
-                        cp.seasonScore = 0;
-                        cp.eventPopup = null;
-                        return Object.assign({}, prev, { companionPlanting: cp });
-                      });
-                      if (addToast) addToast('🌾 Harvest complete! Nitrogen carryover: +' + Math.round(_carry) + '%. Soil improved for next season! +20 XP', 'success');
-                    },
-                    className: "w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-200 hover:from-amber-600 hover:to-yellow-700 transition-all"
-                  }, "🌾 Harvest & Start Next Season →")
-                )
-              ),
-
-              // ── Quiz Button ──
-              React.createElement("div", { className: "flex items-center gap-3" },
-                React.createElement("div", { className: "flex-1" }),
-                React.createElement("button", {
-                  onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
-                  className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
-                }, "🧠 Quiz"),
-                React.createElement("button", {
-                  onClick: function () { upd('showSciencePanel', !showSciencePanel); },
-                  className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
-                }, "\uD83D\uDCDA Science")
-              ),
-
-              // ── Quiz Panel ──
-              showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, "\uD83C\uDF3E The Three Sisters: Science of Companion Planting"),
-                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-3" },
-                  React.createElement("div", { className: "bg-yellow-50 rounded-lg p-3 border border-yellow-200" },
-                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3D"),
-                    React.createElement("h4", { className: "font-bold text-yellow-800" }, "Corn (Structural Support)"),
-                    React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles.")
-                  ),
-                  React.createElement("div", { className: "bg-green-50 rounded-lg p-3 border border-green-200" },
-                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3E"),
-                    React.createElement("h4", { className: "font-bold text-green-800" }, "Beans (Nitrogen Fixation)"),
-                    React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer.")
-                  ),
-                  React.createElement("div", { className: "bg-orange-50 rounded-lg p-3 border border-orange-200" },
-                    React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF83"),
-                    React.createElement("h4", { className: "font-bold text-orange-800" }, "Squash (Living Mulch)"),
-                    React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover.")
-                  )
-                ),
-                React.createElement("div", { className: "bg-amber-50 rounded-lg p-4 border border-amber-200" },
-                  React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, "\uD83E\uDDEA Underground Chemistry"),
-                  React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
-                    React.createElement("div", { className: "space-y-2" },
-                      React.createElement("div", { className: "flex items-start gap-2" },
-                        React.createElement("span", { className: "text-lg" }, "\uD83C\uDF44"),
-                        React.createElement("div", null,
-                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Mycorrhizal Network"),
-                          React.createElement("p", { className: "text-xs text-amber-700" }, "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars.")
-                        )
-                      ),
-                      React.createElement("div", { className: "flex items-start gap-2" },
-                        React.createElement("span", { className: "text-lg" }, "\uD83E\uDDA0"),
-                        React.createElement("div", null,
-                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Rhizobium Nodules"),
-                          React.createElement("p", { className: "text-xs text-amber-700" }, "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants.")
-                        )
-                      )
-                    ),
-                    React.createElement("div", { className: "space-y-2" },
-                      React.createElement("div", { className: "flex items-start gap-2" },
-                        React.createElement("span", { className: "text-lg" }, "\uD83D\uDCA7"),
-                        React.createElement("div", null,
-                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Water Cycling"),
-                          React.createElement("p", { className: "text-xs text-amber-700" }, "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention.")
-                        )
-                      ),
-                      React.createElement("div", { className: "flex items-start gap-2" },
-                        React.createElement("span", { className: "text-lg" }, "\uD83C\uDF31"),
-                        React.createElement("div", null,
-                          React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Nutrient Cycling"),
-                          React.createElement("p", { className: "text-xs text-amber-700" }, "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs.")
-                        )
-                      )
-                    )
-                  )
-                ),
-                React.createElement("div", { className: "bg-violet-50 rounded-lg p-4 border border-violet-200" },
-                  React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, "\uD83C\uDFDB\uFE0F Cultural Heritage"),
-                  React.createElement("p", { className: "text-xs text-violet-800" }, "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology."),
-                  React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets.")
-                )
-              ),
-
-              quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
-                React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "🧠 Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
-                React.createElement("p", { className: "text-sm text-indigo-800" }, currentQuiz.q),
-                React.createElement("div", { className: "flex flex-wrap gap-2" },
-                  currentQuiz.opts.map(function (opt) {
-                    var isCorrect = opt === currentQuiz.correct;
-                    var isSelected = quizAnswer === opt;
-                    var showResult = quizAnswer !== '';
-                    return React.createElement("button", {
-                      key: opt,
-                      disabled: showResult,
-                      onClick: function () {
-                        upd('quizAnswer', opt);
-                        if (isCorrect) {
-                          upd('quizFeedback', '✅ Correct! ' + currentQuiz.explain);
-                          awardStemXP('companion_planting_quiz', 15, 'Quiz correct: ' + currentQuiz.q.substring(0, 30));
-                        } else {
-                          upd('quizFeedback', '❌ Not quite. ' + currentQuiz.explain);
-                        }
-                      },
-                      className: "px-4 py-2 rounded-xl text-xs font-bold transition-all border " + (
-                        showResult && isCorrect ? 'bg-green-100 text-green-800 border-green-400' :
-                          showResult && isSelected && !isCorrect ? 'bg-red-100 text-red-800 border-red-400' :
-                            'bg-white text-indigo-700 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50'
-                      )
-                    }, opt);
-                  })
-                ),
-                quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
-                quizFeedback && React.createElement("button", {
-                  onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
-                  className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
-                }, quizQ + 1 < quizzes.length ? "Next Question →" : "🔄 Restart Quiz"),
-                // AI hint for wrong answers
-                quizAnswer && quizAnswer !== currentQuiz.correct && StemAIHintButton('companionPlanting', currentQuiz.q, quizAnswer, currentQuiz.correct)
-              ),
-
-              // ── Snapshot button ──
-              React.createElement("button", {
-                onClick: function () {
-                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: 'Companion Planting Lab', data: Object.assign({}, d), timestamp: Date.now() }]); });
-                  if (addToast) addToast('📸 Garden snapshot saved!', 'success');
+                // ─── Simulation description panel (NT view only) ───
+                currentView.isNT && React.createElement("div", {
+                  className: "rounded-xl border-2 p-3",
+                  style: { borderColor: activeSim.color + '44', background: activeSim.color + '0a' }
                 },
-                className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
-              }, "📸 Snapshot")
-            );
-          })(),
-
-          // --- GEOMETRY SANDBOX ---
-          stemLabTab === 'explore' && stemLabTool === 'geoSandbox' && (() => {
-            const gd = (labToolData && labToolData.geoSandbox) || {};
-            const upd = (key, val) => setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox || {}), [key]: val } }));
-            const updDim = (key, val) => setLabToolData(prev => {
-              const g = prev.geoSandbox || {};
-              return { ...prev, geoSandbox: { ...g, dims: { ...(g.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 }), [key]: parseFloat(val) } } };
-            });
-            const shape = gd.shape || 'box';
-            const dims = gd.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 };
-            const shapeColor = gd.color || '#60a5fa';
-            const wireframe = gd.wireframe || false;
-            const opacity = gd.opacity != null ? gd.opacity : 1;
-
-            // --- Measurement calculations ---
-            const calcMeasurements = () => {
-              const PI = Math.PI;
-              switch (shape) {
-                case 'box': {
-                  const w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
-                  return { vol: w * h * d, sa: 2 * (w * h + w * d + h * d), faces: 6, edges: 12, vertices: 8, name: 'Rectangular Prism' };
-                }
-                case 'sphere': {
-                  const r = dims.r || 1.5;
-                  return { vol: (4 / 3) * PI * r * r * r, sa: 4 * PI * r * r, faces: 0, edges: 0, vertices: 0, name: 'Sphere', note: 'Curved surface — no flat faces' };
-                }
-                case 'cylinder': {
-                  const rT = dims.rTop || 1.5, rB = dims.rBot || 1.5, h = dims.h || 3;
-                  const sl = Math.sqrt(Math.pow(rT - rB, 2) + h * h);
-                  return { vol: (PI * h / 3) * (rT * rT + rB * rT + rB * rB), sa: PI * (rT * rT + rB * rB + (rT + rB) * sl), faces: 3, edges: 2, vertices: 0, name: rT === rB ? 'Cylinder' : 'Frustum' };
-                }
-                case 'cone': {
-                  const r = dims.r || 1.5, h = dims.h || 3;
-                  const sl = Math.sqrt(r * r + h * h);
-                  return { vol: (PI * r * r * h) / 3, sa: PI * r * (r + sl), faces: 2, edges: 1, vertices: 1, name: 'Cone' };
-                }
-                case 'pyramid': {
-                  const r = dims.r || 1.5, h = dims.h || 3;
-                  const base = 2 * r, baseA = base * base;
-                  const sl = Math.sqrt(r * r + h * h);
-                  return { vol: baseA * h / 3, sa: baseA + 4 * (0.5 * base * sl), faces: 5, edges: 8, vertices: 5, name: 'Square Pyramid' };
-                }
-                case 'torus': {
-                  const R = dims.r || 1.5, r = dims.tube || 0.5;
-                  return { vol: 2 * PI * PI * R * r * r, sa: 4 * PI * PI * R * r, faces: 0, edges: 0, vertices: 0, name: 'Torus', note: 'Donut shape — curved surface' };
-                }
-                case 'prism': {
-                  const w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
-                  const triA = 0.5 * w * h;
-                  const hyp = Math.sqrt((w / 2) * (w / 2) + h * h);
-                  return { vol: triA * d, sa: 2 * triA + w * d + 2 * hyp * d, faces: 5, edges: 9, vertices: 6, name: 'Triangular Prism' };
-                }
-                default: return { vol: 0, sa: 0, faces: 0, edges: 0, vertices: 0, name: 'Shape' };
-              }
-            };
-            const m = calcMeasurements();
-
-            // --- STL Export ---
-            const exportSTL = () => {
-              if (!window._geoScene || !window._geoScene.mesh || !window.THREE) return;
-              const mesh = window._geoScene.mesh;
-              const geo = mesh.geometry.clone();
-              geo.applyMatrix4(mesh.matrixWorld);
-              const pos = geo.attributes.position;
-              const idx = geo.index;
-              const triCount = idx ? idx.count / 3 : pos.count / 3;
-              const bufLen = 80 + 4 + triCount * 50;
-              var buf = new ArrayBuffer(bufLen);
-              var dv = new DataView(buf);
-              // Header (80 bytes)
-              var headerStr = 'AlloFlow Geometry Sandbox - ' + shape;
-              for (var hi = 0; hi < 80; hi++) dv.setUint8(hi, hi < headerStr.length ? headerStr.charCodeAt(hi) : 0);
-              dv.setUint32(80, triCount, true);
-              var offset = 84;
-              const _v = (i) => {
-                if (idx) return new window.THREE.Vector3(pos.getX(idx.getX(i)), pos.getY(idx.getX(i)), pos.getZ(idx.getX(i)));
-                return new window.THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
-              };
-              for (var t = 0; t < triCount; t++) {
-                const i0 = idx ? t * 3 : t * 3, i1 = i0 + 1, i2 = i0 + 2;
-                const v0 = _v(i0), v1 = _v(i1), v2 = _v(i2);
-                const edge1 = new window.THREE.Vector3().subVectors(v1, v0);
-                const edge2 = new window.THREE.Vector3().subVectors(v2, v0);
-                const normal = new window.THREE.Vector3().crossVectors(edge1, edge2).normalize();
-                // Normal
-                dv.setFloat32(offset, normal.x, true); offset += 4;
-                dv.setFloat32(offset, normal.y, true); offset += 4;
-                dv.setFloat32(offset, normal.z, true); offset += 4;
-                // Vertices
-                [v0, v1, v2].forEach(v => {
-                  dv.setFloat32(offset, v.x, true); offset += 4;
-                  dv.setFloat32(offset, v.y, true); offset += 4;
-                  dv.setFloat32(offset, v.z, true); offset += 4;
-                });
-                dv.setUint16(offset, 0, true); offset += 2;
-              }
-              geo.dispose();
-              const blob = new Blob([buf], { type: 'application/sla' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'geometry_sandbox_' + shape + '_' + Date.now() + '.stl';
-              a.click();
-              URL.revokeObjectURL(url);
-              if (typeof addToast === 'function') addToast('\u{1F4E6} STL exported — ready for 3D printing!', 'success');
-            };
-
-            // --- Shape palette config ---
-            const shapes = [
-              { id: 'box', icon: '\u{1F7E6}', label: 'Cube' },
-              { id: 'sphere', icon: '\u{26AA}', label: 'Sphere' },
-              { id: 'cylinder', icon: '\u{1F6E2}\uFE0F', label: 'Cylinder' },
-              { id: 'cone', icon: '\u{1F4D0}', label: 'Cone' },
-              { id: 'pyramid', icon: '\u{1F53A}', label: 'Pyramid' },
-              { id: 'torus', icon: '\u{1F369}', label: 'Torus' },
-              { id: 'prism', icon: '\u{1F4D0}', label: 'Prism' }
-            ];
-
-            // --- Slider configs per shape ---
-            const sliderConfigs = {
-              box: [
-                { key: 'w', label: 'Width', min: 0.5, max: 10, step: 0.1 },
-                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 },
-                { key: 'd', label: 'Depth', min: 0.5, max: 10, step: 0.1 }
-              ],
-              sphere: [
-                { key: 'r', label: 'Radius', min: 0.5, max: 5, step: 0.1 },
-                { key: 'segs', label: 'Smoothness', min: 8, max: 64, step: 4 }
-              ],
-              cylinder: [
-                { key: 'rTop', label: 'Top Radius', min: 0.1, max: 5, step: 0.1 },
-                { key: 'rBot', label: 'Bottom Radius', min: 0.1, max: 5, step: 0.1 },
-                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
-              ],
-              cone: [
-                { key: 'r', label: 'Base Radius', min: 0.5, max: 5, step: 0.1 },
-                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
-              ],
-              pyramid: [
-                { key: 'r', label: 'Base Size', min: 0.5, max: 5, step: 0.1 },
-                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
-              ],
-              torus: [
-                { key: 'r', label: 'Major Radius', min: 0.5, max: 5, step: 0.1 },
-                { key: 'tube', label: 'Tube Radius', min: 0.1, max: 2, step: 0.05 }
-              ],
-              prism: [
-                { key: 'w', label: 'Base Width', min: 0.5, max: 10, step: 0.1 },
-                { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 },
-                { key: 'd', label: 'Depth', min: 0.5, max: 10, step: 0.1 }
-              ]
-            };
-
-            // --- Coach tips ---
-            const coachTips = {
-              box: { title: 'Rectangular Prism', tip: 'A prism with 6 rectangular faces. Every corner is a right angle. V = l \u00D7 w \u00D7 h', example: 'Shipping boxes, buildings, books — most structures start as rectangular prisms.' },
-              sphere: { title: 'Sphere', tip: 'Every point on the surface is the same distance from the center. V = \u2074\u2044\u2083\u03C0r\u00B3', example: 'Planets, basketballs, soap bubbles — nature prefers spheres because they minimize surface area.' },
-              cylinder: { title: 'Cylinder', tip: 'Two circular bases connected by a curved surface. V = \u03C0r\u00B2h', example: 'Cans, pipes, pillars — cylinders are strong under compression.' },
-              cone: { title: 'Cone', tip: 'A circular base that narrows to a point. V = \u2153\u03C0r\u00B2h', example: 'Ice cream cones, traffic cones, volcanoes — one-third the volume of a cylinder!' },
-              pyramid: { title: 'Square Pyramid', tip: '4 triangular faces meeting at an apex over a square base. V = \u2153Bh', example: 'The Great Pyramid of Giza has a 230m base and 146m height — over 2.3 million blocks.' },
-              torus: { title: 'Torus', tip: 'A donut shape — a circle rotated around an axis. V = 2\u03C0\u00B2Rr\u00B2', example: 'Donuts, bagels, tire inner tubes, and tokamak fusion reactors are all tori!' },
-              prism: { title: 'Triangular Prism', tip: '2 triangular faces + 3 rectangular faces. V = \u00BDbh \u00D7 depth', example: 'Roof trusses, Toblerone boxes, and optical prisms that split light into rainbows.' }
-            };
-            const ct = coachTips[shape] || coachTips.box;
-
-            // Color palette
-            const colorPalette = ['#60a5fa', '#f472b6', '#34d399', '#fbbf24', '#a78bfa', '#fb923c', '#f87171', '#e2e8f0'];
-
-            const currentSliders = sliderConfigs[shape] || sliderConfigs.box;
-
-            // ── Three.js not loaded yet? Show loading state ──
-            if (!labToolData._threeLoaded) {
-              return React.createElement('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
-                React.createElement('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
-                React.createElement('div', { className: 'text-slate-400 text-lg' }, 'Loading 3D engine...')
-              );
-            }
-
-            return React.createElement('div', { className: 'flex flex-col gap-3 animate-in fade-in duration-300' },
-              // Header row
-              React.createElement('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-                React.createElement('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500 flex items-center gap-2' },
-                  '\uD83D\uDD37 Geometry Sandbox'
-                ),
-                React.createElement('div', { className: 'flex gap-2' },
-                  React.createElement('button', {
-                    onClick: exportSTL,
-                    className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
-                  }, '\uD83D\uDCE6 Export STL'),
-                  React.createElement('button', {
-                    onClick: () => { if (window._geoScene) { cancelAnimationFrame(window._geoScene.animId); if (window._geoScene.renderer) window._geoScene.renderer.dispose(); if (window._geoScene.controls) window._geoScene.controls.dispose(); window._geoScene = null; } setStemLabTool(null); },
-                    className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
-                  }, '\u2190 Back')
-                )
-              ),
-
-              // Main layout: sidebar + viewport
-              React.createElement('div', { className: 'flex flex-col md:flex-row gap-3', style: { minHeight: '480px' } },
-
-                // === LEFT SIDEBAR ===
-                React.createElement('div', { className: 'w-full md:w-64 flex-shrink-0 flex flex-col gap-3' },
-
-                  // Shape palette
-                  React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-                    React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, 'Shapes'),
-                    React.createElement('div', { className: 'grid grid-cols-4 gap-1.5' },
-                      ...shapes.map(s =>
-                        React.createElement('button', {
-                          key: s.id,
-                          onClick: () => upd('shape', s.id),
-                          className: 'flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-xs transition-all ' +
-                            (shape === s.id ? 'bg-sky-500/30 border border-sky-400/50 text-sky-300 shadow-lg shadow-sky-500/10' : 'bg-slate-700/40 border border-slate-600/30 text-slate-400 hover:bg-slate-700/60 hover:text-slate-300')
-                        },
-                          React.createElement('span', { className: 'text-lg leading-none' }, s.icon),
-                          React.createElement('span', { className: 'text-[10px] leading-tight' }, s.label)
-                        )
-                      )
+                  React.createElement("div", { className: "flex items-start gap-2" },
+                    React.createElement("span", { className: "text-lg flex-shrink-0" }, activeSim.icon),
+                    React.createElement("div", null,
+                      React.createElement("p", {
+                        className: "text-sm font-black mb-1",
+                        style: { color: activeSim.color }
+                      }, activeSim.name + ' Mode'),
+                      React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, activeSim.desc)
                     )
-                  ),
-
-                  // Property sliders
-                  React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-                    React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, 'Properties'),
-                    ...currentSliders.map(sl =>
-                      React.createElement('div', { key: sl.key, className: 'mb-2' },
-                        React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-400 mb-0.5' },
-                          React.createElement('span', null, sl.label),
-                          React.createElement('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
+                  )
+                ),
+                // ─── Detail panel (below canvas) ───
+                d.quizMode ? (
+                  quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
+                      React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
+                    ),
+                    React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
+                    React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
+                      brainQuizOpts.map(function (opt) {
+                        var fb = d.quizFeedback;
+                        var isCorrect = opt.id === quizQ.id;
+                        var wasChosen = fb && fb.chosen === opt.id;
+                        var showResult = fb !== null && fb !== undefined;
+                        return React.createElement("button", {
+                          key: opt.id, disabled: showResult,
+                          onClick: function () {
+                            var correct = opt.id === quizQ.id;
+                            upd('quizFeedback', { chosen: opt.id, correct: correct });
+                            if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                          },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
+                            (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                              showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                                'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
+                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
+                      })
+                    ),
+                    d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                      React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
+                      React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                      quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
+                      quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
+                    ),
+                    d.quizFeedback && React.createElement("button", {
+                      onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                    }, "Next Question \u2192")
+                  ) : null
+                ) : (
+                  sel ? (
+                    React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
+                      React.createElement("div", { className: "flex items-start justify-between" },
+                        React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
+                        React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                      ),
+                      React.createElement("div", { className: "space-y-2.5" },
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                          React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
                         ),
-                        React.createElement('input', {
-                          type: 'range',
-                          min: sl.min,
-                          max: sl.max,
-                          step: sl.step,
-                          value: dims[sl.key] || sl.min,
-                          onChange: e => updDim(sl.key, e.target.value),
-                          className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
-                        })
-                      )
-                    ),
-                    // Color picker
-                    React.createElement('div', { className: 'mt-3' },
-                      React.createElement('div', { className: 'text-[10px] text-slate-400 mb-1' }, 'Color'),
-                      React.createElement('div', { className: 'flex gap-1.5 flex-wrap' },
-                        ...colorPalette.map(c =>
-                          React.createElement('button', {
-                            key: c,
-                            onClick: () => upd('color', c),
-                            style: { backgroundColor: c },
-                            className: 'w-5 h-5 rounded-full transition-all border-2 ' +
-                              (shapeColor === c ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105 opacity-70 hover:opacity-100')
-                          })
+                        sel.brodmann && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
+                          React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
+                        ),
+                        sel.blood && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
+                          React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
+                        ),
+                        sel.category && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
+                          React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
+                        ),
+                        sel.synthesis && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
+                        ),
+                        sel.receptors && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
+                        ),
+                        sel.pathways && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
+                        ),
+                        sel.drugs && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
+                          React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
+                        ),
+                        sel.conditions && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
+                        ),
+                        sel.damage && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
                         )
                       )
-                    ),
-                    // Wireframe toggle
-                    React.createElement('div', { className: 'flex items-center gap-2 mt-3' },
-                      React.createElement('button', {
-                        onClick: () => upd('wireframe', !wireframe),
-                        className: 'w-8 h-4 rounded-full transition-all relative ' + (wireframe ? 'bg-sky-500' : 'bg-slate-600')
-                      },
-                        React.createElement('div', {
-                          className: 'w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ' + (wireframe ? 'left-4' : 'left-0.5')
-                        })
-                      ),
-                      React.createElement('span', { className: 'text-[10px] text-slate-400' }, 'Wireframe')
-                    ),
-                    // Opacity slider
-                    React.createElement('div', { className: 'mt-2' },
-                      React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-400 mb-0.5' },
-                        React.createElement('span', null, 'Opacity'),
-                        React.createElement('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
-                      ),
-                      React.createElement('input', {
-                        type: 'range', min: 0.1, max: 1, step: 0.05,
-                        value: opacity,
-                        onChange: e => upd('opacity', parseFloat(e.target.value)),
-                        className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
-                      })
                     )
-                  ),
-
-                  // Measurements
-                  React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-                    React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Measurements'),
-                    React.createElement('div', { className: 'space-y-1.5' },
-                      React.createElement('div', { className: 'flex justify-between text-xs' },
-                        React.createElement('span', { className: 'text-slate-400' }, 'Volume'),
-                        React.createElement('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
-                      ),
-                      React.createElement('div', { className: 'flex justify-between text-xs' },
-                        React.createElement('span', { className: 'text-slate-400' }, 'Surface Area'),
-                        React.createElement('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
-                      ),
-                      React.createElement('div', { className: 'flex justify-between text-xs' },
-                        React.createElement('span', { className: 'text-slate-400' }, 'Faces'),
-                        React.createElement('span', { className: 'text-amber-400 font-mono font-bold' }, m.faces)
-                      ),
-                      React.createElement('div', { className: 'flex justify-between text-xs' },
-                        React.createElement('span', { className: 'text-slate-400' }, 'Edges'),
-                        React.createElement('span', { className: 'text-purple-400 font-mono font-bold' }, m.edges)
-                      ),
-                      React.createElement('div', { className: 'flex justify-between text-xs' },
-                        React.createElement('span', { className: 'text-slate-400' }, 'Vertices'),
-                        React.createElement('span', { className: 'text-rose-400 font-mono font-bold' }, m.vertices)
-                      ),
-                      m.note && React.createElement('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, m.note)
-                    )
-                  )
-                ),
-
-                // === THREE.JS VIEWPORT ===
-                React.createElement('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
-                  React.createElement('canvas', {
-                    id: 'geo-sandbox-canvas',
-                    className: 'w-full h-full',
-                    style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
-                  }),
-                  // Controls hint overlay
-                  React.createElement('div', { className: 'absolute bottom-2 right-2 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md' },
-                    '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
-                  ),
-                  // Shape name overlay
-                  React.createElement('div', { className: 'absolute top-2 left-2 text-xs font-bold text-sky-400 bg-slate-900/80 px-2 py-1 rounded-md' },
-                    m.name
-                  )
-                )
-              ),
-
-              // Coach panel
-              React.createElement('div', { className: 'bg-gradient-to-r from-sky-900/30 to-blue-900/30 backdrop-blur-md rounded-xl p-3 border border-sky-700/30' },
-                React.createElement('div', { className: 'flex items-start gap-3' },
-                  React.createElement('div', { className: 'text-2xl flex-shrink-0' }, '\uD83D\uDCD0'),
-                  React.createElement('div', null,
-                    React.createElement('div', { className: 'text-sm font-bold text-sky-300 mb-1' }, ct.title),
-                    React.createElement('div', { className: 'text-xs text-slate-300 mb-1' }, ct.tip),
-                    React.createElement('div', { className: 'text-[10px] text-slate-400 italic' }, '\uD83C\uDF0D ' + ct.example)
-                  )
-                )
-              ),
-
-              // STL note
-              React.createElement('div', { className: 'text-[10px] text-slate-500 text-center' },
-                '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
-              )
-            );
-          })(),
-
-          // --- ARCHITECTURE STUDIO ---
-          stemLabTab === 'explore' && stemLabTool === 'archStudio' && (function () {
-            var d = (labToolData && labToolData.archStudio) || {};
-            var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { archStudio: Object.assign({}, prev.archStudio || {}, (typeof key === 'object' ? key : (function () { var o = {}; o[key] = val; return o; })())) }); }); };
-            var blocks = d.blocks || [];
-            var activeShape = d.activeShape || 'block';
-            var activeMaterial = d.activeMaterial || 'stone';
-            var activeColor = d.activeColor || '#94a3b8';
-            var mode = d.mode || 'place';
-            var styleMode = d.styleMode || 'architect';
-            var blueprintView = d.blueprintView || false;
-            var threeReady = labToolData._threeLoaded;
-
-            // Shape definitions
-            var shapes = [
-              { id: 'block', icon: '\uD83D\uDFE6', label: 'Block', vol: 1 },
-              { id: 'slab', icon: '\uD83D\uDCCF', label: 'Slab', vol: 0.5 },
-              { id: 'ramp', icon: '\uD83C\uDFD4\uFE0F', label: 'Ramp', vol: 0.5 },
-              { id: 'column', icon: '\uD83C\uDFDB\uFE0F', label: 'Column', vol: 0.385 },
-              { id: 'arch', icon: '\uD83C\uDF09', label: 'Arch', vol: 0.24 },
-              { id: 'roof', icon: '\uD83D\uDCD0', label: 'Roof', vol: 0.35 },
-              { id: 'pyramid', icon: '\uD83D\uDD3A', label: 'Pyramid', vol: 0.26 },
-              { id: 'dome', icon: '\uD83D\uDD35', label: 'Dome', vol: 0.26 }
-            ];
-            // Material definitions
-            var materials = [
-              { id: 'stone', label: 'Stone', color: '#94a3b8', icon: '\uD83E\uDEA8' },
-              { id: 'brick', label: 'Brick', color: '#b45309', icon: '\uD83E\uDDF1' },
-              { id: 'wood', label: 'Wood', color: '#92400e', icon: '\uD83E\uDEB5' },
-              { id: 'glass', label: 'Glass', color: '#38bdf8', icon: '\uD83E\uDE9F' },
-              { id: 'marble', label: 'Marble', color: '#f1f5f9', icon: '\u26AA' },
-              { id: 'metal', label: 'Metal', color: '#cbd5e1', icon: '\u2699\uFE0F' }
-            ];
-            // Tool modes
-            var modes = [
-              { id: 'place', label: 'Place', icon: '\u2795' },
-              { id: 'erase', label: 'Erase', icon: '\u274C' },
-              { id: 'paint', label: 'Paint', icon: '\uD83C\uDFA8' }
-            ];
-            // Volume lookup
-            var volLookup = {};
-            shapes.forEach(function (s) { volLookup[s.id] = s.vol; });
-            // Stats
-            var totalBlocks = blocks.length;
-            var totalVolume = blocks.reduce(function (sum, b) { return sum + (volLookup[b.shape || 'block'] || 1); }, 0).toFixed(2);
-            // Footprint = unique (x,z) cells
-            var footprintSet = {};
-            blocks.forEach(function (b) { footprintSet[b.x + ',' + b.z] = true; });
-            var footprint = Object.keys(footprintSet).length;
-            // Surface area (rough estimate: 6 faces per block - 2 per shared face)
-            var blockMap = {};
-            blocks.forEach(function (b) { blockMap[b.x + ',' + b.y + ',' + b.z] = true; });
-            var surfaceArea = 0;
-            blocks.forEach(function (b) {
-              var neighbors = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
-              neighbors.forEach(function (n) {
-                if (!blockMap[(b.x + n[0]) + ',' + (b.y + n[1]) + ',' + (b.z + n[2])]) surfaceArea += 1;
-              });
-            });
-            // Bounding box dimensions
-            var buildW = 0, buildD = 0, buildH = 0;
-            if (blocks.length > 0) {
-              var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
-              blocks.forEach(function (b) {
-                if (b.x < minX) minX = b.x; if (b.x > maxX) maxX = b.x;
-                if (b.y < minY) minY = b.y; if (b.y > maxY) maxY = b.y;
-                if (b.z < minZ) minZ = b.z; if (b.z > maxZ) maxZ = b.z;
-              });
-              buildW = maxX - minX + 1; buildD = maxZ - minZ + 1; buildH = maxY - minY + 1;
-            }
-
-            // STL export function
-            var exportSTL = function () {
-              if (!window.THREE || !window._archScene || blocks.length === 0) return;
-              var THREE = window.THREE;
-              var combined = new THREE.BufferGeometry();
-              var geos = [];
-              window._archScene.blockMeshes.forEach(function (m) {
-                var g = m.geometry.clone();
-                g.applyMatrix4(m.matrixWorld);
-                geos.push(g);
-              });
-              if (geos.length === 0) return;
-              // Merge all geometries
-              var positions = [];
-              var normals = [];
-              geos.forEach(function (g) {
-                var idx = g.index;
-                var pos = g.getAttribute('position');
-                var nrm = g.getAttribute('normal');
-                if (idx) {
-                  for (var i = 0; i < idx.count; i++) {
-                    var vi = idx.getX(i);
-                    positions.push(pos.getX(vi), pos.getY(vi), pos.getZ(vi));
-                    if (nrm) normals.push(nrm.getX(vi), nrm.getY(vi), nrm.getZ(vi));
-                    else normals.push(0, 1, 0);
-                  }
-                } else {
-                  for (var j = 0; j < pos.count; j++) {
-                    positions.push(pos.getX(j), pos.getY(j), pos.getZ(j));
-                    if (nrm) normals.push(nrm.getX(j), nrm.getY(j), nrm.getZ(j));
-                    else normals.push(0, 1, 0);
-                  }
-                }
-              });
-              var triCount = positions.length / 9;
-              var bufLen = 84 + triCount * 50;
-              var buf = new ArrayBuffer(bufLen);
-              var dv = new DataView(buf);
-              for (var h = 0; h < 80; h++) dv.setUint8(h, 0);
-              dv.setUint32(80, triCount, true);
-              var offset = 84;
-              for (var t = 0; t < triCount; t++) {
-                var ni = t * 9;
-                dv.setFloat32(offset, normals[ni], true);
-                dv.setFloat32(offset + 4, normals[ni + 1], true);
-                dv.setFloat32(offset + 8, normals[ni + 2], true);
-                offset += 12;
-                for (var v = 0; v < 3; v++) {
-                  var pi = t * 9 + v * 3;
-                  dv.setFloat32(offset, positions[pi], true);
-                  dv.setFloat32(offset + 4, positions[pi + 1], true);
-                  dv.setFloat32(offset + 8, positions[pi + 2], true);
-                  offset += 12;
-                }
-                dv.setUint16(offset, 0, true);
-                offset += 2;
-              }
-              var blob = new Blob([buf], { type: 'application/octet-stream' });
-              var url = URL.createObjectURL(blob);
-              var a = document.createElement('a');
-              a.href = url;
-              a.download = 'architecture_studio_' + Date.now() + '.stl';
-              a.click();
-              URL.revokeObjectURL(url);
-              if (typeof addToast === 'function') addToast('\uD83C\uDFD7\uFE0F Building exported as STL!', 'success');
-            };
-
-            // Undo
-            var undoBlock = function () {
-              setLabToolData(function (p) {
-                var a = Object.assign({}, p.archStudio || {});
-                var nb = (a.blocks || []).slice(0, -1);
-                return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: nb }) });
-              });
-            };
-            // Clear all
-            var clearAll = function () {
-              setLabToolData(function (p) {
-                var a = Object.assign({}, p.archStudio || {});
-                return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [] }) });
-              });
-            };
-
-            // Coach tips based on block count
-            var coachTip = totalBlocks === 0 ? '\uD83C\uDFD7\uFE0F Click on the grid to place your first block! Use different shapes and materials to build amazing structures.'
-              : totalBlocks < 5 ? '\uD83D\uDCA1 Tip: Click on the side of an existing block to stack blocks upward. Try building a simple wall!'
-                : totalBlocks < 15 ? '\uD83C\uDFDB\uFE0F Try adding columns and arches to give your structure a classical look. Ancient Greeks used columns to support roofs.'
-                  : totalBlocks < 30 ? '\uD83C\uDFE0 Great progress! Mix materials for visual contrast \u2014 try a stone foundation with wooden walls and a brick chimney.'
-                    : totalBlocks < 50 ? '\uD83C\uDF09 Fun fact: The Roman Colosseum used 80 arched entrances. Try adding arches to your design!'
-                      : '\uD83C\uDFF0 You\'re an architect! The Great Wall of China used over 3.8 billion bricks. How big can you build?';
-
-            return React.createElement('div', { key: 'archStudio', style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', borderRadius: 16, overflow: 'hidden' } },
-              // Header bar
-              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: 'linear-gradient(90deg,#1e293b,#0f172a)', borderBottom: '1px solid #334155', flexWrap: 'wrap' } },
-                React.createElement('button', { onClick: function () { setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: '#e2e8f0', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
-                React.createElement('span', { style: { fontSize: 20 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
-                React.createElement('span', { style: { fontWeight: 700, fontSize: 17, color: '#f8fafc', letterSpacing: 0.5 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
-                React.createElement('span', { style: { fontSize: 11, color: '#64748b', marginLeft: 4 } }, blocks.length + ' blocks'),
-                // Style mode toggle
-                React.createElement('button', { onClick: function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }, style: { background: styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', border: '1px solid ' + (styleMode === 'bricks' ? '#f87171' : '#6366f1'), color: styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, styleMode === 'bricks' ? '\uD83E\uDDF1 Brick Builder' : '\uD83C\uDFDB\uFE0F Architect'),
-                // Blueprint toggle
-                React.createElement('button', { onClick: function () { upd('blueprintView', !blueprintView); }, style: { background: blueprintView ? 'rgba(34,211,238,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blueprintView ? '#22d3ee' : '#475569'), color: blueprintView ? '#67e8f9' : '#94a3b8', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View'),
-                React.createElement('div', { style: { flex: 1 } }),
-                React.createElement('button', { onClick: undoBlock, disabled: blocks.length === 0, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: blocks.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '6px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 600 } }, '\u21A9 Undo'),
-                React.createElement('button', { onClick: clearAll, disabled: blocks.length === 0, style: { background: blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '6px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
-                React.createElement('button', { onClick: exportSTL, disabled: blocks.length === 0, style: { background: blocks.length ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '6px 14px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 700 } }, '\uD83D\uDCE5 Export STL')
-              ),
-              // Main content: sidebar + viewport
-              React.createElement('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
-                // Left sidebar
-                React.createElement('div', { style: { width: 180, background: '#1e293b', padding: '12px 10px', overflowY: 'auto', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: 14 } },
-                  // Tool mode selector
-                  React.createElement('div', null,
-                    React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Mode'),
-                    React.createElement('div', { style: { display: 'flex', gap: 4 } },
-                      modes.map(function (m) {
-                        return React.createElement('button', {
-                          key: m.id,
-                          onClick: function () { upd('mode', m.id); },
-                          style: {
-                            flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 600, border: mode === m.id ? '2px solid #f59e0b' : '1px solid #475569',
-                            borderRadius: 8, background: mode === m.id ? 'rgba(245,158,11,.15)' : 'rgba(30,41,59,.8)', color: mode === m.id ? '#fbbf24' : '#94a3b8',
-                            cursor: 'pointer', textAlign: 'center'
-                          }
-                        }, m.icon + ' ' + m.label);
-                      })
-                    )
-                  ),
-                  // Shape palette
-                  React.createElement('div', null,
-                    React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Shapes'),
-                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
-                      shapes.map(function (s) {
-                        return React.createElement('button', {
-                          key: s.id,
-                          onClick: function () { upd('activeShape', s.id); },
-                          style: {
-                            padding: '8px 4px', fontSize: 11, fontWeight: 600, border: activeShape === s.id ? '2px solid #60a5fa' : '1px solid #334155',
-                            borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent', color: activeShape === s.id ? '#93c5fd' : '#94a3b8',
-                            cursor: 'pointer', textAlign: 'center', lineHeight: 1.2
-                          }
-                        }, React.createElement('div', { style: { fontSize: 18 } }, s.icon), s.label);
-                      })
-                    )
-                  ),
-                  // Material palette
-                  React.createElement('div', null,
-                    React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Materials'),
-                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
-                      materials.map(function (m) {
-                        return React.createElement('button', {
-                          key: m.id,
-                          onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); },
-                          style: {
-                            display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', fontSize: 11, fontWeight: 600,
-                            border: activeMaterial === m.id ? '2px solid ' + m.color : '1px solid #334155',
-                            borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
-                            color: activeMaterial === m.id ? '#f8fafc' : '#94a3b8', cursor: 'pointer', textAlign: 'left'
-                          }
+                  ) : (
+                    React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
+                      filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
+                      filtered.map(function (r) {
+                        return React.createElement("button", {
+                          key: r.id,
+                          onClick: function () { upd('selectedRegion', r.id); },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
+                            (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
                         },
-                          React.createElement('span', { style: { width: 18, height: 18, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
-                          m.icon + ' ' + m.label
+                          React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
+                          React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
                         );
                       })
                     )
                   )
-                ),
-                // Main viewport area
-                React.createElement('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-                  // Three.js canvas
-                  !threeReady
-                    ? React.createElement('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14 } },
-                      React.createElement('div', { style: { textAlign: 'center' } },
-                        React.createElement('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '\u2699\uFE0F'),
-                        'Loading 3D engine...'
-                      )
-                    )
-                    : React.createElement('canvas', {
-                      id: 'arch-studio-canvas',
-                      style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' }
-                    }),
-                  // Controls overlay
-                  React.createElement('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '8px 12px', fontSize: 10, color: '#64748b', lineHeight: 1.5, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
-                    React.createElement('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
-                    React.createElement('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
-                    React.createElement('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
-                    React.createElement('div', null, '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place block' : mode === 'erase' ? 'Remove block' : 'Paint block'))
-                  ),
-                  // Mode indicator overlay
-                  React.createElement('div', { style: { position: 'absolute', top: 10, left: 10, background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
-                    (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode'
-                  ),
-                  // Bottom stats bar
-                  React.createElement('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', padding: '8px 16px', background: 'linear-gradient(0deg,#1e293b,#0f172a)', borderTop: '1px solid #334155', flexWrap: 'wrap' } },
-                    [
-                      { label: 'Blocks', value: totalBlocks, icon: '\uD83E\uDDF1' },
-                      { label: 'Dimensions', value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
-                      { label: 'Volume', value: totalVolume + ' u\u00B3', icon: '\uD83D\uDCE6' },
-                      { label: 'Footprint', value: footprint + ' u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
-                      { label: 'Surface', value: surfaceArea + ' u\u00B2', icon: '\uD83D\uDCC0' }
-                    ].map(function (stat) {
-                      return React.createElement('div', { key: stat.label, style: { textAlign: 'center' } },
-                        React.createElement('div', { style: { fontSize: 11, color: '#64748b', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
-                        React.createElement('div', { style: { fontSize: 16, fontWeight: 700, color: '#f8fafc' } }, stat.value)
-                      );
-                    })
-                  )
                 )
-              ),
-              // Coach panel
-              React.createElement('div', { style: { padding: '10px 16px', background: '#1e293b', borderTop: '1px solid #334155', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
-                coachTip
               )
+            )
             );
-          })(),
+    }) (),
 
-          // --- GRAPHING CALCULATOR EMULATOR ---
-          stemLabTab === 'explore' && stemLabTool === 'graphCalc' && (() => {
-            const d = labToolData.graphCalc || {};
-            const upd = (key, val) => setLabToolData(prev => ({ ...prev, graphCalc: { ...(prev.graphCalc || {}), [key]: val } }));
-            const tier = d.tier || 'explorer';
-            const funcs = d.funcs || [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
-            const win = d.window || { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
-            const showTable = d.showTable || false;
-            const showWindow = d.showWindow || false;
-            const showChallenge = d.showChallenge || false;
-            const showMathPad = d.showMathPad != null ? d.showMathPad : false;
-            const showArith = d.showArith || false;
-            const arithExpr = d.arithExpr || '';
-            const arithResult = d.arithResult || '';
-            const showSliders = d.showSliders || false;
-            const focusedInput = d.focusedInput || 0;
-            const tableX = d.tableX != null ? d.tableX : -5;
-            const tableStep = d.tableStep || 1;
 
-            // Math Pad symbols gated by tier
-            const MATH_SYMBOLS = [
-              // Explorer tier (always visible)
-              { label: 'x', insert: 'x', tier: 'explorer' },
-              { label: '^', insert: '^', tier: 'explorer' },
-              { label: '( )', insert: '()', tier: 'explorer' },
-              { label: '\u03C0', insert: 'pi', tier: 'explorer' },
-              { label: '\u221A', insert: 'sqrt(', tier: 'explorer' },
-              { label: '|x|', insert: 'abs(', tier: 'explorer' },
-              // Analyst tier
-              { label: 'x\u00B2', insert: '^2', tier: 'analyst' },
-              { label: 'x\u00B3', insert: '^3', tier: 'analyst' },
-              { label: '\u00B1', insert: '-', tier: 'analyst' },
-              { label: '1/x', insert: '1/', tier: 'analyst' },
-              // Engineer tier
-              { label: 'sin', insert: 'sin(', tier: 'engineer' },
-              { label: 'cos', insert: 'cos(', tier: 'engineer' },
-              { label: 'tan', insert: 'tan(', tier: 'engineer' },
-              { label: 'log', insert: 'log(', tier: 'engineer' },
-              { label: 'ln', insert: 'ln(', tier: 'engineer' },
-              { label: 'e', insert: 'e', tier: 'engineer' },
-            ];
-            const visibleSymbols = MATH_SYMBOLS.filter(function (s) {
-              if (tier === 'researcher') return true;
-              if (tier === 'engineer') return s.tier !== 'researcher';
-              if (tier === 'analyst') return s.tier === 'explorer' || s.tier === 'analyst';
-              return s.tier === 'explorer';
-            });
-            var insertSymbol = function (text) {
-              var nf = funcs.slice();
-              var idx = focusedInput;
-              nf[idx] = Object.assign({}, nf[idx], { expr: (nf[idx].expr || '') + text });
-              upd('funcs', nf);
-            };
+      stemLabTab === 'explore' && stemLabTool === 'artStudio' && (() => {
+        const d = labToolData.artStudio || {};
+        const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
+        const tab = d.tab || 'colorWheel';
 
-            // NOTE: useEffect hooks for math.js loading and canvas rendering
-            // have been moved to the component body level (above) to satisfy
-            // React's Rules of Hooks. They guard internally with early returns.
+        // Color Wheel Canvas
+        const wheelRef = function (canvas) {
+          if (!canvas) return;
+          if (canvas._wheelAnim) cancelAnimationFrame(canvas._wheelAnim);
+          var ctx = canvas.getContext('2d');
+          var W = canvas.width, H = canvas.height;
+          var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 20;
+          var tick = 0;
+          var hue = d.hue || 0, sat = d.sat !== undefined ? d.sat : 100, lit = d.lit !== undefined ? d.lit : 50;
 
-            const COACH_TIPS = {
-              explorer: [
-                { icon: '\uD83D\uDCA1', title: 'Entering Functions', text: 'Type y = mx + b where m is the slope (steepness) and b is where the line crosses the y-axis. Try: y = 2x + 3' },
-                { icon: '\uD83D\uDD0D', title: 'Zoom & Window', text: 'The window controls how much of the graph you see. If your graph disappeared, try resetting the window to Standard (-10 to 10).' },
-                { icon: '\uD83D\uDCCA', title: 'Reading the Table', text: 'The table shows exact y-values for each x. Use it to check calculations or find patterns in your function.' },
-                { icon: '\uD83C\uDFAF', title: 'Multiple Functions', text: 'Enter different equations in each slot to compare them. Where the lines cross is called an intersection!' }
-              ],
-              analyst: [
-                { icon: '\uD83D\uDCC8', title: 'Linear vs Quadratic', text: 'y = 2x + 1 is a straight line. y = x\u00B2 is a parabola. The exponent determines the shape!' },
-                { icon: '\uD83E\uDDEE', title: 'Finding Zeros', text: 'Where the graph crosses the x-axis, y = 0. These points are called zeros, roots, or x-intercepts.' },
-                { icon: '\uD83D\uDCCA', title: 'Slope Meaning', text: 'In y = mx + b, slope m tells you: for every 1 step right, the line goes up by m. Negative m = downhill.' },
-                { icon: '\u26A1', title: 'Transformations', text: 'y = (x-3)\u00B2 shifts the parabola right by 3. y = x\u00B2 + 5 shifts it up by 5. Try it!' }
-              ],
-              engineer: [
-                { icon: '\uD83E\uDDE9', title: 'Trig Functions', text: 'sin(x), cos(x), tan(x) create waves. The period of sin(x) is 2\u03C0 \u2248 6.28.' },
-                { icon: '\uD83D\uDD22', title: 'Logarithms', text: 'log(x) is the inverse of 10^x. ln(x) is the natural log (base e). They grow very slowly.' },
-                { icon: '\u221E', title: 'Asymptotes', text: 'Some functions approach a line but never touch it. y = 1/x has asymptotes at x=0 and y=0.' }
-              ],
-              researcher: [
-                { icon: '\uD83D\uDE80', title: 'Full Access', text: 'All features unlocked. You have the power of a full graphing calculator. Explore freely!' }
-              ]
-            };
-            const currentTips = [...(COACH_TIPS.explorer || []), ...(tier !== 'explorer' ? COACH_TIPS.analyst || [] : []), ...(tier === 'engineer' || tier === 'researcher' ? COACH_TIPS.engineer || [] : []), ...(tier === 'researcher' ? COACH_TIPS.researcher || [] : [])];
-            const coachIdx = d.coachIdx || 0;
-
-            const ZOOM_PRESETS = [
-              { name: 'Standard', xmin: -10, xmax: 10, ymin: -10, ymax: 10 },
-              { name: 'Trig', xmin: -6.28, xmax: 6.28, ymin: -2, ymax: 2 },
-              { name: 'Quadratic', xmin: -5, xmax: 5, ymin: -5, ymax: 25 },
-              { name: 'Wide', xmin: -50, xmax: 50, ymin: -50, ymax: 50 },
-              { name: 'Positive', xmin: 0, xmax: 20, ymin: 0, ymax: 20 }
-            ];
-
-            const PREMADE_CHALLENGES = [
-              { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = 3x - 2. What is the y-intercept? What is the slope?', hint: 'The y-intercept is where the line crosses the y-axis (x=0). The slope is the coefficient of x.' },
-              { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = -x + 5 and y = x - 1. Where do they intersect?', hint: 'The intersection is where both equations give the same y for the same x. Look at the table!' },
-              { tier: 'explorer', topic: 'Tables', prompt: 'Enter y = x^2. Look at the table. What pattern do you see in the y-values?', hint: 'Compare consecutive y-values. The differences between them increase by 2 each time!' },
-              { tier: 'analyst', topic: 'Quadratics', prompt: 'Graph y = x^2 - 4. Where are the zeros (x-intercepts)? Can you verify with the equation?', hint: 'Set y = 0: x^2 - 4 = 0, so x^2 = 4, so x = +/-2. Check the graph!' },
-              { tier: 'analyst', topic: 'Transformations', prompt: 'Graph y = x^2, then y = (x-3)^2, then y = (x+2)^2. How does the number inside affect the graph?', hint: '(x-h) shifts the graph RIGHT by h. (x+h) shifts LEFT by h.' },
-              { tier: 'analyst', topic: 'Slope', prompt: 'Graph y = 0.5x, y = x, y = 2x, and y = 5x. What happens as the slope gets bigger?', hint: 'Bigger slope = steeper line. Slope is the rise/run ratio.' },
-              { tier: 'engineer', topic: 'Trigonometry', prompt: 'Graph y = sin(x) and y = cos(x) using the Trig zoom preset. How are they related?', hint: 'cos(x) is sin(x) shifted left by pi/2. They have the same shape!' },
-              { tier: 'engineer', topic: 'Exponential', prompt: 'Graph y = 2^x and y = log(x)/log(2). What do you notice? These are inverse functions!', hint: 'Inverse functions are mirror images across the line y = x.' },
-              { tier: 'engineer', topic: 'Asymptotes', prompt: 'Graph y = 1/x. What happens near x = 0? What happens as x gets very large?', hint: 'The graph gets infinitely close to the axes but never touches them. These lines are asymptotes.' }
-            ];
-
-            const TIER_INFO = {
-              explorer: { icon: '\uD83D\uDFE2', name: 'Explorer', desc: 'Linear functions, basic graphing, tables', color: '#34d399' },
-              analyst: { icon: '\uD83D\uDFE1', name: 'Analyst', desc: 'Quadratics, transformations, intersections', color: '#fbbf24' },
-              engineer: { icon: '\uD83D\uDD35', name: 'Engineer', desc: 'Trig, logs, exponentials, advanced analysis', color: '#60a5fa' },
-              researcher: { icon: '\uD83D\uDFE3', name: 'Researcher', desc: 'Full access - all features unlocked', color: '#a78bfa' }
-            };
-            const tierInfo = TIER_INFO[tier] || TIER_INFO.explorer;
-
-            const availableChallenges = PREMADE_CHALLENGES.filter(c => {
-              if (tier === 'researcher') return true;
-              if (tier === 'engineer') return c.tier !== 'researcher';
-              if (tier === 'analyst') return c.tier === 'explorer' || c.tier === 'analyst';
-              return c.tier === 'explorer';
-            });
-
-            let tableRows = [];
-            if (showTable && funcs[0] && funcs[0].expr && window.math) {
-              try {
-                let tExpr = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                tExpr = tExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                const tCompiled = math.compile(tExpr);
-                for (let tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
-                  try { var _tScope = { x: tx }; if (d.sliderA != null) _tScope.a = d.sliderA; if (d.sliderB != null) _tScope.b = d.sliderB; if (d.sliderC != null) _tScope.c = d.sliderC; const ty = tCompiled.evaluate(_tScope); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
-                  catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
-                }
-              } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
+          function drawWheel() {
+            tick++;
+            ctx.clearRect(0, 0, W, H);
+            for (var a = 0; a < 360; a++) {
+              var rad1 = (a - 90) * Math.PI / 180;
+              var rad2 = (a - 89) * Math.PI / 180;
+              ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, rad1, rad2); ctx.closePath();
+              ctx.fillStyle = 'hsl(' + a + ',' + sat + '%,' + lit + '%)'; ctx.fill();
             }
+            ctx.beginPath(); ctx.arc(cx, cy, R * 0.35, 0, Math.PI * 2);
+            ctx.fillStyle = 'hsl(' + hue + ',' + sat + '%,' + lit + '%)'; ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+            var selRad = (hue - 90) * Math.PI / 180;
+            var sx = cx + Math.cos(selRad) * R * 0.75;
+            var sy = cy + Math.sin(selRad) * R * 0.75;
+            ctx.beginPath(); ctx.arc(sx, sy, 8 + Math.sin(tick * 0.06) * 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff'; ctx.fill();
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = lit > 55 ? '#000' : '#fff';
+            ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('H:' + hue + '\u00B0', cx, cy - 8);
+            ctx.fillText('S:' + sat + '% L:' + lit + '%', cx, cy + 8);
+            var harmony = d.harmony || 'complementary';
+            var harmAngles = [];
+            if (harmony === 'complementary') harmAngles = [(hue + 180) % 360];
+            else if (harmony === 'triadic') harmAngles = [(hue + 120) % 360, (hue + 240) % 360];
+            else if (harmony === 'analogous') harmAngles = [(hue + 30) % 360, (hue - 30 + 360) % 360];
+            else if (harmony === 'split') harmAngles = [(hue + 150) % 360, (hue + 210) % 360];
+            harmAngles.forEach(function (ha) {
+              var hr = (ha - 90) * Math.PI / 180;
+              var hx = cx + Math.cos(hr) * R * 0.75, hy = cy + Math.sin(hr) * R * 0.75;
+              ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+              ctx.fillStyle = 'hsl(' + ha + ',' + sat + '%,' + lit + '%)'; ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            });
+            canvas._wheelAnim = requestAnimationFrame(drawWheel);
+          }
+          canvas.onmousedown = canvas.ontouchstart = function (e) {
+            var rect = canvas.getBoundingClientRect();
+            var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            var scaleX = W / rect.width, scaleY = H / rect.height;
+            ex *= scaleX; ey *= scaleY;
+            var dx = ex - cx, dy = ey - cy;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < R && dist > R * 0.35) {
+              var angle = Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360);
+              hue = angle; upd('hue', angle);
+            }
+          };
+          drawWheel();
+        };
 
-            return React.createElement('div', {
-              style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' }
-            },
-              React.createElement('div', {
-                style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' }
-              },
-                React.createElement('button', { onClick: () => setStemLabTool(null), style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }, 'aria-label': 'Back to STEM Lab tools' }, '\u2190 Back'),
-                React.createElement('div', { style: { fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.5px', color: '#c7d2fe' } }, '\uD83D\uDCC8 Graphing Calculator'),
-                React.createElement('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
-                  React.createElement('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
-                  React.createElement('select', { value: tier, onChange: e => upd('tier', e.target.value), style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' }, 'aria-label': 'Select skill tier' },
-                    React.createElement('option', { value: 'explorer' }, '\uD83D\uDFE2 Explorer'),
-                    React.createElement('option', { value: 'analyst' }, '\uD83D\uDFE1 Analyst'),
-                    React.createElement('option', { value: 'engineer' }, '\uD83D\uDD35 Engineer'),
-                    React.createElement('option', { value: 'researcher' }, '\uD83D\uDFE3 Researcher')
-                  )
-                )
-              ),
+        // Pixel Art Canvas
+        const pixelRef = function (canvas) {
+          if (!canvas) return;
+          var ctx = canvas.getContext('2d');
+          var W = canvas.width, H = canvas.height;
+          var gridSize = d.pixelGrid || 16;
+          var cellW = W / gridSize, cellH = H / gridSize;
+          var grid = d.pixelData || {};
+          var painting = false;
+          var currentColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+          function drawPixelGrid() {
+            ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = '#1e1e2e'; ctx.fillRect(0, 0, W, H);
+            Object.keys(grid).forEach(function (key) {
+              var parts = key.split(',');
+              ctx.fillStyle = grid[key];
+              ctx.fillRect(parseInt(parts[0]) * cellW, parseInt(parts[1]) * cellH, cellW, cellH);
+            });
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
+            for (var gx = 0; gx <= gridSize; gx++) { ctx.beginPath(); ctx.moveTo(gx * cellW, 0); ctx.lineTo(gx * cellW, H); ctx.stroke(); }
+            for (var gy = 0; gy <= gridSize; gy++) { ctx.beginPath(); ctx.moveTo(0, gy * cellH); ctx.lineTo(W, gy * cellH); ctx.stroke(); }
+          }
+          function paint(e) {
+            var rect = canvas.getBoundingClientRect();
+            var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            var gx = Math.floor(ex * (W / rect.width) / cellW);
+            var gy = Math.floor(ey * (H / rect.height) / cellH);
+            if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
+              var key = gx + ',' + gy;
+              if (d.pixelTool === 'eraser') delete grid[key]; else grid[key] = currentColor;
+              upd('pixelData', Object.assign({}, grid));
+              drawPixelGrid();
+            }
+          }
+          canvas.onmousedown = canvas.ontouchstart = function (e) { painting = true; paint(e); };
+          canvas.onmousemove = canvas.ontouchmove = function (e) { if (painting) paint(e); };
+          canvas.onmouseup = canvas.ontouchend = function () { painting = false; };
+          canvas.onmouseleave = function () { painting = false; };
+          drawPixelGrid();
+        };
 
-              React.createElement('div', {
-                style: { display: 'flex', flex: 1, overflow: 'hidden' }
-              },
-                React.createElement('div', {
-                  style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' }
-                },
-                  React.createElement('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, '\uD83D\uDCDD FUNCTIONS'),
-                  React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
-                    ...funcs.map((fn, i) => React.createElement('div', { key: 'f' + i, style: { marginBottom: '8px' } },
-                      React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
-                        React.createElement('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
-                        React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'y' + (i + 1) + ' =')
-                      ),
-                      React.createElement('input', {
-                        type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
-                        onChange: e => { const nf = [...funcs]; nf[i] = { ...nf[i], expr: e.target.value }; upd('funcs', nf); },
-                        onFocus: function () { upd('focusedInput', i); },
-                        style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' },
-                        'aria-label': 'Function y' + (i + 1) + ' expression'
-                      })
-                    ))
-                  ),
+        // Symmetry Canvas
+        const symmetryRef = function (canvas) {
+          if (!canvas) return;
+          var ctx = canvas.getContext('2d');
+          var W = canvas.width, H = canvas.height;
+          var cx = W / 2, cy = H / 2;
+          var folds = d.symmetryFolds || 6;
+          var drawing = false;
+          var brushSize = d.brushSize || 3;
+          var brushColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+          if (!canvas._symInit) {
+            canvas._symInit = true;
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
+            for (var i = 0; i < folds; i++) {
+              var angle = (i / folds) * Math.PI * 2;
+              ctx.beginPath(); ctx.moveTo(cx, cy);
+              ctx.lineTo(cx + Math.cos(angle) * Math.max(W, H), cy + Math.sin(angle) * Math.max(W, H));
+              ctx.stroke();
+            }
+          }
+          function drawSymmetric(ex, ey) {
+            var dx = ex - cx, dy = ey - cy, dist = Math.sqrt(dx * dx + dy * dy);
+            var baseAngle = Math.atan2(dy, dx);
+            for (var i = 0; i < folds; i++) {
+              var angle = baseAngle + (i / folds) * Math.PI * 2;
+              ctx.beginPath(); ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, brushSize, 0, Math.PI * 2);
+              ctx.fillStyle = brushColor; ctx.fill();
+              var mirrorAngle = -baseAngle + (i / folds) * Math.PI * 2;
+              ctx.beginPath(); ctx.arc(cx + Math.cos(mirrorAngle) * dist, cy + Math.sin(mirrorAngle) * dist, brushSize, 0, Math.PI * 2);
+              ctx.fillStyle = brushColor; ctx.fill();
+            }
+          }
+          function handleDraw(e) {
+            var rect = canvas.getBoundingClientRect();
+            var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            drawSymmetric(ex * (W / rect.width), ey * (H / rect.height));
+          }
+          canvas.onmousedown = canvas.ontouchstart = function (e) { drawing = true; handleDraw(e); };
+          canvas.onmousemove = canvas.ontouchmove = function (e) { if (drawing) handleDraw(e); };
+          canvas.onmouseup = canvas.ontouchend = function () { drawing = false; };
+          canvas.onmouseleave = function () { drawing = false; };
+        };
 
-                  // ── Math Pad (collapsible symbol buttons) ──
-                  React.createElement('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                    React.createElement('button', {
-                      onClick: function () { upd('showMathPad', !showMathPad); },
-                      style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#64748b', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', marginBottom: showMathPad ? '6px' : '0' }
-                    }, '\u2328 Math Pad ' + (showMathPad ? '\u25B2' : '\u25BC')),
-                    showMathPad && React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px' } },
-                      visibleSymbols.map(function (sym) {
-                        return React.createElement('button', {
-                          key: sym.label,
-                          onClick: function () { insertSymbol(sym.insert); },
-                          style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer', lineHeight: '1.2', transition: 'background 0.15s' },
-                          onMouseEnter: function (e) { e.currentTarget.style.background = 'rgba(99,102,241,0.3)'; },
-                          onMouseLeave: function (e) { e.currentTarget.style.background = 'rgba(99,102,241,0.12)'; },
-                          title: 'Insert ' + sym.insert,
-                          'aria-label': 'Insert ' + sym.label
-                        }, sym.label);
-                      })
+        // WCAG contrast helpers
+        function luminance(h, s, l) {
+          var c = (1 - Math.abs(2 * l / 100 - 1)) * s / 100;
+          var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+          var m = l / 100 - c / 2;
+          var r, g, b;
+          if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
+          else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
+          else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
+          r += m; g += m; b += m;
+          var toL = function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+          return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
+        }
+        function mixColors(c1, c2, ratio) {
+          var h1 = c1.h, s1 = c1.s, l1 = c1.l, h2 = c2.h, s2 = c2.s, l2 = c2.l;
+          var hDiff = h2 - h1; if (Math.abs(hDiff) > 180) { if (hDiff > 0) h1 += 360; else h2 += 360; }
+          return { h: Math.round((h1 + (h2 - h1) * ratio + 360) % 360), s: Math.round(s1 + (s2 - s1) * ratio), l: Math.round(l1 + (l2 - l1) * ratio) };
+        }
+        var mix1 = { h: d.mix1H || 0, s: d.mix1S || 100, l: d.mix1L || 50 };
+        var mix2 = { h: d.mix2H || 200, s: d.mix2S || 100, l: d.mix2L || 50 };
+        var mixRatio = d.mixRatio || 0.5;
+        var mixed = mixColors(mix1, mix2, mixRatio);
+        var fgH = d.fgH || 0, fgS = d.fgS || 0, fgL = d.fgL || 0;
+        var bgH = d.bgH || 0, bgS = d.bgS || 0, bgL = d.bgL || 100;
+        var l1c = luminance(fgH, fgS, fgL), l2c = luminance(bgH, bgS, bgL);
+        var contrastRatio = (Math.max(l1c, l2c) + 0.05) / (Math.min(l1c, l2c) + 0.05);
+        var passAA = contrastRatio >= 4.5, passAAA = contrastRatio >= 7, passAALarge = contrastRatio >= 3;
+
+        return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
+            React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE")
+          ),
+          React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200" },
+            [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
+              return React.createElement("button", { key: tb.id, onClick: function () { upd('tab', tb.id); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
+            })
+          ),
+          tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
+            React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
+              React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
+              React.createElement("div", { className: "flex-1 space-y-3" },
+                React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-200" },
+                  React.createElement("h4", { className: "text-xs font-bold text-pink-700 mb-2" }, "\uD83C\uDFAF Selected Color"),
+                  React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                    React.createElement("div", { style: { width: 60, height: 60, borderRadius: 12, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-sm font-bold text-slate-800" }, "HSL(" + (d.hue || 0) + ", " + (d.sat || 100) + "%, " + (d.lit || 50) + "%)"),
+                      React.createElement("p", { className: "text-[10px] text-slate-500" }, "Click the wheel to pick a hue")
                     )
                   ),
-
-                  React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-                    React.createElement('button', { onClick: () => upd('showTable', !showTable), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
-                    React.createElement('button', { onClick: () => upd('showWindow', !showWindow), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
-                    React.createElement('button', { onClick: () => upd('showChallenge', !showChallenge), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
-                    React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear'),
-                    React.createElement('button', { onClick: function () { upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD0D Trace'),
-                    React.createElement('button', {
-                      onClick: function () {
-                        if (!window.math) return;
-                        var an = !d.showAnalysis;
-                        upd('showAnalysis', an);
-                        if (an) {
-                          var zeros = []; var inters = [];
-                          try {
-                            var f1 = funcs[0]; if (f1 && f1.expr && f1.expr.trim()) {
-                              var e1 = f1.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                              e1 = e1.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                              var c1 = math.compile(e1);
-                              var sA = {}; if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
-                              var step = (win.xmax - win.xmin) / 500;
-                              var prevY = null; var prevX = null;
-                              for (var sx = win.xmin; sx <= win.xmax; sx += step) {
-                                try {
-                                  var sy = c1.evaluate(Object.assign({ x: sx }, sA));
-                                  if (prevY != null && typeof sy === 'number' && isFinite(sy) && typeof prevY === 'number') {
-                                    if (prevY * sy < 0) {
-                                      var lo = prevX, hi = sx;
-                                      for (var bi = 0; bi < 30; bi++) { var mid = (lo + hi) / 2; var mval = c1.evaluate(Object.assign({ x: mid }, sA)); if (c1.evaluate(Object.assign({ x: lo }, sA)) * mval < 0) hi = mid; else lo = mid; }
-                                      var root = (lo + hi) / 2;
-                                      if (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2) zeros.push({ x: root, fi: 0 });
-                                    }
-                                  }
-                                  prevY = sy; prevX = sx;
-                                } catch (e) { prevY = null; }
-                              }
-                              for (var fi2 = 1; fi2 < funcs.length; fi2++) {
-                                var f2 = funcs[fi2]; if (!f2 || !f2.expr || !f2.expr.trim()) continue;
-                                try {
-                                  var e2 = f2.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                                  e2 = e2.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                                  var c2 = math.compile(e2);
-                                  var pDiff = null; var pXd = null;
-                                  for (var ix = win.xmin; ix <= win.xmax; ix += step) {
-                                    try {
-                                      var iy1 = c1.evaluate(Object.assign({ x: ix }, sA));
-                                      var iy2 = c2.evaluate(Object.assign({ x: ix }, sA));
-                                      var diff = iy1 - iy2;
-                                      if (pDiff != null && typeof diff === 'number' && isFinite(diff) && pDiff * diff < 0) {
-                                        var ilo = pXd, ihi = ix;
-                                        for (var ibi = 0; ibi < 30; ibi++) { var imid = (ilo + ihi) / 2; var d1 = c1.evaluate(Object.assign({ x: imid }, sA)) - c2.evaluate(Object.assign({ x: imid }, sA)); if ((c1.evaluate(Object.assign({ x: ilo }, sA)) - c2.evaluate(Object.assign({ x: ilo }, sA))) * d1 < 0) ihi = imid; else ilo = imid; }
-                                        var iroot = (ilo + ihi) / 2;
-                                        var irootY = c1.evaluate(Object.assign({ x: iroot }, sA));
-                                        inters.push({ x: iroot, y: irootY, f1: 0, f2: fi2 });
-                                      }
-                                      pDiff = diff; pXd = ix;
-                                    } catch (e) { pDiff = null; }
-                                  }
-                                } catch (e) { }
-                              }
-                            }
-                          } catch (e) { }
-                          upd('_zeros', zeros);
-                          upd('_intersections', inters);
-                        }
-                      },
-                      style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }
-                    }, '\u26A1 Analyze'),
-                    React.createElement('button', { onClick: function () { upd('showDeriv', !d.showDeriv); if (!d.showDeriv && d.derivX == null) upd('derivX', 0); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, "\u2202 f\'(x)"),
-                    React.createElement('button', { onClick: function () { upd('showArith', !showArith); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showArith ? '#60a5fa33' : 'rgba(255,255,255,0.05)', color: showArith ? '#60a5fa' : '#94a3b8', border: showArith ? '1px solid #60a5fa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDDEE Calc'),
-                    React.createElement('button', { onClick: function () { upd('showSliders', !showSliders); if (!showSliders) { if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFA8 Sliders')
-                  ),
-
-                  React.createElement('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                    React.createElement('div', { style: { fontSize: '9px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
-                    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
-                      ...ZOOM_PRESETS.map(z => React.createElement('button', { key: z.name, onClick: () => upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }), style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '9px', cursor: 'pointer' } }, z.name))
-                    )
-                  )
-                ),
-                // ── Arithmetic Calculator ──
-                showArith && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(96,165,250,0.06)' } },
-                  React.createElement('div', { style: { fontSize: '9px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' } }, '\uD83E\uDDEE CALCULATOR'),
-                  React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '4px' } },
-                    React.createElement('input', { type: 'text', value: arithExpr, placeholder: 'e.g. sqrt(144) + 3^2', onChange: function (e) { upd('arithExpr', e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter' && window.math) { try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } } }, style: { flex: 1, padding: '5px 8px', borderRadius: '6px', border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.08)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' }, 'aria-label': 'Calculator expression' }),
-                    React.createElement('button', { onClick: function () { if (!window.math) return; try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } }, style: { padding: '5px 10px', borderRadius: '6px', background: '#3b82f6', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '=')
-                  ),
-                  arithResult && React.createElement('div', { style: { padding: '5px 8px', borderRadius: '6px', background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', fontFamily: 'monospace', fontSize: '13px', fontWeight: 'bold', color: '#93c5fd', marginBottom: '4px' } }, '= ' + arithResult),
-                  React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px' } },
-                    ['7', '8', '9', '/', '+', '4', '5', '6', '*', '-', '1', '2', '3', '(', ')', '0', '.', 'pi', 'e', '^'].map(function (b) {
-                      return React.createElement('button', { key: b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.15)', fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b);
-                    }),
-                    React.createElement('button', { onClick: function () { upd('arithExpr', ''); upd('arithResult', ''); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, 'C'),
-                    React.createElement('button', { onClick: function () { upd('arithExpr', arithExpr.slice(0, -1)); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u232B'),
-                    ['sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt(', 'abs(', '!', '%'].map(function (b) {
-                      return React.createElement('button', { key: 'fn_' + b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.2)', fontSize: '9px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b.replace('(', ''));
-                    })
-                  )
-                ),
-                // ── Slider Parameters ──
-                showSliders && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
-                  React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 PARAMETER SLIDERS \u2014 Use a, b, c in your equations'),
-                  ['a', 'b', 'c'].map(function (p) {
-                    var key = 'slider' + p.toUpperCase();
-                    var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
-                    return React.createElement('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
-                      React.createElement('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
-                      React.createElement('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, onChange: function (e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' }, 'aria-label': 'Parameter ' + p }),
-                      React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#e2e8f0', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
+                  [{ k: 'hue', label: 'Hue', min: 0, max: 360 }, { k: 'sat', label: 'Saturation %', min: 0, max: 100 }, { k: 'lit', label: 'Lightness %', min: 0, max: 100 }].map(function (s) {
+                    return React.createElement("div", { key: s.k, className: "mb-2" },
+                      React.createElement("label", { className: "text-[10px] font-bold text-pink-600 block mb-0.5" }, s.label + ": " + (d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50))),
+                      React.createElement("input", { type: "range", min: s.min, max: s.max, value: d[s.k] !== undefined ? d[s.k] : (s.k === 'hue' ? 0 : s.k === 'sat' ? 100 : 50), onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-pink-600" })
                     );
                   })
                 ),
-                // ── Derivative ──
-                d.showDeriv && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
-                  React.createElement('div', { style: { fontSize: '9px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 DERIVATIVE \u2014 Tangent line to y\u2081'),
-                  React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                    React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x ='),
-                    React.createElement('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, onChange: function (e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' }, 'aria-label': 'Derivative x value' }),
-                    React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold', minWidth: '40px', textAlign: 'right' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'),
-                    (function () {
-                      if (!window.math || !funcs[0] || !funcs[0].expr) return null;
-                      try {
-                        var de = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
-                        de = de.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
-                        var dc = math.compile(de); var dx = d.derivX != null ? d.derivX : 0; var dh2 = 0.0001;
-                        var dsc = { x: dx }; if (d.sliderA != null) dsc.a = d.sliderA; if (d.sliderB != null) dsc.b = d.sliderB; if (d.sliderC != null) dsc.c = d.sliderC;
-                        var dscp = Object.assign({}, dsc, { x: dx + dh2 }); var dscm = Object.assign({}, dsc, { x: dx - dh2 });
-                        var slope = (dc.evaluate(dscp) - dc.evaluate(dscm)) / (2 * dh2);
-                        return React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fbbf24', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(251,191,36,0.3)' } }, "f'=" + Number(slope.toPrecision(5)));
-                      } catch (e) { return null; }
-                    })()
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-pink-200" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-pink-600 mb-2" }, "\uD83D\uDD17 Color Harmony"),
+                  React.createElement("div", { className: "flex gap-1" },
+                    ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
+                      return React.createElement("button", { key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
+                    })
                   )
-                ),
-                // ── Analysis Results ──
-                d.showAnalysis && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
-                  React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS RESULTS'),
-                  React.createElement('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-                    React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
-                      React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '2px' } }, 'Zeros (y\u2081 = 0)'),
-                      (d._zeros && d._zeros.length > 0) ? d._zeros.map(function (z, zi) {
-                        return React.createElement('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0', padding: '1px 0' } }, 'x = ' + Number(z.x.toPrecision(5)));
-                      }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'No zeros found')
-                    ),
-                    React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
-                      React.createElement('div', { style: { fontSize: '9px', color: '#f472b6', fontWeight: 'bold', marginBottom: '2px' } }, 'Intersections'),
-                      (d._intersections && d._intersections.length > 0) ? d._intersections.map(function (pt, pi) {
-                        return React.createElement('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4', padding: '1px 0' } }, '(' + Number(pt.x.toPrecision(4)) + ', ' + Number(pt.y.toPrecision(4)) + ')');
-                      }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'Enter 2+ functions')
-                    )
-                  )
-                )
-              ),
-
-              React.createElement('div', {
-                style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }
-              },
-                React.createElement('canvas', {
-                  id: 'graph-calc-canvas', width: 600, height: 420,
-                  style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0', cursor: d.traceMode ? 'crosshair' : 'default' },
-                  'aria-label': 'Graphing calculator coordinate plane',
-                  onMouseMove: function (e) {
-                    if (!d.traceMode) return;
-                    var rect = e.currentTarget.getBoundingClientRect();
-                    var px = (e.clientX - rect.left) / rect.width * 600;
-                    var cv2 = e.currentTarget;
-                    if (cv2._toMathX) upd('traceX', cv2._toMathX(px));
-                  },
-                  onMouseLeave: function () { if (d.traceMode) upd('traceX', null); }
-                }),
-
-                showWindow && React.createElement('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
-                  React.createElement('span', { style: { fontSize: '10px', color: '#818cf8', fontWeight: 'bold' } }, 'WINDOW:'),
-                  ...['xmin', 'xmax', 'ymin', 'ymax'].map(k => React.createElement('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#94a3b8' } },
-                    k + ':', React.createElement('input', { type: 'number', value: win[k], onChange: e => upd('window', { ...win, [k]: parseFloat(e.target.value) || 0 }), style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '10px' }, 'aria-label': k })
-                  ))
-                ),
-
-                showTable && React.createElement('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
-                  React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
-                    React.createElement('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, '\uD83D\uDCCA TABLE'),
-                    React.createElement('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', React.createElement('input', { type: 'number', value: tableX, onChange: e => upd('tableX', parseFloat(e.target.value) || 0), style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } })),
-                    React.createElement('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', React.createElement('input', { type: 'number', value: tableStep, onChange: e => upd('tableStep', parseFloat(e.target.value) || 1), style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } }))
-                  ),
-                  React.createElement('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
-                    React.createElement('thead', null, React.createElement('tr', null,
-                      React.createElement('th', { style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'),
-                      React.createElement('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081')
-                    )),
-                    React.createElement('tbody', null, ...tableRows.map((r, ri) => React.createElement('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } },
-                      React.createElement('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#94a3b8' } }, r.x),
-                      React.createElement('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#e2e8f0' } }, r.y)
-                    )))
-                  )
-                )
-              ),
-
-              React.createElement('div', {
-                style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' }
-              },
-                React.createElement('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, showChallenge ? '\uD83C\uDFAF CHALLENGES' : '\uD83D\uDCA1 COACH'),
-                !showChallenge && React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
-                  ...currentTips.map((tip, i) => React.createElement('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
-                    React.createElement('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
-                    React.createElement('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#cbd5e1' } }, tip.text)
-                  ))
-                ),
-
-                showChallenge && React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
-                  React.createElement('div', { style: { marginBottom: '10px' } },
-                    React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '8px' } },
-                      React.createElement('button', { onClick: () => upd('challengeSource', 'premade'), style: { flex: 1, padding: '5px', borderRadius: '6px', background: (d.challengeSource || 'premade') === 'premade' ? '#818cf8' : 'rgba(255,255,255,0.05)', color: (d.challengeSource || 'premade') === 'premade' ? '#fff' : '#94a3b8', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCDA Pre-made'),
-                      React.createElement('button', { onClick: () => { upd('challengeSource', 'ai'); if (typeof addToast === 'function') addToast('AI challenges use Gemini to generate custom problems', 'info'); }, style: { flex: 1, padding: '5px', borderRadius: '6px', background: d.challengeSource === 'ai' ? '#a78bfa' : 'rgba(255,255,255,0.05)', color: d.challengeSource === 'ai' ? '#fff' : '#94a3b8', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDD16 AI Generated')
-                    )
-                  ),
-                  ...availableChallenges.map((ch, ci) => React.createElement('div', { key: ci, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' }, onClick: () => upd('activeChallenge', d.activeChallenge === ci ? -1 : ci) },
-                    React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
-                    React.createElement('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
-                    d.activeChallenge === ci && React.createElement('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px', lineHeight: '1.4' } }, '\uD83D\uDCA1 Hint: ' + ch.hint)
-                  ))
                 )
               )
-            );
-          })(),
+            )
+          ),
+          tab === 'mixer' && React.createElement("div", { className: "space-y-4" },
+            React.createElement("div", { className: "grid grid-cols-3 gap-4 items-center" },
+              React.createElement("div", { className: "bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 text-center" },
+                React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix1.h + ',' + mix1.s + '%,' + mix1.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                React.createElement("p", { className: "text-xs font-bold text-indigo-700 mb-2" }, "Color A"),
+                [{ k: 'mix1H', max: 360, val: mix1.h }, { k: 'mix1S', max: 100, val: mix1.s }, { k: 'mix1L', max: 100, val: mix1.l }].map(function (s) {
+                  return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-indigo-500 mb-1" });
+                })
+              ),
+              React.createElement("div", { className: "text-center" },
+                React.createElement("div", { style: { width: 100, height: 100, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mixed.h + ',' + mixed.s + '%,' + mixed.l + '%)', border: '4px solid white', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' } }),
+                React.createElement("p", { className: "text-xs font-bold text-slate-700 mb-2" }, "\uD83C\uDFAF Result"),
+                React.createElement("input", { type: "range", min: 0, max: 100, value: Math.round(mixRatio * 100), onChange: function (e) { upd('mixRatio', parseInt(e.target.value) / 100); }, className: "w-full accent-pink-500" }),
+                React.createElement("p", { className: "text-[10px] text-slate-500" }, Math.round((1 - mixRatio) * 100) + '% A + ' + Math.round(mixRatio * 100) + '% B')
+              ),
+              React.createElement("div", { className: "bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 text-center" },
+                React.createElement("div", { style: { width: 80, height: 80, borderRadius: '50%', margin: '0 auto 8px', background: 'hsl(' + mix2.h + ',' + mix2.s + '%,' + mix2.l + '%)', border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }),
+                React.createElement("p", { className: "text-xs font-bold text-rose-700 mb-2" }, "Color B"),
+                [{ k: 'mix2H', max: 360, val: mix2.h }, { k: 'mix2S', max: 100, val: mix2.s }, { k: 'mix2L', max: 100, val: mix2.l }].map(function (s) {
+                  return React.createElement("input", { key: s.k, type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-rose-500 mb-1" });
+                })
+              )
+            )
+          ),
+          tab === 'pixel' && React.createElement("div", { className: "space-y-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+              React.createElement("div", { style: { width: 28, height: 28, borderRadius: 6, background: 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' } }),
+              React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Current color"),
+              React.createElement("div", { className: "ml-auto flex gap-1" },
+                [{ id: 'brush', icon: '\uD83D\uDD8C', label: 'Brush' }, { id: 'eraser', icon: '\uD83E\uDDFD', label: 'Eraser' }].map(function (t) {
+                  return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
+                }),
+                React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("select", { 'aria-label': 'Grid size', value: d.pixelGrid || 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
+                  [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
+              )
+            ),
+            React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
+          ),
+          tab === 'symmetry' && React.createElement("div", { className: "space-y-3" },
+            React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+              React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2728 Folds:"),
+              [4, 6, 8, 12, 16].map(function (f) {
+                return React.createElement("button", { key: f, onClick: function () { upd('symmetryFolds', f); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all " + ((d.symmetryFolds || 6) === f ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, f);
+              }),
+              React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
+              React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
+              React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
+            ),
+            React.createElement("canvas", { ref: symmetryRef, width: 512, height: 512, key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0f172a' } })
+          ),
+          tab === 'contrast' && React.createElement("div", { className: "space-y-4" },
+            React.createElement("div", { className: "grid grid-cols-2 gap-4" },
+              React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Foreground (Text)"),
+                React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', marginBottom: 8 } }),
+                [{ k: 'fgH', label: 'Hue', max: 360, val: fgH }, { k: 'fgS', label: 'Sat', max: 100, val: fgS }, { k: 'fgL', label: 'Light', max: 100, val: fgL }].map(function (s) {
+                  return React.createElement("div", { key: s.k, className: "mb-1" },
+                    React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
+                    React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                  );
+                })
+              ),
+              React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Background"),
+                React.createElement("div", { style: { width: '100%', height: 50, borderRadius: 8, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)', marginBottom: 8 } }),
+                [{ k: 'bgH', label: 'Hue', max: 360, val: bgH }, { k: 'bgS', label: 'Sat', max: 100, val: bgS }, { k: 'bgL', label: 'Light', max: 100, val: bgL }].map(function (s) {
+                  return React.createElement("div", { key: s.k, className: "mb-1" },
+                    React.createElement("label", { className: "text-[10px] text-slate-500 font-bold" }, s.label + ': ' + s.val),
+                    React.createElement("input", { type: "range", min: 0, max: s.max, value: s.val, onChange: function (e) { upd(s.k, parseInt(e.target.value)); }, className: "w-full accent-slate-600" })
+                  );
+                })
+              )
+            ),
+            React.createElement("div", { className: "rounded-xl border-2 p-6 text-center " + (passAA ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50') },
+              React.createElement("div", { className: "mb-3", style: { padding: 20, borderRadius: 12, background: 'hsl(' + bgH + ',' + bgS + '%,' + bgL + '%)' } },
+                React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 24, fontWeight: 'bold' } }, "Sample Text"),
+                React.createElement("p", { style: { color: 'hsl(' + fgH + ',' + fgS + '%,' + fgL + '%)', fontSize: 14 } }, "The quick brown fox jumps over the lazy dog")
+              ),
+              React.createElement("p", { className: "text-3xl font-bold " + (passAA ? 'text-green-700' : 'text-red-700') }, contrastRatio.toFixed(2) + ':1'),
+              React.createElement("div", { className: "flex justify-center gap-3 mt-3" },
+                React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAALarge ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAALarge ? '\u2705' : '\u274C') + ' AA Large'),
+                React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAA ? '\u2705' : '\u274C') + ' AA Normal'),
+                React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-bold " + (passAAA ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800') }, (passAAA ? '\u2705' : '\u274C') + ' AAA')
+              )
+            )
+          ),
+          React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: 'Art Studio', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+        );
+      })(),
 
-          // ═══════════════════════════════════════════════════════════════
-          // ██  DATA STUDIO — Bar / Pie / Line / Histogram Charts        ██
-          // ═══════════════════════════════════════════════════════════════
-          stemLabTab === 'explore' && stemLabTool === 'dataStudio' && (() => {
-            var d = (labToolData && labToolData._dataStudio) || {};
-            var updDS = function (key, val) {
-              setLabToolData(function (prev) {
-                var ds = Object.assign({}, (prev && prev._dataStudio) || {});
-                ds[key] = val;
-                return Object.assign({}, prev, { _dataStudio: ds });
-              });
-            };
-            var chartType = d.chartType || 'bar';
-            var dataRows = d.dataRows || [
-              { label: 'Apples', value: 45 },
-              { label: 'Bananas', value: 30 },
-              { label: 'Oranges', value: 55 },
-              { label: 'Grapes', value: 25 },
-              { label: 'Cherries', value: 40 }
-            ];
-            var chartTitle = d.chartTitle || 'My Data';
-            var editRow = d.editRow || { label: '', value: '' };
-            var showStats = d.showStats !== undefined ? d.showStats : true;
 
-            var CHART_TYPES = [
-              { id: 'bar', icon: '📊', label: 'Bar Chart' },
-              { id: 'pie', icon: '🥧', label: 'Pie Chart' },
-              { id: 'line', icon: '📈', label: 'Line Graph' },
-              { id: 'histogram', icon: '📉', label: 'Histogram' }
-            ];
+      // ═══════════════════════════════════════════════════════
+      // COMPANION PLANTING LAB — Canvas2D Animated Garden
+      // ═══════════════════════════════════════════════════════
+      stemLabTab === 'explore' && stemLabTool === 'companionPlanting' && (() => {
+        var d = (labToolData.companionPlanting) || {};
+        var upd = function (key, val) { var _k = {}; _k[key] = val; setLabToolData(function (prev) { return Object.assign({}, prev, { companionPlanting: Object.assign({}, prev.companionPlanting || {}, _k) }); }); };
 
-            var PRESETS = [
-              { label: '🍎 Fruit Sales', data: [{ label: 'Apples', value: 45 }, { label: 'Bananas', value: 30 }, { label: 'Oranges', value: 55 }, { label: 'Grapes', value: 25 }, { label: 'Cherries', value: 40 }], title: 'Fruit Sales' },
-              { label: '🌡️ Monthly Temps (°F)', data: [{ label: 'Jan', value: 32 }, { label: 'Feb', value: 35 }, { label: 'Mar', value: 45 }, { label: 'Apr', value: 55 }, { label: 'May', value: 65 }, { label: 'Jun', value: 75 }, { label: 'Jul', value: 82 }, { label: 'Aug', value: 80 }, { label: 'Sep', value: 70 }, { label: 'Oct', value: 58 }, { label: 'Nov', value: 45 }, { label: 'Dec', value: 35 }], title: 'Monthly Temperature' },
-              { label: '📚 Class Grades', data: [{ label: 'A', value: 8 }, { label: 'B', value: 15 }, { label: 'C', value: 12 }, { label: 'D', value: 5 }, { label: 'F', value: 2 }], title: 'Grade Distribution' },
-              { label: '🏀 Sports Points', data: [{ label: 'Game 1', value: 22 }, { label: 'Game 2', value: 18 }, { label: 'Game 3', value: 31 }, { label: 'Game 4', value: 27 }, { label: 'Game 5', value: 35 }, { label: 'Game 6', value: 29 }], title: 'Points Per Game' },
-              { label: '🎲 Dice Rolls (50)', data: (function () { var c = [0, 0, 0, 0, 0, 0]; for (var i = 0; i < 50; i++) c[Math.floor(Math.random() * 6)]++; return c.map(function (v, j) { return { label: '' + (j + 1), value: v }; }); })(), title: 'Dice Roll Distribution' }
-            ];
+        // ── State defaults ──
+        var phase = d.phase || 'plant';  // 'plant' | 'grow' | 'harvest'
+        var growthTime = d.growthTime || 0;   // 0-100
+        var growSpeed = d.growSpeed || 1;  // 1, 2, or 5
+        var cornPlanted = d.cornPlanted || false;
+        var beansPlanted = d.beansPlanted || false;
+        var squashPlanted = d.squashPlanted || false;
+        var compareMode = d.compareMode || false;
+        var showCulture = d.showCulture || false;
+        var showSoilDetail = d.showSoilDetail || false;
+        var quizActive = d.quizActive || false;
+        var quizQ = d.quizQ || 0;
+        var showSciencePanel = d.showSciencePanel || false;
+        var quizAnswer = d.quizAnswer || '';
+        var quizFeedback = d.quizFeedback || '';
 
-            // CSV import handler
-            var handleCSVImport = function (text) {
-              try {
-                var lines = text.trim().split('\n');
-                var rows = [];
-                lines.forEach(function (line, idx) {
-                  var parts = line.split(',').map(function (s) { return s.trim().replace(/^"|"$/g, ''); });
-                  if (parts.length >= 2) {
-                    var val = parseFloat(parts[1]);
-                    if (!isNaN(val)) rows.push({ label: parts[0] || ('Row ' + (idx + 1)), value: val });
-                  }
-                });
-                if (rows.length > 0) {
-                  updDS('dataRows', rows);
-                  if (addToast) addToast('Imported ' + rows.length + ' data points!', 'success');
-                }
-              } catch (e) {
-                if (addToast) addToast('CSV import failed. Use format: Label, Value', 'warning');
+        // ── Sims-style needs/meters ──
+        var day = d.day || 0;
+        var moisture = typeof d.moisture === 'number' ? d.moisture : 60;
+        var nitrogenLevel = typeof d.nitrogenLevel === 'number' ? d.nitrogenLevel : 35;
+        var pestPressure = typeof d.pestPressure === 'number' ? d.pestPressure : 10;
+        var weedCover = typeof d.weedCover === 'number' ? d.weedCover : 15;
+        var soilTemp = typeof d.soilTemp === 'number' ? d.soilTemp : 20;
+        var plantHealth = typeof d.plantHealth === 'number' ? d.plantHealth : 100;
+        var actionCooldowns = d.actionCooldowns || {};    // { water: 0, compost: 0, weed: 0, inspect: 0, mulch: 0 }
+        var eventLog = d.eventLog || [];
+        var eventPopup = d.eventPopup || null;
+        var synCornBeans = typeof d.synCornBeans === 'number' ? d.synCornBeans : 0;
+        var synBeansSoil = typeof d.synBeansSoil === 'number' ? d.synBeansSoil : 0;
+        var synSquashAll = typeof d.synSquashAll === 'number' ? d.synSquashAll : 0;
+        var seasonScore = d.seasonScore || 0;
+        var totalScore = d.totalScore || 0;
+        var harvestCount = d.harvestCount || 0;
+        var lastEventDay = d.lastEventDay || 0;
+        var nitrogenCarryover = d.nitrogenCarryover || 0;
+
+        // ── Season calculation ──
+        var DAYS_PER_SEASON = 30;
+        var seasonIndex = Math.floor((day % 120) / DAYS_PER_SEASON);  // 0=spring, 1=summer, 2=autumn, 3=winter
+        var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+        var seasonName = seasonNames[seasonIndex];
+        var dayInSeason = (day % 120) % DAYS_PER_SEASON;
+        var seasonFactors = [
+          { growth: 1.0, pestRate: 0.6, moistureDecay: 1.5, ambientTemp: 18 },  // spring
+          { growth: 1.4, pestRate: 1.3, moistureDecay: 2.5, ambientTemp: 30 },  // summer
+          { growth: 0.6, pestRate: 0.4, moistureDecay: 1.0, ambientTemp: 15 },  // autumn
+          { growth: 0.0, pestRate: 0.1, moistureDecay: 0.5, ambientTemp: 4 }    // winter
+        ];
+        var sf = seasonFactors[seasonIndex];
+
+        // ── Computed values from meters ──
+        var allPlanted = cornPlanted && beansPlanted && squashPlanted;
+        var soilHealth = Math.round(Math.max(0, Math.min(100,
+          (Math.min(nitrogenLevel, 100) * 0.25) +
+          (Math.min(moisture, 100) * 0.25) +
+          ((100 - Math.min(pestPressure, 100)) * 0.2) +
+          ((100 - Math.min(weedCover, 100)) * 0.15) +
+          (plantHealth * 0.15)
+        )));
+
+        // Synergy bonuses
+        var synergyBonus = 1 + (synCornBeans / 500) + (synBeansSoil / 500) + (synSquashAll / 500);
+
+        // Monoculture comparison (simulated decline)
+        var t_norm = growthTime / 100;
+        var monoN = Math.max(5, 30 - 25 * t_norm);
+        var monoH2O = Math.max(15, 40 - 25 * t_norm);
+        var monoWeeds = Math.min(95, 30 + 65 * t_norm);
+        var monoHealth = Math.round((monoN + monoH2O + (100 - monoWeeds)) / 3);
+
+        // Legacy aliases for gauge display
+        var nitrogen = nitrogenLevel;
+        var weedPressure = weedCover;
+        var temperature = soilTemp;
+
+        // ── Random Events Table ──
+        var _EVENTS = [
+          { id: 'rain', emoji: '🌧️', title: 'Heavy Rain', desc: 'A downpour soaks the soil! Nitrogen leaches with runoff.', effects: { moisture: 40, nitrogenLevel: -5 }, lesson: 'Nutrient leaching: Heavy rain washes soluble nitrogen deeper into soil, away from plant roots. Cover crops and mulch help prevent this.' },
+          { id: 'aphids', emoji: '🐛', title: 'Aphid Outbreak', desc: 'Aphids swarm the garden!', effects: { pestPressure: 30 }, lesson: 'Biological pest control: Aphids feed on plant sap. Ladybugs, lacewings, and parasitic wasps are natural predators that control aphid populations without chemicals.' },
+          { id: 'pollinators', emoji: '🐝', title: 'Pollinator Visit', desc: 'Bees and butterflies visit the garden!', effects: { plantHealth: 15 }, lesson: 'Pollination biology: Squash flowers especially depend on pollinators. Companion planting attracts diverse pollinators, improving fruit set across all crops.' },
+          { id: 'wind', emoji: '🌪️', title: 'Wind Storm', desc: 'Strong winds stress the plants.', effects: { plantHealth: -10, moisture: -10 }, lesson: 'Windbreak design: Dense planting and tall stalks (like corn) create natural windbreaks. Bean vines wrapped around corn stalks add structural stability.' },
+          { id: 'ladybugs', emoji: '🐞', title: 'Ladybug Arrival', desc: 'Ladybugs colonize the garden!', effects: { pestPressure: -25 }, lesson: 'Beneficial insects: A single ladybug eats ~5,000 aphids in its lifetime. Companion planting creates habitat diversity that attracts these natural pest controllers.' },
+          { id: 'heatwave', emoji: '☀️', title: 'Heat Wave', desc: 'Scorching heat dries the soil.', effects: { moisture: -20, soilTemp: 5 }, lesson: 'Microclimate management: Squash leaves shade the soil, reducing temperature by up to 10°F and cutting evaporation by 50%. This living mulch is nature\'s AC.' },
+          { id: 'mycorrhiza', emoji: '🍄', title: 'Mycorrhizal Bloom', desc: 'Beneficial fungi spread through the root zone!', effects: { nitrogenLevel: 15, plantHealth: 10 }, lesson: 'Fungal symbiosis: Mycorrhizal fungi extend plant root systems 100-1000×, trading soil minerals for plant sugars. This underground network connects all three sisters.' }
+        ];
+
+        // ── Action definitions ──
+        var _ACTIONS = [
+          { id: 'water', emoji: '💧', label: 'Water', effect: function () { return { moisture: 25 }; }, cooldownDays: 4, tip: 'Irrigate the soil' },
+          { id: 'compost', emoji: '🧱', label: 'Compost', effect: function () { return { nitrogenLevel: 20, plantHealth: 5 }; }, cooldownDays: 6, tip: 'Add organic compost' },
+          { id: 'weed', emoji: '🧹', label: 'Weed', effect: function () { return { weedCover: -30, pestPressure: -10 }; }, cooldownDays: 3, tip: 'Remove weeds' },
+          { id: 'inspect', emoji: '🔍', label: 'Inspect', effect: function () { return { pestPressure: -5 }; }, cooldownDays: 2, tip: 'Check for pests' },
+          { id: 'mulch', emoji: '🍂', label: 'Mulch', effect: function () { return { weedCover: -15, moisture: 10 }; }, cooldownDays: 5, tip: 'Spread organic mulch' }
+        ];
+
+        // ── Helper: apply effects dict ──
+        function applyEffects(efx) {
+          setLabToolData(function (prev) {
+            var cp = Object.assign({}, prev.companionPlanting || {});
+            Object.keys(efx).forEach(function (k) {
+              var cur = typeof cp[k] === 'number' ? cp[k] : 0;
+              cp[k] = Math.max(0, Math.min(100, cur + efx[k]));
+            });
+            return Object.assign({}, prev, { companionPlanting: cp });
+          });
+        }
+
+        // ── Perform action ──
+        function doAction(actionDef) {
+          var efx = actionDef.effect();
+          applyEffects(efx);
+          // Set cooldown
+          var newCD = Object.assign({}, actionCooldowns);
+          newCD[actionDef.id] = day + actionDef.cooldownDays;
+          upd('actionCooldowns', newCD);
+          awardStemXP('companion_action_' + actionDef.id, 5, actionDef.label + ' action');
+          if (addToast) addToast(actionDef.emoji + ' ' + actionDef.label + '! ' + actionDef.tip, 'success');
+        }
+
+        // ── Quiz data ──
+        var quizzes = [
+          { q: 'Which plant fixes atmospheric nitrogen into the soil?', opts: ['Corn', 'Beans', 'Squash'], correct: 'Beans', explain: 'Bean roots house Rhizobium bacteria that convert N₂ gas into ammonia (NH₃), enriching the soil for all three plants.' },
+          { q: 'What role do squash leaves play in the Three Sisters system?', opts: ['Structural support', 'Living mulch', 'Nitrogen fixation'], correct: 'Living mulch', explain: 'Squash\'s large leaves shade the soil, retaining moisture, cooling roots, and suppressing weed growth — acting as living mulch.' },
+          { q: 'Why are beans planted around the corn stalks?', opts: ['For shade', 'To climb the stalks', 'For color'], correct: 'To climb the stalks', explain: 'Corn provides a natural trellis for bean vines to climb, replacing the need for artificial supports.' },
+          { q: 'The milpa system originated approximately how many years ago?', opts: ['500 years', '2,000 years', '7,000+ years'], correct: '7,000+ years', explain: 'Archaeological evidence traces the milpa companion planting system to Mesoamerica over 7,000 years ago.' },
+          { q: 'Corn and beans together provide a complete protein because:', opts: ['They taste good together', 'Their amino acid profiles complement each other', 'They grow at the same rate'], correct: 'Their amino acid profiles complement each other', explain: 'Corn is rich in methionine but low in lysine; beans are rich in lysine but low in methionine. Together they form a complete protein.' },
+          { q: 'What organisms in bean root nodules actually fix nitrogen?', opts: ['Mycorrhizal fungi', 'Rhizobium bacteria', 'Earthworms'], correct: 'Rhizobium bacteria', explain: 'Rhizobium bacteria form a symbiotic relationship with legume roots, converting atmospheric N₂ into plant-usable ammonia through nitrogenase enzyme.' },
+          { q: 'How do prickly squash stems help the garden?', opts: ['They attract pollinators', 'They deter pests like raccoons and deer', 'They provide nutrients'], correct: 'They deter pests like raccoons and deer', explain: 'The spiny, prickly stems and vines of many squash varieties create a natural barrier that discourages animals from entering the garden.' },
+          { q: 'What is the Haudenosaunee name for the Three Sisters?', opts: ['Milpa', 'De-oh-há-ko', 'Teosinte'], correct: 'De-oh-há-ko', explain: 'De-oh-há-ko means "they sustain us" — the Haudenosaunee view the Three Sisters as inseparable spiritual beings, not merely crops.' }
+        ];
+        var currentQuiz = quizzes[quizQ % quizzes.length];
+
+        // ── Canvas Renderer ──
+        var _lastGardenCanvas = null;
+        var canvasRef = function (canvasEl) {
+          if (!canvasEl) {
+            if (_lastGardenCanvas && _lastGardenCanvas._gardenAnim) {
+              cancelAnimationFrame(_lastGardenCanvas._gardenAnim);
+              _lastGardenCanvas._gardenInit = false;
+            }
+            _lastGardenCanvas = null;
+            return;
+          }
+          _lastGardenCanvas = canvasEl;
+          if (canvasEl._gardenInit) return;
+          canvasEl._gardenInit = true;
+          var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+          var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+          var ctx = canvasEl.getContext('2d');
+          var dpr = 2;
+          var tick = 0;
+          var _gt = growthTime;
+
+          // Listen for growth updates via data attribute
+          canvasEl.setAttribute('data-growth', growthTime);
+          canvasEl.setAttribute('data-corn', cornPlanted ? '1' : '0');
+          canvasEl.setAttribute('data-beans', beansPlanted ? '1' : '0');
+          canvasEl.setAttribute('data-squash', squashPlanted ? '1' : '0');
+          canvasEl.setAttribute('data-compare', compareMode ? '1' : '0');
+
+          // Garden entities
+          var particles = [];
+          for (var pi = 0; pi < 40; pi++) {
+            particles.push({ x: Math.random() * cW / dpr, y: Math.random() * cH * 0.3 / dpr, vx: (Math.random() - 0.5) * 0.3, vy: -0.1 - Math.random() * 0.2, life: Math.random() * 200, type: pi < 15 ? 'pollen' : pi < 25 ? 'butterfly' : 'n2' });
+          }
+
+          function drawMound(cx, cy, w, h, label, _corn, _beans, _squash, _growth, isMono) {
+            var gt = _growth / 100;
+
+            // ── Underground soil layers ──
+            // Subsoil
+            ctx.fillStyle = '#8B6914';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + h * 0.7, w * 1.2, h * 0.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Topsoil / mound
+            var moundGrad = ctx.createRadialGradient(cx, cy - h * 0.1, 0, cx, cy, w);
+            moundGrad.addColorStop(0, '#5C4033');
+            moundGrad.addColorStop(0.6, '#3E2723');
+            moundGrad.addColorStop(1, '#2E1A0E');
+            ctx.fillStyle = moundGrad;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w, h, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Topsoil highlights
+            ctx.fillStyle = 'rgba(139,109,60,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(cx - w * 0.2, cy - h * 0.3, w * 0.3, h * 0.2, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // ── Root systems underground ──
+            if (_corn && gt > 0.1) {
+              ctx.strokeStyle = 'rgba(255,235,180,0.25)';
+              ctx.lineWidth = 1.5;
+              for (var ri = 0; ri < 5; ri++) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy + h * 0.2);
+                var rx = cx + (ri - 2) * w * 0.15;
+                var ry = cy + h * (0.5 + gt * 0.4);
+                ctx.quadraticCurveTo(cx + (ri - 2) * w * 0.08, cy + h * 0.4, rx, ry);
+                ctx.stroke();
               }
-            };
+            }
+            // Bean root nodules (nitrogen-fixing!)
+            if (_beans && gt > 0.2) {
+              var noduleGlow = 0.3 + 0.4 * Math.sin(tick * 0.03);
+              for (var ni = 0; ni < 6; ni++) {
+                var nx = cx + (Math.random() - 0.5) * w * 0.8;
+                var ny = cy + h * (0.3 + Math.random() * 0.4);
+                ctx.fillStyle = 'rgba(120,255,180,' + (noduleGlow * gt) + ')';
+                ctx.beginPath();
+                ctx.arc(nx, ny, 2 + gt * 3, 0, Math.PI * 2);
+                ctx.fill();
+                // N₂ label near nodule
+                if (ni < 2 && gt > 0.5) {
+                  ctx.fillStyle = 'rgba(100,255,160,' + (noduleGlow * 0.7) + ')';
+                  ctx.font = (8 + gt * 4) + 'px monospace';
+                  ctx.fillText('N₂→NH₃', nx + 5, ny - 3);
+                }
+              }
+            }
+            // ── Mycorrhizal fungal network (connecting all root systems) ──
+            if ((_corn && _beans || _corn && _squash || _beans && _squash) && gt > 0.25) {
+              var netAlpha = Math.min(0.5, (gt - 0.25) * 0.8) * (0.5 + 0.5 * Math.sin(tick * 0.015));
+              ctx.strokeStyle = 'rgba(180,140,255,' + netAlpha + ')';
+              ctx.lineWidth = 0.8;
+              // Draw branching fungal threads across the underground zone
+              var netY0 = cy + h * 0.3;
+              var netY1 = cy + h * 0.7;
+              var netSpanX = w * 0.9;
+              for (var fi = 0; fi < 8; fi++) {
+                var fx0 = cx - netSpanX * 0.5 + fi * netSpanX * 0.14;
+                var fy0 = netY0 + (fi % 3) * (netY1 - netY0) * 0.3;
+                var fx1 = fx0 + netSpanX * 0.18 + Math.sin(tick * 0.008 + fi) * 5;
+                var fy1 = fy0 + (netY1 - netY0) * 0.2 + Math.cos(tick * 0.01 + fi * 2) * 4;
+                ctx.beginPath();
+                ctx.moveTo(fx0, fy0);
+                ctx.bezierCurveTo(fx0 + 8, fy0 - 4, fx1 - 6, fy1 + 3, fx1, fy1);
+                ctx.stroke();
+                // Branch nodes (hyphal tips / arbuscules)
+                if (fi % 2 === 0) {
+                  ctx.fillStyle = 'rgba(200,160,255,' + (netAlpha * 0.8) + ')';
+                  ctx.beginPath(); ctx.arc(fx1, fy1, 1.5 + gt, 0, Math.PI * 2); ctx.fill();
+                }
+              }
+              // Nutrient transfer indicators (small dots flowing along threads)
+              if (gt > 0.5) {
+                for (var nd = 0; nd < 4; nd++) {
+                  var ndFrac = ((tick * 0.01 + nd * 0.25) % 1);
+                  var ndX = cx - netSpanX * 0.4 + ndFrac * netSpanX * 0.8;
+                  var ndY = netY0 + (netY1 - netY0) * 0.3 + Math.sin(ndFrac * Math.PI * 2 + nd) * 6;
+                  ctx.fillStyle = 'rgba(255,215,100,' + (0.3 + 0.4 * Math.sin(tick * 0.04 + nd)) + ')';
+                  ctx.beginPath(); ctx.arc(ndX, ndY, 1.8, 0, Math.PI * 2); ctx.fill();
+                }
+              }
+            }
 
-            // Statistics
-            var values = dataRows.map(function (r) { return r.value; });
-            var total = values.reduce(function (s, v) { return s + v; }, 0);
-            var mean = values.length > 0 ? total / values.length : 0;
-            var sorted = values.slice().sort(function (a, b) { return a - b; });
-            var median = sorted.length > 0 ? (sorted.length % 2 ? sorted[Math.floor(sorted.length / 2)] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2) : 0;
-            var maxVal = Math.max.apply(null, values.concat([1]));
-            var minVal = Math.min.apply(null, values.concat([0]));
-            var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
+            // ── Corn stalks (enhanced with segments, leaf midribs, silk, husks) ──
+            if (_corn) {
+              var cornH = gt * h * 2.2;
+              var sway = Math.sin(tick * 0.015) * 3 * gt;
+              for (var ci = 0; ci < 3; ci++) {
+                var cornX = cx + (ci - 1) * w * 0.15;
+                // Stalk with segments
+                var segCount = Math.floor(3 + gt * 5);
+                for (var seg = 0; seg < segCount; seg++) {
+                  var segFrac0 = seg / segCount;
+                  var segFrac1 = (seg + 1) / segCount;
+                  var sx0 = cornX + sway * segFrac0;
+                  var sy0 = cy - h * 0.2 - cornH * segFrac0;
+                  var sx1 = cornX + sway * segFrac1;
+                  var sy1 = cy - h * 0.2 - cornH * segFrac1;
+                  var segWidth = 3 + gt * 3 - seg * 0.3;
+                  // Alternating segment shading for realism
+                  ctx.strokeStyle = seg % 2 === 0 ? '#2E7D32' : '#388E3C';
+                  ctx.lineWidth = Math.max(1.5, segWidth);
+                  ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+                  // Node joint ring
+                  if (seg > 0 && seg < segCount - 1) {
+                    ctx.beginPath();
+                    ctx.arc(sx0, sy0, segWidth * 0.6, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(27,94,32,0.4)';
+                    ctx.fill();
+                  }
+                }
+                // Corn leaves with midrib
+                if (gt > 0.3) {
+                  for (var li = 0; li < 4; li++) {
+                    var ly = cy - h * 0.2 - cornH * (0.25 + li * 0.2);
+                    var leafSway = Math.sin(tick * 0.02 + li + ci) * 5;
+                    var leafDir = (li % 2 === 0 ? 1 : -1);
+                    var leafLen = 30 + gt * 10 - li * 3;
+                    var leafTipX = cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen + leafSway;
+                    var leafTipY = ly + 8;
+                    // Leaf blade
+                    ctx.beginPath();
+                    ctx.moveTo(cornX + sway * (0.25 + li * 0.2), ly);
+                    ctx.quadraticCurveTo(
+                      cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen * 0.6 + leafSway * 0.5, ly - 6,
+                      leafTipX, leafTipY
+                    );
+                    ctx.strokeStyle = '#43A047';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+                    // Fill leaf shape
+                    ctx.beginPath();
+                    ctx.moveTo(cornX + sway * (0.25 + li * 0.2), ly);
+                    ctx.quadraticCurveTo(
+                      cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen * 0.6 + leafSway * 0.5, ly - 8,
+                      leafTipX, leafTipY
+                    );
+                    ctx.quadraticCurveTo(
+                      cornX + sway * (0.25 + li * 0.2) + leafDir * leafLen * 0.5 + leafSway * 0.3, ly + 3,
+                      cornX + sway * (0.25 + li * 0.2), ly
+                    );
+                    ctx.fillStyle = 'rgba(76,175,80,' + (0.3 + gt * 0.2) + ')';
+                    ctx.fill();
+                    // Midrib line
+                    ctx.beginPath();
+                    ctx.moveTo(cornX + sway * (0.25 + li * 0.2), ly);
+                    ctx.lineTo(leafTipX, leafTipY);
+                    ctx.strokeStyle = 'rgba(27,94,32,0.4)';
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                  }
+                }
+                // Corn tassels with silk threads
+                if (gt > 0.7) {
+                  var tasselBase = cy - h * 0.2 - cornH;
+                  ctx.fillStyle = '#FDD835';
+                  for (var ti = 0; ti < 5; ti++) {
+                    var tAngle = (ti / 5) * Math.PI - Math.PI * 0.5;
+                    var tLen = 6 + gt * 4;
+                    ctx.beginPath();
+                    ctx.moveTo(cornX + sway * 1.3, tasselBase);
+                    ctx.lineTo(cornX + sway * 1.3 + Math.cos(tAngle) * tLen, tasselBase - Math.abs(Math.sin(tAngle)) * tLen * 0.8);
+                    ctx.strokeStyle = '#FDD835';
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    // Pollen dots at tips
+                    ctx.beginPath();
+                    ctx.arc(cornX + sway * 1.3 + Math.cos(tAngle) * tLen, tasselBase - Math.abs(Math.sin(tAngle)) * tLen * 0.8, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
+                }
+                // Corn ears with husk detail
+                if (gt > 0.6) {
+                  var earY = cy - h * 0.2 - cornH * 0.55;
+                  var earX = cornX + sway * 0.5 + 8;
+                  // Husk (outer layers)
+                  ctx.beginPath();
+                  ctx.ellipse(earX - 1, earY, 6 + gt * 2, 10 + gt * 5, 0.3, 0, Math.PI * 2);
+                  ctx.fillStyle = '#8BC34A';
+                  ctx.fill();
+                  // Ear (inner yellow)
+                  ctx.beginPath();
+                  ctx.ellipse(earX, earY, 4, 8 + gt * 4, 0.3, 0, Math.PI * 2);
+                  ctx.fillStyle = '#FFB300';
+                  ctx.fill();
+                  // Kernel rows
+                  ctx.beginPath();
+                  ctx.ellipse(earX, earY, 3, 6 + gt * 3, 0.3, 0, Math.PI * 2);
+                  ctx.fillStyle = '#C8B900';
+                  ctx.fill();
+                  // Silk threads emerging from top of ear
+                  if (gt > 0.75) {
+                    for (var si2 = 0; si2 < 4; si2++) {
+                      ctx.beginPath();
+                      ctx.moveTo(earX, earY - 8 - gt * 4);
+                      ctx.quadraticCurveTo(
+                        earX + (si2 - 1.5) * 4 + Math.sin(tick * 0.03 + si2) * 2,
+                        earY - 12 - gt * 6,
+                        earX + (si2 - 1.5) * 6 + Math.sin(tick * 0.02 + si2) * 3,
+                        earY - 16 - gt * 5
+                      );
+                      ctx.strokeStyle = 'rgba(255,235,180,0.6)';
+                      ctx.lineWidth = 0.6;
+                      ctx.stroke();
+                    }
+                  }
+                }
+              }
+            }
 
-            // Color palette
-            var COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#a855f7', '#eab308', '#3b82f6'];
+            // ── Bean vines climbing corn ──
+            if (_beans && _corn) {
+              var beanH = gt * h * 1.8;
+              for (var bi = 0; bi < 2; bi++) {
+                var bx = cx + (bi === 0 ? -1 : 1) * w * 0.12;
+                var bSway = Math.sin(tick * 0.02 + bi * 2) * 4;
+                ctx.strokeStyle = '#1B5E20';
+                ctx.lineWidth = 1.5 + gt;
+                ctx.beginPath();
+                ctx.moveTo(bx, cy - h * 0.1);
+                // Spiral up corn stalk
+                for (var bsi = 0; bsi < 10; bsi++) {
+                  var bsy = cy - h * 0.1 - beanH * bsi / 10;
+                  var bsx = bx + Math.sin(bsi * 0.8 + tick * 0.01) * (6 + gt * 4) + bSway * (bsi / 10);
+                  ctx.lineTo(bsx, bsy);
+                }
+                ctx.stroke();
+                // Bean pods
+                if (gt > 0.5) {
+                  ctx.fillStyle = '#4CAF50';
+                  for (var bpi = 0; bpi < 3; bpi++) {
+                    var bpy = cy - h * 0.1 - beanH * (0.3 + bpi * 0.2);
+                    var bpx = bx + Math.sin(bpi * 0.8 + tick * 0.01) * (6 + gt * 4) + bSway * (bpi * 0.3 / 3) + 6;
+                    ctx.beginPath();
+                    ctx.ellipse(bpx, bpy, 2, 5 + gt * 3, 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
+                }
+              }
+            } else if (_beans && !_corn) {
+              // Beans without corn — sprawling on ground
+              ctx.strokeStyle = '#1B5E20';
+              ctx.lineWidth = 1.5;
+              for (var bgi = 0; bgi < 4; bgi++) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - h * 0.1);
+                ctx.quadraticCurveTo(cx + (bgi - 1.5) * w * 0.3, cy - h * 0.15 - gt * 15, cx + (bgi - 1.5) * w * 0.5, cy - h * 0.05);
+                ctx.stroke();
+              }
+            }
 
-            // Dark theme
-            var _bg = isDark || isContrast ? '#0f172a' : '#f0fdfa';
-            var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
-            var _card = isDark || isContrast ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)';
-            var _border = isDark || isContrast ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.15)';
-            var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
-            var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
-            var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
-            var _svgBg = isDark || isContrast ? '#1e293b' : '#ffffff';
+            // ── Squash vines & leaves (enhanced with multi-lobed leaves, cross-veins, flowers, ribbed fruit) ──
+            if (_squash) {
+              var sqSpread = gt * w * 1.3;
+              for (var si = 0; si < 5; si++) {
+                var angle = (si / 5) * Math.PI * 2 - Math.PI * 0.5;
+                var sqx = cx + Math.cos(angle) * sqSpread * (0.5 + si * 0.12);
+                var sqy = cy + Math.sin(angle) * h * 0.3 * gt + h * 0.1;
+                var vineSway = Math.sin(tick * 0.01 + si) * 3;
+                // Vine with tapered width
+                ctx.strokeStyle = '#2E7D32';
+                ctx.lineWidth = 2 + gt * 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.quadraticCurveTo(cx + (sqx - cx) * 0.5 + vineSway, sqy - 10, sqx, sqy);
+                ctx.stroke();
+                // Tendrils along vine
+                if (gt > 0.3) {
+                  var midVX = cx + (sqx - cx) * 0.5 + vineSway;
+                  var midVY = sqy - 10;
+                  ctx.strokeStyle = 'rgba(46,125,50,0.5)';
+                  ctx.lineWidth = 0.8;
+                  for (var tn = 0; tn < 2; tn++) {
+                    var tnX = midVX + (tn === 0 ? -8 : 8);
+                    var tnY = midVY + tn * 5;
+                    ctx.beginPath(); ctx.moveTo(midVX + (sqx - cx) * 0.1 * tn, midVY + tn * 3);
+                    ctx.bezierCurveTo(tnX, tnY - 6, tnX + (tn === 0 ? -4 : 4), tnY - 8, tnX + (tn === 0 ? -2 : 2), tnY - 3);
+                    ctx.stroke();
+                  }
+                }
+                // Multi-lobed squash leaves
+                if (gt > 0.2) {
+                  var leafSize = 8 + gt * 18;
+                  var leafAlpha = 0.6 + gt * 0.3;
+                  // Draw 5-lobed leaf shape
+                  ctx.save();
+                  ctx.translate(sqx + vineSway, sqy);
+                  ctx.rotate(angle + Math.sin(tick * 0.01) * 0.1);
+                  // Main leaf body
+                  ctx.beginPath();
+                  for (var lobe = 0; lobe < 5; lobe++) {
+                    var lobeAngle = (lobe / 5) * Math.PI * 2 - Math.PI / 2;
+                    var lobeR = leafSize * (lobe % 2 === 0 ? 1 : 0.7);
+                    if (lobe === 0) {
+                      ctx.moveTo(Math.cos(lobeAngle) * lobeR, Math.sin(lobeAngle) * lobeR * 0.6);
+                    } else {
+                      ctx.quadraticCurveTo(
+                        Math.cos(lobeAngle - 0.3) * leafSize * 0.4,
+                        Math.sin(lobeAngle - 0.3) * leafSize * 0.35,
+                        Math.cos(lobeAngle) * lobeR,
+                        Math.sin(lobeAngle) * lobeR * 0.6
+                      );
+                    }
+                  }
+                  ctx.closePath();
+                  ctx.fillStyle = 'rgba(76,175,80,' + leafAlpha + ')';
+                  ctx.fill();
+                  ctx.strokeStyle = 'rgba(46,125,50,0.4)';
+                  ctx.lineWidth = 0.6;
+                  ctx.stroke();
+                  // Central vein + cross veins
+                  ctx.strokeStyle = 'rgba(27,94,32,0.35)';
+                  ctx.lineWidth = 0.8;
+                  ctx.beginPath(); ctx.moveTo(-leafSize * 0.6, 0); ctx.lineTo(leafSize * 0.6, 0); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(0, -leafSize * 0.4); ctx.lineTo(0, leafSize * 0.4); ctx.stroke();
+                  // Cross veins
+                  for (var cv = 0; cv < 3; cv++) {
+                    var cvX = (-0.4 + cv * 0.4) * leafSize;
+                    ctx.beginPath();
+                    ctx.moveTo(cvX, -leafSize * 0.25); ctx.lineTo(cvX + 2, leafSize * 0.25);
+                    ctx.strokeStyle = 'rgba(27,94,32,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
+                  }
+                  ctx.restore();
+                }
+                // Squash flower buds (before fruit)
+                if (gt > 0.4 && gt < 0.7 && si < 3) {
+                  var flX = sqx + vineSway + 6;
+                  var flY = sqy - 3;
+                  ctx.beginPath();
+                  for (var petal = 0; petal < 5; petal++) {
+                    var petalAngle = (petal / 5) * Math.PI * 2;
+                    var petalR = 4 + gt * 3;
+                    ctx.ellipse(
+                      flX + Math.cos(petalAngle) * petalR * 0.5,
+                      flY + Math.sin(petalAngle) * petalR * 0.5,
+                      petalR * 0.4, petalR * 0.25, petalAngle, 0, Math.PI * 2
+                    );
+                  }
+                  ctx.fillStyle = 'rgba(255,193,7,0.7)';
+                  ctx.fill();
+                  // Flower center
+                  ctx.beginPath(); ctx.arc(flX, flY, 2, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(255,152,0,0.8)'; ctx.fill();
+                }
+                // Squash fruits with ribs
+                if (gt > 0.65 && si < 3) {
+                  var frX = sqx + 5;
+                  var frY = sqy + 3;
+                  var frW = 6 + gt * 5;
+                  var frH = 4 + gt * 3;
+                  ctx.fillStyle = si === 0 ? '#FF8F00' : si === 1 ? '#F9A825' : '#FFB300';
+                  ctx.beginPath();
+                  ctx.ellipse(frX, frY, frW, frH, 0.2, 0, Math.PI * 2);
+                  ctx.fill();
+                  // Ribs
+                  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+                  ctx.lineWidth = 0.6;
+                  for (var rib = 0; rib < 4; rib++) {
+                    ctx.beginPath();
+                    var ribAngle = (rib / 4) * Math.PI;
+                    ctx.ellipse(frX, frY, frW * 0.95, frH * 0.3, 0.2 + ribAngle * 0.15, 0, Math.PI * 2);
+                    ctx.stroke();
+                  }
+                  // Shadow
+                  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                  ctx.beginPath();
+                  ctx.ellipse(frX + 2, frY + frH * 0.7, frW * 0.8, frH * 0.3, 0.2, 0, Math.PI * 2);
+                  ctx.fill();
+                  // Stem nub
+                  ctx.fillStyle = '#558B2F';
+                  ctx.beginPath(); ctx.arc(frX - frW + 2, frY - 1, 2, 0, Math.PI * 2); ctx.fill();
+                }
+              }
+              // Shade coverage indicator
+              if (gt > 0.3) {
+                ctx.fillStyle = 'rgba(76,175,80,0.08)';
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + h * 0.1, sqSpread * 1.1, h * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
 
-            // SVG dimensions
-            var W = 440, H = 280, pad = 45;
+            // ── Earthworms in soil ──
+            if (gt > 0.15) {
+              for (var wi = 0; wi < 3; wi++) {
+                var wormX = cx + (wi - 1) * w * 0.35;
+                var wormY = cy + h * (0.25 + wi * 0.15);
+                var wormPhase = tick * 0.03 + wi * 2;
+                var wormAlpha = 0.3 + gt * 0.3;
+                ctx.strokeStyle = 'rgba(205,133,110,' + wormAlpha + ')';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(wormX, wormY);
+                for (var ws = 1; ws <= 6; ws++) {
+                  ctx.lineTo(
+                    wormX + ws * 4 + Math.sin(wormPhase + ws * 0.8) * 3,
+                    wormY + Math.cos(wormPhase + ws * 0.6) * 2
+                  );
+                }
+                ctx.stroke();
+                // Worm head
+                ctx.fillStyle = 'rgba(180,110,90,' + wormAlpha + ')';
+                ctx.beginPath();
+                ctx.arc(wormX + 24 + Math.sin(wormPhase + 4.8) * 3, wormY + Math.cos(wormPhase + 3.6) * 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
 
-            return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
-              // Header
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("div", null,
-                  React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "📈 Data Studio"),
-                  React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Create charts, import data & explore statistics")
+            // Mound label
+            if (label) {
+              ctx.fillStyle = 'rgba(255,255,255,0.85)';
+              ctx.font = 'bold ' + 11 + 'px system-ui';
+              ctx.textAlign = 'center';
+              ctx.fillText(label, cx, cy + h + 16);
+            }
+          }
+
+          function draw() {
+            tick++;
+            // Read data attrs for latest state
+            _gt = parseFloat(canvasEl.getAttribute('data-growth') || '0');
+            var _corn = canvasEl.getAttribute('data-corn') === '1';
+            var _beans = canvasEl.getAttribute('data-beans') === '1';
+            var _squash = canvasEl.getAttribute('data-squash') === '1';
+            var _compare = canvasEl.getAttribute('data-compare') === '1';
+            var _season = parseInt(canvasEl.getAttribute('data-season') || '0', 10);
+            var _dayNum = parseInt(canvasEl.getAttribute('data-day') || '0', 10);
+            var _moistLvl = parseInt(canvasEl.getAttribute('data-moisture') || '60', 10);
+            var _pestLvl = parseInt(canvasEl.getAttribute('data-pest') || '0', 10);
+            var _weedLvl = parseInt(canvasEl.getAttribute('data-weed') || '0', 10);
+            var _healthLvl = parseInt(canvasEl.getAttribute('data-health') || '100', 10);
+
+            ctx.clearRect(0, 0, cW, cH);
+
+            // ── Season-aware Sky ──
+            var dayPhase = (Math.sin(tick * 0.003) + 1) / 2;
+            var seasonSkies = [
+              { topH: 170, topS: 65, topL: 65, botH: 90, botS: 45, botL: 80 },   // spring — fresh blue-green
+              { topH: 210, topS: 70, topL: 60, botH: 40, botS: 55, botL: 82 },   // summer — deep blue
+              { topH: 220, topS: 35, topL: 50, botH: 25, botS: 60, botL: 70 },   // autumn — muted orange
+              { topH: 215, topS: 25, topL: 40, botH: 220, botS: 15, botL: 65 }   // winter — gray-blue
+            ];
+            var ssky = seasonSkies[_season];
+            var skyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.45);
+            skyGrad.addColorStop(0, 'hsl(' + ssky.topH + ',' + Math.round(ssky.topS + dayPhase * 10) + '%,' + Math.round(ssky.topL + dayPhase * 10) + '%)');
+            skyGrad.addColorStop(1, 'hsl(' + ssky.botH + ',' + Math.round(ssky.botS + dayPhase * 15) + '%,' + Math.round(ssky.botL + dayPhase * 8) + '%)');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, cW, cH * 0.45);
+
+            // Sun (smaller in winter, bigger in summer)
+            var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
+            var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
+            var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+            var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
+            sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
+            sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
+            sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
+            ctx.fillStyle = sunGlow;
+            ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
+            ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
+            ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+
+            // Snowflakes in winter
+            if (_season === 3) {
+              ctx.fillStyle = 'rgba(255,255,255,0.7)';
+              for (var sfi = 0; sfi < 20; sfi++) {
+                var sfx = ((tick * 0.5 + sfi * 53) % cW);
+                var sfy = ((tick * 0.8 + sfi * 97) % (cH * 0.45));
+                ctx.beginPath();
+                ctx.arc(sfx / dpr, sfy / dpr, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+
+            // Clouds
+            ctx.fillStyle = _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,255,255,0.6)';
+            for (var cli = 0; cli < 4; cli++) {
+              var clx = ((tick * 0.15 + cli * cW / 4) % (cW + 80)) - 40;
+              var cly = cH * (0.05 + cli * 0.06);
+              ctx.beginPath();
+              ctx.ellipse(clx, cly, 30 + cli * 8, 10 + cli * 3, 0, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.ellipse(clx + 20, cly - 5, 20 + cli * 5, 8 + cli * 2, 0, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            // ── Ground (season-tinted) ──
+            var groundColors = [
+              ['#7CB342', '#558B2F', '#33691E'],  // spring
+              ['#8BC34A', '#689F38', '#33691E'],  // summer
+              ['#A1887F', '#795548', '#4E342E'],  // autumn
+              ['#B0BEC5', '#78909C', '#546E7A']   // winter
+            ];
+            var gc = groundColors[_season];
+            var groundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
+            groundGrad.addColorStop(0, gc[0]);
+            groundGrad.addColorStop(0.3, gc[1]);
+            groundGrad.addColorStop(1, gc[2]);
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, cH * 0.4, cW, cH * 0.6);
+
+            // Grass blades (brown in autumn/winter)
+            for (var gi = 0; gi < 60; gi++) {
+              var gx = (gi / 60) * cW;
+              var gy = cH * 0.4 + 2;
+              var gSway = Math.sin(tick * 0.015 + gi * 0.5) * 3;
+              ctx.strokeStyle = _season >= 2 ? 'rgba(161,136,127,0.4)' : 'rgba(104,159,56,0.5)';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(gx, gy);
+              ctx.lineTo(gx + gSway, gy - 6 - Math.random() * 6);
+              ctx.stroke();
+            }
+
+            // ── Draw garden mound(s) ──
+            if (_compare) {
+              // Split view
+              drawMound(cW * 0.27 / dpr, cH * 0.55 / dpr, 70, 25, 'Three Sisters (Milpa)', _corn, _beans, _squash, _gt, false);
+              drawMound(cW * 0.73 / dpr, cH * 0.55 / dpr, 70, 25, 'Monoculture Corn', true, false, false, _gt, true);
+
+              // Divider
+              ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+              ctx.setLineDash([6, 4]);
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(cW / 2, cH * 0.1);
+              ctx.lineTo(cW / 2, cH * 0.95);
+              ctx.stroke();
+              ctx.setLineDash([]);
+
+              // Labels
+              ctx.fillStyle = 'rgba(255,255,255,0.7)';
+              ctx.font = 'bold 10px system-ui';
+              ctx.textAlign = 'center';
+              ctx.fillText('COMPANION PLANTING', cW * 0.27 / dpr, cH * 0.92 / dpr);
+              ctx.fillText('MONOCULTURE', cW * 0.73 / dpr, cH * 0.92 / dpr);
+            } else {
+              drawMound(cW * 0.5 / dpr, cH * 0.58 / dpr, 100, 35, '', _corn, _beans, _squash, _gt, false);
+            }
+
+            // ── Floating particles (pollen, pollinators, N₂ symbols) ──
+            particles.forEach(function (p) {
+              p.life++;
+              p.x += p.vx + Math.sin(tick * 0.01 + p.life * 0.1) * 0.2;
+              p.y += p.vy;
+              if (p.y < -10 || p.life > 250) { p.y = cH * 0.35 / dpr; p.x = Math.random() * cW / dpr; p.life = 0; }
+              var pAlpha = Math.min(1, p.life / 30) * (1 - Math.max(0, p.life - 200) / 50);
+              if (p.type === 'pollen' && _gt > 50) {
+                // Pollen with glow
+                ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.5) + ')';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+                // Pollen glow halo
+                ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.15) + ')';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill();
+              } else if (p.type === 'butterfly' && _gt > 30) {
+                // Enhanced butterfly with detailed wings
+                var wingFlap = Math.sin(tick * 0.08 + p.life) * 0.5;
+                var bfSize = 3.5;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                // Left upper wing
+                ctx.beginPath();
+                ctx.ellipse(-bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, -0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,152,0,' + (pAlpha * 0.7) + ')';
+                ctx.fill();
+                // Right upper wing
+                ctx.beginPath();
+                ctx.ellipse(bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                // Left lower wing (smaller)
+                ctx.beginPath();
+                ctx.ellipse(-bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, -0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,183,77,' + (pAlpha * 0.6) + ')';
+                ctx.fill();
+                // Right lower wing
+                ctx.beginPath();
+                ctx.ellipse(bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                // Wing pattern spots
+                ctx.fillStyle = 'rgba(230,100,0,' + (pAlpha * 0.4) + ')';
+                ctx.beginPath(); ctx.arc(-bfSize * 0.6, -bfSize * 0.1, bfSize * 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(bfSize * 0.6, -bfSize * 0.1, bfSize * 0.2, 0, Math.PI * 2); ctx.fill();
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(0, 0, bfSize * 0.08, bfSize * 0.45, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(40,40,40,' + pAlpha + ')';
+                ctx.fill();
+                // Head
+                ctx.beginPath(); ctx.arc(0, -bfSize * 0.42, bfSize * 0.1, 0, Math.PI * 2);
+                ctx.fill();
+                // Antennae
+                ctx.strokeStyle = 'rgba(40,40,40,' + (pAlpha * 0.6) + ')';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath(); ctx.moveTo(0, -bfSize * 0.5); ctx.lineTo(-bfSize * 0.3, -bfSize * 0.75); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, -bfSize * 0.5); ctx.lineTo(bfSize * 0.3, -bfSize * 0.75); ctx.stroke();
+                // Antenna bulbs
+                ctx.fillStyle = 'rgba(40,40,40,' + (pAlpha * 0.5) + ')';
+                ctx.beginPath(); ctx.arc(-bfSize * 0.3, -bfSize * 0.75, 0.6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(bfSize * 0.3, -bfSize * 0.75, 0.6, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+              } else if (p.type === 'n2' && _beans && _gt > 20) {
+                ctx.fillStyle = 'rgba(130,230,170,' + (pAlpha * 0.4) + ')';
+                ctx.font = '8px monospace';
+                ctx.fillText('N₂', p.x, p.y);
+              }
+            });
+
+            // ── Rain effect (moisture indicator when squash is planted) ──
+            if (_squash && _gt > 10) {
+              var rainIntensity = Math.min(1, _gt / 60);
+              var rainCount = Math.floor(12 * rainIntensity);
+              ctx.strokeStyle = 'rgba(100,180,255,' + (0.15 + rainIntensity * 0.2) + ')';
+              ctx.lineWidth = 1;
+              for (var ri = 0; ri < rainCount; ri++) {
+                var rx = ((tick * 2 + ri * 73) % cW);
+                var ryStart = ((tick * 3 + ri * 137) % (cH * 0.4));
+                var ryLen = 6 + rainIntensity * 8;
+                ctx.beginPath();
+                ctx.moveTo(rx / dpr, ryStart / dpr);
+                ctx.lineTo((rx - 1) / dpr, (ryStart + ryLen) / dpr);
+                ctx.stroke();
+                // Splash at ground level
+                if (ryStart + ryLen > cH * 0.38) {
+                  ctx.fillStyle = 'rgba(100,180,255,' + (0.1 + rainIntensity * 0.15) + ')';
+                  ctx.beginPath();
+                  ctx.arc(rx / dpr, cH * 0.4 / dpr, 2, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+              }
+            }
+
+            // ── Pest swarm overlay ──
+            if (_pestLvl > 40) {
+              var pestAlpha = Math.min(0.6, (_pestLvl - 40) / 100);
+              ctx.fillStyle = 'rgba(180,50,30,' + pestAlpha + ')';
+              for (var pi2 = 0; pi2 < Math.floor(_pestLvl / 8); pi2++) {
+                var px = ((tick * 1.5 + pi2 * 67) % cW) / dpr;
+                var py = ((tick * 0.8 + pi2 * 89) % (cH * 0.35)) / dpr + cH * 0.1 / dpr;
+                ctx.beginPath();
+                ctx.arc(px, py, 2 + Math.sin(tick * 0.05 + pi2) * 1, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+
+            // ── Weed overlay ──
+            if (_weedLvl > 30) {
+              var weedAlpha = Math.min(0.5, (_weedLvl - 30) / 140);
+              ctx.strokeStyle = 'rgba(60,120,40,' + weedAlpha + ')';
+              ctx.lineWidth = 1.5;
+              for (var wi2 = 0; wi2 < Math.floor(_weedLvl / 10); wi2++) {
+                var wx = ((wi2 * 83 + 30) % cW) / dpr;
+                var wy = cH * 0.42 / dpr;
+                var wSway = Math.sin(tick * 0.02 + wi2) * 4;
+                ctx.beginPath();
+                ctx.moveTo(wx, wy);
+                ctx.quadraticCurveTo(wx + wSway, wy - 12, wx + wSway * 1.5, wy - 18 - wi2 % 4 * 3);
+                ctx.stroke();
+              }
+            }
+
+            // ── Wilting tint (low moisture) ──
+            if (_moistLvl < 25 && (_corn || _beans || _squash)) {
+              ctx.fillStyle = 'rgba(180,150,50,' + (0.05 + (25 - _moistLvl) / 100) + ')';
+              ctx.fillRect(0, cH * 0.1, cW, cH * 0.35);
+            }
+
+            // ── Day / Season HUD ──
+            if (_corn || _beans || _squash) {
+              var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+              var hudText = seasonNames[_season] + '  Day ' + (_dayNum % 30 + 1) + '/30';
+              ctx.save();
+              ctx.fillStyle = 'rgba(0,0,0,0.55)';
+              var hudW = 150, hudH = 24;
+              var hudX = 6, hudY = 6;
+              ctx.beginPath();
+              ctx.roundRect(hudX, hudY, hudW, hudH, 6);
+              ctx.fill();
+              ctx.fillStyle = '#fff';
+              ctx.font = 'bold 11px system-ui';
+              ctx.textAlign = 'left';
+              ctx.fillText(hudText, hudX + 8, hudY + 16);
+              ctx.restore();
+            }
+
+            canvasEl._gardenAnim = requestAnimationFrame(draw);
+          }
+          canvasEl._gardenAnim = requestAnimationFrame(draw);
+        };
+
+        // NOTE: Companion Planting hooks (canvas sync + day ticker) have been hoisted
+        // to top level of StemLabModal to satisfy React Rules of Hooks.
+        // See the top-level hooks near the Synth Keyboard Hook.
+
+        // ── Gauge helper (inline colors to avoid Tailwind JIT purge) ──
+        var _gaugeColors = {
+          emerald: { light: '#34d399', dark: '#059669', text: '#047857' },
+          blue: { light: '#60a5fa', dark: '#2563eb', text: '#1d4ed8' },
+          orange: { light: '#fb923c', dark: '#ea580c', text: '#c2410c' },
+          red: { light: '#f87171', dark: '#dc2626', text: '#b91c1c' }
+        };
+        function gauge(label, value, color, icon, unit) {
+          var c = _gaugeColors[color] || _gaugeColors.emerald;
+          return React.createElement("div", { className: "flex items-center gap-2" },
+            React.createElement("span", { className: "text-sm w-5 text-center" }, icon),
+            React.createElement("div", { className: "flex-1" },
+              React.createElement("div", { className: "flex justify-between mb-0.5" },
+                React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, label),
+                React.createElement("span", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(value) + (unit || '%'))
+              ),
+              React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
+                React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: { width: Math.round(value) + '%', background: 'linear-gradient(to right, ' + c.light + ', ' + c.dark + ')' } })
+              )
+            )
+          );
+        }
+
+        return React.createElement("div", { className: "space-y-4 animate-in fade-in duration-200" },
+          // ── Tutorial ──
+          renderTutorial('companionPlanting', _tutCompanionPlanting),
+
+          // ── Header ──
+          React.createElement("div", { className: "flex items-center justify-between" },
+            React.createElement("div", { className: "flex items-center gap-3" },
+              React.createElement("button", {
+                onClick: function () { setStemLabTool(null); },
+                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": "Back to tools"
+              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("div", null,
+                React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "🌱 Companion Planting Lab"),
+                React.createElement("p", { className: "text-xs text-slate-400" }, "The milpa / Three Sisters — 7,000+ years of agricultural science")
+              )
+            ),
+            React.createElement("div", { className: "flex items-center gap-2" },
+              React.createElement("button", {
+                onClick: function () { upd('showCulture', !showCulture); },
+                className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
+                "aria-label": "Cultural context"
+              }, "📜 Origins"),
+              React.createElement("button", {
+                onClick: function () { upd('compareMode', !compareMode); },
+                className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
+              }, "🔬 Compare"),
+              React.createElement("button", {
+                onClick: function () { upd('showSoilDetail', !showSoilDetail); },
+                className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+              }, "🧪 Soil Science")
+            )
+          ),
+
+          // ── Cultural Context Panel ──
+          showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
+            React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "📜 Cultural Origins & Living Knowledge"),
+            React.createElement("div", { className: "grid md:grid-cols-2 gap-3 text-xs text-amber-800 leading-relaxed" },
+              React.createElement("div", { className: "space-y-2" },
+                React.createElement("p", { className: "font-bold text-amber-900" }, "Mesoamerican Origins: The Milpa"),
+                React.createElement("p", null, "The companion planting of corn, beans, and squash — known as milpa in Mesoamerica — is one of humanity's oldest agricultural innovations. Archaeological evidence traces this system to over 7,000 years ago in present-day Mexico. Squash was domesticated ~10,000 years ago, maize ~9,000 years ago from the wild grass teosinte, and common beans ~7,000 years ago."),
+                React.createElement("p", null, "The milpa system diffused northward over millennia, appearing in North America around 1070 CE. By the time European colonizers arrived around 1500, it was a foundational food system across Central and North America.")
+              ),
+              React.createElement("div", { className: "space-y-2" },
+                React.createElement("p", { className: "font-bold text-amber-900" }, "Haudenosaunee Tradition: De-oh-há-ko"),
+                React.createElement("p", null, "The Haudenosaunee (Iroquois Confederacy) call these plants De-oh-há-ko — \"they sustain us.\" The Three Sisters are spiritual beings and precious gifts, central to Haudenosaunee language, ceremony, songs, and cosmology. This is not merely a farming technique — it is a living relationship between people and plants."),
+                React.createElement("p", null, "This knowledge is not historical artifact. Milpa and Three Sisters gardens are actively cultivated today across the Americas, representing a continuous tradition of ecological wisdom.")
+              )
+            ),
+            React.createElement("div", { className: "flex items-center gap-2 pt-1 flex-wrap" },
+              React.createElement("span", { className: "text-[10px] font-bold text-amber-600" }, "Learn more:"),
+              React.createElement("a", { href: "https://www.haudenosauneeconfederacy.com/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Haudenosaunee Confederacy"),
+              React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
+              React.createElement("a", { href: "https://americanindian.si.edu/", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "Smithsonian NMAI"),
+              React.createElement("span", { className: "text-[10px] text-amber-400" }, "•"),
+              React.createElement("a", { href: "https://www.usda.gov/media/blog/2021/11/02/three-sisters-and-more-indigenous-food-systems", target: "_blank", rel: "noopener noreferrer", className: "text-[10px] text-amber-700 underline hover:text-amber-900" }, "USDA: Three Sisters")
+            )
+          ),
+
+          // ── Main Layout: Canvas + Dashboard ──
+          React.createElement("div", { className: "grid md:grid-cols-3 gap-4" },
+
+            // ── Canvas ──
+            React.createElement("div", { className: "md:col-span-2" },
+              React.createElement("canvas", {
+                ref: canvasRef,
+                "data-companion-canvas": "true",
+                className: "w-full rounded-xl border-2 border-emerald-200 shadow-lg",
+                style: { height: 320, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
+                role: "img", "aria-label": "Companion planting garden visualization showing corn, beans, and squash growing together"
+              })
+            ),
+
+            // ── Soil Chemistry Dashboard ──
+            React.createElement("div", { className: "space-y-3" },
+              React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3 space-y-2.5" },
+                React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                  React.createElement("h4", { className: "text-xs font-bold text-emerald-800 flex items-center gap-1.5" }, "🧪 Needs & Meters"),
+                  phase === 'grow' && React.createElement("span", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full" },
+                    seasonName + ' • Day ' + dayInSeason + '/30'
+                  )
                 ),
-                React.createElement("div", { className: "flex gap-2" },
-                  React.createElement("button", {
-                    onClick: function () { updDS('showStats', !showStats); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-                    style: { background: showStats ? _btnBg : _card, color: showStats ? '#fff' : _text, border: '1px solid ' + _border }
-                  }, showStats ? '📊 Stats On' : '📊 Stats'),
-                  React.createElement("button", {
-                    onClick: function () { setStemLabTool(null); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-                    style: { background: _card, border: '1px solid ' + _border, color: _text }
-                  }, "← Back")
+                gauge('Moisture', moisture, 'blue', '💧', '%'),
+                gauge('Nitrogen (N₂)', nitrogen, 'emerald', '🫘', '%'),
+                gauge('Pest Pressure', pestPressure, 'red', '🐛', '%'),
+                gauge('Weed Cover', weedPressure, 'orange', '🌿', '%'),
+                gauge('Soil Temp', temperature, 'orange', '🌡️', '°C'),
+                gauge('Plant Health', plantHealth, plantHealth > 60 ? 'emerald' : plantHealth > 30 ? 'orange' : 'red', '❤️', '%'),
+                React.createElement("div", { className: "border-t border-emerald-200 pt-2 mt-2" },
+                  React.createElement("div", { className: "flex justify-between items-center" },
+                    React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "Overall Soil Health"),
+                    React.createElement("span", { className: "text-sm font-bold " + (soilHealth > 70 ? 'text-emerald-700' : soilHealth > 40 ? 'text-amber-600' : 'text-red-600') }, soilHealth + '%')
+                  )
                 )
               ),
 
-              // Chart type selector
-              React.createElement("div", { className: "flex gap-2" },
-                CHART_TYPES.map(function (ct) {
-                  return React.createElement("button", {
-                    key: ct.id,
-                    onClick: function () { updDS('chartType', ct.id); },
-                    className: "flex-1 p-2 rounded-xl text-center transition-all",
-                    style: { background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
+              // Comparison stats (visible when compare mode is on)
+              compareMode && React.createElement("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-200 p-3 space-y-2" },
+                React.createElement("h4", { className: "text-xs font-bold text-red-800" }, "🌽 Monoculture Comparison"),
+                gauge('Nitrogen', monoN, 'red', '📉', '%'),
+                gauge('Moisture', monoH2O, 'red', '📉', '%'),
+                gauge('Weeds', monoWeeds, 'red', '📈', '%'),
+                React.createElement("div", { className: "border-t border-red-200 pt-2" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-red-700" }, "Soil Health: " + monoHealth + "%")
+                ),
+                growthTime > 30 && React.createElement("div", { className: "text-[10px] text-red-600 bg-red-100 rounded-lg p-2 mt-1" },
+                  "⚠️ Without beans, nitrogen depletes. Without squash leaves, moisture drops and weeds take over."
+                )
+              ),
+
+              // Soil detail panel
+              showSoilDetail && React.createElement("div", { className: "bg-gradient-to-br from-stone-50 to-amber-50 rounded-xl border border-stone-200 p-3 text-[10px] text-stone-700 space-y-2 leading-relaxed" },
+                React.createElement("h4", { className: "font-bold text-stone-800 text-xs" }, "🔬 The Science"),
+                React.createElement("p", null, React.createElement("b", null, "Nitrogen Fixation:"), " Rhizobium bacteria in bean root nodules convert atmospheric N₂ → NH₃ (ammonia) via nitrogenase enzyme. This biological process enriches soil without synthetic fertilizers."),
+                React.createElement("p", null, React.createElement("b", null, "Living Mulch:"), " Squash's broad leaves create ground cover that shades soil, reducing evapotranspiration by up to 50% and suppressing weed germination by blocking sunlight."),
+                React.createElement("p", null, React.createElement("b", null, "Structural Symbiosis:"), " Corn stalks serve as natural trellises for bean vines. Bean vines, in turn, stabilize corn against wind shear."),
+                React.createElement("p", null, React.createElement("b", null, "Nutritional Complementarity:"), " Corn provides methionine-rich carbohydrates; beans provide lysine-rich protein. Together they form a complete amino acid profile — a balanced diet from one garden.")
+              )
+            )
+          ),
+
+          // ── Event Popup ──
+          eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
+            React.createElement("div", { className: "flex items-center justify-between" },
+              React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
+              React.createElement("button", {
+                onClick: function () { upd('eventPopup', null); },
+                className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
+              }, "✕")
+            ),
+            React.createElement("p", { className: "text-xs text-indigo-800 leading-relaxed bg-white/50 rounded-lg p-2" },
+              "🔬 ", React.createElement("b", null, "Science: "), eventPopup.lesson
+            )
+          ),
+
+          // ── Controls Bar ──
+          React.createElement("div", { className: "space-y-3" },
+
+            // Seed buttons (planting phase)
+            phase === 'plant' && React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
+              React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2" },
+                React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase px-1" }, "Plant:"),
+                React.createElement("button", {
+                  onClick: function () {
+                    upd('cornPlanted', !cornPlanted);
+                    if (!cornPlanted) {
+                      awardStemXP('companion_planting_corn', 10, 'Planted corn');
+                      if (addToast) addToast('🌽 Corn planted! Tall stalks provide a trellis for beans.', 'success');
+                    }
                   },
-                    React.createElement("div", { className: "text-lg" }, ct.icon),
-                    React.createElement("div", { className: "text-[10px] font-bold" }, ct.label)
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-200')
+                }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
+                React.createElement("button", {
+                  onClick: function () {
+                    upd('beansPlanted', !beansPlanted);
+                    if (!beansPlanted) {
+                      awardStemXP('companion_planting_beans', 10, 'Planted beans');
+                      if (addToast) addToast('🫘 Beans planted! Rhizobium bacteria fix nitrogen.', 'success');
+                    }
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-200')
+                }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
+                React.createElement("button", {
+                  onClick: function () {
+                    upd('squashPlanted', !squashPlanted);
+                    if (!squashPlanted) {
+                      awardStemXP('companion_planting_squash', 10, 'Planted squash');
+                      if (addToast) addToast('🎃 Squash planted! Leaves shade soil and trap moisture.', 'success');
+                    }
+                  },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-200')
+                }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
+              ),
+              allPlanted && React.createElement("button", {
+                onClick: function () { upd('phase', 'grow'); awardStemXP('companion_planting_grow', 15, 'Started growth simulation'); },
+                className: "px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-green-700 transition-all flex items-center gap-1.5"
+              }, "▶ Grow!"),
+              !allPlanted && React.createElement("span", { className: "text-[10px] text-slate-400 italic" }, "Plant all three seeds to begin")
+            ),
+
+            // ── Action Toolbar (grow phase) ──
+            phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, "🎮 Actions"),
+                React.createElement("div", { className: "flex-1" }),
+                // Speed controls
+                React.createElement("div", { className: "flex items-center gap-1" },
+                  React.createElement("span", { className: "text-[10px] text-emerald-600 font-bold mr-1" }, "Speed:"),
+                  [1, 2, 5].map(function (s) {
+                    return React.createElement("button", {
+                      key: s,
+                      onClick: function () { upd('growSpeed', s); },
+                      className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
+                    }, s + '×');
+                  })
+                ),
+                React.createElement("span", { className: "text-[10px] font-bold text-emerald-700 ml-2" }, Math.round(growthTime) + "% grown")
+              ),
+              React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                // Action buttons with cooldowns
+                [
+                  { id: 'water', emoji: '💧', label: 'Water', tip: 'Irrigation replenishes soil moisture. Over-watering leaches nutrients.' },
+                  { id: 'compost', emoji: '🧪', label: 'Compost', tip: 'Composting adds organic nitrogen and beneficial microbes.' },
+                  { id: 'weed', emoji: '🌿', label: 'Weed', tip: 'Weeding removes competition for light, water, and nutrients.' },
+                  { id: 'inspect', emoji: '🔍', label: 'Inspect', tip: 'Inspecting reveals plant condition and early pest signs.' },
+                  { id: 'mulch', emoji: '🍂', label: 'Mulch', tip: 'Mulching regulates soil temperature and retains moisture.' }
+                ].map(function (action) {
+                  var cd = (actionCooldowns && actionCooldowns[action.id]) || 0;
+                  var onCooldown = cd > day;
+                  var pct = onCooldown ? Math.min(100, Math.round(((cd - day) / 5) * 100)) : 0;
+                  return React.createElement("button", {
+                    key: action.id,
+                    disabled: onCooldown,
+                    title: action.tip,
+                    onClick: function () {
+                      setLabToolData(function (prev) {
+                        var cp = Object.assign({}, prev.companionPlanting || {});
+                        var cds = Object.assign({}, cp.actionCooldowns || {});
+                        cds[action.id] = (cp.day || 0) + 5;
+                        if (action.id === 'water') cp.moisture = Math.min(100, (cp.moisture || 60) + 30);
+                        else if (action.id === 'compost') cp.nitrogenLevel = Math.min(100, (cp.nitrogenLevel || 35) + 20);
+                        else if (action.id === 'weed') cp.weedCover = Math.max(0, (cp.weedCover || 15) - 25);
+                        else if (action.id === 'inspect') {
+                          cp.plantHealth = Math.min(100, (cp.plantHealth || 100) + 5);
+                          cp.pestPressure = Math.max(0, (cp.pestPressure || 10) - 10);
+                        }
+                        else if (action.id === 'mulch') {
+                          cp.soilTemp = cp.soilTemp + (22 - cp.soilTemp) * 0.3;
+                          cp.moisture = Math.min(100, (cp.moisture || 60) + 10);
+                        }
+                        cp.actionCooldowns = cds;
+                        return Object.assign({}, prev, { companionPlanting: cp });
+                      });
+                      if (addToast) addToast(action.emoji + ' ' + action.tip, 'success');
+                      awardStemXP('companion_action_' + action.id, 5, action.label);
+                    },
+                    className: "relative px-3 py-2 rounded-xl text-xs font-bold transition-all border " + (
+                      onCooldown
+                        ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                        : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
+                    ),
+                    style: onCooldown ? { background: 'linear-gradient(to top, rgba(209,250,229,' + pct / 100 + ') ' + pct + '%, #f1f5f9 ' + pct + '%)' } : {}
+                  }, action.emoji + ' ' + action.label + (onCooldown ? ' (' + (cd - day) + 'd)' : ''));
+                })
+              )
+            ),
+
+            // ── Synergy Panel (grow phase) ──
+            phase === 'grow' && React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200 p-3 space-y-2" },
+              React.createElement("h4", { className: "text-xs font-bold text-purple-800 flex items-center gap-1.5" }, "🤝 Companion Synergies"),
+              React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+                [
+                  { label: 'Corn ↔ Beans', val: synCornBeans, desc: 'Structural support & N-fixation', color: 'emerald' },
+                  { label: 'Beans → Soil', val: synBeansSoil, desc: 'Rhizobium nitrogen enrichment', color: 'blue' },
+                  { label: 'Squash → All', val: synSquashAll, desc: 'Living mulch & pest deterrent', color: 'orange' }
+                ].map(function (syn) {
+                  var c = _gaugeColors[syn.color] || _gaugeColors.emerald;
+                  var unlocked = syn.val >= 50;
+                  return React.createElement("div", { key: syn.label, className: "text-center space-y-1" },
+                    React.createElement("div", { className: "text-[10px] font-bold " + (unlocked ? 'text-purple-700' : 'text-slate-500') }, (unlocked ? '✨ ' : '🔒 ') + syn.label),
+                    React.createElement("div", { className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden" },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.round(syn.val) + '%', background: 'linear-gradient(to right, ' + c.light + ', ' + c.dark + ')' } })
+                    ),
+                    React.createElement("div", { className: "text-[9px] text-slate-400" }, syn.desc),
+                    React.createElement("div", { className: "text-[10px] font-bold", style: { color: c.text } }, Math.round(syn.val) + '%')
+                  );
+                })
+              )
+            ),
+
+            // ── Harvest Panel ──
+            phase === 'harvest' && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-300 p-4 space-y-3 shadow-lg" },
+              React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, "🌾 Season " + (seasonIndex + 1) + " Harvest Report"),
+              React.createElement("div", { className: "grid grid-cols-3 gap-3 text-center" },
+                React.createElement("div", { className: "bg-white rounded-lg p-2" },
+                  React.createElement("div", { className: "text-lg font-bold text-emerald-700" }, Math.round(plantHealth)),
+                  React.createElement("div", { className: "text-[10px] text-slate-500" }, "Health Score")
+                ),
+                React.createElement("div", { className: "bg-white rounded-lg p-2" },
+                  React.createElement("div", { className: "text-lg font-bold text-blue-700" }, Math.round((synCornBeans + synBeansSoil + synSquashAll) / 3)),
+                  React.createElement("div", { className: "text-[10px] text-slate-500" }, "Avg Synergy")
+                ),
+                React.createElement("div", { className: "bg-white rounded-lg p-2" },
+                  React.createElement("div", { className: "text-lg font-bold text-amber-700" }, seasonScore),
+                  React.createElement("div", { className: "text-[10px] text-slate-500" }, "Season Score")
+                )
+              ),
+              React.createElement("div", { className: "flex items-center justify-between bg-amber-100 rounded-lg p-2" },
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "🏆 Total Score: " + totalScore),
+                React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "🌾 Harvests: " + harvestCount)
+              ),
+              React.createElement("button", {
+                onClick: function () {
+                  var _carry = Math.min(30, nitrogenLevel * 0.3);
+                  awardStemXP('companion_planting_harvest', 20, 'Completed harvest');
+                  setLabToolData(function (prev) {
+                    var cp = Object.assign({}, prev.companionPlanting || {});
+                    cp.phase = 'plant';
+                    cp.growthTime = 0;
+                    cp.cornPlanted = false; cp.beansPlanted = false; cp.squashPlanted = false;
+                    cp.moisture = 60; cp.pestPressure = 10; cp.weedCover = 15;
+                    cp.plantHealth = 100;
+                    cp.nitrogenLevel = 35 + _carry; // nitrogen carryover from good management
+                    cp.nitrogenCarryover = _carry;
+                    cp.synCornBeans = 0; cp.synBeansSoil = 0; cp.synSquashAll = 0;
+                    cp.totalScore = (cp.totalScore || 0) + (cp.seasonScore || 0);
+                    cp.harvestCount = (cp.harvestCount || 0) + 1;
+                    cp.seasonScore = 0;
+                    cp.eventPopup = null;
+                    return Object.assign({}, prev, { companionPlanting: cp });
+                  });
+                  if (addToast) addToast('🌾 Harvest complete! Nitrogen carryover: +' + Math.round(_carry) + '%. Soil improved for next season! +20 XP', 'success');
+                },
+                className: "w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-200 hover:from-amber-600 hover:to-yellow-700 transition-all"
+              }, "🌾 Harvest & Start Next Season →")
+            )
+          ),
+
+          // ── Quiz Button ──
+          React.createElement("div", { className: "flex items-center gap-3" },
+            React.createElement("div", { className: "flex-1" }),
+            React.createElement("button", {
+              onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
+              className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
+            }, "🧠 Quiz"),
+            React.createElement("button", {
+              onClick: function () { upd('showSciencePanel', !showSciencePanel); },
+              className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-600 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+            }, "\uD83D\uDCDA Science")
+          ),
+
+          // ── Quiz Panel ──
+          showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
+            React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, "\uD83C\uDF3E The Three Sisters: Science of Companion Planting"),
+            React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-3" },
+              React.createElement("div", { className: "bg-yellow-50 rounded-lg p-3 border border-yellow-200" },
+                React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3D"),
+                React.createElement("h4", { className: "font-bold text-yellow-800" }, "Corn (Structural Support)"),
+                React.createElement("p", { className: "text-xs text-yellow-700 mt-1" }, "Grows tall stalks (6\u201310 ft) that serve as natural trellises for bean vines, providing vertical structure and replacing the need for artificial poles.")
+              ),
+              React.createElement("div", { className: "bg-green-50 rounded-lg p-3 border border-green-200" },
+                React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF3E"),
+                React.createElement("h4", { className: "font-bold text-green-800" }, "Beans (Nitrogen Fixation)"),
+                React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "Rhizobium bacteria in root nodules convert atmospheric N\u2082 into plant-usable ammonia. This biological nitrogen fixation enriches the soil without synthetic fertilizer.")
+              ),
+              React.createElement("div", { className: "bg-orange-50 rounded-lg p-3 border border-orange-200" },
+                React.createElement("div", { className: "text-2xl mb-1" }, "\uD83C\uDF83"),
+                React.createElement("h4", { className: "font-bold text-orange-800" }, "Squash (Living Mulch)"),
+                React.createElement("p", { className: "text-xs text-orange-700 mt-1" }, "Broad leaves shade the soil, reducing water evaporation by up to 50%. Prickly stems deter animal pests. Acts as natural weed suppression through ground cover.")
+              )
+            ),
+            React.createElement("div", { className: "bg-amber-50 rounded-lg p-4 border border-amber-200" },
+              React.createElement("h4", { className: "font-bold text-amber-900 mb-2" }, "\uD83E\uDDEA Underground Chemistry"),
+              React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
+                React.createElement("div", { className: "space-y-2" },
+                  React.createElement("div", { className: "flex items-start gap-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF44"),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Mycorrhizal Network"),
+                      React.createElement("p", { className: "text-xs text-amber-700" }, "Fungal threads extend root systems 100\u20131000x, creating an underground wood wide web that trades soil minerals for plant sugars.")
+                    )
+                  ),
+                  React.createElement("div", { className: "flex items-start gap-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83E\uDDA0"),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Rhizobium Nodules"),
+                      React.createElement("p", { className: "text-xs text-amber-700" }, "Specialized bacteria colonize bean roots, forming visible pink nodules. Nitrogenase enzyme breaks the triple bond in N\u2082 gas, producing ammonia for all plants.")
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "space-y-2" },
+                  React.createElement("div", { className: "flex items-start gap-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83D\uDCA7"),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Water Cycling"),
+                      React.createElement("p", { className: "text-xs text-amber-700" }, "Squash leaf shade reduces soil temperature by up to 10\u00B0F, cutting evaporation in half. Fallen leaves build organic matter, improving water retention.")
+                    )
+                  ),
+                  React.createElement("div", { className: "flex items-start gap-2" },
+                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF31"),
+                    React.createElement("div", null,
+                      React.createElement("p", { className: "text-xs font-bold text-amber-800" }, "Nutrient Cycling"),
+                      React.createElement("p", { className: "text-xs text-amber-700" }, "Corn is a heavy nitrogen feeder. Beans replace what corn takes. Squash returns organic matter. Together they maintain soil fertility without synthetic inputs.")
+                    )
+                  )
+                )
+              )
+            ),
+            React.createElement("div", { className: "bg-violet-50 rounded-lg p-4 border border-violet-200" },
+              React.createElement("h4", { className: "font-bold text-violet-900 mb-2" }, "\uD83C\uDFDB\uFE0F Cultural Heritage"),
+              React.createElement("p", { className: "text-xs text-violet-800" }, "The Three Sisters (De-oh-h\u00E1-ko, meaning \u201Cthey sustain us\u201D in Haudenosaunee) is a 7,000-year-old agricultural system originating in Mesoamerica. Indigenous agricultural science developed sophisticated polyculture techniques millennia before modern ecology."),
+              React.createElement("p", { className: "text-xs text-violet-700 mt-2 italic" }, "Together, corn and beans provide a complete protein \u2014 corn supplies methionine while beans supply lysine \u2014 forming the nutritional foundation of many Indigenous diets.")
+            )
+          ),
+
+          quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
+            React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "🧠 Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
+            React.createElement("p", { className: "text-sm text-indigo-800" }, currentQuiz.q),
+            React.createElement("div", { className: "flex flex-wrap gap-2" },
+              currentQuiz.opts.map(function (opt) {
+                var isCorrect = opt === currentQuiz.correct;
+                var isSelected = quizAnswer === opt;
+                var showResult = quizAnswer !== '';
+                return React.createElement("button", {
+                  key: opt,
+                  disabled: showResult,
+                  onClick: function () {
+                    upd('quizAnswer', opt);
+                    if (isCorrect) {
+                      upd('quizFeedback', '✅ Correct! ' + currentQuiz.explain);
+                      awardStemXP('companion_planting_quiz', 15, 'Quiz correct: ' + currentQuiz.q.substring(0, 30));
+                    } else {
+                      upd('quizFeedback', '❌ Not quite. ' + currentQuiz.explain);
+                    }
+                  },
+                  className: "px-4 py-2 rounded-xl text-xs font-bold transition-all border " + (
+                    showResult && isCorrect ? 'bg-green-100 text-green-800 border-green-400' :
+                      showResult && isSelected && !isCorrect ? 'bg-red-100 text-red-800 border-red-400' :
+                        'bg-white text-indigo-700 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50'
+                  )
+                }, opt);
+              })
+            ),
+            quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
+            quizFeedback && React.createElement("button", {
+              onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
+              className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
+            }, quizQ + 1 < quizzes.length ? "Next Question →" : "🔄 Restart Quiz"),
+            // AI hint for wrong answers
+            quizAnswer && quizAnswer !== currentQuiz.correct && StemAIHintButton('companionPlanting', currentQuiz.q, quizAnswer, currentQuiz.correct)
+          ),
+
+          // ── Snapshot button ──
+          React.createElement("button", {
+            onClick: function () {
+              setToolSnapshots(function (prev) { return prev.concat([{ id: 'garden-' + Date.now(), tool: 'companionPlanting', label: 'Companion Planting Lab', data: Object.assign({}, d), timestamp: Date.now() }]); });
+              if (addToast) addToast('📸 Garden snapshot saved!', 'success');
+            },
+            className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all"
+          }, "📸 Snapshot")
+        );
+      })(),
+
+      // --- GEOMETRY SANDBOX ---
+      stemLabTab === 'explore' && stemLabTool === 'geoSandbox' && (() => {
+        const gd = (labToolData && labToolData.geoSandbox) || {};
+        const upd = (key, val) => setLabToolData(prev => ({ ...prev, geoSandbox: { ...(prev.geoSandbox || {}), [key]: val } }));
+        const updDim = (key, val) => setLabToolData(prev => {
+          const g = prev.geoSandbox || {};
+          return { ...prev, geoSandbox: { ...g, dims: { ...(g.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 }), [key]: parseFloat(val) } } };
+        });
+        const shape = gd.shape || 'box';
+        const dims = gd.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 };
+        const shapeColor = gd.color || '#60a5fa';
+        const wireframe = gd.wireframe || false;
+        const opacity = gd.opacity != null ? gd.opacity : 1;
+
+        // --- Measurement calculations ---
+        const calcMeasurements = () => {
+          const PI = Math.PI;
+          switch (shape) {
+            case 'box': {
+              const w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
+              return { vol: w * h * d, sa: 2 * (w * h + w * d + h * d), faces: 6, edges: 12, vertices: 8, name: 'Rectangular Prism' };
+            }
+            case 'sphere': {
+              const r = dims.r || 1.5;
+              return { vol: (4 / 3) * PI * r * r * r, sa: 4 * PI * r * r, faces: 0, edges: 0, vertices: 0, name: 'Sphere', note: 'Curved surface — no flat faces' };
+            }
+            case 'cylinder': {
+              const rT = dims.rTop || 1.5, rB = dims.rBot || 1.5, h = dims.h || 3;
+              const sl = Math.sqrt(Math.pow(rT - rB, 2) + h * h);
+              return { vol: (PI * h / 3) * (rT * rT + rB * rT + rB * rB), sa: PI * (rT * rT + rB * rB + (rT + rB) * sl), faces: 3, edges: 2, vertices: 0, name: rT === rB ? 'Cylinder' : 'Frustum' };
+            }
+            case 'cone': {
+              const r = dims.r || 1.5, h = dims.h || 3;
+              const sl = Math.sqrt(r * r + h * h);
+              return { vol: (PI * r * r * h) / 3, sa: PI * r * (r + sl), faces: 2, edges: 1, vertices: 1, name: 'Cone' };
+            }
+            case 'pyramid': {
+              const r = dims.r || 1.5, h = dims.h || 3;
+              const base = 2 * r, baseA = base * base;
+              const sl = Math.sqrt(r * r + h * h);
+              return { vol: baseA * h / 3, sa: baseA + 4 * (0.5 * base * sl), faces: 5, edges: 8, vertices: 5, name: 'Square Pyramid' };
+            }
+            case 'torus': {
+              const R = dims.r || 1.5, r = dims.tube || 0.5;
+              return { vol: 2 * PI * PI * R * r * r, sa: 4 * PI * PI * R * r, faces: 0, edges: 0, vertices: 0, name: 'Torus', note: 'Donut shape — curved surface' };
+            }
+            case 'prism': {
+              const w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
+              const triA = 0.5 * w * h;
+              const hyp = Math.sqrt((w / 2) * (w / 2) + h * h);
+              return { vol: triA * d, sa: 2 * triA + w * d + 2 * hyp * d, faces: 5, edges: 9, vertices: 6, name: 'Triangular Prism' };
+            }
+            default: return { vol: 0, sa: 0, faces: 0, edges: 0, vertices: 0, name: 'Shape' };
+          }
+        };
+        const m = calcMeasurements();
+
+        // --- STL Export ---
+        const exportSTL = () => {
+          if (!window._geoScene || !window._geoScene.mesh || !window.THREE) return;
+          const mesh = window._geoScene.mesh;
+          const geo = mesh.geometry.clone();
+          geo.applyMatrix4(mesh.matrixWorld);
+          const pos = geo.attributes.position;
+          const idx = geo.index;
+          const triCount = idx ? idx.count / 3 : pos.count / 3;
+          const bufLen = 80 + 4 + triCount * 50;
+          var buf = new ArrayBuffer(bufLen);
+          var dv = new DataView(buf);
+          // Header (80 bytes)
+          var headerStr = 'AlloFlow Geometry Sandbox - ' + shape;
+          for (var hi = 0; hi < 80; hi++) dv.setUint8(hi, hi < headerStr.length ? headerStr.charCodeAt(hi) : 0);
+          dv.setUint32(80, triCount, true);
+          var offset = 84;
+          const _v = (i) => {
+            if (idx) return new window.THREE.Vector3(pos.getX(idx.getX(i)), pos.getY(idx.getX(i)), pos.getZ(idx.getX(i)));
+            return new window.THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
+          };
+          for (var t = 0; t < triCount; t++) {
+            const i0 = idx ? t * 3 : t * 3, i1 = i0 + 1, i2 = i0 + 2;
+            const v0 = _v(i0), v1 = _v(i1), v2 = _v(i2);
+            const edge1 = new window.THREE.Vector3().subVectors(v1, v0);
+            const edge2 = new window.THREE.Vector3().subVectors(v2, v0);
+            const normal = new window.THREE.Vector3().crossVectors(edge1, edge2).normalize();
+            // Normal
+            dv.setFloat32(offset, normal.x, true); offset += 4;
+            dv.setFloat32(offset, normal.y, true); offset += 4;
+            dv.setFloat32(offset, normal.z, true); offset += 4;
+            // Vertices
+            [v0, v1, v2].forEach(v => {
+              dv.setFloat32(offset, v.x, true); offset += 4;
+              dv.setFloat32(offset, v.y, true); offset += 4;
+              dv.setFloat32(offset, v.z, true); offset += 4;
+            });
+            dv.setUint16(offset, 0, true); offset += 2;
+          }
+          geo.dispose();
+          const blob = new Blob([buf], { type: 'application/sla' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'geometry_sandbox_' + shape + '_' + Date.now() + '.stl';
+          a.click();
+          URL.revokeObjectURL(url);
+          if (typeof addToast === 'function') addToast('\u{1F4E6} STL exported — ready for 3D printing!', 'success');
+        };
+
+        // --- Shape palette config ---
+        const shapes = [
+          { id: 'box', icon: '\u{1F7E6}', label: 'Cube' },
+          { id: 'sphere', icon: '\u{26AA}', label: 'Sphere' },
+          { id: 'cylinder', icon: '\u{1F6E2}\uFE0F', label: 'Cylinder' },
+          { id: 'cone', icon: '\u{1F4D0}', label: 'Cone' },
+          { id: 'pyramid', icon: '\u{1F53A}', label: 'Pyramid' },
+          { id: 'torus', icon: '\u{1F369}', label: 'Torus' },
+          { id: 'prism', icon: '\u{1F4D0}', label: 'Prism' }
+        ];
+
+        // --- Slider configs per shape ---
+        const sliderConfigs = {
+          box: [
+            { key: 'w', label: 'Width', min: 0.5, max: 10, step: 0.1 },
+            { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 },
+            { key: 'd', label: 'Depth', min: 0.5, max: 10, step: 0.1 }
+          ],
+          sphere: [
+            { key: 'r', label: 'Radius', min: 0.5, max: 5, step: 0.1 },
+            { key: 'segs', label: 'Smoothness', min: 8, max: 64, step: 4 }
+          ],
+          cylinder: [
+            { key: 'rTop', label: 'Top Radius', min: 0.1, max: 5, step: 0.1 },
+            { key: 'rBot', label: 'Bottom Radius', min: 0.1, max: 5, step: 0.1 },
+            { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
+          ],
+          cone: [
+            { key: 'r', label: 'Base Radius', min: 0.5, max: 5, step: 0.1 },
+            { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
+          ],
+          pyramid: [
+            { key: 'r', label: 'Base Size', min: 0.5, max: 5, step: 0.1 },
+            { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 }
+          ],
+          torus: [
+            { key: 'r', label: 'Major Radius', min: 0.5, max: 5, step: 0.1 },
+            { key: 'tube', label: 'Tube Radius', min: 0.1, max: 2, step: 0.05 }
+          ],
+          prism: [
+            { key: 'w', label: 'Base Width', min: 0.5, max: 10, step: 0.1 },
+            { key: 'h', label: 'Height', min: 0.5, max: 10, step: 0.1 },
+            { key: 'd', label: 'Depth', min: 0.5, max: 10, step: 0.1 }
+          ]
+        };
+
+        // --- Coach tips ---
+        const coachTips = {
+          box: { title: 'Rectangular Prism', tip: 'A prism with 6 rectangular faces. Every corner is a right angle. V = l \u00D7 w \u00D7 h', example: 'Shipping boxes, buildings, books — most structures start as rectangular prisms.' },
+          sphere: { title: 'Sphere', tip: 'Every point on the surface is the same distance from the center. V = \u2074\u2044\u2083\u03C0r\u00B3', example: 'Planets, basketballs, soap bubbles — nature prefers spheres because they minimize surface area.' },
+          cylinder: { title: 'Cylinder', tip: 'Two circular bases connected by a curved surface. V = \u03C0r\u00B2h', example: 'Cans, pipes, pillars — cylinders are strong under compression.' },
+          cone: { title: 'Cone', tip: 'A circular base that narrows to a point. V = \u2153\u03C0r\u00B2h', example: 'Ice cream cones, traffic cones, volcanoes — one-third the volume of a cylinder!' },
+          pyramid: { title: 'Square Pyramid', tip: '4 triangular faces meeting at an apex over a square base. V = \u2153Bh', example: 'The Great Pyramid of Giza has a 230m base and 146m height — over 2.3 million blocks.' },
+          torus: { title: 'Torus', tip: 'A donut shape — a circle rotated around an axis. V = 2\u03C0\u00B2Rr\u00B2', example: 'Donuts, bagels, tire inner tubes, and tokamak fusion reactors are all tori!' },
+          prism: { title: 'Triangular Prism', tip: '2 triangular faces + 3 rectangular faces. V = \u00BDbh \u00D7 depth', example: 'Roof trusses, Toblerone boxes, and optical prisms that split light into rainbows.' }
+        };
+        const ct = coachTips[shape] || coachTips.box;
+
+        // Color palette
+        const colorPalette = ['#60a5fa', '#f472b6', '#34d399', '#fbbf24', '#a78bfa', '#fb923c', '#f87171', '#e2e8f0'];
+
+        const currentSliders = sliderConfigs[shape] || sliderConfigs.box;
+
+        // ── Three.js not loaded yet? Show loading state ──
+        if (!labToolData._threeLoaded) {
+          return React.createElement('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
+            React.createElement('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
+            React.createElement('div', { className: 'text-slate-400 text-lg' }, 'Loading 3D engine...')
+          );
+        }
+
+        return React.createElement('div', { className: 'flex flex-col gap-3 animate-in fade-in duration-300' },
+          // Header row
+          React.createElement('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+            React.createElement('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500 flex items-center gap-2' },
+              '\uD83D\uDD37 Geometry Sandbox'
+            ),
+            React.createElement('div', { className: 'flex gap-2' },
+              React.createElement('button', {
+                onClick: exportSTL,
+                className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 rounded-full hover:from-emerald-600 hover:to-green-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
+              }, '\uD83D\uDCE6 Export STL'),
+              React.createElement('button', {
+                onClick: () => { if (window._geoScene) { cancelAnimationFrame(window._geoScene.animId); if (window._geoScene.renderer) window._geoScene.renderer.dispose(); if (window._geoScene.controls) window._geoScene.controls.dispose(); window._geoScene = null; } setStemLabTool(null); },
+                className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
+              }, '\u2190 Back')
+            )
+          ),
+
+          // Main layout: sidebar + viewport
+          React.createElement('div', { className: 'flex flex-col md:flex-row gap-3', style: { minHeight: '480px' } },
+
+            // === LEFT SIDEBAR ===
+            React.createElement('div', { className: 'w-full md:w-64 flex-shrink-0 flex flex-col gap-3' },
+
+              // Shape palette
+              React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, 'Shapes'),
+                React.createElement('div', { className: 'grid grid-cols-4 gap-1.5' },
+                  ...shapes.map(s =>
+                    React.createElement('button', {
+                      key: s.id,
+                      onClick: () => upd('shape', s.id),
+                      className: 'flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-xs transition-all ' +
+                        (shape === s.id ? 'bg-sky-500/30 border border-sky-400/50 text-sky-300 shadow-lg shadow-sky-500/10' : 'bg-slate-700/40 border border-slate-600/30 text-slate-400 hover:bg-slate-700/60 hover:text-slate-300')
+                    },
+                      React.createElement('span', { className: 'text-lg leading-none' }, s.icon),
+                      React.createElement('span', { className: 'text-[10px] leading-tight' }, s.label)
+                    )
+                  )
+                )
+              ),
+
+              // Property sliders
+              React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, 'Properties'),
+                ...currentSliders.map(sl =>
+                  React.createElement('div', { key: sl.key, className: 'mb-2' },
+                    React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-400 mb-0.5' },
+                      React.createElement('span', null, sl.label),
+                      React.createElement('span', { className: 'text-sky-400 font-mono' }, (dims[sl.key] || sl.min).toFixed(sl.step < 1 ? 1 : 0))
+                    ),
+                    React.createElement('input', {
+                      type: 'range',
+                      min: sl.min,
+                      max: sl.max,
+                      step: sl.step,
+                      value: dims[sl.key] || sl.min,
+                      onChange: e => updDim(sl.key, e.target.value),
+                      className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
+                    })
+                  )
+                ),
+                // Color picker
+                React.createElement('div', { className: 'mt-3' },
+                  React.createElement('div', { className: 'text-[10px] text-slate-400 mb-1' }, 'Color'),
+                  React.createElement('div', { className: 'flex gap-1.5 flex-wrap' },
+                    ...colorPalette.map(c =>
+                      React.createElement('button', {
+                        key: c,
+                        onClick: () => upd('color', c),
+                        style: { backgroundColor: c },
+                        className: 'w-5 h-5 rounded-full transition-all border-2 ' +
+                          (shapeColor === c ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105 opacity-70 hover:opacity-100')
+                      })
+                    )
+                  )
+                ),
+                // Wireframe toggle
+                React.createElement('div', { className: 'flex items-center gap-2 mt-3' },
+                  React.createElement('button', {
+                    onClick: () => upd('wireframe', !wireframe),
+                    className: 'w-8 h-4 rounded-full transition-all relative ' + (wireframe ? 'bg-sky-500' : 'bg-slate-600')
+                  },
+                    React.createElement('div', {
+                      className: 'w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ' + (wireframe ? 'left-4' : 'left-0.5')
+                    })
+                  ),
+                  React.createElement('span', { className: 'text-[10px] text-slate-400' }, 'Wireframe')
+                ),
+                // Opacity slider
+                React.createElement('div', { className: 'mt-2' },
+                  React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-400 mb-0.5' },
+                    React.createElement('span', null, 'Opacity'),
+                    React.createElement('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
+                  ),
+                  React.createElement('input', {
+                    type: 'range', min: 0.1, max: 1, step: 0.05,
+                    value: opacity,
+                    onChange: e => upd('opacity', parseFloat(e.target.value)),
+                    className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
+                  })
+                )
+              ),
+
+              // Measurements
+              React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
+                React.createElement('div', { className: 'text-xs font-bold text-slate-400 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Measurements'),
+                React.createElement('div', { className: 'space-y-1.5' },
+                  React.createElement('div', { className: 'flex justify-between text-xs' },
+                    React.createElement('span', { className: 'text-slate-400' }, 'Volume'),
+                    React.createElement('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
+                  ),
+                  React.createElement('div', { className: 'flex justify-between text-xs' },
+                    React.createElement('span', { className: 'text-slate-400' }, 'Surface Area'),
+                    React.createElement('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
+                  ),
+                  React.createElement('div', { className: 'flex justify-between text-xs' },
+                    React.createElement('span', { className: 'text-slate-400' }, 'Faces'),
+                    React.createElement('span', { className: 'text-amber-400 font-mono font-bold' }, m.faces)
+                  ),
+                  React.createElement('div', { className: 'flex justify-between text-xs' },
+                    React.createElement('span', { className: 'text-slate-400' }, 'Edges'),
+                    React.createElement('span', { className: 'text-purple-400 font-mono font-bold' }, m.edges)
+                  ),
+                  React.createElement('div', { className: 'flex justify-between text-xs' },
+                    React.createElement('span', { className: 'text-slate-400' }, 'Vertices'),
+                    React.createElement('span', { className: 'text-rose-400 font-mono font-bold' }, m.vertices)
+                  ),
+                  m.note && React.createElement('div', { className: 'text-[10px] text-slate-500 italic mt-1' }, m.note)
+                )
+              )
+            ),
+
+            // === THREE.JS VIEWPORT ===
+            React.createElement('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
+              React.createElement('canvas', {
+                id: 'geo-sandbox-canvas',
+                className: 'w-full h-full',
+                style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
+              }),
+              // Controls hint overlay
+              React.createElement('div', { className: 'absolute bottom-2 right-2 text-[10px] text-slate-500 bg-slate-900/80 px-2 py-1 rounded-md' },
+                '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan'
+              ),
+              // Shape name overlay
+              React.createElement('div', { className: 'absolute top-2 left-2 text-xs font-bold text-sky-400 bg-slate-900/80 px-2 py-1 rounded-md' },
+                m.name
+              )
+            )
+          ),
+
+          // Coach panel
+          React.createElement('div', { className: 'bg-gradient-to-r from-sky-900/30 to-blue-900/30 backdrop-blur-md rounded-xl p-3 border border-sky-700/30' },
+            React.createElement('div', { className: 'flex items-start gap-3' },
+              React.createElement('div', { className: 'text-2xl flex-shrink-0' }, '\uD83D\uDCD0'),
+              React.createElement('div', null,
+                React.createElement('div', { className: 'text-sm font-bold text-sky-300 mb-1' }, ct.title),
+                React.createElement('div', { className: 'text-xs text-slate-300 mb-1' }, ct.tip),
+                React.createElement('div', { className: 'text-[10px] text-slate-400 italic' }, '\uD83C\uDF0D ' + ct.example)
+              )
+            )
+          ),
+
+          // STL note
+          React.createElement('div', { className: 'text-[10px] text-slate-500 text-center' },
+            '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.'
+          )
+        );
+      })(),
+
+      // --- ARCHITECTURE STUDIO ---
+      stemLabTab === 'explore' && stemLabTool === 'archStudio' && (function () {
+        var d = (labToolData && labToolData.archStudio) || {};
+        var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { archStudio: Object.assign({}, prev.archStudio || {}, (typeof key === 'object' ? key : (function () { var o = {}; o[key] = val; return o; })())) }); }); };
+        var blocks = d.blocks || [];
+        var activeShape = d.activeShape || 'block';
+        var activeMaterial = d.activeMaterial || 'stone';
+        var activeColor = d.activeColor || '#94a3b8';
+        var mode = d.mode || 'place';
+        var styleMode = d.styleMode || 'architect';
+        var blueprintView = d.blueprintView || false;
+        var threeReady = labToolData._threeLoaded;
+
+        // Shape definitions
+        var shapes = [
+          { id: 'block', icon: '\uD83D\uDFE6', label: 'Block', vol: 1 },
+          { id: 'slab', icon: '\uD83D\uDCCF', label: 'Slab', vol: 0.5 },
+          { id: 'ramp', icon: '\uD83C\uDFD4\uFE0F', label: 'Ramp', vol: 0.5 },
+          { id: 'column', icon: '\uD83C\uDFDB\uFE0F', label: 'Column', vol: 0.385 },
+          { id: 'arch', icon: '\uD83C\uDF09', label: 'Arch', vol: 0.24 },
+          { id: 'roof', icon: '\uD83D\uDCD0', label: 'Roof', vol: 0.35 },
+          { id: 'pyramid', icon: '\uD83D\uDD3A', label: 'Pyramid', vol: 0.26 },
+          { id: 'dome', icon: '\uD83D\uDD35', label: 'Dome', vol: 0.26 }
+        ];
+        // Material definitions
+        var materials = [
+          { id: 'stone', label: 'Stone', color: '#94a3b8', icon: '\uD83E\uDEA8' },
+          { id: 'brick', label: 'Brick', color: '#b45309', icon: '\uD83E\uDDF1' },
+          { id: 'wood', label: 'Wood', color: '#92400e', icon: '\uD83E\uDEB5' },
+          { id: 'glass', label: 'Glass', color: '#38bdf8', icon: '\uD83E\uDE9F' },
+          { id: 'marble', label: 'Marble', color: '#f1f5f9', icon: '\u26AA' },
+          { id: 'metal', label: 'Metal', color: '#cbd5e1', icon: '\u2699\uFE0F' }
+        ];
+        // Tool modes
+        var modes = [
+          { id: 'place', label: 'Place', icon: '\u2795' },
+          { id: 'erase', label: 'Erase', icon: '\u274C' },
+          { id: 'paint', label: 'Paint', icon: '\uD83C\uDFA8' }
+        ];
+        // Volume lookup
+        var volLookup = {};
+        shapes.forEach(function (s) { volLookup[s.id] = s.vol; });
+        // Stats
+        var totalBlocks = blocks.length;
+        var totalVolume = blocks.reduce(function (sum, b) { return sum + (volLookup[b.shape || 'block'] || 1); }, 0).toFixed(2);
+        // Footprint = unique (x,z) cells
+        var footprintSet = {};
+        blocks.forEach(function (b) { footprintSet[b.x + ',' + b.z] = true; });
+        var footprint = Object.keys(footprintSet).length;
+        // Surface area (rough estimate: 6 faces per block - 2 per shared face)
+        var blockMap = {};
+        blocks.forEach(function (b) { blockMap[b.x + ',' + b.y + ',' + b.z] = true; });
+        var surfaceArea = 0;
+        blocks.forEach(function (b) {
+          var neighbors = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+          neighbors.forEach(function (n) {
+            if (!blockMap[(b.x + n[0]) + ',' + (b.y + n[1]) + ',' + (b.z + n[2])]) surfaceArea += 1;
+          });
+        });
+        // Bounding box dimensions
+        var buildW = 0, buildD = 0, buildH = 0;
+        if (blocks.length > 0) {
+          var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+          blocks.forEach(function (b) {
+            if (b.x < minX) minX = b.x; if (b.x > maxX) maxX = b.x;
+            if (b.y < minY) minY = b.y; if (b.y > maxY) maxY = b.y;
+            if (b.z < minZ) minZ = b.z; if (b.z > maxZ) maxZ = b.z;
+          });
+          buildW = maxX - minX + 1; buildD = maxZ - minZ + 1; buildH = maxY - minY + 1;
+        }
+
+        // STL export function
+        var exportSTL = function () {
+          if (!window.THREE || !window._archScene || blocks.length === 0) return;
+          var THREE = window.THREE;
+          var combined = new THREE.BufferGeometry();
+          var geos = [];
+          window._archScene.blockMeshes.forEach(function (m) {
+            var g = m.geometry.clone();
+            g.applyMatrix4(m.matrixWorld);
+            geos.push(g);
+          });
+          if (geos.length === 0) return;
+          // Merge all geometries
+          var positions = [];
+          var normals = [];
+          geos.forEach(function (g) {
+            var idx = g.index;
+            var pos = g.getAttribute('position');
+            var nrm = g.getAttribute('normal');
+            if (idx) {
+              for (var i = 0; i < idx.count; i++) {
+                var vi = idx.getX(i);
+                positions.push(pos.getX(vi), pos.getY(vi), pos.getZ(vi));
+                if (nrm) normals.push(nrm.getX(vi), nrm.getY(vi), nrm.getZ(vi));
+                else normals.push(0, 1, 0);
+              }
+            } else {
+              for (var j = 0; j < pos.count; j++) {
+                positions.push(pos.getX(j), pos.getY(j), pos.getZ(j));
+                if (nrm) normals.push(nrm.getX(j), nrm.getY(j), nrm.getZ(j));
+                else normals.push(0, 1, 0);
+              }
+            }
+          });
+          var triCount = positions.length / 9;
+          var bufLen = 84 + triCount * 50;
+          var buf = new ArrayBuffer(bufLen);
+          var dv = new DataView(buf);
+          for (var h = 0; h < 80; h++) dv.setUint8(h, 0);
+          dv.setUint32(80, triCount, true);
+          var offset = 84;
+          for (var t = 0; t < triCount; t++) {
+            var ni = t * 9;
+            dv.setFloat32(offset, normals[ni], true);
+            dv.setFloat32(offset + 4, normals[ni + 1], true);
+            dv.setFloat32(offset + 8, normals[ni + 2], true);
+            offset += 12;
+            for (var v = 0; v < 3; v++) {
+              var pi = t * 9 + v * 3;
+              dv.setFloat32(offset, positions[pi], true);
+              dv.setFloat32(offset + 4, positions[pi + 1], true);
+              dv.setFloat32(offset + 8, positions[pi + 2], true);
+              offset += 12;
+            }
+            dv.setUint16(offset, 0, true);
+            offset += 2;
+          }
+          var blob = new Blob([buf], { type: 'application/octet-stream' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'architecture_studio_' + Date.now() + '.stl';
+          a.click();
+          URL.revokeObjectURL(url);
+          if (typeof addToast === 'function') addToast('\uD83C\uDFD7\uFE0F Building exported as STL!', 'success');
+        };
+
+        // Undo
+        var undoBlock = function () {
+          setLabToolData(function (p) {
+            var a = Object.assign({}, p.archStudio || {});
+            var nb = (a.blocks || []).slice(0, -1);
+            return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: nb }) });
+          });
+        };
+        // Clear all
+        var clearAll = function () {
+          setLabToolData(function (p) {
+            var a = Object.assign({}, p.archStudio || {});
+            return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [] }) });
+          });
+        };
+
+        // Coach tips based on block count
+        var coachTip = totalBlocks === 0 ? '\uD83C\uDFD7\uFE0F Click on the grid to place your first block! Use different shapes and materials to build amazing structures.'
+          : totalBlocks < 5 ? '\uD83D\uDCA1 Tip: Click on the side of an existing block to stack blocks upward. Try building a simple wall!'
+            : totalBlocks < 15 ? '\uD83C\uDFDB\uFE0F Try adding columns and arches to give your structure a classical look. Ancient Greeks used columns to support roofs.'
+              : totalBlocks < 30 ? '\uD83C\uDFE0 Great progress! Mix materials for visual contrast \u2014 try a stone foundation with wooden walls and a brick chimney.'
+                : totalBlocks < 50 ? '\uD83C\uDF09 Fun fact: The Roman Colosseum used 80 arched entrances. Try adding arches to your design!'
+                  : '\uD83C\uDFF0 You\'re an architect! The Great Wall of China used over 3.8 billion bricks. How big can you build?';
+
+        return React.createElement('div', { key: 'archStudio', style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', borderRadius: 16, overflow: 'hidden' } },
+          // Header bar
+          React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: 'linear-gradient(90deg,#1e293b,#0f172a)', borderBottom: '1px solid #334155', flexWrap: 'wrap' } },
+            React.createElement('button', { onClick: function () { setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: '#e2e8f0', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
+            React.createElement('span', { style: { fontSize: 20 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
+            React.createElement('span', { style: { fontWeight: 700, fontSize: 17, color: '#f8fafc', letterSpacing: 0.5 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
+            React.createElement('span', { style: { fontSize: 11, color: '#64748b', marginLeft: 4 } }, blocks.length + ' blocks'),
+            // Style mode toggle
+            React.createElement('button', { onClick: function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }, style: { background: styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', border: '1px solid ' + (styleMode === 'bricks' ? '#f87171' : '#6366f1'), color: styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, styleMode === 'bricks' ? '\uD83E\uDDF1 Brick Builder' : '\uD83C\uDFDB\uFE0F Architect'),
+            // Blueprint toggle
+            React.createElement('button', { onClick: function () { upd('blueprintView', !blueprintView); }, style: { background: blueprintView ? 'rgba(34,211,238,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blueprintView ? '#22d3ee' : '#475569'), color: blueprintView ? '#67e8f9' : '#94a3b8', borderRadius: 20, padding: '4px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View'),
+            React.createElement('div', { style: { flex: 1 } }),
+            React.createElement('button', { onClick: undoBlock, disabled: blocks.length === 0, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: blocks.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '6px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 600 } }, '\u21A9 Undo'),
+            React.createElement('button', { onClick: clearAll, disabled: blocks.length === 0, style: { background: blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '6px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
+            React.createElement('button', { onClick: exportSTL, disabled: blocks.length === 0, style: { background: blocks.length ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '6px 14px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 12, fontWeight: 700 } }, '\uD83D\uDCE5 Export STL')
+          ),
+          // Main content: sidebar + viewport
+          React.createElement('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
+            // Left sidebar
+            React.createElement('div', { style: { width: 180, background: '#1e293b', padding: '12px 10px', overflowY: 'auto', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: 14 } },
+              // Tool mode selector
+              React.createElement('div', null,
+                React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Mode'),
+                React.createElement('div', { style: { display: 'flex', gap: 4 } },
+                  modes.map(function (m) {
+                    return React.createElement('button', {
+                      key: m.id,
+                      onClick: function () { upd('mode', m.id); },
+                      style: {
+                        flex: 1, padding: '6px 4px', fontSize: 11, fontWeight: 600, border: mode === m.id ? '2px solid #f59e0b' : '1px solid #475569',
+                        borderRadius: 8, background: mode === m.id ? 'rgba(245,158,11,.15)' : 'rgba(30,41,59,.8)', color: mode === m.id ? '#fbbf24' : '#94a3b8',
+                        cursor: 'pointer', textAlign: 'center'
+                      }
+                    }, m.icon + ' ' + m.label);
+                  })
+                )
+              ),
+              // Shape palette
+              React.createElement('div', null,
+                React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Shapes'),
+                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+                  shapes.map(function (s) {
+                    return React.createElement('button', {
+                      key: s.id,
+                      onClick: function () { upd('activeShape', s.id); },
+                      style: {
+                        padding: '8px 4px', fontSize: 11, fontWeight: 600, border: activeShape === s.id ? '2px solid #60a5fa' : '1px solid #334155',
+                        borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent', color: activeShape === s.id ? '#93c5fd' : '#94a3b8',
+                        cursor: 'pointer', textAlign: 'center', lineHeight: 1.2
+                      }
+                    }, React.createElement('div', { style: { fontSize: 18 } }, s.icon), s.label);
+                  })
+                )
+              ),
+              // Material palette
+              React.createElement('div', null,
+                React.createElement('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 } }, 'Materials'),
+                React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+                  materials.map(function (m) {
+                    return React.createElement('button', {
+                      key: m.id,
+                      onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); },
+                      style: {
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', fontSize: 11, fontWeight: 600,
+                        border: activeMaterial === m.id ? '2px solid ' + m.color : '1px solid #334155',
+                        borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
+                        color: activeMaterial === m.id ? '#f8fafc' : '#94a3b8', cursor: 'pointer', textAlign: 'left'
+                      }
+                    },
+                      React.createElement('span', { style: { width: 18, height: 18, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
+                      m.icon + ' ' + m.label
+                    );
+                  })
+                )
+              )
+            ),
+            // Main viewport area
+            React.createElement('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
+              // Three.js canvas
+              !threeReady
+                ? React.createElement('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14 } },
+                  React.createElement('div', { style: { textAlign: 'center' } },
+                    React.createElement('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '\u2699\uFE0F'),
+                    'Loading 3D engine...'
+                  )
+                )
+                : React.createElement('canvas', {
+                  id: 'arch-studio-canvas',
+                  style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' }
+                }),
+              // Controls overlay
+              React.createElement('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '8px 12px', fontSize: 10, color: '#64748b', lineHeight: 1.5, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
+                React.createElement('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
+                React.createElement('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
+                React.createElement('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
+                React.createElement('div', null, '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place block' : mode === 'erase' ? 'Remove block' : 'Paint block'))
+              ),
+              // Mode indicator overlay
+              React.createElement('div', { style: { position: 'absolute', top: 10, left: 10, background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '5px 12px', fontSize: 12, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
+                (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode'
+              ),
+              // Bottom stats bar
+              React.createElement('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', padding: '8px 16px', background: 'linear-gradient(0deg,#1e293b,#0f172a)', borderTop: '1px solid #334155', flexWrap: 'wrap' } },
+                [
+                  { label: 'Blocks', value: totalBlocks, icon: '\uD83E\uDDF1' },
+                  { label: 'Dimensions', value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
+                  { label: 'Volume', value: totalVolume + ' u\u00B3', icon: '\uD83D\uDCE6' },
+                  { label: 'Footprint', value: footprint + ' u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
+                  { label: 'Surface', value: surfaceArea + ' u\u00B2', icon: '\uD83D\uDCC0' }
+                ].map(function (stat) {
+                  return React.createElement('div', { key: stat.label, style: { textAlign: 'center' } },
+                    React.createElement('div', { style: { fontSize: 11, color: '#64748b', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
+                    React.createElement('div', { style: { fontSize: 16, fontWeight: 700, color: '#f8fafc' } }, stat.value)
+                  );
+                })
+              )
+            )
+          ),
+          // Coach panel
+          React.createElement('div', { style: { padding: '10px 16px', background: '#1e293b', borderTop: '1px solid #334155', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
+            coachTip
+          )
+        );
+      })(),
+
+      // --- GRAPHING CALCULATOR EMULATOR ---
+      stemLabTab === 'explore' && stemLabTool === 'graphCalc' && (() => {
+        const d = labToolData.graphCalc || {};
+        const upd = (key, val) => setLabToolData(prev => ({ ...prev, graphCalc: { ...(prev.graphCalc || {}), [key]: val } }));
+        const tier = d.tier || 'explorer';
+        const funcs = d.funcs || [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
+        const win = d.window || { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+        const showTable = d.showTable || false;
+        const showWindow = d.showWindow || false;
+        const showChallenge = d.showChallenge || false;
+        const showMathPad = d.showMathPad != null ? d.showMathPad : false;
+        const showArith = d.showArith || false;
+        const arithExpr = d.arithExpr || '';
+        const arithResult = d.arithResult || '';
+        const showSliders = d.showSliders || false;
+        const focusedInput = d.focusedInput || 0;
+        const tableX = d.tableX != null ? d.tableX : -5;
+        const tableStep = d.tableStep || 1;
+
+        // Math Pad symbols gated by tier
+        const MATH_SYMBOLS = [
+          // Explorer tier (always visible)
+          { label: 'x', insert: 'x', tier: 'explorer' },
+          { label: '^', insert: '^', tier: 'explorer' },
+          { label: '( )', insert: '()', tier: 'explorer' },
+          { label: '\u03C0', insert: 'pi', tier: 'explorer' },
+          { label: '\u221A', insert: 'sqrt(', tier: 'explorer' },
+          { label: '|x|', insert: 'abs(', tier: 'explorer' },
+          // Analyst tier
+          { label: 'x\u00B2', insert: '^2', tier: 'analyst' },
+          { label: 'x\u00B3', insert: '^3', tier: 'analyst' },
+          { label: '\u00B1', insert: '-', tier: 'analyst' },
+          { label: '1/x', insert: '1/', tier: 'analyst' },
+          // Engineer tier
+          { label: 'sin', insert: 'sin(', tier: 'engineer' },
+          { label: 'cos', insert: 'cos(', tier: 'engineer' },
+          { label: 'tan', insert: 'tan(', tier: 'engineer' },
+          { label: 'log', insert: 'log(', tier: 'engineer' },
+          { label: 'ln', insert: 'ln(', tier: 'engineer' },
+          { label: 'e', insert: 'e', tier: 'engineer' },
+        ];
+        const visibleSymbols = MATH_SYMBOLS.filter(function (s) {
+          if (tier === 'researcher') return true;
+          if (tier === 'engineer') return s.tier !== 'researcher';
+          if (tier === 'analyst') return s.tier === 'explorer' || s.tier === 'analyst';
+          return s.tier === 'explorer';
+        });
+        var insertSymbol = function (text) {
+          var nf = funcs.slice();
+          var idx = focusedInput;
+          nf[idx] = Object.assign({}, nf[idx], { expr: (nf[idx].expr || '') + text });
+          upd('funcs', nf);
+        };
+
+        // NOTE: useEffect hooks for math.js loading and canvas rendering
+        // have been moved to the component body level (above) to satisfy
+        // React's Rules of Hooks. They guard internally with early returns.
+
+        const COACH_TIPS = {
+          explorer: [
+            { icon: '\uD83D\uDCA1', title: 'Entering Functions', text: 'Type y = mx + b where m is the slope (steepness) and b is where the line crosses the y-axis. Try: y = 2x + 3' },
+            { icon: '\uD83D\uDD0D', title: 'Zoom & Window', text: 'The window controls how much of the graph you see. If your graph disappeared, try resetting the window to Standard (-10 to 10).' },
+            { icon: '\uD83D\uDCCA', title: 'Reading the Table', text: 'The table shows exact y-values for each x. Use it to check calculations or find patterns in your function.' },
+            { icon: '\uD83C\uDFAF', title: 'Multiple Functions', text: 'Enter different equations in each slot to compare them. Where the lines cross is called an intersection!' }
+          ],
+          analyst: [
+            { icon: '\uD83D\uDCC8', title: 'Linear vs Quadratic', text: 'y = 2x + 1 is a straight line. y = x\u00B2 is a parabola. The exponent determines the shape!' },
+            { icon: '\uD83E\uDDEE', title: 'Finding Zeros', text: 'Where the graph crosses the x-axis, y = 0. These points are called zeros, roots, or x-intercepts.' },
+            { icon: '\uD83D\uDCCA', title: 'Slope Meaning', text: 'In y = mx + b, slope m tells you: for every 1 step right, the line goes up by m. Negative m = downhill.' },
+            { icon: '\u26A1', title: 'Transformations', text: 'y = (x-3)\u00B2 shifts the parabola right by 3. y = x\u00B2 + 5 shifts it up by 5. Try it!' }
+          ],
+          engineer: [
+            { icon: '\uD83E\uDDE9', title: 'Trig Functions', text: 'sin(x), cos(x), tan(x) create waves. The period of sin(x) is 2\u03C0 \u2248 6.28.' },
+            { icon: '\uD83D\uDD22', title: 'Logarithms', text: 'log(x) is the inverse of 10^x. ln(x) is the natural log (base e). They grow very slowly.' },
+            { icon: '\u221E', title: 'Asymptotes', text: 'Some functions approach a line but never touch it. y = 1/x has asymptotes at x=0 and y=0.' }
+          ],
+          researcher: [
+            { icon: '\uD83D\uDE80', title: 'Full Access', text: 'All features unlocked. You have the power of a full graphing calculator. Explore freely!' }
+          ]
+        };
+        const currentTips = [...(COACH_TIPS.explorer || []), ...(tier !== 'explorer' ? COACH_TIPS.analyst || [] : []), ...(tier === 'engineer' || tier === 'researcher' ? COACH_TIPS.engineer || [] : []), ...(tier === 'researcher' ? COACH_TIPS.researcher || [] : [])];
+        const coachIdx = d.coachIdx || 0;
+
+        const ZOOM_PRESETS = [
+          { name: 'Standard', xmin: -10, xmax: 10, ymin: -10, ymax: 10 },
+          { name: 'Trig', xmin: -6.28, xmax: 6.28, ymin: -2, ymax: 2 },
+          { name: 'Quadratic', xmin: -5, xmax: 5, ymin: -5, ymax: 25 },
+          { name: 'Wide', xmin: -50, xmax: 50, ymin: -50, ymax: 50 },
+          { name: 'Positive', xmin: 0, xmax: 20, ymin: 0, ymax: 20 }
+        ];
+
+        const PREMADE_CHALLENGES = [
+          { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = 3x - 2. What is the y-intercept? What is the slope?', hint: 'The y-intercept is where the line crosses the y-axis (x=0). The slope is the coefficient of x.' },
+          { tier: 'explorer', topic: 'Linear Functions', prompt: 'Graph y = -x + 5 and y = x - 1. Where do they intersect?', hint: 'The intersection is where both equations give the same y for the same x. Look at the table!' },
+          { tier: 'explorer', topic: 'Tables', prompt: 'Enter y = x^2. Look at the table. What pattern do you see in the y-values?', hint: 'Compare consecutive y-values. The differences between them increase by 2 each time!' },
+          { tier: 'analyst', topic: 'Quadratics', prompt: 'Graph y = x^2 - 4. Where are the zeros (x-intercepts)? Can you verify with the equation?', hint: 'Set y = 0: x^2 - 4 = 0, so x^2 = 4, so x = +/-2. Check the graph!' },
+          { tier: 'analyst', topic: 'Transformations', prompt: 'Graph y = x^2, then y = (x-3)^2, then y = (x+2)^2. How does the number inside affect the graph?', hint: '(x-h) shifts the graph RIGHT by h. (x+h) shifts LEFT by h.' },
+          { tier: 'analyst', topic: 'Slope', prompt: 'Graph y = 0.5x, y = x, y = 2x, and y = 5x. What happens as the slope gets bigger?', hint: 'Bigger slope = steeper line. Slope is the rise/run ratio.' },
+          { tier: 'engineer', topic: 'Trigonometry', prompt: 'Graph y = sin(x) and y = cos(x) using the Trig zoom preset. How are they related?', hint: 'cos(x) is sin(x) shifted left by pi/2. They have the same shape!' },
+          { tier: 'engineer', topic: 'Exponential', prompt: 'Graph y = 2^x and y = log(x)/log(2). What do you notice? These are inverse functions!', hint: 'Inverse functions are mirror images across the line y = x.' },
+          { tier: 'engineer', topic: 'Asymptotes', prompt: 'Graph y = 1/x. What happens near x = 0? What happens as x gets very large?', hint: 'The graph gets infinitely close to the axes but never touches them. These lines are asymptotes.' }
+        ];
+
+        const TIER_INFO = {
+          explorer: { icon: '\uD83D\uDFE2', name: 'Explorer', desc: 'Linear functions, basic graphing, tables', color: '#34d399' },
+          analyst: { icon: '\uD83D\uDFE1', name: 'Analyst', desc: 'Quadratics, transformations, intersections', color: '#fbbf24' },
+          engineer: { icon: '\uD83D\uDD35', name: 'Engineer', desc: 'Trig, logs, exponentials, advanced analysis', color: '#60a5fa' },
+          researcher: { icon: '\uD83D\uDFE3', name: 'Researcher', desc: 'Full access - all features unlocked', color: '#a78bfa' }
+        };
+        const tierInfo = TIER_INFO[tier] || TIER_INFO.explorer;
+
+        const availableChallenges = PREMADE_CHALLENGES.filter(c => {
+          if (tier === 'researcher') return true;
+          if (tier === 'engineer') return c.tier !== 'researcher';
+          if (tier === 'analyst') return c.tier === 'explorer' || c.tier === 'analyst';
+          return c.tier === 'explorer';
+        });
+
+        let tableRows = [];
+        if (showTable && funcs[0] && funcs[0].expr && window.math) {
+          try {
+            let tExpr = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+            tExpr = tExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+            const tCompiled = math.compile(tExpr);
+            for (let tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
+              try { var _tScope = { x: tx }; if (d.sliderA != null) _tScope.a = d.sliderA; if (d.sliderB != null) _tScope.b = d.sliderB; if (d.sliderC != null) _tScope.c = d.sliderC; const ty = tCompiled.evaluate(_tScope); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
+              catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
+            }
+          } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
+        }
+
+        return React.createElement('div', {
+          style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' }
+        },
+          React.createElement('div', {
+            style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' }
+          },
+            React.createElement('button', { onClick: () => setStemLabTool(null), style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }, 'aria-label': 'Back to STEM Lab tools' }, '\u2190 Back'),
+            React.createElement('div', { style: { fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.5px', color: '#c7d2fe' } }, '\uD83D\uDCC8 Graphing Calculator'),
+            React.createElement('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
+              React.createElement('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
+              React.createElement('select', { value: tier, onChange: e => upd('tier', e.target.value), style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' }, 'aria-label': 'Select skill tier' },
+                React.createElement('option', { value: 'explorer' }, '\uD83D\uDFE2 Explorer'),
+                React.createElement('option', { value: 'analyst' }, '\uD83D\uDFE1 Analyst'),
+                React.createElement('option', { value: 'engineer' }, '\uD83D\uDD35 Engineer'),
+                React.createElement('option', { value: 'researcher' }, '\uD83D\uDFE3 Researcher')
+              )
+            )
+          ),
+
+          React.createElement('div', {
+            style: { display: 'flex', flex: 1, overflow: 'hidden' }
+          },
+            React.createElement('div', {
+              style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' }
+            },
+              React.createElement('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, '\uD83D\uDCDD FUNCTIONS'),
+              React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+                ...funcs.map((fn, i) => React.createElement('div', { key: 'f' + i, style: { marginBottom: '8px' } },
+                  React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
+                    React.createElement('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
+                    React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'y' + (i + 1) + ' =')
+                  ),
+                  React.createElement('input', {
+                    type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
+                    onChange: e => { const nf = [...funcs]; nf[i] = { ...nf[i], expr: e.target.value }; upd('funcs', nf); },
+                    onFocus: function () { upd('focusedInput', i); },
+                    style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' },
+                    'aria-label': 'Function y' + (i + 1) + ' expression'
+                  })
+                ))
+              ),
+
+              // ── Math Pad (collapsible symbol buttons) ──
+              React.createElement('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
+                React.createElement('button', {
+                  onClick: function () { upd('showMathPad', !showMathPad); },
+                  style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#64748b', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', marginBottom: showMathPad ? '6px' : '0' }
+                }, '\u2328 Math Pad ' + (showMathPad ? '\u25B2' : '\u25BC')),
+                showMathPad && React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px' } },
+                  visibleSymbols.map(function (sym) {
+                    return React.createElement('button', {
+                      key: sym.label,
+                      onClick: function () { insertSymbol(sym.insert); },
+                      style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer', lineHeight: '1.2', transition: 'background 0.15s' },
+                      onMouseEnter: function (e) { e.currentTarget.style.background = 'rgba(99,102,241,0.3)'; },
+                      onMouseLeave: function (e) { e.currentTarget.style.background = 'rgba(99,102,241,0.12)'; },
+                      title: 'Insert ' + sym.insert,
+                      'aria-label': 'Insert ' + sym.label
+                    }, sym.label);
+                  })
+                )
+              ),
+
+              React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                React.createElement('button', { onClick: () => upd('showTable', !showTable), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
+                React.createElement('button', { onClick: () => upd('showWindow', !showWindow), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
+                React.createElement('button', { onClick: () => upd('showChallenge', !showChallenge), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
+                React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear'),
+                React.createElement('button', { onClick: function () { upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD0D Trace'),
+                React.createElement('button', {
+                  onClick: function () {
+                    if (!window.math) return;
+                    var an = !d.showAnalysis;
+                    upd('showAnalysis', an);
+                    if (an) {
+                      var zeros = []; var inters = [];
+                      try {
+                        var f1 = funcs[0]; if (f1 && f1.expr && f1.expr.trim()) {
+                          var e1 = f1.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                          e1 = e1.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                          var c1 = math.compile(e1);
+                          var sA = {}; if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
+                          var step = (win.xmax - win.xmin) / 500;
+                          var prevY = null; var prevX = null;
+                          for (var sx = win.xmin; sx <= win.xmax; sx += step) {
+                            try {
+                              var sy = c1.evaluate(Object.assign({ x: sx }, sA));
+                              if (prevY != null && typeof sy === 'number' && isFinite(sy) && typeof prevY === 'number') {
+                                if (prevY * sy < 0) {
+                                  var lo = prevX, hi = sx;
+                                  for (var bi = 0; bi < 30; bi++) { var mid = (lo + hi) / 2; var mval = c1.evaluate(Object.assign({ x: mid }, sA)); if (c1.evaluate(Object.assign({ x: lo }, sA)) * mval < 0) hi = mid; else lo = mid; }
+                                  var root = (lo + hi) / 2;
+                                  if (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2) zeros.push({ x: root, fi: 0 });
+                                }
+                              }
+                              prevY = sy; prevX = sx;
+                            } catch (e) { prevY = null; }
+                          }
+                          for (var fi2 = 1; fi2 < funcs.length; fi2++) {
+                            var f2 = funcs[fi2]; if (!f2 || !f2.expr || !f2.expr.trim()) continue;
+                            try {
+                              var e2 = f2.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                              e2 = e2.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                              var c2 = math.compile(e2);
+                              var pDiff = null; var pXd = null;
+                              for (var ix = win.xmin; ix <= win.xmax; ix += step) {
+                                try {
+                                  var iy1 = c1.evaluate(Object.assign({ x: ix }, sA));
+                                  var iy2 = c2.evaluate(Object.assign({ x: ix }, sA));
+                                  var diff = iy1 - iy2;
+                                  if (pDiff != null && typeof diff === 'number' && isFinite(diff) && pDiff * diff < 0) {
+                                    var ilo = pXd, ihi = ix;
+                                    for (var ibi = 0; ibi < 30; ibi++) { var imid = (ilo + ihi) / 2; var d1 = c1.evaluate(Object.assign({ x: imid }, sA)) - c2.evaluate(Object.assign({ x: imid }, sA)); if ((c1.evaluate(Object.assign({ x: ilo }, sA)) - c2.evaluate(Object.assign({ x: ilo }, sA))) * d1 < 0) ihi = imid; else ilo = imid; }
+                                    var iroot = (ilo + ihi) / 2;
+                                    var irootY = c1.evaluate(Object.assign({ x: iroot }, sA));
+                                    inters.push({ x: iroot, y: irootY, f1: 0, f2: fi2 });
+                                  }
+                                  pDiff = diff; pXd = ix;
+                                } catch (e) { pDiff = null; }
+                              }
+                            } catch (e) { }
+                          }
+                        }
+                      } catch (e) { }
+                      upd('_zeros', zeros);
+                      upd('_intersections', inters);
+                    }
+                  },
+                  style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }
+                }, '\u26A1 Analyze'),
+                React.createElement('button', { onClick: function () { upd('showDeriv', !d.showDeriv); if (!d.showDeriv && d.derivX == null) upd('derivX', 0); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, "\u2202 f\'(x)"),
+                React.createElement('button', { onClick: function () { upd('showArith', !showArith); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showArith ? '#60a5fa33' : 'rgba(255,255,255,0.05)', color: showArith ? '#60a5fa' : '#94a3b8', border: showArith ? '1px solid #60a5fa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDDEE Calc'),
+                React.createElement('button', { onClick: function () { upd('showSliders', !showSliders); if (!showSliders) { if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFA8 Sliders')
+              ),
+
+              React.createElement('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
+                React.createElement('div', { style: { fontSize: '9px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
+                React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
+                  ...ZOOM_PRESETS.map(z => React.createElement('button', { key: z.name, onClick: () => upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }), style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '9px', cursor: 'pointer' } }, z.name))
+                )
+              )
+            ),
+            // ── Arithmetic Calculator ──
+            showArith && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(96,165,250,0.06)' } },
+              React.createElement('div', { style: { fontSize: '9px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' } }, '\uD83E\uDDEE CALCULATOR'),
+              React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '4px' } },
+                React.createElement('input', { type: 'text', value: arithExpr, placeholder: 'e.g. sqrt(144) + 3^2', onChange: function (e) { upd('arithExpr', e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter' && window.math) { try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } } }, style: { flex: 1, padding: '5px 8px', borderRadius: '6px', border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.08)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' }, 'aria-label': 'Calculator expression' }),
+                React.createElement('button', { onClick: function () { if (!window.math) return; try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } }, style: { padding: '5px 10px', borderRadius: '6px', background: '#3b82f6', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '=')
+              ),
+              arithResult && React.createElement('div', { style: { padding: '5px 8px', borderRadius: '6px', background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', fontFamily: 'monospace', fontSize: '13px', fontWeight: 'bold', color: '#93c5fd', marginBottom: '4px' } }, '= ' + arithResult),
+              React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px' } },
+                ['7', '8', '9', '/', '+', '4', '5', '6', '*', '-', '1', '2', '3', '(', ')', '0', '.', 'pi', 'e', '^'].map(function (b) {
+                  return React.createElement('button', { key: b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.15)', fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b);
+                }),
+                React.createElement('button', { onClick: function () { upd('arithExpr', ''); upd('arithResult', ''); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, 'C'),
+                React.createElement('button', { onClick: function () { upd('arithExpr', arithExpr.slice(0, -1)); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u232B'),
+                ['sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt(', 'abs(', '!', '%'].map(function (b) {
+                  return React.createElement('button', { key: 'fn_' + b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.2)', fontSize: '9px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b.replace('(', ''));
+                })
+              )
+            ),
+            // ── Slider Parameters ──
+            showSliders && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
+              React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 PARAMETER SLIDERS \u2014 Use a, b, c in your equations'),
+              ['a', 'b', 'c'].map(function (p) {
+                var key = 'slider' + p.toUpperCase();
+                var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
+                return React.createElement('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                  React.createElement('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
+                  React.createElement('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, onChange: function (e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' }, 'aria-label': 'Parameter ' + p }),
+                  React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#e2e8f0', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
+                );
+              })
+            ),
+            // ── Derivative ──
+            d.showDeriv && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
+              React.createElement('div', { style: { fontSize: '9px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 DERIVATIVE \u2014 Tangent line to y\u2081'),
+              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x ='),
+                React.createElement('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, onChange: function (e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' }, 'aria-label': 'Derivative x value' }),
+                React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold', minWidth: '40px', textAlign: 'right' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'),
+                (function () {
+                  if (!window.math || !funcs[0] || !funcs[0].expr) return null;
+                  try {
+                    var de = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                    de = de.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                    var dc = math.compile(de); var dx = d.derivX != null ? d.derivX : 0; var dh2 = 0.0001;
+                    var dsc = { x: dx }; if (d.sliderA != null) dsc.a = d.sliderA; if (d.sliderB != null) dsc.b = d.sliderB; if (d.sliderC != null) dsc.c = d.sliderC;
+                    var dscp = Object.assign({}, dsc, { x: dx + dh2 }); var dscm = Object.assign({}, dsc, { x: dx - dh2 });
+                    var slope = (dc.evaluate(dscp) - dc.evaluate(dscm)) / (2 * dh2);
+                    return React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fbbf24', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(251,191,36,0.3)' } }, "f'=" + Number(slope.toPrecision(5)));
+                  } catch (e) { return null; }
+                })()
+              )
+            ),
+            // ── Analysis Results ──
+            d.showAnalysis && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
+              React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS RESULTS'),
+              React.createElement('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
+                  React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '2px' } }, 'Zeros (y\u2081 = 0)'),
+                  (d._zeros && d._zeros.length > 0) ? d._zeros.map(function (z, zi) {
+                    return React.createElement('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0', padding: '1px 0' } }, 'x = ' + Number(z.x.toPrecision(5)));
+                  }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'No zeros found')
+                ),
+                React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
+                  React.createElement('div', { style: { fontSize: '9px', color: '#f472b6', fontWeight: 'bold', marginBottom: '2px' } }, 'Intersections'),
+                  (d._intersections && d._intersections.length > 0) ? d._intersections.map(function (pt, pi) {
+                    return React.createElement('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4', padding: '1px 0' } }, '(' + Number(pt.x.toPrecision(4)) + ', ' + Number(pt.y.toPrecision(4)) + ')');
+                  }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'Enter 2+ functions')
+                )
+              )
+            )
+          ),
+
+          React.createElement('div', {
+            style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }
+          },
+            React.createElement('canvas', {
+              id: 'graph-calc-canvas', width: 600, height: 420,
+              style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0', cursor: d.traceMode ? 'crosshair' : 'default' },
+              'aria-label': 'Graphing calculator coordinate plane',
+              onMouseMove: function (e) {
+                if (!d.traceMode) return;
+                var rect = e.currentTarget.getBoundingClientRect();
+                var px = (e.clientX - rect.left) / rect.width * 600;
+                var cv2 = e.currentTarget;
+                if (cv2._toMathX) upd('traceX', cv2._toMathX(px));
+              },
+              onMouseLeave: function () { if (d.traceMode) upd('traceX', null); }
+            }),
+
+            showWindow && React.createElement('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+              React.createElement('span', { style: { fontSize: '10px', color: '#818cf8', fontWeight: 'bold' } }, 'WINDOW:'),
+              ...['xmin', 'xmax', 'ymin', 'ymax'].map(k => React.createElement('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: '#94a3b8' } },
+                k + ':', React.createElement('input', { type: 'number', value: win[k], onChange: e => upd('window', { ...win, [k]: parseFloat(e.target.value) || 0 }), style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '10px' }, 'aria-label': k })
+              ))
+            ),
+
+            showTable && React.createElement('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.95)' } },
+              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
+                React.createElement('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, '\uD83D\uDCCA TABLE'),
+                React.createElement('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', React.createElement('input', { type: 'number', value: tableX, onChange: e => upd('tableX', parseFloat(e.target.value) || 0), style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } })),
+                React.createElement('label', { style: { fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', React.createElement('input', { type: 'number', value: tableStep, onChange: e => upd('tableStep', parseFloat(e.target.value) || 1), style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '9px' } }))
+              ),
+              React.createElement('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
+                React.createElement('thead', null, React.createElement('tr', null,
+                  React.createElement('th', { style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'),
+                  React.createElement('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081')
+                )),
+                React.createElement('tbody', null, ...tableRows.map((r, ri) => React.createElement('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } },
+                  React.createElement('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#94a3b8' } }, r.x),
+                  React.createElement('td', { style: { padding: '2px 10px', textAlign: 'right', color: '#e2e8f0' } }, r.y)
+                )))
+              )
+            )
+          ),
+
+          React.createElement('div', {
+            style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'rgba(15,23,42,0.8)' }
+          },
+            React.createElement('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, showChallenge ? '\uD83C\uDFAF CHALLENGES' : '\uD83D\uDCA1 COACH'),
+            !showChallenge && React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+              ...currentTips.map((tip, i) => React.createElement('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
+                React.createElement('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
+                React.createElement('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#cbd5e1' } }, tip.text)
+              ))
+            ),
+
+            showChallenge && React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
+              React.createElement('div', { style: { marginBottom: '10px' } },
+                React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '8px' } },
+                  React.createElement('button', { onClick: () => upd('challengeSource', 'premade'), style: { flex: 1, padding: '5px', borderRadius: '6px', background: (d.challengeSource || 'premade') === 'premade' ? '#818cf8' : 'rgba(255,255,255,0.05)', color: (d.challengeSource || 'premade') === 'premade' ? '#fff' : '#94a3b8', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCDA Pre-made'),
+                  React.createElement('button', { onClick: () => { upd('challengeSource', 'ai'); if (typeof addToast === 'function') addToast('AI challenges use Gemini to generate custom problems', 'info'); }, style: { flex: 1, padding: '5px', borderRadius: '6px', background: d.challengeSource === 'ai' ? '#a78bfa' : 'rgba(255,255,255,0.05)', color: d.challengeSource === 'ai' ? '#fff' : '#94a3b8', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDD16 AI Generated')
+                )
+              ),
+              ...availableChallenges.map((ch, ci) => React.createElement('div', { key: ci, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' }, onClick: () => upd('activeChallenge', d.activeChallenge === ci ? -1 : ci) },
+                React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
+                React.createElement('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
+                d.activeChallenge === ci && React.createElement('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px', lineHeight: '1.4' } }, '\uD83D\uDCA1 Hint: ' + ch.hint)
+              ))
+            )
+          )
+        );
+      })(),
+
+      // ═══════════════════════════════════════════════════════════════
+      // ██  DATA STUDIO — Bar / Pie / Line / Histogram Charts        ██
+      // ═══════════════════════════════════════════════════════════════
+      stemLabTab === 'explore' && stemLabTool === 'dataStudio' && (() => {
+        var d = (labToolData && labToolData._dataStudio) || {};
+        var updDS = function (key, val) {
+          setLabToolData(function (prev) {
+            var ds = Object.assign({}, (prev && prev._dataStudio) || {});
+            ds[key] = val;
+            return Object.assign({}, prev, { _dataStudio: ds });
+          });
+        };
+        var chartType = d.chartType || 'bar';
+        var dataRows = d.dataRows || [
+          { label: 'Apples', value: 45 },
+          { label: 'Bananas', value: 30 },
+          { label: 'Oranges', value: 55 },
+          { label: 'Grapes', value: 25 },
+          { label: 'Cherries', value: 40 }
+        ];
+        var chartTitle = d.chartTitle || 'My Data';
+        var editRow = d.editRow || { label: '', value: '' };
+        var showStats = d.showStats !== undefined ? d.showStats : true;
+
+        var CHART_TYPES = [
+          { id: 'bar', icon: '📊', label: 'Bar Chart' },
+          { id: 'pie', icon: '🥧', label: 'Pie Chart' },
+          { id: 'line', icon: '📈', label: 'Line Graph' },
+          { id: 'histogram', icon: '📉', label: 'Histogram' }
+        ];
+
+        var PRESETS = [
+          { label: '🍎 Fruit Sales', data: [{ label: 'Apples', value: 45 }, { label: 'Bananas', value: 30 }, { label: 'Oranges', value: 55 }, { label: 'Grapes', value: 25 }, { label: 'Cherries', value: 40 }], title: 'Fruit Sales' },
+          { label: '🌡️ Monthly Temps (°F)', data: [{ label: 'Jan', value: 32 }, { label: 'Feb', value: 35 }, { label: 'Mar', value: 45 }, { label: 'Apr', value: 55 }, { label: 'May', value: 65 }, { label: 'Jun', value: 75 }, { label: 'Jul', value: 82 }, { label: 'Aug', value: 80 }, { label: 'Sep', value: 70 }, { label: 'Oct', value: 58 }, { label: 'Nov', value: 45 }, { label: 'Dec', value: 35 }], title: 'Monthly Temperature' },
+          { label: '📚 Class Grades', data: [{ label: 'A', value: 8 }, { label: 'B', value: 15 }, { label: 'C', value: 12 }, { label: 'D', value: 5 }, { label: 'F', value: 2 }], title: 'Grade Distribution' },
+          { label: '🏀 Sports Points', data: [{ label: 'Game 1', value: 22 }, { label: 'Game 2', value: 18 }, { label: 'Game 3', value: 31 }, { label: 'Game 4', value: 27 }, { label: 'Game 5', value: 35 }, { label: 'Game 6', value: 29 }], title: 'Points Per Game' },
+          { label: '🎲 Dice Rolls (50)', data: (function () { var c = [0, 0, 0, 0, 0, 0]; for (var i = 0; i < 50; i++) c[Math.floor(Math.random() * 6)]++; return c.map(function (v, j) { return { label: '' + (j + 1), value: v }; }); })(), title: 'Dice Roll Distribution' }
+        ];
+
+        // CSV import handler
+        var handleCSVImport = function (text) {
+          try {
+            var lines = text.trim().split('\n');
+            var rows = [];
+            lines.forEach(function (line, idx) {
+              var parts = line.split(',').map(function (s) { return s.trim().replace(/^"|"$/g, ''); });
+              if (parts.length >= 2) {
+                var val = parseFloat(parts[1]);
+                if (!isNaN(val)) rows.push({ label: parts[0] || ('Row ' + (idx + 1)), value: val });
+              }
+            });
+            if (rows.length > 0) {
+              updDS('dataRows', rows);
+              if (addToast) addToast('Imported ' + rows.length + ' data points!', 'success');
+            }
+          } catch (e) {
+            if (addToast) addToast('CSV import failed. Use format: Label, Value', 'warning');
+          }
+        };
+
+        // Statistics
+        var values = dataRows.map(function (r) { return r.value; });
+        var total = values.reduce(function (s, v) { return s + v; }, 0);
+        var mean = values.length > 0 ? total / values.length : 0;
+        var sorted = values.slice().sort(function (a, b) { return a - b; });
+        var median = sorted.length > 0 ? (sorted.length % 2 ? sorted[Math.floor(sorted.length / 2)] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2) : 0;
+        var maxVal = Math.max.apply(null, values.concat([1]));
+        var minVal = Math.min.apply(null, values.concat([0]));
+        var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
+
+        // Color palette
+        var COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#a855f7', '#eab308', '#3b82f6'];
+
+        // Dark theme
+        var _bg = isDark || isContrast ? '#0f172a' : '#f0fdfa';
+        var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
+        var _card = isDark || isContrast ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)';
+        var _border = isDark || isContrast ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.15)';
+        var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
+        var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
+        var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
+        var _svgBg = isDark || isContrast ? '#1e293b' : '#ffffff';
+
+        // SVG dimensions
+        var W = 440, H = 280, pad = 45;
+
+        return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
+          // Header
+          React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            React.createElement("div", null,
+              React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "📈 Data Studio"),
+              React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Create charts, import data & explore statistics")
+            ),
+            React.createElement("div", { className: "flex gap-2" },
+              React.createElement("button", {
+                onClick: function () { updDS('showStats', !showStats); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold",
+                style: { background: showStats ? _btnBg : _card, color: showStats ? '#fff' : _text, border: '1px solid ' + _border }
+              }, showStats ? '📊 Stats On' : '📊 Stats'),
+              React.createElement("button", {
+                onClick: function () { setStemLabTool(null); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold",
+                style: { background: _card, border: '1px solid ' + _border, color: _text }
+              }, "← Back")
+            )
+          ),
+
+          // Chart type selector
+          React.createElement("div", { className: "flex gap-2" },
+            CHART_TYPES.map(function (ct) {
+              return React.createElement("button", {
+                key: ct.id,
+                onClick: function () { updDS('chartType', ct.id); },
+                className: "flex-1 p-2 rounded-xl text-center transition-all",
+                style: { background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
+              },
+                React.createElement("div", { className: "text-lg" }, ct.icon),
+                React.createElement("div", { className: "text-[10px] font-bold" }, ct.label)
+              );
+            })
+          ),
+
+          // Chart title
+          React.createElement("input", {
+            type: "text", value: chartTitle,
+            onChange: function (e) { updDS('chartTitle', e.target.value); },
+            placeholder: "Chart title...",
+            className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
+            style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+          }),
+
+          // ── SVG Chart Rendering ──
+          React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: '1px solid ' + _border } },
+            React.createElement("svg", { viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { background: _svgBg, maxHeight: '340px' } },
+              // Title
+              React.createElement("text", { x: W / 2, y: 18, textAnchor: "middle", style: { fontSize: '13px', fontWeight: 'bold', fill: _text } }, chartTitle),
+
+              // ── Bar Chart ──
+              chartType === 'bar' && dataRows.length > 0 && (() => {
+                var barW = Math.min(40, (W - 2 * pad) / dataRows.length - 4);
+                var gap = (W - 2 * pad) / dataRows.length;
+                return React.createElement("g", null,
+                  // Y axis
+                  React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                  // X axis
+                  React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                  // Y labels
+                  [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
+                    var yVal = Math.round(maxVal * frac);
+                    var yPos = (H - pad) - frac * (H - pad - 28);
+                    return React.createElement("g", { key: 'yl' + i },
+                      React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
+                      React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
+                    );
+                  }),
+                  // Bars
+                  dataRows.map(function (row, i) {
+                    var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - 28) : 0;
+                    var x = pad + i * gap + (gap - barW) / 2;
+                    var y = (H - pad) - barH;
+                    return React.createElement("g", { key: 'bar' + i },
+                      React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
+                      React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, row.value),
+                      React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
+                    );
+                  })
+                );
+              })(),
+
+              // ── Pie Chart ──
+              chartType === 'pie' && dataRows.length > 0 && (() => {
+                var cx = W / 2, cy = (H + 10) / 2, r = Math.min(W, H) / 2.8;
+                var cumAngle = -Math.PI / 2;
+                return React.createElement("g", null,
+                  dataRows.map(function (row, i) {
+                    var angle = total > 0 ? (row.value / total) * 2 * Math.PI : 0;
+                    var startAngle = cumAngle;
+                    cumAngle += angle;
+                    var endAngle = cumAngle;
+                    var largeArc = angle > Math.PI ? 1 : 0;
+                    var x1 = cx + r * Math.cos(startAngle);
+                    var y1 = cy + r * Math.sin(startAngle);
+                    var x2 = cx + r * Math.cos(endAngle);
+                    var y2 = cy + r * Math.sin(endAngle);
+                    var midAngle = startAngle + angle / 2;
+                    var lx = cx + (r + 16) * Math.cos(midAngle);
+                    var ly = cy + (r + 16) * Math.sin(midAngle);
+                    var pct = total > 0 ? Math.round(row.value / total * 100) : 0;
+                    if (dataRows.length === 1) {
+                      return React.createElement("g", { key: 'pie' + i },
+                        React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.85 }),
+                        React.createElement("text", { x: cx, y: cy + 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: '#fff' } }, '100%')
+                      );
+                    }
+                    return React.createElement("g", { key: 'pie' + i },
+                      React.createElement("path", {
+                        d: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
+                        fill: COLORS[i % COLORS.length], opacity: 0.85, stroke: _svgBg, strokeWidth: 1.5
+                      }),
+                      pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 5) + ' ' + pct + '%')
+                    );
+                  })
+                );
+              })(),
+
+              // ── Line Graph ──
+              chartType === 'line' && dataRows.length > 0 && (() => {
+                var rangeY = maxVal - minVal || 1;
+                var gap = dataRows.length > 1 ? (W - 2 * pad) / (dataRows.length - 1) : 0;
+                var pts = dataRows.map(function (row, i) {
+                  var x = dataRows.length === 1 ? W / 2 : pad + i * gap;
+                  var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
+                  return { x: x, y: y, label: row.label, value: row.value };
+                });
+                var pathD = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y; }).join(' ');
+                // Area fill
+                var areaD = pathD + ' L ' + pts[pts.length - 1].x + ' ' + (H - pad) + ' L ' + pts[0].x + ' ' + (H - pad) + ' Z';
+                return React.createElement("g", null,
+                  React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                  React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                  [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
+                    var yVal = (minVal + rangeY * frac).toFixed(0);
+                    var yPos = (H - pad) - frac * (H - pad - 28);
+                    return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal);
+                  }),
+                  React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
+                  React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round" }),
+                  pts.map(function (p, i) {
+                    return React.createElement("g", { key: 'lp' + i },
+                      React.createElement("circle", { cx: p.x, cy: p.y, r: 4, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
+                      React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
+                      React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
+                    );
+                  })
+                );
+              })(),
+
+              // ── Histogram ──
+              chartType === 'histogram' && dataRows.length > 0 && (() => {
+                // For histogram, bin the values
+                var numBins = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(values.length))));
+                var range = maxVal - minVal || 1;
+                var binW = range / numBins;
+                var bins = [];
+                for (var b = 0; b < numBins; b++) bins.push({ lo: minVal + b * binW, hi: minVal + (b + 1) * binW, count: 0 });
+                values.forEach(function (v) {
+                  var bi = Math.min(numBins - 1, Math.floor((v - minVal) / binW));
+                  bins[bi].count++;
+                });
+                var maxCount = Math.max.apply(null, bins.map(function (b) { return b.count; }).concat([1]));
+                var bw = (W - 2 * pad) / numBins - 2;
+                return React.createElement("g", null,
+                  React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                  React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                  bins.map(function (bin, i) {
+                    var bh = maxCount > 0 ? (bin.count / maxCount) * (H - pad - 28) : 0;
+                    var x = pad + i * ((W - 2 * pad) / numBins) + 1;
+                    var y = (H - pad) - bh;
+                    return React.createElement("g", { key: 'hb' + i },
+                      React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
+                      bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, bin.count),
+                      React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
+                    );
+                  })
+                );
+              })()
+            )
+          ),
+
+          // ── Preset Datasets ──
+          React.createElement("div", { className: "flex gap-2 flex-wrap" },
+            React.createElement("span", { className: "text-[10px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
+            PRESETS.map(function (p, i) {
+              return React.createElement("button", {
+                key: i,
+                onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); },
+                className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:scale-105",
+                style: { background: _card, border: '1px solid ' + _border, color: _accent }
+              }, p.label);
+            })
+          ),
+
+          // ── CSV Import ──
+          React.createElement("div", { className: "flex gap-2" },
+            React.createElement("button", {
+              onClick: function () {
+                var el = document.createElement('input');
+                el.type = 'file';
+                el.accept = '.csv,.txt';
+                el.onchange = function (e) {
+                  var file = e.target.files[0];
+                  if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (ev) { handleCSVImport(ev.target.result); };
+                    reader.readAsText(file);
+                  }
+                };
+                el.click();
+              },
+              className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
+              style: { background: _card, border: '1px solid ' + _border, color: _accent }
+            }, "📂 Import CSV"),
+            React.createElement("button", {
+              onClick: function () {
+                var csv = 'Label,Value\n' + dataRows.map(function (r) { return r.label + ',' + r.value; }).join('\n');
+                var blob = new Blob([csv], { type: 'text/csv' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url; a.download = (chartTitle || 'data') + '.csv';
+                a.click(); URL.revokeObjectURL(url);
+              },
+              className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
+              style: { background: _card, border: '1px solid ' + _border, color: _accent }
+            }, "💾 Export CSV")
+          ),
+
+          // ── Data Editor ──
+          React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
+            React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📝 Data (" + dataRows.length + " items)"),
+            // Add row
+            React.createElement("div", { className: "flex gap-2 mb-2" },
+              React.createElement("input", {
+                type: "text", placeholder: "Label",
+                value: editRow.label,
+                onChange: function (e) { updDS('editRow', { label: e.target.value, value: editRow.value }); },
+                className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
+                style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              }),
+              React.createElement("input", {
+                type: "number", placeholder: "Value",
+                value: editRow.value,
+                onChange: function (e) { updDS('editRow', { label: editRow.label, value: e.target.value }); },
+                onKeyDown: function (e) {
+                  if (e.key === 'Enter' && editRow.label && editRow.value !== '') {
+                    updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
+                    updDS('editRow', { label: '', value: '' });
+                  }
+                },
+                className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
+                style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
+              }),
+              React.createElement("button", {
+                onClick: function () {
+                  if (editRow.label && editRow.value !== '') {
+                    updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
+                    updDS('editRow', { label: '', value: '' });
+                  }
+                },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold",
+                style: { background: _btnBg, color: '#fff' }
+              }, "+ Add")
+            ),
+            // Data rows
+            React.createElement("div", { className: "max-h-28 overflow-y-auto space-y-1" },
+              dataRows.map(function (row, i) {
+                return React.createElement("div", { key: i, className: "flex items-center gap-2 py-1 px-2 rounded-lg text-xs", style: { background: _svgBg } },
+                  React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: COLORS[i % COLORS.length] } }),
+                  React.createElement("span", { className: "flex-1 font-bold" }, row.label),
+                  React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
+                  React.createElement("button", {
+                    onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
+                    className: "text-red-400 hover:text-red-600 font-bold text-xs"
+                  }, "✕")
+                );
+              })
+            ),
+            // Clear
+            dataRows.length > 0 && React.createElement("button", {
+              onClick: function () { updDS('dataRows', []); },
+              className: "mt-2 px-3 py-1 rounded-lg text-[10px] font-bold",
+              style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
+            }, "🗑 Clear All")
+          ),
+
+          // ── Statistics Panel ──
+          showStats && dataRows.length > 0 && React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+            [
+              { label: 'Sum', val: total.toFixed(1) },
+              { label: 'Mean', val: mean.toFixed(1) },
+              { label: 'Median', val: median.toFixed(1) },
+              { label: 'Std Dev', val: stdDev.toFixed(1) }
+            ].map(function (stat, i) {
+              return React.createElement("div", { key: i, className: "p-2 rounded-xl text-center", style: { background: _card, border: '1px solid ' + _border } },
+                React.createElement("div", { className: "text-[9px] font-bold uppercase", style: { color: _muted } }, stat.label),
+                React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: _accent } }, stat.val)
+              );
+            })
+          )
+        );
+      })(),
+
+      // ═══════════════════════════════════════════════════════════════
+      // ██  ALGEBRA SOLVER (CAS) — AI-Powered Step-by-Step Math      ██
+      // ═══════════════════════════════════════════════════════════════
+      stemLabTab === 'explore' && stemLabTool === 'algebraCAS' && (() => {
+        var d = (labToolData && labToolData._algebraCAS) || {};
+        var updCAS = function (key, val) {
+          setLabToolData(function (prev) {
+            var cas = Object.assign({}, (prev && prev._algebraCAS) || {});
+            cas[key] = val;
+            return Object.assign({}, prev, { _algebraCAS: cas });
+          });
+        };
+        var expression = d.expression || '';
+        var mode = d.mode || 'solve';
+        var result = d.result || null;
+        var isLoading = d.isLoading || false;
+        var history = d.history || [];
+        var difficulty = d.difficulty || 'elementary';
+        var practiceMode = d.practiceMode || false;
+        var practiceQ = d.practiceQ || null;
+        var practiceAnswer = d.practiceAnswer || '';
+        var practiceFeedback = d.practiceFeedback || null;
+
+        var MODES = [
+          { id: 'solve', label: '🔍 Solve', desc: 'Find the value of a variable' },
+          { id: 'factor', label: '🧩 Factor', desc: 'Factor an expression' },
+          { id: 'simplify', label: '✨ Simplify', desc: 'Simplify an expression' },
+          { id: 'expand', label: '📐 Expand', desc: 'Expand & distribute' }
+        ];
+
+        var DIFFICULTIES = [
+          { id: 'elementary', label: 'Elementary', desc: 'Single variable, basic operations' },
+          { id: 'middle', label: 'Middle School', desc: 'Quadratics, systems, fractions' },
+          { id: 'advanced', label: 'Advanced', desc: 'Rational, radical, polynomial' }
+        ];
+
+        var EXAMPLES = {
+          solve: ['2x + 5 = 13', 'x² - 4x + 3 = 0', '3(x - 2) = 15'],
+          factor: ['x² - 9', 'x² + 5x + 6', '2x² - 8'],
+          simplify: ['(3x² + 6x) / 3x', '2(x + 3) - (x - 1)', '√(50)'],
+          expand: ['(x + 3)(x - 2)', '(2x + 1)²', '3(x² - 4x + 1)']
+        };
+
+        var handleSolve = function () {
+          if (!expression.trim() || !callGemini || isLoading) return;
+          updCAS('isLoading', true);
+          updCAS('result', null);
+          var modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
+          var prompt = 'You are a math CAS (Computer Algebra System) tutor for a ' + _stemGrade + ' student.\n\n' +
+            'MODE: ' + modeLabel + '\n' +
+            'EXPRESSION: ' + expression.trim() + '\n\n' +
+            'Instructions:\n' +
+            '1. ' + modeLabel + ' this expression step by step.\n' +
+            '2. For EACH step, show the work AND label the algebraic rule used in [brackets].\n' +
+            '   Rules include: [Distributive Property], [Combining Like Terms], [Addition Property of Equality],\n' +
+            '   [Division Property of Equality], [Zero Product Property], [Quadratic Formula], [Factoring],\n' +
+            '   [Difference of Squares], [Perfect Square Trinomial], [GCF Factoring], [Simplification], etc.\n' +
+            '3. Format your response as:\n' +
+            '   STEP 1: (show work) [Rule Name]\n' +
+            '   STEP 2: (show work) [Rule Name]\n' +
+            '   ...\n' +
+            '   ANSWER: (final result)\n\n' +
+            'Be mathematically rigorous. Show every step clearly. Keep explanations concise but educational.';
+
+          callGemini(prompt).then(function (res) {
+            updCAS('isLoading', false);
+            if (res) {
+              updCAS('result', res);
+              var newH = (history || []).slice(-9);
+              newH.push({ expr: expression, mode: mode, result: res, ts: Date.now() });
+              updCAS('history', newH);
+              awardStemXP('algebraCAS', 5, 'Solved: ' + expression.trim().substring(0, 30));
+            }
+          }).catch(function (e) {
+            updCAS('isLoading', false);
+            updCAS('result', 'Error: ' + (e.message || 'Failed to process'));
+          });
+        };
+
+        var handlePracticeGenerate = function () {
+          if (!callGemini || isLoading) return;
+          updCAS('isLoading', true);
+          updCAS('practiceFeedback', null);
+          updCAS('practiceAnswer', '');
+          var diffDesc = difficulty === 'elementary' ? 'single-variable linear equation (e.g. 3x + 7 = 22)' :
+            difficulty === 'middle' ? 'quadratic or two-step equation (e.g. x² + 3x - 10 = 0)' :
+              'rational, radical, or multi-step polynomial equation';
+          var prompt = 'Generate ONE algebra practice problem at the ' + difficulty + ' level.\n' +
+            'Type: ' + diffDesc + '\n' +
+            'Format your response as EXACTLY:\n' +
+            'PROBLEM: (the equation)\n' +
+            'ANSWER: (the correct answer, simplified)\n' +
+            'HINT: (a one-sentence hint without giving away the answer)\n\n' +
+            'Do not include any other text.';
+
+          callGemini(prompt).then(function (res) {
+            updCAS('isLoading', false);
+            if (res) {
+              var pMatch = res.match(/PROBLEM:\s*(.+)/i);
+              var aMatch = res.match(/ANSWER:\s*(.+)/i);
+              var hMatch = res.match(/HINT:\s*(.+)/i);
+              updCAS('practiceQ', {
+                problem: pMatch ? pMatch[1].trim() : res,
+                answer: aMatch ? aMatch[1].trim() : '',
+                hint: hMatch ? hMatch[1].trim() : 'Think step by step!'
+              });
+            }
+          }).catch(function () { updCAS('isLoading', false); });
+        };
+
+        var handlePracticeCheck = function () {
+          if (!practiceQ || !practiceAnswer.trim()) return;
+          updCAS('isLoading', true);
+          var prompt = 'A student is solving this algebra problem:\n' +
+            'PROBLEM: ' + practiceQ.problem + '\n' +
+            'CORRECT ANSWER: ' + practiceQ.answer + '\n' +
+            'STUDENT ANSWER: ' + practiceAnswer.trim() + '\n\n' +
+            'Respond in this format:\n' +
+            'CORRECT: yes/no\n' +
+            'FEEDBACK: (1-2 sentences explaining if they are right or what they did wrong, be encouraging)\n' +
+            'If wrong, show the correct step-by-step solution briefly.';
+
+          callGemini(prompt).then(function (res) {
+            updCAS('isLoading', false);
+            if (res) {
+              var isCorrect = /CORRECT:\s*yes/i.test(res);
+              updCAS('practiceFeedback', { correct: isCorrect, text: res });
+              if (isCorrect) awardStemXP('algebraCAS', 10, 'Practice problem correct');
+            }
+          }).catch(function () { updCAS('isLoading', false); });
+        };
+
+        // ── Dark theme styles ──
+        var _bg = isDark || isContrast ? '#1e1b4b' : '#fffbeb';
+        var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
+        var _card = isDark || isContrast ? 'rgba(99,102,241,0.08)' : 'rgba(245,158,11,0.06)';
+        var _border = isDark || isContrast ? 'rgba(99,102,241,0.2)' : 'rgba(245,158,11,0.2)';
+        var _accent = isDark || isContrast ? '#a5b4fc' : '#d97706';
+        var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
+        var _btnBg = isDark || isContrast ? '#6366f1' : '#f59e0b';
+        var _btnText = isDark || isContrast ? '#fff' : '#fff';
+
+        return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
+          // ── Header ──
+          React.createElement("div", { className: "flex items-center justify-between mb-2" },
+            React.createElement("div", null,
+              React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "🧮 Algebra Solver"),
+              React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Step-by-step symbolic math powered by AI")
+            ),
+            React.createElement("div", { className: "flex gap-2" },
+              React.createElement("button", {
+                onClick: function () { updCAS('practiceMode', !practiceMode); updCAS('result', null); updCAS('practiceFeedback', null); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                style: { background: practiceMode ? _btnBg : _card, color: practiceMode ? _btnText : _text, border: '1px solid ' + _border }
+              }, practiceMode ? '📝 Practice Mode' : '🎯 Practice Mode'),
+              React.createElement("button", {
+                onClick: function () { setStemLabTool(null); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold",
+                style: { background: _card, border: '1px solid ' + _border, color: _text }
+              }, "← Back")
+            )
+          ),
+
+          // ── Practice Mode ──
+          practiceMode ? React.createElement("div", { className: "space-y-4" },
+            // Difficulty Selector
+            React.createElement("div", { className: "flex gap-2 flex-wrap" },
+              DIFFICULTIES.map(function (df) {
+                return React.createElement("button", {
+                  key: df.id,
+                  onClick: function () { updCAS('difficulty', df.id); updCAS('practiceQ', null); updCAS('practiceFeedback', null); },
+                  className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
+                  style: { background: difficulty === df.id ? _btnBg : _card, color: difficulty === df.id ? _btnText : _text, border: '1px solid ' + _border }
+                }, df.label);
+              })
+            ),
+            // Generate / Current Problem
+            !practiceQ ? React.createElement("div", { className: "text-center py-8 rounded-2xl", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("p", { className: "text-sm mb-4", style: { color: _muted } }, "Generate a practice problem at the " + difficulty + " level"),
+              React.createElement("button", {
+                onClick: handlePracticeGenerate,
+                disabled: isLoading,
+                className: "px-6 py-3 rounded-xl text-sm font-bold transition-all",
+                style: { background: _btnBg, color: _btnText, opacity: isLoading ? 0.5 : 1 }
+              }, isLoading ? '⏳ Generating...' : '🎲 Generate Problem')
+            ) : React.createElement("div", { className: "space-y-3" },
+              // Problem display
+              React.createElement("div", { className: "p-4 rounded-2xl", style: { background: _card, border: '2px solid ' + _accent } },
+                React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📋 PROBLEM"),
+                React.createElement("div", { className: "text-xl font-mono font-bold text-center py-3" }, practiceQ.problem),
+                React.createElement("p", { className: "text-xs text-center mt-2", style: { color: _muted } }, "💡 Hint: " + practiceQ.hint)
+              ),
+              // Answer input
+              React.createElement("div", { className: "flex gap-2" },
+                React.createElement("input", {
+                  type: "text",
+                  value: practiceAnswer,
+                  onChange: function (e) { updCAS('practiceAnswer', e.target.value); },
+                  onKeyDown: function (e) { if (e.key === 'Enter') handlePracticeCheck(); },
+                  placeholder: "Type your answer...",
+                  className: "flex-1 px-4 py-3 rounded-xl text-sm font-mono",
+                  style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                }),
+                React.createElement("button", {
+                  onClick: handlePracticeCheck,
+                  disabled: isLoading || !practiceAnswer.trim(),
+                  className: "px-5 py-3 rounded-xl text-sm font-bold transition-all",
+                  style: { background: _btnBg, color: _btnText, opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1 }
+                }, isLoading ? '⏳' : '✅ Check')
+              ),
+              // Feedback
+              practiceFeedback && React.createElement("div", {
+                className: "p-4 rounded-2xl",
+                style: { background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)') }
+              },
+                React.createElement("div", { className: "text-sm font-bold mb-2" }, practiceFeedback.correct ? '🎉 Correct!' : '❌ Not quite...'),
+                React.createElement("div", { className: "text-xs whitespace-pre-wrap leading-relaxed" }, practiceFeedback.text.replace(/^CORRECT:.*\n?/im, '').replace(/^FEEDBACK:\s*/im, '').trim())
+              ),
+              // Next problem button
+              React.createElement("button", {
+                onClick: function () { updCAS('practiceQ', null); updCAS('practiceFeedback', null); updCAS('practiceAnswer', ''); handlePracticeGenerate(); },
+                className: "w-full py-2 rounded-xl text-xs font-bold transition-all",
+                style: { background: _card, border: '1px solid ' + _border, color: _text }
+              }, "🔄 New Problem")
+            )
+          ) :
+            // ── Solver Mode ──
+            React.createElement("div", { className: "space-y-4" },
+              // Mode selector
+              React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+                MODES.map(function (m) {
+                  return React.createElement("button", {
+                    key: m.id,
+                    onClick: function () { updCAS('mode', m.id); updCAS('result', null); },
+                    className: "p-2 rounded-xl text-center transition-all",
+                    style: { background: mode === m.id ? _btnBg : _card, color: mode === m.id ? _btnText : _text, border: '1px solid ' + (mode === m.id ? _accent : _border) }
+                  },
+                    React.createElement("div", { className: "text-lg" }, m.label.split(' ')[0]),
+                    React.createElement("div", { className: "text-[10px] font-bold mt-0.5" }, m.label.split(' ').slice(1).join(' '))
+                  );
+                })
+              ),
+              // Input
+              React.createElement("div", { className: "flex gap-2" },
+                React.createElement("input", {
+                  type: "text",
+                  value: expression,
+                  onChange: function (e) { updCAS('expression', e.target.value); },
+                  onKeyDown: function (e) { if (e.key === 'Enter') handleSolve(); },
+                  placeholder: 'Enter expression, e.g. ' + (EXAMPLES[mode] || ['2x + 5 = 13'])[0],
+                  className: "flex-1 px-4 py-3 rounded-xl text-sm font-mono",
+                  style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
+                }),
+                React.createElement("button", {
+                  onClick: handleSolve,
+                  disabled: isLoading || !expression.trim(),
+                  className: "px-5 py-3 rounded-xl text-sm font-bold transition-all",
+                  style: { background: _btnBg, color: _btnText, opacity: (isLoading || !expression.trim()) ? 0.5 : 1 }
+                }, isLoading ? '⏳ Computing...' : '▶ ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
+              ),
+              // Quick examples
+              React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                React.createElement("span", { className: "text-[10px] font-bold", style: { color: _muted } }, "TRY:"),
+                (EXAMPLES[mode] || []).map(function (ex, i) {
+                  return React.createElement("button", {
+                    key: i,
+                    onClick: function () { updCAS('expression', ex); },
+                    className: "px-2 py-1 rounded-lg text-[10px] font-mono transition-all hover:scale-105",
+                    style: { background: _card, border: '1px solid ' + _border, color: _accent }
+                  }, ex);
+                })
+              ),
+              // Result
+              result && React.createElement("div", { className: "p-4 rounded-2xl", style: { background: _card, border: '1px solid ' + _accent } },
+                React.createElement("div", { className: "text-xs font-bold mb-3 flex items-center gap-2", style: { color: _accent } }, "📋 Step-by-Step Solution"),
+                React.createElement("div", { className: "text-sm whitespace-pre-wrap leading-relaxed font-mono" },
+                  result.split('\n').map(function (line, i) {
+                    var isStep = /^STEP\s+\d+/i.test(line.trim());
+                    var isAnswer = /^ANSWER:/i.test(line.trim());
+                    var ruleMatch = line.match(/\[([^\]]+)\]/);
+                    if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-3 rounded-xl text-base font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, "✅ " + line.trim());
+                    if (isStep) return React.createElement("div", { key: i, className: "py-1.5 flex items-start gap-2" },
+                      React.createElement("span", { className: "flex-1" }, ruleMatch ? line.replace(ruleMatch[0], '').trim() : line.trim()),
+                      ruleMatch && React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap", style: { background: 'rgba(99,102,241,0.15)', color: isDark || isContrast ? '#a5b4fc' : '#6366f1', border: '1px solid rgba(99,102,241,0.2)' } }, ruleMatch[1])
+                    );
+                    return line.trim() ? React.createElement("div", { key: i, className: "py-0.5" }, line) : null;
+                  })
+                )
+              ),
+              // History
+              history.length > 0 && React.createElement("div", null,
+                React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _muted } }, "📜 Recent (last " + history.length + ")"),
+                React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                  history.slice().reverse().slice(0, 5).map(function (h, i) {
+                    return React.createElement("button", {
+                      key: i,
+                      onClick: function () { updCAS('expression', h.expr); updCAS('mode', h.mode); updCAS('result', h.result); },
+                      className: "px-2 py-1 rounded-lg text-[10px] font-mono transition-all hover:scale-105",
+                      style: { background: _card, border: '1px solid ' + _border, color: _text }
+                    }, h.mode + ': ' + h.expr.substring(0, 20) + (h.expr.length > 20 ? '...' : ''));
+                  })
+                )
+              )
+            )
+        );
+      })(),
+
+
+      // ═══════════════════════════════════════════════════════════════
+      // ██  AQUACULTURE & OCEAN ECOLOGY LAB                         ██
+      // ═══════════════════════════════════════════════════════════════
+      stemLabTab === 'explore' && stemLabTool === 'aquarium' && (() => {
+        var d = (labToolData && labToolData._aquarium) || {};
+        var upd = function (key, val) {
+          setLabToolData(function (prev) {
+            var aq = Object.assign({}, (prev && prev._aquarium) || {});
+            aq[key] = val;
+            return Object.assign({}, prev, { _aquarium: aq });
+          });
+        };
+        var updMulti = function (obj) {
+          setLabToolData(function (prev) {
+            var aq = Object.assign({}, (prev && prev._aquarium) || {});
+            Object.keys(obj).forEach(function (k) { aq[k] = obj[k]; });
+            return Object.assign({}, prev, { _aquarium: aq });
+          });
+        };
+
+        var mode = d.mode || 'tank';
+
+        // ── Inject aquarium CSS animations ──
+        if (!document.getElementById('aqua-css')) {
+          var style = document.createElement('style');
+          style.id = 'aqua-css';
+          style.textContent = [
+            '@keyframes aquaSwim { 0% { transform: translateX(0) translateY(0); } 25% { transform: translateX(12px) translateY(-4px); } 50% { transform: translateX(-8px) translateY(3px); } 75% { transform: translateX(6px) translateY(-2px); } 100% { transform: translateX(0) translateY(0); } }',
+            '@keyframes aquaBubble { 0% { bottom: 30px; opacity: 0.6; } 50% { opacity: 0.8; } 100% { bottom: 220px; opacity: 0; } }',
+            '@keyframes aquaWave { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }',
+            '@keyframes oceanPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+            '.aqua-fish:hover { transform: scale(1.3) !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) !important; }',
+            '@keyframes aiEventSlideIn { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+            '@keyframes aiEventPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.3); } 50% { box-shadow: 0 0 20px 4px rgba(59,130,246,0.15); } }',
+            '@keyframes aiEventFadeOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }',
+            '@keyframes xpPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }',
+            '.ai-event-card { animation: aiEventSlideIn 0.4s ease-out, aiEventPulse 3s ease-in-out 0.5s infinite; }',
+            '.ai-event-choice:hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }',
+            '.ai-event-choice { transition: all 0.2s ease; }'
+          ].join('\n');
+          document.head.appendChild(style);
+        }
+        // ═══ ANATOMY VIEWER SYSTEM ═══
+        var BODY_PLANS = {
+          fish: {
+            label: 'Bony Fish (Osteichthyes)',
+            svg: function (w, h, color) {
+              var c1 = color || '#22d3ee', c2 = color || '#0891b2';
+              return '<svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<linearGradient id="fishG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                '<linearGradient id="fishBelly" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c2 + '"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>' +
+                '</defs>' +
+                '<path d="M55,130 Q65,75 110,65 Q160,50 210,55 Q270,58 310,75 Q340,85 355,110 Q360,130 355,150 Q340,175 310,185 Q270,200 210,205 Q160,210 110,195 Q65,185 55,130Z" fill="url(#fishG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                '<path d="M55,130 Q65,145 110,170 Q160,190 210,193 Q270,195 310,185 Q340,175 355,150 Q360,130 355,150" fill="url(#fishBelly)" opacity="0.4"/>' +
+                '<path d="M350,125 Q370,115 400,90 Q415,80 420,85 L420,95 Q418,100 410,110 Q395,125 380,130 Q395,135 410,150 Q418,160 420,165 L420,175 Q415,180 400,170 Q370,145 350,135" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.9"/>' +
+                '<line x1="400" y1="93" x2="400" y2="167" stroke="' + c2 + '" stroke-width="0.8" opacity="0.5"/>' +
+                '<line x1="390" y1="100" x2="390" y2="160" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
+                '<line x1="380" y1="107" x2="380" y2="153" stroke="' + c2 + '" stroke-width="0.5" opacity="0.3"/>' +
+                '<path d="M180,58 Q185,38 195,20 Q210,5 225,10 Q235,15 240,25 Q248,40 250,60" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
+                '<line x1="195" y1="55" x2="210" y2="18" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
+                '<line x1="210" y1="55" x2="220" y2="14" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
+                '<line x1="225" y1="56" x2="233" y2="17" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
+                '<path d="M215,200 Q220,220 225,235 Q230,245 240,248 Q245,245 248,235 Q250,220 250,200" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.75"/>' +
+                '<path d="M270,198 Q275,215 280,225 Q285,230 290,228 Q293,222 295,210 Q296,200 295,195" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7"/>' +
+                '<path d="M120,165 Q105,178 92,188 Q85,192 88,195 Q95,195 108,188 Q125,178 135,170" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.8" transform="rotate(-10,120,175)"/>' +
+                '<path d="M138,170 Q128,182 118,190 Q112,193 115,196 Q120,196 130,190 Q142,182 148,175" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7" transform="rotate(-5,138,180)"/>' +
+                '<circle cx="88" cy="118" r="16" fill="white" stroke="#334155" stroke-width="2"/>' +
+                '<circle cx="92" cy="118" r="9" fill="#1e293b"/>' +
+                '<circle cx="95" cy="115" r="3" fill="white" opacity="0.8"/>' +
+                '<path d="M55,128 Q48,125 40,124" stroke="' + c2 + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<path d="M118,90 Q113,120 118,150" stroke="' + c2 + '" fill="none" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
+                '<path d="M123,93 Q118,120 123,147" stroke="' + c2 + '" fill="none" stroke-width="2" stroke-linecap="round" opacity="0.4"/>' +
+                '<path d="M130,110 L340,110" stroke="' + c2 + '" fill="none" stroke-width="1" stroke-dasharray="6,4" opacity="0.35"/>' +
+                '<path d="M130,115 L340,115" stroke="' + c2 + '" fill="none" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.2"/>' +
+                '<ellipse cx="210" cy="100" rx="45" ry="12" fill="rgba(255,255,255,0.08)" stroke="' + c2 + '" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.5"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Dorsal Fin', x: 48, y: 5, desc: 'Stabilizes the fish during swimming, preventing rolling. Contains bony spines (rays) connected by thin membrane. Erected when alarmed.' },
+              { name: 'Caudal Fin (Tail)', x: 93, y: 48, desc: 'Primary propulsion organ. Shape determines swimming style — forked tails are built for speed, rounded for maneuverability.' },
+              { name: 'Pectoral Fins', x: 26, y: 68, desc: 'Paired fins used for steering, braking, and hovering. Act like hydrofoils. Can be fanned out to appear larger to rivals.' },
+              { name: 'Anal/Pelvic Fins', x: 53, y: 85, desc: 'Ventral stabilizers that prevent pitching and yawing. Pelvic fins evolved from ancestral limb buds.' },
+              { name: 'Gill Cover (Operculum)', x: 27, y: 42, desc: 'Bony plate protecting delicate gill filaments. Pumps water over gills by rhythmically opening and closing.' },
+              { name: 'Lateral Line', x: 58, y: 42, desc: 'A row of sensory pores detecting vibrations and pressure changes. Allows fish to sense movement, currents, and obstacles in total darkness.' },
+              { name: 'Eye', x: 19, y: 44, desc: 'Spherical lens focuses light. Most fish see in color and some perceive UV light. No eyelids — cornea is bathed in water.' },
+              { name: 'Swim Bladder (internal)', x: 48, y: 38, desc: 'Gas-filled organ for buoyancy control. Fish add or remove gas to hover at any depth without expending energy.' },
+              { name: 'Scales & Mucus', x: 70, y: 55, desc: 'Overlapping cycloid or ctenoid scales covered in antibacterial mucus. Reduces hydrodynamic drag by up to 65%.' }
+            ]
+          },
+          shark: {
+            label: 'Cartilaginous Fish (Chondrichthyes)',
+            svg: function (w, h, color) {
+              return '<svg viewBox="0 0 460 230" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<linearGradient id="sharkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#64748b"/><stop offset="50%" stop-color="#475569"/><stop offset="100%" stop-color="#cbd5e1"/></linearGradient>' +
+                '</defs>' +
+                '<path d="M30,115 Q45,85 75,78 Q120,65 180,68 Q250,62 310,78 Q350,88 380,98 Q400,105 410,105 Q430,90 445,70 L448,72 Q445,85 440,100 Q438,110 440,118 Q445,135 448,148 L445,150 Q430,130 410,115 Q400,115 380,122 Q350,132 310,142 Q250,158 180,155 Q120,155 75,142 Q45,135 30,115Z" fill="url(#sharkG)" stroke="#334155" stroke-width="2.5"/>' +
+                '<path d="M30,115 Q45,130 75,140 Q120,152 180,155 Q250,158 310,142 Q350,132 380,122 Q400,115 410,115" fill="#e2e8f0" opacity="0.4"/>' +
+                '<path d="M230,68 Q232,42 238,22 Q244,8 252,5 Q258,8 260,18 Q264,35 264,68" fill="#475569" stroke="#334155" stroke-width="2"/>' +
+                '<line x1="240" y1="65" x2="248" y2="12" stroke="#334155" stroke-width="0.6" opacity="0.4"/>' +
+                '<line x1="250" y1="65" x2="255" y2="10" stroke="#334155" stroke-width="0.6" opacity="0.4"/>' +
+                '<path d="M330,78 Q335,68 340,62 Q344,60 347,62 Q348,68 346,78" fill="#475569" stroke="#334155" stroke-width="1.2" opacity="0.7"/>' +
+                '<path d="M120,145 Q108,160 98,170 Q92,172 93,168 Q97,158 108,145 Q115,140 120,142" fill="#64748b" stroke="#334155" stroke-width="1.2" opacity="0.7"/>' +
+                '<path d="M135,148 Q128,160 122,168 Q118,170 119,166 Q122,158 130,148" fill="#64748b" stroke="#334155" stroke-width="1" opacity="0.6"/>' +
+                '<ellipse cx="68" cy="105" r="8" ry="6" fill="white" stroke="#1e293b" stroke-width="1.5"/>' +
+                '<circle cx="70" cy="105" r="3.5" fill="#0f172a"/>' +
+                '<path d="M30,112 Q22,110 15,110" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<path d="M30,118 Q22,120 15,120" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<line x1="105" y1="90" x2="105" y2="80" stroke="#334155" stroke-width="1.8" stroke-linecap="round"/>' +
+                '<line x1="115" y1="88" x2="115" y2="78" stroke="#334155" stroke-width="1.8" stroke-linecap="round"/>' +
+                '<line x1="125" y1="86" x2="125" y2="77" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>' +
+                '<line x1="135" y1="84" x2="135" y2="76" stroke="#334155" stroke-width="1.4" stroke-linecap="round"/>' +
+                '<line x1="145" y1="82" x2="145" y2="75" stroke="#334155" stroke-width="1.2" stroke-linecap="round"/>' +
+                '<circle cx="45" cy="108" r="2" fill="#475569" opacity="0.5"/>' +
+                '<circle cx="40" cy="112" r="1.5" fill="#475569" opacity="0.4"/>' +
+                '<circle cx="50" cy="105" r="1.5" fill="#475569" opacity="0.4"/>' +
+                '<circle cx="38" cy="106" r="1" fill="#475569" opacity="0.3"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Dorsal Fin', x: 53, y: 3, desc: 'The iconic triangular fin provides stability. Made entirely of cartilage — sharks have no true bones anywhere in their body.' },
+              { name: 'Gill Slits (5)', x: 27, y: 36, desc: 'Five exposed gill slits with no protective cover. Sharks must swim to push water over gills — they cannot pump water like bony fish.' },
+              { name: 'Ampullae of Lorenzini', x: 9, y: 46, desc: 'Jelly-filled pores on the snout that detect electrical fields as weak as 5 nanovolts — enough to sense a prey heartbeat buried in sand.' },
+              { name: 'Heterocercal Tail', x: 95, y: 32, desc: 'Upper lobe is longer, generating upward lift as the shark swims. This compensates for the lack of a swim bladder.' },
+              { name: 'Pectoral Fins', x: 26, y: 62, desc: 'Rigid, wing-like fins that generate lift. Unlike bony fish, shark pectoral fins cannot fold flat — they act as airplane wings.' },
+              { name: 'Dermal Denticles', x: 62, y: 55, desc: 'Tooth-like scales (placoid scales) that channel water flow. Surface texture reduces drag by 8% — inspired NASA swimsuit designs.' },
+              { name: 'Cartilage Skeleton', x: 45, y: 50, desc: 'Skeleton is 100% cartilage — half the density of bone. This makes sharks lighter and more agile, but fossils only preserve teeth and spines.' },
+              { name: 'Replaceable Teeth', x: 5, y: 50, desc: 'Teeth grow in rows on a conveyor-belt jaw. A single shark may produce 30,000+ teeth in its lifetime, replacing them every 1-2 weeks.' }
+            ]
+          },
+          jellyfish: {
+            label: 'Cnidarian (Medusa Form)',
+            svg: function (w, h, color) {
+              var c1 = color || '#c4b5fd', c2 = color || '#8b5cf6';
+              return '<svg viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<radialGradient id="jellyG" cx="50%" cy="40%"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.3"/><stop offset="60%" stop-color="' + c1 + '" stop-opacity="0.5"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.7"/></radialGradient>' +
+                '<radialGradient id="jellyInner" cx="50%" cy="50%"><stop offset="0%" stop-color="white" stop-opacity="0.15"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0"/></radialGradient>' +
+                '</defs>' +
+                '<path d="M60,100 Q60,30 160,25 Q260,30 260,100 Q260,120 240,130 Q200,145 160,145 Q120,145 80,130 Q60,120 60,100Z" fill="url(#jellyG)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                '<ellipse cx="160" cy="75" rx="55" ry="30" fill="url(#jellyInner)"/>' +
+                '<path d="M100,100 Q95,95 100,90 Q105,85 110,87" stroke="' + c1 + '" stroke-width="0.8" fill="none" opacity="0.5"/>' +
+                '<path d="M200,95 Q195,90 200,85 Q205,80 210,82" stroke="' + c1 + '" stroke-width="0.8" fill="none" opacity="0.5"/>' +
+                '<path d="M160,100 L160,120 Q155,140 160,155 Q163,160 168,155 Q165,140 165,120" fill="' + c2 + '" opacity="0.3" stroke="' + c2 + '" stroke-width="0.5"/>' +
+                '<path d="M80,130 Q85,180 75,230 Q70,260 65,290" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.65"/>' +
+                '<path d="M115,140 Q118,200 110,260 Q108,280 105,310" stroke="' + c1 + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.55"/>' +
+                '<path d="M145,145 Q148,210 142,275 Q140,295 137,320" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>' +
+                '<path d="M175,145 Q172,210 178,275 Q180,295 183,320" stroke="' + c1 + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.55"/>' +
+                '<path d="M205,140 Q202,200 210,260 Q212,280 215,310" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.65"/>' +
+                '<path d="M240,130 Q235,180 245,230 Q250,260 255,290" stroke="' + c1 + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>' +
+                '<path d="M90,132 Q100,155 88,175 Q100,190 90,210 Q100,225 92,245" stroke="' + c1 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.35"/>' +
+                '<path d="M230,132 Q220,155 232,175 Q220,190 230,210 Q220,225 228,245" stroke="' + c1 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.35"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Bell (Medusa)', x: 50, y: 10, desc: 'The dome-shaped body contracts rhythmically for jet propulsion. Made of mesoglea — 95% water with collagen fibers for elasticity.' },
+              { name: 'Tentacles', x: 78, y: 60, desc: 'Trailing appendages lined with cnidocytes — stinging cells that fire nematocysts in 700 nanoseconds, among the fastest events in nature.' },
+              { name: 'Oral Arms', x: 25, y: 50, desc: 'Frilly appendages near the mouth that capture food particles. In some species they fuse to form a feeding curtain.' },
+              { name: 'Gastrovascular Cavity', x: 50, y: 33, desc: 'A central cavity serves as both stomach and circulatory system. One opening functions as both mouth and anus.' },
+              { name: 'Nerve Net', x: 40, y: 22, desc: 'No brain, no central nervous system. A diffuse nerve net coordinates swimming contractions. Some species have rhopalia (light/gravity sensors).' },
+              { name: 'Radial Canals', x: 65, y: 25, desc: 'Channels radiating from the central cavity to the bell margin, distributing nutrients. Their radial symmetry predates bilateral body plans by 200M+ years.' }
+            ]
+          },
+          crustacean: {
+            label: 'Crustacean (Arthropoda)',
+            svg: function (w, h, color) {
+              var c1 = color || '#f97316', c2 = color || '#dc2626';
+              return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<linearGradient id="crustG" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                '</defs>' +
+                '<ellipse cx="200" cy="120" rx="100" ry="55" fill="url(#crustG)" stroke="#991b1b" stroke-width="2.5"/>' +
+                '<path d="M200,67 Q200,75 195,85 Q190,90 200,90 Q210,90 205,85 Q200,75 200,67" fill="#991b1b" opacity="0.3"/>' +
+                '<ellipse cx="200" cy="90" rx="60" ry="25" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>' +
+                '<ellipse cx="110" cy="105" rx="40" ry="32" fill="' + c1 + '" stroke="#991b1b" stroke-width="2"/>' +
+                '<circle cx="82" cy="92" r="8" fill="black" stroke="#991b1b" stroke-width="1.5"/><circle cx="84" cy="90" r="3" fill="white" opacity="0.7"/>' +
+                '<circle cx="95" cy="88" r="7" fill="black" stroke="#991b1b" stroke-width="1.5"/><circle cx="97" cy="86" r="2.5" fill="white" opacity="0.7"/>' +
+                '<path d="M80,88 Q50,55 30,38 Q25,35 28,32 Q32,30 38,35 Q55,48 78,80" stroke="' + c1 + '" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+                '<path d="M85,82 Q60,40 48,22 Q45,18 48,15 Q52,13 55,18 Q65,35 82,75" stroke="' + c1 + '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+                '<path d="M140,155 Q135,185 130,215 Q128,225 132,230 Q138,228 140,220 Q145,195 148,165" stroke="#991b1b" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+                '<path d="M170,162 Q168,192 165,225 Q163,235 168,238 Q174,236 175,228 Q178,198 178,168" stroke="#991b1b" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+                '<path d="M210,165 Q212,195 215,228 Q217,238 222,238 Q226,235 225,225 Q222,195 218,168" stroke="#991b1b" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+                '<path d="M245,162 Q248,190 252,218 Q254,226 258,225 Q262,222 260,215 Q255,188 250,160" stroke="#991b1b" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+                '<path d="M275,155 Q280,180 285,205 Q287,212 290,210 Q293,207 290,200 Q285,178 280,155" stroke="#991b1b" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+                '<path d="M285,100 Q310,95 335,100 Q340,108 335,115 Q310,108 290,115" fill="' + c1 + '" stroke="#991b1b" stroke-width="2" opacity="0.6"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Carapace (Exoskeleton)', x: 50, y: 24, desc: 'Hardened shell of chitin and calcium carbonate. Must be molted (shed) to grow — the animal is soft and vulnerable for hours after.' },
+              { name: 'Antennae (2 pairs)', x: 10, y: 11, desc: 'Long antennae detect touch, chemicals, and water currents. Short antennules sense gravity and balance via statocysts.' },
+              { name: 'Compound Eyes', x: 22, y: 30, desc: 'Mounted on stalks with thousands of ommatidia (individual lenses). Excellent motion detection. Some species see polarized and UV light.' },
+              { name: 'Walking Legs (Pereopods)', x: 42, y: 78, desc: 'Five pairs of jointed walking legs. First pair often modified into claws (chelipeds) for defense, feeding, and signaling.' },
+              { name: 'Swimmerets (Pleopods)', x: 60, y: 60, desc: 'Small paddle-like appendages under the abdomen. Used for swimming, carrying eggs, and circulating water over abdominal gills.' },
+              { name: 'Gills (under carapace)', x: 72, y: 38, desc: 'Feathery gills sit in chambers under the carapace. Appendages called scaphognathites act as pumps to draw water through.' }
+            ]
+          },
+          cephalopod: {
+            label: 'Cephalopod (Mollusca)',
+            svg: function (w, h, color) {
+              var c1 = color || '#f472b6', c2 = color || '#be185d';
+              return '<svg viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<radialGradient id="cephG" cx="50%" cy="35%"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.8"/><stop offset="100%" stop-color="' + c2 + '"/></radialGradient>' +
+                '</defs>' +
+                '<path d="M100,130 Q80,70 100,30 Q130,5 160,5 Q190,5 220,30 Q240,70 220,130 Q210,145 200,150 Q160,158 120,150 Q110,145 100,130Z" fill="url(#cephG)" stroke="' + c2 + '" stroke-width="2"/>' +
+                '<ellipse cx="160" cy="90" rx="40" ry="20" fill="rgba(255,255,255,0.06)"/>' +
+                '<circle cx="125" cy="80" r="18" fill="white" stroke="#1e293b" stroke-width="2"/><ellipse cx="128" cy="80" rx="7" ry="11" fill="#1e293b"/><circle cx="130" cy="77" r="2.5" fill="white"/>' +
+                '<circle cx="195" cy="80" r="18" fill="white" stroke="#1e293b" stroke-width="2"/><ellipse cx="198" cy="80" rx="7" ry="11" fill="#1e293b"/><circle cx="200" cy="77" r="2.5" fill="white"/>' +
+                '<path d="M148,120 Q155,125 160,120 Q165,125 172,120" stroke="' + c2 + '" stroke-width="2" fill="none"/>' +
+                '<path d="M160,130 Q158,140 155,148 Q160,155 165,148 Q162,140 160,130" fill="' + c2 + '" opacity="0.5"/>' +
+                '<path d="M108,155 Q100,200 90,250 Q85,280 82,310 Q80,320 85,325 Q92,322 95,310 Q100,280 105,250 Q108,220 112,190" stroke="' + c1 + '" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.8"/>' +
+                '<path d="M125,158 Q120,210 115,265 Q112,295 110,320 Q108,330 113,332 Q120,328 120,315 Q122,290 125,260 Q128,220 130,180" stroke="' + c2 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.75"/>' +
+                '<path d="M145,160 Q143,220 140,280 Q138,310 137,335 Q136,342 140,342 Q145,340 145,330 Q146,305 148,275 Q150,220 150,170" stroke="' + c1 + '" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.8"/>' +
+                '<path d="M175,160 Q177,220 180,280 Q182,310 183,335 Q184,342 180,342 Q175,340 175,330 Q174,305 172,275 Q170,220 170,170" stroke="' + c2 + '" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.75"/>' +
+                '<path d="M195,158 Q200,210 205,265 Q208,295 210,320 Q212,330 207,332 Q200,328 200,315 Q198,290 195,260 Q192,220 190,180" stroke="' + c1 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8"/>' +
+                '<path d="M212,155 Q220,200 230,250 Q235,280 238,310 Q240,320 235,325 Q228,322 225,310 Q220,280 215,250 Q212,220 208,190" stroke="' + c2 + '" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.75"/>' +
+                '<circle cx="95" cy="260" r="3" fill="rgba(255,255,255,0.3)"/>' +
+                '<circle cx="115" cy="285" r="2.5" fill="rgba(255,255,255,0.25)"/>' +
+                '<circle cx="145" cy="300" r="3" fill="rgba(255,255,255,0.3)"/>' +
+                '<circle cx="180" cy="295" r="2.5" fill="rgba(255,255,255,0.25)"/>' +
+                '<circle cx="210" cy="270" r="3" fill="rgba(255,255,255,0.3)"/>' +
+                '<circle cx="225" cy="260" r="2" fill="rgba(255,255,255,0.2)"/>' +
+                '<circle cx="130" cy="50" r="5" fill="' + c1 + '" opacity="0.25"/>' +
+                '<circle cx="190" cy="45" r="6" fill="' + c1 + '" opacity="0.2"/>' +
+                '<circle cx="160" cy="115" r="4" fill="' + c1 + '" opacity="0.15"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Mantle', x: 50, y: 8, desc: 'Muscular body housing all organs. Contracts forcefully to jet water through the siphon, achieving speeds up to 40 km/h in squids.' },
+              { name: 'Arms (8) with Suckers', x: 25, y: 60, desc: 'Eight arms lined with suckers containing chemoreceptors — they can taste what they touch. Each sucker can exert tremendous grip force.' },
+              { name: 'Siphon (Funnel)', x: 50, y: 40, desc: 'A muscular nozzle for jet propulsion. Water is drawn into the mantle cavity, then expelled forcefully. Also ejects ink for escape.' },
+              { name: 'Camera Eyes', x: 38, y: 22, desc: 'Evolved independently from vertebrate eyes but are structurally similar. No blind spot (unlike human eyes). Can see polarized light.' },
+              { name: 'Chromatophores', x: 60, y: 15, desc: 'Thousands of pigment-filled sacs that expand/contract in milliseconds. Controlled directly by the brain for instant camouflage, signaling, and hypnotic hunting displays.' },
+              { name: 'Three Hearts', x: 50, y: 30, desc: 'Two branchial hearts push blood through the gills. One systemic heart circulates oxygenated blood. Blood is copper-based (hemocyanin) — it is blue.' },
+              { name: 'Beak', x: 50, y: 36, desc: 'A hard, parrot-like beak of chitin — the only rigid structure. An octopus can squeeze through any gap larger than its beak.' }
+            ]
+          },
+          echinoderm: {
+            label: 'Echinoderm (Asteroidea)',
+            svg: function (w, h, color) {
+              var c1 = color || '#f97316', c2 = color || '#ea580c';
+              return '<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<linearGradient id="echiG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                '<radialGradient id="echiCenter"><stop offset="0%" stop-color="#fed7aa"/><stop offset="100%" stop-color="' + c2 + '"/></radialGradient>' +
+                '</defs>' +
+                '<path d="M160,15 Q170,60 178,85 L195,95 Q240,80 275,68 Q285,68 285,75 Q280,82 240,105 L225,118 Q235,140 245,175 Q250,195 248,200 Q242,205 235,195 Q215,162 200,140 L185,138 Q170,155 160,175 Q150,155 135,138 L120,140 Q105,162 85,195 Q78,205 72,200 Q70,195 75,175 Q85,140 95,118 L80,105 Q40,82 35,75 Q35,68 45,68 Q80,80 125,95 L142,85 Q150,60 160,15Z" fill="url(#echiG)" stroke="#c2410c" stroke-width="2.5" stroke-linejoin="round"/>' +
+                '<circle cx="160" cy="135" r="22" fill="url(#echiCenter)" stroke="#c2410c" stroke-width="2"/>' +
+                '<circle cx="160" cy="135" r="5" fill="#c2410c"/>' +
+                '<circle cx="160" cy="22" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
+                '<circle cx="278" cy="72" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
+                '<circle cx="245" cy="197" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
+                '<circle cx="75" cy="197" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
+                '<circle cx="42" cy="72" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
+                '<line x1="160" y1="113" x2="160" y2="25" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
+                '<line x1="178" y1="122" x2="275" y2="72" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
+                '<line x1="172" y1="152" x2="242" y2="195" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
+                '<line x1="148" y1="152" x2="78" y2="195" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
+                '<line x1="142" y1="122" x2="45" y2="72" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
+                '<circle cx="155" cy="128" r="3" fill="#fde68a" opacity="0.6"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Water Vascular System', x: 50, y: 42, desc: 'A hydraulic network unique to echinoderms. Seawater enters through the madreporite and fills radial canals powering hundreds of tube feet.' },
+              { name: 'Tube Feet', x: 30, y: 42, desc: 'Tiny suction-cup appendages powered by hydraulic pressure. Coordinated movement can pry open clam shells with sustained force of 5+ kg.' },
+              { name: 'Madreporite', x: 48, y: 38, desc: 'A small sieve plate (visible as a pale dot) that filters seawater into the water vascular system. Located off-center on the aboral surface.' },
+              { name: 'Eyespots', x: 50, y: 5, desc: 'Simple photoreceptors at each arm tip — bright spots visible at extremities. Cannot form images but detect light direction and intensity.' },
+              { name: 'Pentaradial Symmetry', x: 85, y: 22, desc: 'Five-fold body plan. Adults develop this from bilateral larvae — a unique metamorphosis among animals. No front, back, or sides.' },
+              { name: 'Regeneration Zone', x: 24, y: 60, desc: 'Can regrow entire arms from the central disc. Some species regenerate a complete animal from a single arm. Process takes months to years.' }
+            ]
+          },
+          cetacean: {
+            label: 'Marine Mammal (Cetacea)',
+            svg: function (w, h, color) {
+              return '<svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<linearGradient id="cetG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#64748b"/><stop offset="55%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>' +
+                '</defs>' +
+                '<path d="M35,110 Q45,72 80,62 Q120,52 170,55 Q230,52 290,62 Q340,72 370,85 Q400,95 420,100 Q440,95 455,78 Q462,70 465,72 Q465,80 460,92 Q455,105 455,115 Q460,130 465,148 Q465,150 462,150 Q455,142 440,125 Q420,120 400,125 Q370,135 340,148 Q290,162 230,168 Q170,168 120,162 Q80,155 45,142 Q35,135 35,110Z" fill="url(#cetG)" stroke="#475569" stroke-width="2.5"/>' +
+                '<path d="M35,112 Q45,135 80,150 Q120,160 170,165 Q230,168 290,162 Q340,148 370,135 Q400,125 420,120" fill="#e2e8f0" opacity="0.35"/>' +
+                '<path d="M260,60 Q265,42 272,30 Q278,24 284,28 Q288,35 288,48 Q286,58 282,65" fill="#94a3b8" stroke="#475569" stroke-width="1.5" opacity="0.8"/>' +
+                '<circle cx="65" cy="100" r="7" fill="white" stroke="#1e293b" stroke-width="1.5"/><circle cx="67" cy="100" r="3.5" fill="#0f172a"/>' +
+                '<ellipse cx="58" cy="72" rx="8" ry="4" fill="#64748b" stroke="#475569" stroke-width="1.5" opacity="0.8"/>' +
+                '<path d="M140,145 Q128,162 118,172 Q112,175 113,170 Q118,158 130,142" fill="#94a3b8" stroke="#475569" stroke-width="1.5" opacity="0.7"/>' +
+                '<path d="M150,148 Q142,162 135,170 Q130,172 131,168 Q136,158 145,146" fill="#94a3b8" stroke="#475569" stroke-width="1.2" opacity="0.6"/>' +
+                '<path d="M35,108 Q42,100 50,98 Q55,102 48,110" fill="#94a3b8" stroke="#475569" stroke-width="1" opacity="0.5"/>' +
+                '<ellipse cx="100" cy="95" rx="25" ry="15" fill="rgba(255,255,255,0.05)" stroke="#475569" stroke-width="0.5" stroke-dasharray="4,4" />' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Blowhole', x: 12, y: 28, desc: 'Modified nostril(s) on top of skull. Breathing is voluntary — cetaceans must consciously surface. Only half the brain sleeps at a time (unihemispheric sleep).' },
+              { name: 'Melon (Echolocation)', x: 20, y: 40, desc: 'A fatty, oil-filled lens in the forehead that focuses outgoing clicks into a directional beam. Returning echoes are received through the lower jaw.' },
+              { name: 'Dorsal Fin', x: 57, y: 12, desc: 'Dense connective tissue (no bone). Used for thermoregulation — blood vessels release or retain heat. Shape and nicks identify individuals.' },
+              { name: 'Fluke (Tail)', x: 95, y: 38, desc: 'Horizontal tail moved up-and-down by powerful back muscles (not side-to-side like fish). No bones — pure collagen and connective tissue.' },
+              { name: 'Pectoral Flippers', x: 30, y: 68, desc: 'Modified forelimbs containing humerus, radius, ulna, and finger bones — the same skeletal plan as a human arm, adapted for steering and braking.' },
+              { name: 'Blubber Layer', x: 50, y: 55, desc: 'Thick subcutaneous fat providing insulation, energy storage, buoyancy, and streamlining. Up to 50 cm thick in Arctic species like bowhead whales.' }
+            ]
+          },
+          chelonian: {
+            label: 'Sea Turtle (Testudines)',
+            svg: function (w, h, color) {
+              return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">' +
+                '<defs>' +
+                '<linearGradient id="turtG" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="#65a30d"/><stop offset="50%" stop-color="#3f6212"/><stop offset="100%" stop-color="#365314"/></linearGradient>' +
+                '<linearGradient id="turtSkin" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4d7c0f"/><stop offset="100%" stop-color="#365314"/></linearGradient>' +
+                '</defs>' +
+                '<ellipse cx="200" cy="140" rx="110" ry="72" fill="url(#turtG)" stroke="#1a2e05" stroke-width="3"/>' +
+                '<path d="M200,70 L240,80 L260,105 L252,132 L220,148 L200,152 L180,148 L148,132 L140,105 L160,80Z" fill="none" stroke="#4d7c0f" stroke-width="2" opacity="0.5"/>' +
+                '<line x1="200" y1="70" x2="200" y2="152" stroke="#4d7c0f" stroke-width="1.2" opacity="0.3"/>' +
+                '<line x1="140" y1="105" x2="260" y2="105" stroke="#4d7c0f" stroke-width="1.2" opacity="0.3"/>' +
+                '<line x1="160" y1="80" x2="220" y2="148" stroke="#4d7c0f" stroke-width="0.8" opacity="0.2"/>' +
+                '<line x1="240" y1="80" x2="180" y2="148" stroke="#4d7c0f" stroke-width="0.8" opacity="0.2"/>' +
+                '<path d="M94,105 Q62,90 38,85 Q25,85 22,92 Q22,100 30,105 Q40,110 55,112" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.9"/>' +
+                '<path d="M306,105 Q338,90 362,85 Q375,85 378,92 Q378,100 370,105 Q360,110 345,112" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.9"/>' +
+                '<path d="M115,190 Q95,210 82,225 Q78,230 82,232 Q88,230 100,218 Q112,202 120,192" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.85"/>' +
+                '<path d="M285,190 Q305,210 318,225 Q322,230 318,232 Q312,230 300,218 Q288,202 280,192" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.85"/>' +
+                '<circle cx="32" cy="92" r="14" fill="#4d7c0f" stroke="#365314" stroke-width="2"/>' +
+                '<circle cx="28" cy="88" r="5" fill="black" stroke="#1a2e05" stroke-width="1"/><circle cx="27" cy="87" r="2" fill="white" opacity="0.6"/>' +
+                '<circle cx="26" cy="95" r="3" fill="#e2e8f0" opacity="0.3" stroke="#365314" stroke-width="0.5"/>' +
+                '</svg>';
+            },
+            parts: [
+              { name: 'Carapace (Shell)', x: 50, y: 25, desc: 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell — it is streamlined for swimming.' },
+              { name: 'Front Flippers', x: 8, y: 33, desc: 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.' },
+              { name: 'Rear Flippers', x: 20, y: 80, desc: 'Shorter and rounder than front flippers. Used as rudders for steering. Females use them to dig egg chambers on nesting beaches.' },
+              { name: 'Salt Glands', x: 7, y: 32, desc: 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
+              { name: 'Scute Pattern', x: 40, y: 28, desc: 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.' },
+              { name: 'Magnetic Navigation', x: 50, y: 55, desc: 'Magnetite crystals in the brain create an internal compass. Hatchlings imprint their natal beach\'s unique magnetic signature and return decades later to nest.' }
+            ]
+          }
+        };
+
+        // Map each species to its body plan
+        var SPECIES_BODY_MAP = {
+          neon: 'fish', guppy: 'fish', cory: 'fish', angel: 'fish', platy: 'fish', molly: 'fish',
+          cardinal: 'fish', rummy: 'fish', oto: 'fish', betta: 'fish',
+          clown: 'fish', tang: 'fish', goby: 'fish',
+          oscar: 'fish', pike: 'fish', pleco: 'fish',
+          goldfish: 'fish', rockfish: 'fish',
+          archer: 'fish', puffer: 'fish', mudskip: 'fish',
+          anemone: 'jellyfish',
+          shrimp: 'crustacean', cleaner: 'crustacean', crab: 'crustacean', amphipod: 'crustacean',
+          starfish: 'echinoderm', seastar: 'echinoderm', urchin: 'echinoderm', seacucumber: 'echinoderm',
+          slider: 'chelonian', turtle: 'chelonian',
+          kelp: 'fish',
+          clownfish: 'fish', dolphin: 'cetacean', jellyfish: 'jellyfish', squid: 'cephalopod',
+          hatchetfish: 'fish', swordfish: 'fish', anglerfish: 'fish', gulpereel: 'fish',
+          giantsquid: 'cephalopod', tubeworms: 'jellyfish', snailfish: 'fish',
+          mantaray: 'shark', bluewhale: 'cetacean', seahorse: 'fish',
+          octopus: 'cephalopod', nautilus: 'cephalopod', coelacanth: 'fish'
+        };
+
+        // Per-species colors for unique anatomy close-ups
+        var SPECIES_COLORS = {
+          // ── Freshwater ──
+          neon: '#38bdf8',     // electric blue stripe
+          guppy: '#f97316',    // orange/rainbow
+          cory: '#a78bfa',     // pale lavender
+          angel: '#fbbf24',    // gold/silver
+          platy: '#fb923c',    // orange-red
+          molly: '#1e293b',    // dark/black
+          // ── Planted ──
+          cardinal: '#dc2626', // deep red stripe
+          rummy: '#ef4444',    // red nose accent
+          oto: '#84cc16',      // olive/green
+          shrimp: '#e11d48',   // cherry red
+          betta: '#7c3aed',    // royal purple
+          // ── Reef ──
+          clown: '#f97316',    // orange clownfish
+          tang: '#3b82f6',     // royal blue
+          goby: '#14b8a6',     // teal/aqua
+          anemone: '#ec4899',  // pink/magenta
+          cleaner: '#ef4444',  // red/white stripe
+          // ── Predator ──
+          oscar: '#b45309',    // dark orange/brown tiger
+          pike: '#4d7c0f',     // forest green
+          pleco: '#57534e',    // dark brown armor
+          // ── Turtle & Reptile ──
+          slider: '#16a34a',   // green shell
+          turtle: '#15803d',   // deep green
+          goldfish: '#f59e0b', // classic gold
+          // ── Invertebrate Reef ──
+          crab: '#dc2626',     // red crab
+          urchin: '#6b21a8',   // dark purple spines
+          starfish: '#f97316', // orange starfish
+          seastar: '#ef4444',  // red seastar
+          // ── Cold Water ──
+          rockfish: '#9f1239', // vermillion rockfish
+          kelp: '#15803d',     // dark green
+          // ── Brackish ──
+          archer: '#c2410c',   // amber/brown bands
+          puffer: '#eab308',   // yellow puffer
+          mudskip: '#713f12',  // muddy brown
+          // ── Marine Science species ──
+          clownfish: '#f97316',  // orange
+          dolphin: '#64748b',   // grey
+          jellyfish: '#c084fc', // translucent purple
+          squid: '#ec4899',     // pink/bioluminescent
+          hatchetfish: '#94a3b8', // silver
+          swordfish: '#475569', // steel blue-grey
+          anglerfish: '#1c1917', // deep black
+          gulpereel: '#292524', // near-black
+          giantsquid: '#881337', // dark crimson
+          tubeworms: '#dc2626', // red plume
+          snailfish: '#cbd5e1', // pale/translucent
+          mantaray: '#1e293b', // dark navy
+          bluewhale: '#3b82f6', // blue
+          seahorse: '#f59e0b', // golden yellow
+          octopus: '#7c3aed',  // purple
+          nautilus: '#b45309', // amber/brown shell
+          coelacanth: '#1e3a5f', // deep steel blue
+          amphipod: '#f87171',  // pale red
+          seacucumber: '#854d0e' // brown
+        };
+
+        // Species-specific anatomy overrides and extra info
+        var SPECIES_ANATOMY = {
+          mudskip: { override: 'Modified pectoral fins act as legs. Can breathe through skin and oral lining when on land.', locomotion: 'Uses pectoral fins to "walk" and "skip" across mud. Can also climb roots.' },
+          betta: { override: 'Has a labyrinth organ that allows breathing atmospheric air directly — can survive in low-oxygen water.', locomotion: 'Flowing fins create drag; bettas are slow but agile swimmers using sculling pectoral fins.' },
+          seahorse: { override: 'Swims upright using a tiny dorsal fin that beats 35 times per second. Prehensile tail grips substrates.', locomotion: 'The worst swimmer in the ocean — relies on rapid dorsal fin oscillation and steers with pectoral fins.' },
+          anglerfish: { override: 'The bioluminescent lure (esca) contains symbiotic bacteria. Males fuse permanently to females, sharing blood supply.', locomotion: 'Slow ambush predator. Uses modified pectoral fins to "walk" on the seafloor.' },
+          puffer: { override: 'Can inflate body by swallowing water rapidly. Many species contain tetrodotoxin — 1200x more toxic than cyanide.', locomotion: 'Slow swimmer using pectoral and dorsal fin sculling. Sacrifices speed for defensive inflation ability.' },
+          mantaray: { override: 'Cephalic fins funnel plankton into mouth. Largest brain-to-body ratio of any fish. Recognized individual humans.', locomotion: 'Underwater flight — flaps wing-like pectoral fins. Can breach completely out of the water.' },
+          coelacanth: { override: 'Lobed fins move in alternating pattern like tetrapod limbs — may represent step in fish-to-land transition.', locomotion: 'Slow drift feeder. Uses lobed fins in a unique "walking" pattern not seen in other living fish.' },
+          nautilus: { override: 'Shell chambers filled with gas for buoyancy control. Has 90+ tentacles with no suckers — uses sticky ridges.', locomotion: 'Jet propulsion via siphon. Can withdraw completely into shell and seal with a leathery hood.' },
+          clown: { override: 'Mucus coating prevents anemone stings. All born male — the dominant fish transitions to female (sequential hermaphroditism).', locomotion: 'Rapid pectoral fin waving for hovering near host anemone. Rarely strays far from home.' },
+          slider: { override: 'Basking behavior critical for thermoregulation and vitamin D synthesis. Can brumate (hibernate) underwater for months.', locomotion: 'Powerful rear leg kicks propel through water. On land, uses all four legs in a characteristic waddle.' }
+        };
+
+        // ── Anatomy viewer state ──
+        var viewingAnatomy = d.viewingAnatomy || null;
+        var anatomyHighlight = d.anatomyHighlight || null;
+
+        var openAnatomy = function (speciesId) {
+          updMulti({ viewingAnatomy: speciesId, anatomyHighlight: null });
+        };
+        var closeAnatomy = function () {
+          updMulti({ viewingAnatomy: null, anatomyHighlight: null });
+        };
+
+        var TANK_TYPES = [
+
+          { id: 'freshwater', name: '🐠 Freshwater Community', size: 20, temp: 76, salinity: 0, pH: 7.0, diff: 1, desc: 'Classic beginner setup with tetras, guppies, and corydoras.' },
+          { id: 'planted', name: '🌿 Planted Tropical', size: 40, temp: 78, salinity: 0, pH: 6.8, diff: 2, desc: 'Lush aquascape with live plants and small schooling fish.' },
+          { id: 'reef', name: '🐡 Saltwater Reef', size: 55, temp: 78, salinity: 35, pH: 8.2, diff: 3, desc: 'Vibrant coral reef with clownfish and anemones.' },
+          { id: 'predator', name: '🦈 Predator Tank', size: 75, temp: 76, salinity: 0, pH: 7.2, diff: 3, desc: 'Oscars, pike cichlids, and other large predatory fish.' },
+          { id: 'turtle', name: '🐢 Turtle & Reptile', size: 40, temp: 80, salinity: 0, pH: 7.5, diff: 2, desc: 'Basking dock, UVB lighting, and hardy companion fish.' },
+          { id: 'invert', name: '🦐 Invertebrate Reef', size: 30, temp: 77, salinity: 35, pH: 8.3, diff: 4, desc: 'Shrimp, crabs, urchins, and delicate corals.' },
+          { id: 'coldwater', name: '🐧 Cold Water Marine', size: 100, temp: 55, salinity: 34, pH: 8.1, diff: 4, desc: 'Kelp forest ecosystem with rockfish and sea stars.' },
+          { id: 'brackish', name: '🔬 Brackish Estuary', size: 30, temp: 75, salinity: 15, pH: 7.8, diff: 3, desc: 'Where river meets sea — archerfish, puffers, mudskippers.' }
+        ];
+
+        var SPECIES_BY_TANK = {
+          freshwater: [
+            { id: 'neon', name: 'Neon Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], fact: 'Their iridescent stripe is made of guanine crystals.' },
+            { id: 'guppy', name: 'Guppy', icon: '🐟', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], fact: 'Males display vibrant colors to attract females.' },
+            { id: 'cory', name: 'Corydoras', icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], fact: 'They breathe air by darting to the surface!' },
+            { id: 'angel', name: 'Angelfish', icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], fact: 'Angelfish are cichlids — they guard their eggs fiercely.' },
+            { id: 'platy', name: 'Platy', icon: '🐟', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], fact: 'Platys are livebearers — they give birth to free-swimming fry.' },
+            { id: 'molly', name: 'Molly', icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], fact: 'Mollies can survive in both fresh and saltwater!' }
+          ],
+          planted: [
+            { id: 'cardinal', name: 'Cardinal Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], fact: 'Cardinals have a deeper red stripe than neons.' },
+            { id: 'rummy', name: 'Rummynose Tetra', icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], fact: 'Their red nose fades when stressed — a living water quality indicator!' },
+            { id: 'oto', name: 'Otocinclus', icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
+            { id: 'shrimp', name: 'Cherry Shrimp', icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], fact: 'A colony can double in size every 2-3 months.' },
+            { id: 'betta', name: 'Betta', icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], fact: 'Bettas build bubble nests at the surface for their eggs.' }
+          ],
+          reef: [
+            { id: 'clown', name: 'Clownfish', icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], fact: 'All clownfish are born male — the dominant one becomes female!' },
+            { id: 'tang', name: 'Blue Tang', icon: '🐟', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
+            { id: 'goby', name: 'Watchman Goby', icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
+            { id: 'anemone', name: 'Sea Anemone', icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], fact: 'Anemones can live over 100 years in the right conditions.' }
+          ],
+          predator: [
+            { id: 'oscar', name: 'Oscar', icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], fact: 'Oscars recognize their owners and can learn tricks.' },
+            { id: 'pike', name: 'Pike Cichlid', icon: '🐟', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
+            { id: 'pleco', name: 'Plecostomus', icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], fact: 'Some plecos can grow over 2 feet long!' }
+          ],
+          turtle: [
+            { id: 'slider', name: 'Red-Eared Slider', icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], fact: 'They can hold their breath for over 30 minutes!' },
+            { id: 'goldfish', name: 'Feeder Goldfish', icon: '🐟', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], fact: 'Goldfish can live 20+ years with proper care.' }
+          ],
+          invert: [
+            { id: 'cleaner', name: 'Cleaner Shrimp', icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], fact: 'They set up cleaning stations where fish line up to be groomed!' },
+            { id: 'urchin', name: 'Sea Urchin', icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], fact: 'Urchin spines are actually modified teeth.' },
+            { id: 'crab', name: 'Hermit Crab', icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], fact: 'Hermit crabs form "vacancy chains" — swapping shells in order of size!' },
+            { id: 'starfish', name: 'Sea Star', icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], fact: 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.' }
+          ],
+          coldwater: [
+            { id: 'rockfish', name: 'Rockfish', icon: '🐟', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], fact: 'Some rockfish live over 200 years!' },
+            { id: 'seastar', name: 'Sunflower Star', icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
+            { id: 'kelp', name: 'Giant Kelp', icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], fact: 'Giant kelp can grow up to 2 feet per day!' }
+          ],
+          brackish: [
+            { id: 'archer', name: 'Archerfish', icon: '🐟', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], fact: 'Archerfish shoot jets of water to knock insects off branches!' },
+            { id: 'puffer', name: 'Figure-8 Puffer', icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
+            { id: 'mudskip', name: 'Mudskipper', icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], fact: 'Mudskippers are fish that can walk on land and breathe air!' }
+          ]
+        };
+
+        // ── Current state ──
+        var selectedTank = d.selectedTank || null;
+        var tankFish = d.tankFish || [];
+        var waterChem = d.waterChem || null;
+        var simTick = d.simTick || 0;
+        var simRunning = d.simRunning || false;
+        var fishHealth = d.fishHealth || {};
+        var eventLog = d.eventLog || [];
+
+        // ── Enhanced sim state ──
+        var hungerLevels = d.hungerLevels || {};
+        var simSpeed = d.simSpeed || 1;
+        var simDay = d.simDay || 0;
+        var simHour = d.simHour || 8;
+        var feedingLog = d.feedingLog || null;
+        var chemTooltip = d.chemTooltip || null;
+        var fishStress = d.fishStress || {};
+
+        // ── AI Event state ──
+        var aiEvent = d.aiEvent || null;
+        var aiEventHistory = d.aiEventHistory || [];
+        var aiEventLoading = d.aiEventLoading || false;
+        var lastAIEventDay = d.lastAIEventDay || 0;
+
+        // ── Fallback Event Bank (fires when Gemini unavailable) ──
+        var FALLBACK_EVENTS = [
+          // Disease
+          {
+            id: 'ich', title: 'White Spot Disease (Ich)', icon: '\u26A0\uFE0F', desc: 'You notice tiny white spots on your fish\u2019s fins and body. Ichthyophthirius multifiliis is highly contagious and can be fatal if untreated.', category: 'disease',
+            educational: 'Ich is caused by a ciliated protozoan parasite. It burrows under the skin, creating white cysts. The parasite has a 3-stage life cycle \u2014 it\u2019s only vulnerable to treatment during the free-swimming stage.',
+            choices: [
+              { label: '\uD83C\uDF21\uFE0F Raise temperature to 86\u00B0F', effect: { temp: 86, ammonia: 0.1 }, outcome: 'The higher temperature speeds up the parasite\u2019s life cycle, making treatment more effective. Fish are slightly stressed by the heat but the ich is clearing.', xp: 5 },
+              { label: '\uD83E\uDDEA Add aquarium salt (1 tsp/gal)', effect: { ammonia: 0.05 }, outcome: 'Salt disrupts the parasite\u2019s osmotic balance. After 3 days, the white spots are fading. Scaleless fish like corydoras may be slightly irritated.', xp: 4 },
+              { label: '\u274C Do nothing and observe', effect: { ammonia: 0.3 }, outcome: 'The ich spreads rapidly. Two fish are now heavily infected and showing labored breathing. Immediate action is now critical.', xp: 1 }
+            ]
+          },
+          {
+            id: 'finrot', title: 'Fin Rot Detected', icon: '\uD83E\uDE78', desc: 'One of your fish has ragged, discolored fin edges \u2014 a sign of bacterial fin rot. Poor water quality is usually the root cause.', category: 'disease',
+            educational: 'Fin rot is caused by gram-negative bacteria (Aeromonas, Pseudomonas) that thrive in dirty water. Clean water is the #1 treatment \u2014 medications are secondary.',
+            choices: [
+              { label: '\uD83D\uDCA7 25% water change + clean filter', effect: { ammonia: -0.2, nitrite: -0.1 }, outcome: 'Excellent choice! The water quality improves dramatically. Over the next week, the damaged fins begin regenerating with clear tissue.', xp: 6 },
+              { label: '\uD83D\uDC8A Dose antibiotics immediately', effect: { ammonia: 0.15 }, outcome: 'The antibiotics help, but also kill beneficial bacteria in your filter. Next time, try clean water first \u2014 it\u2019s usually sufficient.', xp: 3 },
+              { label: '\u274C Ignore it', effect: { ammonia: 0.4 }, outcome: 'The fin rot progresses to body rot. The fish\u2019s immune system is now compromised. This could have been prevented with a water change.', xp: 0 }
+            ]
+          },
+          // Equipment
+          {
+            id: 'heater_fail', title: 'Heater Malfunction!', icon: '\uD83C\uDF21\uFE0F', desc: 'Your heater thermostat is stuck on high! Water temperature is climbing rapidly toward 88\u00B0F. Your fish are showing signs of thermal stress.', category: 'equipment',
+            educational: 'Heater malfunctions are one of the most dangerous aquarium emergencies. Above 86\u00B0F, dissolved oxygen drops significantly. Many fish can tolerate brief temperature spikes but prolonged exposure causes organ damage.',
+            choices: [
+              { label: '\u26A1 Unplug heater + add ice bag', effect: { temp: -6 }, outcome: 'Quick thinking! The ice bag slowly cools the water back to safe range. You\u2019ll need to monitor and replace the heater.', xp: 6 },
+              { label: '\uD83D\uDCA8 Point a fan across water surface', effect: { temp: -3 }, outcome: 'Evaporative cooling helps reduce temperature gradually. The water drops a few degrees but may not be enough. Good emergency measure!', xp: 4 },
+              { label: '\u274C Unplug heater only', effect: { temp: -1 }, outcome: 'The temperature will slowly drift down, but tropical fish need some heat. Monitor closely and get a replacement heater soon.', xp: 2 }
+            ]
+          },
+          {
+            id: 'filter_clog', title: 'Filter Flow Reduced', icon: '\u2699\uFE0F', desc: 'Your filter output is barely trickling. Debris has built up in the intake and media. Without filtration, ammonia will spike quickly.', category: 'equipment',
+            educational: 'Filters house your nitrogen cycle bacteria (Nitrosomonas + Nitrospira). Never clean filter media in tap water \u2014 the chlorine kills the beneficial bacteria. Always rinse in old tank water!',
+            choices: [
+              { label: '\uD83D\uDCA7 Rinse media in old tank water', effect: { ammonia: -0.1 }, outcome: 'Perfect technique! The filter flow is restored while preserving the bacterial colony. Your nitrogen cycle stays intact.', xp: 6 },
+              { label: '\uD83D\uDDD1\uFE0F Replace all filter media', effect: { ammonia: 0.3 }, outcome: 'The filter runs great, but you\u2019ve lost ALL your beneficial bacteria. Expect an ammonia spike in 2-3 days as the cycle restarts.', xp: 2 },
+              { label: '\u274C Deal with it later', effect: { ammonia: 0.5 }, outcome: 'Without proper filtration, ammonia and waste build up rapidly. Your fish are gasping at the surface for oxygen.', xp: 0 }
+            ]
+          },
+          // Ecology
+          {
+            id: 'algae_bloom', title: 'Green Algae Bloom!', icon: '\uD83C\uDF3F', desc: 'Your tank water has turned pea-soup green overnight. A massive algae bloom has erupted, likely from excess nutrients and light.', category: 'ecology',
+            educational: 'Algae blooms are caused by excess phosphates and nitrates combined with too much light (>10 hours/day). They\u2019re not immediately dangerous but reduce oxygen at night and look unsightly.',
+            choices: [
+              { label: '\uD83D\uDD26 Blackout for 3 days (cover tank)', effect: { nitrate: -5 }, outcome: 'Without light, the algae dies off. After 3 days of darkness, the water clears. Reduce your light schedule to prevent recurrence.', xp: 5 },
+              { label: '\uD83E\uDDA0 Add algae-eating fish (Oto)', effect: { nitrate: -2 }, outcome: 'The otocinclus help with surface algae, but green water algae is too small for them. Partial improvement, but a blackout would be more effective.', xp: 3 },
+              { label: '\uD83D\uDCA7 50% water change', effect: { ammonia: -0.1, nitrate: -10 }, outcome: 'The water change dilutes nutrients and clears some algae, but it may return if the root cause (excess light/nutrients) isn\u2019t addressed.', xp: 4 }
+            ]
+          },
+          {
+            id: 'snail_invasion', title: 'Snail Population Explosion!', icon: '\uD83D\uDC0C', desc: 'Tiny snails are everywhere! They hitchhiked in on a plant and have multiplied rapidly. While not harmful, they\u2019re covering your glass.', category: 'ecology',
+            educational: 'Pest snails (bladder snails, Malaysian trumpet snails) reproduce asexually \u2014 one snail can become hundreds. They\u2019re actually beneficial detritivores but can indicate overfeeding.',
+            choices: [
+              { label: '\uD83C\uDF7D\uFE0F Reduce feeding (snails eat leftovers)', effect: { ammonia: -0.15 }, outcome: 'Smart approach! With less excess food, the snail population naturally declines over 2-3 weeks. Bonus: your water quality improves too.', xp: 6 },
+              { label: '\uD83E\uDD9E Add an assassin snail', effect: {}, outcome: 'The assassin snail is a natural predator. Over time, it hunts down the pest snails. A biological control approach \u2014 very elegant!', xp: 5 },
+              { label: '\uD83D\uDEAB Remove them manually', effect: {}, outcome: 'You pick out dozens, but miss the tiny ones and eggs. They\u2019ll be back. This is a never-ending battle without addressing the root cause.', xp: 2 }
+            ]
+          },
+          {
+            id: 'plant_melt', title: 'Aquatic Plants Melting', icon: '\uD83C\uDF42', desc: 'Several of your live plants are turning brown and dissolving. The leaves are becoming translucent and falling apart.', category: 'ecology',
+            educational: 'New aquatic plants often \"melt\" as they transition from emersed (above-water) to submersed growth. This is normal! Iron and CO2 deficiency can also cause melting in established plants.',
+            choices: [
+              { label: '\uD83E\uDDEA Add root tabs + liquid fertilizer', effect: { nitrate: 3 }, outcome: 'The iron and micronutrients give the plants what they need. New, submersed-growth leaves begin sprouting within a week.', xp: 5 },
+              { label: '\u2702\uFE0F Trim dead leaves, leave roots', effect: {}, outcome: 'Good practice! Removing dead material prevents it from decaying and spiking ammonia. Healthy roots will send up new growth.', xp: 4 },
+              { label: '\uD83D\uDDD1\uFE0F Remove all dying plants', effect: { ammonia: 0.1, nitrate: 5 }, outcome: 'Without plants absorbing nitrate, your water quality may suffer. Plants also provide hiding spots that reduce fish stress.', xp: 1 }
+            ]
+          },
+          // Water
+          {
+            id: 'ph_crash', title: 'Sudden pH Crash!', icon: '\u2697\uFE0F', desc: 'Your pH has dropped from 7.2 to 6.0 overnight! Fish are showing signs of acidosis: clamped fins, rapid gill movement, and lethargy.', category: 'water',
+            educational: 'pH crashes happen when KH (carbonate hardness) is depleted. KH acts as a buffer \u2014 without it, pH becomes unstable. Adding crushed coral or baking soda restores buffering capacity.',
+            choices: [
+              { label: '\uD83E\uDDF1 Add crushed coral to filter', effect: { pH: 1.0 }, outcome: 'The crushed coral slowly dissolves, raising KH and stabilizing pH around 7.2. This provides long-term buffering. Excellent choice!', xp: 6 },
+              { label: '\uD83E\uDDEA Add baking soda (1 tsp/5 gal)', effect: { pH: 0.6 }, outcome: 'The pH rises quickly back toward neutral. Be careful \u2014 sudden pH changes can be as stressful as the crash itself. Slow and steady wins.', xp: 4 },
+              { label: '\uD83D\uDCA7 Large water change (50%)', effect: { pH: 0.4, ammonia: -0.2 }, outcome: 'The fresh water brings pH up somewhat, but without addressing the low KH, the pH will crash again within days.', xp: 3 }
+            ]
+          },
+          {
+            id: 'cloudy_water', title: 'Mysterious Cloudiness', icon: '\uD83C\uDF2B\uFE0F', desc: 'Your crystal-clear water has become milky white. It happened within hours and the fish seem unaffected so far.', category: 'water',
+            educational: 'Milky white cloudiness is a bacterial bloom \u2014 millions of free-floating heterotrophic bacteria. This is common in new tanks or after a major disturbance. It\u2019s usually harmless and self-resolving.',
+            choices: [
+              { label: '\u23F3 Wait it out (bacterial bloom)', effect: { ammonia: 0.1 }, outcome: 'Correct diagnosis! The bloom runs out of food after 2-3 days and clears on its own. Your tank\u2019s ecosystem is simply rebalancing.', xp: 5 },
+              { label: '\uD83D\uDCA7 Small daily water changes (10%)', effect: { ammonia: -0.05 }, outcome: 'The gentle water changes remove some bacteria without disrupting the cycle. Combined with patience, the water clears in a few days.', xp: 5 },
+              { label: '\uD83E\uDDEA Add water clarifier chemical', effect: { ammonia: 0.05 }, outcome: 'The clarifier clumps particles for the filter to catch. It works visually but doesn\u2019t address why the bloom happened. A band-aid solution.', xp: 2 }
+            ]
+          },
+          // Behavioral
+          {
+            id: 'aggression', title: 'Fish Aggression Alert!', icon: '\uD83D\uDCA2', desc: 'One of your larger fish is chasing and nipping at the others. You can see torn fins on the smaller fish. Tank harmony is disrupted.', category: 'behavioral',
+            educational: 'Aggression often stems from territorial behavior, breeding instincts, or overcrowding. Rearranging decorations breaks established territories and can reset the social hierarchy.',
+            choices: [
+              { label: '\uD83C\uDFE0 Rearrange decorations', effect: {}, outcome: 'Brilliant strategy! Moving the decor disrupts the bully\u2019s claimed territory. All fish have to re-establish boundaries, reducing aggression.', xp: 5 },
+              { label: '\uD83C\uDF3F Add more hiding spots', effect: {}, outcome: 'More plants and caves give smaller fish escape routes. Line-of-sight breaks are key to peaceful tanks. The nipping decreases significantly.', xp: 5 },
+              { label: '\uD83D\uDCD0 Check if tank is overcrowded', effect: {}, outcome: 'You review your stocking \u2014 the bioload is high. Sometimes the only solution is to rehome the aggressive individual.', xp: 4 }
+            ]
+          },
+          {
+            id: 'breeding', title: 'Breeding Behavior Spotted!', icon: '\uD83D\uDC95', desc: 'Two fish are performing an elaborate courtship dance! The male is displaying vibrant colors and the female appears to have a rounded belly.', category: 'behavioral',
+            educational: 'Successful breeding requires stable water chemistry, proper temperature, and adequate nutrition. Many livebearers (guppies, mollies, platys) breed readily. Egg-layers need specific conditions.',
+            choices: [
+              { label: '\uD83C\uDF31 Add breeding box / plants', effect: {}, outcome: 'The dense plants provide cover for fry. Within days, you spot tiny baby fish hiding among the leaves! Your population may grow.', xp: 5 },
+              { label: '\uD83C\uDF21\uFE0F Optimize conditions for spawning', effect: { temp: 1 }, outcome: 'The slightly warmer water and good nutrition encourage spawning. Nature takes its course \u2014 this is natural population dynamics!', xp: 4 },
+              { label: '\uD83D\uDC40 Just observe and enjoy', effect: {}, outcome: 'You watch the beautiful natural behavior unfold. Even if fry don\u2019t survive, witnessing courtship displays is one of the joys of fishkeeping.', xp: 3 }
+            ]
+          },
+          {
+            id: 'new_cycle', title: 'Nitrogen Cycle Kick-starting', icon: '\uD83D\uDD04', desc: 'You notice ammonia is rising but nitrite is still zero. Your tank is in the early stages of cycling \u2014 beneficial bacteria haven\u2019t colonized yet.', category: 'water',
+            educational: 'The nitrogen cycle is the single most important concept in fishkeeping. Ammonia \u2192 Nitrite \u2192 Nitrate. It takes 4-6 weeks to fully establish. Patience is the key.',
+            choices: [
+              { label: '\uD83E\uDDA0 Add bottled bacteria starter', effect: { ammonia: -0.2 }, outcome: 'The commercial bacteria boost jump-starts colonization. You should see nitrite appear within a week as the first bacteria convert ammonia.', xp: 5 },
+              { label: '\uD83D\uDCA7 Small daily water changes', effect: { ammonia: -0.15 }, outcome: 'Keeping ammonia below 2 ppm protects your fish while the cycle establishes. This is the gold standard for fish-in cycling.', xp: 6 },
+              { label: '\u274C Add more fish to speed it up', effect: { ammonia: 0.6 }, outcome: 'More fish = more ammonia. But your bacteria can\u2019t keep up yet! This overloads the system and puts all fish at risk. Less is more during cycling.', xp: 0 }
+            ]
+          },
+          {
+            id: 'power_outage', title: 'Power Outage Simulation', icon: '\u26A1', desc: 'The power goes out! Your heater, filter, and lights all stop. Without filtration, oxygen levels will drop. Without the heater, temperature will fall.', category: 'equipment',
+            educational: 'During power outages, oxygen is the #1 concern. Battery-powered air pumps are essential emergency gear. Most tropical fish can survive 4-6 hours without heat but suffocate faster without water movement.',
+            choices: [
+              { label: '\uD83E\uDEAB Battery air pump + blanket on tank', effect: { temp: -2 }, outcome: 'The air pump maintains oxygen while the blanket insulates heat. Your fish barely notice the outage. You were prepared!', xp: 6 },
+              { label: '\uD83D\uDCA8 Manually agitate water surface', effect: { temp: -3, ammonia: 0.1 }, outcome: 'Stirring the water with a cup adds oxygen. It\u2019s labor-intensive but effective short-term. Temperature slowly drops.', xp: 4 },
+              { label: '\u274C Wait for power to return', effect: { temp: -5, ammonia: 0.3 }, outcome: 'After 3 hours, oxygen drops critically. Some fish are gasping at the surface. The temperature is falling steadily. An emergency kit would have prevented this.', xp: 1 }
+            ]
+          },
+          {
+            id: 'test_results', title: 'Unexpected Water Test Results', icon: '\uD83E\uDDEA', desc: 'Your weekly water test shows nitrate at 80+ ppm! Your fish seem fine now, but this level of nitrate suppresses immune function over time.', category: 'water',
+            educational: 'High nitrate is the "silent killer." Fish acclimate gradually and seem fine, but chronic exposure stunts growth, fades color, and weakens immunity. Regular water changes are the #1 prevention.',
+            choices: [
+              { label: '\uD83D\uDCA7 50% water change + gravel vacuum', effect: { nitrate: -30, ammonia: -0.1 }, outcome: 'A thorough water change and gravel vacuum removes trapped detritus. Nitrate drops to safe levels. Schedule weekly changes to prevent buildup.', xp: 6 },
+              { label: '\uD83C\uDF3F Add fast-growing live plants', effect: { nitrate: -15 }, outcome: 'Floating plants like duckweed and hornwort are nitrogen-absorbing machines. They\u2019ll help keep nitrate in check between water changes.', xp: 5 },
+              { label: '\u274C It will come down on its own', effect: { nitrate: 10 }, outcome: 'Nitrate doesn\u2019t decrease on its own \u2014 only water changes, plants, or special media remove it. Your fish\u2019s long-term health is at risk.', xp: 0 }
+            ]
+          }
+        ];
+
+        // ── AI Event Generator (Gemini-powered with fallback) ──
+        var generateAIEvent = function () {
+          if (aiEventLoading || !selectedTank || tankFish.length === 0) return;
+
+          // Try Gemini first, fall back to curated bank
+          if (callGemini) {
+            upd('aiEventLoading', true);
+            var fishNames = tankFish.map(function (fId) {
+              var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
+              return sp ? sp.name : fId;
+            }).join(', ');
+            var tankInfo = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+            var prompt = 'You are an aquarium science educator generating an interactive learning event for a tank simulation. Current tank state:\n' +
+              '- Tank type: ' + (tankInfo ? tankInfo.name : selectedTank) + '\n' +
+              '- Fish: ' + fishNames + ' (' + tankFish.length + ' total)\n' +
+              '- Water: pH ' + (waterChem ? waterChem.pH.toFixed(1) : '?') + ', Temp ' + (waterChem ? waterChem.temp.toFixed(0) : '?') + 'F, NH3 ' + (waterChem ? waterChem.ammonia.toFixed(2) : '?') + ', NO2 ' + (waterChem ? waterChem.nitrite.toFixed(2) : '?') + ', NO3 ' + (waterChem ? waterChem.nitrate.toFixed(0) : '?') + '\n' +
+              '- Day: ' + simDay + '\n' +
+              '- Recent events: ' + (aiEventHistory.length > 0 ? aiEventHistory.slice(-3).map(function (e) { return e.title; }).join(', ') : 'none') + '\n\n' +
+              'Generate ONE realistic aquarium event that requires a student decision. Return ONLY valid JSON:\n' +
+              '{"title":"short title","icon":"single emoji","desc":"2-3 sentence scenario description","educational":"1-2 sentence science explanation","choices":[{"label":"emoji + action","effect_desc":"brief consequence preview","ammonia_delta":0,"ph_delta":0,"temp_delta":0,"nitrate_delta":0,"xp":5,"outcome":"what happens after choosing this"},{"label":"emoji + alternative action","effect_desc":"brief consequence","ammonia_delta":0,"ph_delta":0,"temp_delta":0,"nitrate_delta":0,"xp":3,"outcome":"result"}]}\n' +
+              'Rules: 2-3 choices, effects realistic, one choice should be clearly educational/best, include a wrong/risky choice. Make it specific to the current fish and water conditions. Do NOT repeat recent events.';
+
+            callGemini(prompt, true, false, 0.9).then(function (response) {
+              try {
+                var parsed = typeof response === 'string' ? JSON.parse(response) : response;
+                if (parsed && parsed.title && parsed.choices && parsed.choices.length >= 2) {
+                  // Convert AI response to standard event format
+                  var aiEvt = {
+                    id: 'ai_' + Date.now(),
+                    title: parsed.title,
+                    icon: parsed.icon || '\uD83E\uDD16',
+                    desc: parsed.desc,
+                    educational: parsed.educational,
+                    category: 'ai_generated',
+                    choices: parsed.choices.map(function (c) {
+                      return {
+                        label: c.label,
+                        effect: {
+                          ammonia: c.ammonia_delta || 0,
+                          pH: c.ph_delta || 0,
+                          temp: c.temp_delta || 0,
+                          nitrate: c.nitrate_delta || 0
+                        },
+                        outcome: c.outcome,
+                        xp: c.xp || 3
+                      };
+                    })
+                  };
+                  updMulti({ aiEvent: aiEvt, aiEventLoading: false, lastAIEventDay: simDay });
+                  return;
+                }
+              } catch (e) { /* fall through to fallback */ }
+              // Fallback on parse failure
+              var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
+              updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
+            }).catch(function () {
+              var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
+              updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
+            });
+          } else {
+            // No callGemini available — use fallback
+            var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
+            updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
+          }
+        };
+
+        // ── Resolve AI Event (apply chosen consequence) ──
+        var resolveAIEvent = function (choiceIdx) {
+          if (!aiEvent || !aiEvent.choices || !aiEvent.choices[choiceIdx]) return;
+          var choice = aiEvent.choices[choiceIdx];
+          var updates = {};
+          // Apply effects to water chemistry
+          if (waterChem && choice.effect) {
+            var newChem = Object.assign({}, waterChem);
+            if (choice.effect.ammonia) newChem.ammonia = Math.max(0, newChem.ammonia + choice.effect.ammonia);
+            if (choice.effect.pH) newChem.pH = Math.max(5.5, Math.min(9.0, newChem.pH + choice.effect.pH));
+            if (choice.effect.temp) {
+              if (Math.abs(choice.effect.temp) > 10) newChem.temp = choice.effect.temp; // Absolute temp set
+              else newChem.temp = Math.max(40, Math.min(95, newChem.temp + choice.effect.temp));
+            }
+            if (choice.effect.nitrate) newChem.nitrate = Math.max(0, newChem.nitrate + choice.effect.nitrate);
+            if (choice.effect.nitrite) newChem.nitrite = Math.max(0, newChem.nitrite + choice.effect.nitrite);
+            updates.waterChem = newChem;
+          }
+          // Award XP
+          if (choice.xp && typeof awardStemXP === 'function') awardStemXP('aquarium', choice.xp, 'AI Event: ' + aiEvent.title);
+          // Log the resolved event
+          var historyEntry = { title: aiEvent.title, icon: aiEvent.icon, choice: choice.label, outcome: choice.outcome, day: simDay, xp: choice.xp || 0 };
+          updates.aiEventHistory = aiEventHistory.concat([historyEntry]).slice(-20);
+          // Mark event as resolved (show outcome)
+          updates.aiEvent = Object.assign({}, aiEvent, { resolved: true, chosenIdx: choiceIdx, chosenOutcome: choice.outcome, chosenXp: choice.xp || 0 });
+          updMulti(updates);
+          // Auto-dismiss outcome after 8 seconds
+          setTimeout(function () { upd('aiEvent', null); }, 8000);
+        };
+
+        // ── Ocean Ecology state ──
+        var oceanPop = d.oceanPop || { sardines: 800, tuna: 200, sharks: 50 };
+        var harvestRate = d.harvestRate != null ? d.harvestRate : 20;
+        var meshSize = d.meshSize || 'medium';
+        var mpaPercent = d.mpaPercent != null ? d.mpaPercent : 10;
+        var isOpenSeason = d.isOpenSeason != null ? d.isOpenSeason : true;
+        var oceanHistory = d.oceanHistory || [];
+        var oceanYear = d.oceanYear || 0;
+        var oceanRevenue = d.oceanRevenue || 0;
+        var oceanBycatch = d.oceanBycatch || 0;
+        var oceanCollapsed = d.oceanCollapsed || false;
+        var oceanScenario = d.oceanScenario || null;
+
+        // ── Marine Science state ──
+        var selectedZone = d.selectedZone || null;
+        var selectedSpecies = d.selectedSpecies || null;
+        var quizActive = d.quizActive || false;
+        var quizScore = d.quizScore || { correct: 0, total: 0 };
+        var quizQ = d.quizQ || null;
+
+
+        // ── Chemistry educational data ──
+        var CHEM_INFO = {
+          pH: {
+            name: 'pH (Power of Hydrogen)',
+            icon: '\u2697\uFE0F',
+            what: 'A measure of how acidic or basic the water is. The scale runs 0-14, where 7 is neutral. Each whole number change represents a 10x difference in hydrogen ion concentration.',
+            safeRange: 'Depends on species — freshwater: 6.5-7.5, African cichlids: 7.8-8.6, marine: 8.1-8.4',
+            danger: 'Rapid pH swings > 0.5 in 24h cause osmotic stress. Fish gills struggle to regulate ion exchange, leading to respiratory distress.',
+            math: function (wc, tank) {
+              var diff = Math.abs(wc.pH - tank.pH);
+              return 'Target: ' + tank.pH.toFixed(1) + ' | Current deviation: ' + diff.toFixed(2) + ' units\nA pH of ' + wc.pH.toFixed(1) + ' means [H\u207A] = 10\u207B' + wc.pH.toFixed(1) + ' mol/L';
+            },
+            fix: 'Partial water changes gradually bring pH toward target. Never adjust more than 0.2 units per day.'
+          },
+          temp: {
+            name: 'Temperature',
+            icon: '\uD83C\uDF21\uFE0F',
+            what: 'Fish are ectotherms — their metabolism is controlled by water temperature. Higher temps increase metabolism, oxygen demand, and ammonia toxicity.',
+            safeRange: 'Tropical: 75-82\u00B0F (24-28\u00B0C), Coldwater: 60-72\u00B0F (16-22\u00B0C), Marine: 76-82\u00B0F (24-28\u00B0C)',
+            danger: 'Every 10\u00B0F increase roughly doubles metabolic rate. Ammonia toxicity increases 10x between 68\u00B0F and 86\u00B0F.',
+            math: function (wc, tank) {
+              var diff = Math.abs(wc.temp - tank.temp);
+              var celsius = ((wc.temp - 32) * 5 / 9).toFixed(1);
+              return 'Current: ' + wc.temp.toFixed(1) + '\u00B0F (' + celsius + '\u00B0C) | Target: ' + tank.temp + '\u00B0F\nDeviation: \u00B1' + diff.toFixed(1) + '\u00B0F';
+            },
+            fix: 'Adjust heater gradually — no more than 2\u00B0F per hour. Rapid changes cause thermal shock.'
+          },
+          ammonia: {
+            name: 'Ammonia (NH\u2083/NH\u2084\u207A)',
+            icon: '\u2620\uFE0F',
+            what: 'The primary waste product from fish gills and decomposing food. In its un-ionized form (NH\u2083), it is extremely toxic to fish even at low concentrations.',
+            safeRange: '0 ppm ideal | < 0.25 ppm tolerable | 0.25-1.0 ppm stressful | > 1.0 ppm lethal',
+            danger: 'Ammonia burns gill tissue, causing fish to gasp at the surface. At > 1 ppm, irreversible gill damage occurs within hours.',
+            math: function (wc, tank, bioload, fishCount) {
+              var gen = bioload * 0.02;
+              var converted = wc.ammonia * 0.15;
+              return 'Generation: ' + fishCount + ' fish \u00D7 bioload = ' + gen.toFixed(3) + ' ppm/tick\nBacteria (Nitrosomonas) convert: ' + wc.ammonia.toFixed(2) + ' \u00D7 15% = ' + converted.toFixed(3) + ' ppm \u2192 NO\u2082\nNet change: +' + (gen - wc.ammonia * 0.05).toFixed(3) + ' ppm/tick';
+            },
+            fix: 'Immediate 25% water change. Reduce feeding. Add beneficial bacteria supplement. Do NOT add more fish.'
+          },
+          nitrite: {
+            name: 'Nitrite (NO\u2082\u207B)',
+            icon: '\u26A0\uFE0F',
+            what: 'Produced by Nitrosomonas bacteria converting ammonia. Still toxic — it binds to hemoglobin, reducing oxygen-carrying capacity (brown blood disease).',
+            safeRange: '0 ppm ideal | < 0.25 ppm tolerable | 0.25-1.0 ppm dangerous | > 1.0 ppm critical',
+            danger: 'Nitrite replaces oxygen on hemoglobin molecules. Fish blood turns brown and cannot carry O\u2082. Gills appear dark/chocolate colored.',
+            math: function (wc, tank) {
+              var fromAmmonia = wc.ammonia * 0.15;
+              var converted = wc.nitrite * 0.08;
+              var toNitrate = wc.nitrite * 0.2;
+              return 'Input from NH\u2083: ' + fromAmmonia.toFixed(3) + ' ppm/tick\nNatural decay: ' + converted.toFixed(3) + ' ppm/tick\nConverted to NO\u2083 by Nitrobacter: ' + toNitrate.toFixed(3) + ' ppm/tick';
+            },
+            fix: 'Water change + add aquarium salt (1 tsp/gal) to block nitrite absorption through gills.'
+          },
+          nitrate: {
+            name: 'Nitrate (NO\u2083\u207B)',
+            icon: '\uD83C\uDF3F',
+            what: 'The end product of the nitrogen cycle. Much less toxic than ammonia or nitrite, but accumulates over time. Live plants absorb nitrate as fertilizer.',
+            safeRange: '< 20 ppm excellent | < 40 ppm acceptable | 40-80 ppm high | > 80 ppm water change needed',
+            danger: 'Chronic high nitrate (> 40 ppm) suppresses immune function and stunts growth. Promotes algae blooms that consume oxygen at night.',
+            math: function (wc) {
+              var fromNitrite = wc.nitrite * 0.2;
+              return 'Input from NO\u2082: ' + fromNitrite.toFixed(3) + ' ppm/tick\nAccumulation: ' + wc.nitrate.toFixed(1) + ' ppm total\nOnly removed by: water changes or live plants';
+            },
+            fix: 'Regular 25% weekly water changes. Add fast-growing plants (hornwort, pothos). Reduce fish load.'
+          },
+          salinity: {
+            name: 'Salinity',
+            icon: '\uD83E\uDDC2',
+            what: 'The concentration of dissolved salts (primarily NaCl). Freshwater fish maintain internal salt levels higher than their environment; marine fish do the opposite.',
+            safeRange: 'Freshwater: 0 ppt | Brackish: 5-15 ppt | Marine: 34-36 ppt',
+            danger: 'Incorrect salinity disrupts osmoregulation. Fish cells either swell (too fresh) or shrink (too salty), damaging organs.',
+            math: function (wc) {
+              return 'Current: ' + wc.salinity + ' ppt (parts per thousand)\n1 ppt = 1g salt per 1000g water\nSeawater: ~35 ppt = 3.5% salt by weight';
+            },
+            fix: 'Adjust slowly through water changes with correctly mixed water. Never change > 2 ppt per day.'
+          }
+        };
+        // ── Tank setup helpers ──
+        var initTank = function (tankId) {
+          var tank = TANK_TYPES.find(function (t) { return t.id === tankId; });
+          if (!tank) return;
+          updMulti({
+            selectedTank: tankId,
+            tankFish: [],
+            waterChem: { pH: tank.pH, temp: tank.temp, ammonia: 0, nitrite: 0, nitrate: 5, salinity: tank.salinity },
+            simTick: 0, simRunning: false, fishHealth: {}, eventLog: [{ tick: 0, msg: '🐠 ' + tank.name + ' tank initialized!' }]
+          });
+        };
+
+        var addFish = function (speciesId) {
+          var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+          var species = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === speciesId; });
+          if (!tank || !species) return;
+          var currentLoad = tankFish.reduce(function (sum, f) {
+            var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === f; });
+            return sum + (sp ? sp.load : 0);
+          }, 0);
+          var maxLoad = Math.floor(tank.size / 2);
+          if (currentLoad + species.load > maxLoad) {
+            if (addToast) addToast('⚠️ Tank is at capacity! Bioload would exceed safe limits.', 'warning');
+            return;
+          }
+          var newFish = tankFish.concat([speciesId]);
+          var newHealth = Object.assign({}, fishHealth);
+          newHealth[speciesId] = (newHealth[speciesId] || 0) + 1;
+          var newHunger = Object.assign({}, hungerLevels);
+          if (newHunger[speciesId] === undefined) newHunger[speciesId] = 50;
+          updMulti({ tankFish: newFish, fishHealth: newHealth, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
+        };
+
+        var removeFish = function (idx) {
+          var newFish = tankFish.slice();
+          var removed = newFish.splice(idx, 1)[0];
+          var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === removed; });
+          updMulti({ tankFish: newFish, eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (sp ? sp.name : removed) }]) });
+        };
+
+        // ── Water chemistry helpers ──
+        var getChemStatus = function (param, value) {
+          var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+          if (!tank) return 'ok';
+          if (param === 'ammonia') return value < 0.25 ? 'ok' : value < 1.0 ? 'warn' : 'danger';
+          if (param === 'nitrite') return value < 0.25 ? 'ok' : value < 1.0 ? 'warn' : 'danger';
+          if (param === 'nitrate') return value < 40 ? 'ok' : value < 80 ? 'warn' : 'danger';
+          if (param === 'pH') {
+            var diff = Math.abs(value - tank.pH);
+            return diff < 0.5 ? 'ok' : diff < 1.0 ? 'warn' : 'danger';
+          }
+          if (param === 'temp') {
+            var tdiff = Math.abs(value - tank.temp);
+            return tdiff < 3 ? 'ok' : tdiff < 6 ? 'warn' : 'danger';
+          }
+          return 'ok';
+        };
+
+        var statusIcon = function (s) { return s === 'ok' ? '✅' : s === 'warn' ? '⚠️' : '❌'; };
+        var statusColor = function (s) { return s === 'ok' ? 'text-green-600' : s === 'warn' ? 'text-amber-600' : 'text-red-600'; };
+
+        var doWaterChange = function () {
+          if (!waterChem) return;
+          var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+          var newChem = Object.assign({}, waterChem, {
+            ammonia: Math.max(0, waterChem.ammonia * 0.5),
+            nitrite: Math.max(0, waterChem.nitrite * 0.5),
+            nitrate: Math.max(0, waterChem.nitrate * 0.6),
+            pH: waterChem.pH + (tank.pH - waterChem.pH) * 0.3
+          });
+          updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '💧 25% water change performed' }]) });
+          if (addToast) addToast('💧 Water change complete!', 'success');
+        };
+
+        var feedFish = function () {
+          if (!waterChem) return;
+          var newChem = Object.assign({}, waterChem, {
+            ammonia: waterChem.ammonia + 0.15 * (tankFish.length || 1),
+          });
+          updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed' }]) });
+        };
+
+        // ── Simulation tick (water chemistry drift) ──
+        var simStep = function () {
+          if (!waterChem || !selectedTank) return;
+          var bioload = tankFish.reduce(function (sum, f) {
+            var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === f; });
+            return sum + (sp ? sp.load : 0);
+          }, 0);
+          var ammoniaGen = bioload * 0.02;
+          var newAmm = Math.max(0, waterChem.ammonia + ammoniaGen - waterChem.ammonia * 0.05);
+          var nitriteBact = waterChem.ammonia * 0.15;
+          var newNitrite = Math.max(0, waterChem.nitrite + nitriteBact - waterChem.nitrite * 0.08);
+          var nitrateBact = waterChem.nitrite * 0.2;
+          var newNitrate = Math.max(0, waterChem.nitrate + nitrateBact);
+          var pHdrift = (Math.random() - 0.5) * 0.05;
+          var tempDrift = (Math.random() - 0.5) * 0.3;
+          var newChem = {
+            pH: Math.max(5.5, Math.min(9.0, waterChem.pH + pHdrift)),
+            temp: Math.max(40, Math.min(95, waterChem.temp + tempDrift)),
+            ammonia: Math.round(newAmm * 100) / 100,
+            nitrite: Math.round(newNitrite * 100) / 100,
+            nitrate: Math.round(newNitrate * 10) / 10,
+            salinity: waterChem.salinity
+          };
+          var newTick = simTick + 1;
+          var newLog = eventLog.slice();
+          // AI-powered random events (every ~5 sim-days, 60% chance)
+          var daysSinceLastEvent = simDay - lastAIEventDay;
+          if (daysSinceLastEvent >= 5 && Math.random() < 0.6 && !aiEvent && !aiEventLoading) {
+            generateAIEvent();
+            newLog.push({ tick: newTick, msg: '🤖 An event is developing in your tank...' });
+          }
+          // XP for maintaining healthy parameters
+          var allOk = getChemStatus('ammonia', newChem.ammonia) === 'ok' &&
+            getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
+            getChemStatus('pH', newChem.pH) === 'ok';
+          if (allOk && tankFish.length > 0 && newTick % 5 === 0) {
+            awardStemXP('aquarium', 2, 'Healthy tank maintenance');
+          }
+          updMulti({ waterChem: newChem, simTick: newTick, eventLog: newLog.slice(-20) });
+        };
+
+
+        // ── Tank Health Score & Strategy Tips ──
+        var getTankHealth = function () {
+          if (!waterChem || tankFish.length === 0) return { score: 100, tips: [{ icon: '\uD83D\uDC1F', text: 'Add some fish to get started!', color: 'text-cyan-600' }] };
+          var score = 100;
+          var tips = [];
+          // Ammonia penalty
+          var ammSt = getChemStatus('ammonia', waterChem.ammonia);
+          if (ammSt === 'warn') { score -= 15; tips.push({ icon: '\u26A0\uFE0F', text: 'Ammonia at ' + waterChem.ammonia.toFixed(2) + ' ppm \u2014 approaching toxic levels. Consider a water change.', color: 'text-amber-600' }); }
+          if (ammSt === 'danger') { score -= 35; tips.push({ icon: '\u2620\uFE0F', text: 'CRITICAL: Ammonia at ' + waterChem.ammonia.toFixed(2) + ' ppm! Immediate water change needed. Fish are suffering gill damage.', color: 'text-red-600' }); }
+          // Nitrite penalty
+          var nitSt = getChemStatus('nitrite', waterChem.nitrite);
+          if (nitSt === 'warn') { score -= 12; tips.push({ icon: '\u26A0\uFE0F', text: 'Nitrite rising (' + waterChem.nitrite.toFixed(2) + ' ppm). Your nitrogen cycle may not be established yet.', color: 'text-amber-600' }); }
+          if (nitSt === 'danger') { score -= 30; tips.push({ icon: '\u2620\uFE0F', text: 'CRITICAL: Nitrite at ' + waterChem.nitrite.toFixed(2) + ' ppm! Brown blood disease risk. Emergency water change!', color: 'text-red-600' }); }
+          // Nitrate penalty
+          if (waterChem.nitrate > 80) { score -= 15; tips.push({ icon: '\uD83D\uDE2C', text: 'Nitrate very high (' + waterChem.nitrate.toFixed(0) + ' ppm). Schedule regular water changes or add live plants.', color: 'text-amber-600' }); }
+          else if (waterChem.nitrate > 40) { score -= 8; tips.push({ icon: '\uD83C\uDF3F', text: 'Nitrate at ' + waterChem.nitrate.toFixed(0) + ' ppm \u2014 a water change will bring this down.', color: 'text-amber-600' }); }
+          // pH penalty
+          var phSt = getChemStatus('pH', waterChem.pH);
+          if (phSt === 'warn') { score -= 10; tips.push({ icon: '\u2697\uFE0F', text: 'pH drifting (' + waterChem.pH.toFixed(1) + '). Fish prefer stable pH near ' + (TANK_TYPES.find(function (t) { return t.id === selectedTank; }) || { pH: 7 }).pH + '.', color: 'text-amber-600' }); }
+          if (phSt === 'danger') { score -= 25; tips.push({ icon: '\u2697\uFE0F', text: 'pH dangerously off-target (' + waterChem.pH.toFixed(1) + ')! Osmotic stress is likely.', color: 'text-red-600' }); }
+          // Bioload check
+          var species = SPECIES_BY_TANK[selectedTank] || [];
+          var currentLoad = tankFish.reduce(function (s, f) { var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
+          var maxLoad = Math.floor((TANK_TYPES.find(function (t) { return t.id === selectedTank; }) || { size: 20 }).size / 2);
+          var loadPct = Math.round(currentLoad / maxLoad * 100);
+          if (loadPct > 80) { score -= 10; tips.push({ icon: '\uD83D\uDC1F', text: 'Bioload at ' + loadPct + '% capacity. High bioload = more waste = faster ammonia buildup.', color: 'text-amber-600' }); }
+          // Hunger check
+          var avgHunger = 0;
+          var hungerCount = 0;
+          tankFish.forEach(function (fId) { var h = hungerLevels[fId]; if (h !== undefined) { avgHunger += h; hungerCount++; } });
+          if (hungerCount > 0) avgHunger = avgHunger / hungerCount;
+          if (avgHunger > 75) { score -= 12; tips.push({ icon: '\uD83C\uDF7D\uFE0F', text: 'Fish are very hungry (avg ' + Math.round(avgHunger) + '%). Feed soon to reduce stress!', color: 'text-amber-600' }); }
+          // All good!
+          if (tips.length === 0) {
+            tips.push({ icon: '\uD83C\uDF1F', text: 'Excellent tank management! All parameters in safe range. Your nitrogen cycle is established.', color: 'text-green-600' });
+          }
+          return { score: Math.max(0, score), tips: tips };
+        };
+        // ── Ocean Ecology helpers ──
+        var OCEAN_SPECIES = [
+          { id: 'sardines', name: 'Sardines', icon: '🐟', r: 0.4, K: 1000, value: 1, desc: 'Fast-reproducing small fish. Foundation of the marine food web.' },
+          { id: 'tuna', name: 'Tuna', icon: '🐠', r: 0.15, K: 400, value: 8, desc: 'Mid-level predator. High commercial value but slow to recover.' },
+          { id: 'sharks', name: 'Sharks', icon: '🦈', r: 0.05, K: 100, value: 3, desc: 'Apex predator. Extremely slow reproduction — vulnerable to overfishing.' }
+        ];
+
+        var stepOcean = function () {
+          var newPop = Object.assign({}, oceanPop);
+          var harvestFactor = isOpenSeason ? harvestRate / 100 : 0;
+          var mpaFactor = 1 - mpaPercent / 100;
+          var bycatchMult = meshSize === 'small' ? 0.15 : meshSize === 'medium' ? 0.05 : 0.02;
+          var yearRevenue = 0;
+          var yearBycatch = 0;
+
+          OCEAN_SPECIES.forEach(function (sp) {
+            var N = newPop[sp.id];
+            var growth = sp.r * N * (1 - N / sp.K);
+            var predation = 0;
+            if (sp.id === 'sardines') predation = 0.003 * N * newPop.tuna;
+            if (sp.id === 'tuna') predation = 0.004 * N * newPop.sharks;
+            var harvest = sp.id !== 'sharks' ? harvestFactor * mpaFactor * N * 0.1 : harvestFactor * mpaFactor * N * 0.03;
+            var bycatch = sp.id === 'sharks' ? harvest * bycatchMult * 3 : 0;
+            yearBycatch += bycatch;
+            yearRevenue += harvest * sp.value;
+            newPop[sp.id] = Math.max(0, Math.round(N + growth - predation - harvest - bycatch));
+          });
+
+          var newYear = oceanYear + 1;
+          var newHistory = oceanHistory.concat([{ year: newYear, sardines: newPop.sardines, tuna: newPop.tuna, sharks: newPop.sharks, revenue: Math.round(yearRevenue) }]);
+          var collapsed = newPop.sardines < 50 || newPop.tuna < 20;
+
+          updMulti({
+            oceanPop: newPop,
+            oceanYear: newYear,
+            oceanRevenue: oceanRevenue + Math.round(yearRevenue),
+            oceanBycatch: oceanBycatch + Math.round(yearBycatch),
+            oceanHistory: newHistory.slice(-50),
+            oceanCollapsed: collapsed
+          });
+
+          if (collapsed && !oceanCollapsed) {
+            if (addToast) addToast('🚨 Fish stock collapse! Populations have crashed below sustainable levels.', 'error');
+          }
+          if (!collapsed && newYear % 5 === 0) {
+            awardStemXP('ocean', 3, 'Sustainable fishing for 5 years');
+          }
+        };
+
+        var resetOcean = function () {
+          updMulti({
+            oceanPop: { sardines: 800, tuna: 200, sharks: 50 },
+            harvestRate: 20, meshSize: 'medium', mpaPercent: 10, isOpenSeason: true,
+            oceanHistory: [], oceanYear: 0, oceanRevenue: 0, oceanBycatch: 0,
+            oceanCollapsed: false, oceanScenario: null
+          });
+        };
+
+        // ── Marine Science data ──
+        var OCEAN_ZONES = [
+          { id: 'sunlight', name: 'Sunlight Zone (Epipelagic)', depth: '0-200m', light: '100%', temp: '20-25°C', color: '#38bdf8', species: ['clownfish', 'dolphin', 'jellyfish', 'turtle'] },
+          { id: 'twilight', name: 'Twilight Zone (Mesopelagic)', depth: '200-1000m', light: '1%', temp: '5-20°C', color: '#1e40af', species: ['squid', 'hatchetfish', 'swordfish'] },
+          { id: 'midnight', name: 'Midnight Zone (Bathypelagic)', depth: '1000-4000m', light: '0%', temp: '2-5°C', color: '#1e1b4b', species: ['anglerfish', 'gulpereel', 'giantsquid'] },
+          { id: 'abyssal', name: 'Abyssal Zone (Abyssopelagic)', depth: '4000-6000m', light: '0%', temp: '1-2°C', color: '#0f0a2e', species: ['tubeworms', 'seacucumber'] },
+          { id: 'hadal', name: 'Hadal Zone (Trenches)', depth: '6000-11000m', light: '0%', temp: '1-4°C', color: '#050210', species: ['amphipod', 'snailfish'] }
+        ];
+
+        var MARINE_SPECIES = [
+          { id: 'clownfish', name: 'Clownfish', icon: '🐠', zone: 'sunlight', habitat: 'Coral Reef', diet: 'Omnivore', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
+          { id: 'dolphin', name: 'Bottlenose Dolphin', icon: '🐬', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Dolphins sleep with one eye open — one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
+          { id: 'jellyfish', name: 'Moon Jellyfish', icon: '🪼', zone: 'sunlight', habitat: 'Coastal', diet: 'Carnivore', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood — just a nerve net.', quiz: 'What body system do jellyfish lack?' },
+          { id: 'turtle', name: 'Green Sea Turtle', icon: '🐢', zone: 'sunlight', habitat: 'Coastal & Reef', diet: 'Herbivore', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
+          { id: 'squid', name: 'Firefly Squid', icon: '🦑', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
+          { id: 'hatchetfish', name: 'Hatchetfish', icon: '🐟', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
+          { id: 'swordfish', name: 'Swordfish', icon: '🐟', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
+          { id: 'anglerfish', name: 'Anglerfish', icon: '🐡', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
+          { id: 'gulpereel', name: 'Gulper Eel', icon: '🐍', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
+          { id: 'giantsquid', name: 'Giant Squid', icon: '🦑', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Has the largest eyes in the animal kingdom — up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
+          { id: 'tubeworms', name: 'Giant Tube Worms', icon: '🪱', zone: 'abyssal', habitat: 'Hydrothermal Vents', diet: 'Chemosynthetic', status: 'LC', fact: 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
+          { id: 'seacucumber', name: 'Sea Cucumber', icon: '🥒', zone: 'abyssal', habitat: 'Abyssal Plain', diet: 'Detritivore', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
+          { id: 'amphipod', name: 'Supergiant Amphipod', icon: '🦐', zone: 'hadal', habitat: 'Trenches', diet: 'Scavenger', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
+          { id: 'snailfish', name: 'Mariana Snailfish', icon: '🐟', zone: 'hadal', habitat: 'Trenches', diet: 'Carnivore', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
+          { id: 'mantaray', name: 'Manta Ray', icon: '🐟', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Filter Feeder', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
+          { id: 'bluewhale', name: 'Blue Whale', icon: '🐋', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Filter Feeder', status: 'EN', fact: 'The largest animal ever — their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
+          { id: 'seahorse', name: 'Seahorse', icon: '🐟', zone: 'sunlight', habitat: 'Coastal', diet: 'Carnivore', status: 'VU', fact: 'Males carry and give birth to the babies — unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
+          { id: 'octopus', name: 'Dumbo Octopus', icon: '🐙', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
+          { id: 'nautilus', name: 'Nautilus', icon: '🐚', zone: 'twilight', habitat: 'Deep Reef', diet: 'Scavenger', status: 'VU', fact: 'A living fossil — virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
+          { id: 'coelacanth', name: 'Coelacanth', icon: '🐟', zone: 'twilight', habitat: 'Deep Caves', diet: 'Carnivore', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
+        ];
+
+        var generateQuiz = function () {
+          var sp = MARINE_SPECIES[Math.floor(Math.random() * MARINE_SPECIES.length)];
+          var q = {
+            species: sp.id, question: sp.quiz, answer: sp.name,
+            options: [sp.name].concat(
+              MARINE_SPECIES.filter(function (s) { return s.id !== sp.id; })
+                .sort(function () { return Math.random() - 0.5; }).slice(0, 3)
+                .map(function (s) { return s.name; })
+            ).sort(function () { return Math.random() - 0.5; })
+          };
+          updMulti({ quizQ: q, quizActive: true });
+        };
+
+        var answerQuiz = function (ans) {
+          if (!quizQ) return;
+          var correct = ans === quizQ.answer;
+          announceToSR(correct ? 'Correct!' : 'Incorrect');
+          if (correct) awardXP(3, 'Marine science quiz');
+          updMulti({
+            quizScore: { correct: quizScore.correct + (correct ? 1 : 0), total: quizScore.total + 1 },
+            quizQ: Object.assign({}, quizQ, { answered: ans, correct: correct })
+          });
+        };
+
+
+
+        // ═══ RENDER ═══
+        var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo' };
+        var mColor = modeColors[mode] || 'cyan';
+
+        return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-300" },
+
+          // ── Header ──
+          React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+            React.createElement("button", {
+              onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
+              className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools'
+            }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+            React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, "\uD83D\uDC20 Aquaculture & Ocean Lab"),
+            React.createElement("div", { className: "flex items-center gap-2 ml-auto" },
+              React.createElement("button", {
+                onClick: function () {
+                  var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : 'Marine Science', data: Object.assign({}, d), timestamp: Date.now() };
+                  setToolSnapshots(function (prev) { return prev.concat([snap]); });
+                  if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
+                },
+                className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
+              }, "\uD83D\uDCF8 Snapshot")
+            )
+          ),
+
+          // ── Mode Tabs ──
+          React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1" },
+            [
+              { id: 'tank', icon: '\uD83D\uDC20', label: 'Aquarium Lab' },
+              { id: 'ocean', icon: '\uD83C\uDF0A', label: 'Ocean Ecology' },
+              { id: 'marine', icon: '\uD83D\uDD2C', label: 'Marine Science' }
+            ].map(function (tab) {
+              return React.createElement("button", {
+                key: tab.id,
+                onClick: function () { upd('mode', tab.id); },
+                className: "flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 " + (mode === tab.id ? "bg-gradient-to-r from-" + modeColors[tab.id] + "-500 to-" + modeColors[tab.id] + "-600 text-white shadow-lg shadow-" + modeColors[tab.id] + "-500/25" : "text-slate-500 hover:text-slate-700 hover:bg-white/60")
+              }, tab.icon, " ", tab.label);
+            })
+          ),
+
+
+          // ═══ ANATOMY VIEWER OVERLAY ═══
+          viewingAnatomy && (() => {
+            // Find species data from all sources
+            var allSpecies = [].concat(
+              SPECIES_BY_TANK[selectedTank] || [],
+              MARINE_SPECIES || []
+            );
+            var sp = allSpecies.find(function (s) { return s.id === viewingAnatomy; });
+            if (!sp) { closeAnatomy(); return null; }
+            var bodyPlanKey = SPECIES_BODY_MAP[viewingAnatomy] || 'fish';
+            var plan = BODY_PLANS[bodyPlanKey];
+            if (!plan) { closeAnatomy(); return null; }
+            var extraInfo = SPECIES_ANATOMY[viewingAnatomy] || {};
+
+            return React.createElement("div", { className: "bg-gradient-to-br from-slate-900/95 via-indigo-950/95 to-slate-900/95 rounded-2xl p-5 border-2 border-indigo-400/30 shadow-2xl animate-in fade-in duration-300 relative overflow-hidden" },
+              // Subtle background pattern
+              React.createElement("div", { style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 20% 80%, rgba(99,102,241,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(34,211,238,0.06) 0%, transparent 50%)', pointerEvents: 'none' } }),
+
+              // Header
+              React.createElement("div", { className: "flex items-center gap-3 mb-4 relative z-10" },
+                React.createElement("div", { className: "text-3xl" }, sp.icon || '\uD83D\uDC1F'),
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "text-base font-bold text-white" }, sp.name),
+                  React.createElement("p", { className: "text-[11px] text-indigo-300/80" }, plan.label)
+                ),
+                React.createElement("button", {
+                  onClick: closeAnatomy,
+                  className: "ml-auto px-3 py-1 text-xs font-bold text-slate-400 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
+                }, "\u2715 Close")
+              ),
+
+              // ── SVG Diagram with interactive labels ──
+              React.createElement("div", { className: "relative bg-gradient-to-b from-slate-800/50 to-slate-900/50 rounded-xl p-4 mb-4 border border-slate-700/30" },
+                // Render SVG diagram
+                React.createElement("div", {
+                  dangerouslySetInnerHTML: { __html: plan.svg(400, 250, SPECIES_COLORS[viewingAnatomy]) },
+                  className: "max-w-sm mx-auto",
+                  style: { filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }
+                }),
+                // Clickable label dots overlaid on the diagram
+                React.createElement("div", { style: { position: 'absolute', top: '16px', left: '16px', right: '16px', bottom: '16px' } },
+                  plan.parts.map(function (part, i) {
+                    var isHighlighted = anatomyHighlight === i;
+                    return React.createElement("div", {
+                      key: i,
+                      style: {
+                        position: 'absolute',
+                        left: part.x + '%', top: part.y + '%',
+                        transform: 'translate(-50%,-50%)',
+                        zIndex: isHighlighted ? 20 : 10,
+                        cursor: 'pointer'
+                      },
+                      onClick: function () { upd('anatomyHighlight', isHighlighted ? null : i); }
+                    },
+                      // Pulsing dot
+                      React.createElement("div", {
+                        className: "relative",
+                        style: { width: '16px', height: '16px' }
+                      },
+                        React.createElement("div", {
+                          style: {
+                            width: '16px', height: '16px', borderRadius: '50%',
+                            background: isHighlighted ? '#22d3ee' : 'rgba(255,255,255,0.9)',
+                            border: '2px solid ' + (isHighlighted ? '#06b6d4' : 'rgba(99,102,241,0.6)'),
+                            boxShadow: isHighlighted ? '0 0 12px rgba(34,211,238,0.6)' : '0 0 6px rgba(255,255,255,0.3)',
+                            animation: isHighlighted ? 'none' : 'pulse 2s ease-in-out infinite',
+                            transition: 'all 0.2s'
+                          }
+                        }),
+                        // Number label
+                        React.createElement("span", {
+                          style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '8px', fontWeight: 'bold', color: isHighlighted ? '#164e63' : '#4338ca', lineHeight: 1 }
+                        }, String(i + 1))
+                      ),
+                      // Tooltip on highlight
+                      isHighlighted && React.createElement("div", {
+                        className: "absolute z-30",
+                        style: { top: '20px', left: '50%', transform: 'translateX(-50%)', minWidth: '200px' }
+                      },
+                        React.createElement("div", { className: "bg-slate-800/95 backdrop-blur-sm rounded-lg p-2.5 border border-cyan-500/30 shadow-xl" },
+                          React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, part.name),
+                          React.createElement("p", { className: "text-[10px] text-slate-300 leading-relaxed" }, part.desc)
+                        )
+                      )
+                    );
+                  })
+                )
+              ),
+
+              // ── Parts Legend ──
+              React.createElement("div", { className: "grid grid-cols-2 gap-1.5 mb-3 relative z-10" },
+                plan.parts.map(function (part, i) {
+                  var isHighlighted = anatomyHighlight === i;
+                  return React.createElement("button", {
+                    key: i,
+                    onClick: function () { upd('anatomyHighlight', isHighlighted ? null : i); },
+                    className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all " + (isHighlighted ? "bg-cyan-500/20 border border-cyan-400/40" : "bg-slate-800/40 border border-transparent hover:bg-slate-700/40")
+                  },
+                    React.createElement("span", { className: "w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold flex-shrink-0 " + (isHighlighted ? "bg-cyan-400 text-slate-900" : "bg-slate-600 text-slate-300") }, String(i + 1)),
+                    React.createElement("span", { className: "text-[10px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-400") }, part.name)
                   );
                 })
               ),
 
-              // Chart title
-              React.createElement("input", {
-                type: "text", value: chartTitle,
-                onChange: function (e) { updDS('chartTitle', e.target.value); },
-                placeholder: "Chart title...",
-                className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
-              }),
+              // ── Species-Specific Info ──
+              React.createElement("div", { className: "space-y-2 relative z-10" },
+                // Fun fact
+                sp.fact && React.createElement("div", { className: "bg-indigo-500/10 rounded-xl p-3 border border-indigo-400/20" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-indigo-300 mb-0.5" }, "\uD83D\uDCA1 Did You Know?"),
+                  React.createElement("p", { className: "text-[11px] text-indigo-200/80 leading-relaxed" }, sp.fact)
+                ),
+                // Anatomy override (species-specific)
+                extraInfo.override && React.createElement("div", { className: "bg-cyan-500/10 rounded-xl p-3 border border-cyan-400/20" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-cyan-300 mb-0.5" }, "\uD83E\uDDAC Unique Anatomy"),
+                  React.createElement("p", { className: "text-[11px] text-cyan-200/80 leading-relaxed" }, extraInfo.override)
+                ),
+                // Locomotion
+                extraInfo.locomotion && React.createElement("div", { className: "bg-emerald-500/10 rounded-xl p-3 border border-emerald-400/20" },
+                  React.createElement("p", { className: "text-[10px] font-bold text-emerald-300 mb-0.5" }, "\uD83C\uDFCA How It Moves"),
+                  React.createElement("p", { className: "text-[11px] text-emerald-200/80 leading-relaxed" }, extraInfo.locomotion)
+                ),
+                // Habitat info from marine species
+                sp.habitat && React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                  React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
+                  sp.diet && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                  sp.status && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
+                    "\uD83D\uDEE1\uFE0F " + ({ LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' }[sp.status] || sp.status))
+                ),
 
-              // ── SVG Chart Rendering ──
-              React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: '1px solid ' + _border } },
-                React.createElement("svg", { viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { background: _svgBg, maxHeight: '340px' } },
-                  // Title
-                  React.createElement("text", { x: W / 2, y: 18, textAnchor: "middle", style: { fontSize: '13px', fontWeight: 'bold', fill: _text } }, chartTitle),
+                // XP button
+                React.createElement("button", {
+                  onClick: function () {
+                    awardStemXP('aquarium', 2, 'Studied anatomy of ' + sp.name);
+                    if (addToast) addToast('\uD83E\uDDAC +2 XP for studying ' + sp.name + ' anatomy!', 'success');
+                  },
+                  className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
+                }, "\uD83C\uDF93 I Studied This! (+2 XP)")
+              )
+            );
+          })(),
 
-                  // ── Bar Chart ──
-                  chartType === 'bar' && dataRows.length > 0 && (() => {
-                    var barW = Math.min(40, (W - 2 * pad) / dataRows.length - 4);
-                    var gap = (W - 2 * pad) / dataRows.length;
-                    return React.createElement("g", null,
-                      // Y axis
-                      React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                      // X axis
-                      React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                      // Y labels
-                      [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-                        var yVal = Math.round(maxVal * frac);
-                        var yPos = (H - pad) - frac * (H - pad - 28);
-                        return React.createElement("g", { key: 'yl' + i },
-                          React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal),
-                          React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
-                        );
-                      }),
-                      // Bars
-                      dataRows.map(function (row, i) {
-                        var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - 28) : 0;
-                        var x = pad + i * gap + (gap - barW) / 2;
-                        var y = (H - pad) - barH;
-                        return React.createElement("g", { key: 'bar' + i },
-                          React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
-                          React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, row.value),
-                          React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
-                        );
-                      })
+
+          // ═══════════════ MODE 1: AQUARIUM LAB ═══════════════
+          mode === 'tank' && !selectedTank && React.createElement("div", { className: "space-y-3" },
+            React.createElement("h4", { className: "text-sm font-bold text-cyan-700" }, "\uD83D\uDC1F Choose Your Tank"),
+            React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+              TANK_TYPES.map(function (tank) {
+                return React.createElement("button", {
+                  key: tank.id,
+                  onClick: function () { initTank(tank.id); },
+                  className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-200/60 hover:border-cyan-400"
+                },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                    React.createElement("span", { className: "text-xl" }, tank.name.split(' ')[0]),
+                    React.createElement("span", { className: "text-xs font-bold text-cyan-800" }, tank.name.split(' ').slice(1).join(' ')),
+                    React.createElement("span", { className: "ml-auto text-[10px] text-amber-600 font-bold" }, '\u2B50'.repeat(tank.diff))
+                  ),
+                  React.createElement("p", { className: "text-[11px] text-slate-500 mb-2" }, tank.desc),
+                  React.createElement("div", { className: "flex gap-2 text-[10px] text-cyan-600" },
+                    React.createElement("span", null, tank.size + " gal"),
+                    React.createElement("span", null, "\u2022"),
+                    React.createElement("span", null, tank.temp + "\u00B0F"),
+                    React.createElement("span", null, "\u2022"),
+                    React.createElement("span", null, "pH " + tank.pH),
+                    tank.salinity > 0 && React.createElement("span", null, "\u2022 " + tank.salinity + " ppt")
+                  )
+                );
+              })
+            )
+          ),
+
+          // ── Active Tank View ──
+          mode === 'tank' && selectedTank && (() => {
+            var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+            var species = SPECIES_BY_TANK[selectedTank] || [];
+            var currentLoad = tankFish.reduce(function (sum, f) {
+              var sp = species.find(function (s) { return s.id === f; });
+              return sum + (sp ? sp.load : 0);
+            }, 0);
+            var maxLoad = Math.floor(tank.size / 2);
+            var loadPct = Math.min(100, Math.round(currentLoad / maxLoad * 100));
+
+            return React.createElement("div", { className: "space-y-3" },
+              // Tank header with time & speed
+              React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-3 border border-cyan-200/50" },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  React.createElement("button", {
+                    onClick: function () { updMulti({ selectedTank: null, simRunning: false }); },
+                    className: "text-xs text-cyan-600 hover:text-cyan-800 font-bold"
+                  }, "\u2190 Back"),
+                  React.createElement("span", { className: "text-sm font-bold text-cyan-800" }, tank.name),
+                  React.createElement("span", { className: "ml-auto text-xs font-mono text-slate-500" },
+                    "\uD83D\uDCC5 Day " + simDay + ", " + (simHour < 10 ? '0' : '') + simHour + ":00" + (simHour >= 20 || simHour < 6 ? ' \uD83C\uDF19' : ' \u2600\uFE0F')
+                  )
+                ),
+                // Speed controls
+                React.createElement("div", { className: "flex items-center gap-1.5" },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 mr-1" }, "\u23F1 Speed:"),
+                  [
+                    { spd: 0, label: '\u23F8', tip: 'Pause' },
+                    { spd: 1, label: '\u25B6', tip: 'Normal (2s/tick)' },
+                    { spd: 2, label: '\u23E9', tip: 'Fast (1s/tick)' },
+                    { spd: 5, label: '\u23ED', tip: 'Turbo (0.4s/tick)' }
+                  ].map(function (s) {
+                    return React.createElement("button", {
+                      key: s.spd,
+                      onClick: function () { upd('simSpeed', s.spd); },
+                      title: s.tip,
+                      className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-500 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-500 hover:bg-cyan-100 border border-slate-200")
+                    }, s.label);
+                  }),
+                  React.createElement("span", { className: "ml-auto text-[10px] text-slate-400 font-mono" }, "T:" + simTick)
+                )
+              ),
+
+              // Water Chemistry Panel (clickable tooltips)
+              waterChem && React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 rounded-2xl p-4 border border-cyan-200/60 shadow-sm" },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("h4", { className: "text-xs font-bold text-cyan-700" }, "\uD83E\uDDEA Water Chemistry"),
+                  React.createElement("span", { className: "text-[9px] text-slate-400 italic" }, "Tap any card for details")
+                ),
+                React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                  [
+                    { key: 'pH', label: 'pH', val: waterChem.pH.toFixed(1) },
+                    { key: 'temp', label: 'Temp', val: waterChem.temp.toFixed(0) + '\u00B0F' },
+                    { key: 'ammonia', label: 'NH\u2083', val: waterChem.ammonia.toFixed(2) + ' ppm' },
+                    { key: 'nitrite', label: 'NO\u2082', val: waterChem.nitrite.toFixed(2) + ' ppm' },
+                    { key: 'nitrate', label: 'NO\u2083', val: waterChem.nitrate.toFixed(1) + ' ppm' },
+                    { key: 'salinity', label: 'Salt', val: waterChem.salinity + ' ppt' }
+                  ].map(function (p) {
+                    var st = getChemStatus(p.key, waterChem[p.key]);
+                    var isActive = chemTooltip === p.key;
+                    return React.createElement("div", {
+                      key: p.key,
+                      onClick: function () { upd('chemTooltip', isActive ? null : p.key); },
+                      className: "rounded-lg p-2 text-center cursor-pointer transition-all hover:scale-105 " + (isActive ? "bg-white ring-2 ring-cyan-400 shadow-lg" : "bg-white/70 hover:bg-white/90")
+                    },
+                      React.createElement("div", { className: "text-[10px] text-slate-500 font-bold" }, (CHEM_INFO[p.key] || {}).icon || '', ' ', p.label),
+                      React.createElement("div", { className: "text-sm font-bold " + statusColor(st) }, statusIcon(st) + " " + p.val)
                     );
-                  })(),
+                  })
+                ),
+                // ── Chemistry Tooltip Overlay ──
+                chemTooltip && CHEM_INFO[chemTooltip] && (() => {
+                  var info = CHEM_INFO[chemTooltip];
+                  var t = TANK_TYPES.find(function (x) { return x.id === selectedTank; }) || {};
+                  var bio = tankFish.reduce(function (s, f) { var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
+                  var mathStr = info.math ? info.math(waterChem, t, bio, tankFish.length) : '';
+                  return React.createElement("div", { className: "mt-3 bg-white rounded-xl p-3 border-2 border-cyan-300/60 shadow-lg animate-in fade-in duration-200" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
+                      React.createElement("button", { onClick: function () { upd('chemTooltip', null); }, className: "text-[10px] text-slate-400 hover:text-slate-600" }, "\u2715")
+                    ),
+                    React.createElement("div", { className: "space-y-2 text-[11px] leading-relaxed" },
+                      React.createElement("div", { className: "bg-cyan-50 rounded-lg p-2" },
+                        React.createElement("p", { className: "font-bold text-cyan-700 mb-0.5" }, "\uD83D\uDCD6 What is it?"),
+                        React.createElement("p", { className: "text-slate-600" }, info.what)
+                      ),
+                      React.createElement("div", { className: "bg-green-50 rounded-lg p-2" },
+                        React.createElement("p", { className: "font-bold text-green-700 mb-0.5" }, "\u2705 Safe Range"),
+                        React.createElement("p", { className: "text-slate-600" }, info.safeRange)
+                      ),
+                      React.createElement("div", { className: "bg-red-50 rounded-lg p-2" },
+                        React.createElement("p", { className: "font-bold text-red-700 mb-0.5" }, "\u26A0\uFE0F Why It's Dangerous"),
+                        React.createElement("p", { className: "text-slate-600" }, info.danger)
+                      ),
+                      mathStr && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2" },
+                        React.createElement("p", { className: "font-bold text-indigo-700 mb-0.5" }, "\uD83E\uDDEE Current Math"),
+                        React.createElement("pre", { className: "text-[10px] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
+                      ),
+                      React.createElement("div", { className: "bg-amber-50 rounded-lg p-2" },
+                        React.createElement("p", { className: "font-bold text-amber-700 mb-0.5" }, "\uD83D\uDCA1 How to Fix"),
+                        React.createElement("p", { className: "text-slate-600" }, info.fix)
+                      )
+                    )
+                  );
+                })(),
+                // Nitrogen cycle mini-diagram
+                !chemTooltip && React.createElement("div", { className: "mt-3 flex items-center justify-center gap-1 text-[10px] text-slate-500 bg-gradient-to-r from-red-50/50 via-orange-50/50 to-green-50/50 rounded-xl p-2.5 border border-slate-100" },
+                  React.createElement("span", { className: "font-bold text-red-500" }, "NH\u2083"),
+                  React.createElement("span", null, " \u2192 "),
+                  React.createElement("span", { className: "text-[9px] text-slate-400" }, "Nitrosomonas"),
+                  React.createElement("span", null, " \u2192 "),
+                  React.createElement("span", { className: "font-bold text-orange-500" }, "NO\u2082"),
+                  React.createElement("span", null, " \u2192 "),
+                  React.createElement("span", { className: "text-[9px] text-slate-400" }, "Nitrobacter"),
+                  React.createElement("span", null, " \u2192 "),
+                  React.createElement("span", { className: "font-bold text-green-500" }, "NO\u2083"),
+                  React.createElement("span", { className: "ml-1 text-slate-400" }, "(Nitrogen Cycle)")
+                )
+              ),
 
-                  // ── Pie Chart ──
-                  chartType === 'pie' && dataRows.length > 0 && (() => {
-                    var cx = W / 2, cy = (H + 10) / 2, r = Math.min(W, H) / 2.8;
-                    var cumAngle = -Math.PI / 2;
-                    return React.createElement("g", null,
-                      dataRows.map(function (row, i) {
-                        var angle = total > 0 ? (row.value / total) * 2 * Math.PI : 0;
-                        var startAngle = cumAngle;
-                        cumAngle += angle;
-                        var endAngle = cumAngle;
-                        var largeArc = angle > Math.PI ? 1 : 0;
-                        var x1 = cx + r * Math.cos(startAngle);
-                        var y1 = cy + r * Math.sin(startAngle);
-                        var x2 = cx + r * Math.cos(endAngle);
-                        var y2 = cy + r * Math.sin(endAngle);
-                        var midAngle = startAngle + angle / 2;
-                        var lx = cx + (r + 16) * Math.cos(midAngle);
-                        var ly = cy + (r + 16) * Math.sin(midAngle);
-                        var pct = total > 0 ? Math.round(row.value / total * 100) : 0;
-                        if (dataRows.length === 1) {
-                          return React.createElement("g", { key: 'pie' + i },
-                            React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.85 }),
-                            React.createElement("text", { x: cx, y: cy + 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: '#fff' } }, '100%')
-                          );
-                        }
-                        return React.createElement("g", { key: 'pie' + i },
-                          React.createElement("path", {
-                            d: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
-                            fill: COLORS[i % COLORS.length], opacity: 0.85, stroke: _svgBg, strokeWidth: 1.5
-                          }),
-                          pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 5) + ' ' + pct + '%')
-                        );
-                      })
-                    );
-                  })(),
+              // Bioload Meter
+              React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                  React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDC1F Bioload"),
+                  React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
+                ),
+                React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden" },
+                  React.createElement("div", { style: { width: loadPct + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
+                )
+              ),
 
-                  // ── Line Graph ──
-                  chartType === 'line' && dataRows.length > 0 && (() => {
-                    var rangeY = maxVal - minVal || 1;
-                    var gap = dataRows.length > 1 ? (W - 2 * pad) / (dataRows.length - 1) : 0;
-                    var pts = dataRows.map(function (row, i) {
-                      var x = dataRows.length === 1 ? W / 2 : pad + i * gap;
-                      var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
-                      return { x: x, y: y, label: row.label, value: row.value };
+              // Tank visualization (animated fish)
+              React.createElement("div", {
+                className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
+                style: { height: '240px', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
+              },
+                // Water surface shimmer
+                React.createElement("div", {
+                  style: { position: 'absolute', top: 0, left: 0, right: 0, height: '30px', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 40%, transparent 100%)', zIndex: 5 }
+                }),
+                // Light rays
+                [0, 1, 2].map(function (i) {
+                  return React.createElement("div", {
+                    key: 'ray-' + i,
+                    style: {
+                      position: 'absolute', top: 0, left: (20 + i * 30) + '%',
+                      width: '40px', height: '100%',
+                      background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 70%)',
+                      transform: 'skewX(-15deg)', zIndex: 1
+                    }
+                  });
+                }),
+                // Decorative plants
+                (selectedTank === 'planted' || selectedTank === 'freshwater' || selectedTank === 'brackish') && [0, 1, 2, 3].map(function (i) {
+                  var heights = [50, 35, 60, 40];
+                  return React.createElement("div", {
+                    key: 'plant-' + i,
+                    style: {
+                      position: 'absolute', bottom: '24px', left: (8 + i * 25) + '%',
+                      width: '8px', height: heights[i] + 'px', borderRadius: '4px 4px 0 0',
+                      background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)',
+                      opacity: 0.7, zIndex: 2,
+                      animation: 'pulse 4s ease-in-out ' + (i * 0.8) + 's infinite'
+                    }
+                  });
+                }),
+                // Coral for reef tanks
+                (selectedTank === 'reef' || selectedTank === 'invert') && [0, 1, 2].map(function (i) {
+                  var colors = ['#f472b6', '#fb923c', '#a78bfa'];
+                  return React.createElement("div", {
+                    key: 'coral-' + i,
+                    style: {
+                      position: 'absolute', bottom: '24px', left: (15 + i * 30) + '%',
+                      width: '20px', height: (25 + i * 8) + 'px', borderRadius: '8px 8px 0 0',
+                      background: colors[i], opacity: 0.6, zIndex: 2,
+                      animation: 'pulse 5s ease-in-out ' + (i * 1.2) + 's infinite'
+                    }
+                  });
+                }),
+                // Rocky substrate
+                React.createElement("div", {
+                  style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '28px', borderRadius: '0 0 12px 12px', zIndex: 3, background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(0deg, #92400e 0%, #b45309 40%, transparent 100%)' : 'linear-gradient(0deg, #92400e 0%, #d97706 40%, transparent 100%)' }
+                }),
+                // Pebbles on substrate
+                [0, 1, 2, 3, 4, 5, 6].map(function (i) {
+                  return React.createElement("div", {
+                    key: 'pebble-' + i,
+                    style: {
+                      position: 'absolute', bottom: (3 + (i % 3) * 4) + 'px', left: (5 + i * 13) + '%',
+                      width: (5 + (i % 3) * 3) + 'px', height: (4 + (i % 2) * 2) + 'px',
+                      borderRadius: '50%', background: i % 2 === 0 ? 'rgba(120,100,80,0.5)' : 'rgba(160,140,110,0.4)',
+                      zIndex: 4
+                    }
+                  });
+                }),
+                // Fish with smooth swimming animation
+                tankFish.map(function (fId, idx) {
+                  var sp = species.find(function (s) { return s.id === fId; });
+                  var yPos = 30 + (idx * 29 + idx * 7) % 150;
+                  var xPos = 5 + (idx * 31 + idx * idx * 11) % 85;
+                  var swimDuration = 3 + (idx % 3) * 1.5;
+                  var swimDelay = (idx * 0.9) % 4;
+                  var direction = idx % 2 === 0 ? 1 : -1;
+                  return React.createElement("div", {
+                    key: idx,
+                    style: {
+                      position: 'absolute', top: yPos + 'px', left: xPos + '%',
+                      cursor: 'pointer', fontSize: '28px', zIndex: 6, userSelect: 'none',
+                      transform: direction < 0 ? 'scaleX(-1)' : 'none',
+                      animation: 'aquaSwim ' + swimDuration + 's ease-in-out ' + swimDelay + 's infinite alternate',
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
+                      transition: 'transform 0.3s'
+                    },
+                    title: sp ? sp.name + ': ' + sp.fact : fId,
+                    onClick: function () {
+                      openAnatomy(fId);
+                    }
+                  }, sp ? sp.icon : '\uD83D\uDC1F',
+                    // Hunger bar under fish
+                    (() => {
+                      var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
+                      var stress = fishStress[fId] || 0;
+                      var barColor = hunger >= 80 ? '#ef4444' : hunger >= 50 ? '#f59e0b' : '#22c55e';
+                      return React.createElement("div", {
+                        style: { position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', width: '24px', height: '3px', background: 'rgba(0,0,0,0.2)', borderRadius: '2px', overflow: 'hidden' }
+                      },
+                        React.createElement("div", { style: { width: (100 - hunger) + '%', height: '100%', background: barColor, borderRadius: '2px', transition: 'width 0.5s, background 0.3s' } })
+                      );
+                    })()
+                  );
+                }),
+                // Animated bubbles
+                [0, 1, 2, 3, 4, 5, 6, 7].map(function (i) {
+                  var sizes = [3, 5, 4, 6, 3, 7, 4, 5];
+                  return React.createElement("div", {
+                    key: 'bubble-' + i,
+                    style: {
+                      position: 'absolute', left: (8 + i * 12) + '%',
+                      width: sizes[i] + 'px', height: sizes[i] + 'px',
+                      background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0.2))',
+                      borderRadius: '50%', zIndex: 5,
+                      animation: 'aquaBubble ' + (2 + i * 0.5) + 's ease-in-out ' + (i * 0.7) + 's infinite'
+                    }
+                  });
+                }),
+                // Day/night overlay
+                (simHour >= 20 || simHour < 6) && React.createElement("div", {
+                  style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(180deg, rgba(15,23,42,0.3) 0%, rgba(30,41,59,0.25) 50%, rgba(15,23,42,0.35) 100%)', zIndex: 7, pointerEvents: 'none', borderRadius: '16px', transition: 'opacity 0.5s' }
+                }),
+                // Tank label overlay
+                React.createElement("div", {
+                  style: { position: 'absolute', top: '8px', right: '10px', zIndex: 10, padding: '2px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)' }
+                },
+                  React.createElement("span", { style: { fontSize: '10px', color: 'rgba(255,255,255,0.8)', fontWeight: 'bold' } }, tank.name),
+                  React.createElement("span", { style: { fontSize: '9px', color: 'rgba(255,255,255,0.5)', marginLeft: '6px' } }, (simHour >= 20 || simHour < 6) ? '\uD83C\uDF19 Night' : '\u2600\uFE0F Day')
+                )
+              ),
+
+
+              // Fish stocking list
+              React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\u2795 Add Fish"),
+                React.createElement("div", { className: "flex flex-wrap gap-1" },
+                  species.map(function (sp) {
+                    return React.createElement("button", {
+                      key: sp.id,
+                      onClick: function () { addFish(sp.id); },
+                      className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-all",
+                      title: sp.fact
+                    }, sp.icon + " " + sp.name + " (" + sp.load + ")");
+                  })
+                ),
+                tankFish.length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1" },
+                  tankFish.map(function (fId, idx) {
+                    var sp = species.find(function (s) { return s.id === fId; });
+                    return React.createElement("span", {
+                      key: idx,
+                      onClick: function () { removeFish(idx); },
+                      className: "px-2 py-0.5 text-[10px] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
+                      title: "Click to remove"
+                    }, (sp ? sp.icon + " " + sp.name : fId) + " \u00D7");
+                  })
+                )
+              ),
+
+              // Action buttons
+              React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { className: "flex gap-2" },
+                  React.createElement("button", {
+                    onClick: function () {
+                      if (simRunning) {
+                        upd('simRunning', false);
+                      } else {
+                        upd('simRunning', true);
+                        var speed = simSpeed || 1;
+                        var interval = speed === 0 ? 99999 : speed === 1 ? 2000 : speed === 2 ? 1000 : 400;
+                        var iv = setInterval(function () {
+                          simStep();
+                        }, interval);
+                        setTimeout(function () { clearInterval(iv); upd('simRunning', false); }, 120000);
+                      }
+                    },
+                    className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-500 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")
+                  }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
+                  React.createElement("button", {
+                    onClick: doWaterChange,
+                    className: "px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-sm hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-200/60"
+                  }, "\uD83D\uDCA7 Water Change"),
+                  React.createElement("button", {
+                    onClick: feedFish,
+                    disabled: tankFish.length === 0,
+                    className: "px-4 py-2.5 font-bold rounded-xl text-sm transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
+                  }, "\uD83C\uDF7D\uFE0F Feed")
+                ),
+
+                // ── Feeding Impact Panel (slides in after feeding) ──
+                feedingLog && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200/60 animate-in slide-in-from-top duration-300" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+                    React.createElement("span", { className: "text-sm" }, "\uD83C\uDF7D\uFE0F"),
+                    React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Feeding Report"),
+                    React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[10px] text-slate-400" }, "\u2715")
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center mb-2" },
+                    React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
+                      React.createElement("div", { className: "text-[9px] text-slate-500" }, "Fish Fed"),
+                      React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
+                    ),
+                    React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
+                      React.createElement("div", { className: "text-[9px] text-slate-500" }, "Hunger \u2193"),
+                      React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
+                    ),
+                    React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
+                      React.createElement("div", { className: "text-[9px] text-slate-500" }, "NH\u2083 \u2191"),
+                      React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
+                    )
+                  ),
+                  feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[10px] text-red-700 font-bold mb-1" },
+                    "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
+                  ),
+                  React.createElement("p", { className: "text-[10px] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
+                )
+              ),
+
+              // ── Tank Health Score & Strategy Tips ──
+              (() => {
+                var health = getTankHealth();
+                var scoreColor = health.score >= 80 ? 'text-green-600' : health.score >= 50 ? 'text-amber-600' : 'text-red-600';
+                var scoreBg = health.score >= 80 ? 'from-green-50 to-emerald-50 border-green-200/60' : health.score >= 50 ? 'from-amber-50 to-orange-50 border-amber-200/60' : 'from-red-50 to-rose-50 border-red-200/60';
+                var barColor = health.score >= 80 ? 'bg-green-500' : health.score >= 50 ? 'bg-amber-500' : 'bg-red-500';
+                return React.createElement("div", { className: "bg-gradient-to-r " + scoreBg + " rounded-xl p-3 border shadow-sm" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm" }, health.score >= 80 ? '\uD83C\uDF1F' : health.score >= 50 ? '\u26A0\uFE0F' : '\uD83D\uDEA8'),
+                    React.createElement("span", { className: "text-xs font-bold " + scoreColor }, "Tank Health"),
+                    React.createElement("span", { className: "text-lg font-bold ml-auto " + scoreColor }, health.score + "/100")
+                  ),
+                  React.createElement("div", { className: "h-2.5 bg-white/50 rounded-full overflow-hidden mb-2" },
+                    React.createElement("div", { style: { width: health.score + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + barColor })
+                  ),
+                  React.createElement("div", { className: "space-y-1" },
+                    health.tips.map(function (tip, i) {
+                      return React.createElement("p", { key: i, className: "text-[10px] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
+                    })
+                  )
+                );
+              })(),
+
+              // ── Hunger Overview ──
+              tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83C\uDF7D\uFE0F Fish Hunger Status"),
+                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                  (() => {
+                    var seen = {};
+                    return tankFish.map(function (fId, idx) {
+                      var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
+                      var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
+                      var stress = fishStress[fId] || 0;
+                      var hungerColor = hunger >= 80 ? 'bg-red-500' : hunger >= 50 ? 'bg-amber-400' : 'bg-green-500';
+                      var hungerText = hunger >= 80 ? 'Starving!' : hunger >= 50 ? 'Hungry' : hunger >= 20 ? 'Satisfied' : 'Full';
+                      var hungerTextColor = hunger >= 80 ? 'text-red-600' : hunger >= 50 ? 'text-amber-600' : 'text-green-600';
+                      return React.createElement("div", { key: idx, className: "flex items-center gap-2 bg-slate-50 rounded-lg p-1.5" },
+                        React.createElement("span", { className: "text-sm" }, sp ? sp.icon : '\uD83D\uDC1F'),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "flex items-center justify-between mb-0.5" },
+                            React.createElement("span", { className: "text-[9px] font-bold text-slate-600 truncate" }, sp ? sp.name : fId),
+                            React.createElement("span", { className: "text-[9px] font-bold " + hungerTextColor }, hungerText)
+                          ),
+                          React.createElement("div", { className: "h-1.5 bg-slate-200 rounded-full overflow-hidden" },
+                            React.createElement("div", { style: { width: (100 - hunger) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hungerColor })
+                          )
+                        ),
+                        stress > 30 && React.createElement("span", { className: "text-[9px] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
+                      );
                     });
-                    var pathD = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y; }).join(' ');
-                    // Area fill
-                    var areaD = pathD + ' L ' + pts[pts.length - 1].x + ' ' + (H - pad) + ' L ' + pts[0].x + ' ' + (H - pad) + ' Z';
-                    return React.createElement("g", null,
-                      React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                      React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                      [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-                        var yVal = (minVal + rangeY * frac).toFixed(0);
-                        var yPos = (H - pad) - frac * (H - pad - 28);
-                        return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, yVal);
-                      }),
-                      React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
-                      React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round" }),
-                      pts.map(function (p, i) {
-                        return React.createElement("g", { key: 'lp' + i },
-                          React.createElement("circle", { cx: p.x, cy: p.y, r: 4, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
-                          React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
-                          React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
-                        );
-                      })
-                    );
-                  })(),
-
-                  // ── Histogram ──
-                  chartType === 'histogram' && dataRows.length > 0 && (() => {
-                    // For histogram, bin the values
-                    var numBins = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(values.length))));
-                    var range = maxVal - minVal || 1;
-                    var binW = range / numBins;
-                    var bins = [];
-                    for (var b = 0; b < numBins; b++) bins.push({ lo: minVal + b * binW, hi: minVal + (b + 1) * binW, count: 0 });
-                    values.forEach(function (v) {
-                      var bi = Math.min(numBins - 1, Math.floor((v - minVal) / binW));
-                      bins[bi].count++;
-                    });
-                    var maxCount = Math.max.apply(null, bins.map(function (b) { return b.count; }).concat([1]));
-                    var bw = (W - 2 * pad) / numBins - 2;
-                    return React.createElement("g", null,
-                      React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                      React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                      bins.map(function (bin, i) {
-                        var bh = maxCount > 0 ? (bin.count / maxCount) * (H - pad - 28) : 0;
-                        var x = pad + i * ((W - 2 * pad) / numBins) + 1;
-                        var y = (H - pad) - bh;
-                        return React.createElement("g", { key: 'hb' + i },
-                          React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
-                          bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _text } }, bin.count),
-                          React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
-                        );
-                      })
-                    );
                   })()
                 )
               ),
 
-              // ── Preset Datasets ──
-              React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                React.createElement("span", { className: "text-[10px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
-                PRESETS.map(function (p, i) {
-                  return React.createElement("button", {
-                    key: i,
-                    onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); },
-                    className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:scale-105",
-                    style: { background: _card, border: '1px solid ' + _border, color: _accent }
-                  }, p.label);
-                })
-              ),
-
-              // ── CSV Import ──
-              React.createElement("div", { className: "flex gap-2" },
-                React.createElement("button", {
-                  onClick: function () {
-                    var el = document.createElement('input');
-                    el.type = 'file';
-                    el.accept = '.csv,.txt';
-                    el.onchange = function (e) {
-                      var file = e.target.files[0];
-                      if (file) {
-                        var reader = new FileReader();
-                        reader.onload = function (ev) { handleCSVImport(ev.target.result); };
-                        reader.readAsText(file);
-                      }
-                    };
-                    el.click();
-                  },
-                  className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
-                  style: { background: _card, border: '1px solid ' + _border, color: _accent }
-                }, "📂 Import CSV"),
-                React.createElement("button", {
-                  onClick: function () {
-                    var csv = 'Label,Value\n' + dataRows.map(function (r) { return r.label + ',' + r.value; }).join('\n');
-                    var blob = new Blob([csv], { type: 'text/csv' });
-                    var url = URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.href = url; a.download = (chartTitle || 'data') + '.csv';
-                    a.click(); URL.revokeObjectURL(url);
-                  },
-                  className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
-                  style: { background: _card, border: '1px solid ' + _border, color: _accent }
-                }, "💾 Export CSV")
-              ),
-
-              // ── Data Editor ──
-              React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
-                React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📝 Data (" + dataRows.length + " items)"),
-                // Add row
-                React.createElement("div", { className: "flex gap-2 mb-2" },
-                  React.createElement("input", {
-                    type: "text", placeholder: "Label",
-                    value: editRow.label,
-                    onChange: function (e) { updDS('editRow', { label: e.target.value, value: editRow.value }); },
-                    className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
-                    style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
-                  }),
-                  React.createElement("input", {
-                    type: "number", placeholder: "Value",
-                    value: editRow.value,
-                    onChange: function (e) { updDS('editRow', { label: editRow.label, value: e.target.value }); },
-                    onKeyDown: function (e) {
-                      if (e.key === 'Enter' && editRow.label && editRow.value !== '') {
-                        updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
-                        updDS('editRow', { label: '', value: '' });
-                      }
-                    },
-                    className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
-                    style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' }
-                  }),
-                  React.createElement("button", {
-                    onClick: function () {
-                      if (editRow.label && editRow.value !== '') {
-                        updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
-                        updDS('editRow', { label: '', value: '' });
-                      }
-                    },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-                    style: { background: _btnBg, color: '#fff' }
-                  }, "+ Add")
+              // ── AI Event Decision Modal ──
+              aiEvent && !aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 border-blue-300/60 shadow-xl shadow-blue-500/10" },
+                // Header bar with category color
+                React.createElement("div", { className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 flex items-center gap-2" },
+                  React.createElement("span", { className: "text-lg" }, aiEvent.icon || '\uD83E\uDD16'),
+                  React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title),
+                  aiEvent.category && React.createElement("span", { className: "text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
+                  React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
                 ),
-                // Data rows
-                React.createElement("div", { className: "max-h-28 overflow-y-auto space-y-1" },
-                  dataRows.map(function (row, i) {
-                    return React.createElement("div", { key: i, className: "flex items-center gap-2 py-1 px-2 rounded-lg text-xs", style: { background: _svgBg } },
-                      React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: COLORS[i % COLORS.length] } }),
-                      React.createElement("span", { className: "flex-1 font-bold" }, row.label),
-                      React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
-                      React.createElement("button", {
-                        onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
-                        className: "text-red-400 hover:text-red-600 font-bold text-xs"
-                      }, "✕")
-                    );
-                  })
-                ),
-                // Clear
-                dataRows.length > 0 && React.createElement("button", {
-                  onClick: function () { updDS('dataRows', []); },
-                  className: "mt-2 px-3 py-1 rounded-lg text-[10px] font-bold",
-                  style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
-                }, "🗑 Clear All")
-              ),
-
-              // ── Statistics Panel ──
-              showStats && dataRows.length > 0 && React.createElement("div", { className: "grid grid-cols-4 gap-2" },
-                [
-                  { label: 'Sum', val: total.toFixed(1) },
-                  { label: 'Mean', val: mean.toFixed(1) },
-                  { label: 'Median', val: median.toFixed(1) },
-                  { label: 'Std Dev', val: stdDev.toFixed(1) }
-                ].map(function (stat, i) {
-                  return React.createElement("div", { key: i, className: "p-2 rounded-xl text-center", style: { background: _card, border: '1px solid ' + _border } },
-                    React.createElement("div", { className: "text-[9px] font-bold uppercase", style: { color: _muted } }, stat.label),
-                    React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: _accent } }, stat.val)
-                  );
-                })
-              )
-            );
-          })(),
-
-          // ═══════════════════════════════════════════════════════════════
-          // ██  ALGEBRA SOLVER (CAS) — AI-Powered Step-by-Step Math      ██
-          // ═══════════════════════════════════════════════════════════════
-          stemLabTab === 'explore' && stemLabTool === 'algebraCAS' && (() => {
-            var d = (labToolData && labToolData._algebraCAS) || {};
-            var updCAS = function (key, val) {
-              setLabToolData(function (prev) {
-                var cas = Object.assign({}, (prev && prev._algebraCAS) || {});
-                cas[key] = val;
-                return Object.assign({}, prev, { _algebraCAS: cas });
-              });
-            };
-            var expression = d.expression || '';
-            var mode = d.mode || 'solve';
-            var result = d.result || null;
-            var isLoading = d.isLoading || false;
-            var history = d.history || [];
-            var difficulty = d.difficulty || 'elementary';
-            var practiceMode = d.practiceMode || false;
-            var practiceQ = d.practiceQ || null;
-            var practiceAnswer = d.practiceAnswer || '';
-            var practiceFeedback = d.practiceFeedback || null;
-
-            var MODES = [
-              { id: 'solve', label: '🔍 Solve', desc: 'Find the value of a variable' },
-              { id: 'factor', label: '🧩 Factor', desc: 'Factor an expression' },
-              { id: 'simplify', label: '✨ Simplify', desc: 'Simplify an expression' },
-              { id: 'expand', label: '📐 Expand', desc: 'Expand & distribute' }
-            ];
-
-            var DIFFICULTIES = [
-              { id: 'elementary', label: 'Elementary', desc: 'Single variable, basic operations' },
-              { id: 'middle', label: 'Middle School', desc: 'Quadratics, systems, fractions' },
-              { id: 'advanced', label: 'Advanced', desc: 'Rational, radical, polynomial' }
-            ];
-
-            var EXAMPLES = {
-              solve: ['2x + 5 = 13', 'x² - 4x + 3 = 0', '3(x - 2) = 15'],
-              factor: ['x² - 9', 'x² + 5x + 6', '2x² - 8'],
-              simplify: ['(3x² + 6x) / 3x', '2(x + 3) - (x - 1)', '√(50)'],
-              expand: ['(x + 3)(x - 2)', '(2x + 1)²', '3(x² - 4x + 1)']
-            };
-
-            var handleSolve = function () {
-              if (!expression.trim() || !callGemini || isLoading) return;
-              updCAS('isLoading', true);
-              updCAS('result', null);
-              var modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
-              var prompt = 'You are a math CAS (Computer Algebra System) tutor for a ' + _stemGrade + ' student.\n\n' +
-                'MODE: ' + modeLabel + '\n' +
-                'EXPRESSION: ' + expression.trim() + '\n\n' +
-                'Instructions:\n' +
-                '1. ' + modeLabel + ' this expression step by step.\n' +
-                '2. For EACH step, show the work AND label the algebraic rule used in [brackets].\n' +
-                '   Rules include: [Distributive Property], [Combining Like Terms], [Addition Property of Equality],\n' +
-                '   [Division Property of Equality], [Zero Product Property], [Quadratic Formula], [Factoring],\n' +
-                '   [Difference of Squares], [Perfect Square Trinomial], [GCF Factoring], [Simplification], etc.\n' +
-                '3. Format your response as:\n' +
-                '   STEP 1: (show work) [Rule Name]\n' +
-                '   STEP 2: (show work) [Rule Name]\n' +
-                '   ...\n' +
-                '   ANSWER: (final result)\n\n' +
-                'Be mathematically rigorous. Show every step clearly. Keep explanations concise but educational.';
-
-              callGemini(prompt).then(function (res) {
-                updCAS('isLoading', false);
-                if (res) {
-                  updCAS('result', res);
-                  var newH = (history || []).slice(-9);
-                  newH.push({ expr: expression, mode: mode, result: res, ts: Date.now() });
-                  updCAS('history', newH);
-                  awardStemXP('algebraCAS', 5, 'Solved: ' + expression.trim().substring(0, 30));
-                }
-              }).catch(function (e) {
-                updCAS('isLoading', false);
-                updCAS('result', 'Error: ' + (e.message || 'Failed to process'));
-              });
-            };
-
-            var handlePracticeGenerate = function () {
-              if (!callGemini || isLoading) return;
-              updCAS('isLoading', true);
-              updCAS('practiceFeedback', null);
-              updCAS('practiceAnswer', '');
-              var diffDesc = difficulty === 'elementary' ? 'single-variable linear equation (e.g. 3x + 7 = 22)' :
-                difficulty === 'middle' ? 'quadratic or two-step equation (e.g. x² + 3x - 10 = 0)' :
-                  'rational, radical, or multi-step polynomial equation';
-              var prompt = 'Generate ONE algebra practice problem at the ' + difficulty + ' level.\n' +
-                'Type: ' + diffDesc + '\n' +
-                'Format your response as EXACTLY:\n' +
-                'PROBLEM: (the equation)\n' +
-                'ANSWER: (the correct answer, simplified)\n' +
-                'HINT: (a one-sentence hint without giving away the answer)\n\n' +
-                'Do not include any other text.';
-
-              callGemini(prompt).then(function (res) {
-                updCAS('isLoading', false);
-                if (res) {
-                  var pMatch = res.match(/PROBLEM:\s*(.+)/i);
-                  var aMatch = res.match(/ANSWER:\s*(.+)/i);
-                  var hMatch = res.match(/HINT:\s*(.+)/i);
-                  updCAS('practiceQ', {
-                    problem: pMatch ? pMatch[1].trim() : res,
-                    answer: aMatch ? aMatch[1].trim() : '',
-                    hint: hMatch ? hMatch[1].trim() : 'Think step by step!'
-                  });
-                }
-              }).catch(function () { updCAS('isLoading', false); });
-            };
-
-            var handlePracticeCheck = function () {
-              if (!practiceQ || !practiceAnswer.trim()) return;
-              updCAS('isLoading', true);
-              var prompt = 'A student is solving this algebra problem:\n' +
-                'PROBLEM: ' + practiceQ.problem + '\n' +
-                'CORRECT ANSWER: ' + practiceQ.answer + '\n' +
-                'STUDENT ANSWER: ' + practiceAnswer.trim() + '\n\n' +
-                'Respond in this format:\n' +
-                'CORRECT: yes/no\n' +
-                'FEEDBACK: (1-2 sentences explaining if they are right or what they did wrong, be encouraging)\n' +
-                'If wrong, show the correct step-by-step solution briefly.';
-
-              callGemini(prompt).then(function (res) {
-                updCAS('isLoading', false);
-                if (res) {
-                  var isCorrect = /CORRECT:\s*yes/i.test(res);
-                  updCAS('practiceFeedback', { correct: isCorrect, text: res });
-                  if (isCorrect) awardStemXP('algebraCAS', 10, 'Practice problem correct');
-                }
-              }).catch(function () { updCAS('isLoading', false); });
-            };
-
-            // ── Dark theme styles ──
-            var _bg = isDark || isContrast ? '#1e1b4b' : '#fffbeb';
-            var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
-            var _card = isDark || isContrast ? 'rgba(99,102,241,0.08)' : 'rgba(245,158,11,0.06)';
-            var _border = isDark || isContrast ? 'rgba(99,102,241,0.2)' : 'rgba(245,158,11,0.2)';
-            var _accent = isDark || isContrast ? '#a5b4fc' : '#d97706';
-            var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
-            var _btnBg = isDark || isContrast ? '#6366f1' : '#f59e0b';
-            var _btnText = isDark || isContrast ? '#fff' : '#fff';
-
-            return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
-              // ── Header ──
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("div", null,
-                  React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "🧮 Algebra Solver"),
-                  React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Step-by-step symbolic math powered by AI")
-                ),
-                React.createElement("div", { className: "flex gap-2" },
-                  React.createElement("button", {
-                    onClick: function () { updCAS('practiceMode', !practiceMode); updCAS('result', null); updCAS('practiceFeedback', null); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                    style: { background: practiceMode ? _btnBg : _card, color: practiceMode ? _btnText : _text, border: '1px solid ' + _border }
-                  }, practiceMode ? '📝 Practice Mode' : '🎯 Practice Mode'),
-                  React.createElement("button", {
-                    onClick: function () { setStemLabTool(null); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-                    style: { background: _card, border: '1px solid ' + _border, color: _text }
-                  }, "← Back")
-                )
-              ),
-
-              // ── Practice Mode ──
-              practiceMode ? React.createElement("div", { className: "space-y-4" },
-                // Difficulty Selector
-                React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                  DIFFICULTIES.map(function (df) {
-                    return React.createElement("button", {
-                      key: df.id,
-                      onClick: function () { updCAS('difficulty', df.id); updCAS('practiceQ', null); updCAS('practiceFeedback', null); },
-                      className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
-                      style: { background: difficulty === df.id ? _btnBg : _card, color: difficulty === df.id ? _btnText : _text, border: '1px solid ' + _border }
-                    }, df.label);
-                  })
-                ),
-                // Generate / Current Problem
-                !practiceQ ? React.createElement("div", { className: "text-center py-8 rounded-2xl", style: { background: _card, border: '1px solid ' + _border } },
-                  React.createElement("p", { className: "text-sm mb-4", style: { color: _muted } }, "Generate a practice problem at the " + difficulty + " level"),
-                  React.createElement("button", {
-                    onClick: handlePracticeGenerate,
-                    disabled: isLoading,
-                    className: "px-6 py-3 rounded-xl text-sm font-bold transition-all",
-                    style: { background: _btnBg, color: _btnText, opacity: isLoading ? 0.5 : 1 }
-                  }, isLoading ? '⏳ Generating...' : '🎲 Generate Problem')
-                ) : React.createElement("div", { className: "space-y-3" },
-                  // Problem display
-                  React.createElement("div", { className: "p-4 rounded-2xl", style: { background: _card, border: '2px solid ' + _accent } },
-                    React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📋 PROBLEM"),
-                    React.createElement("div", { className: "text-xl font-mono font-bold text-center py-3" }, practiceQ.problem),
-                    React.createElement("p", { className: "text-xs text-center mt-2", style: { color: _muted } }, "💡 Hint: " + practiceQ.hint)
-                  ),
-                  // Answer input
-                  React.createElement("div", { className: "flex gap-2" },
-                    React.createElement("input", {
-                      type: "text",
-                      value: practiceAnswer,
-                      onChange: function (e) { updCAS('practiceAnswer', e.target.value); },
-                      onKeyDown: function (e) { if (e.key === 'Enter') handlePracticeCheck(); },
-                      placeholder: "Type your answer...",
-                      className: "flex-1 px-4 py-3 rounded-xl text-sm font-mono",
-                      style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
-                    }),
-                    React.createElement("button", {
-                      onClick: handlePracticeCheck,
-                      disabled: isLoading || !practiceAnswer.trim(),
-                      className: "px-5 py-3 rounded-xl text-sm font-bold transition-all",
-                      style: { background: _btnBg, color: _btnText, opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1 }
-                    }, isLoading ? '⏳' : '✅ Check')
-                  ),
-                  // Feedback
-                  practiceFeedback && React.createElement("div", {
-                    className: "p-4 rounded-2xl",
-                    style: { background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)') }
-                  },
-                    React.createElement("div", { className: "text-sm font-bold mb-2" }, practiceFeedback.correct ? '🎉 Correct!' : '❌ Not quite...'),
-                    React.createElement("div", { className: "text-xs whitespace-pre-wrap leading-relaxed" }, practiceFeedback.text.replace(/^CORRECT:.*\n?/im, '').replace(/^FEEDBACK:\s*/im, '').trim())
-                  ),
-                  // Next problem button
-                  React.createElement("button", {
-                    onClick: function () { updCAS('practiceQ', null); updCAS('practiceFeedback', null); updCAS('practiceAnswer', ''); handlePracticeGenerate(); },
-                    className: "w-full py-2 rounded-xl text-xs font-bold transition-all",
-                    style: { background: _card, border: '1px solid ' + _border, color: _text }
-                  }, "🔄 New Problem")
-                )
-              ) :
-                // ── Solver Mode ──
-                React.createElement("div", { className: "space-y-4" },
-                  // Mode selector
-                  React.createElement("div", { className: "grid grid-cols-4 gap-2" },
-                    MODES.map(function (m) {
-                      return React.createElement("button", {
-                        key: m.id,
-                        onClick: function () { updCAS('mode', m.id); updCAS('result', null); },
-                        className: "p-2 rounded-xl text-center transition-all",
-                        style: { background: mode === m.id ? _btnBg : _card, color: mode === m.id ? _btnText : _text, border: '1px solid ' + (mode === m.id ? _accent : _border) }
-                      },
-                        React.createElement("div", { className: "text-lg" }, m.label.split(' ')[0]),
-                        React.createElement("div", { className: "text-[10px] font-bold mt-0.5" }, m.label.split(' ').slice(1).join(' '))
-                      );
-                    })
-                  ),
-                  // Input
-                  React.createElement("div", { className: "flex gap-2" },
-                    React.createElement("input", {
-                      type: "text",
-                      value: expression,
-                      onChange: function (e) { updCAS('expression', e.target.value); },
-                      onKeyDown: function (e) { if (e.key === 'Enter') handleSolve(); },
-                      placeholder: 'Enter expression, e.g. ' + (EXAMPLES[mode] || ['2x + 5 = 13'])[0],
-                      className: "flex-1 px-4 py-3 rounded-xl text-sm font-mono",
-                      style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' }
-                    }),
-                    React.createElement("button", {
-                      onClick: handleSolve,
-                      disabled: isLoading || !expression.trim(),
-                      className: "px-5 py-3 rounded-xl text-sm font-bold transition-all",
-                      style: { background: _btnBg, color: _btnText, opacity: (isLoading || !expression.trim()) ? 0.5 : 1 }
-                    }, isLoading ? '⏳ Computing...' : '▶ ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
-                  ),
-                  // Quick examples
-                  React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                    React.createElement("span", { className: "text-[10px] font-bold", style: { color: _muted } }, "TRY:"),
-                    (EXAMPLES[mode] || []).map(function (ex, i) {
-                      return React.createElement("button", {
-                        key: i,
-                        onClick: function () { updCAS('expression', ex); },
-                        className: "px-2 py-1 rounded-lg text-[10px] font-mono transition-all hover:scale-105",
-                        style: { background: _card, border: '1px solid ' + _border, color: _accent }
-                      }, ex);
-                    })
-                  ),
-                  // Result
-                  result && React.createElement("div", { className: "p-4 rounded-2xl", style: { background: _card, border: '1px solid ' + _accent } },
-                    React.createElement("div", { className: "text-xs font-bold mb-3 flex items-center gap-2", style: { color: _accent } }, "📋 Step-by-Step Solution"),
-                    React.createElement("div", { className: "text-sm whitespace-pre-wrap leading-relaxed font-mono" },
-                      result.split('\n').map(function (line, i) {
-                        var isStep = /^STEP\s+\d+/i.test(line.trim());
-                        var isAnswer = /^ANSWER:/i.test(line.trim());
-                        var ruleMatch = line.match(/\[([^\]]+)\]/);
-                        if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-3 rounded-xl text-base font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, "✅ " + line.trim());
-                        if (isStep) return React.createElement("div", { key: i, className: "py-1.5 flex items-start gap-2" },
-                          React.createElement("span", { className: "flex-1" }, ruleMatch ? line.replace(ruleMatch[0], '').trim() : line.trim()),
-                          ruleMatch && React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap", style: { background: 'rgba(99,102,241,0.15)', color: isDark || isContrast ? '#a5b4fc' : '#6366f1', border: '1px solid rgba(99,102,241,0.2)' } }, ruleMatch[1])
-                        );
-                        return line.trim() ? React.createElement("div", { key: i, className: "py-0.5" }, line) : null;
-                      })
+                // Description
+                React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-blue-50 to-white" },
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" }, aiEvent.desc),
+                  // Educational note
+                  aiEvent.educational && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2.5 mb-3 border border-indigo-100" },
+                    React.createElement("div", { className: "flex items-start gap-1.5" },
+                      React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
+                      React.createElement("p", { className: "text-[10px] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
                     )
                   ),
-                  // History
-                  history.length > 0 && React.createElement("div", null,
-                    React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _muted } }, "📜 Recent (last " + history.length + ")"),
-                    React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                      history.slice().reverse().slice(0, 5).map(function (h, i) {
-                        return React.createElement("button", {
-                          key: i,
-                          onClick: function () { updCAS('expression', h.expr); updCAS('mode', h.mode); updCAS('result', h.result); },
-                          className: "px-2 py-1 rounded-lg text-[10px] font-mono transition-all hover:scale-105",
-                          style: { background: _card, border: '1px solid ' + _border, color: _text }
-                        }, h.mode + ': ' + h.expr.substring(0, 20) + (h.expr.length > 20 ? '...' : ''));
-                      })
-                    )
-                  )
-                )
-            );
-          })(),
-
-
-          // ═══════════════════════════════════════════════════════════════
-          // ██  AQUACULTURE & OCEAN ECOLOGY LAB                         ██
-          // ═══════════════════════════════════════════════════════════════
-          stemLabTab === 'explore' && stemLabTool === 'aquarium' && (() => {
-            var d = (labToolData && labToolData._aquarium) || {};
-            var upd = function (key, val) {
-              setLabToolData(function (prev) {
-                var aq = Object.assign({}, (prev && prev._aquarium) || {});
-                aq[key] = val;
-                return Object.assign({}, prev, { _aquarium: aq });
-              });
-            };
-            var updMulti = function (obj) {
-              setLabToolData(function (prev) {
-                var aq = Object.assign({}, (prev && prev._aquarium) || {});
-                Object.keys(obj).forEach(function (k) { aq[k] = obj[k]; });
-                return Object.assign({}, prev, { _aquarium: aq });
-              });
-            };
-
-            var mode = d.mode || 'tank';
-
-            // ── Inject aquarium CSS animations ──
-            if (!document.getElementById('aqua-css')) {
-              var style = document.createElement('style');
-              style.id = 'aqua-css';
-              style.textContent = [
-                '@keyframes aquaSwim { 0% { transform: translateX(0) translateY(0); } 25% { transform: translateX(12px) translateY(-4px); } 50% { transform: translateX(-8px) translateY(3px); } 75% { transform: translateX(6px) translateY(-2px); } 100% { transform: translateX(0) translateY(0); } }',
-                '@keyframes aquaBubble { 0% { bottom: 30px; opacity: 0.6; } 50% { opacity: 0.8; } 100% { bottom: 220px; opacity: 0; } }',
-                '@keyframes aquaWave { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }',
-                '@keyframes oceanPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
-                '.aqua-fish:hover { transform: scale(1.3) !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) !important; }',
-                '@keyframes aiEventSlideIn { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
-                '@keyframes aiEventPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.3); } 50% { box-shadow: 0 0 20px 4px rgba(59,130,246,0.15); } }',
-                '@keyframes aiEventFadeOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }',
-                '@keyframes xpPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }',
-                '.ai-event-card { animation: aiEventSlideIn 0.4s ease-out, aiEventPulse 3s ease-in-out 0.5s infinite; }',
-                '.ai-event-choice:hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }',
-                '.ai-event-choice { transition: all 0.2s ease; }'
-              ].join('\n');
-              document.head.appendChild(style);
-            }
-            // ═══ ANATOMY VIEWER SYSTEM ═══
-            var BODY_PLANS = {
-              fish: {
-                label: 'Bony Fish (Osteichthyes)',
-                svg: function (w, h, color) {
-                  var c1 = color || '#22d3ee', c2 = color || '#0891b2';
-                  return '<svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<linearGradient id="fishG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
-                    '<linearGradient id="fishBelly" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c2 + '"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>' +
-                    '</defs>' +
-                    '<path d="M55,130 Q65,75 110,65 Q160,50 210,55 Q270,58 310,75 Q340,85 355,110 Q360,130 355,150 Q340,175 310,185 Q270,200 210,205 Q160,210 110,195 Q65,185 55,130Z" fill="url(#fishG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
-                    '<path d="M55,130 Q65,145 110,170 Q160,190 210,193 Q270,195 310,185 Q340,175 355,150 Q360,130 355,150" fill="url(#fishBelly)" opacity="0.4"/>' +
-                    '<path d="M350,125 Q370,115 400,90 Q415,80 420,85 L420,95 Q418,100 410,110 Q395,125 380,130 Q395,135 410,150 Q418,160 420,165 L420,175 Q415,180 400,170 Q370,145 350,135" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.9"/>' +
-                    '<line x1="400" y1="93" x2="400" y2="167" stroke="' + c2 + '" stroke-width="0.8" opacity="0.5"/>' +
-                    '<line x1="390" y1="100" x2="390" y2="160" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
-                    '<line x1="380" y1="107" x2="380" y2="153" stroke="' + c2 + '" stroke-width="0.5" opacity="0.3"/>' +
-                    '<path d="M180,58 Q185,38 195,20 Q210,5 225,10 Q235,15 240,25 Q248,40 250,60" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
-                    '<line x1="195" y1="55" x2="210" y2="18" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
-                    '<line x1="210" y1="55" x2="220" y2="14" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
-                    '<line x1="225" y1="56" x2="233" y2="17" stroke="' + c2 + '" stroke-width="0.6" opacity="0.4"/>' +
-                    '<path d="M215,200 Q220,220 225,235 Q230,245 240,248 Q245,245 248,235 Q250,220 250,200" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.75"/>' +
-                    '<path d="M270,198 Q275,215 280,225 Q285,230 290,228 Q293,222 295,210 Q296,200 295,195" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7"/>' +
-                    '<path d="M120,165 Q105,178 92,188 Q85,192 88,195 Q95,195 108,188 Q125,178 135,170" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.8" transform="rotate(-10,120,175)"/>' +
-                    '<path d="M138,170 Q128,182 118,190 Q112,193 115,196 Q120,196 130,190 Q142,182 148,175" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7" transform="rotate(-5,138,180)"/>' +
-                    '<circle cx="88" cy="118" r="16" fill="white" stroke="#334155" stroke-width="2"/>' +
-                    '<circle cx="92" cy="118" r="9" fill="#1e293b"/>' +
-                    '<circle cx="95" cy="115" r="3" fill="white" opacity="0.8"/>' +
-                    '<path d="M55,128 Q48,125 40,124" stroke="' + c2 + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M118,90 Q113,120 118,150" stroke="' + c2 + '" fill="none" stroke-width="3" stroke-linecap="round" opacity="0.6"/>' +
-                    '<path d="M123,93 Q118,120 123,147" stroke="' + c2 + '" fill="none" stroke-width="2" stroke-linecap="round" opacity="0.4"/>' +
-                    '<path d="M130,110 L340,110" stroke="' + c2 + '" fill="none" stroke-width="1" stroke-dasharray="6,4" opacity="0.35"/>' +
-                    '<path d="M130,115 L340,115" stroke="' + c2 + '" fill="none" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.2"/>' +
-                    '<ellipse cx="210" cy="100" rx="45" ry="12" fill="rgba(255,255,255,0.08)" stroke="' + c2 + '" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.5"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Dorsal Fin', x: 48, y: 5, desc: 'Stabilizes the fish during swimming, preventing rolling. Contains bony spines (rays) connected by thin membrane. Erected when alarmed.' },
-                  { name: 'Caudal Fin (Tail)', x: 93, y: 48, desc: 'Primary propulsion organ. Shape determines swimming style — forked tails are built for speed, rounded for maneuverability.' },
-                  { name: 'Pectoral Fins', x: 26, y: 68, desc: 'Paired fins used for steering, braking, and hovering. Act like hydrofoils. Can be fanned out to appear larger to rivals.' },
-                  { name: 'Anal/Pelvic Fins', x: 53, y: 85, desc: 'Ventral stabilizers that prevent pitching and yawing. Pelvic fins evolved from ancestral limb buds.' },
-                  { name: 'Gill Cover (Operculum)', x: 27, y: 42, desc: 'Bony plate protecting delicate gill filaments. Pumps water over gills by rhythmically opening and closing.' },
-                  { name: 'Lateral Line', x: 58, y: 42, desc: 'A row of sensory pores detecting vibrations and pressure changes. Allows fish to sense movement, currents, and obstacles in total darkness.' },
-                  { name: 'Eye', x: 19, y: 44, desc: 'Spherical lens focuses light. Most fish see in color and some perceive UV light. No eyelids — cornea is bathed in water.' },
-                  { name: 'Swim Bladder (internal)', x: 48, y: 38, desc: 'Gas-filled organ for buoyancy control. Fish add or remove gas to hover at any depth without expending energy.' },
-                  { name: 'Scales & Mucus', x: 70, y: 55, desc: 'Overlapping cycloid or ctenoid scales covered in antibacterial mucus. Reduces hydrodynamic drag by up to 65%.' }
-                ]
-              },
-              shark: {
-                label: 'Cartilaginous Fish (Chondrichthyes)',
-                svg: function (w, h, color) {
-                  return '<svg viewBox="0 0 460 230" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<linearGradient id="sharkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#64748b"/><stop offset="50%" stop-color="#475569"/><stop offset="100%" stop-color="#cbd5e1"/></linearGradient>' +
-                    '</defs>' +
-                    '<path d="M30,115 Q45,85 75,78 Q120,65 180,68 Q250,62 310,78 Q350,88 380,98 Q400,105 410,105 Q430,90 445,70 L448,72 Q445,85 440,100 Q438,110 440,118 Q445,135 448,148 L445,150 Q430,130 410,115 Q400,115 380,122 Q350,132 310,142 Q250,158 180,155 Q120,155 75,142 Q45,135 30,115Z" fill="url(#sharkG)" stroke="#334155" stroke-width="2.5"/>' +
-                    '<path d="M30,115 Q45,130 75,140 Q120,152 180,155 Q250,158 310,142 Q350,132 380,122 Q400,115 410,115" fill="#e2e8f0" opacity="0.4"/>' +
-                    '<path d="M230,68 Q232,42 238,22 Q244,8 252,5 Q258,8 260,18 Q264,35 264,68" fill="#475569" stroke="#334155" stroke-width="2"/>' +
-                    '<line x1="240" y1="65" x2="248" y2="12" stroke="#334155" stroke-width="0.6" opacity="0.4"/>' +
-                    '<line x1="250" y1="65" x2="255" y2="10" stroke="#334155" stroke-width="0.6" opacity="0.4"/>' +
-                    '<path d="M330,78 Q335,68 340,62 Q344,60 347,62 Q348,68 346,78" fill="#475569" stroke="#334155" stroke-width="1.2" opacity="0.7"/>' +
-                    '<path d="M120,145 Q108,160 98,170 Q92,172 93,168 Q97,158 108,145 Q115,140 120,142" fill="#64748b" stroke="#334155" stroke-width="1.2" opacity="0.7"/>' +
-                    '<path d="M135,148 Q128,160 122,168 Q118,170 119,166 Q122,158 130,148" fill="#64748b" stroke="#334155" stroke-width="1" opacity="0.6"/>' +
-                    '<ellipse cx="68" cy="105" r="8" ry="6" fill="white" stroke="#1e293b" stroke-width="1.5"/>' +
-                    '<circle cx="70" cy="105" r="3.5" fill="#0f172a"/>' +
-                    '<path d="M30,112 Q22,110 15,110" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M30,118 Q22,120 15,120" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-                    '<line x1="105" y1="90" x2="105" y2="80" stroke="#334155" stroke-width="1.8" stroke-linecap="round"/>' +
-                    '<line x1="115" y1="88" x2="115" y2="78" stroke="#334155" stroke-width="1.8" stroke-linecap="round"/>' +
-                    '<line x1="125" y1="86" x2="125" y2="77" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>' +
-                    '<line x1="135" y1="84" x2="135" y2="76" stroke="#334155" stroke-width="1.4" stroke-linecap="round"/>' +
-                    '<line x1="145" y1="82" x2="145" y2="75" stroke="#334155" stroke-width="1.2" stroke-linecap="round"/>' +
-                    '<circle cx="45" cy="108" r="2" fill="#475569" opacity="0.5"/>' +
-                    '<circle cx="40" cy="112" r="1.5" fill="#475569" opacity="0.4"/>' +
-                    '<circle cx="50" cy="105" r="1.5" fill="#475569" opacity="0.4"/>' +
-                    '<circle cx="38" cy="106" r="1" fill="#475569" opacity="0.3"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Dorsal Fin', x: 53, y: 3, desc: 'The iconic triangular fin provides stability. Made entirely of cartilage — sharks have no true bones anywhere in their body.' },
-                  { name: 'Gill Slits (5)', x: 27, y: 36, desc: 'Five exposed gill slits with no protective cover. Sharks must swim to push water over gills — they cannot pump water like bony fish.' },
-                  { name: 'Ampullae of Lorenzini', x: 9, y: 46, desc: 'Jelly-filled pores on the snout that detect electrical fields as weak as 5 nanovolts — enough to sense a prey heartbeat buried in sand.' },
-                  { name: 'Heterocercal Tail', x: 95, y: 32, desc: 'Upper lobe is longer, generating upward lift as the shark swims. This compensates for the lack of a swim bladder.' },
-                  { name: 'Pectoral Fins', x: 26, y: 62, desc: 'Rigid, wing-like fins that generate lift. Unlike bony fish, shark pectoral fins cannot fold flat — they act as airplane wings.' },
-                  { name: 'Dermal Denticles', x: 62, y: 55, desc: 'Tooth-like scales (placoid scales) that channel water flow. Surface texture reduces drag by 8% — inspired NASA swimsuit designs.' },
-                  { name: 'Cartilage Skeleton', x: 45, y: 50, desc: 'Skeleton is 100% cartilage — half the density of bone. This makes sharks lighter and more agile, but fossils only preserve teeth and spines.' },
-                  { name: 'Replaceable Teeth', x: 5, y: 50, desc: 'Teeth grow in rows on a conveyor-belt jaw. A single shark may produce 30,000+ teeth in its lifetime, replacing them every 1-2 weeks.' }
-                ]
-              },
-              jellyfish: {
-                label: 'Cnidarian (Medusa Form)',
-                svg: function (w, h, color) {
-                  var c1 = color || '#c4b5fd', c2 = color || '#8b5cf6';
-                  return '<svg viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<radialGradient id="jellyG" cx="50%" cy="40%"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.3"/><stop offset="60%" stop-color="' + c1 + '" stop-opacity="0.5"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.7"/></radialGradient>' +
-                    '<radialGradient id="jellyInner" cx="50%" cy="50%"><stop offset="0%" stop-color="white" stop-opacity="0.15"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0"/></radialGradient>' +
-                    '</defs>' +
-                    '<path d="M60,100 Q60,30 160,25 Q260,30 260,100 Q260,120 240,130 Q200,145 160,145 Q120,145 80,130 Q60,120 60,100Z" fill="url(#jellyG)" stroke="' + c2 + '" stroke-width="1.5"/>' +
-                    '<ellipse cx="160" cy="75" rx="55" ry="30" fill="url(#jellyInner)"/>' +
-                    '<path d="M100,100 Q95,95 100,90 Q105,85 110,87" stroke="' + c1 + '" stroke-width="0.8" fill="none" opacity="0.5"/>' +
-                    '<path d="M200,95 Q195,90 200,85 Q205,80 210,82" stroke="' + c1 + '" stroke-width="0.8" fill="none" opacity="0.5"/>' +
-                    '<path d="M160,100 L160,120 Q155,140 160,155 Q163,160 168,155 Q165,140 165,120" fill="' + c2 + '" opacity="0.3" stroke="' + c2 + '" stroke-width="0.5"/>' +
-                    '<path d="M80,130 Q85,180 75,230 Q70,260 65,290" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.65"/>' +
-                    '<path d="M115,140 Q118,200 110,260 Q108,280 105,310" stroke="' + c1 + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.55"/>' +
-                    '<path d="M145,145 Q148,210 142,275 Q140,295 137,320" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>' +
-                    '<path d="M175,145 Q172,210 178,275 Q180,295 183,320" stroke="' + c1 + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.55"/>' +
-                    '<path d="M205,140 Q202,200 210,260 Q212,280 215,310" stroke="' + c2 + '" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.65"/>' +
-                    '<path d="M240,130 Q235,180 245,230 Q250,260 255,290" stroke="' + c1 + '" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>' +
-                    '<path d="M90,132 Q100,155 88,175 Q100,190 90,210 Q100,225 92,245" stroke="' + c1 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.35"/>' +
-                    '<path d="M230,132 Q220,155 232,175 Q220,190 230,210 Q220,225 228,245" stroke="' + c1 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.35"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Bell (Medusa)', x: 50, y: 10, desc: 'The dome-shaped body contracts rhythmically for jet propulsion. Made of mesoglea — 95% water with collagen fibers for elasticity.' },
-                  { name: 'Tentacles', x: 78, y: 60, desc: 'Trailing appendages lined with cnidocytes — stinging cells that fire nematocysts in 700 nanoseconds, among the fastest events in nature.' },
-                  { name: 'Oral Arms', x: 25, y: 50, desc: 'Frilly appendages near the mouth that capture food particles. In some species they fuse to form a feeding curtain.' },
-                  { name: 'Gastrovascular Cavity', x: 50, y: 33, desc: 'A central cavity serves as both stomach and circulatory system. One opening functions as both mouth and anus.' },
-                  { name: 'Nerve Net', x: 40, y: 22, desc: 'No brain, no central nervous system. A diffuse nerve net coordinates swimming contractions. Some species have rhopalia (light/gravity sensors).' },
-                  { name: 'Radial Canals', x: 65, y: 25, desc: 'Channels radiating from the central cavity to the bell margin, distributing nutrients. Their radial symmetry predates bilateral body plans by 200M+ years.' }
-                ]
-              },
-              crustacean: {
-                label: 'Crustacean (Arthropoda)',
-                svg: function (w, h, color) {
-                  var c1 = color || '#f97316', c2 = color || '#dc2626';
-                  return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<linearGradient id="crustG" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
-                    '</defs>' +
-                    '<ellipse cx="200" cy="120" rx="100" ry="55" fill="url(#crustG)" stroke="#991b1b" stroke-width="2.5"/>' +
-                    '<path d="M200,67 Q200,75 195,85 Q190,90 200,90 Q210,90 205,85 Q200,75 200,67" fill="#991b1b" opacity="0.3"/>' +
-                    '<ellipse cx="200" cy="90" rx="60" ry="25" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>' +
-                    '<ellipse cx="110" cy="105" rx="40" ry="32" fill="' + c1 + '" stroke="#991b1b" stroke-width="2"/>' +
-                    '<circle cx="82" cy="92" r="8" fill="black" stroke="#991b1b" stroke-width="1.5"/><circle cx="84" cy="90" r="3" fill="white" opacity="0.7"/>' +
-                    '<circle cx="95" cy="88" r="7" fill="black" stroke="#991b1b" stroke-width="1.5"/><circle cx="97" cy="86" r="2.5" fill="white" opacity="0.7"/>' +
-                    '<path d="M80,88 Q50,55 30,38 Q25,35 28,32 Q32,30 38,35 Q55,48 78,80" stroke="' + c1 + '" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M85,82 Q60,40 48,22 Q45,18 48,15 Q52,13 55,18 Q65,35 82,75" stroke="' + c1 + '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M140,155 Q135,185 130,215 Q128,225 132,230 Q138,228 140,220 Q145,195 148,165" stroke="#991b1b" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M170,162 Q168,192 165,225 Q163,235 168,238 Q174,236 175,228 Q178,198 178,168" stroke="#991b1b" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M210,165 Q212,195 215,228 Q217,238 222,238 Q226,235 225,225 Q222,195 218,168" stroke="#991b1b" stroke-width="4" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M245,162 Q248,190 252,218 Q254,226 258,225 Q262,222 260,215 Q255,188 250,160" stroke="#991b1b" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M275,155 Q280,180 285,205 Q287,212 290,210 Q293,207 290,200 Q285,178 280,155" stroke="#991b1b" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-                    '<path d="M285,100 Q310,95 335,100 Q340,108 335,115 Q310,108 290,115" fill="' + c1 + '" stroke="#991b1b" stroke-width="2" opacity="0.6"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Carapace (Exoskeleton)', x: 50, y: 24, desc: 'Hardened shell of chitin and calcium carbonate. Must be molted (shed) to grow — the animal is soft and vulnerable for hours after.' },
-                  { name: 'Antennae (2 pairs)', x: 10, y: 11, desc: 'Long antennae detect touch, chemicals, and water currents. Short antennules sense gravity and balance via statocysts.' },
-                  { name: 'Compound Eyes', x: 22, y: 30, desc: 'Mounted on stalks with thousands of ommatidia (individual lenses). Excellent motion detection. Some species see polarized and UV light.' },
-                  { name: 'Walking Legs (Pereopods)', x: 42, y: 78, desc: 'Five pairs of jointed walking legs. First pair often modified into claws (chelipeds) for defense, feeding, and signaling.' },
-                  { name: 'Swimmerets (Pleopods)', x: 60, y: 60, desc: 'Small paddle-like appendages under the abdomen. Used for swimming, carrying eggs, and circulating water over abdominal gills.' },
-                  { name: 'Gills (under carapace)', x: 72, y: 38, desc: 'Feathery gills sit in chambers under the carapace. Appendages called scaphognathites act as pumps to draw water through.' }
-                ]
-              },
-              cephalopod: {
-                label: 'Cephalopod (Mollusca)',
-                svg: function (w, h, color) {
-                  var c1 = color || '#f472b6', c2 = color || '#be185d';
-                  return '<svg viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<radialGradient id="cephG" cx="50%" cy="35%"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.8"/><stop offset="100%" stop-color="' + c2 + '"/></radialGradient>' +
-                    '</defs>' +
-                    '<path d="M100,130 Q80,70 100,30 Q130,5 160,5 Q190,5 220,30 Q240,70 220,130 Q210,145 200,150 Q160,158 120,150 Q110,145 100,130Z" fill="url(#cephG)" stroke="' + c2 + '" stroke-width="2"/>' +
-                    '<ellipse cx="160" cy="90" rx="40" ry="20" fill="rgba(255,255,255,0.06)"/>' +
-                    '<circle cx="125" cy="80" r="18" fill="white" stroke="#1e293b" stroke-width="2"/><ellipse cx="128" cy="80" rx="7" ry="11" fill="#1e293b"/><circle cx="130" cy="77" r="2.5" fill="white"/>' +
-                    '<circle cx="195" cy="80" r="18" fill="white" stroke="#1e293b" stroke-width="2"/><ellipse cx="198" cy="80" rx="7" ry="11" fill="#1e293b"/><circle cx="200" cy="77" r="2.5" fill="white"/>' +
-                    '<path d="M148,120 Q155,125 160,120 Q165,125 172,120" stroke="' + c2 + '" stroke-width="2" fill="none"/>' +
-                    '<path d="M160,130 Q158,140 155,148 Q160,155 165,148 Q162,140 160,130" fill="' + c2 + '" opacity="0.5"/>' +
-                    '<path d="M108,155 Q100,200 90,250 Q85,280 82,310 Q80,320 85,325 Q92,322 95,310 Q100,280 105,250 Q108,220 112,190" stroke="' + c1 + '" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.8"/>' +
-                    '<path d="M125,158 Q120,210 115,265 Q112,295 110,320 Q108,330 113,332 Q120,328 120,315 Q122,290 125,260 Q128,220 130,180" stroke="' + c2 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.75"/>' +
-                    '<path d="M145,160 Q143,220 140,280 Q138,310 137,335 Q136,342 140,342 Q145,340 145,330 Q146,305 148,275 Q150,220 150,170" stroke="' + c1 + '" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.8"/>' +
-                    '<path d="M175,160 Q177,220 180,280 Q182,310 183,335 Q184,342 180,342 Q175,340 175,330 Q174,305 172,275 Q170,220 170,170" stroke="' + c2 + '" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.75"/>' +
-                    '<path d="M195,158 Q200,210 205,265 Q208,295 210,320 Q212,330 207,332 Q200,328 200,315 Q198,290 195,260 Q192,220 190,180" stroke="' + c1 + '" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8"/>' +
-                    '<path d="M212,155 Q220,200 230,250 Q235,280 238,310 Q240,320 235,325 Q228,322 225,310 Q220,280 215,250 Q212,220 208,190" stroke="' + c2 + '" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.75"/>' +
-                    '<circle cx="95" cy="260" r="3" fill="rgba(255,255,255,0.3)"/>' +
-                    '<circle cx="115" cy="285" r="2.5" fill="rgba(255,255,255,0.25)"/>' +
-                    '<circle cx="145" cy="300" r="3" fill="rgba(255,255,255,0.3)"/>' +
-                    '<circle cx="180" cy="295" r="2.5" fill="rgba(255,255,255,0.25)"/>' +
-                    '<circle cx="210" cy="270" r="3" fill="rgba(255,255,255,0.3)"/>' +
-                    '<circle cx="225" cy="260" r="2" fill="rgba(255,255,255,0.2)"/>' +
-                    '<circle cx="130" cy="50" r="5" fill="' + c1 + '" opacity="0.25"/>' +
-                    '<circle cx="190" cy="45" r="6" fill="' + c1 + '" opacity="0.2"/>' +
-                    '<circle cx="160" cy="115" r="4" fill="' + c1 + '" opacity="0.15"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Mantle', x: 50, y: 8, desc: 'Muscular body housing all organs. Contracts forcefully to jet water through the siphon, achieving speeds up to 40 km/h in squids.' },
-                  { name: 'Arms (8) with Suckers', x: 25, y: 60, desc: 'Eight arms lined with suckers containing chemoreceptors — they can taste what they touch. Each sucker can exert tremendous grip force.' },
-                  { name: 'Siphon (Funnel)', x: 50, y: 40, desc: 'A muscular nozzle for jet propulsion. Water is drawn into the mantle cavity, then expelled forcefully. Also ejects ink for escape.' },
-                  { name: 'Camera Eyes', x: 38, y: 22, desc: 'Evolved independently from vertebrate eyes but are structurally similar. No blind spot (unlike human eyes). Can see polarized light.' },
-                  { name: 'Chromatophores', x: 60, y: 15, desc: 'Thousands of pigment-filled sacs that expand/contract in milliseconds. Controlled directly by the brain for instant camouflage, signaling, and hypnotic hunting displays.' },
-                  { name: 'Three Hearts', x: 50, y: 30, desc: 'Two branchial hearts push blood through the gills. One systemic heart circulates oxygenated blood. Blood is copper-based (hemocyanin) — it is blue.' },
-                  { name: 'Beak', x: 50, y: 36, desc: 'A hard, parrot-like beak of chitin — the only rigid structure. An octopus can squeeze through any gap larger than its beak.' }
-                ]
-              },
-              echinoderm: {
-                label: 'Echinoderm (Asteroidea)',
-                svg: function (w, h, color) {
-                  var c1 = color || '#f97316', c2 = color || '#ea580c';
-                  return '<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<linearGradient id="echiG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
-                    '<radialGradient id="echiCenter"><stop offset="0%" stop-color="#fed7aa"/><stop offset="100%" stop-color="' + c2 + '"/></radialGradient>' +
-                    '</defs>' +
-                    '<path d="M160,15 Q170,60 178,85 L195,95 Q240,80 275,68 Q285,68 285,75 Q280,82 240,105 L225,118 Q235,140 245,175 Q250,195 248,200 Q242,205 235,195 Q215,162 200,140 L185,138 Q170,155 160,175 Q150,155 135,138 L120,140 Q105,162 85,195 Q78,205 72,200 Q70,195 75,175 Q85,140 95,118 L80,105 Q40,82 35,75 Q35,68 45,68 Q80,80 125,95 L142,85 Q150,60 160,15Z" fill="url(#echiG)" stroke="#c2410c" stroke-width="2.5" stroke-linejoin="round"/>' +
-                    '<circle cx="160" cy="135" r="22" fill="url(#echiCenter)" stroke="#c2410c" stroke-width="2"/>' +
-                    '<circle cx="160" cy="135" r="5" fill="#c2410c"/>' +
-                    '<circle cx="160" cy="22" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
-                    '<circle cx="278" cy="72" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
-                    '<circle cx="245" cy="197" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
-                    '<circle cx="75" cy="197" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
-                    '<circle cx="42" cy="72" r="4" fill="#fbbf24" stroke="#c2410c" stroke-width="1" opacity="0.8"/>' +
-                    '<line x1="160" y1="113" x2="160" y2="25" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
-                    '<line x1="178" y1="122" x2="275" y2="72" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
-                    '<line x1="172" y1="152" x2="242" y2="195" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
-                    '<line x1="148" y1="152" x2="78" y2="195" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
-                    '<line x1="142" y1="122" x2="45" y2="72" stroke="#c2410c" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>' +
-                    '<circle cx="155" cy="128" r="3" fill="#fde68a" opacity="0.6"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Water Vascular System', x: 50, y: 42, desc: 'A hydraulic network unique to echinoderms. Seawater enters through the madreporite and fills radial canals powering hundreds of tube feet.' },
-                  { name: 'Tube Feet', x: 30, y: 42, desc: 'Tiny suction-cup appendages powered by hydraulic pressure. Coordinated movement can pry open clam shells with sustained force of 5+ kg.' },
-                  { name: 'Madreporite', x: 48, y: 38, desc: 'A small sieve plate (visible as a pale dot) that filters seawater into the water vascular system. Located off-center on the aboral surface.' },
-                  { name: 'Eyespots', x: 50, y: 5, desc: 'Simple photoreceptors at each arm tip — bright spots visible at extremities. Cannot form images but detect light direction and intensity.' },
-                  { name: 'Pentaradial Symmetry', x: 85, y: 22, desc: 'Five-fold body plan. Adults develop this from bilateral larvae — a unique metamorphosis among animals. No front, back, or sides.' },
-                  { name: 'Regeneration Zone', x: 24, y: 60, desc: 'Can regrow entire arms from the central disc. Some species regenerate a complete animal from a single arm. Process takes months to years.' }
-                ]
-              },
-              cetacean: {
-                label: 'Marine Mammal (Cetacea)',
-                svg: function (w, h, color) {
-                  return '<svg viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<linearGradient id="cetG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#64748b"/><stop offset="55%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>' +
-                    '</defs>' +
-                    '<path d="M35,110 Q45,72 80,62 Q120,52 170,55 Q230,52 290,62 Q340,72 370,85 Q400,95 420,100 Q440,95 455,78 Q462,70 465,72 Q465,80 460,92 Q455,105 455,115 Q460,130 465,148 Q465,150 462,150 Q455,142 440,125 Q420,120 400,125 Q370,135 340,148 Q290,162 230,168 Q170,168 120,162 Q80,155 45,142 Q35,135 35,110Z" fill="url(#cetG)" stroke="#475569" stroke-width="2.5"/>' +
-                    '<path d="M35,112 Q45,135 80,150 Q120,160 170,165 Q230,168 290,162 Q340,148 370,135 Q400,125 420,120" fill="#e2e8f0" opacity="0.35"/>' +
-                    '<path d="M260,60 Q265,42 272,30 Q278,24 284,28 Q288,35 288,48 Q286,58 282,65" fill="#94a3b8" stroke="#475569" stroke-width="1.5" opacity="0.8"/>' +
-                    '<circle cx="65" cy="100" r="7" fill="white" stroke="#1e293b" stroke-width="1.5"/><circle cx="67" cy="100" r="3.5" fill="#0f172a"/>' +
-                    '<ellipse cx="58" cy="72" rx="8" ry="4" fill="#64748b" stroke="#475569" stroke-width="1.5" opacity="0.8"/>' +
-                    '<path d="M140,145 Q128,162 118,172 Q112,175 113,170 Q118,158 130,142" fill="#94a3b8" stroke="#475569" stroke-width="1.5" opacity="0.7"/>' +
-                    '<path d="M150,148 Q142,162 135,170 Q130,172 131,168 Q136,158 145,146" fill="#94a3b8" stroke="#475569" stroke-width="1.2" opacity="0.6"/>' +
-                    '<path d="M35,108 Q42,100 50,98 Q55,102 48,110" fill="#94a3b8" stroke="#475569" stroke-width="1" opacity="0.5"/>' +
-                    '<ellipse cx="100" cy="95" rx="25" ry="15" fill="rgba(255,255,255,0.05)" stroke="#475569" stroke-width="0.5" stroke-dasharray="4,4" />' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Blowhole', x: 12, y: 28, desc: 'Modified nostril(s) on top of skull. Breathing is voluntary — cetaceans must consciously surface. Only half the brain sleeps at a time (unihemispheric sleep).' },
-                  { name: 'Melon (Echolocation)', x: 20, y: 40, desc: 'A fatty, oil-filled lens in the forehead that focuses outgoing clicks into a directional beam. Returning echoes are received through the lower jaw.' },
-                  { name: 'Dorsal Fin', x: 57, y: 12, desc: 'Dense connective tissue (no bone). Used for thermoregulation — blood vessels release or retain heat. Shape and nicks identify individuals.' },
-                  { name: 'Fluke (Tail)', x: 95, y: 38, desc: 'Horizontal tail moved up-and-down by powerful back muscles (not side-to-side like fish). No bones — pure collagen and connective tissue.' },
-                  { name: 'Pectoral Flippers', x: 30, y: 68, desc: 'Modified forelimbs containing humerus, radius, ulna, and finger bones — the same skeletal plan as a human arm, adapted for steering and braking.' },
-                  { name: 'Blubber Layer', x: 50, y: 55, desc: 'Thick subcutaneous fat providing insulation, energy storage, buoyancy, and streamlining. Up to 50 cm thick in Arctic species like bowhead whales.' }
-                ]
-              },
-              chelonian: {
-                label: 'Sea Turtle (Testudines)',
-                svg: function (w, h, color) {
-                  return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">' +
-                    '<defs>' +
-                    '<linearGradient id="turtG" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="#65a30d"/><stop offset="50%" stop-color="#3f6212"/><stop offset="100%" stop-color="#365314"/></linearGradient>' +
-                    '<linearGradient id="turtSkin" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4d7c0f"/><stop offset="100%" stop-color="#365314"/></linearGradient>' +
-                    '</defs>' +
-                    '<ellipse cx="200" cy="140" rx="110" ry="72" fill="url(#turtG)" stroke="#1a2e05" stroke-width="3"/>' +
-                    '<path d="M200,70 L240,80 L260,105 L252,132 L220,148 L200,152 L180,148 L148,132 L140,105 L160,80Z" fill="none" stroke="#4d7c0f" stroke-width="2" opacity="0.5"/>' +
-                    '<line x1="200" y1="70" x2="200" y2="152" stroke="#4d7c0f" stroke-width="1.2" opacity="0.3"/>' +
-                    '<line x1="140" y1="105" x2="260" y2="105" stroke="#4d7c0f" stroke-width="1.2" opacity="0.3"/>' +
-                    '<line x1="160" y1="80" x2="220" y2="148" stroke="#4d7c0f" stroke-width="0.8" opacity="0.2"/>' +
-                    '<line x1="240" y1="80" x2="180" y2="148" stroke="#4d7c0f" stroke-width="0.8" opacity="0.2"/>' +
-                    '<path d="M94,105 Q62,90 38,85 Q25,85 22,92 Q22,100 30,105 Q40,110 55,112" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.9"/>' +
-                    '<path d="M306,105 Q338,90 362,85 Q375,85 378,92 Q378,100 370,105 Q360,110 345,112" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.9"/>' +
-                    '<path d="M115,190 Q95,210 82,225 Q78,230 82,232 Q88,230 100,218 Q112,202 120,192" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.85"/>' +
-                    '<path d="M285,190 Q305,210 318,225 Q322,230 318,232 Q312,230 300,218 Q288,202 280,192" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.85"/>' +
-                    '<circle cx="32" cy="92" r="14" fill="#4d7c0f" stroke="#365314" stroke-width="2"/>' +
-                    '<circle cx="28" cy="88" r="5" fill="black" stroke="#1a2e05" stroke-width="1"/><circle cx="27" cy="87" r="2" fill="white" opacity="0.6"/>' +
-                    '<circle cx="26" cy="95" r="3" fill="#e2e8f0" opacity="0.3" stroke="#365314" stroke-width="0.5"/>' +
-                    '</svg>';
-                },
-                parts: [
-                  { name: 'Carapace (Shell)', x: 50, y: 25, desc: 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell — it is streamlined for swimming.' },
-                  { name: 'Front Flippers', x: 8, y: 33, desc: 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.' },
-                  { name: 'Rear Flippers', x: 20, y: 80, desc: 'Shorter and rounder than front flippers. Used as rudders for steering. Females use them to dig egg chambers on nesting beaches.' },
-                  { name: 'Salt Glands', x: 7, y: 32, desc: 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
-                  { name: 'Scute Pattern', x: 40, y: 28, desc: 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.' },
-                  { name: 'Magnetic Navigation', x: 50, y: 55, desc: 'Magnetite crystals in the brain create an internal compass. Hatchlings imprint their natal beach\'s unique magnetic signature and return decades later to nest.' }
-                ]
-              }
-            };
-
-            // Map each species to its body plan
-            var SPECIES_BODY_MAP = {
-              neon: 'fish', guppy: 'fish', cory: 'fish', angel: 'fish', platy: 'fish', molly: 'fish',
-              cardinal: 'fish', rummy: 'fish', oto: 'fish', betta: 'fish',
-              clown: 'fish', tang: 'fish', goby: 'fish',
-              oscar: 'fish', pike: 'fish', pleco: 'fish',
-              goldfish: 'fish', rockfish: 'fish',
-              archer: 'fish', puffer: 'fish', mudskip: 'fish',
-              anemone: 'jellyfish',
-              shrimp: 'crustacean', cleaner: 'crustacean', crab: 'crustacean', amphipod: 'crustacean',
-              starfish: 'echinoderm', seastar: 'echinoderm', urchin: 'echinoderm', seacucumber: 'echinoderm',
-              slider: 'chelonian', turtle: 'chelonian',
-              kelp: 'fish',
-              clownfish: 'fish', dolphin: 'cetacean', jellyfish: 'jellyfish', squid: 'cephalopod',
-              hatchetfish: 'fish', swordfish: 'fish', anglerfish: 'fish', gulpereel: 'fish',
-              giantsquid: 'cephalopod', tubeworms: 'jellyfish', snailfish: 'fish',
-              mantaray: 'shark', bluewhale: 'cetacean', seahorse: 'fish',
-              octopus: 'cephalopod', nautilus: 'cephalopod', coelacanth: 'fish'
-            };
-
-            // Per-species colors for unique anatomy close-ups
-            var SPECIES_COLORS = {
-              // ── Freshwater ──
-              neon: '#38bdf8',     // electric blue stripe
-              guppy: '#f97316',    // orange/rainbow
-              cory: '#a78bfa',     // pale lavender
-              angel: '#fbbf24',    // gold/silver
-              platy: '#fb923c',    // orange-red
-              molly: '#1e293b',    // dark/black
-              // ── Planted ──
-              cardinal: '#dc2626', // deep red stripe
-              rummy: '#ef4444',    // red nose accent
-              oto: '#84cc16',      // olive/green
-              shrimp: '#e11d48',   // cherry red
-              betta: '#7c3aed',    // royal purple
-              // ── Reef ──
-              clown: '#f97316',    // orange clownfish
-              tang: '#3b82f6',     // royal blue
-              goby: '#14b8a6',     // teal/aqua
-              anemone: '#ec4899',  // pink/magenta
-              cleaner: '#ef4444',  // red/white stripe
-              // ── Predator ──
-              oscar: '#b45309',    // dark orange/brown tiger
-              pike: '#4d7c0f',     // forest green
-              pleco: '#57534e',    // dark brown armor
-              // ── Turtle & Reptile ──
-              slider: '#16a34a',   // green shell
-              turtle: '#15803d',   // deep green
-              goldfish: '#f59e0b', // classic gold
-              // ── Invertebrate Reef ──
-              crab: '#dc2626',     // red crab
-              urchin: '#6b21a8',   // dark purple spines
-              starfish: '#f97316', // orange starfish
-              seastar: '#ef4444',  // red seastar
-              // ── Cold Water ──
-              rockfish: '#9f1239', // vermillion rockfish
-              kelp: '#15803d',     // dark green
-              // ── Brackish ──
-              archer: '#c2410c',   // amber/brown bands
-              puffer: '#eab308',   // yellow puffer
-              mudskip: '#713f12',  // muddy brown
-              // ── Marine Science species ──
-              clownfish: '#f97316',  // orange
-              dolphin: '#64748b',   // grey
-              jellyfish: '#c084fc', // translucent purple
-              squid: '#ec4899',     // pink/bioluminescent
-              hatchetfish: '#94a3b8', // silver
-              swordfish: '#475569', // steel blue-grey
-              anglerfish: '#1c1917', // deep black
-              gulpereel: '#292524', // near-black
-              giantsquid: '#881337', // dark crimson
-              tubeworms: '#dc2626', // red plume
-              snailfish: '#cbd5e1', // pale/translucent
-              mantaray: '#1e293b', // dark navy
-              bluewhale: '#3b82f6', // blue
-              seahorse: '#f59e0b', // golden yellow
-              octopus: '#7c3aed',  // purple
-              nautilus: '#b45309', // amber/brown shell
-              coelacanth: '#1e3a5f', // deep steel blue
-              amphipod: '#f87171',  // pale red
-              seacucumber: '#854d0e' // brown
-            };
-
-            // Species-specific anatomy overrides and extra info
-            var SPECIES_ANATOMY = {
-              mudskip: { override: 'Modified pectoral fins act as legs. Can breathe through skin and oral lining when on land.', locomotion: 'Uses pectoral fins to "walk" and "skip" across mud. Can also climb roots.' },
-              betta: { override: 'Has a labyrinth organ that allows breathing atmospheric air directly — can survive in low-oxygen water.', locomotion: 'Flowing fins create drag; bettas are slow but agile swimmers using sculling pectoral fins.' },
-              seahorse: { override: 'Swims upright using a tiny dorsal fin that beats 35 times per second. Prehensile tail grips substrates.', locomotion: 'The worst swimmer in the ocean — relies on rapid dorsal fin oscillation and steers with pectoral fins.' },
-              anglerfish: { override: 'The bioluminescent lure (esca) contains symbiotic bacteria. Males fuse permanently to females, sharing blood supply.', locomotion: 'Slow ambush predator. Uses modified pectoral fins to "walk" on the seafloor.' },
-              puffer: { override: 'Can inflate body by swallowing water rapidly. Many species contain tetrodotoxin — 1200x more toxic than cyanide.', locomotion: 'Slow swimmer using pectoral and dorsal fin sculling. Sacrifices speed for defensive inflation ability.' },
-              mantaray: { override: 'Cephalic fins funnel plankton into mouth. Largest brain-to-body ratio of any fish. Recognized individual humans.', locomotion: 'Underwater flight — flaps wing-like pectoral fins. Can breach completely out of the water.' },
-              coelacanth: { override: 'Lobed fins move in alternating pattern like tetrapod limbs — may represent step in fish-to-land transition.', locomotion: 'Slow drift feeder. Uses lobed fins in a unique "walking" pattern not seen in other living fish.' },
-              nautilus: { override: 'Shell chambers filled with gas for buoyancy control. Has 90+ tentacles with no suckers — uses sticky ridges.', locomotion: 'Jet propulsion via siphon. Can withdraw completely into shell and seal with a leathery hood.' },
-              clown: { override: 'Mucus coating prevents anemone stings. All born male — the dominant fish transitions to female (sequential hermaphroditism).', locomotion: 'Rapid pectoral fin waving for hovering near host anemone. Rarely strays far from home.' },
-              slider: { override: 'Basking behavior critical for thermoregulation and vitamin D synthesis. Can brumate (hibernate) underwater for months.', locomotion: 'Powerful rear leg kicks propel through water. On land, uses all four legs in a characteristic waddle.' }
-            };
-
-            // ── Anatomy viewer state ──
-            var viewingAnatomy = d.viewingAnatomy || null;
-            var anatomyHighlight = d.anatomyHighlight || null;
-
-            var openAnatomy = function (speciesId) {
-              updMulti({ viewingAnatomy: speciesId, anatomyHighlight: null });
-            };
-            var closeAnatomy = function () {
-              updMulti({ viewingAnatomy: null, anatomyHighlight: null });
-            };
-
-            var TANK_TYPES = [
-
-              { id: 'freshwater', name: '🐠 Freshwater Community', size: 20, temp: 76, salinity: 0, pH: 7.0, diff: 1, desc: 'Classic beginner setup with tetras, guppies, and corydoras.' },
-              { id: 'planted', name: '🌿 Planted Tropical', size: 40, temp: 78, salinity: 0, pH: 6.8, diff: 2, desc: 'Lush aquascape with live plants and small schooling fish.' },
-              { id: 'reef', name: '🐡 Saltwater Reef', size: 55, temp: 78, salinity: 35, pH: 8.2, diff: 3, desc: 'Vibrant coral reef with clownfish and anemones.' },
-              { id: 'predator', name: '🦈 Predator Tank', size: 75, temp: 76, salinity: 0, pH: 7.2, diff: 3, desc: 'Oscars, pike cichlids, and other large predatory fish.' },
-              { id: 'turtle', name: '🐢 Turtle & Reptile', size: 40, temp: 80, salinity: 0, pH: 7.5, diff: 2, desc: 'Basking dock, UVB lighting, and hardy companion fish.' },
-              { id: 'invert', name: '🦐 Invertebrate Reef', size: 30, temp: 77, salinity: 35, pH: 8.3, diff: 4, desc: 'Shrimp, crabs, urchins, and delicate corals.' },
-              { id: 'coldwater', name: '🐧 Cold Water Marine', size: 100, temp: 55, salinity: 34, pH: 8.1, diff: 4, desc: 'Kelp forest ecosystem with rockfish and sea stars.' },
-              { id: 'brackish', name: '🔬 Brackish Estuary', size: 30, temp: 75, salinity: 15, pH: 7.8, diff: 3, desc: 'Where river meets sea — archerfish, puffers, mudskippers.' }
-            ];
-
-            var SPECIES_BY_TANK = {
-              freshwater: [
-                { id: 'neon', name: 'Neon Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], fact: 'Their iridescent stripe is made of guanine crystals.' },
-                { id: 'guppy', name: 'Guppy', icon: '🐟', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], fact: 'Males display vibrant colors to attract females.' },
-                { id: 'cory', name: 'Corydoras', icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], fact: 'They breathe air by darting to the surface!' },
-                { id: 'angel', name: 'Angelfish', icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], fact: 'Angelfish are cichlids — they guard their eggs fiercely.' },
-                { id: 'platy', name: 'Platy', icon: '🐟', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], fact: 'Platys are livebearers — they give birth to free-swimming fry.' },
-                { id: 'molly', name: 'Molly', icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], fact: 'Mollies can survive in both fresh and saltwater!' }
-              ],
-              planted: [
-                { id: 'cardinal', name: 'Cardinal Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], fact: 'Cardinals have a deeper red stripe than neons.' },
-                { id: 'rummy', name: 'Rummynose Tetra', icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], fact: 'Their red nose fades when stressed — a living water quality indicator!' },
-                { id: 'oto', name: 'Otocinclus', icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
-                { id: 'shrimp', name: 'Cherry Shrimp', icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], fact: 'A colony can double in size every 2-3 months.' },
-                { id: 'betta', name: 'Betta', icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], fact: 'Bettas build bubble nests at the surface for their eggs.' }
-              ],
-              reef: [
-                { id: 'clown', name: 'Clownfish', icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], fact: 'All clownfish are born male — the dominant one becomes female!' },
-                { id: 'tang', name: 'Blue Tang', icon: '🐟', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
-                { id: 'goby', name: 'Watchman Goby', icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
-                { id: 'anemone', name: 'Sea Anemone', icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], fact: 'Anemones can live over 100 years in the right conditions.' }
-              ],
-              predator: [
-                { id: 'oscar', name: 'Oscar', icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], fact: 'Oscars recognize their owners and can learn tricks.' },
-                { id: 'pike', name: 'Pike Cichlid', icon: '🐟', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
-                { id: 'pleco', name: 'Plecostomus', icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], fact: 'Some plecos can grow over 2 feet long!' }
-              ],
-              turtle: [
-                { id: 'slider', name: 'Red-Eared Slider', icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], fact: 'They can hold their breath for over 30 minutes!' },
-                { id: 'goldfish', name: 'Feeder Goldfish', icon: '🐟', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], fact: 'Goldfish can live 20+ years with proper care.' }
-              ],
-              invert: [
-                { id: 'cleaner', name: 'Cleaner Shrimp', icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], fact: 'They set up cleaning stations where fish line up to be groomed!' },
-                { id: 'urchin', name: 'Sea Urchin', icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], fact: 'Urchin spines are actually modified teeth.' },
-                { id: 'crab', name: 'Hermit Crab', icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], fact: 'Hermit crabs form "vacancy chains" — swapping shells in order of size!' },
-                { id: 'starfish', name: 'Sea Star', icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], fact: 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.' }
-              ],
-              coldwater: [
-                { id: 'rockfish', name: 'Rockfish', icon: '🐟', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], fact: 'Some rockfish live over 200 years!' },
-                { id: 'seastar', name: 'Sunflower Star', icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
-                { id: 'kelp', name: 'Giant Kelp', icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], fact: 'Giant kelp can grow up to 2 feet per day!' }
-              ],
-              brackish: [
-                { id: 'archer', name: 'Archerfish', icon: '🐟', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], fact: 'Archerfish shoot jets of water to knock insects off branches!' },
-                { id: 'puffer', name: 'Figure-8 Puffer', icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
-                { id: 'mudskip', name: 'Mudskipper', icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], fact: 'Mudskippers are fish that can walk on land and breathe air!' }
-              ]
-            };
-
-            // ── Current state ──
-            var selectedTank = d.selectedTank || null;
-            var tankFish = d.tankFish || [];
-            var waterChem = d.waterChem || null;
-            var simTick = d.simTick || 0;
-            var simRunning = d.simRunning || false;
-            var fishHealth = d.fishHealth || {};
-            var eventLog = d.eventLog || [];
-
-            // ── Enhanced sim state ──
-            var hungerLevels = d.hungerLevels || {};
-            var simSpeed = d.simSpeed || 1;
-            var simDay = d.simDay || 0;
-            var simHour = d.simHour || 8;
-            var feedingLog = d.feedingLog || null;
-            var chemTooltip = d.chemTooltip || null;
-            var fishStress = d.fishStress || {};
-
-            // ── AI Event state ──
-            var aiEvent = d.aiEvent || null;
-            var aiEventHistory = d.aiEventHistory || [];
-            var aiEventLoading = d.aiEventLoading || false;
-            var lastAIEventDay = d.lastAIEventDay || 0;
-
-            // ── Fallback Event Bank (fires when Gemini unavailable) ──
-            var FALLBACK_EVENTS = [
-              // Disease
-              {
-                id: 'ich', title: 'White Spot Disease (Ich)', icon: '\u26A0\uFE0F', desc: 'You notice tiny white spots on your fish\u2019s fins and body. Ichthyophthirius multifiliis is highly contagious and can be fatal if untreated.', category: 'disease',
-                educational: 'Ich is caused by a ciliated protozoan parasite. It burrows under the skin, creating white cysts. The parasite has a 3-stage life cycle \u2014 it\u2019s only vulnerable to treatment during the free-swimming stage.',
-                choices: [
-                  { label: '\uD83C\uDF21\uFE0F Raise temperature to 86\u00B0F', effect: { temp: 86, ammonia: 0.1 }, outcome: 'The higher temperature speeds up the parasite\u2019s life cycle, making treatment more effective. Fish are slightly stressed by the heat but the ich is clearing.', xp: 5 },
-                  { label: '\uD83E\uDDEA Add aquarium salt (1 tsp/gal)', effect: { ammonia: 0.05 }, outcome: 'Salt disrupts the parasite\u2019s osmotic balance. After 3 days, the white spots are fading. Scaleless fish like corydoras may be slightly irritated.', xp: 4 },
-                  { label: '\u274C Do nothing and observe', effect: { ammonia: 0.3 }, outcome: 'The ich spreads rapidly. Two fish are now heavily infected and showing labored breathing. Immediate action is now critical.', xp: 1 }
-                ]
-              },
-              {
-                id: 'finrot', title: 'Fin Rot Detected', icon: '\uD83E\uDE78', desc: 'One of your fish has ragged, discolored fin edges \u2014 a sign of bacterial fin rot. Poor water quality is usually the root cause.', category: 'disease',
-                educational: 'Fin rot is caused by gram-negative bacteria (Aeromonas, Pseudomonas) that thrive in dirty water. Clean water is the #1 treatment \u2014 medications are secondary.',
-                choices: [
-                  { label: '\uD83D\uDCA7 25% water change + clean filter', effect: { ammonia: -0.2, nitrite: -0.1 }, outcome: 'Excellent choice! The water quality improves dramatically. Over the next week, the damaged fins begin regenerating with clear tissue.', xp: 6 },
-                  { label: '\uD83D\uDC8A Dose antibiotics immediately', effect: { ammonia: 0.15 }, outcome: 'The antibiotics help, but also kill beneficial bacteria in your filter. Next time, try clean water first \u2014 it\u2019s usually sufficient.', xp: 3 },
-                  { label: '\u274C Ignore it', effect: { ammonia: 0.4 }, outcome: 'The fin rot progresses to body rot. The fish\u2019s immune system is now compromised. This could have been prevented with a water change.', xp: 0 }
-                ]
-              },
-              // Equipment
-              {
-                id: 'heater_fail', title: 'Heater Malfunction!', icon: '\uD83C\uDF21\uFE0F', desc: 'Your heater thermostat is stuck on high! Water temperature is climbing rapidly toward 88\u00B0F. Your fish are showing signs of thermal stress.', category: 'equipment',
-                educational: 'Heater malfunctions are one of the most dangerous aquarium emergencies. Above 86\u00B0F, dissolved oxygen drops significantly. Many fish can tolerate brief temperature spikes but prolonged exposure causes organ damage.',
-                choices: [
-                  { label: '\u26A1 Unplug heater + add ice bag', effect: { temp: -6 }, outcome: 'Quick thinking! The ice bag slowly cools the water back to safe range. You\u2019ll need to monitor and replace the heater.', xp: 6 },
-                  { label: '\uD83D\uDCA8 Point a fan across water surface', effect: { temp: -3 }, outcome: 'Evaporative cooling helps reduce temperature gradually. The water drops a few degrees but may not be enough. Good emergency measure!', xp: 4 },
-                  { label: '\u274C Unplug heater only', effect: { temp: -1 }, outcome: 'The temperature will slowly drift down, but tropical fish need some heat. Monitor closely and get a replacement heater soon.', xp: 2 }
-                ]
-              },
-              {
-                id: 'filter_clog', title: 'Filter Flow Reduced', icon: '\u2699\uFE0F', desc: 'Your filter output is barely trickling. Debris has built up in the intake and media. Without filtration, ammonia will spike quickly.', category: 'equipment',
-                educational: 'Filters house your nitrogen cycle bacteria (Nitrosomonas + Nitrospira). Never clean filter media in tap water \u2014 the chlorine kills the beneficial bacteria. Always rinse in old tank water!',
-                choices: [
-                  { label: '\uD83D\uDCA7 Rinse media in old tank water', effect: { ammonia: -0.1 }, outcome: 'Perfect technique! The filter flow is restored while preserving the bacterial colony. Your nitrogen cycle stays intact.', xp: 6 },
-                  { label: '\uD83D\uDDD1\uFE0F Replace all filter media', effect: { ammonia: 0.3 }, outcome: 'The filter runs great, but you\u2019ve lost ALL your beneficial bacteria. Expect an ammonia spike in 2-3 days as the cycle restarts.', xp: 2 },
-                  { label: '\u274C Deal with it later', effect: { ammonia: 0.5 }, outcome: 'Without proper filtration, ammonia and waste build up rapidly. Your fish are gasping at the surface for oxygen.', xp: 0 }
-                ]
-              },
-              // Ecology
-              {
-                id: 'algae_bloom', title: 'Green Algae Bloom!', icon: '\uD83C\uDF3F', desc: 'Your tank water has turned pea-soup green overnight. A massive algae bloom has erupted, likely from excess nutrients and light.', category: 'ecology',
-                educational: 'Algae blooms are caused by excess phosphates and nitrates combined with too much light (>10 hours/day). They\u2019re not immediately dangerous but reduce oxygen at night and look unsightly.',
-                choices: [
-                  { label: '\uD83D\uDD26 Blackout for 3 days (cover tank)', effect: { nitrate: -5 }, outcome: 'Without light, the algae dies off. After 3 days of darkness, the water clears. Reduce your light schedule to prevent recurrence.', xp: 5 },
-                  { label: '\uD83E\uDDA0 Add algae-eating fish (Oto)', effect: { nitrate: -2 }, outcome: 'The otocinclus help with surface algae, but green water algae is too small for them. Partial improvement, but a blackout would be more effective.', xp: 3 },
-                  { label: '\uD83D\uDCA7 50% water change', effect: { ammonia: -0.1, nitrate: -10 }, outcome: 'The water change dilutes nutrients and clears some algae, but it may return if the root cause (excess light/nutrients) isn\u2019t addressed.', xp: 4 }
-                ]
-              },
-              {
-                id: 'snail_invasion', title: 'Snail Population Explosion!', icon: '\uD83D\uDC0C', desc: 'Tiny snails are everywhere! They hitchhiked in on a plant and have multiplied rapidly. While not harmful, they\u2019re covering your glass.', category: 'ecology',
-                educational: 'Pest snails (bladder snails, Malaysian trumpet snails) reproduce asexually \u2014 one snail can become hundreds. They\u2019re actually beneficial detritivores but can indicate overfeeding.',
-                choices: [
-                  { label: '\uD83C\uDF7D\uFE0F Reduce feeding (snails eat leftovers)', effect: { ammonia: -0.15 }, outcome: 'Smart approach! With less excess food, the snail population naturally declines over 2-3 weeks. Bonus: your water quality improves too.', xp: 6 },
-                  { label: '\uD83E\uDD9E Add an assassin snail', effect: {}, outcome: 'The assassin snail is a natural predator. Over time, it hunts down the pest snails. A biological control approach \u2014 very elegant!', xp: 5 },
-                  { label: '\uD83D\uDEAB Remove them manually', effect: {}, outcome: 'You pick out dozens, but miss the tiny ones and eggs. They\u2019ll be back. This is a never-ending battle without addressing the root cause.', xp: 2 }
-                ]
-              },
-              {
-                id: 'plant_melt', title: 'Aquatic Plants Melting', icon: '\uD83C\uDF42', desc: 'Several of your live plants are turning brown and dissolving. The leaves are becoming translucent and falling apart.', category: 'ecology',
-                educational: 'New aquatic plants often \"melt\" as they transition from emersed (above-water) to submersed growth. This is normal! Iron and CO2 deficiency can also cause melting in established plants.',
-                choices: [
-                  { label: '\uD83E\uDDEA Add root tabs + liquid fertilizer', effect: { nitrate: 3 }, outcome: 'The iron and micronutrients give the plants what they need. New, submersed-growth leaves begin sprouting within a week.', xp: 5 },
-                  { label: '\u2702\uFE0F Trim dead leaves, leave roots', effect: {}, outcome: 'Good practice! Removing dead material prevents it from decaying and spiking ammonia. Healthy roots will send up new growth.', xp: 4 },
-                  { label: '\uD83D\uDDD1\uFE0F Remove all dying plants', effect: { ammonia: 0.1, nitrate: 5 }, outcome: 'Without plants absorbing nitrate, your water quality may suffer. Plants also provide hiding spots that reduce fish stress.', xp: 1 }
-                ]
-              },
-              // Water
-              {
-                id: 'ph_crash', title: 'Sudden pH Crash!', icon: '\u2697\uFE0F', desc: 'Your pH has dropped from 7.2 to 6.0 overnight! Fish are showing signs of acidosis: clamped fins, rapid gill movement, and lethargy.', category: 'water',
-                educational: 'pH crashes happen when KH (carbonate hardness) is depleted. KH acts as a buffer \u2014 without it, pH becomes unstable. Adding crushed coral or baking soda restores buffering capacity.',
-                choices: [
-                  { label: '\uD83E\uDDF1 Add crushed coral to filter', effect: { pH: 1.0 }, outcome: 'The crushed coral slowly dissolves, raising KH and stabilizing pH around 7.2. This provides long-term buffering. Excellent choice!', xp: 6 },
-                  { label: '\uD83E\uDDEA Add baking soda (1 tsp/5 gal)', effect: { pH: 0.6 }, outcome: 'The pH rises quickly back toward neutral. Be careful \u2014 sudden pH changes can be as stressful as the crash itself. Slow and steady wins.', xp: 4 },
-                  { label: '\uD83D\uDCA7 Large water change (50%)', effect: { pH: 0.4, ammonia: -0.2 }, outcome: 'The fresh water brings pH up somewhat, but without addressing the low KH, the pH will crash again within days.', xp: 3 }
-                ]
-              },
-              {
-                id: 'cloudy_water', title: 'Mysterious Cloudiness', icon: '\uD83C\uDF2B\uFE0F', desc: 'Your crystal-clear water has become milky white. It happened within hours and the fish seem unaffected so far.', category: 'water',
-                educational: 'Milky white cloudiness is a bacterial bloom \u2014 millions of free-floating heterotrophic bacteria. This is common in new tanks or after a major disturbance. It\u2019s usually harmless and self-resolving.',
-                choices: [
-                  { label: '\u23F3 Wait it out (bacterial bloom)', effect: { ammonia: 0.1 }, outcome: 'Correct diagnosis! The bloom runs out of food after 2-3 days and clears on its own. Your tank\u2019s ecosystem is simply rebalancing.', xp: 5 },
-                  { label: '\uD83D\uDCA7 Small daily water changes (10%)', effect: { ammonia: -0.05 }, outcome: 'The gentle water changes remove some bacteria without disrupting the cycle. Combined with patience, the water clears in a few days.', xp: 5 },
-                  { label: '\uD83E\uDDEA Add water clarifier chemical', effect: { ammonia: 0.05 }, outcome: 'The clarifier clumps particles for the filter to catch. It works visually but doesn\u2019t address why the bloom happened. A band-aid solution.', xp: 2 }
-                ]
-              },
-              // Behavioral
-              {
-                id: 'aggression', title: 'Fish Aggression Alert!', icon: '\uD83D\uDCA2', desc: 'One of your larger fish is chasing and nipping at the others. You can see torn fins on the smaller fish. Tank harmony is disrupted.', category: 'behavioral',
-                educational: 'Aggression often stems from territorial behavior, breeding instincts, or overcrowding. Rearranging decorations breaks established territories and can reset the social hierarchy.',
-                choices: [
-                  { label: '\uD83C\uDFE0 Rearrange decorations', effect: {}, outcome: 'Brilliant strategy! Moving the decor disrupts the bully\u2019s claimed territory. All fish have to re-establish boundaries, reducing aggression.', xp: 5 },
-                  { label: '\uD83C\uDF3F Add more hiding spots', effect: {}, outcome: 'More plants and caves give smaller fish escape routes. Line-of-sight breaks are key to peaceful tanks. The nipping decreases significantly.', xp: 5 },
-                  { label: '\uD83D\uDCD0 Check if tank is overcrowded', effect: {}, outcome: 'You review your stocking \u2014 the bioload is high. Sometimes the only solution is to rehome the aggressive individual.', xp: 4 }
-                ]
-              },
-              {
-                id: 'breeding', title: 'Breeding Behavior Spotted!', icon: '\uD83D\uDC95', desc: 'Two fish are performing an elaborate courtship dance! The male is displaying vibrant colors and the female appears to have a rounded belly.', category: 'behavioral',
-                educational: 'Successful breeding requires stable water chemistry, proper temperature, and adequate nutrition. Many livebearers (guppies, mollies, platys) breed readily. Egg-layers need specific conditions.',
-                choices: [
-                  { label: '\uD83C\uDF31 Add breeding box / plants', effect: {}, outcome: 'The dense plants provide cover for fry. Within days, you spot tiny baby fish hiding among the leaves! Your population may grow.', xp: 5 },
-                  { label: '\uD83C\uDF21\uFE0F Optimize conditions for spawning', effect: { temp: 1 }, outcome: 'The slightly warmer water and good nutrition encourage spawning. Nature takes its course \u2014 this is natural population dynamics!', xp: 4 },
-                  { label: '\uD83D\uDC40 Just observe and enjoy', effect: {}, outcome: 'You watch the beautiful natural behavior unfold. Even if fry don\u2019t survive, witnessing courtship displays is one of the joys of fishkeeping.', xp: 3 }
-                ]
-              },
-              {
-                id: 'new_cycle', title: 'Nitrogen Cycle Kick-starting', icon: '\uD83D\uDD04', desc: 'You notice ammonia is rising but nitrite is still zero. Your tank is in the early stages of cycling \u2014 beneficial bacteria haven\u2019t colonized yet.', category: 'water',
-                educational: 'The nitrogen cycle is the single most important concept in fishkeeping. Ammonia \u2192 Nitrite \u2192 Nitrate. It takes 4-6 weeks to fully establish. Patience is the key.',
-                choices: [
-                  { label: '\uD83E\uDDA0 Add bottled bacteria starter', effect: { ammonia: -0.2 }, outcome: 'The commercial bacteria boost jump-starts colonization. You should see nitrite appear within a week as the first bacteria convert ammonia.', xp: 5 },
-                  { label: '\uD83D\uDCA7 Small daily water changes', effect: { ammonia: -0.15 }, outcome: 'Keeping ammonia below 2 ppm protects your fish while the cycle establishes. This is the gold standard for fish-in cycling.', xp: 6 },
-                  { label: '\u274C Add more fish to speed it up', effect: { ammonia: 0.6 }, outcome: 'More fish = more ammonia. But your bacteria can\u2019t keep up yet! This overloads the system and puts all fish at risk. Less is more during cycling.', xp: 0 }
-                ]
-              },
-              {
-                id: 'power_outage', title: 'Power Outage Simulation', icon: '\u26A1', desc: 'The power goes out! Your heater, filter, and lights all stop. Without filtration, oxygen levels will drop. Without the heater, temperature will fall.', category: 'equipment',
-                educational: 'During power outages, oxygen is the #1 concern. Battery-powered air pumps are essential emergency gear. Most tropical fish can survive 4-6 hours without heat but suffocate faster without water movement.',
-                choices: [
-                  { label: '\uD83E\uDEAB Battery air pump + blanket on tank', effect: { temp: -2 }, outcome: 'The air pump maintains oxygen while the blanket insulates heat. Your fish barely notice the outage. You were prepared!', xp: 6 },
-                  { label: '\uD83D\uDCA8 Manually agitate water surface', effect: { temp: -3, ammonia: 0.1 }, outcome: 'Stirring the water with a cup adds oxygen. It\u2019s labor-intensive but effective short-term. Temperature slowly drops.', xp: 4 },
-                  { label: '\u274C Wait for power to return', effect: { temp: -5, ammonia: 0.3 }, outcome: 'After 3 hours, oxygen drops critically. Some fish are gasping at the surface. The temperature is falling steadily. An emergency kit would have prevented this.', xp: 1 }
-                ]
-              },
-              {
-                id: 'test_results', title: 'Unexpected Water Test Results', icon: '\uD83E\uDDEA', desc: 'Your weekly water test shows nitrate at 80+ ppm! Your fish seem fine now, but this level of nitrate suppresses immune function over time.', category: 'water',
-                educational: 'High nitrate is the "silent killer." Fish acclimate gradually and seem fine, but chronic exposure stunts growth, fades color, and weakens immunity. Regular water changes are the #1 prevention.',
-                choices: [
-                  { label: '\uD83D\uDCA7 50% water change + gravel vacuum', effect: { nitrate: -30, ammonia: -0.1 }, outcome: 'A thorough water change and gravel vacuum removes trapped detritus. Nitrate drops to safe levels. Schedule weekly changes to prevent buildup.', xp: 6 },
-                  { label: '\uD83C\uDF3F Add fast-growing live plants', effect: { nitrate: -15 }, outcome: 'Floating plants like duckweed and hornwort are nitrogen-absorbing machines. They\u2019ll help keep nitrate in check between water changes.', xp: 5 },
-                  { label: '\u274C It will come down on its own', effect: { nitrate: 10 }, outcome: 'Nitrate doesn\u2019t decrease on its own \u2014 only water changes, plants, or special media remove it. Your fish\u2019s long-term health is at risk.', xp: 0 }
-                ]
-              }
-            ];
-
-            // ── AI Event Generator (Gemini-powered with fallback) ──
-            var generateAIEvent = function () {
-              if (aiEventLoading || !selectedTank || tankFish.length === 0) return;
-
-              // Try Gemini first, fall back to curated bank
-              if (callGemini) {
-                upd('aiEventLoading', true);
-                var fishNames = tankFish.map(function (fId) {
-                  var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
-                  return sp ? sp.name : fId;
-                }).join(', ');
-                var tankInfo = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
-                var prompt = 'You are an aquarium science educator generating an interactive learning event for a tank simulation. Current tank state:\n' +
-                  '- Tank type: ' + (tankInfo ? tankInfo.name : selectedTank) + '\n' +
-                  '- Fish: ' + fishNames + ' (' + tankFish.length + ' total)\n' +
-                  '- Water: pH ' + (waterChem ? waterChem.pH.toFixed(1) : '?') + ', Temp ' + (waterChem ? waterChem.temp.toFixed(0) : '?') + 'F, NH3 ' + (waterChem ? waterChem.ammonia.toFixed(2) : '?') + ', NO2 ' + (waterChem ? waterChem.nitrite.toFixed(2) : '?') + ', NO3 ' + (waterChem ? waterChem.nitrate.toFixed(0) : '?') + '\n' +
-                  '- Day: ' + simDay + '\n' +
-                  '- Recent events: ' + (aiEventHistory.length > 0 ? aiEventHistory.slice(-3).map(function (e) { return e.title; }).join(', ') : 'none') + '\n\n' +
-                  'Generate ONE realistic aquarium event that requires a student decision. Return ONLY valid JSON:\n' +
-                  '{"title":"short title","icon":"single emoji","desc":"2-3 sentence scenario description","educational":"1-2 sentence science explanation","choices":[{"label":"emoji + action","effect_desc":"brief consequence preview","ammonia_delta":0,"ph_delta":0,"temp_delta":0,"nitrate_delta":0,"xp":5,"outcome":"what happens after choosing this"},{"label":"emoji + alternative action","effect_desc":"brief consequence","ammonia_delta":0,"ph_delta":0,"temp_delta":0,"nitrate_delta":0,"xp":3,"outcome":"result"}]}\n' +
-                  'Rules: 2-3 choices, effects realistic, one choice should be clearly educational/best, include a wrong/risky choice. Make it specific to the current fish and water conditions. Do NOT repeat recent events.';
-
-                callGemini(prompt, true, false, 0.9).then(function (response) {
-                  try {
-                    var parsed = typeof response === 'string' ? JSON.parse(response) : response;
-                    if (parsed && parsed.title && parsed.choices && parsed.choices.length >= 2) {
-                      // Convert AI response to standard event format
-                      var aiEvt = {
-                        id: 'ai_' + Date.now(),
-                        title: parsed.title,
-                        icon: parsed.icon || '\uD83E\uDD16',
-                        desc: parsed.desc,
-                        educational: parsed.educational,
-                        category: 'ai_generated',
-                        choices: parsed.choices.map(function (c) {
-                          return {
-                            label: c.label,
-                            effect: {
-                              ammonia: c.ammonia_delta || 0,
-                              pH: c.ph_delta || 0,
-                              temp: c.temp_delta || 0,
-                              nitrate: c.nitrate_delta || 0
-                            },
-                            outcome: c.outcome,
-                            xp: c.xp || 3
-                          };
-                        })
-                      };
-                      updMulti({ aiEvent: aiEvt, aiEventLoading: false, lastAIEventDay: simDay });
-                      return;
-                    }
-                  } catch (e) { /* fall through to fallback */ }
-                  // Fallback on parse failure
-                  var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
-                  updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
-                }).catch(function () {
-                  var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
-                  updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
-                });
-              } else {
-                // No callGemini available — use fallback
-                var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
-                updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
-              }
-            };
-
-            // ── Resolve AI Event (apply chosen consequence) ──
-            var resolveAIEvent = function (choiceIdx) {
-              if (!aiEvent || !aiEvent.choices || !aiEvent.choices[choiceIdx]) return;
-              var choice = aiEvent.choices[choiceIdx];
-              var updates = {};
-              // Apply effects to water chemistry
-              if (waterChem && choice.effect) {
-                var newChem = Object.assign({}, waterChem);
-                if (choice.effect.ammonia) newChem.ammonia = Math.max(0, newChem.ammonia + choice.effect.ammonia);
-                if (choice.effect.pH) newChem.pH = Math.max(5.5, Math.min(9.0, newChem.pH + choice.effect.pH));
-                if (choice.effect.temp) {
-                  if (Math.abs(choice.effect.temp) > 10) newChem.temp = choice.effect.temp; // Absolute temp set
-                  else newChem.temp = Math.max(40, Math.min(95, newChem.temp + choice.effect.temp));
-                }
-                if (choice.effect.nitrate) newChem.nitrate = Math.max(0, newChem.nitrate + choice.effect.nitrate);
-                if (choice.effect.nitrite) newChem.nitrite = Math.max(0, newChem.nitrite + choice.effect.nitrite);
-                updates.waterChem = newChem;
-              }
-              // Award XP
-              if (choice.xp && typeof awardStemXP === 'function') awardStemXP('aquarium', choice.xp, 'AI Event: ' + aiEvent.title);
-              // Log the resolved event
-              var historyEntry = { title: aiEvent.title, icon: aiEvent.icon, choice: choice.label, outcome: choice.outcome, day: simDay, xp: choice.xp || 0 };
-              updates.aiEventHistory = aiEventHistory.concat([historyEntry]).slice(-20);
-              // Mark event as resolved (show outcome)
-              updates.aiEvent = Object.assign({}, aiEvent, { resolved: true, chosenIdx: choiceIdx, chosenOutcome: choice.outcome, chosenXp: choice.xp || 0 });
-              updMulti(updates);
-              // Auto-dismiss outcome after 8 seconds
-              setTimeout(function () { upd('aiEvent', null); }, 8000);
-            };
-
-            // ── Ocean Ecology state ──
-            var oceanPop = d.oceanPop || { sardines: 800, tuna: 200, sharks: 50 };
-            var harvestRate = d.harvestRate != null ? d.harvestRate : 20;
-            var meshSize = d.meshSize || 'medium';
-            var mpaPercent = d.mpaPercent != null ? d.mpaPercent : 10;
-            var isOpenSeason = d.isOpenSeason != null ? d.isOpenSeason : true;
-            var oceanHistory = d.oceanHistory || [];
-            var oceanYear = d.oceanYear || 0;
-            var oceanRevenue = d.oceanRevenue || 0;
-            var oceanBycatch = d.oceanBycatch || 0;
-            var oceanCollapsed = d.oceanCollapsed || false;
-            var oceanScenario = d.oceanScenario || null;
-
-            // ── Marine Science state ──
-            var selectedZone = d.selectedZone || null;
-            var selectedSpecies = d.selectedSpecies || null;
-            var quizActive = d.quizActive || false;
-            var quizScore = d.quizScore || { correct: 0, total: 0 };
-            var quizQ = d.quizQ || null;
-
-
-            // ── Chemistry educational data ──
-            var CHEM_INFO = {
-              pH: {
-                name: 'pH (Power of Hydrogen)',
-                icon: '\u2697\uFE0F',
-                what: 'A measure of how acidic or basic the water is. The scale runs 0-14, where 7 is neutral. Each whole number change represents a 10x difference in hydrogen ion concentration.',
-                safeRange: 'Depends on species — freshwater: 6.5-7.5, African cichlids: 7.8-8.6, marine: 8.1-8.4',
-                danger: 'Rapid pH swings > 0.5 in 24h cause osmotic stress. Fish gills struggle to regulate ion exchange, leading to respiratory distress.',
-                math: function (wc, tank) {
-                  var diff = Math.abs(wc.pH - tank.pH);
-                  return 'Target: ' + tank.pH.toFixed(1) + ' | Current deviation: ' + diff.toFixed(2) + ' units\nA pH of ' + wc.pH.toFixed(1) + ' means [H\u207A] = 10\u207B' + wc.pH.toFixed(1) + ' mol/L';
-                },
-                fix: 'Partial water changes gradually bring pH toward target. Never adjust more than 0.2 units per day.'
-              },
-              temp: {
-                name: 'Temperature',
-                icon: '\uD83C\uDF21\uFE0F',
-                what: 'Fish are ectotherms — their metabolism is controlled by water temperature. Higher temps increase metabolism, oxygen demand, and ammonia toxicity.',
-                safeRange: 'Tropical: 75-82\u00B0F (24-28\u00B0C), Coldwater: 60-72\u00B0F (16-22\u00B0C), Marine: 76-82\u00B0F (24-28\u00B0C)',
-                danger: 'Every 10\u00B0F increase roughly doubles metabolic rate. Ammonia toxicity increases 10x between 68\u00B0F and 86\u00B0F.',
-                math: function (wc, tank) {
-                  var diff = Math.abs(wc.temp - tank.temp);
-                  var celsius = ((wc.temp - 32) * 5 / 9).toFixed(1);
-                  return 'Current: ' + wc.temp.toFixed(1) + '\u00B0F (' + celsius + '\u00B0C) | Target: ' + tank.temp + '\u00B0F\nDeviation: \u00B1' + diff.toFixed(1) + '\u00B0F';
-                },
-                fix: 'Adjust heater gradually — no more than 2\u00B0F per hour. Rapid changes cause thermal shock.'
-              },
-              ammonia: {
-                name: 'Ammonia (NH\u2083/NH\u2084\u207A)',
-                icon: '\u2620\uFE0F',
-                what: 'The primary waste product from fish gills and decomposing food. In its un-ionized form (NH\u2083), it is extremely toxic to fish even at low concentrations.',
-                safeRange: '0 ppm ideal | < 0.25 ppm tolerable | 0.25-1.0 ppm stressful | > 1.0 ppm lethal',
-                danger: 'Ammonia burns gill tissue, causing fish to gasp at the surface. At > 1 ppm, irreversible gill damage occurs within hours.',
-                math: function (wc, tank, bioload, fishCount) {
-                  var gen = bioload * 0.02;
-                  var converted = wc.ammonia * 0.15;
-                  return 'Generation: ' + fishCount + ' fish \u00D7 bioload = ' + gen.toFixed(3) + ' ppm/tick\nBacteria (Nitrosomonas) convert: ' + wc.ammonia.toFixed(2) + ' \u00D7 15% = ' + converted.toFixed(3) + ' ppm \u2192 NO\u2082\nNet change: +' + (gen - wc.ammonia * 0.05).toFixed(3) + ' ppm/tick';
-                },
-                fix: 'Immediate 25% water change. Reduce feeding. Add beneficial bacteria supplement. Do NOT add more fish.'
-              },
-              nitrite: {
-                name: 'Nitrite (NO\u2082\u207B)',
-                icon: '\u26A0\uFE0F',
-                what: 'Produced by Nitrosomonas bacteria converting ammonia. Still toxic — it binds to hemoglobin, reducing oxygen-carrying capacity (brown blood disease).',
-                safeRange: '0 ppm ideal | < 0.25 ppm tolerable | 0.25-1.0 ppm dangerous | > 1.0 ppm critical',
-                danger: 'Nitrite replaces oxygen on hemoglobin molecules. Fish blood turns brown and cannot carry O\u2082. Gills appear dark/chocolate colored.',
-                math: function (wc, tank) {
-                  var fromAmmonia = wc.ammonia * 0.15;
-                  var converted = wc.nitrite * 0.08;
-                  var toNitrate = wc.nitrite * 0.2;
-                  return 'Input from NH\u2083: ' + fromAmmonia.toFixed(3) + ' ppm/tick\nNatural decay: ' + converted.toFixed(3) + ' ppm/tick\nConverted to NO\u2083 by Nitrobacter: ' + toNitrate.toFixed(3) + ' ppm/tick';
-                },
-                fix: 'Water change + add aquarium salt (1 tsp/gal) to block nitrite absorption through gills.'
-              },
-              nitrate: {
-                name: 'Nitrate (NO\u2083\u207B)',
-                icon: '\uD83C\uDF3F',
-                what: 'The end product of the nitrogen cycle. Much less toxic than ammonia or nitrite, but accumulates over time. Live plants absorb nitrate as fertilizer.',
-                safeRange: '< 20 ppm excellent | < 40 ppm acceptable | 40-80 ppm high | > 80 ppm water change needed',
-                danger: 'Chronic high nitrate (> 40 ppm) suppresses immune function and stunts growth. Promotes algae blooms that consume oxygen at night.',
-                math: function (wc) {
-                  var fromNitrite = wc.nitrite * 0.2;
-                  return 'Input from NO\u2082: ' + fromNitrite.toFixed(3) + ' ppm/tick\nAccumulation: ' + wc.nitrate.toFixed(1) + ' ppm total\nOnly removed by: water changes or live plants';
-                },
-                fix: 'Regular 25% weekly water changes. Add fast-growing plants (hornwort, pothos). Reduce fish load.'
-              },
-              salinity: {
-                name: 'Salinity',
-                icon: '\uD83E\uDDC2',
-                what: 'The concentration of dissolved salts (primarily NaCl). Freshwater fish maintain internal salt levels higher than their environment; marine fish do the opposite.',
-                safeRange: 'Freshwater: 0 ppt | Brackish: 5-15 ppt | Marine: 34-36 ppt',
-                danger: 'Incorrect salinity disrupts osmoregulation. Fish cells either swell (too fresh) or shrink (too salty), damaging organs.',
-                math: function (wc) {
-                  return 'Current: ' + wc.salinity + ' ppt (parts per thousand)\n1 ppt = 1g salt per 1000g water\nSeawater: ~35 ppt = 3.5% salt by weight';
-                },
-                fix: 'Adjust slowly through water changes with correctly mixed water. Never change > 2 ppt per day.'
-              }
-            };
-            // ── Tank setup helpers ──
-            var initTank = function (tankId) {
-              var tank = TANK_TYPES.find(function (t) { return t.id === tankId; });
-              if (!tank) return;
-              updMulti({
-                selectedTank: tankId,
-                tankFish: [],
-                waterChem: { pH: tank.pH, temp: tank.temp, ammonia: 0, nitrite: 0, nitrate: 5, salinity: tank.salinity },
-                simTick: 0, simRunning: false, fishHealth: {}, eventLog: [{ tick: 0, msg: '🐠 ' + tank.name + ' tank initialized!' }]
-              });
-            };
-
-            var addFish = function (speciesId) {
-              var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
-              var species = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === speciesId; });
-              if (!tank || !species) return;
-              var currentLoad = tankFish.reduce(function (sum, f) {
-                var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === f; });
-                return sum + (sp ? sp.load : 0);
-              }, 0);
-              var maxLoad = Math.floor(tank.size / 2);
-              if (currentLoad + species.load > maxLoad) {
-                if (addToast) addToast('⚠️ Tank is at capacity! Bioload would exceed safe limits.', 'warning');
-                return;
-              }
-              var newFish = tankFish.concat([speciesId]);
-              var newHealth = Object.assign({}, fishHealth);
-              newHealth[speciesId] = (newHealth[speciesId] || 0) + 1;
-              var newHunger = Object.assign({}, hungerLevels);
-              if (newHunger[speciesId] === undefined) newHunger[speciesId] = 50;
-              updMulti({ tankFish: newFish, fishHealth: newHealth, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
-            };
-
-            var removeFish = function (idx) {
-              var newFish = tankFish.slice();
-              var removed = newFish.splice(idx, 1)[0];
-              var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === removed; });
-              updMulti({ tankFish: newFish, eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (sp ? sp.name : removed) }]) });
-            };
-
-            // ── Water chemistry helpers ──
-            var getChemStatus = function (param, value) {
-              var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
-              if (!tank) return 'ok';
-              if (param === 'ammonia') return value < 0.25 ? 'ok' : value < 1.0 ? 'warn' : 'danger';
-              if (param === 'nitrite') return value < 0.25 ? 'ok' : value < 1.0 ? 'warn' : 'danger';
-              if (param === 'nitrate') return value < 40 ? 'ok' : value < 80 ? 'warn' : 'danger';
-              if (param === 'pH') {
-                var diff = Math.abs(value - tank.pH);
-                return diff < 0.5 ? 'ok' : diff < 1.0 ? 'warn' : 'danger';
-              }
-              if (param === 'temp') {
-                var tdiff = Math.abs(value - tank.temp);
-                return tdiff < 3 ? 'ok' : tdiff < 6 ? 'warn' : 'danger';
-              }
-              return 'ok';
-            };
-
-            var statusIcon = function (s) { return s === 'ok' ? '✅' : s === 'warn' ? '⚠️' : '❌'; };
-            var statusColor = function (s) { return s === 'ok' ? 'text-green-600' : s === 'warn' ? 'text-amber-600' : 'text-red-600'; };
-
-            var doWaterChange = function () {
-              if (!waterChem) return;
-              var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
-              var newChem = Object.assign({}, waterChem, {
-                ammonia: Math.max(0, waterChem.ammonia * 0.5),
-                nitrite: Math.max(0, waterChem.nitrite * 0.5),
-                nitrate: Math.max(0, waterChem.nitrate * 0.6),
-                pH: waterChem.pH + (tank.pH - waterChem.pH) * 0.3
-              });
-              updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '💧 25% water change performed' }]) });
-              if (addToast) addToast('💧 Water change complete!', 'success');
-            };
-
-            var feedFish = function () {
-              if (!waterChem) return;
-              var newChem = Object.assign({}, waterChem, {
-                ammonia: waterChem.ammonia + 0.15 * (tankFish.length || 1),
-              });
-              updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed' }]) });
-            };
-
-            // ── Simulation tick (water chemistry drift) ──
-            var simStep = function () {
-              if (!waterChem || !selectedTank) return;
-              var bioload = tankFish.reduce(function (sum, f) {
-                var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === f; });
-                return sum + (sp ? sp.load : 0);
-              }, 0);
-              var ammoniaGen = bioload * 0.02;
-              var newAmm = Math.max(0, waterChem.ammonia + ammoniaGen - waterChem.ammonia * 0.05);
-              var nitriteBact = waterChem.ammonia * 0.15;
-              var newNitrite = Math.max(0, waterChem.nitrite + nitriteBact - waterChem.nitrite * 0.08);
-              var nitrateBact = waterChem.nitrite * 0.2;
-              var newNitrate = Math.max(0, waterChem.nitrate + nitrateBact);
-              var pHdrift = (Math.random() - 0.5) * 0.05;
-              var tempDrift = (Math.random() - 0.5) * 0.3;
-              var newChem = {
-                pH: Math.max(5.5, Math.min(9.0, waterChem.pH + pHdrift)),
-                temp: Math.max(40, Math.min(95, waterChem.temp + tempDrift)),
-                ammonia: Math.round(newAmm * 100) / 100,
-                nitrite: Math.round(newNitrite * 100) / 100,
-                nitrate: Math.round(newNitrate * 10) / 10,
-                salinity: waterChem.salinity
-              };
-              var newTick = simTick + 1;
-              var newLog = eventLog.slice();
-              // AI-powered random events (every ~5 sim-days, 60% chance)
-              var daysSinceLastEvent = simDay - lastAIEventDay;
-              if (daysSinceLastEvent >= 5 && Math.random() < 0.6 && !aiEvent && !aiEventLoading) {
-                generateAIEvent();
-                newLog.push({ tick: newTick, msg: '🤖 An event is developing in your tank...' });
-              }
-              // XP for maintaining healthy parameters
-              var allOk = getChemStatus('ammonia', newChem.ammonia) === 'ok' &&
-                getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
-                getChemStatus('pH', newChem.pH) === 'ok';
-              if (allOk && tankFish.length > 0 && newTick % 5 === 0) {
-                awardStemXP('aquarium', 2, 'Healthy tank maintenance');
-              }
-              updMulti({ waterChem: newChem, simTick: newTick, eventLog: newLog.slice(-20) });
-            };
-
-
-            // ── Tank Health Score & Strategy Tips ──
-            var getTankHealth = function () {
-              if (!waterChem || tankFish.length === 0) return { score: 100, tips: [{ icon: '\uD83D\uDC1F', text: 'Add some fish to get started!', color: 'text-cyan-600' }] };
-              var score = 100;
-              var tips = [];
-              // Ammonia penalty
-              var ammSt = getChemStatus('ammonia', waterChem.ammonia);
-              if (ammSt === 'warn') { score -= 15; tips.push({ icon: '\u26A0\uFE0F', text: 'Ammonia at ' + waterChem.ammonia.toFixed(2) + ' ppm \u2014 approaching toxic levels. Consider a water change.', color: 'text-amber-600' }); }
-              if (ammSt === 'danger') { score -= 35; tips.push({ icon: '\u2620\uFE0F', text: 'CRITICAL: Ammonia at ' + waterChem.ammonia.toFixed(2) + ' ppm! Immediate water change needed. Fish are suffering gill damage.', color: 'text-red-600' }); }
-              // Nitrite penalty
-              var nitSt = getChemStatus('nitrite', waterChem.nitrite);
-              if (nitSt === 'warn') { score -= 12; tips.push({ icon: '\u26A0\uFE0F', text: 'Nitrite rising (' + waterChem.nitrite.toFixed(2) + ' ppm). Your nitrogen cycle may not be established yet.', color: 'text-amber-600' }); }
-              if (nitSt === 'danger') { score -= 30; tips.push({ icon: '\u2620\uFE0F', text: 'CRITICAL: Nitrite at ' + waterChem.nitrite.toFixed(2) + ' ppm! Brown blood disease risk. Emergency water change!', color: 'text-red-600' }); }
-              // Nitrate penalty
-              if (waterChem.nitrate > 80) { score -= 15; tips.push({ icon: '\uD83D\uDE2C', text: 'Nitrate very high (' + waterChem.nitrate.toFixed(0) + ' ppm). Schedule regular water changes or add live plants.', color: 'text-amber-600' }); }
-              else if (waterChem.nitrate > 40) { score -= 8; tips.push({ icon: '\uD83C\uDF3F', text: 'Nitrate at ' + waterChem.nitrate.toFixed(0) + ' ppm \u2014 a water change will bring this down.', color: 'text-amber-600' }); }
-              // pH penalty
-              var phSt = getChemStatus('pH', waterChem.pH);
-              if (phSt === 'warn') { score -= 10; tips.push({ icon: '\u2697\uFE0F', text: 'pH drifting (' + waterChem.pH.toFixed(1) + '). Fish prefer stable pH near ' + (TANK_TYPES.find(function (t) { return t.id === selectedTank; }) || { pH: 7 }).pH + '.', color: 'text-amber-600' }); }
-              if (phSt === 'danger') { score -= 25; tips.push({ icon: '\u2697\uFE0F', text: 'pH dangerously off-target (' + waterChem.pH.toFixed(1) + ')! Osmotic stress is likely.', color: 'text-red-600' }); }
-              // Bioload check
-              var species = SPECIES_BY_TANK[selectedTank] || [];
-              var currentLoad = tankFish.reduce(function (s, f) { var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
-              var maxLoad = Math.floor((TANK_TYPES.find(function (t) { return t.id === selectedTank; }) || { size: 20 }).size / 2);
-              var loadPct = Math.round(currentLoad / maxLoad * 100);
-              if (loadPct > 80) { score -= 10; tips.push({ icon: '\uD83D\uDC1F', text: 'Bioload at ' + loadPct + '% capacity. High bioload = more waste = faster ammonia buildup.', color: 'text-amber-600' }); }
-              // Hunger check
-              var avgHunger = 0;
-              var hungerCount = 0;
-              tankFish.forEach(function (fId) { var h = hungerLevels[fId]; if (h !== undefined) { avgHunger += h; hungerCount++; } });
-              if (hungerCount > 0) avgHunger = avgHunger / hungerCount;
-              if (avgHunger > 75) { score -= 12; tips.push({ icon: '\uD83C\uDF7D\uFE0F', text: 'Fish are very hungry (avg ' + Math.round(avgHunger) + '%). Feed soon to reduce stress!', color: 'text-amber-600' }); }
-              // All good!
-              if (tips.length === 0) {
-                tips.push({ icon: '\uD83C\uDF1F', text: 'Excellent tank management! All parameters in safe range. Your nitrogen cycle is established.', color: 'text-green-600' });
-              }
-              return { score: Math.max(0, score), tips: tips };
-            };
-            // ── Ocean Ecology helpers ──
-            var OCEAN_SPECIES = [
-              { id: 'sardines', name: 'Sardines', icon: '🐟', r: 0.4, K: 1000, value: 1, desc: 'Fast-reproducing small fish. Foundation of the marine food web.' },
-              { id: 'tuna', name: 'Tuna', icon: '🐠', r: 0.15, K: 400, value: 8, desc: 'Mid-level predator. High commercial value but slow to recover.' },
-              { id: 'sharks', name: 'Sharks', icon: '🦈', r: 0.05, K: 100, value: 3, desc: 'Apex predator. Extremely slow reproduction — vulnerable to overfishing.' }
-            ];
-
-            var stepOcean = function () {
-              var newPop = Object.assign({}, oceanPop);
-              var harvestFactor = isOpenSeason ? harvestRate / 100 : 0;
-              var mpaFactor = 1 - mpaPercent / 100;
-              var bycatchMult = meshSize === 'small' ? 0.15 : meshSize === 'medium' ? 0.05 : 0.02;
-              var yearRevenue = 0;
-              var yearBycatch = 0;
-
-              OCEAN_SPECIES.forEach(function (sp) {
-                var N = newPop[sp.id];
-                var growth = sp.r * N * (1 - N / sp.K);
-                var predation = 0;
-                if (sp.id === 'sardines') predation = 0.003 * N * newPop.tuna;
-                if (sp.id === 'tuna') predation = 0.004 * N * newPop.sharks;
-                var harvest = sp.id !== 'sharks' ? harvestFactor * mpaFactor * N * 0.1 : harvestFactor * mpaFactor * N * 0.03;
-                var bycatch = sp.id === 'sharks' ? harvest * bycatchMult * 3 : 0;
-                yearBycatch += bycatch;
-                yearRevenue += harvest * sp.value;
-                newPop[sp.id] = Math.max(0, Math.round(N + growth - predation - harvest - bycatch));
-              });
-
-              var newYear = oceanYear + 1;
-              var newHistory = oceanHistory.concat([{ year: newYear, sardines: newPop.sardines, tuna: newPop.tuna, sharks: newPop.sharks, revenue: Math.round(yearRevenue) }]);
-              var collapsed = newPop.sardines < 50 || newPop.tuna < 20;
-
-              updMulti({
-                oceanPop: newPop,
-                oceanYear: newYear,
-                oceanRevenue: oceanRevenue + Math.round(yearRevenue),
-                oceanBycatch: oceanBycatch + Math.round(yearBycatch),
-                oceanHistory: newHistory.slice(-50),
-                oceanCollapsed: collapsed
-              });
-
-              if (collapsed && !oceanCollapsed) {
-                if (addToast) addToast('🚨 Fish stock collapse! Populations have crashed below sustainable levels.', 'error');
-              }
-              if (!collapsed && newYear % 5 === 0) {
-                awardStemXP('ocean', 3, 'Sustainable fishing for 5 years');
-              }
-            };
-
-            var resetOcean = function () {
-              updMulti({
-                oceanPop: { sardines: 800, tuna: 200, sharks: 50 },
-                harvestRate: 20, meshSize: 'medium', mpaPercent: 10, isOpenSeason: true,
-                oceanHistory: [], oceanYear: 0, oceanRevenue: 0, oceanBycatch: 0,
-                oceanCollapsed: false, oceanScenario: null
-              });
-            };
-
-            // ── Marine Science data ──
-            var OCEAN_ZONES = [
-              { id: 'sunlight', name: 'Sunlight Zone (Epipelagic)', depth: '0-200m', light: '100%', temp: '20-25°C', color: '#38bdf8', species: ['clownfish', 'dolphin', 'jellyfish', 'turtle'] },
-              { id: 'twilight', name: 'Twilight Zone (Mesopelagic)', depth: '200-1000m', light: '1%', temp: '5-20°C', color: '#1e40af', species: ['squid', 'hatchetfish', 'swordfish'] },
-              { id: 'midnight', name: 'Midnight Zone (Bathypelagic)', depth: '1000-4000m', light: '0%', temp: '2-5°C', color: '#1e1b4b', species: ['anglerfish', 'gulpereel', 'giantsquid'] },
-              { id: 'abyssal', name: 'Abyssal Zone (Abyssopelagic)', depth: '4000-6000m', light: '0%', temp: '1-2°C', color: '#0f0a2e', species: ['tubeworms', 'seacucumber'] },
-              { id: 'hadal', name: 'Hadal Zone (Trenches)', depth: '6000-11000m', light: '0%', temp: '1-4°C', color: '#050210', species: ['amphipod', 'snailfish'] }
-            ];
-
-            var MARINE_SPECIES = [
-              { id: 'clownfish', name: 'Clownfish', icon: '🐠', zone: 'sunlight', habitat: 'Coral Reef', diet: 'Omnivore', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
-              { id: 'dolphin', name: 'Bottlenose Dolphin', icon: '🐬', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Dolphins sleep with one eye open — one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
-              { id: 'jellyfish', name: 'Moon Jellyfish', icon: '🪼', zone: 'sunlight', habitat: 'Coastal', diet: 'Carnivore', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood — just a nerve net.', quiz: 'What body system do jellyfish lack?' },
-              { id: 'turtle', name: 'Green Sea Turtle', icon: '🐢', zone: 'sunlight', habitat: 'Coastal & Reef', diet: 'Herbivore', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
-              { id: 'squid', name: 'Firefly Squid', icon: '🦑', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
-              { id: 'hatchetfish', name: 'Hatchetfish', icon: '🐟', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
-              { id: 'swordfish', name: 'Swordfish', icon: '🐟', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
-              { id: 'anglerfish', name: 'Anglerfish', icon: '🐡', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
-              { id: 'gulpereel', name: 'Gulper Eel', icon: '🐍', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
-              { id: 'giantsquid', name: 'Giant Squid', icon: '🦑', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Has the largest eyes in the animal kingdom — up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
-              { id: 'tubeworms', name: 'Giant Tube Worms', icon: '🪱', zone: 'abyssal', habitat: 'Hydrothermal Vents', diet: 'Chemosynthetic', status: 'LC', fact: 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
-              { id: 'seacucumber', name: 'Sea Cucumber', icon: '🥒', zone: 'abyssal', habitat: 'Abyssal Plain', diet: 'Detritivore', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
-              { id: 'amphipod', name: 'Supergiant Amphipod', icon: '🦐', zone: 'hadal', habitat: 'Trenches', diet: 'Scavenger', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
-              { id: 'snailfish', name: 'Mariana Snailfish', icon: '🐟', zone: 'hadal', habitat: 'Trenches', diet: 'Carnivore', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
-              { id: 'mantaray', name: 'Manta Ray', icon: '🐟', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Filter Feeder', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
-              { id: 'bluewhale', name: 'Blue Whale', icon: '🐋', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Filter Feeder', status: 'EN', fact: 'The largest animal ever — their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
-              { id: 'seahorse', name: 'Seahorse', icon: '🐟', zone: 'sunlight', habitat: 'Coastal', diet: 'Carnivore', status: 'VU', fact: 'Males carry and give birth to the babies — unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
-              { id: 'octopus', name: 'Dumbo Octopus', icon: '🐙', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
-              { id: 'nautilus', name: 'Nautilus', icon: '🐚', zone: 'twilight', habitat: 'Deep Reef', diet: 'Scavenger', status: 'VU', fact: 'A living fossil — virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
-              { id: 'coelacanth', name: 'Coelacanth', icon: '🐟', zone: 'twilight', habitat: 'Deep Caves', diet: 'Carnivore', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
-            ];
-
-            var generateQuiz = function () {
-              var sp = MARINE_SPECIES[Math.floor(Math.random() * MARINE_SPECIES.length)];
-              var q = {
-                species: sp.id, question: sp.quiz, answer: sp.name,
-                options: [sp.name].concat(
-                  MARINE_SPECIES.filter(function (s) { return s.id !== sp.id; })
-                    .sort(function () { return Math.random() - 0.5; }).slice(0, 3)
-                    .map(function (s) { return s.name; })
-                ).sort(function () { return Math.random() - 0.5; })
-              };
-              updMulti({ quizQ: q, quizActive: true });
-            };
-
-            var answerQuiz = function (ans) {
-              if (!quizQ) return;
-              var correct = ans === quizQ.answer;
-              announceToSR(correct ? 'Correct!' : 'Incorrect');
-              if (correct) awardXP(3, 'Marine science quiz');
-              updMulti({
-                quizScore: { correct: quizScore.correct + (correct ? 1 : 0), total: quizScore.total + 1 },
-                quizQ: Object.assign({}, quizQ, { answered: ans, correct: correct })
-              });
-            };
-
-
-
-            // ═══ RENDER ═══
-            var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo' };
-            var mColor = modeColors[mode] || 'cyan';
-
-            return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-300" },
-
-              // ── Header ──
-              React.createElement("div", { className: "flex items-center gap-3 mb-2" },
-                React.createElement("button", {
-                  onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
-                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools'
-                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-                React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, "\uD83D\uDC20 Aquaculture & Ocean Lab"),
-                React.createElement("div", { className: "flex items-center gap-2 ml-auto" },
-                  React.createElement("button", {
-                    onClick: function () {
-                      var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : 'Marine Science', data: Object.assign({}, d), timestamp: Date.now() };
-                      setToolSnapshots(function (prev) { return prev.concat([snap]); });
-                      if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
-                    },
-                    className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
-                  }, "\uD83D\uDCF8 Snapshot")
-                )
-              ),
-
-              // ── Mode Tabs ──
-              React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1" },
-                [
-                  { id: 'tank', icon: '\uD83D\uDC20', label: 'Aquarium Lab' },
-                  { id: 'ocean', icon: '\uD83C\uDF0A', label: 'Ocean Ecology' },
-                  { id: 'marine', icon: '\uD83D\uDD2C', label: 'Marine Science' }
-                ].map(function (tab) {
-                  return React.createElement("button", {
-                    key: tab.id,
-                    onClick: function () { upd('mode', tab.id); },
-                    className: "flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 " + (mode === tab.id ? "bg-gradient-to-r from-" + modeColors[tab.id] + "-500 to-" + modeColors[tab.id] + "-600 text-white shadow-lg shadow-" + modeColors[tab.id] + "-500/25" : "text-slate-500 hover:text-slate-700 hover:bg-white/60")
-                  }, tab.icon, " ", tab.label);
-                })
-              ),
-
-
-              // ═══ ANATOMY VIEWER OVERLAY ═══
-              viewingAnatomy && (() => {
-                // Find species data from all sources
-                var allSpecies = [].concat(
-                  SPECIES_BY_TANK[selectedTank] || [],
-                  MARINE_SPECIES || []
-                );
-                var sp = allSpecies.find(function (s) { return s.id === viewingAnatomy; });
-                if (!sp) { closeAnatomy(); return null; }
-                var bodyPlanKey = SPECIES_BODY_MAP[viewingAnatomy] || 'fish';
-                var plan = BODY_PLANS[bodyPlanKey];
-                if (!plan) { closeAnatomy(); return null; }
-                var extraInfo = SPECIES_ANATOMY[viewingAnatomy] || {};
-
-                return React.createElement("div", { className: "bg-gradient-to-br from-slate-900/95 via-indigo-950/95 to-slate-900/95 rounded-2xl p-5 border-2 border-indigo-400/30 shadow-2xl animate-in fade-in duration-300 relative overflow-hidden" },
-                  // Subtle background pattern
-                  React.createElement("div", { style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 20% 80%, rgba(99,102,241,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(34,211,238,0.06) 0%, transparent 50%)', pointerEvents: 'none' } }),
-
-                  // Header
-                  React.createElement("div", { className: "flex items-center gap-3 mb-4 relative z-10" },
-                    React.createElement("div", { className: "text-3xl" }, sp.icon || '\uD83D\uDC1F'),
-                    React.createElement("div", null,
-                      React.createElement("h4", { className: "text-base font-bold text-white" }, sp.name),
-                      React.createElement("p", { className: "text-[11px] text-indigo-300/80" }, plan.label)
-                    ),
-                    React.createElement("button", {
-                      onClick: closeAnatomy,
-                      className: "ml-auto px-3 py-1 text-xs font-bold text-slate-400 bg-slate-800/60 hover:bg-slate-700/80 rounded-full transition-all border border-slate-600/30"
-                    }, "\u2715 Close")
-                  ),
-
-                  // ── SVG Diagram with interactive labels ──
-                  React.createElement("div", { className: "relative bg-gradient-to-b from-slate-800/50 to-slate-900/50 rounded-xl p-4 mb-4 border border-slate-700/30" },
-                    // Render SVG diagram
-                    React.createElement("div", {
-                      dangerouslySetInnerHTML: { __html: plan.svg(400, 250, SPECIES_COLORS[viewingAnatomy]) },
-                      className: "max-w-sm mx-auto",
-                      style: { filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }
-                    }),
-                    // Clickable label dots overlaid on the diagram
-                    React.createElement("div", { style: { position: 'absolute', top: '16px', left: '16px', right: '16px', bottom: '16px' } },
-                      plan.parts.map(function (part, i) {
-                        var isHighlighted = anatomyHighlight === i;
-                        return React.createElement("div", {
-                          key: i,
-                          style: {
-                            position: 'absolute',
-                            left: part.x + '%', top: part.y + '%',
-                            transform: 'translate(-50%,-50%)',
-                            zIndex: isHighlighted ? 20 : 10,
-                            cursor: 'pointer'
-                          },
-                          onClick: function () { upd('anatomyHighlight', isHighlighted ? null : i); }
-                        },
-                          // Pulsing dot
-                          React.createElement("div", {
-                            className: "relative",
-                            style: { width: '16px', height: '16px' }
-                          },
-                            React.createElement("div", {
-                              style: {
-                                width: '16px', height: '16px', borderRadius: '50%',
-                                background: isHighlighted ? '#22d3ee' : 'rgba(255,255,255,0.9)',
-                                border: '2px solid ' + (isHighlighted ? '#06b6d4' : 'rgba(99,102,241,0.6)'),
-                                boxShadow: isHighlighted ? '0 0 12px rgba(34,211,238,0.6)' : '0 0 6px rgba(255,255,255,0.3)',
-                                animation: isHighlighted ? 'none' : 'pulse 2s ease-in-out infinite',
-                                transition: 'all 0.2s'
-                              }
-                            }),
-                            // Number label
-                            React.createElement("span", {
-                              style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '8px', fontWeight: 'bold', color: isHighlighted ? '#164e63' : '#4338ca', lineHeight: 1 }
-                            }, String(i + 1))
-                          ),
-                          // Tooltip on highlight
-                          isHighlighted && React.createElement("div", {
-                            className: "absolute z-30",
-                            style: { top: '20px', left: '50%', transform: 'translateX(-50%)', minWidth: '200px' }
-                          },
-                            React.createElement("div", { className: "bg-slate-800/95 backdrop-blur-sm rounded-lg p-2.5 border border-cyan-500/30 shadow-xl" },
-                              React.createElement("p", { className: "text-[11px] font-bold text-cyan-300 mb-0.5" }, part.name),
-                              React.createElement("p", { className: "text-[10px] text-slate-300 leading-relaxed" }, part.desc)
-                            )
-                          )
-                        );
-                      })
-                    )
-                  ),
-
-                  // ── Parts Legend ──
-                  React.createElement("div", { className: "grid grid-cols-2 gap-1.5 mb-3 relative z-10" },
-                    plan.parts.map(function (part, i) {
-                      var isHighlighted = anatomyHighlight === i;
-                      return React.createElement("button", {
-                        key: i,
-                        onClick: function () { upd('anatomyHighlight', isHighlighted ? null : i); },
-                        className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all " + (isHighlighted ? "bg-cyan-500/20 border border-cyan-400/40" : "bg-slate-800/40 border border-transparent hover:bg-slate-700/40")
-                      },
-                        React.createElement("span", { className: "w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold flex-shrink-0 " + (isHighlighted ? "bg-cyan-400 text-slate-900" : "bg-slate-600 text-slate-300") }, String(i + 1)),
-                        React.createElement("span", { className: "text-[10px] font-bold " + (isHighlighted ? "text-cyan-300" : "text-slate-400") }, part.name)
-                      );
-                    })
-                  ),
-
-                  // ── Species-Specific Info ──
-                  React.createElement("div", { className: "space-y-2 relative z-10" },
-                    // Fun fact
-                    sp.fact && React.createElement("div", { className: "bg-indigo-500/10 rounded-xl p-3 border border-indigo-400/20" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-indigo-300 mb-0.5" }, "\uD83D\uDCA1 Did You Know?"),
-                      React.createElement("p", { className: "text-[11px] text-indigo-200/80 leading-relaxed" }, sp.fact)
-                    ),
-                    // Anatomy override (species-specific)
-                    extraInfo.override && React.createElement("div", { className: "bg-cyan-500/10 rounded-xl p-3 border border-cyan-400/20" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-cyan-300 mb-0.5" }, "\uD83E\uDDAC Unique Anatomy"),
-                      React.createElement("p", { className: "text-[11px] text-cyan-200/80 leading-relaxed" }, extraInfo.override)
-                    ),
-                    // Locomotion
-                    extraInfo.locomotion && React.createElement("div", { className: "bg-emerald-500/10 rounded-xl p-3 border border-emerald-400/20" },
-                      React.createElement("p", { className: "text-[10px] font-bold text-emerald-300 mb-0.5" }, "\uD83C\uDFCA How It Moves"),
-                      React.createElement("p", { className: "text-[11px] text-emerald-200/80 leading-relaxed" }, extraInfo.locomotion)
-                    ),
-                    // Habitat info from marine species
-                    sp.habitat && React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                      React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-bold border border-blue-400/20" }, "\uD83C\uDF0A " + sp.habitat),
-                      sp.diet && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-bold border border-amber-400/20" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
-                      sp.status && React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (sp.status === 'CR' ? 'bg-red-500/20 text-red-300 border border-red-400/20' : sp.status === 'EN' ? 'bg-red-500/15 text-red-300 border border-red-400/20' : sp.status === 'VU' ? 'bg-amber-500/15 text-amber-300 border border-amber-400/20' : 'bg-green-500/15 text-green-300 border border-green-400/20') },
-                        "\uD83D\uDEE1\uFE0F " + ({ LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' }[sp.status] || sp.status))
-                    ),
-
-                    // XP button
-                    React.createElement("button", {
-                      onClick: function () {
-                        awardStemXP('aquarium', 2, 'Studied anatomy of ' + sp.name);
-                        if (addToast) addToast('\uD83E\uDDAC +2 XP for studying ' + sp.name + ' anatomy!', 'success');
-                      },
-                      className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
-                    }, "\uD83C\uDF93 I Studied This! (+2 XP)")
-                  )
-                );
-              })(),
-
-
-              // ═══════════════ MODE 1: AQUARIUM LAB ═══════════════
-              mode === 'tank' && !selectedTank && React.createElement("div", { className: "space-y-3" },
-                React.createElement("h4", { className: "text-sm font-bold text-cyan-700" }, "\uD83D\uDC1F Choose Your Tank"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-3" },
-                  TANK_TYPES.map(function (tank) {
-                    return React.createElement("button", {
-                      key: tank.id,
-                      onClick: function () { initTank(tank.id); },
-                      className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-200/60 hover:border-cyan-400"
-                    },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-xl" }, tank.name.split(' ')[0]),
-                        React.createElement("span", { className: "text-xs font-bold text-cyan-800" }, tank.name.split(' ').slice(1).join(' ')),
-                        React.createElement("span", { className: "ml-auto text-[10px] text-amber-600 font-bold" }, '\u2B50'.repeat(tank.diff))
-                      ),
-                      React.createElement("p", { className: "text-[11px] text-slate-500 mb-2" }, tank.desc),
-                      React.createElement("div", { className: "flex gap-2 text-[10px] text-cyan-600" },
-                        React.createElement("span", null, tank.size + " gal"),
-                        React.createElement("span", null, "\u2022"),
-                        React.createElement("span", null, tank.temp + "\u00B0F"),
-                        React.createElement("span", null, "\u2022"),
-                        React.createElement("span", null, "pH " + tank.pH),
-                        tank.salinity > 0 && React.createElement("span", null, "\u2022 " + tank.salinity + " ppt")
-                      )
-                    );
-                  })
-                )
-              ),
-
-              // ── Active Tank View ──
-              mode === 'tank' && selectedTank && (() => {
-                var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
-                var species = SPECIES_BY_TANK[selectedTank] || [];
-                var currentLoad = tankFish.reduce(function (sum, f) {
-                  var sp = species.find(function (s) { return s.id === f; });
-                  return sum + (sp ? sp.load : 0);
-                }, 0);
-                var maxLoad = Math.floor(tank.size / 2);
-                var loadPct = Math.min(100, Math.round(currentLoad / maxLoad * 100));
-
-                return React.createElement("div", { className: "space-y-3" },
-                  // Tank header with time & speed
-                  React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-3 border border-cyan-200/50" },
-                    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                      React.createElement("button", {
-                        onClick: function () { updMulti({ selectedTank: null, simRunning: false }); },
-                        className: "text-xs text-cyan-600 hover:text-cyan-800 font-bold"
-                      }, "\u2190 Back"),
-                      React.createElement("span", { className: "text-sm font-bold text-cyan-800" }, tank.name),
-                      React.createElement("span", { className: "ml-auto text-xs font-mono text-slate-500" },
-                        "\uD83D\uDCC5 Day " + simDay + ", " + (simHour < 10 ? '0' : '') + simHour + ":00" + (simHour >= 20 || simHour < 6 ? ' \uD83C\uDF19' : ' \u2600\uFE0F')
-                      )
-                    ),
-                    // Speed controls
-                    React.createElement("div", { className: "flex items-center gap-1.5" },
-                      React.createElement("span", { className: "text-[10px] font-bold text-slate-500 mr-1" }, "\u23F1 Speed:"),
-                      [
-                        { spd: 0, label: '\u23F8', tip: 'Pause' },
-                        { spd: 1, label: '\u25B6', tip: 'Normal (2s/tick)' },
-                        { spd: 2, label: '\u23E9', tip: 'Fast (1s/tick)' },
-                        { spd: 5, label: '\u23ED', tip: 'Turbo (0.4s/tick)' }
-                      ].map(function (s) {
-                        return React.createElement("button", {
-                          key: s.spd,
-                          onClick: function () { upd('simSpeed', s.spd); },
-                          title: s.tip,
-                          className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-500 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-500 hover:bg-cyan-100 border border-slate-200")
-                        }, s.label);
-                      }),
-                      React.createElement("span", { className: "ml-auto text-[10px] text-slate-400 font-mono" }, "T:" + simTick)
-                    )
-                  ),
-
-                  // Water Chemistry Panel (clickable tooltips)
-                  waterChem && React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 rounded-2xl p-4 border border-cyan-200/60 shadow-sm" },
-                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                      React.createElement("h4", { className: "text-xs font-bold text-cyan-700" }, "\uD83E\uDDEA Water Chemistry"),
-                      React.createElement("span", { className: "text-[9px] text-slate-400 italic" }, "Tap any card for details")
-                    ),
-                    React.createElement("div", { className: "grid grid-cols-3 gap-2" },
-                      [
-                        { key: 'pH', label: 'pH', val: waterChem.pH.toFixed(1) },
-                        { key: 'temp', label: 'Temp', val: waterChem.temp.toFixed(0) + '\u00B0F' },
-                        { key: 'ammonia', label: 'NH\u2083', val: waterChem.ammonia.toFixed(2) + ' ppm' },
-                        { key: 'nitrite', label: 'NO\u2082', val: waterChem.nitrite.toFixed(2) + ' ppm' },
-                        { key: 'nitrate', label: 'NO\u2083', val: waterChem.nitrate.toFixed(1) + ' ppm' },
-                        { key: 'salinity', label: 'Salt', val: waterChem.salinity + ' ppt' }
-                      ].map(function (p) {
-                        var st = getChemStatus(p.key, waterChem[p.key]);
-                        var isActive = chemTooltip === p.key;
-                        return React.createElement("div", {
-                          key: p.key,
-                          onClick: function () { upd('chemTooltip', isActive ? null : p.key); },
-                          className: "rounded-lg p-2 text-center cursor-pointer transition-all hover:scale-105 " + (isActive ? "bg-white ring-2 ring-cyan-400 shadow-lg" : "bg-white/70 hover:bg-white/90")
-                        },
-                          React.createElement("div", { className: "text-[10px] text-slate-500 font-bold" }, (CHEM_INFO[p.key] || {}).icon || '', ' ', p.label),
-                          React.createElement("div", { className: "text-sm font-bold " + statusColor(st) }, statusIcon(st) + " " + p.val)
-                        );
-                      })
-                    ),
-                    // ── Chemistry Tooltip Overlay ──
-                    chemTooltip && CHEM_INFO[chemTooltip] && (() => {
-                      var info = CHEM_INFO[chemTooltip];
-                      var t = TANK_TYPES.find(function (x) { return x.id === selectedTank; }) || {};
-                      var bio = tankFish.reduce(function (s, f) { var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
-                      var mathStr = info.math ? info.math(waterChem, t, bio, tankFish.length) : '';
-                      return React.createElement("div", { className: "mt-3 bg-white rounded-xl p-3 border-2 border-cyan-300/60 shadow-lg animate-in fade-in duration-200" },
-                        React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                          React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
-                          React.createElement("button", { onClick: function () { upd('chemTooltip', null); }, className: "text-[10px] text-slate-400 hover:text-slate-600" }, "\u2715")
-                        ),
-                        React.createElement("div", { className: "space-y-2 text-[11px] leading-relaxed" },
-                          React.createElement("div", { className: "bg-cyan-50 rounded-lg p-2" },
-                            React.createElement("p", { className: "font-bold text-cyan-700 mb-0.5" }, "\uD83D\uDCD6 What is it?"),
-                            React.createElement("p", { className: "text-slate-600" }, info.what)
-                          ),
-                          React.createElement("div", { className: "bg-green-50 rounded-lg p-2" },
-                            React.createElement("p", { className: "font-bold text-green-700 mb-0.5" }, "\u2705 Safe Range"),
-                            React.createElement("p", { className: "text-slate-600" }, info.safeRange)
-                          ),
-                          React.createElement("div", { className: "bg-red-50 rounded-lg p-2" },
-                            React.createElement("p", { className: "font-bold text-red-700 mb-0.5" }, "\u26A0\uFE0F Why It's Dangerous"),
-                            React.createElement("p", { className: "text-slate-600" }, info.danger)
-                          ),
-                          mathStr && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2" },
-                            React.createElement("p", { className: "font-bold text-indigo-700 mb-0.5" }, "\uD83E\uDDEE Current Math"),
-                            React.createElement("pre", { className: "text-[10px] text-slate-600 font-mono whitespace-pre-wrap" }, mathStr)
-                          ),
-                          React.createElement("div", { className: "bg-amber-50 rounded-lg p-2" },
-                            React.createElement("p", { className: "font-bold text-amber-700 mb-0.5" }, "\uD83D\uDCA1 How to Fix"),
-                            React.createElement("p", { className: "text-slate-600" }, info.fix)
-                          )
-                        )
-                      );
-                    })(),
-                    // Nitrogen cycle mini-diagram
-                    !chemTooltip && React.createElement("div", { className: "mt-3 flex items-center justify-center gap-1 text-[10px] text-slate-500 bg-gradient-to-r from-red-50/50 via-orange-50/50 to-green-50/50 rounded-xl p-2.5 border border-slate-100" },
-                      React.createElement("span", { className: "font-bold text-red-500" }, "NH\u2083"),
-                      React.createElement("span", null, " \u2192 "),
-                      React.createElement("span", { className: "text-[9px] text-slate-400" }, "Nitrosomonas"),
-                      React.createElement("span", null, " \u2192 "),
-                      React.createElement("span", { className: "font-bold text-orange-500" }, "NO\u2082"),
-                      React.createElement("span", null, " \u2192 "),
-                      React.createElement("span", { className: "text-[9px] text-slate-400" }, "Nitrobacter"),
-                      React.createElement("span", null, " \u2192 "),
-                      React.createElement("span", { className: "font-bold text-green-500" }, "NO\u2083"),
-                      React.createElement("span", { className: "ml-1 text-slate-400" }, "(Nitrogen Cycle)")
-                    )
-                  ),
-
-                  // Bioload Meter
-                  React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
-                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
-                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDC1F Bioload"),
-                      React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
-                    ),
-                    React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden" },
-                      React.createElement("div", { style: { width: loadPct + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
-                    )
-                  ),
-
-                  // Tank visualization (animated fish)
-                  React.createElement("div", {
-                    className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
-                    style: { height: '240px', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
-                  },
-                    // Water surface shimmer
-                    React.createElement("div", {
-                      style: { position: 'absolute', top: 0, left: 0, right: 0, height: '30px', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 40%, transparent 100%)', zIndex: 5 }
-                    }),
-                    // Light rays
-                    [0, 1, 2].map(function (i) {
-                      return React.createElement("div", {
-                        key: 'ray-' + i,
-                        style: {
-                          position: 'absolute', top: 0, left: (20 + i * 30) + '%',
-                          width: '40px', height: '100%',
-                          background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 70%)',
-                          transform: 'skewX(-15deg)', zIndex: 1
-                        }
-                      });
-                    }),
-                    // Decorative plants
-                    (selectedTank === 'planted' || selectedTank === 'freshwater' || selectedTank === 'brackish') && [0, 1, 2, 3].map(function (i) {
-                      var heights = [50, 35, 60, 40];
-                      return React.createElement("div", {
-                        key: 'plant-' + i,
-                        style: {
-                          position: 'absolute', bottom: '24px', left: (8 + i * 25) + '%',
-                          width: '8px', height: heights[i] + 'px', borderRadius: '4px 4px 0 0',
-                          background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)',
-                          opacity: 0.7, zIndex: 2,
-                          animation: 'pulse 4s ease-in-out ' + (i * 0.8) + 's infinite'
-                        }
-                      });
-                    }),
-                    // Coral for reef tanks
-                    (selectedTank === 'reef' || selectedTank === 'invert') && [0, 1, 2].map(function (i) {
-                      var colors = ['#f472b6', '#fb923c', '#a78bfa'];
-                      return React.createElement("div", {
-                        key: 'coral-' + i,
-                        style: {
-                          position: 'absolute', bottom: '24px', left: (15 + i * 30) + '%',
-                          width: '20px', height: (25 + i * 8) + 'px', borderRadius: '8px 8px 0 0',
-                          background: colors[i], opacity: 0.6, zIndex: 2,
-                          animation: 'pulse 5s ease-in-out ' + (i * 1.2) + 's infinite'
-                        }
-                      });
-                    }),
-                    // Rocky substrate
-                    React.createElement("div", {
-                      style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '28px', borderRadius: '0 0 12px 12px', zIndex: 3, background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(0deg, #92400e 0%, #b45309 40%, transparent 100%)' : 'linear-gradient(0deg, #92400e 0%, #d97706 40%, transparent 100%)' }
-                    }),
-                    // Pebbles on substrate
-                    [0, 1, 2, 3, 4, 5, 6].map(function (i) {
-                      return React.createElement("div", {
-                        key: 'pebble-' + i,
-                        style: {
-                          position: 'absolute', bottom: (3 + (i % 3) * 4) + 'px', left: (5 + i * 13) + '%',
-                          width: (5 + (i % 3) * 3) + 'px', height: (4 + (i % 2) * 2) + 'px',
-                          borderRadius: '50%', background: i % 2 === 0 ? 'rgba(120,100,80,0.5)' : 'rgba(160,140,110,0.4)',
-                          zIndex: 4
-                        }
-                      });
-                    }),
-                    // Fish with smooth swimming animation
-                    tankFish.map(function (fId, idx) {
-                      var sp = species.find(function (s) { return s.id === fId; });
-                      var yPos = 30 + (idx * 29 + idx * 7) % 150;
-                      var xPos = 5 + (idx * 31 + idx * idx * 11) % 85;
-                      var swimDuration = 3 + (idx % 3) * 1.5;
-                      var swimDelay = (idx * 0.9) % 4;
-                      var direction = idx % 2 === 0 ? 1 : -1;
-                      return React.createElement("div", {
-                        key: idx,
-                        style: {
-                          position: 'absolute', top: yPos + 'px', left: xPos + '%',
-                          cursor: 'pointer', fontSize: '28px', zIndex: 6, userSelect: 'none',
-                          transform: direction < 0 ? 'scaleX(-1)' : 'none',
-                          animation: 'aquaSwim ' + swimDuration + 's ease-in-out ' + swimDelay + 's infinite alternate',
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
-                          transition: 'transform 0.3s'
-                        },
-                        title: sp ? sp.name + ': ' + sp.fact : fId,
-                        onClick: function () {
-                          openAnatomy(fId);
-                        }
-                      }, sp ? sp.icon : '\uD83D\uDC1F',
-                        // Hunger bar under fish
-                        (() => {
-                          var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
-                          var stress = fishStress[fId] || 0;
-                          var barColor = hunger >= 80 ? '#ef4444' : hunger >= 50 ? '#f59e0b' : '#22c55e';
-                          return React.createElement("div", {
-                            style: { position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', width: '24px', height: '3px', background: 'rgba(0,0,0,0.2)', borderRadius: '2px', overflow: 'hidden' }
-                          },
-                            React.createElement("div", { style: { width: (100 - hunger) + '%', height: '100%', background: barColor, borderRadius: '2px', transition: 'width 0.5s, background 0.3s' } })
-                          );
-                        })()
-                      );
-                    }),
-                    // Animated bubbles
-                    [0, 1, 2, 3, 4, 5, 6, 7].map(function (i) {
-                      var sizes = [3, 5, 4, 6, 3, 7, 4, 5];
-                      return React.createElement("div", {
-                        key: 'bubble-' + i,
-                        style: {
-                          position: 'absolute', left: (8 + i * 12) + '%',
-                          width: sizes[i] + 'px', height: sizes[i] + 'px',
-                          background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0.2))',
-                          borderRadius: '50%', zIndex: 5,
-                          animation: 'aquaBubble ' + (2 + i * 0.5) + 's ease-in-out ' + (i * 0.7) + 's infinite'
-                        }
-                      });
-                    }),
-                    // Day/night overlay
-                    (simHour >= 20 || simHour < 6) && React.createElement("div", {
-                      style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(180deg, rgba(15,23,42,0.3) 0%, rgba(30,41,59,0.25) 50%, rgba(15,23,42,0.35) 100%)', zIndex: 7, pointerEvents: 'none', borderRadius: '16px', transition: 'opacity 0.5s' }
-                    }),
-                    // Tank label overlay
-                    React.createElement("div", {
-                      style: { position: 'absolute', top: '8px', right: '10px', zIndex: 10, padding: '2px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)' }
-                    },
-                      React.createElement("span", { style: { fontSize: '10px', color: 'rgba(255,255,255,0.8)', fontWeight: 'bold' } }, tank.name),
-                      React.createElement("span", { style: { fontSize: '9px', color: 'rgba(255,255,255,0.5)', marginLeft: '6px' } }, (simHour >= 20 || simHour < 6) ? '\uD83C\uDF19 Night' : '\u2600\uFE0F Day')
-                    )
-                  ),
-
-
-                  // Fish stocking list
-                  React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
-                    React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\u2795 Add Fish"),
-                    React.createElement("div", { className: "flex flex-wrap gap-1" },
-                      species.map(function (sp) {
-                        return React.createElement("button", {
-                          key: sp.id,
-                          onClick: function () { addFish(sp.id); },
-                          className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-all",
-                          title: sp.fact
-                        }, sp.icon + " " + sp.name + " (" + sp.load + ")");
-                      })
-                    ),
-                    tankFish.length > 0 && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1" },
-                      tankFish.map(function (fId, idx) {
-                        var sp = species.find(function (s) { return s.id === fId; });
-                        return React.createElement("span", {
-                          key: idx,
-                          onClick: function () { removeFish(idx); },
-                          className: "px-2 py-0.5 text-[10px] bg-cyan-100 text-cyan-800 rounded-full cursor-pointer hover:bg-red-100 hover:text-red-700 transition-all",
-                          title: "Click to remove"
-                        }, (sp ? sp.icon + " " + sp.name : fId) + " \u00D7");
-                      })
-                    )
-                  ),
-
-                  // Action buttons
+                  // Choice buttons
                   React.createElement("div", { className: "space-y-2" },
-                    React.createElement("div", { className: "flex gap-2" },
-                      React.createElement("button", {
-                        onClick: function () {
-                          if (simRunning) {
-                            upd('simRunning', false);
-                          } else {
-                            upd('simRunning', true);
-                            var speed = simSpeed || 1;
-                            var interval = speed === 0 ? 99999 : speed === 1 ? 2000 : speed === 2 ? 1000 : 400;
-                            var iv = setInterval(function () {
-                              simStep();
-                            }, interval);
-                            setTimeout(function () { clearInterval(iv); upd('simRunning', false); }, 120000);
-                          }
-                        },
-                        className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-500 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")
-                      }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
-                      React.createElement("button", {
-                        onClick: doWaterChange,
-                        className: "px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-sm hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-200/60"
-                      }, "\uD83D\uDCA7 Water Change"),
-                      React.createElement("button", {
-                        onClick: feedFish,
-                        disabled: tankFish.length === 0,
-                        className: "px-4 py-2.5 font-bold rounded-xl text-sm transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
-                      }, "\uD83C\uDF7D\uFE0F Feed")
-                    ),
-
-                    // ── Feeding Impact Panel (slides in after feeding) ──
-                    feedingLog && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200/60 animate-in slide-in-from-top duration-300" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
-                        React.createElement("span", { className: "text-sm" }, "\uD83C\uDF7D\uFE0F"),
-                        React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Feeding Report"),
-                        React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[10px] text-slate-400" }, "\u2715")
-                      ),
-                      React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center mb-2" },
-                        React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
-                          React.createElement("div", { className: "text-[9px] text-slate-500" }, "Fish Fed"),
-                          React.createElement("div", { className: "text-sm font-bold text-amber-700" }, feedingLog.fishCount)
-                        ),
-                        React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
-                          React.createElement("div", { className: "text-[9px] text-slate-500" }, "Hunger \u2193"),
-                          React.createElement("div", { className: "text-sm font-bold text-green-600" }, "-" + feedingLog.avgHungerDrop + " avg")
-                        ),
-                        React.createElement("div", { className: "bg-white/70 rounded-lg p-1.5" },
-                          React.createElement("div", { className: "text-[9px] text-slate-500" }, "NH\u2083 \u2191"),
-                          React.createElement("div", { className: "text-sm font-bold text-red-600" }, "+" + feedingLog.ammoniaAdded.toFixed(2))
-                        )
-                      ),
-                      feedingLog.overfedCount > 0 && React.createElement("div", { className: "bg-red-50 rounded-lg p-1.5 text-[10px] text-red-700 font-bold mb-1" },
-                        "\u26A0\uFE0F " + feedingLog.overfedCount + " fish already full! Excess food = extra ammonia waste."
-                      ),
-                      React.createElement("p", { className: "text-[10px] text-amber-700 italic" }, "\uD83D\uDCA1 " + feedingLog.tip)
-                    )
-                  ),
-
-                  // ── Tank Health Score & Strategy Tips ──
-                  (() => {
-                    var health = getTankHealth();
-                    var scoreColor = health.score >= 80 ? 'text-green-600' : health.score >= 50 ? 'text-amber-600' : 'text-red-600';
-                    var scoreBg = health.score >= 80 ? 'from-green-50 to-emerald-50 border-green-200/60' : health.score >= 50 ? 'from-amber-50 to-orange-50 border-amber-200/60' : 'from-red-50 to-rose-50 border-red-200/60';
-                    var barColor = health.score >= 80 ? 'bg-green-500' : health.score >= 50 ? 'bg-amber-500' : 'bg-red-500';
-                    return React.createElement("div", { className: "bg-gradient-to-r " + scoreBg + " rounded-xl p-3 border shadow-sm" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                        React.createElement("span", { className: "text-sm" }, health.score >= 80 ? '\uD83C\uDF1F' : health.score >= 50 ? '\u26A0\uFE0F' : '\uD83D\uDEA8'),
-                        React.createElement("span", { className: "text-xs font-bold " + scoreColor }, "Tank Health"),
-                        React.createElement("span", { className: "text-lg font-bold ml-auto " + scoreColor }, health.score + "/100")
-                      ),
-                      React.createElement("div", { className: "h-2.5 bg-white/50 rounded-full overflow-hidden mb-2" },
-                        React.createElement("div", { style: { width: health.score + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + barColor })
-                      ),
-                      React.createElement("div", { className: "space-y-1" },
-                        health.tips.map(function (tip, i) {
-                          return React.createElement("p", { key: i, className: "text-[10px] " + tip.color + " font-bold leading-relaxed" }, tip.icon + " " + tip.text);
-                        })
-                      )
-                    );
-                  })(),
-
-                  // ── Hunger Overview ──
-                  tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
-                    React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83C\uDF7D\uFE0F Fish Hunger Status"),
-                    React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                      (() => {
-                        var seen = {};
-                        return tankFish.map(function (fId, idx) {
-                          var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
-                          var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
-                          var stress = fishStress[fId] || 0;
-                          var hungerColor = hunger >= 80 ? 'bg-red-500' : hunger >= 50 ? 'bg-amber-400' : 'bg-green-500';
-                          var hungerText = hunger >= 80 ? 'Starving!' : hunger >= 50 ? 'Hungry' : hunger >= 20 ? 'Satisfied' : 'Full';
-                          var hungerTextColor = hunger >= 80 ? 'text-red-600' : hunger >= 50 ? 'text-amber-600' : 'text-green-600';
-                          return React.createElement("div", { key: idx, className: "flex items-center gap-2 bg-slate-50 rounded-lg p-1.5" },
-                            React.createElement("span", { className: "text-sm" }, sp ? sp.icon : '\uD83D\uDC1F'),
-                            React.createElement("div", { className: "flex-1 min-w-0" },
-                              React.createElement("div", { className: "flex items-center justify-between mb-0.5" },
-                                React.createElement("span", { className: "text-[9px] font-bold text-slate-600 truncate" }, sp ? sp.name : fId),
-                                React.createElement("span", { className: "text-[9px] font-bold " + hungerTextColor }, hungerText)
-                              ),
-                              React.createElement("div", { className: "h-1.5 bg-slate-200 rounded-full overflow-hidden" },
-                                React.createElement("div", { style: { width: (100 - hunger) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hungerColor })
-                              )
-                            ),
-                            stress > 30 && React.createElement("span", { className: "text-[9px] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
-                          );
-                        });
-                      })()
-                    )
-                  ),
-
-                  // ── AI Event Decision Modal ──
-                  aiEvent && !aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 border-blue-300/60 shadow-xl shadow-blue-500/10" },
-                    // Header bar with category color
-                    React.createElement("div", { className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 flex items-center gap-2" },
-                      React.createElement("span", { className: "text-lg" }, aiEvent.icon || '\uD83E\uDD16'),
-                      React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title),
-                      aiEvent.category && React.createElement("span", { className: "text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
-                      React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
-                    ),
-                    // Description
-                    React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-blue-50 to-white" },
-                      React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" }, aiEvent.desc),
-                      // Educational note
-                      aiEvent.educational && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2.5 mb-3 border border-indigo-100" },
-                        React.createElement("div", { className: "flex items-start gap-1.5" },
-                          React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
-                          React.createElement("p", { className: "text-[10px] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
-                        )
-                      ),
-                      // Choice buttons
-                      React.createElement("div", { className: "space-y-2" },
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, '\u2696\uFE0F What do you do?'),
-                        (aiEvent.choices || []).map(function (choice, idx) {
-                          return React.createElement("button", {
-                            key: idx,
-                            onClick: function () { resolveAIEvent(idx); },
-                            className: "ai-event-choice w-full text-left px-3 py-2.5 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/50 group"
-                          },
-                            React.createElement("div", { className: "flex items-center justify-between" },
-                              React.createElement("span", { className: "text-xs font-bold text-slate-700 group-hover:text-blue-700" }, choice.label),
-                              choice.xp > 0 && React.createElement("span", { className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
-                            )
-                          );
-                        })
-                      )
-                    )
-                  ),
-
-                  // ── AI Event Outcome Display ──
-                  aiEvent && aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 shadow-lg " + (aiEvent.chosenXp >= 5 ? 'border-green-300 shadow-green-500/10' : aiEvent.chosenXp >= 3 ? 'border-blue-300 shadow-blue-500/10' : 'border-amber-300 shadow-amber-500/10') },
-                    React.createElement("div", { className: "px-4 py-2.5 flex items-center gap-2 " + (aiEvent.chosenXp >= 5 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : aiEvent.chosenXp >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500') },
-                      React.createElement("span", { className: "text-lg" }, aiEvent.chosenXp >= 5 ? '\u2705' : aiEvent.chosenXp >= 3 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
-                      React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' — Outcome'),
-                      React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
-                      React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
-                    ),
-                    React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-50 to-white" },
-                      React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiEvent.chosenOutcome)
-                    )
-                  ),
-
-                  // ── AI Event Loading Indicator ──
-                  aiEventLoading && React.createElement("div", { className: "ai-event-card rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center" },
-                    React.createElement("div", { className: "flex items-center justify-center gap-2" },
-                      React.createElement("div", { className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full", style: { animation: 'spin 1s linear infinite' } }),
-                      React.createElement("span", { className: "text-xs font-bold text-blue-600" }, '\uD83E\uDD16 AI is analyzing your tank conditions...')
-                    )
-                  ),
-
-                  // ── AI Event History (Learning Journal) ──
-                  aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
-                    React.createElement("h4", { className: "text-[10px] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
-                      React.createElement("span", null, '\uD83D\uDCD3'),
-                      'Event Journal (' + aiEventHistory.length + ' events)'
-                    ),
-                    aiEventHistory.slice().reverse().slice(0, 8).map(function (entry, i) {
-                      return React.createElement("div", { key: i, className: "flex items-start gap-1.5 py-1 border-b border-indigo-100/60 last:border-0" },
-                        React.createElement("span", { className: "text-xs flex-shrink-0" }, entry.icon || '\uD83D\uDCCC'),
-                        React.createElement("div", { className: "flex-1 min-w-0" },
-                          React.createElement("div", { className: "flex items-center gap-1" },
-                            React.createElement("span", { className: "text-[10px] font-bold text-slate-600 truncate" }, entry.title),
-                            React.createElement("span", { className: "text-[8px] text-slate-400 flex-shrink-0" }, 'Day ' + entry.day)
-                          ),
-                          React.createElement("p", { className: "text-[9px] text-slate-500 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
-                        ),
-                        entry.xp > 0 ? React.createElement("span", { className: "text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-600 flex-shrink-0" }, '+' + entry.xp) : null
-                      );
-                    })
-                  ),
-
-                  // Event log
-                  eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200 max-h-32 overflow-y-auto" },
-                    React.createElement("h4", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
-                    eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
-                      return React.createElement("p", { key: i, className: "text-[10px] text-slate-500" }, "[T" + evt.tick + "] " + evt.msg);
-                    })
-                  )
-                );
-              })(),
-
-              // ═══════════════ MODE 2: OCEAN ECOLOGY ═══════════════
-              mode === 'ocean' && React.createElement("div", { className: "space-y-3" },
-
-                // Scenario selector
-                React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                  [
-                    { id: 'free', label: '\uD83C\uDF0A Free Play', desc: 'Manage fisheries freely' },
-                    { id: 'feed', label: '\uD83C\uDFC6 Feed the Town', desc: 'Sustain harvest for 10 years' },
-                    { id: 'recover', label: '\uD83D\uDEE0\uFE0F Recovery Plan', desc: 'Rebuild collapsed stocks' },
-                    { id: 'balance', label: '\u2696\uFE0F Balanced Eco', desc: 'Keep all species above 50' }
-                  ].map(function (sc) {
-                    return React.createElement("button", {
-                      key: sc.id,
-                      onClick: function () {
-                        if (sc.id === 'recover') {
-                          updMulti({ oceanScenario: sc.id, oceanPop: { sardines: 30, tuna: 10, sharks: 5 }, harvestRate: 0, oceanYear: 0, oceanHistory: [], oceanRevenue: 0, oceanBycatch: 0, oceanCollapsed: true });
-                        } else if (sc.id === 'free' || sc.id === 'feed' || sc.id === 'balance') {
-                          resetOcean();
-                          upd('oceanScenario', sc.id);
-                        }
-                      },
-                      className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-500 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100")
-                    }, sc.label);
-                  })
-                ),
-
-                // Population Display
-                React.createElement("div", { className: "grid grid-cols-3 gap-3" },
-                  OCEAN_SPECIES.map(function (sp) {
-                    var pop = oceanPop[sp.id];
-                    var pct = Math.min(100, Math.round(pop / sp.K * 100));
-                    var critical = pop < sp.K * 0.1;
-                    return React.createElement("div", {
-                      key: sp.id,
-                      className: "rounded-2xl p-3 border-2 text-center transition-all duration-300 shadow-sm " + (critical ? "border-red-300 bg-gradient-to-br from-red-50 to-red-100 shadow-red-500/10" : "border-slate-200/60 bg-gradient-to-br from-white to-slate-50 hover:shadow-md")
-                    },
-                      React.createElement("div", { className: "text-2xl mb-1" }, sp.icon),
-                      React.createElement("div", { className: "text-xs font-bold " + (critical ? "text-red-700" : "text-slate-700") }, sp.name),
-                      React.createElement("div", { className: "text-lg font-bold " + (critical ? "text-red-600" : "text-blue-600") }, pop.toLocaleString()),
-                      React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden" },
-                        React.createElement("div", { style: { width: pct + '%' }, className: "h-full rounded-full transition-all " + (critical ? "bg-red-500" : pct > 50 ? "bg-green-500" : "bg-amber-400") })
-                      ),
-                      React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5" }, pct + "% of carrying capacity")
-                    );
-                  })
-                ),
-
-                // Population history chart (simple bar visualization)
-                oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
-                  React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[10px] text-slate-400 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
-                  React.createElement("div", { className: "flex items-end gap-px h-24" },
-                    oceanHistory.slice(-20).map(function (h, i) {
-                      var maxPop = 1000;
-                      return React.createElement("div", { key: i, className: "flex-1 flex flex-col gap-px" },
-                        React.createElement("div", { style: { height: Math.max(1, h.sardines / maxPop * 80) + 'px' }, className: "bg-sky-400 rounded-t-sm", title: 'Sardines: ' + h.sardines }),
-                        React.createElement("div", { style: { height: Math.max(1, h.tuna / maxPop * 80) + 'px' }, className: "bg-blue-500", title: 'Tuna: ' + h.tuna }),
-                        React.createElement("div", { style: { height: Math.max(1, h.sharks / maxPop * 80) + 'px' }, className: "bg-indigo-600 rounded-b-sm", title: 'Sharks: ' + h.sharks })
-                      );
-                    })
-                  ),
-                  React.createElement("div", { className: "flex gap-3 mt-1 text-[10px]" },
-                    React.createElement("span", { className: "text-sky-500 font-bold" }, "\u25CF Sardines"),
-                    React.createElement("span", { className: "text-blue-600 font-bold" }, "\u25CF Tuna"),
-                    React.createElement("span", { className: "text-indigo-700 font-bold" }, "\u25CF Sharks")
-                  )
-                ),
-
-                // Controls
-                React.createElement("div", { className: "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 rounded-2xl p-4 border border-blue-200/60 shadow-sm space-y-3" },
-                  React.createElement("h4", { className: "text-xs font-bold text-blue-700" }, "\u2699\uFE0F Fishery Controls"),
-
-                  // Harvest Rate
-                  React.createElement("div", null,
-                    React.createElement("div", { className: "flex justify-between text-xs mb-1" },
-                      React.createElement("span", { className: "font-bold text-slate-600" }, "\uD83C\uDFA3 Harvest Rate"),
-                      React.createElement("span", { className: "font-mono " + (harvestRate > 50 ? "text-red-600" : "text-green-600") }, harvestRate + "%")
-                    ),
-                    React.createElement("input", {
-                      type: "range", min: "0", max: "100", value: harvestRate,
-                      onChange: function (e) { upd('harvestRate', parseInt(e.target.value)); },
-                      className: "w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                    })
-                  ),
-
-                  // MPA
-                  React.createElement("div", null,
-                    React.createElement("div", { className: "flex justify-between text-xs mb-1" },
-                      React.createElement("span", { className: "font-bold text-slate-600" }, "\uD83C\uDFDD\uFE0F Marine Protected Area"),
-                      React.createElement("span", { className: "font-mono text-green-600" }, mpaPercent + "% protected")
-                    ),
-                    React.createElement("input", {
-                      type: "range", min: "0", max: "80", value: mpaPercent,
-                      onChange: function (e) { upd('mpaPercent', parseInt(e.target.value)); },
-                      className: "w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600"
-                    })
-                  ),
-
-                  // Mesh Size
-                  React.createElement("div", { className: "flex items-center gap-2" },
-                    React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83E\uDE7A Mesh Size"),
-                    ['small', 'medium', 'large'].map(function (m) {
+                    React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, '\u2696\uFE0F What do you do?'),
+                    (aiEvent.choices || []).map(function (choice, idx) {
                       return React.createElement("button", {
-                        key: m,
-                        onClick: function () { upd('meshSize', m); },
-                        className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-500 text-white" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50")
-                      }, m.charAt(0).toUpperCase() + m.slice(1));
-                    }),
-                    React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
-                  ),
-
-                  // Season toggle
-                  React.createElement("div", { className: "flex items-center gap-3" },
-                    React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDCC5 Season"),
-                    React.createElement("button", {
-                      onClick: function () { upd('isOpenSeason', !isOpenSeason); },
-                      className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-500 text-white" : "bg-red-100 text-red-700 border border-red-200")
-                    }, isOpenSeason ? "\uD83D\uDFE2 Open Season" : "\uD83D\uDD34 Closed Season")
+                        key: idx,
+                        onClick: function () { resolveAIEvent(idx); },
+                        className: "ai-event-choice w-full text-left px-3 py-2.5 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/50 group"
+                      },
+                        React.createElement("div", { className: "flex items-center justify-between" },
+                          React.createElement("span", { className: "text-xs font-bold text-slate-700 group-hover:text-blue-700" }, choice.label),
+                          choice.xp > 0 && React.createElement("span", { className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
+                        )
+                      );
+                    })
                   )
-                ),
-
-                // Stats row
-                React.createElement("div", { className: "grid grid-cols-4 gap-2" },
-                  [
-                    { label: 'Year', val: oceanYear, icon: '\uD83D\uDCC5' },
-                    { label: 'Revenue', val: '$' + oceanRevenue.toLocaleString(), icon: '\uD83D\uDCB0' },
-                    { label: 'Bycatch', val: oceanBycatch, icon: '\u26A0\uFE0F' },
-                    { label: 'Status', val: oceanCollapsed ? 'COLLAPSED' : 'Healthy', icon: oceanCollapsed ? '\u274C' : '\u2705' }
-                  ].map(function (s) {
-                    return React.createElement("div", { key: s.label, className: "bg-white rounded-lg p-2 text-center border border-slate-200" },
-                      React.createElement("div", { className: "text-xs text-slate-400" }, s.icon + " " + s.label),
-                      React.createElement("div", { className: "text-sm font-bold " + (s.label === 'Status' && oceanCollapsed ? 'text-red-600' : 'text-slate-700') }, s.val)
-                    );
-                  })
-                ),
-
-                // Advance button
-                React.createElement("div", { className: "flex gap-2" },
-                  React.createElement("button", {
-                    onClick: stepOcean,
-                    className: "flex-1 py-2.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 active:scale-[0.98]"
-                  }, "\u23E9 Advance 1 Year"),
-                  React.createElement("button", {
-                    onClick: function () { for (var i = 0; i < 5; i++) stepOcean(); },
-                    className: "px-4 py-2 bg-indigo-100 text-indigo-700 font-bold rounded-lg text-sm hover:bg-indigo-200 transition-all"
-                  }, "\u23E9\u00D75"),
-                  React.createElement("button", {
-                    onClick: resetOcean,
-                    className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
-                  }, "\u21BA Reset")
                 )
               ),
 
-              // ═══════════════ MODE 3: MARINE SCIENCE ═══════════════
-              mode === 'marine' && React.createElement("div", { className: "space-y-3" },
-
-                // Ocean Zones Cross-Section
-                React.createElement("div", { className: "rounded-xl overflow-hidden border-2 border-blue-300" },
-                  OCEAN_ZONES.map(function (zone) {
-                    var zoneSpecies = MARINE_SPECIES.filter(function (s) { return s.zone === zone.id; });
-                    return React.createElement("div", {
-                      key: zone.id,
-                      role: "button", tabIndex: 0,
-                      onClick: function () { upd('selectedZone', selectedZone === zone.id ? null : zone.id); },
-                      className: "w-full text-left transition-all hover:brightness-110 cursor-pointer",
-                      style: { background: 'linear-gradient(135deg, ' + zone.color + ', ' + zone.color + '88)', padding: selectedZone === zone.id ? '16px 12px' : '10px 12px', transition: 'all 0.3s ease', borderBottom: '1px solid rgba(255,255,255,0.1)' }
-                    },
-                      React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-xs font-bold text-white drop-shadow-sm" }, zone.name),
-                        React.createElement("span", { className: "text-[10px] text-white/70 ml-auto font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.depth),
-                        React.createElement("span", { className: "text-[10px] text-white/60 font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.temp)
-                      ),
-                      selectedZone === zone.id && React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
-                        zoneSpecies.map(function (sp) {
-                          return React.createElement("button", {
-                            key: sp.id,
-                            onClick: function (e) { e.stopPropagation(); upd('selectedSpecies', sp.id); openAnatomy(sp.id); },
-                            className: "px-2.5 py-1 bg-white/25 rounded-full text-[11px] text-white font-bold hover:bg-white/40 hover:shadow-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
-                          }, sp.icon + " " + sp.name);
-                        }),
-                        zoneSpecies.length === 0 && React.createElement("span", { className: "text-[10px] text-white/50 italic" }, "Few species survive here")
-                      )
-                    );
-                  })
+              // ── AI Event Outcome Display ──
+              aiEvent && aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 shadow-lg " + (aiEvent.chosenXp >= 5 ? 'border-green-300 shadow-green-500/10' : aiEvent.chosenXp >= 3 ? 'border-blue-300 shadow-blue-500/10' : 'border-amber-300 shadow-amber-500/10') },
+                React.createElement("div", { className: "px-4 py-2.5 flex items-center gap-2 " + (aiEvent.chosenXp >= 5 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : aiEvent.chosenXp >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500') },
+                  React.createElement("span", { className: "text-lg" }, aiEvent.chosenXp >= 5 ? '\u2705' : aiEvent.chosenXp >= 3 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
+                  React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' — Outcome'),
+                  React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
+                  React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
                 ),
-
-                // Selected Species Card
-                selectedSpecies && (() => {
-                  var sp = MARINE_SPECIES.find(function (s) { return s.id === selectedSpecies; });
-                  if (!sp) return null;
-                  var statusColors = { LC: 'text-green-600 bg-green-50', VU: 'text-amber-600 bg-amber-50', EN: 'text-red-600 bg-red-50', CR: 'text-red-800 bg-red-100' };
-                  var statusLabels = { LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' };
-                  return React.createElement("div", { className: "bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-2xl p-4 border-2 border-indigo-200/60 shadow-lg shadow-indigo-500/10 animate-in fade-in duration-200" },
-                    React.createElement("div", { className: "flex items-start gap-3" },
-                      React.createElement("div", { className: "text-4xl" }, sp.icon),
-                      React.createElement("div", { className: "flex-1" },
-                        React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, sp.name),
-                        React.createElement("div", { className: "flex gap-2 mt-1 flex-wrap" },
-                          React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold" }, "\uD83C\uDF0A " + sp.habitat),
-                          React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
-                          React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (statusColors[sp.status] || '') }, "\uD83D\uDEE1\uFE0F " + (statusLabels[sp.status] || sp.status))
-                        )
-                      ),
-                      React.createElement("button", {
-                        onClick: function () { upd('selectedSpecies', null); },
-                        className: "text-slate-400 hover:text-slate-600 text-lg"
-                      }, "\u2715")
-                    ),
-                    React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-lg p-3" },
-                      React.createElement("p", { className: "text-xs text-indigo-800 leading-relaxed" }, "\uD83D\uDCA1 " + sp.fact)
-                    ),
-                    React.createElement("div", { className: "mt-2 bg-amber-50 rounded-lg p-2" },
-                      React.createElement("p", { className: "text-xs text-amber-700 font-bold" }, "\u2753 " + sp.quiz)
-                    )
-                  );
-                })(),
-
-                // Quiz Section
-                React.createElement("div", { className: "flex gap-2 items-center" },
-                  React.createElement("button", {
-                    onClick: generateQuiz,
-                    className: "flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
-                  }, "\uD83E\uDDE0 Marine Science Quiz"),
-                  quizScore.total > 0 && React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "\u2705 " + quizScore.correct + "/" + quizScore.total)
-                ),
-
-                quizQ && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-50 rounded-2xl p-4 border border-indigo-200/60 shadow-sm" },
-                  React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, "\u2753 " + quizQ.question),
-                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                    quizQ.options.map(function (opt) {
-                      var answered = quizQ.answered != null;
-                      var isCorrect = opt === quizQ.answer;
-                      var isChosen = opt === quizQ.answered;
-                      return React.createElement("button", {
-                        key: opt,
-                        onClick: function () { if (!answered) answerQuiz(opt); },
-                        disabled: answered,
-                        className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-400") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
-                      }, opt);
-                    })
-                  ),
-                  quizQ.answered && React.createElement("div", { className: "mt-2" },
-                    React.createElement("p", { className: "text-xs font-bold " + (quizQ.correct ? "text-green-600" : "text-red-600") }, quizQ.correct ? "\u2705 Correct! +3 XP" : "\u274C The answer is: " + quizQ.answer),
-                    React.createElement("button", {
-                      onClick: generateQuiz,
-                      className: "mt-1 px-3 py-1 text-[10px] font-bold bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
-                    }, "Next Question \u2192")
-                  )
+                React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-50 to-white" },
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiEvent.chosenOutcome)
                 )
+              ),
+
+              // ── AI Event Loading Indicator ──
+              aiEventLoading && React.createElement("div", { className: "ai-event-card rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center" },
+                React.createElement("div", { className: "flex items-center justify-center gap-2" },
+                  React.createElement("div", { className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full", style: { animation: 'spin 1s linear infinite' } }),
+                  React.createElement("span", { className: "text-xs font-bold text-blue-600" }, '\uD83E\uDD16 AI is analyzing your tank conditions...')
+                )
+              ),
+
+              // ── AI Event History (Learning Journal) ──
+              aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
+                React.createElement("h4", { className: "text-[10px] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
+                  React.createElement("span", null, '\uD83D\uDCD3'),
+                  'Event Journal (' + aiEventHistory.length + ' events)'
+                ),
+                aiEventHistory.slice().reverse().slice(0, 8).map(function (entry, i) {
+                  return React.createElement("div", { key: i, className: "flex items-start gap-1.5 py-1 border-b border-indigo-100/60 last:border-0" },
+                    React.createElement("span", { className: "text-xs flex-shrink-0" }, entry.icon || '\uD83D\uDCCC'),
+                    React.createElement("div", { className: "flex-1 min-w-0" },
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("span", { className: "text-[10px] font-bold text-slate-600 truncate" }, entry.title),
+                        React.createElement("span", { className: "text-[8px] text-slate-400 flex-shrink-0" }, 'Day ' + entry.day)
+                      ),
+                      React.createElement("p", { className: "text-[9px] text-slate-500 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
+                    ),
+                    entry.xp > 0 ? React.createElement("span", { className: "text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-600 flex-shrink-0" }, '+' + entry.xp) : null
+                  );
+                })
+              ),
+
+              // Event log
+              eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200 max-h-32 overflow-y-auto" },
+                React.createElement("h4", { className: "text-[10px] font-bold text-slate-400 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
+                eventLog.slice().reverse().slice(0, 10).map(function (evt, i) {
+                  return React.createElement("p", { key: i, className: "text-[10px] text-slate-500" }, "[T" + evt.tick + "] " + evt.msg);
+                })
               )
             );
           })(),
 
-          // ═══════════════════════════════════════════════════════════════
-          // ██  CODING PLAYGROUND — Visual Block / Text Turtle Graphics  ██
-          // ═══════════════════════════════════════════════════════════════
-          stemLabTab === 'explore' && stemLabTool === 'codingPlayground' && (() => {
-            // ── State from labToolData ──
-            var d = (labToolData && labToolData._codingPlayground) || {};
-            var upd = function (key, val) {
-              setLabToolData(function (prev) {
-                var cp = Object.assign({}, (prev && prev._codingPlayground) || {});
-                cp[key] = val;
-                return Object.assign({}, prev, { _codingPlayground: cp });
-              });
-            };
-            var updMulti = function (obj) {
-              setLabToolData(function (prev) {
-                var cp = Object.assign({}, (prev && prev._codingPlayground) || {});
-                Object.keys(obj).forEach(function (k) { cp[k] = obj[k]; });
-                return Object.assign({}, prev, { _codingPlayground: cp });
-              });
-            };
+          // ═══════════════ MODE 2: OCEAN ECOLOGY ═══════════════
+          mode === 'ocean' && React.createElement("div", { className: "space-y-3" },
 
-            // ── Defaults ──
-            var blocks = d.blocks || [];
-            var turtleState = d.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
-            var drawnLines = d.lines || [];
-            var running = d.running || false;
-            var stepIdx = d.stepIdx != null ? d.stepIdx : -1;
-            var codeMode = d.codeMode || 'blocks';
-            var textCode = d.textCode || '';
-            var challengeIdx = d.challengeIdx != null ? d.challengeIdx : -1;
-            var completed = d.completed || [];
-            var speed = d.speed || 200;
-            var showTurtle = d.showTurtle !== false;
-            var cumulativeMode = d.cumulativeMode || false;
-            var runHistory = d.history || [];
-
-            // ── Block definitions ──
-            var BLOCK_TYPES = [
-              { type: 'forward', label: '🐢 Move Forward', param: 'distance', defaultVal: 50, unit: 'px', color: '#6366f1' },
-              { type: 'backward', label: '🔙 Move Backward', param: 'distance', defaultVal: 50, unit: 'px', color: '#818cf8' },
-              { type: 'right', label: '↩️ Turn Right', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
-              { type: 'left', label: '↪️ Turn Left', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
-              { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: '#94a3b8' },
-              { type: 'pendown', label: '✏️ Pen Down', param: null, defaultVal: null, unit: null, color: '#22c55e' },
-              { type: 'color', label: '🎨 Set Color', param: 'color', defaultVal: '#6366f1', unit: null, color: '#ec4899' },
-              { type: 'width', label: '📏 Set Width', param: 'width', defaultVal: 2, unit: 'px', color: '#14b8a6' },
-              { type: 'circle', label: '⭕ Draw Circle', param: 'radius', defaultVal: 30, unit: 'px', color: '#06b6d4' },
-              { type: 'goto', label: '📍 Go To', param: 'x', defaultVal: 250, unit: null, color: '#a855f7' },
-              { type: 'home', label: '🏠 Go Home', param: null, defaultVal: null, unit: null, color: '#78716c' },
-              { type: 'repeat', label: '🔄 Repeat', param: 'times', defaultVal: 4, unit: '×', color: '#8b5cf6' }
-            ];
-
-            // ── Challenges ──
-            var CHALLENGES = [
-              { id: 'hello', title: '1. Hello, Turtle!', desc: 'Add a "Move Forward" block and run it.', concept: 'Sequencing', hint: 'Drag a Move Forward block to your program and click Run!', check: function (lines) { return lines.length >= 1; } },
-              { id: 'square', title: '2. Draw a Square', desc: 'Draw a square using Move and Turn blocks.', concept: 'Sequencing', hint: 'You need 4× Move Forward + 4× Turn Right 90°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && Math.abs(ex.turns - 360) < 10 && ex.segments >= 4; } },
-              { id: 'loop_square', title: '3. Loop It!', desc: 'Draw the same square using a Repeat block.', concept: 'Loops', hint: 'Use Repeat 4× with Move Forward and Turn Right 90° inside.', check: function (lines, blks) { return blks.some(function (b) { return b.type === 'repeat'; }) && lines.length >= 4; } },
-              { id: 'triangle', title: '4. Triangle Time', desc: 'Draw an equilateral triangle.', concept: 'Loops + Angles', hint: 'Repeat 3×: Move Forward, Turn Right 120°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 3 && Math.abs(ex.turns - 360) < 15; } },
-              { id: 'rainbow', title: '5. Rainbow Line', desc: 'Draw 3+ lines, each a different color.', concept: 'Variables', hint: 'Use Set Color blocks between your Move Forward blocks.', check: function (lines) { var colors = {}; lines.forEach(function (l) { colors[l.color] = true; }); return Object.keys(colors).length >= 3; } },
-              { id: 'star', title: '6. Star Power', desc: 'Draw a 5-pointed star.', concept: 'Math + Patterns', hint: 'Repeat 5×: Move Forward 100, Turn Right 144°', check: function (lines) { return lines.length >= 5; } },
-              { id: 'spiral', title: '7. Spiral', desc: 'Create a spiral that grows outward.', concept: 'Variables in Loops', hint: 'This is tricky! Try increasing the distance each time.', check: function (lines) { return lines.length >= 10; } },
-              { id: 'hexagon', title: '8. Hexagon Hero', desc: 'Draw a perfect regular hexagon.', concept: 'Math + Patterns', hint: 'Repeat 6×: Move Forward 60, Turn Right 60°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6 && Math.abs(ex.turns - 360) < 15; } },
-              { id: 'freestyle', title: '9. Freestyle!', desc: 'Create any drawing with 20+ line segments.', concept: 'Creativity', hint: 'Combine everything you\'ve learned!', check: function (lines) { return lines.length >= 20; } },
-              { id: 'house', title: '10. Build a House', desc: 'Draw a house: a square base with a triangle roof on top.', concept: 'Decomposition', hint: 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.', check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } }
-            ];
-
-            // ── Helper: analyze drawn lines for challenge checking ──
-            function getEndpoints(lines) {
-              if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
-              var first = lines[0];
-              var last = lines[lines.length - 1];
-              var dist = Math.sqrt(Math.pow(last.x2 - first.x1, 2) + Math.pow(last.y2 - first.y1, 2));
-              var totalAngle = 0;
-              for (var i = 1; i < lines.length; i++) {
-                var a1 = Math.atan2(lines[i - 1].y2 - lines[i - 1].y1, lines[i - 1].x2 - lines[i - 1].x1);
-                var a2 = Math.atan2(lines[i].y2 - lines[i].y1, lines[i].x2 - lines[i].x1);
-                var diff = (a2 - a1) * 180 / Math.PI;
-                while (diff > 180) diff -= 360;
-                while (diff < -180) diff += 360;
-                totalAngle += Math.abs(diff);
-              }
-              return { closed: dist < 15, turns: totalAngle, segments: lines.length };
-            }
-
-            // ── Generate text code from blocks ──
-            function blocksToText(blks, indent) {
-              indent = indent || '';
-              var lines = [];
-              for (var i = 0; i < blks.length; i++) {
-                var b = blks[i];
-                if (b.type === 'forward') lines.push(indent + 'forward(' + (b.distance || 50) + ')');
-                else if (b.type === 'backward') lines.push(indent + 'backward(' + (b.distance || 50) + ')');
-                else if (b.type === 'right') lines.push(indent + 'right(' + (b.degrees || 90) + ')');
-                else if (b.type === 'left') lines.push(indent + 'left(' + (b.degrees || 90) + ')');
-                else if (b.type === 'penup') lines.push(indent + 'penUp()');
-                else if (b.type === 'pendown') lines.push(indent + 'penDown()');
-                else if (b.type === 'color') lines.push(indent + 'setColor("' + (b.color || '#6366f1') + '")');
-                else if (b.type === 'width') lines.push(indent + 'setWidth(' + (b.width || 2) + ')');
-                else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
-                else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
-                else if (b.type === 'home') lines.push(indent + 'home()');
-                else if (b.type === 'repeat') {
-                  lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
-                  if (b.children && b.children.length > 0) {
-                    lines.push(blocksToText(b.children, indent + '  '));
-                  }
-                  lines.push(indent + '})');
-                }
-              }
-              return lines.join('\n');
-            }
-
-            // ── Parse text code to blocks ──
-            function textToBlocks(code) {
-              var result = [];
-              var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
-              var i = 0;
-              function parse() {
-                var blks = [];
-                while (i < lineArr.length) {
-                  var line = lineArr[i];
-                  if (line.match(/^}\)?;?$/)) { i++; return blks; }
-                  var m;
-                  if ((m = line.match(/^forward\((\d+)\)/))) { blks.push({ type: 'forward', distance: parseInt(m[1]) }); }
-                  else if ((m = line.match(/^backward\((\d+)\)/))) { blks.push({ type: 'backward', distance: parseInt(m[1]) }); }
-                  else if ((m = line.match(/^right\((\d+)\)/))) { blks.push({ type: 'right', degrees: parseInt(m[1]) }); }
-                  else if ((m = line.match(/^left\((\d+)\)/))) { blks.push({ type: 'left', degrees: parseInt(m[1]) }); }
-                  else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
-                  else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
-                  else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
-                  else if ((m = line.match(/^setWidth\((\d+)\)/))) { blks.push({ type: 'width', width: parseInt(m[1]) }); }
-                  else if ((m = line.match(/^circle\((\d+)\)/))) { blks.push({ type: 'circle', radius: parseInt(m[1]) }); }
-                  else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
-                  else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
-                  else if ((m = line.match(/^repeat\((\d+)/))) {
-                    i++;
-                    var children = parse();
-                    blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
-                    continue;
-                  }
-                  i++;
-                }
-                return blks;
-              }
-              return parse();
-            }
-
-            // ── Execute blocks (async with animation) ──
-            function executeBlocks(blks, turtle, lines, cb, spd, stepCb) {
-              var t = Object.assign({}, turtle);
-              var allLines = lines.slice();
-              function flattenBlocks(bArr) {
-                var flat = [];
-                for (var j = 0; j < bArr.length; j++) {
-                  if (bArr[j].type === 'repeat') {
-                    var times = bArr[j].times || 4;
-                    for (var r = 0; r < times; r++) {
-                      flat = flat.concat(flattenBlocks(bArr[j].children || []));
+            // Scenario selector
+            React.createElement("div", { className: "flex gap-2 flex-wrap" },
+              [
+                { id: 'free', label: '\uD83C\uDF0A Free Play', desc: 'Manage fisheries freely' },
+                { id: 'feed', label: '\uD83C\uDFC6 Feed the Town', desc: 'Sustain harvest for 10 years' },
+                { id: 'recover', label: '\uD83D\uDEE0\uFE0F Recovery Plan', desc: 'Rebuild collapsed stocks' },
+                { id: 'balance', label: '\u2696\uFE0F Balanced Eco', desc: 'Keep all species above 50' }
+              ].map(function (sc) {
+                return React.createElement("button", {
+                  key: sc.id,
+                  onClick: function () {
+                    if (sc.id === 'recover') {
+                      updMulti({ oceanScenario: sc.id, oceanPop: { sardines: 30, tuna: 10, sharks: 5 }, harvestRate: 0, oceanYear: 0, oceanHistory: [], oceanRevenue: 0, oceanBycatch: 0, oceanCollapsed: true });
+                    } else if (sc.id === 'free' || sc.id === 'feed' || sc.id === 'balance') {
+                      resetOcean();
+                      upd('oceanScenario', sc.id);
                     }
-                  } else {
-                    flat.push(bArr[j]);
-                  }
-                }
-                return flat;
-              }
-              var flat = flattenBlocks(blks);
-              var idx = 0;
+                  },
+                  className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-500 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100")
+                }, sc.label);
+              })
+            ),
 
-              function step() {
-                if (idx >= flat.length) {
-                  if (cb) cb(t, allLines);
-                  return;
-                }
-                var b = flat[idx];
-                if (stepCb) stepCb(idx);
-                if (b.type === 'forward') {
-                  var dist = b.distance || 50;
-                  var rad = t.angle * Math.PI / 180;
-                  var nx = t.x + Math.cos(rad) * dist;
-                  var ny = t.y + Math.sin(rad) * dist;
-                  if (t.penDown) {
-                    allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width });
-                  }
-                  t.x = nx; t.y = ny;
-                } else if (b.type === 'backward') {
-                  var dist2 = b.distance || 50;
-                  var rad2 = t.angle * Math.PI / 180;
-                  var nx2 = t.x - Math.cos(rad2) * dist2;
-                  var ny2 = t.y - Math.sin(rad2) * dist2;
-                  if (t.penDown) {
-                    allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width });
-                  }
-                  t.x = nx2; t.y = ny2;
-                } else if (b.type === 'right') {
-                  t.angle = (t.angle + (b.degrees || 90)) % 360;
-                } else if (b.type === 'left') {
-                  t.angle = (t.angle - (b.degrees || 90) + 360) % 360;
-                } else if (b.type === 'penup') {
-                  t.penDown = false;
-                } else if (b.type === 'pendown') {
-                  t.penDown = true;
-                } else if (b.type === 'color') {
-                  t.color = b.color || '#6366f1';
-                } else if (b.type === 'width') {
-                  t.width = b.width || 2;
-                } else if (b.type === 'circle') {
-                  var cRadius = b.radius || 30;
-                  if (t.penDown) {
-                    var segs = 36;
-                    for (var si = 0; si < segs; si++) {
-                      var a1 = t.angle + (si / segs) * 360;
-                      var a2 = t.angle + ((si + 1) / segs) * 360;
-                      var r1 = a1 * Math.PI / 180;
-                      var r2 = a2 * Math.PI / 180;
-                      var cx1 = t.x + cRadius * (Math.cos(r1) - Math.cos(t.angle * Math.PI / 180));
-                      var cy1 = t.y + cRadius * (Math.sin(r1) - Math.sin(t.angle * Math.PI / 180));
-                      var cx2 = t.x + cRadius * (Math.cos(r2) - Math.cos(t.angle * Math.PI / 180));
-                      var cy2 = t.y + cRadius * (Math.sin(r2) - Math.sin(t.angle * Math.PI / 180));
-                      allLines.push({ x1: cx1, y1: cy1, x2: cx2, y2: cy2, color: t.color, width: t.width });
-                    }
-                  }
-                } else if (b.type === 'goto') {
-                  var gx = b.x != null ? b.x : 250;
-                  var gy = b.y != null ? b.y : 250;
-                  if (t.penDown) {
-                    allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width });
-                  }
-                  t.x = gx; t.y = gy;
-                } else if (b.type === 'home') {
-                  if (t.penDown) {
-                    allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width });
-                  }
-                  t.x = 250; t.y = 250; t.angle = -90;
-                }
-                updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true });
-                idx++;
-                setTimeout(step, spd || 200);
-              }
-              step();
-            }
-
-            // ── Run handler ──
-            function handleRun() {
-              var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
-              var startTurtle, startLines;
-              if (cumulativeMode) {
-                // In cumulative mode, start from current turtle state and keep existing lines
-                startTurtle = Object.assign({}, turtleState);
-                startLines = drawnLines.slice();
-              } else {
-                startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
-                startLines = [];
-              }
-              updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0 });
-              setTimeout(function () {
-                executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
-                  var newHistory = runHistory.concat([{
-                    blocks: blks.slice(),
-                    linesCount: finalLines.length - startLines.length,
-                    timestamp: Date.now()
-                  }]);
-                  updMulti({ turtle: finalTurtle, lines: finalLines, running: false, stepIdx: -1, history: newHistory });
-                  if (challengeIdx >= 0 && challengeIdx < CHALLENGES.length) {
-                    var ch = CHALLENGES[challengeIdx];
-                    if (ch.check(finalLines, blks)) {
-                      if (completed.indexOf(ch.id) < 0) {
-                        var newCompleted = completed.concat([ch.id]);
-                        upd('completed', newCompleted);
-                        awardStemXP('codingPlayground', 15, 'Completed: ' + ch.title);
-                        if (addToast) addToast('🎉 Challenge "' + ch.title + '" complete!', 'success');
-                      }
-                    }
-                  }
-                }, speed, function (si) {
-                  upd('stepIdx', si);
-                });
-              }, 50);
-            }
-
-            function handleClear() {
-              updMulti({ turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, history: [] });
-            }
-
-            function handleReset() {
-              updMulti({ blocks: [], turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, textCode: '', challengeIdx: -1, history: [], cumulativeMode: false, showTurtle: true });
-            }
-
-            function addBlock(type) {
-              var def = BLOCK_TYPES.find(function (bt) { return bt.type === type; });
-              var newBlock = { type: type };
-              if (def && def.param) newBlock[def.param] = def.defaultVal;
-              if (type === 'repeat') newBlock.children = [];
-              var updated = blocks.concat([newBlock]);
-              upd('blocks', updated);
-              if (codeMode === 'text') upd('textCode', blocksToText(updated));
-            }
-
-            function removeBlock(idx) {
-              var updated = blocks.filter(function (_, i) { return i !== idx; });
-              upd('blocks', updated);
-              if (codeMode === 'text') upd('textCode', blocksToText(updated));
-            }
-
-            function updateBlockParam(idx, param, val) {
-              var updated = blocks.map(function (b, i) {
-                if (i === idx) { var nb = Object.assign({}, b); nb[param] = val; return nb; }
-                return b;
-              });
-              upd('blocks', updated);
-              if (codeMode === 'text') upd('textCode', blocksToText(updated));
-            }
-
-            function addChildBlock(repeatIdx, type) {
-              var def = BLOCK_TYPES.find(function (bt) { return bt.type === type; });
-              var newBlock = { type: type };
-              if (def && def.param) newBlock[def.param] = def.defaultVal;
-              var updated = blocks.map(function (b, i) {
-                if (i === repeatIdx && b.type === 'repeat') {
-                  var nb = Object.assign({}, b);
-                  nb.children = (nb.children || []).concat([newBlock]);
-                  return nb;
-                }
-                return b;
-              });
-              upd('blocks', updated);
-              if (codeMode === 'text') upd('textCode', blocksToText(updated));
-            }
-
-            function removeChildBlock(repeatIdx, childIdx) {
-              var updated = blocks.map(function (b, i) {
-                if (i === repeatIdx && b.type === 'repeat') {
-                  var nb = Object.assign({}, b);
-                  nb.children = (nb.children || []).filter(function (_, ci) { return ci !== childIdx; });
-                  return nb;
-                }
-                return b;
-              });
-              upd('blocks', updated);
-              if (codeMode === 'text') upd('textCode', blocksToText(updated));
-            }
-
-            function toggleMode() {
-              if (codeMode === 'blocks') {
-                upd('textCode', blocksToText(blocks));
-                upd('codeMode', 'text');
-              } else {
-                upd('blocks', textToBlocks(textCode));
-                upd('codeMode', 'blocks');
-              }
-            }
-
-            function moveBlock(idx, dir) {
-              var newIdx = idx + dir;
-              if (newIdx < 0 || newIdx >= blocks.length) return;
-              var updated = blocks.slice();
-              var tmp = updated[idx];
-              updated[idx] = updated[newIdx];
-              updated[newIdx] = tmp;
-              upd('blocks', updated);
-            }
-
-            // NOTE: Coding Playground canvas hooks (useRef + useEffect) have been hoisted
-            // to top level of StemLabModal to satisfy React Rules of Hooks.
-            // The ref is available as _codingCanvasRef.
-            var canvasRef = _codingCanvasRef;
-
-            // ── Render ──
-            return React.createElement("div", {
-              className: "grid gap-4",
-              style: { gridTemplateColumns: '220px 1fr', gridTemplateRows: 'auto auto' }
-            },
-              // ── Header bar ──
-              React.createElement("div", {
-                className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
-              },
-                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
-                React.createElement("span", { className: "text-2xl" }, "🖥️"),
-                React.createElement("div", { className: "flex-1" },
-                  React.createElement("h2", { className: "text-white font-bold text-lg" }, "Coding Playground"),
-                  React.createElement("p", { className: "text-indigo-200 text-xs" },
-                    challengeIdx >= 0 ? '🎯 ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
-                      'Build programs with blocks or code. The turtle draws your creation!'
-                  )
-                ),
-                // Mode toggle — Minecraft Education style
-                React.createElement("button", {
-                  onClick: toggleMode,
-                  className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
-                    (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
+            // Population Display
+            React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+              OCEAN_SPECIES.map(function (sp) {
+                var pop = oceanPop[sp.id];
+                var pct = Math.min(100, Math.round(pop / sp.K * 100));
+                var critical = pop < sp.K * 0.1;
+                return React.createElement("div", {
+                  key: sp.id,
+                  className: "rounded-2xl p-3 border-2 text-center transition-all duration-300 shadow-sm " + (critical ? "border-red-300 bg-gradient-to-br from-red-50 to-red-100 shadow-red-500/10" : "border-slate-200/60 bg-gradient-to-br from-white to-slate-50 hover:shadow-md")
                 },
-                  React.createElement("span", null, codeMode === 'blocks' ? '🧩' : '📝'),
-                  codeMode === 'blocks' ? 'Switch to Code' : 'Switch to Blocks'
+                  React.createElement("div", { className: "text-2xl mb-1" }, sp.icon),
+                  React.createElement("div", { className: "text-xs font-bold " + (critical ? "text-red-700" : "text-slate-700") }, sp.name),
+                  React.createElement("div", { className: "text-lg font-bold " + (critical ? "text-red-600" : "text-blue-600") }, pop.toLocaleString()),
+                  React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden" },
+                    React.createElement("div", { style: { width: pct + '%' }, className: "h-full rounded-full transition-all " + (critical ? "bg-red-500" : pct > 50 ? "bg-green-500" : "bg-amber-400") })
+                  ),
+                  React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5" }, pct + "% of carrying capacity")
+                );
+              })
+            ),
+
+            // Population history chart (simple bar visualization)
+            oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+              React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[10px] text-slate-400 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
+              React.createElement("div", { className: "flex items-end gap-px h-24" },
+                oceanHistory.slice(-20).map(function (h, i) {
+                  var maxPop = 1000;
+                  return React.createElement("div", { key: i, className: "flex-1 flex flex-col gap-px" },
+                    React.createElement("div", { style: { height: Math.max(1, h.sardines / maxPop * 80) + 'px' }, className: "bg-sky-400 rounded-t-sm", title: 'Sardines: ' + h.sardines }),
+                    React.createElement("div", { style: { height: Math.max(1, h.tuna / maxPop * 80) + 'px' }, className: "bg-blue-500", title: 'Tuna: ' + h.tuna }),
+                    React.createElement("div", { style: { height: Math.max(1, h.sharks / maxPop * 80) + 'px' }, className: "bg-indigo-600 rounded-b-sm", title: 'Sharks: ' + h.sharks })
+                  );
+                })
+              ),
+              React.createElement("div", { className: "flex gap-3 mt-1 text-[10px]" },
+                React.createElement("span", { className: "text-sky-500 font-bold" }, "\u25CF Sardines"),
+                React.createElement("span", { className: "text-blue-600 font-bold" }, "\u25CF Tuna"),
+                React.createElement("span", { className: "text-indigo-700 font-bold" }, "\u25CF Sharks")
+              )
+            ),
+
+            // Controls
+            React.createElement("div", { className: "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 rounded-2xl p-4 border border-blue-200/60 shadow-sm space-y-3" },
+              React.createElement("h4", { className: "text-xs font-bold text-blue-700" }, "\u2699\uFE0F Fishery Controls"),
+
+              // Harvest Rate
+              React.createElement("div", null,
+                React.createElement("div", { className: "flex justify-between text-xs mb-1" },
+                  React.createElement("span", { className: "font-bold text-slate-600" }, "\uD83C\uDFA3 Harvest Rate"),
+                  React.createElement("span", { className: "font-mono " + (harvestRate > 50 ? "text-red-600" : "text-green-600") }, harvestRate + "%")
                 ),
-                // Speed
-                React.createElement("select", {
-                  'aria-label': 'Execution speed',
-                  value: speed,
-                  onChange: function (e) { upd('speed', parseInt(e.target.value)); },
-                  className: "px-2 py-1 rounded-lg bg-indigo-900/50 text-indigo-200 text-xs border border-indigo-400/30"
-                },
-                  React.createElement("option", { value: 50 }, "⚡ Fast"),
-                  React.createElement("option", { value: 200 }, "🐢 Normal"),
-                  React.createElement("option", { value: 500 }, "🐌 Slow")
-                )
+                React.createElement("input", {
+                  type: "range", min: "0", max: "100", value: harvestRate,
+                  onChange: function (e) { upd('harvestRate', parseInt(e.target.value)); },
+                  className: "w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                })
               ),
 
-              // ── Left panel: Toolbox + Program ──
-              React.createElement("div", { className: "flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
-                // Toolbox
-                React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
-                  React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
-                  React.createElement("div", { className: "flex flex-col gap-1" },
-                    BLOCK_TYPES.map(function (bt) {
-                      return React.createElement("button", {
-                        key: bt.type,
-                        onClick: function () { addBlock(bt.type); },
-                        disabled: running,
-                        className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:scale-[1.02] hover:brightness-110 disabled:opacity-40",
-                        style: { backgroundColor: bt.color }
-                      }, bt.label);
-                    })
-                  )
+              // MPA
+              React.createElement("div", null,
+                React.createElement("div", { className: "flex justify-between text-xs mb-1" },
+                  React.createElement("span", { className: "font-bold text-slate-600" }, "\uD83C\uDFDD\uFE0F Marine Protected Area"),
+                  React.createElement("span", { className: "font-mono text-green-600" }, mpaPercent + "% protected")
                 ),
+                React.createElement("input", {
+                  type: "range", min: "0", max: "80", value: mpaPercent,
+                  onChange: function (e) { upd('mpaPercent', parseInt(e.target.value)); },
+                  className: "w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                })
+              ),
 
-                // Program (blocks mode)
-                codeMode === 'blocks' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
-                  React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
-                    "📋 Program (" + blocks.length + " blocks)"
+              // Mesh Size
+              React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83E\uDE7A Mesh Size"),
+                ['small', 'medium', 'large'].map(function (m) {
+                  return React.createElement("button", {
+                    key: m,
+                    onClick: function () { upd('meshSize', m); },
+                    className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-500 text-white" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50")
+                  }, m.charAt(0).toUpperCase() + m.slice(1));
+                }),
+                React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
+              ),
+
+              // Season toggle
+              React.createElement("div", { className: "flex items-center gap-3" },
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDCC5 Season"),
+                React.createElement("button", {
+                  onClick: function () { upd('isOpenSeason', !isOpenSeason); },
+                  className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-500 text-white" : "bg-red-100 text-red-700 border border-red-200")
+                }, isOpenSeason ? "\uD83D\uDFE2 Open Season" : "\uD83D\uDD34 Closed Season")
+              )
+            ),
+
+            // Stats row
+            React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+              [
+                { label: 'Year', val: oceanYear, icon: '\uD83D\uDCC5' },
+                { label: 'Revenue', val: '$' + oceanRevenue.toLocaleString(), icon: '\uD83D\uDCB0' },
+                { label: 'Bycatch', val: oceanBycatch, icon: '\u26A0\uFE0F' },
+                { label: 'Status', val: oceanCollapsed ? 'COLLAPSED' : 'Healthy', icon: oceanCollapsed ? '\u274C' : '\u2705' }
+              ].map(function (s) {
+                return React.createElement("div", { key: s.label, className: "bg-white rounded-lg p-2 text-center border border-slate-200" },
+                  React.createElement("div", { className: "text-xs text-slate-400" }, s.icon + " " + s.label),
+                  React.createElement("div", { className: "text-sm font-bold " + (s.label === 'Status' && oceanCollapsed ? 'text-red-600' : 'text-slate-700') }, s.val)
+                );
+              })
+            ),
+
+            // Advance button
+            React.createElement("div", { className: "flex gap-2" },
+              React.createElement("button", {
+                onClick: stepOcean,
+                className: "flex-1 py-2.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 active:scale-[0.98]"
+              }, "\u23E9 Advance 1 Year"),
+              React.createElement("button", {
+                onClick: function () { for (var i = 0; i < 5; i++) stepOcean(); },
+                className: "px-4 py-2 bg-indigo-100 text-indigo-700 font-bold rounded-lg text-sm hover:bg-indigo-200 transition-all"
+              }, "\u23E9\u00D75"),
+              React.createElement("button", {
+                onClick: resetOcean,
+                className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
+              }, "\u21BA Reset")
+            )
+          ),
+
+          // ═══════════════ MODE 3: MARINE SCIENCE ═══════════════
+          mode === 'marine' && React.createElement("div", { className: "space-y-3" },
+
+            // Ocean Zones Cross-Section
+            React.createElement("div", { className: "rounded-xl overflow-hidden border-2 border-blue-300" },
+              OCEAN_ZONES.map(function (zone) {
+                var zoneSpecies = MARINE_SPECIES.filter(function (s) { return s.zone === zone.id; });
+                return React.createElement("div", {
+                  key: zone.id,
+                  role: "button", tabIndex: 0,
+                  onClick: function () { upd('selectedZone', selectedZone === zone.id ? null : zone.id); },
+                  className: "w-full text-left transition-all hover:brightness-110 cursor-pointer",
+                  style: { background: 'linear-gradient(135deg, ' + zone.color + ', ' + zone.color + '88)', padding: selectedZone === zone.id ? '16px 12px' : '10px 12px', transition: 'all 0.3s ease', borderBottom: '1px solid rgba(255,255,255,0.1)' }
+                },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-xs font-bold text-white drop-shadow-sm" }, zone.name),
+                    React.createElement("span", { className: "text-[10px] text-white/70 ml-auto font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.depth),
+                    React.createElement("span", { className: "text-[10px] text-white/60 font-mono bg-white/10 px-1.5 py-0.5 rounded" }, zone.temp)
                   ),
-                  blocks.length === 0 && React.createElement("p", { className: "text-slate-400 text-xs italic text-center py-4" },
-                    'Click blocks above to add them to your program'
+                  selectedZone === zone.id && React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
+                    zoneSpecies.map(function (sp) {
+                      return React.createElement("button", {
+                        key: sp.id,
+                        onClick: function (e) { e.stopPropagation(); upd('selectedSpecies', sp.id); openAnatomy(sp.id); },
+                        className: "px-2.5 py-1 bg-white/25 rounded-full text-[11px] text-white font-bold hover:bg-white/40 hover:shadow-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
+                      }, sp.icon + " " + sp.name);
+                    }),
+                    zoneSpecies.length === 0 && React.createElement("span", { className: "text-[10px] text-white/50 italic" }, "Few species survive here")
+                  )
+                );
+              })
+            ),
+
+            // Selected Species Card
+            selectedSpecies && (() => {
+              var sp = MARINE_SPECIES.find(function (s) { return s.id === selectedSpecies; });
+              if (!sp) return null;
+              var statusColors = { LC: 'text-green-600 bg-green-50', VU: 'text-amber-600 bg-amber-50', EN: 'text-red-600 bg-red-50', CR: 'text-red-800 bg-red-100' };
+              var statusLabels = { LC: 'Least Concern', VU: 'Vulnerable', EN: 'Endangered', CR: 'Critically Endangered' };
+              return React.createElement("div", { className: "bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-2xl p-4 border-2 border-indigo-200/60 shadow-lg shadow-indigo-500/10 animate-in fade-in duration-200" },
+                React.createElement("div", { className: "flex items-start gap-3" },
+                  React.createElement("div", { className: "text-4xl" }, sp.icon),
+                  React.createElement("div", { className: "flex-1" },
+                    React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, sp.name),
+                    React.createElement("div", { className: "flex gap-2 mt-1 flex-wrap" },
+                      React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold" }, "\uD83C\uDF0A " + sp.habitat),
+                      React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 font-bold" }, "\uD83C\uDF7D\uFE0F " + sp.diet),
+                      React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full font-bold " + (statusColors[sp.status] || '') }, "\uD83D\uDEE1\uFE0F " + (statusLabels[sp.status] || sp.status))
+                    )
                   ),
-                  React.createElement("div", { className: "flex flex-col gap-1" },
-                    blocks.map(function (b, idx) {
-                      var def = BLOCK_TYPES.find(function (bt) { return bt.type === b.type; });
-                      var isActive = running && stepIdx === idx;
-                      return React.createElement("div", { key: idx },
-                        React.createElement("div", {
-                          className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
-                            (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
-                          style: { backgroundColor: def ? def.color : '#64748b' }
+                  React.createElement("button", {
+                    onClick: function () { upd('selectedSpecies', null); },
+                    className: "text-slate-400 hover:text-slate-600 text-lg"
+                  }, "\u2715")
+                ),
+                React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-lg p-3" },
+                  React.createElement("p", { className: "text-xs text-indigo-800 leading-relaxed" }, "\uD83D\uDCA1 " + sp.fact)
+                ),
+                React.createElement("div", { className: "mt-2 bg-amber-50 rounded-lg p-2" },
+                  React.createElement("p", { className: "text-xs text-amber-700 font-bold" }, "\u2753 " + sp.quiz)
+                )
+              );
+            })(),
+
+            // Quiz Section
+            React.createElement("div", { className: "flex gap-2 items-center" },
+              React.createElement("button", {
+                onClick: generateQuiz,
+                className: "flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
+              }, "\uD83E\uDDE0 Marine Science Quiz"),
+              quizScore.total > 0 && React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "\u2705 " + quizScore.correct + "/" + quizScore.total)
+            ),
+
+            quizQ && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-50 rounded-2xl p-4 border border-indigo-200/60 shadow-sm" },
+              React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, "\u2753 " + quizQ.question),
+              React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                quizQ.options.map(function (opt) {
+                  var answered = quizQ.answered != null;
+                  var isCorrect = opt === quizQ.answer;
+                  var isChosen = opt === quizQ.answered;
+                  return React.createElement("button", {
+                    key: opt,
+                    onClick: function () { if (!answered) answerQuiz(opt); },
+                    disabled: answered,
+                    className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-400") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
+                  }, opt);
+                })
+              ),
+              quizQ.answered && React.createElement("div", { className: "mt-2" },
+                React.createElement("p", { className: "text-xs font-bold " + (quizQ.correct ? "text-green-600" : "text-red-600") }, quizQ.correct ? "\u2705 Correct! +3 XP" : "\u274C The answer is: " + quizQ.answer),
+                React.createElement("button", {
+                  onClick: generateQuiz,
+                  className: "mt-1 px-3 py-1 text-[10px] font-bold bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
+                }, "Next Question \u2192")
+              )
+            )
+          )
+        );
+      })(),
+
+      // ═══════════════════════════════════════════════════════════════
+      // ██  CODING PLAYGROUND — Visual Block / Text Turtle Graphics  ██
+      // ═══════════════════════════════════════════════════════════════
+      stemLabTab === 'explore' && stemLabTool === 'codingPlayground' && (() => {
+        // ── State from labToolData ──
+        var d = (labToolData && labToolData._codingPlayground) || {};
+        var upd = function (key, val) {
+          setLabToolData(function (prev) {
+            var cp = Object.assign({}, (prev && prev._codingPlayground) || {});
+            cp[key] = val;
+            return Object.assign({}, prev, { _codingPlayground: cp });
+          });
+        };
+        var updMulti = function (obj) {
+          setLabToolData(function (prev) {
+            var cp = Object.assign({}, (prev && prev._codingPlayground) || {});
+            Object.keys(obj).forEach(function (k) { cp[k] = obj[k]; });
+            return Object.assign({}, prev, { _codingPlayground: cp });
+          });
+        };
+
+        // ── Defaults ──
+        var blocks = d.blocks || [];
+        var turtleState = d.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
+        var drawnLines = d.lines || [];
+        var running = d.running || false;
+        var stepIdx = d.stepIdx != null ? d.stepIdx : -1;
+        var codeMode = d.codeMode || 'blocks';
+        var textCode = d.textCode || '';
+        var challengeIdx = d.challengeIdx != null ? d.challengeIdx : -1;
+        var completed = d.completed || [];
+        var speed = d.speed || 200;
+        var showTurtle = d.showTurtle !== false;
+        var cumulativeMode = d.cumulativeMode || false;
+        var runHistory = d.history || [];
+
+        // ── Block definitions ──
+        var BLOCK_TYPES = [
+          { type: 'forward', label: '🐢 Move Forward', param: 'distance', defaultVal: 50, unit: 'px', color: '#6366f1' },
+          { type: 'backward', label: '🔙 Move Backward', param: 'distance', defaultVal: 50, unit: 'px', color: '#818cf8' },
+          { type: 'right', label: '↩️ Turn Right', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
+          { type: 'left', label: '↪️ Turn Left', param: 'degrees', defaultVal: 90, unit: '°', color: '#f59e0b' },
+          { type: 'penup', label: '✏️ Pen Up', param: null, defaultVal: null, unit: null, color: '#94a3b8' },
+          { type: 'pendown', label: '✏️ Pen Down', param: null, defaultVal: null, unit: null, color: '#22c55e' },
+          { type: 'color', label: '🎨 Set Color', param: 'color', defaultVal: '#6366f1', unit: null, color: '#ec4899' },
+          { type: 'width', label: '📏 Set Width', param: 'width', defaultVal: 2, unit: 'px', color: '#14b8a6' },
+          { type: 'circle', label: '⭕ Draw Circle', param: 'radius', defaultVal: 30, unit: 'px', color: '#06b6d4' },
+          { type: 'goto', label: '📍 Go To', param: 'x', defaultVal: 250, unit: null, color: '#a855f7' },
+          { type: 'home', label: '🏠 Go Home', param: null, defaultVal: null, unit: null, color: '#78716c' },
+          { type: 'repeat', label: '🔄 Repeat', param: 'times', defaultVal: 4, unit: '×', color: '#8b5cf6' }
+        ];
+
+        // ── Challenges ──
+        var CHALLENGES = [
+          { id: 'hello', title: '1. Hello, Turtle!', desc: 'Add a "Move Forward" block and run it.', concept: 'Sequencing', hint: 'Drag a Move Forward block to your program and click Run!', check: function (lines) { return lines.length >= 1; } },
+          { id: 'square', title: '2. Draw a Square', desc: 'Draw a square using Move and Turn blocks.', concept: 'Sequencing', hint: 'You need 4× Move Forward + 4× Turn Right 90°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && Math.abs(ex.turns - 360) < 10 && ex.segments >= 4; } },
+          { id: 'loop_square', title: '3. Loop It!', desc: 'Draw the same square using a Repeat block.', concept: 'Loops', hint: 'Use Repeat 4× with Move Forward and Turn Right 90° inside.', check: function (lines, blks) { return blks.some(function (b) { return b.type === 'repeat'; }) && lines.length >= 4; } },
+          { id: 'triangle', title: '4. Triangle Time', desc: 'Draw an equilateral triangle.', concept: 'Loops + Angles', hint: 'Repeat 3×: Move Forward, Turn Right 120°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 3 && Math.abs(ex.turns - 360) < 15; } },
+          { id: 'rainbow', title: '5. Rainbow Line', desc: 'Draw 3+ lines, each a different color.', concept: 'Variables', hint: 'Use Set Color blocks between your Move Forward blocks.', check: function (lines) { var colors = {}; lines.forEach(function (l) { colors[l.color] = true; }); return Object.keys(colors).length >= 3; } },
+          { id: 'star', title: '6. Star Power', desc: 'Draw a 5-pointed star.', concept: 'Math + Patterns', hint: 'Repeat 5×: Move Forward 100, Turn Right 144°', check: function (lines) { return lines.length >= 5; } },
+          { id: 'spiral', title: '7. Spiral', desc: 'Create a spiral that grows outward.', concept: 'Variables in Loops', hint: 'This is tricky! Try increasing the distance each time.', check: function (lines) { return lines.length >= 10; } },
+          { id: 'hexagon', title: '8. Hexagon Hero', desc: 'Draw a perfect regular hexagon.', concept: 'Math + Patterns', hint: 'Repeat 6×: Move Forward 60, Turn Right 60°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6 && Math.abs(ex.turns - 360) < 15; } },
+          { id: 'freestyle', title: '9. Freestyle!', desc: 'Create any drawing with 20+ line segments.', concept: 'Creativity', hint: 'Combine everything you\'ve learned!', check: function (lines) { return lines.length >= 20; } },
+          { id: 'house', title: '10. Build a House', desc: 'Draw a house: a square base with a triangle roof on top.', concept: 'Decomposition', hint: 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.', check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } }
+        ];
+
+        // ── Helper: analyze drawn lines for challenge checking ──
+        function getEndpoints(lines) {
+          if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
+          var first = lines[0];
+          var last = lines[lines.length - 1];
+          var dist = Math.sqrt(Math.pow(last.x2 - first.x1, 2) + Math.pow(last.y2 - first.y1, 2));
+          var totalAngle = 0;
+          for (var i = 1; i < lines.length; i++) {
+            var a1 = Math.atan2(lines[i - 1].y2 - lines[i - 1].y1, lines[i - 1].x2 - lines[i - 1].x1);
+            var a2 = Math.atan2(lines[i].y2 - lines[i].y1, lines[i].x2 - lines[i].x1);
+            var diff = (a2 - a1) * 180 / Math.PI;
+            while (diff > 180) diff -= 360;
+            while (diff < -180) diff += 360;
+            totalAngle += Math.abs(diff);
+          }
+          return { closed: dist < 15, turns: totalAngle, segments: lines.length };
+        }
+
+        // ── Generate text code from blocks ──
+        function blocksToText(blks, indent) {
+          indent = indent || '';
+          var lines = [];
+          for (var i = 0; i < blks.length; i++) {
+            var b = blks[i];
+            if (b.type === 'forward') lines.push(indent + 'forward(' + (b.distance || 50) + ')');
+            else if (b.type === 'backward') lines.push(indent + 'backward(' + (b.distance || 50) + ')');
+            else if (b.type === 'right') lines.push(indent + 'right(' + (b.degrees || 90) + ')');
+            else if (b.type === 'left') lines.push(indent + 'left(' + (b.degrees || 90) + ')');
+            else if (b.type === 'penup') lines.push(indent + 'penUp()');
+            else if (b.type === 'pendown') lines.push(indent + 'penDown()');
+            else if (b.type === 'color') lines.push(indent + 'setColor("' + (b.color || '#6366f1') + '")');
+            else if (b.type === 'width') lines.push(indent + 'setWidth(' + (b.width || 2) + ')');
+            else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
+            else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
+            else if (b.type === 'home') lines.push(indent + 'home()');
+            else if (b.type === 'repeat') {
+              lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
+              if (b.children && b.children.length > 0) {
+                lines.push(blocksToText(b.children, indent + '  '));
+              }
+              lines.push(indent + '})');
+            }
+          }
+          return lines.join('\n');
+        }
+
+        // ── Parse text code to blocks ──
+        function textToBlocks(code) {
+          var result = [];
+          var lineArr = code.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+          var i = 0;
+          function parse() {
+            var blks = [];
+            while (i < lineArr.length) {
+              var line = lineArr[i];
+              if (line.match(/^}\)?;?$/)) { i++; return blks; }
+              var m;
+              if ((m = line.match(/^forward\((\d+)\)/))) { blks.push({ type: 'forward', distance: parseInt(m[1]) }); }
+              else if ((m = line.match(/^backward\((\d+)\)/))) { blks.push({ type: 'backward', distance: parseInt(m[1]) }); }
+              else if ((m = line.match(/^right\((\d+)\)/))) { blks.push({ type: 'right', degrees: parseInt(m[1]) }); }
+              else if ((m = line.match(/^left\((\d+)\)/))) { blks.push({ type: 'left', degrees: parseInt(m[1]) }); }
+              else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
+              else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
+              else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
+              else if ((m = line.match(/^setWidth\((\d+)\)/))) { blks.push({ type: 'width', width: parseInt(m[1]) }); }
+              else if ((m = line.match(/^circle\((\d+)\)/))) { blks.push({ type: 'circle', radius: parseInt(m[1]) }); }
+              else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
+              else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
+              else if ((m = line.match(/^repeat\((\d+)/))) {
+                i++;
+                var children = parse();
+                blks.push({ type: 'repeat', times: parseInt(m[1]), children: children });
+                continue;
+              }
+              i++;
+            }
+            return blks;
+          }
+          return parse();
+        }
+
+        // ── Execute blocks (async with animation) ──
+        function executeBlocks(blks, turtle, lines, cb, spd, stepCb) {
+          var t = Object.assign({}, turtle);
+          var allLines = lines.slice();
+          function flattenBlocks(bArr) {
+            var flat = [];
+            for (var j = 0; j < bArr.length; j++) {
+              if (bArr[j].type === 'repeat') {
+                var times = bArr[j].times || 4;
+                for (var r = 0; r < times; r++) {
+                  flat = flat.concat(flattenBlocks(bArr[j].children || []));
+                }
+              } else {
+                flat.push(bArr[j]);
+              }
+            }
+            return flat;
+          }
+          var flat = flattenBlocks(blks);
+          var idx = 0;
+
+          function step() {
+            if (idx >= flat.length) {
+              if (cb) cb(t, allLines);
+              return;
+            }
+            var b = flat[idx];
+            if (stepCb) stepCb(idx);
+            if (b.type === 'forward') {
+              var dist = b.distance || 50;
+              var rad = t.angle * Math.PI / 180;
+              var nx = t.x + Math.cos(rad) * dist;
+              var ny = t.y + Math.sin(rad) * dist;
+              if (t.penDown) {
+                allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width });
+              }
+              t.x = nx; t.y = ny;
+            } else if (b.type === 'backward') {
+              var dist2 = b.distance || 50;
+              var rad2 = t.angle * Math.PI / 180;
+              var nx2 = t.x - Math.cos(rad2) * dist2;
+              var ny2 = t.y - Math.sin(rad2) * dist2;
+              if (t.penDown) {
+                allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width });
+              }
+              t.x = nx2; t.y = ny2;
+            } else if (b.type === 'right') {
+              t.angle = (t.angle + (b.degrees || 90)) % 360;
+            } else if (b.type === 'left') {
+              t.angle = (t.angle - (b.degrees || 90) + 360) % 360;
+            } else if (b.type === 'penup') {
+              t.penDown = false;
+            } else if (b.type === 'pendown') {
+              t.penDown = true;
+            } else if (b.type === 'color') {
+              t.color = b.color || '#6366f1';
+            } else if (b.type === 'width') {
+              t.width = b.width || 2;
+            } else if (b.type === 'circle') {
+              var cRadius = b.radius || 30;
+              if (t.penDown) {
+                var segs = 36;
+                for (var si = 0; si < segs; si++) {
+                  var a1 = t.angle + (si / segs) * 360;
+                  var a2 = t.angle + ((si + 1) / segs) * 360;
+                  var r1 = a1 * Math.PI / 180;
+                  var r2 = a2 * Math.PI / 180;
+                  var cx1 = t.x + cRadius * (Math.cos(r1) - Math.cos(t.angle * Math.PI / 180));
+                  var cy1 = t.y + cRadius * (Math.sin(r1) - Math.sin(t.angle * Math.PI / 180));
+                  var cx2 = t.x + cRadius * (Math.cos(r2) - Math.cos(t.angle * Math.PI / 180));
+                  var cy2 = t.y + cRadius * (Math.sin(r2) - Math.sin(t.angle * Math.PI / 180));
+                  allLines.push({ x1: cx1, y1: cy1, x2: cx2, y2: cy2, color: t.color, width: t.width });
+                }
+              }
+            } else if (b.type === 'goto') {
+              var gx = b.x != null ? b.x : 250;
+              var gy = b.y != null ? b.y : 250;
+              if (t.penDown) {
+                allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width });
+              }
+              t.x = gx; t.y = gy;
+            } else if (b.type === 'home') {
+              if (t.penDown) {
+                allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width });
+              }
+              t.x = 250; t.y = 250; t.angle = -90;
+            }
+            updMulti({ turtle: Object.assign({}, t), lines: allLines.slice(), stepIdx: idx, running: true });
+            idx++;
+            setTimeout(step, spd || 200);
+          }
+          step();
+        }
+
+        // ── Run handler ──
+        function handleRun() {
+          var blks = codeMode === 'text' ? textToBlocks(textCode) : blocks;
+          var startTurtle, startLines;
+          if (cumulativeMode) {
+            // In cumulative mode, start from current turtle state and keep existing lines
+            startTurtle = Object.assign({}, turtleState);
+            startLines = drawnLines.slice();
+          } else {
+            startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
+            startLines = [];
+          }
+          updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0 });
+          setTimeout(function () {
+            executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
+              var newHistory = runHistory.concat([{
+                blocks: blks.slice(),
+                linesCount: finalLines.length - startLines.length,
+                timestamp: Date.now()
+              }]);
+              updMulti({ turtle: finalTurtle, lines: finalLines, running: false, stepIdx: -1, history: newHistory });
+              if (challengeIdx >= 0 && challengeIdx < CHALLENGES.length) {
+                var ch = CHALLENGES[challengeIdx];
+                if (ch.check(finalLines, blks)) {
+                  if (completed.indexOf(ch.id) < 0) {
+                    var newCompleted = completed.concat([ch.id]);
+                    upd('completed', newCompleted);
+                    awardStemXP('codingPlayground', 15, 'Completed: ' + ch.title);
+                    if (addToast) addToast('🎉 Challenge "' + ch.title + '" complete!', 'success');
+                  }
+                }
+              }
+            }, speed, function (si) {
+              upd('stepIdx', si);
+            });
+          }, 50);
+        }
+
+        function handleClear() {
+          updMulti({ turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, history: [] });
+        }
+
+        function handleReset() {
+          updMulti({ blocks: [], turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, textCode: '', challengeIdx: -1, history: [], cumulativeMode: false, showTurtle: true });
+        }
+
+        function addBlock(type) {
+          var def = BLOCK_TYPES.find(function (bt) { return bt.type === type; });
+          var newBlock = { type: type };
+          if (def && def.param) newBlock[def.param] = def.defaultVal;
+          if (type === 'repeat') newBlock.children = [];
+          var updated = blocks.concat([newBlock]);
+          upd('blocks', updated);
+          if (codeMode === 'text') upd('textCode', blocksToText(updated));
+        }
+
+        function removeBlock(idx) {
+          var updated = blocks.filter(function (_, i) { return i !== idx; });
+          upd('blocks', updated);
+          if (codeMode === 'text') upd('textCode', blocksToText(updated));
+        }
+
+        function updateBlockParam(idx, param, val) {
+          var updated = blocks.map(function (b, i) {
+            if (i === idx) { var nb = Object.assign({}, b); nb[param] = val; return nb; }
+            return b;
+          });
+          upd('blocks', updated);
+          if (codeMode === 'text') upd('textCode', blocksToText(updated));
+        }
+
+        function addChildBlock(repeatIdx, type) {
+          var def = BLOCK_TYPES.find(function (bt) { return bt.type === type; });
+          var newBlock = { type: type };
+          if (def && def.param) newBlock[def.param] = def.defaultVal;
+          var updated = blocks.map(function (b, i) {
+            if (i === repeatIdx && b.type === 'repeat') {
+              var nb = Object.assign({}, b);
+              nb.children = (nb.children || []).concat([newBlock]);
+              return nb;
+            }
+            return b;
+          });
+          upd('blocks', updated);
+          if (codeMode === 'text') upd('textCode', blocksToText(updated));
+        }
+
+        function removeChildBlock(repeatIdx, childIdx) {
+          var updated = blocks.map(function (b, i) {
+            if (i === repeatIdx && b.type === 'repeat') {
+              var nb = Object.assign({}, b);
+              nb.children = (nb.children || []).filter(function (_, ci) { return ci !== childIdx; });
+              return nb;
+            }
+            return b;
+          });
+          upd('blocks', updated);
+          if (codeMode === 'text') upd('textCode', blocksToText(updated));
+        }
+
+        function toggleMode() {
+          if (codeMode === 'blocks') {
+            upd('textCode', blocksToText(blocks));
+            upd('codeMode', 'text');
+          } else {
+            upd('blocks', textToBlocks(textCode));
+            upd('codeMode', 'blocks');
+          }
+        }
+
+        function moveBlock(idx, dir) {
+          var newIdx = idx + dir;
+          if (newIdx < 0 || newIdx >= blocks.length) return;
+          var updated = blocks.slice();
+          var tmp = updated[idx];
+          updated[idx] = updated[newIdx];
+          updated[newIdx] = tmp;
+          upd('blocks', updated);
+        }
+
+        // NOTE: Coding Playground canvas hooks (useRef + useEffect) have been hoisted
+        // to top level of StemLabModal to satisfy React Rules of Hooks.
+        // The ref is available as _codingCanvasRef.
+        var canvasRef = _codingCanvasRef;
+
+        // ── Render ──
+        return React.createElement("div", {
+          className: "grid gap-4",
+          style: { gridTemplateColumns: '220px 1fr', gridTemplateRows: 'auto auto' }
+        },
+          // ── Header bar ──
+          React.createElement("div", {
+            className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
+          },
+            React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
+            React.createElement("span", { className: "text-2xl" }, "🖥️"),
+            React.createElement("div", { className: "flex-1" },
+              React.createElement("h2", { className: "text-white font-bold text-lg" }, "Coding Playground"),
+              React.createElement("p", { className: "text-indigo-200 text-xs" },
+                challengeIdx >= 0 ? '🎯 ' + CHALLENGES[challengeIdx].title + ' — ' + CHALLENGES[challengeIdx].desc :
+                  'Build programs with blocks or code. The turtle draws your creation!'
+              )
+            ),
+            // Mode toggle — Minecraft Education style
+            React.createElement("button", {
+              onClick: toggleMode,
+              className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
+                (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
+            },
+              React.createElement("span", null, codeMode === 'blocks' ? '🧩' : '📝'),
+              codeMode === 'blocks' ? 'Switch to Code' : 'Switch to Blocks'
+            ),
+            // Speed
+            React.createElement("select", {
+              'aria-label': 'Execution speed',
+              value: speed,
+              onChange: function (e) { upd('speed', parseInt(e.target.value)); },
+              className: "px-2 py-1 rounded-lg bg-indigo-900/50 text-indigo-200 text-xs border border-indigo-400/30"
+            },
+              React.createElement("option", { value: 50 }, "⚡ Fast"),
+              React.createElement("option", { value: 200 }, "🐢 Normal"),
+              React.createElement("option", { value: 500 }, "🐌 Slow")
+            )
+          ),
+
+          // ── Left panel: Toolbox + Program ──
+          React.createElement("div", { className: "flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
+            // Toolbox
+            React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
+              React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
+              React.createElement("div", { className: "flex flex-col gap-1" },
+                BLOCK_TYPES.map(function (bt) {
+                  return React.createElement("button", {
+                    key: bt.type,
+                    onClick: function () { addBlock(bt.type); },
+                    disabled: running,
+                    className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:scale-[1.02] hover:brightness-110 disabled:opacity-40",
+                    style: { backgroundColor: bt.color }
+                  }, bt.label);
+                })
+              )
+            ),
+
+            // Program (blocks mode)
+            codeMode === 'blocks' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
+              React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
+                "📋 Program (" + blocks.length + " blocks)"
+              ),
+              blocks.length === 0 && React.createElement("p", { className: "text-slate-400 text-xs italic text-center py-4" },
+                'Click blocks above to add them to your program'
+              ),
+              React.createElement("div", { className: "flex flex-col gap-1" },
+                blocks.map(function (b, idx) {
+                  var def = BLOCK_TYPES.find(function (bt) { return bt.type === b.type; });
+                  var isActive = running && stepIdx === idx;
+                  return React.createElement("div", { key: idx },
+                    React.createElement("div", {
+                      className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
+                        (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
+                      style: { backgroundColor: def ? def.color : '#64748b' }
+                    },
+                      React.createElement("span", { className: "flex-1 truncate" },
+                        def ? def.label : b.type,
+                        def && def.param && b.type !== 'repeat' && b.type !== 'color' && b.type !== 'goto' ? ' ' + (b[def.param] || def.defaultVal) + (def.unit || '') : '',
+                        b.type === 'goto' ? ' (' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')' : '',
+                        b.type === 'repeat' ? ' ' + (b.times || 4) + '×' : ''
+                      ),
+                      // Param editor (single param)
+                      def && def.param && b.type !== 'color' && b.type !== 'goto' && React.createElement("input", {
+                        type: "number", value: b[def.param] || def.defaultVal,
+                        onChange: function (e) { updateBlockParam(idx, def.param, parseInt(e.target.value) || def.defaultVal); },
+                        className: "w-12 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
+                        style: { appearance: 'textfield' }
+                      }),
+                      // Goto dual param editor (x, y)
+                      b.type === 'goto' && React.createElement("span", { className: "flex items-center gap-0.5" },
+                        React.createElement("span", { className: "text-[10px] text-white/60" }, "x"),
+                        React.createElement("input", {
+                          type: "number", value: b.x != null ? b.x : 250,
+                          onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
+                          className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                          style: { appearance: 'textfield' }
+                        }),
+                        React.createElement("span", { className: "text-[10px] text-white/60" }, "y"),
+                        React.createElement("input", {
+                          type: "number", value: b.y != null ? b.y : 250,
+                          onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
+                          className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                          style: { appearance: 'textfield' }
+                        })
+                      ),
+                      b.type === 'color' && React.createElement("input", {
+                        type: "color", value: b.color || '#6366f1',
+                        onChange: function (e) { updateBlockParam(idx, 'color', e.target.value); },
+                        className: "w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                      }),
+                      React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
+                      React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
+                      React.createElement("button", { onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
+                    ),
+                    // Repeat children
+                    b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
+                      (b.children || []).map(function (child, ci) {
+                        var cdef = BLOCK_TYPES.find(function (bt) { return bt.type === child.type; });
+                        return React.createElement("div", {
+                          key: ci,
+                          className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
+                          style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
                         },
                           React.createElement("span", { className: "flex-1 truncate" },
-                            def ? def.label : b.type,
-                            def && def.param && b.type !== 'repeat' && b.type !== 'color' && b.type !== 'goto' ? ' ' + (b[def.param] || def.defaultVal) + (def.unit || '') : '',
-                            b.type === 'goto' ? ' (' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')' : '',
-                            b.type === 'repeat' ? ' ' + (b.times || 4) + '×' : ''
+                            cdef ? cdef.label : child.type,
+                            cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
                           ),
-                          // Param editor (single param)
-                          def && def.param && b.type !== 'color' && b.type !== 'goto' && React.createElement("input", {
-                            type: "number", value: b[def.param] || def.defaultVal,
-                            onChange: function (e) { updateBlockParam(idx, def.param, parseInt(e.target.value) || def.defaultVal); },
-                            className: "w-12 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
-                            style: { appearance: 'textfield' }
-                          }),
-                          // Goto dual param editor (x, y)
-                          b.type === 'goto' && React.createElement("span", { className: "flex items-center gap-0.5" },
-                            React.createElement("span", { className: "text-[10px] text-white/60" }, "x"),
-                            React.createElement("input", {
-                              type: "number", value: b.x != null ? b.x : 250,
-                              onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
-                              className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
-                              style: { appearance: 'textfield' }
-                            }),
-                            React.createElement("span", { className: "text-[10px] text-white/60" }, "y"),
-                            React.createElement("input", {
-                              type: "number", value: b.y != null ? b.y : 250,
-                              onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
-                              className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
-                              style: { appearance: 'textfield' }
-                            })
-                          ),
-                          b.type === 'color' && React.createElement("input", {
-                            type: "color", value: b.color || '#6366f1',
-                            onChange: function (e) { updateBlockParam(idx, 'color', e.target.value); },
-                            className: "w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
-                          }),
-                          React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                          React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
-                          React.createElement("button", { onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
-                        ),
-                        // Repeat children
-                        b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
-                          (b.children || []).map(function (child, ci) {
-                            var cdef = BLOCK_TYPES.find(function (bt) { return bt.type === child.type; });
-                            return React.createElement("div", {
-                              key: ci,
-                              className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
-                              style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
-                            },
-                              React.createElement("span", { className: "flex-1 truncate" },
-                                cdef ? cdef.label : child.type,
-                                cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
-                              ),
-                              React.createElement("button", { onClick: function () { removeChildBlock(idx, ci); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
-                            );
-                          }),
-                          // Quick-add buttons for repeat children
-                          React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
-                            ['forward', 'backward', 'right', 'left', 'circle', 'color'].map(function (ct) {
-                              return React.createElement("button", {
-                                key: ct, onClick: function () { addChildBlock(idx, ct); },
-                                className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
-                              }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : '+🎨');
-                            })
-                          )
-                        )
-                      );
-                    })
-                  )
-                ),
-
-                // Code editor (text mode)
-                codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
-                  React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
-                  React.createElement("textarea", {
-                    'aria-label': 'Code editor',
-                    value: textCode,
-                    onChange: function (e) { upd('textCode', e.target.value); },
-                    placeholder: "forward(50)\nright(90)\nbackward(30)\n\ncircle(40)\ngoto(100, 200)\nhome()\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
-                    className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
-                    spellCheck: false
-                  }),
-                  React.createElement("p", { className: "text-slate-500 text-[10px] mt-1" },
-                    "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(radius), goto(x, y), home(), repeat(n, function() { ... })"
-                  )
-                )
-              ),
-
-              // ── Right panel: Canvas + Controls ──
-              React.createElement("div", { className: "flex flex-col gap-3" },
-                // Canvas
-                React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
-                  React.createElement("canvas", {
-                    ref: canvasRef, width: 500, height: 500,
-                    className: "w-full rounded-lg",
-                    style: { maxWidth: '500px', aspectRatio: '1/1', imageRendering: 'auto' }
-                  })
-                ),
-
-                // Controls
-                React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                  React.createElement("button", {
-                    onClick: handleRun,
-                    disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
-                    className: "flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
-                      (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-green-500/30')
-                  }, "▶ Run"),
-                  React.createElement("button", {
-                    onClick: handleClear,
-                    className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
-                  }, "🗑️ Clear Canvas"),
-                  React.createElement("button", {
-                    onClick: handleReset,
-                    className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
-                  }, "⏪ Reset All"),
-                  running && React.createElement("span", { className: "text-xs text-yellow-400 animate-pulse font-medium" },
-                    "🔄 Running... step " + (stepIdx + 1)
-                  )
-                ),
-
-                // Options bar (turtle toggle + cumulative mode)
-                React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                  // Show/Hide turtle toggle
-                  React.createElement("button", {
-                    onClick: function () { upd('showTurtle', !showTurtle); },
-                    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
-                      (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
-                  }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                  // Cumulative mode toggle
-                  React.createElement("button", {
-                    onClick: function () { upd('cumulativeMode', !cumulativeMode); },
-                    className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
-                      (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
-                  }, cumulativeMode ? '📚 Cumulative Mode' : '🔄 Fresh Start Mode'),
-                  // Run counter in cumulative mode
-                  cumulativeMode && runHistory.length > 0 && React.createElement("span", {
-                    className: "flex items-center gap-1 text-[11px] text-amber-300/80 font-medium bg-amber-900/30 px-2 py-1 rounded-full"
-                  }, '📊 ' + runHistory.length + ' run' + (runHistory.length !== 1 ? 's' : '') + ' • ' + drawnLines.length + ' lines drawn')
-                ),
-
-                // ── Challenges panel ──
-                React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
-                  React.createElement("h3", { className: "text-xs font-bold text-amber-300 uppercase tracking-wider mb-2" },
-                    "🏆 Challenges (" + completed.length + "/" + CHALLENGES.length + ")"
-                  ),
-                  React.createElement("div", { className: "flex flex-col gap-1" },
-                    CHALLENGES.map(function (ch, ci) {
-                      var done = completed.indexOf(ch.id) >= 0;
-                      var active = challengeIdx === ci;
-                      return React.createElement("button", {
-                        key: ch.id,
-                        onClick: function () { upd('challengeIdx', active ? -1 : ci); },
-                        className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
-                          (done ? 'bg-green-900/40 text-green-300 border border-green-700/50' :
-                            active ? 'bg-indigo-900/60 text-indigo-200 border border-indigo-500/50 ring-1 ring-indigo-400' :
-                              'bg-slate-700/50 text-slate-300 hover:bg-slate-700 border border-transparent')
-                      },
-                        React.createElement("span", { className: "text-sm" }, done ? '✅' : active ? '🎯' : '⬜'),
-                        React.createElement("div", { className: "flex-1" },
-                          React.createElement("span", { className: "font-semibold" }, ch.title),
-                          active && React.createElement("p", { className: "text-[10px] text-indigo-300/70 mt-0.5" }, '💡 ' + ch.hint)
-                        ),
-                        React.createElement("span", {
-                          className: "text-[10px] px-1.5 py-0.5 rounded-full " +
-                            (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-400')
-                        }, ch.concept)
-                      );
-                    })
-                  )
-                ),
-
-                // CS concepts panel
-                React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-700/30" },
-                  React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, "🔬 CS Concepts"),
-                  React.createElement("p", { className: "text-[11px] text-indigo-200/70 leading-relaxed" },
-                    challengeIdx >= 0 ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :
-                      'Computational thinking is the foundation of all computer science. Sequencing puts steps in order. Loops repeat steps efficiently. Together they let you create anything!'
-                  )
-                ),
-
-                // Snapshot button
-                React.createElement("button", {
-                  onClick: function () {
-                    setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
-                    if (addToast) addToast('📸 Code snapshot saved!', 'success');
-                  },
-                  className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
-                }, "📸 Snapshot")
+                          React.createElement("button", { onClick: function () { removeChildBlock(idx, ci); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
+                        );
+                      }),
+                      // Quick-add buttons for repeat children
+                      React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
+                        ['forward', 'backward', 'right', 'left', 'circle', 'color'].map(function (ct) {
+                          return React.createElement("button", {
+                            key: ct, onClick: function () { addChildBlock(idx, ct); },
+                            className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
+                          }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : '+🎨');
+                        })
+                      )
+                    )
+                  );
+                })
               )
-            );
-          })(),
+            ),
+
+            // Code editor (text mode)
+            codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
+              React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
+              React.createElement("textarea", {
+                'aria-label': 'Code editor',
+                value: textCode,
+                onChange: function (e) { upd('textCode', e.target.value); },
+                placeholder: "forward(50)\nright(90)\nbackward(30)\n\ncircle(40)\ngoto(100, 200)\nhome()\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
+                className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
+                spellCheck: false
+              }),
+              React.createElement("p", { className: "text-slate-500 text-[10px] mt-1" },
+                "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(radius), goto(x, y), home(), repeat(n, function() { ... })"
+              )
+            )
+          ),
+
+          // ── Right panel: Canvas + Controls ──
+          React.createElement("div", { className: "flex flex-col gap-3" },
+            // Canvas
+            React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
+              React.createElement("canvas", {
+                ref: canvasRef, width: 500, height: 500,
+                className: "w-full rounded-lg",
+                style: { maxWidth: '500px', aspectRatio: '1/1', imageRendering: 'auto' }
+              })
+            ),
+
+            // Controls
+            React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+              React.createElement("button", {
+                onClick: handleRun,
+                disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
+                className: "flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
+                  (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-green-500/30')
+              }, "▶ Run"),
+              React.createElement("button", {
+                onClick: handleClear,
+                className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition-all"
+              }, "🗑️ Clear Canvas"),
+              React.createElement("button", {
+                onClick: handleReset,
+                className: "flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600/80 text-white hover:bg-red-600 transition-all"
+              }, "⏪ Reset All"),
+              running && React.createElement("span", { className: "text-xs text-yellow-400 animate-pulse font-medium" },
+                "🔄 Running... step " + (stepIdx + 1)
+              )
+            ),
+
+            // Options bar (turtle toggle + cumulative mode)
+            React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
+              // Show/Hide turtle toggle
+              React.createElement("button", {
+                onClick: function () { upd('showTurtle', !showTurtle); },
+                className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
+                  (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+              }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
+              // Cumulative mode toggle
+              React.createElement("button", {
+                onClick: function () { upd('cumulativeMode', !cumulativeMode); },
+                className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
+                  (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+              }, cumulativeMode ? '📚 Cumulative Mode' : '🔄 Fresh Start Mode'),
+              // Run counter in cumulative mode
+              cumulativeMode && runHistory.length > 0 && React.createElement("span", {
+                className: "flex items-center gap-1 text-[11px] text-amber-300/80 font-medium bg-amber-900/30 px-2 py-1 rounded-full"
+              }, '📊 ' + runHistory.length + ' run' + (runHistory.length !== 1 ? 's' : '') + ' • ' + drawnLines.length + ' lines drawn')
+            ),
+
+            // ── Challenges panel ──
+            React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
+              React.createElement("h3", { className: "text-xs font-bold text-amber-300 uppercase tracking-wider mb-2" },
+                "🏆 Challenges (" + completed.length + "/" + CHALLENGES.length + ")"
+              ),
+              React.createElement("div", { className: "flex flex-col gap-1" },
+                CHALLENGES.map(function (ch, ci) {
+                  var done = completed.indexOf(ch.id) >= 0;
+                  var active = challengeIdx === ci;
+                  return React.createElement("button", {
+                    key: ch.id,
+                    onClick: function () { upd('challengeIdx', active ? -1 : ci); },
+                    className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
+                      (done ? 'bg-green-900/40 text-green-300 border border-green-700/50' :
+                        active ? 'bg-indigo-900/60 text-indigo-200 border border-indigo-500/50 ring-1 ring-indigo-400' :
+                          'bg-slate-700/50 text-slate-300 hover:bg-slate-700 border border-transparent')
+                  },
+                    React.createElement("span", { className: "text-sm" }, done ? '✅' : active ? '🎯' : '⬜'),
+                    React.createElement("div", { className: "flex-1" },
+                      React.createElement("span", { className: "font-semibold" }, ch.title),
+                      active && React.createElement("p", { className: "text-[10px] text-indigo-300/70 mt-0.5" }, '💡 ' + ch.hint)
+                    ),
+                    React.createElement("span", {
+                      className: "text-[10px] px-1.5 py-0.5 rounded-full " +
+                        (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-400')
+                    }, ch.concept)
+                  );
+                })
+              )
+            ),
+
+            // CS concepts panel
+            React.createElement("div", { className: "bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-700/30" },
+              React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, "🔬 CS Concepts"),
+              React.createElement("p", { className: "text-[11px] text-indigo-200/70 leading-relaxed" },
+                challengeIdx >= 0 ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :
+                  'Computational thinking is the foundation of all computer science. Sequencing puts steps in order. Loops repeat steps efficiently. Together they let you create anything!'
+              )
+            ),
+
+            // Snapshot button
+            React.createElement("button", {
+              onClick: function () {
+                setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
+                if (addToast) addToast('📸 Code snapshot saved!', 'success');
+              },
+              className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+            }, "📸 Snapshot")
+          )
+        );
+      })(),
 
 
 
         )));
-    };
-  }
-})();
+  };
+}
+}) ();
