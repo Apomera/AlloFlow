@@ -20934,7 +20934,7 @@
               if (!canvas) return;
               var ctx = canvas.getContext('2d');
               var W = canvas.width, H = canvas.height;
-              var gridSize = d.pixelGrid || 16;
+              var gridSize = typeof d.pixelGrid === 'number' ? d.pixelGrid : 16;
               var cellW = W / gridSize, cellH = H / gridSize;
               var grid = d.pixelData || {};
               var painting = false;
@@ -21119,7 +21119,7 @@
                       return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
                     }),
                     React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                    React.createElement("select", { 'aria-label': 'Grid size', value: d.pixelGrid || 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
+                    React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
                       [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
                   )
                 ),
