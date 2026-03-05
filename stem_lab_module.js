@@ -5425,110 +5425,110 @@
               {
                 id: 'amoeba', label: t('stem.cell.amoeba'), icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'],
                 anatomy: [
-                  { name: 'Pseudopods', fn: 'Temporary cytoplasm extensions used for movement and engulfing food (phagocytosis). Formed by actin filament polymerization.', icon: '\uD83E\uDDB6' },
-                  { name: 'Food Vacuole', fn: 'Membrane-bound compartment containing engulfed food particles. Enzymes digest the contents, releasing nutrients into cytoplasm.', icon: '\uD83D\uDFE2' },
-                  { name: 'Contractile Vacuole', fn: 'Pumps excess water out of the cell to maintain osmotic balance. Fills and contracts rhythmically.', icon: '\uD83D\uDCA7' },
-                  { name: 'Nucleus', fn: 'Contains DNA and controls cell activities. Single large nucleus with visible nucleolus.', icon: '\uD83D\uDFE3' },
-                  { name: 'Cell Membrane', fn: 'Flexible phospholipid bilayer that allows shape changes. Selectively permeable \u2014 controls what enters and exits.', icon: '\u26AA' }
+                  { name: 'Pseudopods', fn: 'Temporary cytoplasm extensions used for movement and engulfing food (phagocytosis). Formed by actin filament polymerization.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
+                  { name: 'Food Vacuole', fn: 'Membrane-bound compartment containing engulfed food particles. Enzymes digest the contents, releasing nutrients into cytoplasm.', icon: '\uD83D\uDFE2', lx: -0.4, ly: 0.3 },
+                  { name: 'Contractile Vacuole', fn: 'Pumps excess water out of the cell to maintain osmotic balance. Fills and contracts rhythmically.', icon: '\uD83D\uDCA7', lx: 0.7, ly: -0.5 },
+                  { name: 'Nucleus', fn: 'Contains DNA and controls cell activities. Single large nucleus with visible nucleolus.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
+                  { name: 'Cell Membrane', fn: 'Flexible phospholipid bilayer that allows shape changes. Selectively permeable \u2014 controls what enters and exits.', icon: '\u26AA', lx: 0, ly: -1.1 }
                 ]
               },
               {
                 id: 'paramecium', label: t('stem.cell.paramecium'), icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'],
                 anatomy: [
-                  { name: 'Cilia', fn: 'Thousands of short hair-like projections covering the cell. Beat in coordinated metachronal waves for rapid swimming (~3mm/sec).', icon: '\u{1F4A8}' },
-                  { name: 'Oral Groove', fn: 'Funnel-shaped depression that channels food particles into the cell mouth (cytostome). Cilia sweep food inward.', icon: '\uD83E\uDD44' },
-                  { name: 'Macronucleus', fn: 'Large kidney-shaped nucleus controlling daily cell functions (gene expression for proteins, metabolism).', icon: '\uD83D\uDFE3' },
-                  { name: 'Micronucleus', fn: 'Small round nucleus used only during sexual reproduction (conjugation). Contains complete genome.', icon: '\u26AA' },
-                  { name: 'Trichocysts', fn: 'Defensive organelles embedded in the pellicle. Fire tiny needle-like shafts when the cell is threatened.', icon: '\u26A1' }
+                  { name: 'Cilia', fn: 'Thousands of short hair-like projections covering the cell. Beat in coordinated metachronal waves for rapid swimming (~3mm/sec).', icon: '\u{1F4A8}', lx: 1.5, ly: -0.5 },
+                  { name: 'Oral Groove', fn: 'Funnel-shaped depression that channels food particles into the cell mouth (cytostome). Cilia sweep food inward.', icon: '\uD83E\uDD44', lx: 0.4, ly: 0 },
+                  { name: 'Macronucleus', fn: 'Large kidney-shaped nucleus controlling daily cell functions (gene expression for proteins, metabolism).', icon: '\uD83D\uDFE3', lx: -0.1, ly: 0 },
+                  { name: 'Micronucleus', fn: 'Small round nucleus used only during sexual reproduction (conjugation). Contains complete genome.', icon: '\u26AA', lx: 0.25, ly: 0.15 },
+                  { name: 'Trichocysts', fn: 'Defensive organelles embedded in the pellicle. Fire tiny needle-like shafts when the cell is threatened.', icon: '\u26A1', lx: -1.2, ly: 0.4 }
                 ]
               },
               {
                 id: 'euglena', label: t('stem.cell.euglena'), icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: t('stem.chem_balance.photosynthesis'), activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'],
                 anatomy: [
-                  { name: 'Flagellum', fn: 'Long whip-like appendage emerging from anterior end. Rotates to pull the cell forward through water.', icon: '\u{1F4A8}' },
-                  { name: 'Eyespot (Stigma)', fn: 'Red-orange carotenoid pigment spot that shades a photoreceptor, allowing Euglena to detect light direction for phototaxis.', icon: '\uD83D\uDD34' },
-                  { name: 'Chloroplasts', fn: 'Green plastids containing chlorophyll for photosynthesis. Can be lost permanently if cell is kept in darkness.', icon: '\uD83D\uDFE2' },
-                  { name: 'Pellicle', fn: 'Flexible protein strips beneath the membrane (not a cell wall). Allows euglenoid movement \u2014 stretching and contracting.', icon: '\u26AA' },
-                  { name: 'Paramylon Body', fn: 'Unique carbohydrate storage granule (beta-1,3-glucan). Euglena\u2019s version of starch, used as energy reserve.', icon: '\u26AA' }
+                  { name: 'Flagellum', fn: 'Long whip-like appendage emerging from anterior end. Rotates to pull the cell forward through water.', icon: '\u{1F4A8}', lx: 2.2, ly: -0.2 },
+                  { name: 'Eyespot (Stigma)', fn: 'Red-orange carotenoid pigment spot that shades a photoreceptor, allowing Euglena to detect light direction for phototaxis.', icon: '\uD83D\uDD34', lx: 0.8, ly: -0.15 },
+                  { name: 'Chloroplasts', fn: 'Green plastids containing chlorophyll for photosynthesis. Can be lost permanently if cell is kept in darkness.', icon: '\uD83D\uDFE2', lx: -0.2, ly: -0.15 },
+                  { name: 'Pellicle', fn: 'Flexible protein strips beneath the membrane (not a cell wall). Allows euglenoid movement \u2014 stretching and contracting.', icon: '\u26AA', lx: -0.9, ly: 0.35 },
+                  { name: 'Paramylon Body', fn: 'Unique carbohydrate storage granule (beta-1,3-glucan). Euglena\u2019s version of starch, used as energy reserve.', icon: '\u26AA', lx: 0.3, ly: 0.25 }
                 ]
               },
               {
                 id: 'wbc', label: t('stem.cell.white_blood_cell'), icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'],
                 anatomy: [
-                  { name: 'Lobed Nucleus', fn: 'Multi-lobed nucleus (neutrophils have 3-5 lobes). Allows the cell to squeeze through tight spaces between tissue cells.', icon: '\uD83D\uDFE3' },
-                  { name: 'Lysosomes', fn: 'Enzyme-filled vesicles that digest engulfed pathogens. Contain hydrolytic enzymes active at acidic pH.', icon: '\uD83D\uDFE1' },
-                  { name: 'Pseudopods', fn: 'Cytoplasmic extensions used for amoeboid movement and phagocytosis. Follow chemical gradients (chemotaxis) to find bacteria.', icon: '\uD83E\uDDB6' },
-                  { name: 'Phagosomes', fn: 'Membrane-bound vesicles formed when the cell engulfs a pathogen. Fuse with lysosomes to destroy the invader.', icon: '\uD83D\uDD34' },
-                  { name: 'Surface Receptors', fn: 'Toll-like receptors and antibody receptors recognize foreign molecules (antigens) on pathogen surfaces.', icon: '\u26A1' }
+                  { name: 'Lobed Nucleus', fn: 'Multi-lobed nucleus (neutrophils have 3-5 lobes). Allows the cell to squeeze through tight spaces between tissue cells.', icon: '\uD83D\uDFE3', lx: -0.2, ly: -0.1 },
+                  { name: 'Lysosomes', fn: 'Enzyme-filled vesicles that digest engulfed pathogens. Contain hydrolytic enzymes active at acidic pH.', icon: '\uD83D\uDFE1', lx: 0.5, ly: 0.4 },
+                  { name: 'Pseudopods', fn: 'Cytoplasmic extensions used for amoeboid movement and phagocytosis. Follow chemical gradients (chemotaxis) to find bacteria.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
+                  { name: 'Phagosomes', fn: 'Membrane-bound vesicles formed when the cell engulfs a pathogen. Fuse with lysosomes to destroy the invader.', icon: '\uD83D\uDD34', lx: -0.6, ly: 0.5 },
+                  { name: 'Surface Receptors', fn: 'Toll-like receptors and antibody receptors recognize foreign molecules (antigens) on pathogen surfaces.', icon: '\u26A1', lx: 0, ly: -1.0 }
                 ]
               },
               {
                 id: 'bacterium', label: t('stem.cell.bacterium'), icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'],
                 anatomy: [
-                  { name: 'Nucleoid', fn: 'Region of circular DNA (not membrane-bound). Single chromosome contains ~4,000 genes. No histones in most bacteria.', icon: '\uD83D\uDFE1' },
-                  { name: 'Peptidoglycan Wall', fn: 'Rigid mesh of sugars and amino acids surrounding the membrane. Gram+ have thick walls; Gram- have thin walls + outer membrane.', icon: '\uD83D\uDFE7' },
-                  { name: 'Plasmids', fn: 'Small circular DNA molecules separate from the chromosome. Carry genes for antibiotic resistance; can transfer between bacteria.', icon: '\uD83D\uDD35' },
-                  { name: 'Flagellum', fn: 'Rotating protein filament driven by a molecular motor (proton gradient). Spins ~100 revolutions/second for swimming.', icon: '\u{1F4A8}' },
-                  { name: 'Ribosomes (70S)', fn: 'Smaller than eukaryotic ribosomes (70S vs 80S). This size difference is why antibiotics can target bacterial ribosomes specifically.', icon: '\u26AA' }
+                  { name: 'Nucleoid', fn: 'Region of circular DNA (not membrane-bound). Single chromosome contains ~4,000 genes. No histones in most bacteria.', icon: '\uD83D\uDFE1', lx: 0, ly: 0 },
+                  { name: 'Peptidoglycan Wall', fn: 'Rigid mesh of sugars and amino acids surrounding the membrane. Gram+ have thick walls; Gram- have thin walls + outer membrane.', icon: '\uD83D\uDFE7', lx: 0, ly: -0.9 },
+                  { name: 'Plasmids', fn: 'Small circular DNA molecules separate from the chromosome. Carry genes for antibiotic resistance; can transfer between bacteria.', icon: '\uD83D\uDD35', lx: 0.8, ly: 0.3 },
+                  { name: 'Flagellum', fn: 'Rotating protein filament driven by a molecular motor (proton gradient). Spins ~100 revolutions/second for swimming.', icon: '\u{1F4A8}', lx: -2.2, ly: 0 },
+                  { name: 'Ribosomes (70S)', fn: 'Smaller than eukaryotic ribosomes (70S vs 80S). This size difference is why antibiotics can target bacterial ribosomes specifically.', icon: '\u26AA', lx: -0.5, ly: 0.3 }
                 ]
               },
               {
                 id: 'plantcell', label: t('stem.cell.plant_cell'), icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'],
                 anatomy: [
-                  { name: 'Cell Wall', fn: 'Rigid outer layer of cellulose microfibrils. Provides structural support, prevents bursting from osmotic pressure, and gives plants their shape.', icon: '\uD83D\uDFE9' },
-                  { name: 'Central Vacuole', fn: 'Massive fluid-filled organelle occupying up to 90% of cell volume. Stores water, nutrients, and waste; maintains turgor pressure.', icon: '\uD83D\uDFE6' },
-                  { name: 'Chloroplast', fn: 'Double-membrane organelle with internal thylakoid membranes where photosynthesis occurs. Contains its own DNA (endosymbiotic origin).', icon: '\uD83D\uDFE2' },
-                  { name: 'Nucleus', fn: 'Contains chromosomal DNA enclosed by a double membrane (nuclear envelope) with pores. Controls gene expression and cell division.', icon: '\uD83D\uDFE3' },
-                  { name: 'Mitochondria', fn: 'Powerhouse of the cell \u2014 performs cellular respiration (glucose + O\u2082 \u2192 ATP + CO\u2082 + H\u2082O). Has its own circular DNA.', icon: '\uD83D\uDFE0' },
-                  { name: 'Endoplasmic Reticulum', fn: 'Network of membrane channels. Rough ER (with ribosomes) makes proteins; Smooth ER synthesizes lipids and detoxifies chemicals.', icon: '\u26AA' },
-                  { name: 'Plasmodesmata', fn: 'Tiny channels through the cell wall connecting adjacent plant cells. Allow transport of water, nutrients, and signaling molecules.', icon: '\uD83D\uDD35' }
+                  { name: 'Cell Wall', fn: 'Rigid outer layer of cellulose microfibrils. Provides structural support, prevents bursting from osmotic pressure, and gives plants their shape.', icon: '\uD83D\uDFE9', lx: 0, ly: -1.3 },
+                  { name: 'Central Vacuole', fn: 'Massive fluid-filled organelle occupying up to 90% of cell volume. Stores water, nutrients, and waste; maintains turgor pressure.', icon: '\uD83D\uDFE6', lx: 0, ly: 0 },
+                  { name: 'Chloroplast', fn: 'Double-membrane organelle with internal thylakoid membranes where photosynthesis occurs. Contains its own DNA (endosymbiotic origin).', icon: '\uD83D\uDFE2', lx: -0.8, ly: -0.5 },
+                  { name: 'Nucleus', fn: 'Contains chromosomal DNA enclosed by a double membrane (nuclear envelope) with pores. Controls gene expression and cell division.', icon: '\uD83D\uDFE3', lx: 0.5, ly: -0.35 },
+                  { name: 'Mitochondria', fn: 'Powerhouse of the cell \u2014 performs cellular respiration (glucose + O\u2082 \u2192 ATP + CO\u2082 + H\u2082O). Has its own circular DNA.', icon: '\uD83D\uDFE0', lx: 0.9, ly: 0.5 },
+                  { name: 'Endoplasmic Reticulum', fn: 'Network of membrane channels. Rough ER (with ribosomes) makes proteins; Smooth ER synthesizes lipids and detoxifies chemicals.', icon: '\u26AA', lx: -0.6, ly: -0.7 },
+                  { name: 'Plasmodesmata', fn: 'Tiny channels through the cell wall connecting adjacent plant cells. Allow transport of water, nutrients, and signaling molecules.', icon: '\uD83D\uDD35', lx: -1.5, ly: 0 }
                 ]
               },
               {
                 id: 'diatom', label: t('stem.cell.diatom'), icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'],
                 anatomy: [
-                  { name: 'Frustule', fn: 'Two-part silica shell (epitheca + hypotheca) that fits together like a petri dish. Ornately patterned with pores (areolae) for gas exchange.', icon: '\uD83D\uDC8E' },
-                  { name: 'Raphe', fn: 'Slit along the frustule that secretes mucilage for gliding movement. Not all diatoms have one (pennate vs centric types).', icon: '\u27B0' },
-                  { name: 'Chloroplasts', fn: 'Golden-brown plastids containing chlorophylls a \u0026 c plus fucoxanthin pigment (gives diatoms their characteristic color).', icon: '\uD83D\uDFE2' },
-                  { name: 'Central Node', fn: 'Thickened area in the center of the frustule where the raphe splits. Controls mucilage secretion direction.', icon: '\u26AA' }
+                  { name: 'Frustule', fn: 'Two-part silica shell (epitheca + hypotheca) that fits together like a petri dish. Ornately patterned with pores (areolae) for gas exchange.', icon: '\uD83D\uDC8E', lx: 0, ly: -1.3 },
+                  { name: 'Raphe', fn: 'Slit along the frustule that secretes mucilage for gliding movement. Not all diatoms have one (pennate vs centric types).', icon: '\u27B0', lx: -1.1, ly: 0 },
+                  { name: 'Chloroplasts', fn: 'Golden-brown plastids containing chlorophylls a \u0026 c plus fucoxanthin pigment (gives diatoms their characteristic color).', icon: '\uD83D\uDFE2', lx: 0.3, ly: 0.3 },
+                  { name: 'Central Node', fn: 'Thickened area in the center of the frustule where the raphe splits. Controls mucilage secretion direction.', icon: '\u26AA', lx: 0, ly: 0 }
                 ]
               },
               {
                 id: 'volvox', label: t('stem.cell.volvox'), icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet \u2014 name means "fierce roller"'],
                 anatomy: [
-                  { name: 'Somatic Cells', fn: 'Thousands of biflagellate cells on the colony surface. Beat flagella in coordination for locomotion. Cannot reproduce.', icon: '\uD83D\uDFE2' },
-                  { name: 'Gonidia', fn: 'Large reproductive cells inside the colony. Divide repeatedly to form miniature daughter colonies (asexual reproduction).', icon: '\uD83C\uDF1F' },
-                  { name: 'Cytoplasmic Bridges', fn: 'Thin strands connecting adjacent somatic cells, enabling coordinated flagellar beating across the entire colony surface.', icon: '\uD83D\uDD17' },
-                  { name: 'Glycoprotein Matrix', fn: 'Extracellular gel matrix holding the colony together. Each cell sits in its own pocket within this transparent sphere.', icon: '\u26AA' }
+                  { name: 'Somatic Cells', fn: 'Thousands of biflagellate cells on the colony surface. Beat flagella in coordination for locomotion. Cannot reproduce.', icon: '\uD83D\uDFE2', lx: 0.9, ly: -0.5 },
+                  { name: 'Gonidia', fn: 'Large reproductive cells inside the colony. Divide repeatedly to form miniature daughter colonies (asexual reproduction).', icon: '\uD83C\uDF1F', lx: 0.15, ly: -0.1 },
+                  { name: 'Cytoplasmic Bridges', fn: 'Thin strands connecting adjacent somatic cells, enabling coordinated flagellar beating across the entire colony surface.', icon: '\uD83D\uDD17', lx: -0.7, ly: 0.4 },
+                  { name: 'Glycoprotein Matrix', fn: 'Extracellular gel matrix holding the colony together. Each cell sits in its own pocket within this transparent sphere.', icon: '\u26AA', lx: 0, ly: 0.95 }
                 ]
               },
               {
                 id: 'stentor', label: t('stem.cell.stentor'), icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long \u2014 visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'],
                 anatomy: [
-                  { name: 'Membranellar Band', fn: 'Crown of fused cilia (membranelles) spiraling around the oral end. Creates water vortex currents that sweep food into the oral groove.', icon: '\uD83C\uDF00' },
-                  { name: 'Myonemes', fn: 'Contractile fibers running the length of the body like muscle fibers. Allow rapid contraction to 1/4 length in milliseconds.', icon: '\u26A1' },
-                  { name: 'Beaded Macronucleus', fn: 'Distinctive moniliform (bead-like chain) macronucleus. Can be fragmented during regeneration \u2014 each piece contains full genetic info.', icon: '\uD83D\uDFE3' },
-                  { name: 'Holdfast', fn: 'Attachment structure at the narrow (aboral) end. Anchors the cell to substrate while feeding. Can release for relocation.', icon: '\u2693' },
-                  { name: 'Body Cilia', fn: 'Short cilia covering the body surface. Used for swimming when detached, but primary function is tactile sensing.', icon: '\u{1F4A8}' }
+                  { name: 'Membranellar Band', fn: 'Crown of fused cilia (membranelles) spiraling around the oral end. Creates water vortex currents that sweep food into the oral groove.', icon: '\uD83C\uDF00', lx: 0, ly: -1.0 },
+                  { name: 'Myonemes', fn: 'Contractile fibers running the length of the body like muscle fibers. Allow rapid contraction to 1/4 length in milliseconds.', icon: '\u26A1', lx: 0.3, ly: 0.5 },
+                  { name: 'Beaded Macronucleus', fn: 'Distinctive moniliform (bead-like chain) macronucleus. Can be fragmented during regeneration \u2014 each piece contains full genetic info.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
+                  { name: 'Holdfast', fn: 'Attachment structure at the narrow (aboral) end. Anchors the cell to substrate while feeding. Can release for relocation.', icon: '\u2693', lx: 0, ly: 1.3 },
+                  { name: 'Body Cilia', fn: 'Short cilia covering the body surface. Used for swimming when detached, but primary function is tactile sensing.', icon: '\u{1F4A8}', lx: -0.7, ly: 0.3 }
                 ]
               },
               {
                 id: 'tardigrade', label: t('stem.cell.tardigrade'), icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible \u2014 survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272\u00B0C to 150\u00B0C', 'Survived exposure to outer space', 'Enter cryptobiosis \u2014 suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'],
                 anatomy: [
-                  { name: 'Cuticle', fn: 'Tough external covering shed (molted) periodically. Made of chitin-like material. Provides protection and is permeable to gases.', icon: '\uD83D\uDEE1' },
-                  { name: 'Stylets', fn: 'Piercing mouthparts used to puncture plant cells or small invertebrates. Retracted during molting and re-synthesized.', icon: '\uD83D\uDD2A' },
-                  { name: 'Lobopod Legs', fn: 'Eight stubby legs ending in 4-8 claws each. Last pair faces backward. No joints \u2014 moved by individual muscle fibers.', icon: '\uD83E\uDDB6' },
-                  { name: 'Tun State', fn: 'Cryptobiosis form: body contracts into a ball (tun), loses 97% of water, metabolism drops to 0.01%. Can survive decades.', icon: '\uD83D\uDFE4' },
-                  { name: 'Dsup Protein', fn: 'Damage Suppressor protein unique to tardigrades. Binds to DNA and shields it from radiation damage (discovered 2016).', icon: '\u2B50' }
+                  { name: 'Cuticle', fn: 'Tough external covering shed (molted) periodically. Made of chitin-like material. Provides protection and is permeable to gases.', icon: '\uD83D\uDEE1', lx: 0, ly: -1.0 },
+                  { name: 'Stylets', fn: 'Piercing mouthparts used to puncture plant cells or small invertebrates. Retracted during molting and re-synthesized.', icon: '\uD83D\uDD2A', lx: 1.5, ly: 0 },
+                  { name: 'Lobopod Legs', fn: 'Eight stubby legs ending in 4-8 claws each. Last pair faces backward. No joints \u2014 moved by individual muscle fibers.', icon: '\uD83E\uDDB6', lx: -0.5, ly: 0.9 },
+                  { name: 'Tun State', fn: 'Cryptobiosis form: body contracts into a ball (tun), loses 97% of water, metabolism drops to 0.01%. Can survive decades.', icon: '\uD83D\uDFE4', lx: 0, ly: 0.3 },
+                  { name: 'Dsup Protein', fn: 'Damage Suppressor protein unique to tardigrades. Binds to DNA and shields it from radiation damage (discovered 2016).', icon: '\u2B50', lx: -0.3, ly: -0.3 }
                 ]
               },
               {
                 id: 'spirillum', label: t('stem.cell.spirillum'), icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria \u2014 up to 60\u03BCm'],
                 anatomy: [
-                  { name: 'Bipolar Flagella', fn: 'Tufts of flagella at both cell poles. Rotate in opposite directions to produce the characteristic corkscrew swimming motion.', icon: '\u{1F4A8}' },
-                  { name: 'Rigid Spiral Body', fn: 'Cell shape is a fixed helix (unlike flexible spirochetes). The peptidoglycan wall maintains this permanent corkscrew shape.', icon: '\uD83C\uDF00' },
-                  { name: 'Volutin Granules', fn: 'Intracellular phosphate storage bodies. Appear as dark spots under microscopy. Energy reserve for nutrient-poor conditions.', icon: '\u26AA' },
-                  { name: 'Polar Membrane', fn: 'Specialized membrane region at cell poles where flagellar motors are anchored. Contains chemoreceptor proteins for sensing environment.', icon: '\uD83D\uDD35' }
+                  { name: 'Bipolar Flagella', fn: 'Tufts of flagella at both cell poles. Rotate in opposite directions to produce the characteristic corkscrew swimming motion.', icon: '\u{1F4A8}', lx: -2.8, ly: 0.3 },
+                  { name: 'Rigid Spiral Body', fn: 'Cell shape is a fixed helix (unlike flexible spirochetes). The peptidoglycan wall maintains this permanent corkscrew shape.', icon: '\uD83C\uDF00', lx: 0, ly: -0.6 },
+                  { name: 'Volutin Granules', fn: 'Intracellular phosphate storage bodies. Appear as dark spots under microscopy. Energy reserve for nutrient-poor conditions.', icon: '\u26AA', lx: 0.5, ly: 0 },
+                  { name: 'Polar Membrane', fn: 'Specialized membrane region at cell poles where flagellar motors are anchored. Contains chemoreceptor proteins for sensing environment.', icon: '\uD83D\uDD35', lx: 2.3, ly: -0.3 }
                 ]
               }
             ];
@@ -6065,6 +6065,84 @@
                 ctx.restore();
               }
 
+              // ── Organelle labels (floating pills with leader lines) ──
+              function drawOrganelleLabels(o) {
+                var def = o.def;
+                if (!def.anatomy || def.anatomy.length === 0) return;
+                var p = toScreen(o.x, o.y);
+                var sz = o.size * cam.zoom * dpr;
+                // Only show labels when zoomed in enough and organism is on-screen
+                if (sz < 8) return;
+                if (p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) return;
+                ctx.save();
+                var fontSize = Math.max(7, Math.min(10, sz * 0.28)) * dpr;
+                ctx.font = 'bold ' + fontSize + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                def.anatomy.forEach(function (a, i) {
+                  if (typeof a.lx === 'undefined') return;
+                  // Organelle point in world-relative rotated coords
+                  var ox = a.lx * sz;
+                  var oy = a.ly * sz;
+                  // Rotate by organism angle to get screen-space offset
+                  var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
+                  var rx = ox * cos - oy * sin;
+                  var ry = ox * sin + oy * cos;
+                  // Screen position of organelle
+                  var sx = p.x + rx;
+                  var sy = p.y + ry;
+                  // Label offset — push labels outward from center to avoid overlap
+                  var labelDist = sz * 1.5 + fontSize * 2;
+                  var spreadAngle = -Math.PI * 0.7 + (i / (def.anatomy.length - 0.01)) * Math.PI * 1.4;
+                  var lx = sx + Math.cos(spreadAngle) * labelDist;
+                  var ly = sy + Math.sin(spreadAngle) * labelDist;
+                  // Clamp labels to screen
+                  var textW = ctx.measureText(a.name).width + fontSize * 1.5;
+                  lx = Math.max(fontSize, Math.min(W - textW - fontSize, lx));
+                  ly = Math.max(fontSize * 2, Math.min(H - fontSize * 2, ly));
+                  // Leader line
+                  ctx.beginPath();
+                  ctx.moveTo(sx, sy);
+                  ctx.lineTo(lx, ly);
+                  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                  ctx.lineWidth = 0.8 * dpr;
+                  ctx.setLineDash([2 * dpr, 2 * dpr]);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  // Dot at organelle point
+                  ctx.beginPath();
+                  ctx.arc(sx, sy, 2.5 * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = def.color;
+                  ctx.fill();
+                  // Pill background
+                  var pillW = textW + 4 * dpr;
+                  var pillH = fontSize * 1.7;
+                  var pillX = lx - 2 * dpr;
+                  var pillY = ly - pillH / 2;
+                  ctx.beginPath();
+                  var r = pillH / 2;
+                  ctx.moveTo(pillX + r, pillY);
+                  ctx.lineTo(pillX + pillW - r, pillY);
+                  ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
+                  ctx.lineTo(pillX + pillW, pillY + pillH - r);
+                  ctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
+                  ctx.lineTo(pillX + r, pillY + pillH);
+                  ctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
+                  ctx.lineTo(pillX, pillY + r);
+                  ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
+                  ctx.closePath();
+                  ctx.fillStyle = 'rgba(15,23,42,0.75)';
+                  ctx.fill();
+                  ctx.strokeStyle = def.color;
+                  ctx.lineWidth = 0.8 * dpr;
+                  ctx.stroke();
+                  // Label text
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillText(a.name, pillX + fontSize * 0.7, ly);
+                });
+                ctx.restore();
+              }
+
               function updateOrganism(o) {
                 var def = o.def;
                 if (playAsOrg === o) {
@@ -6118,12 +6196,27 @@
                     }
                     o.angle += 0.005; // gentle rotation (~20s per revolution)
                   } else if (def.id === 'stentor') {
-                    // Mostly stationary, gentle sway
-                    o.vx *= 0.9; o.vy *= 0.9;
-                    o.vx += (Math.random() - 0.5) * 0.01;
-                    o.vy += (Math.random() - 0.5) * 0.01;
-                    // Gentle angle oscillation instead of snapping to velocity direction
-                    o.angle = o.phase + Math.sin(world.tick * 0.01 + o.phase) * 0.3;
+                    // Filter-feeding behaviour: slow graceful drift + periodic pauses
+                    if (!o._stentorTimer) o._stentorTimer = Math.floor(Math.random() * 300);
+                    o._stentorTimer = (o._stentorTimer || 0) + 1;
+                    var stCycle = o._stentorTimer % 600; // ~10s cycle at 60fps
+                    if (stCycle < 400) {
+                      // Drifting phase — slow purposeful glide
+                      if (stCycle === 0 || stCycle % 120 === 0) {
+                        // Pick a new drift direction every ~2s
+                        var da = Math.random() * Math.PI * 2;
+                        o._stDriftX = Math.cos(da) * 0.08;
+                        o._stDriftY = Math.sin(da) * 0.08;
+                      }
+                      o.vx += ((o._stDriftX || 0) - o.vx) * 0.02;
+                      o.vy += ((o._stDriftY || 0) - o.vy) * 0.02;
+                    } else {
+                      // Feeding pause — nearly stationary, membranellar band active
+                      o.vx *= 0.92; o.vy *= 0.92;
+                    }
+                    // Gentle rocking sway (trumpet opening scans the water)
+                    o.angle = o.phase + Math.sin(world.tick * 0.018 + o.phase) * 0.45
+                      + Math.sin(world.tick * 0.007 + o.phase * 2) * 0.15;
                   } else if (def.id === 'spirillum') {
                     // Corkscrew movement — spiraling path
                     o.vx += (Math.random() - 0.5) * 0.08;
@@ -6360,6 +6453,10 @@
 
                 // Organisms
                 world.organisms.forEach(function (o) { drawOrganism(o); });
+                // Organelle labels for selected organism
+                world.organisms.forEach(function (o) {
+                  if (o === selectedOrg || o === playAsOrg) drawOrganelleLabels(o);
+                });
 
                 // ── Enhanced Microscope Vignette Overlay ──
                 // Circular vignette
