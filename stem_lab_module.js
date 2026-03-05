@@ -470,7 +470,11 @@
             for (var px = 0; px <= W; px++) {
               var x = _win.xmin + (px / W) * xr;
               try {
-                var y = compiled.evaluate({ x: x });
+                var _scope = { x: x };
+                if (_gcd.sliderA != null) _scope.a = _gcd.sliderA;
+                if (_gcd.sliderB != null) _scope.b = _gcd.sliderB;
+                if (_gcd.sliderC != null) _scope.c = _gcd.sliderC;
+                var y = compiled.evaluate(_scope);
                 if (typeof y === 'number' && isFinite(y)) {
                   var py = toScreenY(y);
                   if (!started) { ctx.moveTo(px, py); started = true; }
@@ -486,6 +490,119 @@
         ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 11px sans-serif';
         ctx.fillText('x', W - 14, (_win.ymin <= 0 && _win.ymax >= 0 ? toScreenY(0) : H / 2) - 6);
         ctx.fillText('y', (_win.xmin <= 0 && _win.xmax >= 0 ? toScreenX(0) : W / 2) + 6, 14);
+
+        // ── Trace cursor overlay ──
+        var traceX = _gcd.traceX;
+        if (_gcd.traceMode && traceX != null && window.math) {
+          var traceScreenX = toScreenX(traceX);
+          ctx.strokeStyle = 'rgba(250,204,21,0.4)'; ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath(); ctx.moveTo(traceScreenX, 0); ctx.lineTo(traceScreenX, H); ctx.stroke();
+          ctx.setLineDash([]);
+          var traceResults = [];
+          _funcs.forEach(function (fn, fi) {
+            if (!fn.expr || !fn.expr.trim()) return;
+            try {
+              var texpr = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+              texpr = texpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+              var tScope = { x: traceX };
+              if (_gcd.sliderA != null) tScope.a = _gcd.sliderA;
+              if (_gcd.sliderB != null) tScope.b = _gcd.sliderB;
+              if (_gcd.sliderC != null) tScope.c = _gcd.sliderC;
+              var tval = math.compile(texpr).evaluate(tScope);
+              if (typeof tval === 'number' && isFinite(tval)) {
+                var tsy = toScreenY(tval);
+                ctx.fillStyle = fn.color;
+                ctx.beginPath(); ctx.arc(traceScreenX, tsy, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(traceScreenX, tsy, 5, 0, Math.PI * 2); ctx.stroke();
+                traceResults.push({ idx: fi, y: tval, sy: tsy, color: fn.color });
+              }
+            } catch (e) {}
+          });
+          if (traceResults.length > 0) {
+            var labelY = Math.min.apply(null, traceResults.map(function (r) { return r.sy; })) - 30;
+            if (labelY < 10) labelY = 10;
+            var labelText = 'x=' + Number(traceX.toPrecision(5));
+            traceResults.forEach(function (r) { labelText += '  y' + (r.idx + 1) + '=' + Number(r.y.toPrecision(5)); });
+            ctx.font = 'bold 10px monospace';
+            var tw = ctx.measureText(labelText).width + 12;
+            var lx = Math.max(4, Math.min(traceScreenX - tw / 2, W - tw - 4));
+            ctx.fillStyle = 'rgba(15,23,42,0.92)'; ctx.strokeStyle = 'rgba(250,204,21,0.5)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(lx, labelY, tw, 20, 4); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#fbbf24'; ctx.fillText(labelText, lx + 6, labelY + 14);
+          }
+        }
+
+        // ── Zeros markers ──
+        if (_gcd.showAnalysis && _gcd._zeros && _gcd._zeros.length > 0) {
+          _gcd._zeros.forEach(function (z) {
+            var zsx = toScreenX(z.x); var zsy = toScreenY(0);
+            if (zsx > 0 && zsx < W) {
+              ctx.fillStyle = '#34d399';
+              ctx.beginPath(); ctx.arc(zsx, zsy, 5, 0, Math.PI * 2); ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.arc(zsx, zsy, 5, 0, Math.PI * 2); ctx.stroke();
+              ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#34d399';
+              ctx.fillText('(' + Number(z.x.toPrecision(4)) + ', 0)', zsx + 7, zsy - 5);
+            }
+          });
+        }
+
+        // ── Intersection markers ──
+        if (_gcd.showAnalysis && _gcd._intersections && _gcd._intersections.length > 0) {
+          _gcd._intersections.forEach(function (pt) {
+            var isx = toScreenX(pt.x); var isy = toScreenY(pt.y);
+            if (isx > 0 && isx < W && isy > 0 && isy < H) {
+              ctx.fillStyle = '#f472b6';
+              ctx.beginPath(); ctx.arc(isx, isy, 5, 0, Math.PI * 2); ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.arc(isx, isy, 5, 0, Math.PI * 2); ctx.stroke();
+              ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#f472b6';
+              ctx.fillText('(' + Number(pt.x.toPrecision(4)) + ', ' + Number(pt.y.toPrecision(4)) + ')', isx + 7, isy - 5);
+            }
+          });
+        }
+
+        // ── Derivative tangent line ──
+        if (_gcd.showDeriv && _gcd.derivX != null && window.math) {
+          var dFn = _funcs[0];
+          if (dFn && dFn.expr && dFn.expr.trim()) {
+            try {
+              var dExpr = dFn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+              dExpr = dExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+              var dScope = { x: _gcd.derivX };
+              if (_gcd.sliderA != null) dScope.a = _gcd.sliderA;
+              if (_gcd.sliderB != null) dScope.b = _gcd.sliderB;
+              if (_gcd.sliderC != null) dScope.c = _gcd.sliderC;
+              var dCompiled = math.compile(dExpr);
+              var dY = dCompiled.evaluate(dScope);
+              var dh = 0.0001;
+              var dScopeP = Object.assign({}, dScope, { x: _gcd.derivX + dh });
+              var dScopeM = Object.assign({}, dScope, { x: _gcd.derivX - dh });
+              var dSlope = (dCompiled.evaluate(dScopeP) - dCompiled.evaluate(dScopeM)) / (2 * dh);
+              if (typeof dY === 'number' && isFinite(dY) && typeof dSlope === 'number' && isFinite(dSlope)) {
+                var dsx = toScreenX(_gcd.derivX); var dsy = toScreenY(dY);
+                var tLineLen = xr * 0.3;
+                var tx1 = _gcd.derivX - tLineLen; var ty1 = dY - dSlope * tLineLen;
+                var tx2 = _gcd.derivX + tLineLen; var ty2 = dY + dSlope * tLineLen;
+                ctx.strokeStyle = 'rgba(251,146,60,0.7)'; ctx.lineWidth = 2;
+                ctx.setLineDash([6, 3]);
+                ctx.beginPath(); ctx.moveTo(toScreenX(tx1), toScreenY(ty1)); ctx.lineTo(toScreenX(tx2), toScreenY(ty2)); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#fb923c';
+                ctx.beginPath(); ctx.arc(dsx, dsy, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(dsx, dsy, 5, 0, Math.PI * 2); ctx.stroke();
+                ctx.font = 'bold 10px monospace'; ctx.fillStyle = '#fb923c';
+                ctx.fillText("f'(" + Number(_gcd.derivX.toPrecision(4)) + ") = " + Number(dSlope.toPrecision(5)), dsx + 8, dsy - 8);
+              }
+            } catch (e) {}
+          }
+        }
+
+        // Store coordinate mapper for mouse handler
+        cv._toMathX = function (px) { return _win.xmin + (px / W) * xr; };
       }, [stemLabTab, stemLabTool, labToolData]);
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
@@ -22422,6 +22539,10 @@
             const showWindow = d.showWindow || false;
             const showChallenge = d.showChallenge || false;
             const showMathPad = d.showMathPad != null ? d.showMathPad : false;
+            const showArith = d.showArith || false;
+            const arithExpr = d.arithExpr || '';
+            const arithResult = d.arithResult || '';
+            const showSliders = d.showSliders || false;
             const focusedInput = d.focusedInput || 0;
             const tableX = d.tableX != null ? d.tableX : -5;
             const tableStep = d.tableStep || 1;
@@ -22532,7 +22653,7 @@
                 tExpr = tExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
                 const tCompiled = math.compile(tExpr);
                 for (let tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
-                  try { const ty = tCompiled.evaluate({ x: tx }); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
+                  try { var _tScope = { x: tx }; if (d.sliderA != null) _tScope.a = d.sliderA; if (d.sliderB != null) _tScope.b = d.sliderB; if (d.sliderC != null) _tScope.c = d.sliderC; const ty = tCompiled.evaluate(_tScope); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
                   catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
                 }
               } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
@@ -22605,7 +22726,72 @@
                     React.createElement('button', { onClick: () => upd('showTable', !showTable), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
                     React.createElement('button', { onClick: () => upd('showWindow', !showWindow), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
                     React.createElement('button', { onClick: () => upd('showChallenge', !showChallenge), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
-                    React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear')
+                    React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear'),
+                    React.createElement('button', { onClick: function () { upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD0D Trace'),
+                    React.createElement('button', {
+                      onClick: function () {
+                        if (!window.math) return;
+                        var an = !d.showAnalysis;
+                        upd('showAnalysis', an);
+                        if (an) {
+                          var zeros = []; var inters = [];
+                          try {
+                            var f1 = funcs[0]; if (f1 && f1.expr && f1.expr.trim()) {
+                              var e1 = f1.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                              e1 = e1.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                              var c1 = math.compile(e1);
+                              var sA = {}; if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
+                              var step = (win.xmax - win.xmin) / 500;
+                              var prevY = null; var prevX = null;
+                              for (var sx = win.xmin; sx <= win.xmax; sx += step) {
+                                try {
+                                  var sy = c1.evaluate(Object.assign({ x: sx }, sA));
+                                  if (prevY != null && typeof sy === 'number' && isFinite(sy) && typeof prevY === 'number') {
+                                    if (prevY * sy < 0) {
+                                      var lo = prevX, hi = sx;
+                                      for (var bi = 0; bi < 30; bi++) { var mid = (lo + hi) / 2; var mval = c1.evaluate(Object.assign({ x: mid }, sA)); if (c1.evaluate(Object.assign({ x: lo }, sA)) * mval < 0) hi = mid; else lo = mid; }
+                                      var root = (lo + hi) / 2;
+                                      if (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2) zeros.push({ x: root, fi: 0 });
+                                    }
+                                  }
+                                  prevY = sy; prevX = sx;
+                                } catch (e) { prevY = null; }
+                              }
+                              for (var fi2 = 1; fi2 < funcs.length; fi2++) {
+                                var f2 = funcs[fi2]; if (!f2 || !f2.expr || !f2.expr.trim()) continue;
+                                try {
+                                  var e2 = f2.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                                  e2 = e2.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                                  var c2 = math.compile(e2);
+                                  var pDiff = null; var pXd = null;
+                                  for (var ix = win.xmin; ix <= win.xmax; ix += step) {
+                                    try {
+                                      var iy1 = c1.evaluate(Object.assign({ x: ix }, sA));
+                                      var iy2 = c2.evaluate(Object.assign({ x: ix }, sA));
+                                      var diff = iy1 - iy2;
+                                      if (pDiff != null && typeof diff === 'number' && isFinite(diff) && pDiff * diff < 0) {
+                                        var ilo = pXd, ihi = ix;
+                                        for (var ibi = 0; ibi < 30; ibi++) { var imid = (ilo + ihi) / 2; var d1 = c1.evaluate(Object.assign({ x: imid }, sA)) - c2.evaluate(Object.assign({ x: imid }, sA)); if ((c1.evaluate(Object.assign({ x: ilo }, sA)) - c2.evaluate(Object.assign({ x: ilo }, sA))) * d1 < 0) ihi = imid; else ilo = imid; }
+                                        var iroot = (ilo + ihi) / 2;
+                                        var irootY = c1.evaluate(Object.assign({ x: iroot }, sA));
+                                        inters.push({ x: iroot, y: irootY, f1: 0, f2: fi2 });
+                                      }
+                                      pDiff = diff; pXd = ix;
+                                    } catch (e) { pDiff = null; }
+                                  }
+                                } catch (e) {}
+                              }
+                            }
+                          } catch (e) {}
+                          upd('_zeros', zeros);
+                          upd('_intersections', inters);
+                        }
+                      },
+                      style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }
+                    }, '\u26A1 Analyze'),
+                    React.createElement('button', { onClick: function () { upd('showDeriv', !d.showDeriv); if (!d.showDeriv && d.derivX == null) upd('derivX', 0); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, "\u2202 f\'(x)"),
+                    React.createElement('button', { onClick: function () { upd('showArith', !showArith); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showArith ? '#60a5fa33' : 'rgba(255,255,255,0.05)', color: showArith ? '#60a5fa' : '#94a3b8', border: showArith ? '1px solid #60a5fa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDDEE Calc'),
+                    React.createElement('button', { onClick: function () { upd('showSliders', !showSliders); if (!showSliders) { if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFA8 Sliders')
                   ),
 
                   React.createElement('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
@@ -22615,14 +22801,94 @@
                     )
                   )
                 ),
+                  // ── Arithmetic Calculator ──
+                  showArith && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(96,165,250,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' } }, '\uD83E\uDDEE CALCULATOR'),
+                    React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '4px' } },
+                      React.createElement('input', { type: 'text', value: arithExpr, placeholder: 'e.g. sqrt(144) + 3^2', onChange: function (e) { upd('arithExpr', e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter' && window.math) { try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } } }, style: { flex: 1, padding: '5px 8px', borderRadius: '6px', border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.08)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' }, 'aria-label': 'Calculator expression' }),
+                      React.createElement('button', { onClick: function () { if (!window.math) return; try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } }, style: { padding: '5px 10px', borderRadius: '6px', background: '#3b82f6', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '=')
+                    ),
+                    arithResult && React.createElement('div', { style: { padding: '5px 8px', borderRadius: '6px', background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', fontFamily: 'monospace', fontSize: '13px', fontWeight: 'bold', color: '#93c5fd', marginBottom: '4px' } }, '= ' + arithResult),
+                    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px' } },
+                      ['7','8','9','/','+','4','5','6','*','-','1','2','3','(',')', '0','.','pi','e','^'].map(function (b) {
+                        return React.createElement('button', { key: b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.15)', fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b);
+                      }),
+                      React.createElement('button', { onClick: function () { upd('arithExpr', ''); upd('arithResult', ''); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, 'C'),
+                      React.createElement('button', { onClick: function () { upd('arithExpr', arithExpr.slice(0, -1)); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u232B'),
+                      ['sin(','cos(','tan(','log(','ln(','sqrt(','abs(','!','%'].map(function (b) {
+                        return React.createElement('button', { key: 'fn_'+b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.2)', fontSize: '9px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b.replace('(',''));
+                      })
+                    )
+                  ),
+                  // ── Slider Parameters ──
+                  showSliders && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 PARAMETER SLIDERS \u2014 Use a, b, c in your equations'),
+                    ['a', 'b', 'c'].map(function (p) {
+                      var key = 'slider' + p.toUpperCase();
+                      var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
+                      return React.createElement('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                        React.createElement('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
+                        React.createElement('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, onChange: function (e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' }, 'aria-label': 'Parameter ' + p }),
+                        React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#e2e8f0', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
+                      );
+                    })
+                  ),
+                  // ── Derivative ──
+                  d.showDeriv && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 DERIVATIVE \u2014 Tangent line to y\u2081'),
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                      React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x ='),
+                      React.createElement('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, onChange: function (e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' }, 'aria-label': 'Derivative x value' }),
+                      React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold', minWidth: '40px', textAlign: 'right' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'),
+                      (function () {
+                        if (!window.math || !funcs[0] || !funcs[0].expr) return null;
+                        try {
+                          var de = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                          de = de.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                          var dc = math.compile(de); var dx = d.derivX != null ? d.derivX : 0; var dh2 = 0.0001;
+                          var dsc = { x: dx }; if (d.sliderA != null) dsc.a = d.sliderA; if (d.sliderB != null) dsc.b = d.sliderB; if (d.sliderC != null) dsc.c = d.sliderC;
+                          var dscp = Object.assign({}, dsc, { x: dx + dh2 }); var dscm = Object.assign({}, dsc, { x: dx - dh2 });
+                          var slope = (dc.evaluate(dscp) - dc.evaluate(dscm)) / (2 * dh2);
+                          return React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fbbf24', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(251,191,36,0.3)' } }, "f'=" + Number(slope.toPrecision(5)));
+                        } catch (e) { return null; }
+                      })()
+                    )
+                  ),
+                  // ── Analysis Results ──
+                  d.showAnalysis && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS RESULTS'),
+                    React.createElement('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                      React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
+                        React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '2px' } }, 'Zeros (y\u2081 = 0)'),
+                        (d._zeros && d._zeros.length > 0) ? d._zeros.map(function (z, zi) {
+                          return React.createElement('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0', padding: '1px 0' } }, 'x = ' + Number(z.x.toPrecision(5)));
+                        }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'No zeros found')
+                      ),
+                      React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
+                        React.createElement('div', { style: { fontSize: '9px', color: '#f472b6', fontWeight: 'bold', marginBottom: '2px' } }, 'Intersections'),
+                        (d._intersections && d._intersections.length > 0) ? d._intersections.map(function (pt, pi) {
+                          return React.createElement('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4', padding: '1px 0' } }, '(' + Number(pt.x.toPrecision(4)) + ', ' + Number(pt.y.toPrecision(4)) + ')');
+                        }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'Enter 2+ functions')
+                      )
+                    )
+                  )
+                ),
 
                 React.createElement('div', {
                   style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }
                 },
                   React.createElement('canvas', {
                     id: 'graph-calc-canvas', width: 600, height: 420,
-                    style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0' },
-                    'aria-label': 'Graphing calculator coordinate plane'
+                    style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0', cursor: d.traceMode ? 'crosshair' : 'default' },
+                    'aria-label': 'Graphing calculator coordinate plane',
+                    onMouseMove: function (e) {
+                      if (!d.traceMode) return;
+                      var rect = e.currentTarget.getBoundingClientRect();
+                      var px = (e.clientX - rect.left) / rect.width * 600;
+                      var cv2 = e.currentTarget;
+                      if (cv2._toMathX) upd('traceX', cv2._toMathX(px));
+                    },
+                    onMouseLeave: function () { if (d.traceMode) upd('traceX', null); }
                   }),
 
                   showWindow && React.createElement('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
