@@ -12,9 +12,16 @@
 
 const CACHE_NAME = 'alloflow-v__BUILD_TS__';
 
-// Install: cache the main page on first load
+// Install: pre-cache index.html so stale-while-revalidate always has content
+// CRITICAL: Without pre-caching, the first load after install falls back to
+// network-only, which will hang on QUIC-blocked networks.
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing:', CACHE_NAME);
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.add('/index.html');
+        })
+    );
     // Activate immediately, don't wait for old tabs to close
     self.skipWaiting();
 });
