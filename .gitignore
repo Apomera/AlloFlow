@@ -11,3 +11,9 @@ prismflow-deploy/.env
 prismflow-deploy/.env.local
 prismflow-deploy/.env.production
 *.env.local
+
+# Security: Never commit API key files
+api key.txt
+*api*key*
+*.key
+*.secret
