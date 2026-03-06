@@ -24431,7 +24431,7 @@
               var style = document.createElement('style');
               style.id = 'aqua-css';
               style.textContent = [
-                '@keyframes aquaSwim { 0% { transform: translateX(0) translateY(0); } 25% { transform: translateX(12px) translateY(-4px); } 50% { transform: translateX(-8px) translateY(3px); } 75% { transform: translateX(6px) translateY(-2px); } 100% { transform: translateX(0) translateY(0); } }',
+                '@keyframes aquaSwim { 0% { transform: translateX(0) translateY(0); } 25% { transform: translateX(35px) translateY(-8px); } 50% { transform: translateX(-25px) translateY(6px); } 75% { transform: translateX(18px) translateY(-5px); } 100% { transform: translateX(0) translateY(0); } }',
                 '@keyframes aquaBubble { 0% { bottom: 30px; opacity: 0.6; } 50% { opacity: 0.8; } 100% { bottom: 220px; opacity: 0; } }',
                 '@keyframes aquaWave { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }',
                 '@keyframes oceanPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
@@ -24446,12 +24446,12 @@
                 '.ai-event-card { animation: aiEventSlideIn 0.4s ease-out, aiEventPulse 3s ease-in-out 0.5s infinite; }',
                 '.ai-event-choice:hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }',
                 '.ai-event-choice { transition: all 0.2s ease; }',
-                '@keyframes aquaBobble { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }',
-                '@keyframes aquaScuttle { 0% { transform: translateX(0) translateY(0); } 20% { transform: translateX(8px) translateY(-2px); } 40% { transform: translateX(-5px) translateY(1px); } 60% { transform: translateX(10px) translateY(-1px); } 80% { transform: translateX(-3px) translateY(2px); } 100% { transform: translateX(0) translateY(0); } }',
-                '@keyframes aquaDrift { 0%, 100% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(3px) rotate(2deg); } }',
-                '@keyframes aquaUndulate { 0% { transform: translateX(0) skewX(0deg); } 25% { transform: translateX(8px) skewX(4deg); } 50% { transform: translateX(-6px) skewX(-3deg); } 75% { transform: translateX(5px) skewX(2deg); } 100% { transform: translateX(0) skewX(0deg); } }',
-                '@keyframes aquaPulse { 0%, 100% { transform: scale(1) translateY(0); } 35% { transform: scale(0.92, 1.06) translateY(-6px); } 65% { transform: scale(1.04, 0.95) translateY(3px); } }',
-                '@keyframes aquaSeaweed { 0%, 100% { transform: rotate(-3deg) scaleY(1); } 50% { transform: rotate(3deg) scaleY(1.03); } }',
+                '@keyframes aquaBobble { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }',
+                '@keyframes aquaScuttle { 0% { transform: translateX(0) translateY(0); } 20% { transform: translateX(20px) translateY(-4px); } 40% { transform: translateX(-14px) translateY(3px); } 60% { transform: translateX(22px) translateY(-3px); } 80% { transform: translateX(-8px) translateY(4px); } 100% { transform: translateX(0) translateY(0); } }',
+                '@keyframes aquaDrift { 0%, 100% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(8px) rotate(3deg); } }',
+                '@keyframes aquaUndulate { 0% { transform: translateX(0) skewX(0deg); } 25% { transform: translateX(20px) skewX(5deg); } 50% { transform: translateX(-16px) skewX(-4deg); } 75% { transform: translateX(14px) skewX(3deg); } 100% { transform: translateX(0) skewX(0deg); } }',
+                '@keyframes aquaPulse { 0%, 100% { transform: scale(1) translateY(0); } 35% { transform: scale(0.90, 1.08) translateY(-10px); } 65% { transform: scale(1.06, 0.94) translateY(5px); } }',
+                '@keyframes aquaSeaweed { 0%, 100% { transform: rotate(-5deg) scaleY(1); } 50% { transform: rotate(5deg) scaleY(1.05); } }',
                 '.aqua-sick-overlay { position: absolute; top: -4px; right: -4px; font-size: 10px; z-index: 8; animation: xpPop 0.4s ease-out; pointer-events: none; }'
               ].join('\n');
               document.head.appendChild(style);
@@ -24716,24 +24716,54 @@
               chelonian: {
                 label: 'Sea Turtle (Testudines)',
                 svg: function (w, h, color) {
-                  return '<svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">' +
+                  var sh = color || '#4d7c0f';
+                  return '<svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">' +
                     '<defs>' +
-                    '<linearGradient id="turtG" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="#65a30d"/><stop offset="50%" stop-color="#3f6212"/><stop offset="100%" stop-color="#365314"/></linearGradient>' +
-                    '<linearGradient id="turtSkin" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4d7c0f"/><stop offset="100%" stop-color="#365314"/></linearGradient>' +
+                    '<radialGradient id="turtCarapace" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#84cc16"/><stop offset="40%" stop-color="#65a30d"/><stop offset="75%" stop-color="#4d7c0f"/><stop offset="100%" stop-color="#365314"/></radialGradient>' +
+                    '<linearGradient id="turtSkin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6b8e23"/><stop offset="100%" stop-color="#3b5110"/></linearGradient>' +
+                    '<linearGradient id="turtFlipGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#5a7c1a"/><stop offset="100%" stop-color="#3d5412" stop-opacity="0.85"/></linearGradient>' +
+                    '<linearGradient id="turtPlastron" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f5e6b8"/><stop offset="100%" stop-color="#d4b66a"/></linearGradient>' +
                     '</defs>' +
-                    '<ellipse cx="200" cy="140" rx="110" ry="72" fill="url(#turtG)" stroke="#1a2e05" stroke-width="3"/>' +
-                    '<path d="M200,70 L240,80 L260,105 L252,132 L220,148 L200,152 L180,148 L148,132 L140,105 L160,80Z" fill="none" stroke="#4d7c0f" stroke-width="2" opacity="0.5"/>' +
-                    '<line x1="200" y1="70" x2="200" y2="152" stroke="#4d7c0f" stroke-width="1.2" opacity="0.3"/>' +
-                    '<line x1="140" y1="105" x2="260" y2="105" stroke="#4d7c0f" stroke-width="1.2" opacity="0.3"/>' +
-                    '<line x1="160" y1="80" x2="220" y2="148" stroke="#4d7c0f" stroke-width="0.8" opacity="0.2"/>' +
-                    '<line x1="240" y1="80" x2="180" y2="148" stroke="#4d7c0f" stroke-width="0.8" opacity="0.2"/>' +
-                    '<path d="M94,105 Q62,90 38,85 Q25,85 22,92 Q22,100 30,105 Q40,110 55,112" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.9"/>' +
-                    '<path d="M306,105 Q338,90 362,85 Q375,85 378,92 Q378,100 370,105 Q360,110 345,112" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.9"/>' +
-                    '<path d="M115,190 Q95,210 82,225 Q78,230 82,232 Q88,230 100,218 Q112,202 120,192" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.85"/>' +
-                    '<path d="M285,190 Q305,210 318,225 Q322,230 318,232 Q312,230 300,218 Q288,202 280,192" fill="url(#turtSkin)" stroke="#365314" stroke-width="2" opacity="0.85"/>' +
-                    '<circle cx="32" cy="92" r="14" fill="#4d7c0f" stroke="#365314" stroke-width="2"/>' +
-                    '<circle cx="28" cy="88" r="5" fill="black" stroke="#1a2e05" stroke-width="1"/><circle cx="27" cy="87" r="2" fill="white" opacity="0.6"/>' +
-                    '<circle cx="26" cy="95" r="3" fill="#e2e8f0" opacity="0.3" stroke="#365314" stroke-width="0.5"/>' +
+                    // Rear flippers (behind body)
+                    '<path d="M140,208 Q118,232 102,252 Q95,262 90,268 Q86,275 90,276 Q96,274 104,264 Q115,248 130,228 Q138,216 145,208" fill="url(#turtFlipGrad)" stroke="#2d4a0a" stroke-width="1.8"/>' +
+                    '<path d="M280,208 Q302,232 318,252 Q325,262 330,268 Q334,275 330,276 Q324,274 316,264 Q305,248 290,228 Q282,216 275,208" fill="url(#turtFlipGrad)" stroke="#2d4a0a" stroke-width="1.8"/>' +
+                    // Short tail
+                    '<path d="M202,215 Q204,242 206,258 Q208,266 204,268 Q200,266 200,258 Q200,242 200,215" fill="url(#turtSkin)" stroke="#2d4a0a" stroke-width="1.2"/>' +
+                    // Front flippers (wide paddle shape)
+                    '<path d="M105,130 Q72,112 42,95 Q25,86 14,82 Q6,80 4,86 Q6,94 16,100 Q28,108 48,118 Q65,126 90,136" fill="url(#turtFlipGrad)" stroke="#2d4a0a" stroke-width="2"/>' +
+                    '<line x1="28" y1="95" x2="70" y2="118" stroke="#2d4a0a" stroke-width="0.6" opacity="0.3"/>' +
+                    '<line x1="20" y1="90" x2="55" y2="110" stroke="#2d4a0a" stroke-width="0.5" opacity="0.2"/>' +
+                    '<path d="M315,130 Q348,112 378,95 Q395,86 406,82 Q414,80 416,86 Q414,94 404,100 Q392,108 372,118 Q355,126 330,136" fill="url(#turtFlipGrad)" stroke="#2d4a0a" stroke-width="2"/>' +
+                    '<line x1="392" y1="95" x2="350" y2="118" stroke="#2d4a0a" stroke-width="0.6" opacity="0.3"/>' +
+                    // Carapace (shell) - main dome
+                    '<ellipse cx="210" cy="148" rx="118" ry="78" fill="url(#turtCarapace)" stroke="#2d4a0a" stroke-width="2.5"/>' +
+                    // Scute pattern - central vertebral scutes (5 large)
+                    '<path d="M210,74 L230,90 L230,118 L210,130 L190,118 L190,90Z" fill="none" stroke="#3d5412" stroke-width="1.5" opacity="0.55"/>' +
+                    '<path d="M210,130 L232,144 L232,172 L210,184 L188,172 L188,144Z" fill="none" stroke="#3d5412" stroke-width="1.5" opacity="0.55"/>' +
+                    '<path d="M210,184 L228,198 L220,222 L200,222 L192,198Z" fill="none" stroke="#3d5412" stroke-width="1.3" opacity="0.45"/>' +
+                    // Costal scutes (flanking)
+                    '<path d="M190,90 L166,80 L140,94 L148,118 L172,126 L190,118Z" fill="none" stroke="#3d5412" stroke-width="1.2" opacity="0.4"/>' +
+                    '<path d="M230,90 L254,80 L280,94 L272,118 L248,126 L230,118Z" fill="none" stroke="#3d5412" stroke-width="1.2" opacity="0.4"/>' +
+                    '<path d="M188,144 L158,136 L132,152 L138,180 L162,188 L188,172Z" fill="none" stroke="#3d5412" stroke-width="1.2" opacity="0.4"/>' +
+                    '<path d="M232,144 L262,136 L288,152 L282,180 L258,188 L232,172Z" fill="none" stroke="#3d5412" stroke-width="1.2" opacity="0.4"/>' +
+                    // Marginal scutes (edge ring, subtle)
+                    '<path d="M100,120 Q97,135 100,150 Q105,165 115,175" fill="none" stroke="#3d5412" stroke-width="1" opacity="0.3"/>' +
+                    '<path d="M320,120 Q323,135 320,150 Q315,165 305,175" fill="none" stroke="#3d5412" stroke-width="1" opacity="0.3"/>' +
+                    // Shell highlight
+                    '<ellipse cx="200" cy="118" rx="55" ry="28" fill="white" opacity="0.06"/>' +
+                    // Head and neck
+                    '<path d="M105,130 Q82,126 62,124 Q48,122 38,124 Q30,128 30,136 Q32,144 40,146 Q50,146 62,144 Q82,140 105,138" fill="url(#turtSkin)" stroke="#2d4a0a" stroke-width="2"/>' +
+                    // Head detail
+                    '<ellipse cx="42" cy="134" rx="16" ry="14" fill="#5a7c1a" stroke="#2d4a0a" stroke-width="2"/>' +
+                    // Eye
+                    '<ellipse cx="36" cy="128" rx="5.5" ry="5" fill="#1a1a1a" stroke="#0f0f0f" stroke-width="1.2"/>' +
+                    '<ellipse cx="35" cy="127" rx="2" ry="1.8" fill="white" opacity="0.7"/>' +
+                    // Beak
+                    '<path d="M28,134 Q22,132 20,136 Q22,140 28,138" fill="#8b7d3c" stroke="#5c5228" stroke-width="1"/>' +
+                    // Salt gland (tear mark)
+                    '<path d="M32,132 Q28,136 26,142" stroke="#7cb8d4" stroke-width="1.5" fill="none" opacity="0.4" stroke-linecap="round"/>' +
+                    // Plastron hint (underside visible at edge)
+                    '<path d="M125,210 Q165,222 210,224 Q255,222 295,210" fill="none" stroke="#d4b66a" stroke-width="2" opacity="0.35"/>' +
                     '</svg>';
                 },
                 parts: [
@@ -26078,181 +26108,172 @@
             };
 
             // ── Simulation tick (water chemistry drift) ──
+            // Uses functional state update to always read fresh state (avoids stale closures)
             var simStep = function () {
-              if (!waterChem || !selectedTank) return;
-              var bioload = tankFish.reduce(function (sum, f) {
-                var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === f; });
-                return sum + (sp ? sp.load : 0);
-              }, 0);
-              var ammoniaGen = bioload * 0.02;
-              var newAmm = Math.max(0, waterChem.ammonia + ammoniaGen - waterChem.ammonia * 0.05);
-              var nitriteBact = waterChem.ammonia * 0.15;
-              var newNitrite = Math.max(0, waterChem.nitrite + nitriteBact - waterChem.nitrite * 0.08);
-              var nitrateBact = waterChem.nitrite * 0.2;
-              var newNitrate = Math.max(0, waterChem.nitrate + nitrateBact);
-              var pHdrift = (Math.random() - 0.5) * 0.05;
-              var tempDrift = (Math.random() - 0.5) * 0.3;
-              var newChem = {
-                pH: Math.max(5.5, Math.min(9.0, waterChem.pH + pHdrift)),
-                temp: Math.max(40, Math.min(95, waterChem.temp + tempDrift)),
-                ammonia: Math.round(newAmm * 100) / 100,
-                nitrite: Math.round(newNitrite * 100) / 100,
-                nitrate: Math.round(newNitrate * 10) / 10,
-                salinity: waterChem.salinity
-              };
-              var newTick = simTick + 1;
-              var newLog = eventLog.slice();
-              // AI-powered random events (every ~5 sim-days, 60% chance)
-              var daysSinceLastEvent = simDay - lastAIEventDay;
-              if (daysSinceLastEvent >= 5 && Math.random() < 0.6 && !aiEvent && !aiEventLoading) {
-                generateAIEvent();
-                newLog.push({ tick: newTick, msg: '🤖 An event is developing in your tank...' });
-              }
-              // XP for maintaining healthy parameters
-              var allOk = getChemStatus('ammonia', newChem.ammonia) === 'ok' &&
-                getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
-                getChemStatus('pH', newChem.pH) === 'ok';
-              if (allOk && tankFish.length > 0 && newTick % 5 === 0) {
-                awardStemXP('aquarium', 2, 'Healthy tank maintenance');
-              }
-              // Increase hunger each simulation tick
-              var newHunger = Object.assign({}, hungerLevels);
-              tankFish.forEach(function (fId) {
-                var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
-                newHunger[fId] = Math.min(100, cur + 2);
-              });
-              updMulti({ waterChem: newChem, simTick: newTick, hungerLevels: newHunger, eventLog: newLog.slice(-20) });
-
-              // ── Disease progression ──
-              var newSickness = Object.assign({}, fishSickness);
-              var sickChanged = false;
-              // Chance of new illness if water quality is bad
-              if (waterChem.ammonia > 0.8 && Math.random() < 0.15 && tankFish.length > 0) {
-                var victim = tankFish[Math.floor(Math.random() * tankFish.length)];
-                if (!newSickness[victim]) {
-                  var diseases = ['ich', 'fin_rot', 'velvet', 'dropsy'];
-                  newSickness[victim] = { disease: diseases[Math.floor(Math.random() * diseases.length)], severity: 1, tick: newTick };
-                  sickChanged = true;
-                  newLog.push({ tick: newTick, msg: '\u26A0\uFE0F A fish is showing signs of illness! Check the Medicate button.' });
+              setLabToolData(function (prev) {
+                var aq = Object.assign({}, (prev && prev._aquarium) || {});
+                if (!aq.waterChem || !aq.selectedTank) return prev;
+                var _tankFish = aq.tankFish || [];
+                var _hungerLevels = aq.hungerLevels || {};
+                var _eventLog = aq.eventLog || [];
+                var _simTick = aq.simTick || 0;
+                var _simDay = aq.simDay || 0;
+                var _simHour = aq.simHour || 8;
+                var _fishSickness = aq.fishSickness || {};
+                var _fishStress = aq.fishStress || {};
+                var _lightsOn = aq.lightsOn !== undefined ? aq.lightsOn : true;
+                var _algaeLevel = aq.algaeLevel || 0;
+                var _selectedTank = aq.selectedTank;
+                var _waterChem = aq.waterChem;
+                var bioload = _tankFish.reduce(function (sum, f) {
+                  var sp = (SPECIES_BY_TANK[_selectedTank] || []).find(function (s) { return s.id === f; });
+                  return sum + (sp ? sp.load : 0);
+                }, 0);
+                var ammoniaGen = bioload * 0.02;
+                var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * 0.05);
+                var nitriteBact = _waterChem.ammonia * 0.15;
+                var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * 0.08);
+                var nitrateBact = _waterChem.nitrite * 0.2;
+                var newNitrate = Math.max(0, _waterChem.nitrate + nitrateBact);
+                var pHdrift = (Math.random() - 0.5) * 0.05;
+                var tempDrift = (Math.random() - 0.5) * 0.3;
+                var newChem = {
+                  pH: Math.max(5.5, Math.min(9.0, _waterChem.pH + pHdrift)),
+                  temp: Math.max(40, Math.min(95, _waterChem.temp + tempDrift)),
+                  ammonia: Math.round(newAmm * 100) / 100,
+                  nitrite: Math.round(newNitrite * 100) / 100,
+                  nitrate: Math.round(newNitrate * 10) / 10,
+                  salinity: _waterChem.salinity
+                };
+                var newTick = _simTick + 1;
+                // Advance time: each tick = 1 hour
+                var newHour = _simHour + 1;
+                var newDay = _simDay;
+                if (newHour >= 24) { newHour = 0; newDay++; }
+                var newLog = _eventLog.slice();
+                // XP for maintaining healthy parameters
+                var allOk = getChemStatus('ammonia', newChem.ammonia) === 'ok' &&
+                  getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
+                  getChemStatus('pH', newChem.pH) === 'ok';
+                if (allOk && _tankFish.length > 0 && newTick % 5 === 0) {
+                  awardStemXP('aquarium', 2, 'Healthy tank maintenance');
                 }
-              }
-              // Existing diseases progress if untreated
-              Object.keys(newSickness).forEach(function (fId) {
-                if (newSickness[fId] && newTick - newSickness[fId].tick > 10 && newSickness[fId].severity < 3) {
-                  newSickness[fId] = Object.assign({}, newSickness[fId], { severity: newSickness[fId].severity + 1, tick: newTick });
-                  sickChanged = true;
+                // Increase hunger each simulation tick
+                var newHunger = Object.assign({}, _hungerLevels);
+                _tankFish.forEach(function (fId) {
+                  var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+                  newHunger[fId] = Math.min(100, cur + 2);
+                });
+                // ── Disease progression ──
+                var newSickness = Object.assign({}, _fishSickness);
+                var sickChanged = false;
+                if (_waterChem.ammonia > 0.8 && Math.random() < 0.15 && _tankFish.length > 0) {
+                  var victim = _tankFish[Math.floor(Math.random() * _tankFish.length)];
+                  if (!newSickness[victim]) {
+                    var diseases = ['ich', 'fin_rot', 'velvet', 'dropsy'];
+                    newSickness[victim] = { disease: diseases[Math.floor(Math.random() * diseases.length)], severity: 1, tick: newTick };
+                    sickChanged = true;
+                    newLog.push({ tick: newTick, msg: '\u26A0\uFE0F A fish is showing signs of illness!' });
+                  }
                 }
-              });
-
-              // ── Hunger consequences (starvation & cannibalism) ──
-              var species = SPECIES_BY_TANK[selectedTank] || [];
-              var fishToRemove = [];
-              var newStress = Object.assign({}, fishStress);
-
-              // Check each fish for starvation
-              tankFish.forEach(function (fId, idx) {
-                var hunger = newHunger[fId] !== undefined ? newHunger[fId] : 50;
-                if (hunger >= 100) {
-                  // Starvation death — 25% chance per tick at max hunger
-                  if (Math.random() < 0.25) {
+                Object.keys(newSickness).forEach(function (fId) {
+                  if (newSickness[fId] && newTick - newSickness[fId].tick > 10 && newSickness[fId].severity < 3) {
+                    newSickness[fId] = Object.assign({}, newSickness[fId], { severity: newSickness[fId].severity + 1, tick: newTick });
+                    sickChanged = true;
+                  }
+                });
+                // ── Hunger consequences ──
+                var species = SPECIES_BY_TANK[_selectedTank] || [];
+                var fishToRemove = [];
+                var newStress = Object.assign({}, _fishStress);
+                _tankFish.forEach(function (fId, idx) {
+                  var hunger = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+                  if (hunger >= 100 && Math.random() < 0.25) {
                     var sp = species.find(function (s) { return s.id === fId; });
                     fishToRemove.push(idx);
                     newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + (sp ? sp.name : fId) + ' has died from starvation!' });
                   }
-                }
-                // Predator cannibalism — large predatory fish may eat smaller tankmates
-                if (hunger > 80) {
-                  var predSp = species.find(function (s) { return s.id === fId; });
-                  if (predSp && predSp.diet && /carnivore|piscivore|predator/i.test(predSp.diet)) {
-                    // Find a smaller incompatible prey in the tank
-                    var preyIdx = -1;
-                    tankFish.forEach(function (pId, pi) {
-                      if (pi === idx || fishToRemove.indexOf(pi) !== -1) return;
-                      if (pId === fId) return; // don't eat own species
-                      var preySp = species.find(function (s) { return s.id === pId; });
-                      if (preySp && preySp.load < predSp.load && predSp.compat.indexOf(pId) === -1) {
-                        if (preyIdx === -1 || Math.random() < 0.5) preyIdx = pi;
+                  if (hunger > 80) {
+                    var predSp = species.find(function (s) { return s.id === fId; });
+                    if (predSp && predSp.diet && /carnivore|piscivore|predator/i.test(predSp.diet)) {
+                      var preyIdx = -1;
+                      _tankFish.forEach(function (pId, pi) {
+                        if (pi === idx || fishToRemove.indexOf(pi) !== -1) return;
+                        if (pId === fId) return;
+                        var preySp = species.find(function (s) { return s.id === pId; });
+                        if (preySp && preySp.load < predSp.load && predSp.compat.indexOf(pId) === -1) {
+                          if (preyIdx === -1 || Math.random() < 0.5) preyIdx = pi;
+                        }
+                      });
+                      if (preyIdx !== -1 && Math.random() < 0.12) {
+                        var preySp2 = species.find(function (s) { return s.id === _tankFish[preyIdx]; });
+                        fishToRemove.push(preyIdx);
+                        newHunger[fId] = Math.max(0, hunger - 40);
+                        newLog.push({ tick: newTick, msg: '\uD83D\uDE31 ' + predSp.name + ' has eaten a ' + (preySp2 ? preySp2.name : 'tankmate') + '!' });
                       }
-                    });
-                    if (preyIdx !== -1 && Math.random() < 0.12) {
-                      var preySp = species.find(function (s) { return s.id === tankFish[preyIdx]; });
-                      fishToRemove.push(preyIdx);
-                      newHunger[fId] = Math.max(0, hunger - 40); // predator is fed
-                      newLog.push({ tick: newTick, msg: '\uD83D\uDE31 ' + predSp.name + ' has eaten a ' + (preySp ? preySp.name : 'tankmate') + '! (Predator was starving)' });
                     }
                   }
-                }
-              });
-
-              // ── Species aggression & territorial fighting ──
-              var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
-              var maxLoad = tank ? Math.floor(tank.size / 2) : 10;
-              var currentLoad = tankFish.reduce(function (s, f) { var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
-              var overcrowded = currentLoad > maxLoad * 0.85;
-
-              // Count each species
-              var speciesCounts = {};
-              tankFish.forEach(function (fId) {
-                speciesCounts[fId] = (speciesCounts[fId] || 0) + 1;
-              });
-
-              // Check incompatible pairings
-              var uniqueSpecies = Object.keys(speciesCounts);
-              for (var si = 0; si < uniqueSpecies.length; si++) {
-                for (var sj = si + 1; sj < uniqueSpecies.length; sj++) {
-                  var sp1 = species.find(function (s) { return s.id === uniqueSpecies[si]; });
-                  var sp2 = species.find(function (s) { return s.id === uniqueSpecies[sj]; });
-                  if (!sp1 || !sp2) continue;
-                  var compatible = sp1.compat && sp1.compat.indexOf(sp2.id) !== -1;
-                  if (!compatible) {
-                    // Aggression chance increases with overcrowding and hunger
-                    var aggressionChance = overcrowded ? 0.08 : 0.03;
-                    var avgH = ((newHunger[sp1.id] || 50) + (newHunger[sp2.id] || 50)) / 2;
-                    if (avgH > 70) aggressionChance += 0.05;
-                    if (Math.random() < aggressionChance) {
-                      // Larger fish usually wins; loser gets stressed
-                      var attacker = sp1.load >= sp2.load ? sp1 : sp2;
-                      var defender = sp1.load >= sp2.load ? sp2 : sp1;
-                      newStress[defender.id] = Math.min(100, (newStress[defender.id] || 0) + 15);
-                      newStress[attacker.id] = Math.min(100, (newStress[attacker.id] || 0) + 5);
-                      newLog.push({ tick: newTick, msg: '\u2694\uFE0F ' + attacker.name + ' is fighting with ' + defender.name + '! (' + (overcrowded ? 'Overcrowded tank' : 'Incompatible species') + ')' });
-                      // If stress reaches critical, fish may die
-                      if ((newStress[defender.id] || 0) >= 90) {
-                        var defIdx = tankFish.indexOf(defender.id);
-                        if (defIdx !== -1 && fishToRemove.indexOf(defIdx) === -1) {
-                          fishToRemove.push(defIdx);
-                          newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + defender.name + ' has died from aggression injuries!' });
+                });
+                // ── Species aggression ──
+                var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+                var maxLoad = tank ? Math.floor(tank.size / 2) : 10;
+                var currentLoad = _tankFish.reduce(function (s, f) { var sp = species.find(function (x) { return x.id === f; }); return s + (sp ? sp.load : 0); }, 0);
+                var overcrowded = currentLoad > maxLoad * 0.85;
+                var speciesCounts = {};
+                _tankFish.forEach(function (fId) { speciesCounts[fId] = (speciesCounts[fId] || 0) + 1; });
+                var uniqueSpecies = Object.keys(speciesCounts);
+                for (var si = 0; si < uniqueSpecies.length; si++) {
+                  for (var sj = si + 1; sj < uniqueSpecies.length; sj++) {
+                    var sp1 = species.find(function (s) { return s.id === uniqueSpecies[si]; });
+                    var sp2 = species.find(function (s) { return s.id === uniqueSpecies[sj]; });
+                    if (!sp1 || !sp2) continue;
+                    var compatible = sp1.compat && sp1.compat.indexOf(sp2.id) !== -1;
+                    if (!compatible) {
+                      var aggressionChance = overcrowded ? 0.08 : 0.03;
+                      var avgH = ((newHunger[sp1.id] || 50) + (newHunger[sp2.id] || 50)) / 2;
+                      if (avgH > 70) aggressionChance += 0.05;
+                      if (Math.random() < aggressionChance) {
+                        var attacker = sp1.load >= sp2.load ? sp1 : sp2;
+                        var defender = sp1.load >= sp2.load ? sp2 : sp1;
+                        newStress[defender.id] = Math.min(100, (newStress[defender.id] || 0) + 15);
+                        newStress[attacker.id] = Math.min(100, (newStress[attacker.id] || 0) + 5);
+                        newLog.push({ tick: newTick, msg: '\u2694\uFE0F ' + attacker.name + ' is fighting with ' + defender.name + '!' });
+                        if ((newStress[defender.id] || 0) >= 90) {
+                          var defIdx = _tankFish.indexOf(defender.id);
+                          if (defIdx !== -1 && fishToRemove.indexOf(defIdx) === -1) {
+                            fishToRemove.push(defIdx);
+                            newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + defender.name + ' has died from aggression injuries!' });
+                          }
                         }
                       }
                     }
                   }
                 }
-              }
-
-              // Apply fish removals (in reverse order to maintain indices)
-              if (fishToRemove.length > 0) {
-                fishToRemove.sort(function (a, b) { return b - a; }); // reverse sort
-                var newTankFish = tankFish.slice();
-                fishToRemove.forEach(function (ri) {
-                  if (ri >= 0 && ri < newTankFish.length) newTankFish.splice(ri, 1);
-                });
-                // Update tickUpdate later with new fish list
-                tankFish = newTankFish;
-              }
-
-              // ── Algae growth ──
-              var newAlgae = algaeLevel;
-              if (lightsOn) {
-                newAlgae = Math.min(100, newAlgae + 0.5 + (waterChem.nitrate > 40 ? 1 : 0));
-              } else {
-                newAlgae = Math.max(0, newAlgae - 0.3);
-              }
-
-              var tickUpdate = { waterChem: newChem, simTick: newTick, hungerLevels: newHunger, eventLog: newLog.slice(-20), algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress };
-              if (sickChanged) tickUpdate.fishSickness = newSickness;
-              if (fishToRemove.length > 0) tickUpdate.tankFish = tankFish;
-              updMulti(tickUpdate);
+                // Apply fish removals
+                var finalTankFish = _tankFish;
+                if (fishToRemove.length > 0) {
+                  fishToRemove.sort(function (a, b) { return b - a; });
+                  finalTankFish = _tankFish.slice();
+                  fishToRemove.forEach(function (ri) { if (ri >= 0 && ri < finalTankFish.length) finalTankFish.splice(ri, 1); });
+                }
+                // ── Algae growth ──
+                var newAlgae = _algaeLevel;
+                if (_lightsOn) { newAlgae = Math.min(100, newAlgae + 0.5 + (newChem.nitrate > 40 ? 1 : 0)); }
+                else { newAlgae = Math.max(0, newAlgae - 0.3); }
+                // Build final update
+                var tickUpdate = {
+                  waterChem: newChem, simTick: newTick, simDay: newDay, simHour: newHour,
+                  hungerLevels: newHunger, eventLog: newLog.slice(-20),
+                  algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress
+                };
+                if (sickChanged) tickUpdate.fishSickness = newSickness;
+                if (fishToRemove.length > 0) tickUpdate.tankFish = finalTankFish;
+                aq = Object.assign(aq, tickUpdate);
+                return Object.assign({}, prev, { _aquarium: aq });
+              });
             };
+
+            // (Disease, hunger, aggression, algae all handled inside simStep above via functional update)
 
 
             // ── Tank Health Score & Strategy Tips ──
@@ -26662,7 +26683,15 @@
                       ].map(function (s) {
                         return React.createElement("button", {
                           key: s.spd,
-                          onClick: function () { upd('simSpeed', s.spd); },
+                          onClick: function () {
+                            upd('simSpeed', s.spd);
+                            // If sim is running, restart interval at new speed
+                            if (simRunning && window._aquaSimInterval) {
+                              clearInterval(window._aquaSimInterval);
+                              var newInterval = s.spd === 0 ? 99999 : s.spd === 1 ? 2000 : s.spd === 2 ? 1000 : 400;
+                              window._aquaSimInterval = setInterval(function () { simStep(); }, newInterval);
+                            }
+                          },
                           title: s.tip,
                           className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-500 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-500 hover:bg-cyan-100 border border-slate-200")
                         }, s.label);
@@ -26958,14 +26987,13 @@
                         onClick: function () {
                           if (simRunning) {
                             upd('simRunning', false);
+                            if (window._aquaSimInterval) { clearInterval(window._aquaSimInterval); window._aquaSimInterval = null; }
                           } else {
                             upd('simRunning', true);
                             var speed = simSpeed || 1;
                             var interval = speed === 0 ? 99999 : speed === 1 ? 2000 : speed === 2 ? 1000 : 400;
-                            var iv = setInterval(function () {
-                              simStep();
-                            }, interval);
-                            setTimeout(function () { clearInterval(iv); upd('simRunning', false); }, 120000);
+                            if (window._aquaSimInterval) clearInterval(window._aquaSimInterval);
+                            window._aquaSimInterval = setInterval(function () { simStep(); }, interval);
                           }
                         },
                         className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-500 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")

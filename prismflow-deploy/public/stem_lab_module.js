@@ -308,12 +308,59 @@
             var label = prev ? (prev.textContent || '').trim().substring(0, 40) : inp.placeholder || inp.type || 'Input';
             inp.setAttribute('aria-label', label);
           });
+          // Auto-label selects without aria-label
+          root.querySelectorAll('select:not([aria-label])').forEach(function (sel) {
+            var prev = sel.previousElementSibling;
+            var label = prev ? (prev.textContent || '').trim().substring(0, 40) : '';
+            if (!label) { var par = sel.closest('[class*="gap-"]'); if (par) { var spn = par.querySelector('span'); label = spn ? (spn.textContent || '').trim().substring(0, 40) : ''; } }
+            sel.setAttribute('aria-label', label || 'Selection');
+          });
+          // Auto-label textareas without aria-label
+          root.querySelectorAll('textarea:not([aria-label])').forEach(function (ta) {
+            var label = ta.placeholder ? ta.placeholder.substring(0, 40) : '';
+            if (!label) { var heading = ta.closest('div') && ta.closest('div').querySelector('h3,h4,label'); label = heading ? (heading.textContent || '').trim().substring(0, 40) : 'Text input'; }
+            ta.setAttribute('aria-label', label || 'Text input');
+          });
+          // Hide decorative SVGs from screen readers
+          root.querySelectorAll('svg:not([aria-label]):not([aria-hidden])').forEach(function (svg) {
+            svg.setAttribute('aria-hidden', 'true');
+          });
           // Fix focus visibility: replace outline-none without replacement
           root.querySelectorAll('[class*="outline-none"]:not([class*="focus:ring"]):not([class*="focus:border"])').forEach(function (el) {
             el.classList.add('focus:ring-2', 'focus:ring-indigo-500', 'focus:ring-offset-1');
           });
+          // Auto-set aria-pressed on toggle buttons (buttons with active-state color classes)
+          var activeClasses = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-indigo-600', 'bg-pink-600', 'bg-amber-600', 'bg-cyan-600', 'bg-emerald-600', 'bg-red-600'];
+          root.querySelectorAll('button:not([aria-pressed])').forEach(function (btn) {
+            var cls = btn.className || '';
+            var isToggle = activeClasses.some(function (ac) { return cls.includes(ac); });
+            if (isToggle) btn.setAttribute('aria-pressed', 'true');
+          });
+          // Auto-set aria-expanded on collapsible section headers
+          root.querySelectorAll('button').forEach(function (btn) {
+            var txt = (btn.textContent || '').trim();
+            if ((txt.includes('▼') || txt.includes('▲') || txt.includes('▾') || txt.includes('▸')) && !btn.hasAttribute('aria-expanded')) {
+              btn.setAttribute('aria-expanded', txt.includes('▼') || txt.includes('▾') ? 'true' : 'false');
+            }
+          });
         } catch (e) { }
       }, [stemLabTool, stemLabTab, labToolData]);
+
+      // ── Accessibility: Focus trap for modal ──
+      React.useEffect(function () {
+        var root = document.querySelector('[data-stem-lab]');
+        if (!root) return;
+        function trapFocus(e) {
+          if (e.key !== 'Tab') return;
+          var focusable = root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          if (!focusable.length) return;
+          var first = focusable[0], last = focusable[focusable.length - 1];
+          if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+          else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
+        }
+        document.addEventListener('keydown', trapFocus);
+        return function () { document.removeEventListener('keydown', trapFocus); };
+      }, [stemLabTool]);
 
       // ── Accessibility: aria-live feedback region ──
       var [a11yAnnouncement, setA11yAnnouncement] = React.useState('');
@@ -418,15 +465,15 @@
         var s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/mathjs@13.2.2/lib/browser/math.min.js';
         s.async = true;
-        s.onload = function () { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); };
+        s.onload = function () { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); setLabToolData(function (prev) { return Object.assign({}, prev, { graphCalc: Object.assign({}, prev.graphCalc || {}, { _mathReady: true }) }); }); };
         document.head.appendChild(s);
       }, [stemLabTab, stemLabTool]);
       // ── Graphing Calculator: Render graph on Canvas (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'graphCalc') return;
         var _gcd = (labToolData && labToolData.graphCalc) || {};
-        var _funcs = _gcd.funcs || [{ expr: '', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
-        var _win = _gcd.window || { xmin: -10, xmax: 10, ymin: -10, ymax: 10 };
+        var _funcs = _gcd.funcs || [{ expr: 'sin(x)', color: '#38bdf8' }, { expr: '', color: '#f472b6' }, { expr: '', color: '#34d399' }, { expr: '', color: '#fbbf24' }, { expr: '', color: '#a78bfa' }, { expr: '', color: '#fb923c' }];
+        var _win = _gcd.window || { xmin: -6, xmax: 6, ymin: -4, ymax: 4 };
         var cv = document.getElementById('graph-calc-canvas');
         if (!cv || !window.math) return;
         var ctx = cv.getContext('2d');
@@ -470,7 +517,11 @@
             for (var px = 0; px <= W; px++) {
               var x = _win.xmin + (px / W) * xr;
               try {
-                var y = compiled.evaluate({ x: x });
+                var _scope = { x: x };
+                if (_gcd.sliderA != null) _scope.a = _gcd.sliderA;
+                if (_gcd.sliderB != null) _scope.b = _gcd.sliderB;
+                if (_gcd.sliderC != null) _scope.c = _gcd.sliderC;
+                var y = compiled.evaluate(_scope);
                 if (typeof y === 'number' && isFinite(y)) {
                   var py = toScreenY(y);
                   if (!started) { ctx.moveTo(px, py); started = true; }
@@ -486,24 +537,145 @@
         ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 11px sans-serif';
         ctx.fillText('x', W - 14, (_win.ymin <= 0 && _win.ymax >= 0 ? toScreenY(0) : H / 2) - 6);
         ctx.fillText('y', (_win.xmin <= 0 && _win.xmax >= 0 ? toScreenX(0) : W / 2) + 6, 14);
+
+        // ── Trace cursor overlay ──
+        var traceX = _gcd.traceX;
+        if (_gcd.traceMode && traceX != null && window.math) {
+          var traceScreenX = toScreenX(traceX);
+          ctx.strokeStyle = 'rgba(250,204,21,0.4)'; ctx.lineWidth = 1;
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath(); ctx.moveTo(traceScreenX, 0); ctx.lineTo(traceScreenX, H); ctx.stroke();
+          ctx.setLineDash([]);
+          var traceResults = [];
+          _funcs.forEach(function (fn, fi) {
+            if (!fn.expr || !fn.expr.trim()) return;
+            try {
+              var texpr = fn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+              texpr = texpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+              var tScope = { x: traceX };
+              if (_gcd.sliderA != null) tScope.a = _gcd.sliderA;
+              if (_gcd.sliderB != null) tScope.b = _gcd.sliderB;
+              if (_gcd.sliderC != null) tScope.c = _gcd.sliderC;
+              var tval = math.compile(texpr).evaluate(tScope);
+              if (typeof tval === 'number' && isFinite(tval)) {
+                var tsy = toScreenY(tval);
+                ctx.fillStyle = fn.color;
+                ctx.beginPath(); ctx.arc(traceScreenX, tsy, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(traceScreenX, tsy, 5, 0, Math.PI * 2); ctx.stroke();
+                traceResults.push({ idx: fi, y: tval, sy: tsy, color: fn.color });
+              }
+            } catch (e) { }
+          });
+          if (traceResults.length > 0) {
+            var labelY = Math.min.apply(null, traceResults.map(function (r) { return r.sy; })) - 30;
+            if (labelY < 10) labelY = 10;
+            var labelText = 'x=' + Number(traceX.toPrecision(5));
+            traceResults.forEach(function (r) { labelText += '  y' + (r.idx + 1) + '=' + Number(r.y.toPrecision(5)); });
+            ctx.font = 'bold 10px monospace';
+            var tw = ctx.measureText(labelText).width + 12;
+            var lx = Math.max(4, Math.min(traceScreenX - tw / 2, W - tw - 4));
+            ctx.fillStyle = 'rgba(15,23,42,0.92)'; ctx.strokeStyle = 'rgba(250,204,21,0.5)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(lx, labelY, tw, 20, 4); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#fbbf24'; ctx.fillText(labelText, lx + 6, labelY + 14);
+          }
+        }
+
+        // ── Zeros markers ──
+        if (_gcd.showAnalysis && _gcd._zeros && _gcd._zeros.length > 0) {
+          _gcd._zeros.forEach(function (z) {
+            var zsx = toScreenX(z.x); var zsy = toScreenY(0);
+            if (zsx > 0 && zsx < W) {
+              ctx.fillStyle = '#34d399';
+              ctx.beginPath(); ctx.arc(zsx, zsy, 5, 0, Math.PI * 2); ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.arc(zsx, zsy, 5, 0, Math.PI * 2); ctx.stroke();
+              ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#34d399';
+              ctx.fillText('(' + Number(z.x.toPrecision(4)) + ', 0)', zsx + 7, zsy - 5);
+            }
+          });
+        }
+
+        // ── Intersection markers ──
+        if (_gcd.showAnalysis && _gcd._intersections && _gcd._intersections.length > 0) {
+          _gcd._intersections.forEach(function (pt) {
+            var isx = toScreenX(pt.x); var isy = toScreenY(pt.y);
+            if (isx > 0 && isx < W && isy > 0 && isy < H) {
+              ctx.fillStyle = '#f472b6';
+              ctx.beginPath(); ctx.arc(isx, isy, 5, 0, Math.PI * 2); ctx.fill();
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.arc(isx, isy, 5, 0, Math.PI * 2); ctx.stroke();
+              ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#f472b6';
+              ctx.fillText('(' + Number(pt.x.toPrecision(4)) + ', ' + Number(pt.y.toPrecision(4)) + ')', isx + 7, isy - 5);
+            }
+          });
+        }
+
+        // ── Derivative tangent line ──
+        if (_gcd.showDeriv && _gcd.derivX != null && window.math) {
+          var dFn = _funcs[0];
+          if (dFn && dFn.expr && dFn.expr.trim()) {
+            try {
+              var dExpr = dFn.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+              dExpr = dExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+              var dScope = { x: _gcd.derivX };
+              if (_gcd.sliderA != null) dScope.a = _gcd.sliderA;
+              if (_gcd.sliderB != null) dScope.b = _gcd.sliderB;
+              if (_gcd.sliderC != null) dScope.c = _gcd.sliderC;
+              var dCompiled = math.compile(dExpr);
+              var dY = dCompiled.evaluate(dScope);
+              var dh = 0.0001;
+              var dScopeP = Object.assign({}, dScope, { x: _gcd.derivX + dh });
+              var dScopeM = Object.assign({}, dScope, { x: _gcd.derivX - dh });
+              var dSlope = (dCompiled.evaluate(dScopeP) - dCompiled.evaluate(dScopeM)) / (2 * dh);
+              if (typeof dY === 'number' && isFinite(dY) && typeof dSlope === 'number' && isFinite(dSlope)) {
+                var dsx = toScreenX(_gcd.derivX); var dsy = toScreenY(dY);
+                var tLineLen = xr * 0.3;
+                var tx1 = _gcd.derivX - tLineLen; var ty1 = dY - dSlope * tLineLen;
+                var tx2 = _gcd.derivX + tLineLen; var ty2 = dY + dSlope * tLineLen;
+                ctx.strokeStyle = 'rgba(251,146,60,0.7)'; ctx.lineWidth = 2;
+                ctx.setLineDash([6, 3]);
+                ctx.beginPath(); ctx.moveTo(toScreenX(tx1), toScreenY(ty1)); ctx.lineTo(toScreenX(tx2), toScreenY(ty2)); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#fb923c';
+                ctx.beginPath(); ctx.arc(dsx, dsy, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(dsx, dsy, 5, 0, Math.PI * 2); ctx.stroke();
+                ctx.font = 'bold 10px monospace'; ctx.fillStyle = '#fb923c';
+                ctx.fillText("f'(" + Number(_gcd.derivX.toPrecision(4)) + ") = " + Number(dSlope.toPrecision(5)), dsx + 8, dsy - 8);
+              }
+            } catch (e) { }
+          }
+        }
+
+        // Store coordinate mapper for mouse handler
+        cv._toMathX = function (px) { return _win.xmin + (px / W) * xr; };
       }, [stemLabTab, stemLabTool, labToolData]);
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio')) return;
         if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
         var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js';
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
         s.async = true;
         s.onload = function () {
           // Load OrbitControls after Three.js is ready
           var s2 = document.createElement('script');
-          s2.src = 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js';
+          s2.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js';
           s2.async = true;
           s2.onload = function () {
             if (typeof addToast === 'function') addToast('\uD83D\uDD37 3D engine loaded', 'info');
             setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); });
           };
+          s2.onerror = function () {
+            console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls');
+            setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); });
+          };
           document.head.appendChild(s2);
+        };
+        s.onerror = function () {
+          console.error('[StemLab] Three.js failed to load');
+          if (typeof addToast === 'function') addToast('\u274c 3D engine failed to load', 'error');
         };
         document.head.appendChild(s);
       }, [stemLabTab, stemLabTool]);
@@ -1289,7 +1461,7 @@
         { text: 'Check the flight stats panel for max height, range, and flight time. Try challenge mode to predict landings!', top: '85%', left: '50%' }
       ];
       var _tutGalaxy = [
-        { text: 'Welcome to the Galaxy Simulator! Click and drag to orbit around the galaxy, scroll to zoom.', top: '25%', left: '50%' },
+        { text: 'Welcome to the Galaxy Explorer! Switch between Galaxy Simulation and Star Lifespan modes using the tabs. Click and drag to orbit the galaxy, scroll to zoom.', top: '25%', left: '50%' },
         { text: 'Adjust Star Count and Arm Count to change the galaxy\'s structure. Watch the spiral arms reform!', top: '45%', left: '50%' },
         { text: 'Click on any star to identify its spectral type (O, B, A, F, G, K, M) — the hottest stars are blue!', top: '65%', left: '50%' },
         { text: 'Use keyboard: Arrow keys to orbit, +/- to zoom, R to reset view. Try the quiz to test your knowledge!', top: '80%', left: '50%' }
@@ -1505,7 +1677,8 @@
           className: "flex items-center gap-3"
         }, /*#__PURE__*/React.createElement("button", {
           onClick: () => setShowAssessmentBuilder(false),
-          className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+          className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+          'aria-label': 'Back'
         }, /*#__PURE__*/React.createElement(ArrowLeft, {
           size: 18,
           className: "text-slate-500"
@@ -1537,6 +1710,7 @@
         }, /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-2"
         }, /*#__PURE__*/React.createElement("select", {
+          'aria-label': 'Question type',
           value: block.type,
           onChange: e => {
             const nb = [...assessmentBlocks];
@@ -2515,7 +2689,8 @@
                 className: "flex items-center gap-3 mb-2"
               }, /*#__PURE__*/React.createElement("button", {
                 onClick: () => setStemLabTool(null),
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+                'aria-label': 'Back to tools'
               }, /*#__PURE__*/React.createElement(ArrowLeft, {
                 size: 18,
                 className: "text-slate-500"
@@ -2903,7 +3078,8 @@
                 className: "flex items-center gap-3"
               }, /*#__PURE__*/React.createElement("button", {
                 onClick: () => setStemLabTool(null),
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+                'aria-label': 'Back to tools'
               }, /*#__PURE__*/React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
               /*#__PURE__*/React.createElement("h3", {
                 className: "text-lg font-bold text-orange-800"
@@ -3365,7 +3541,8 @@
                 className: "flex items-center gap-3 mb-2"
               }, /*#__PURE__*/React.createElement("button", {
                 onClick: () => setStemLabTool(null),
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+                'aria-label': 'Back to tools'
               }, /*#__PURE__*/React.createElement(ArrowLeft, {
                 size: 18,
                 className: "text-slate-500"
@@ -3602,7 +3779,8 @@
                 className: "flex items-center gap-3 mb-2"
               }, /*#__PURE__*/React.createElement("button", {
                 onClick: () => setStemLabTool(null),
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+                'aria-label': 'Back to tools'
               }, /*#__PURE__*/React.createElement(ArrowLeft, {
                 size: 18,
                 className: "text-slate-500"
@@ -3797,7 +3975,8 @@
                 className: "flex items-center gap-3 mb-2"
               }, /*#__PURE__*/React.createElement("button", {
                 onClick: () => setStemLabTool(null),
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+                'aria-label': 'Back to tools'
               }, /*#__PURE__*/React.createElement(ArrowLeft, {
                 size: 18,
                 className: "text-slate-500"
@@ -3914,7 +4093,8 @@
               className: "flex items-center gap-3 mb-2"
             }, /*#__PURE__*/React.createElement("button", {
               onClick: () => setStemLabTool(null),
-              className: "p-1.5 hover:bg-slate-100 rounded-lg"
+              className: "p-1.5 hover:bg-slate-100 rounded-lg",
+              'aria-label': 'Back to tools'
             }, /*#__PURE__*/React.createElement(ArrowLeft, {
               size: 18,
               className: "text-slate-500"
@@ -4214,7 +4394,8 @@
               className: "flex items-center gap-3 mb-2"
             }, /*#__PURE__*/React.createElement("button", {
               onClick: () => setStemLabTool(null),
-              className: "p-1.5 hover:bg-slate-100 rounded-lg"
+              className: "p-1.5 hover:bg-slate-100 rounded-lg",
+              'aria-label': 'Back to tools'
             }, /*#__PURE__*/React.createElement(ArrowLeft, {
               size: 18,
               className: "text-slate-500"
@@ -4483,7 +4664,7 @@
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
               renderTutorial('calculus', _tutCalculus),
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u222B Calculus Visualizer"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE")
               ),
@@ -4618,6 +4799,19 @@
             const d = labToolData.wave;
             const upd = (key, val) => setLabToolData(prev => ({ ...prev, wave: { ...prev.wave, [key]: val } }));
             var waveMode = d.waveMode || 'free';
+
+            // ── Match Waveform XP check (called on slider change) ──
+            var checkWaveMatch = function (newAmp, newFreq) {
+              if (!d.matchTarget || d.matchXpClaimed) return;
+              var tAmp = d.matchTarget.amp, tFreq = d.matchTarget.freq;
+              var ampDiff = Math.abs(newAmp - tAmp) / tAmp;
+              var freqDiff = Math.abs(newFreq - tFreq) / tFreq;
+              var matchPct = Math.max(0, Math.round((1 - (ampDiff + freqDiff) / 2) * 100));
+              if (matchPct > 90) {
+                awardStemXP('wave-match', 10, 'Matched waveform (A=' + tAmp + ', f=' + tFreq + ')');
+                upd('matchXpClaimed', true);
+              }
+            };
 
             // Canvas-based animated wave
             const canvasRef = function (canvasEl) {
@@ -5072,7 +5266,7 @@
             return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
               renderTutorial('wave', _tutWave),
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
               ),
@@ -5145,7 +5339,7 @@
                   React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
                     React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
                     React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : d[s.k])),
-                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : 0), onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-cyan-600" })
+                    React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : 0), onChange: function (e) { var v = parseFloat(e.target.value); upd(s.k, v); if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); } }, className: "w-full accent-cyan-600" })
                   )
                 )
               ),
@@ -5212,11 +5406,12 @@
                     var ta = tAmps[Math.floor(Math.random() * tAmps.length)];
                     var tf = tFreqs[Math.floor(Math.random() * tFreqs.length)];
                     upd('matchTarget', { amp: ta, freq: tf });
+                    upd('matchXpClaimed', false);
                     addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed'), 'info');
                   }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white') + " transition-all"
                 }, d.matchTarget ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
                 d.matchTarget && React.createElement("button", {
-                  onClick: function () { upd('matchTarget', null); },
+                  onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
                   className: "px-2 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100"
                 }, "\u2715 Clear"),
                 d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
@@ -5232,6 +5427,7 @@
                       key: opt, disabled: d.quiz.answered, onClick: function () {
                         var correct = opt === d.quiz.a;
                         upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                        if (correct) { awardStemXP('wave-quiz', 5, 'Wave quiz: ' + d.quiz.q); }
                         addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.quiz.a, correct ? 'success' : 'error');
                       }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
                     }, opt);
@@ -5249,17 +5445,115 @@
 
             // ── Organism definitions ──
             var ORGANISMS = [
-              { id: 'amoeba', label: t('stem.cell.amoeba'), icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'] },
-              { id: 'paramecium', label: t('stem.cell.paramecium'), icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'] },
-              { id: 'euglena', label: t('stem.cell.euglena'), icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: t('stem.chem_balance.photosynthesis'), activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'] },
-              { id: 'wbc', label: t('stem.cell.white_blood_cell'), icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'] },
-              { id: 'bacterium', label: t('stem.cell.bacterium'), icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'] },
-              { id: 'plantcell', label: t('stem.cell.plant_cell'), icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'] },
-              { id: 'diatom', label: t('stem.cell.diatom'), icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'] },
-              { id: 'volvox', label: t('stem.cell.volvox'), icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet — name means "fierce roller"'] },
-              { id: 'stentor', label: t('stem.cell.stentor'), icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long — visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'] },
-              { id: 'tardigrade', label: t('stem.cell.tardigrade'), icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible — survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272°C to 150°C', 'Survived exposure to outer space', 'Enter cryptobiosis — suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'] },
-              { id: 'spirillum', label: t('stem.cell.spirillum'), icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria — up to 60μm'] }
+              {
+                id: 'amoeba', label: t('stem.cell.amoeba'), icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'],
+                anatomy: [
+                  { name: 'Pseudopods', fn: 'Temporary cytoplasm extensions used for movement and engulfing food (phagocytosis). Formed by actin filament polymerization.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
+                  { name: 'Food Vacuole', fn: 'Membrane-bound compartment containing engulfed food particles. Enzymes digest the contents, releasing nutrients into cytoplasm.', icon: '\uD83D\uDFE2', lx: -0.4, ly: 0.3 },
+                  { name: 'Contractile Vacuole', fn: 'Pumps excess water out of the cell to maintain osmotic balance. Fills and contracts rhythmically.', icon: '\uD83D\uDCA7', lx: 0.7, ly: -0.5 },
+                  { name: 'Nucleus', fn: 'Contains DNA and controls cell activities. Single large nucleus with visible nucleolus.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
+                  { name: 'Cell Membrane', fn: 'Flexible phospholipid bilayer that allows shape changes. Selectively permeable \u2014 controls what enters and exits.', icon: '\u26AA', lx: 0, ly: -1.1 }
+                ]
+              },
+              {
+                id: 'paramecium', label: t('stem.cell.paramecium'), icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'],
+                anatomy: [
+                  { name: 'Cilia', fn: 'Thousands of short hair-like projections covering the cell. Beat in coordinated metachronal waves for rapid swimming (~3mm/sec).', icon: '\u{1F4A8}', lx: 1.5, ly: -0.5 },
+                  { name: 'Oral Groove', fn: 'Funnel-shaped depression that channels food particles into the cell mouth (cytostome). Cilia sweep food inward.', icon: '\uD83E\uDD44', lx: 0.4, ly: 0 },
+                  { name: 'Macronucleus', fn: 'Large kidney-shaped nucleus controlling daily cell functions (gene expression for proteins, metabolism).', icon: '\uD83D\uDFE3', lx: -0.1, ly: 0 },
+                  { name: 'Micronucleus', fn: 'Small round nucleus used only during sexual reproduction (conjugation). Contains complete genome.', icon: '\u26AA', lx: 0.25, ly: 0.15 },
+                  { name: 'Trichocysts', fn: 'Defensive organelles embedded in the pellicle. Fire tiny needle-like shafts when the cell is threatened.', icon: '\u26A1', lx: -1.2, ly: 0.4 }
+                ]
+              },
+              {
+                id: 'euglena', label: t('stem.cell.euglena'), icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: t('stem.chem_balance.photosynthesis'), activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'],
+                anatomy: [
+                  { name: 'Flagellum', fn: 'Long whip-like appendage emerging from anterior end. Rotates to pull the cell forward through water.', icon: '\u{1F4A8}', lx: 2.2, ly: -0.2 },
+                  { name: 'Eyespot (Stigma)', fn: 'Red-orange carotenoid pigment spot that shades a photoreceptor, allowing Euglena to detect light direction for phototaxis.', icon: '\uD83D\uDD34', lx: 0.8, ly: -0.15 },
+                  { name: 'Chloroplasts', fn: 'Green plastids containing chlorophyll for photosynthesis. Can be lost permanently if cell is kept in darkness.', icon: '\uD83D\uDFE2', lx: -0.2, ly: -0.15 },
+                  { name: 'Pellicle', fn: 'Flexible protein strips beneath the membrane (not a cell wall). Allows euglenoid movement \u2014 stretching and contracting.', icon: '\u26AA', lx: -0.9, ly: 0.35 },
+                  { name: 'Paramylon Body', fn: 'Unique carbohydrate storage granule (beta-1,3-glucan). Euglena\u2019s version of starch, used as energy reserve.', icon: '\u26AA', lx: 0.3, ly: 0.25 }
+                ]
+              },
+              {
+                id: 'wbc', label: t('stem.cell.white_blood_cell'), icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'],
+                anatomy: [
+                  { name: 'Lobed Nucleus', fn: 'Multi-lobed nucleus (neutrophils have 3-5 lobes). Allows the cell to squeeze through tight spaces between tissue cells.', icon: '\uD83D\uDFE3', lx: -0.2, ly: -0.1 },
+                  { name: 'Lysosomes', fn: 'Enzyme-filled vesicles that digest engulfed pathogens. Contain hydrolytic enzymes active at acidic pH.', icon: '\uD83D\uDFE1', lx: 0.5, ly: 0.4 },
+                  { name: 'Pseudopods', fn: 'Cytoplasmic extensions used for amoeboid movement and phagocytosis. Follow chemical gradients (chemotaxis) to find bacteria.', icon: '\uD83E\uDDB6', lx: 0.8, ly: 0.7 },
+                  { name: 'Phagosomes', fn: 'Membrane-bound vesicles formed when the cell engulfs a pathogen. Fuse with lysosomes to destroy the invader.', icon: '\uD83D\uDD34', lx: -0.6, ly: 0.5 },
+                  { name: 'Surface Receptors', fn: 'Toll-like receptors and antibody receptors recognize foreign molecules (antigens) on pathogen surfaces.', icon: '\u26A1', lx: 0, ly: -1.0 }
+                ]
+              },
+              {
+                id: 'bacterium', label: t('stem.cell.bacterium'), icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'],
+                anatomy: [
+                  { name: 'Nucleoid', fn: 'Region of circular DNA (not membrane-bound). Single chromosome contains ~4,000 genes. No histones in most bacteria.', icon: '\uD83D\uDFE1', lx: 0, ly: 0 },
+                  { name: 'Peptidoglycan Wall', fn: 'Rigid mesh of sugars and amino acids surrounding the membrane. Gram+ have thick walls; Gram- have thin walls + outer membrane.', icon: '\uD83D\uDFE7', lx: 0, ly: -0.9 },
+                  { name: 'Plasmids', fn: 'Small circular DNA molecules separate from the chromosome. Carry genes for antibiotic resistance; can transfer between bacteria.', icon: '\uD83D\uDD35', lx: 0.8, ly: 0.3 },
+                  { name: 'Flagellum', fn: 'Rotating protein filament driven by a molecular motor (proton gradient). Spins ~100 revolutions/second for swimming.', icon: '\u{1F4A8}', lx: -2.2, ly: 0 },
+                  { name: 'Ribosomes (70S)', fn: 'Smaller than eukaryotic ribosomes (70S vs 80S). This size difference is why antibiotics can target bacterial ribosomes specifically.', icon: '\u26AA', lx: -0.5, ly: 0.3 }
+                ]
+              },
+              {
+                id: 'plantcell', label: t('stem.cell.plant_cell'), icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'],
+                anatomy: [
+                  { name: 'Cell Wall', fn: 'Rigid outer layer of cellulose microfibrils. Provides structural support, prevents bursting from osmotic pressure, and gives plants their shape.', icon: '\uD83D\uDFE9', lx: 0, ly: -1.3 },
+                  { name: 'Central Vacuole', fn: 'Massive fluid-filled organelle occupying up to 90% of cell volume. Stores water, nutrients, and waste; maintains turgor pressure.', icon: '\uD83D\uDFE6', lx: 0, ly: 0 },
+                  { name: 'Chloroplast', fn: 'Double-membrane organelle with internal thylakoid membranes where photosynthesis occurs. Contains its own DNA (endosymbiotic origin).', icon: '\uD83D\uDFE2', lx: -0.8, ly: -0.5 },
+                  { name: 'Nucleus', fn: 'Contains chromosomal DNA enclosed by a double membrane (nuclear envelope) with pores. Controls gene expression and cell division.', icon: '\uD83D\uDFE3', lx: 0.5, ly: -0.35 },
+                  { name: 'Mitochondria', fn: 'Powerhouse of the cell \u2014 performs cellular respiration (glucose + O\u2082 \u2192 ATP + CO\u2082 + H\u2082O). Has its own circular DNA.', icon: '\uD83D\uDFE0', lx: 0.9, ly: 0.5 },
+                  { name: 'Endoplasmic Reticulum', fn: 'Network of membrane channels. Rough ER (with ribosomes) makes proteins; Smooth ER synthesizes lipids and detoxifies chemicals.', icon: '\u26AA', lx: -0.6, ly: -0.7 },
+                  { name: 'Plasmodesmata', fn: 'Tiny channels through the cell wall connecting adjacent plant cells. Allow transport of water, nutrients, and signaling molecules.', icon: '\uD83D\uDD35', lx: -1.5, ly: 0 }
+                ]
+              },
+              {
+                id: 'diatom', label: t('stem.cell.diatom'), icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'],
+                anatomy: [
+                  { name: 'Frustule', fn: 'Two-part silica shell (epitheca + hypotheca) that fits together like a petri dish. Ornately patterned with pores (areolae) for gas exchange.', icon: '\uD83D\uDC8E', lx: 0, ly: -1.3 },
+                  { name: 'Raphe', fn: 'Slit along the frustule that secretes mucilage for gliding movement. Not all diatoms have one (pennate vs centric types).', icon: '\u27B0', lx: -1.1, ly: 0 },
+                  { name: 'Chloroplasts', fn: 'Golden-brown plastids containing chlorophylls a \u0026 c plus fucoxanthin pigment (gives diatoms their characteristic color).', icon: '\uD83D\uDFE2', lx: 0.3, ly: 0.3 },
+                  { name: 'Central Node', fn: 'Thickened area in the center of the frustule where the raphe splits. Controls mucilage secretion direction.', icon: '\u26AA', lx: 0, ly: 0 }
+                ]
+              },
+              {
+                id: 'volvox', label: t('stem.cell.volvox'), icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet \u2014 name means "fierce roller"'],
+                anatomy: [
+                  { name: 'Somatic Cells', fn: 'Thousands of biflagellate cells on the colony surface. Beat flagella in coordination for locomotion. Cannot reproduce.', icon: '\uD83D\uDFE2', lx: 0.9, ly: -0.5 },
+                  { name: 'Gonidia', fn: 'Large reproductive cells inside the colony. Divide repeatedly to form miniature daughter colonies (asexual reproduction).', icon: '\uD83C\uDF1F', lx: 0.15, ly: -0.1 },
+                  { name: 'Cytoplasmic Bridges', fn: 'Thin strands connecting adjacent somatic cells, enabling coordinated flagellar beating across the entire colony surface.', icon: '\uD83D\uDD17', lx: -0.7, ly: 0.4 },
+                  { name: 'Glycoprotein Matrix', fn: 'Extracellular gel matrix holding the colony together. Each cell sits in its own pocket within this transparent sphere.', icon: '\u26AA', lx: 0, ly: 0.95 }
+                ]
+              },
+              {
+                id: 'stentor', label: t('stem.cell.stentor'), icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long \u2014 visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'],
+                anatomy: [
+                  { name: 'Membranellar Band', fn: 'Crown of fused cilia (membranelles) spiraling around the oral end. Creates water vortex currents that sweep food into the oral groove.', icon: '\uD83C\uDF00', lx: 0, ly: -1.0 },
+                  { name: 'Myonemes', fn: 'Contractile fibers running the length of the body like muscle fibers. Allow rapid contraction to 1/4 length in milliseconds.', icon: '\u26A1', lx: 0.3, ly: 0.5 },
+                  { name: 'Beaded Macronucleus', fn: 'Distinctive moniliform (bead-like chain) macronucleus. Can be fragmented during regeneration \u2014 each piece contains full genetic info.', icon: '\uD83D\uDFE3', lx: 0, ly: 0 },
+                  { name: 'Holdfast', fn: 'Attachment structure at the narrow (aboral) end. Anchors the cell to substrate while feeding. Can release for relocation.', icon: '\u2693', lx: 0, ly: 1.3 },
+                  { name: 'Body Cilia', fn: 'Short cilia covering the body surface. Used for swimming when detached, but primary function is tactile sensing.', icon: '\u{1F4A8}', lx: -0.7, ly: 0.3 }
+                ]
+              },
+              {
+                id: 'tardigrade', label: t('stem.cell.tardigrade'), icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible \u2014 survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272\u00B0C to 150\u00B0C', 'Survived exposure to outer space', 'Enter cryptobiosis \u2014 suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'],
+                anatomy: [
+                  { name: 'Cuticle', fn: 'Tough external covering shed (molted) periodically. Made of chitin-like material. Provides protection and is permeable to gases.', icon: '\uD83D\uDEE1', lx: 0, ly: -1.0 },
+                  { name: 'Stylets', fn: 'Piercing mouthparts used to puncture plant cells or small invertebrates. Retracted during molting and re-synthesized.', icon: '\uD83D\uDD2A', lx: 1.5, ly: 0 },
+                  { name: 'Lobopod Legs', fn: 'Eight stubby legs ending in 4-8 claws each. Last pair faces backward. No joints \u2014 moved by individual muscle fibers.', icon: '\uD83E\uDDB6', lx: -0.5, ly: 0.9 },
+                  { name: 'Tun State', fn: 'Cryptobiosis form: body contracts into a ball (tun), loses 97% of water, metabolism drops to 0.01%. Can survive decades.', icon: '\uD83D\uDFE4', lx: 0, ly: 0.3 },
+                  { name: 'Dsup Protein', fn: 'Damage Suppressor protein unique to tardigrades. Binds to DNA and shields it from radiation damage (discovered 2016).', icon: '\u2B50', lx: -0.3, ly: -0.3 }
+                ]
+              },
+              {
+                id: 'spirillum', label: t('stem.cell.spirillum'), icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria \u2014 up to 60\u03BCm'],
+                anatomy: [
+                  { name: 'Bipolar Flagella', fn: 'Tufts of flagella at both cell poles. Rotate in opposite directions to produce the characteristic corkscrew swimming motion.', icon: '\u{1F4A8}', lx: -2.8, ly: 0.3 },
+                  { name: 'Rigid Spiral Body', fn: 'Cell shape is a fixed helix (unlike flexible spirochetes). The peptidoglycan wall maintains this permanent corkscrew shape.', icon: '\uD83C\uDF00', lx: 0, ly: -0.6 },
+                  { name: 'Volutin Granules', fn: 'Intracellular phosphate storage bodies. Appear as dark spots under microscopy. Energy reserve for nutrient-poor conditions.', icon: '\u26AA', lx: 0.5, ly: 0 },
+                  { name: 'Polar Membrane', fn: 'Specialized membrane region at cell poles where flagellar motors are anchored. Contains chemoreceptor proteins for sensing environment.', icon: '\uD83D\uDD35', lx: 2.3, ly: -0.3 }
+                ]
+              }
             ];
 
             // ── Quiz questions (observation-based) ──
@@ -5794,6 +6088,84 @@
                 ctx.restore();
               }
 
+              // ── Organelle labels (floating pills with leader lines) ──
+              function drawOrganelleLabels(o) {
+                var def = o.def;
+                if (!def.anatomy || def.anatomy.length === 0) return;
+                var p = toScreen(o.x, o.y);
+                var sz = o.size * cam.zoom * dpr;
+                // Only show labels when zoomed in enough and organism is on-screen
+                if (sz < 8) return;
+                if (p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) return;
+                ctx.save();
+                var fontSize = Math.max(7, Math.min(10, sz * 0.28)) * dpr;
+                ctx.font = 'bold ' + fontSize + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                def.anatomy.forEach(function (a, i) {
+                  if (typeof a.lx === 'undefined') return;
+                  // Organelle point in world-relative rotated coords
+                  var ox = a.lx * sz;
+                  var oy = a.ly * sz;
+                  // Rotate by organism angle to get screen-space offset
+                  var cos = Math.cos(o.angle), sin = Math.sin(o.angle);
+                  var rx = ox * cos - oy * sin;
+                  var ry = ox * sin + oy * cos;
+                  // Screen position of organelle
+                  var sx = p.x + rx;
+                  var sy = p.y + ry;
+                  // Label offset — push labels outward from center to avoid overlap
+                  var labelDist = sz * 1.5 + fontSize * 2;
+                  var spreadAngle = -Math.PI * 0.7 + (i / (def.anatomy.length - 0.01)) * Math.PI * 1.4;
+                  var lx = sx + Math.cos(spreadAngle) * labelDist;
+                  var ly = sy + Math.sin(spreadAngle) * labelDist;
+                  // Clamp labels to screen
+                  var textW = ctx.measureText(a.name).width + fontSize * 1.5;
+                  lx = Math.max(fontSize, Math.min(W - textW - fontSize, lx));
+                  ly = Math.max(fontSize * 2, Math.min(H - fontSize * 2, ly));
+                  // Leader line
+                  ctx.beginPath();
+                  ctx.moveTo(sx, sy);
+                  ctx.lineTo(lx, ly);
+                  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                  ctx.lineWidth = 0.8 * dpr;
+                  ctx.setLineDash([2 * dpr, 2 * dpr]);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  // Dot at organelle point
+                  ctx.beginPath();
+                  ctx.arc(sx, sy, 2.5 * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = def.color;
+                  ctx.fill();
+                  // Pill background
+                  var pillW = textW + 4 * dpr;
+                  var pillH = fontSize * 1.7;
+                  var pillX = lx - 2 * dpr;
+                  var pillY = ly - pillH / 2;
+                  ctx.beginPath();
+                  var r = pillH / 2;
+                  ctx.moveTo(pillX + r, pillY);
+                  ctx.lineTo(pillX + pillW - r, pillY);
+                  ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
+                  ctx.lineTo(pillX + pillW, pillY + pillH - r);
+                  ctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
+                  ctx.lineTo(pillX + r, pillY + pillH);
+                  ctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
+                  ctx.lineTo(pillX, pillY + r);
+                  ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
+                  ctx.closePath();
+                  ctx.fillStyle = 'rgba(15,23,42,0.75)';
+                  ctx.fill();
+                  ctx.strokeStyle = def.color;
+                  ctx.lineWidth = 0.8 * dpr;
+                  ctx.stroke();
+                  // Label text
+                  ctx.fillStyle = '#ffffff';
+                  ctx.fillText(a.name, pillX + fontSize * 0.7, ly);
+                });
+                ctx.restore();
+              }
+
               function updateOrganism(o) {
                 var def = o.def;
                 if (playAsOrg === o) {
@@ -5847,12 +6219,27 @@
                     }
                     o.angle += 0.005; // gentle rotation (~20s per revolution)
                   } else if (def.id === 'stentor') {
-                    // Mostly stationary, gentle sway
-                    o.vx *= 0.9; o.vy *= 0.9;
-                    o.vx += (Math.random() - 0.5) * 0.01;
-                    o.vy += (Math.random() - 0.5) * 0.01;
-                    // Gentle angle oscillation instead of snapping to velocity direction
-                    o.angle = o.phase + Math.sin(world.tick * 0.01 + o.phase) * 0.3;
+                    // Filter-feeding behaviour: slow graceful drift + periodic pauses
+                    if (!o._stentorTimer) o._stentorTimer = Math.floor(Math.random() * 300);
+                    o._stentorTimer = (o._stentorTimer || 0) + 1;
+                    var stCycle = o._stentorTimer % 600; // ~10s cycle at 60fps
+                    if (stCycle < 400) {
+                      // Drifting phase — slow purposeful glide
+                      if (stCycle === 0 || stCycle % 120 === 0) {
+                        // Pick a new drift direction every ~2s
+                        var da = Math.random() * Math.PI * 2;
+                        o._stDriftX = Math.cos(da) * 0.08;
+                        o._stDriftY = Math.sin(da) * 0.08;
+                      }
+                      o.vx += ((o._stDriftX || 0) - o.vx) * 0.02;
+                      o.vy += ((o._stDriftY || 0) - o.vy) * 0.02;
+                    } else {
+                      // Feeding pause — nearly stationary, membranellar band active
+                      o.vx *= 0.92; o.vy *= 0.92;
+                    }
+                    // Gentle rocking sway (trumpet opening scans the water)
+                    o.angle = o.phase + Math.sin(world.tick * 0.018 + o.phase) * 0.45
+                      + Math.sin(world.tick * 0.007 + o.phase * 2) * 0.15;
                   } else if (def.id === 'spirillum') {
                     // Corkscrew movement — spiraling path
                     o.vx += (Math.random() - 0.5) * 0.08;
@@ -6089,6 +6476,10 @@
 
                 // Organisms
                 world.organisms.forEach(function (o) { drawOrganism(o); });
+                // Organelle labels for selected organism
+                world.organisms.forEach(function (o) {
+                  if (o === selectedOrg || o === playAsOrg) drawOrganelleLabels(o);
+                });
 
                 // ── Enhanced Microscope Vignette Overlay ──
                 // Circular vignette
@@ -6301,7 +6692,7 @@
             return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               // Header
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
                 React.createElement("span", { className: "text-xs text-slate-400 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
                 React.createElement("div", { className: "flex gap-1 ml-auto" },
@@ -6393,15 +6784,30 @@
                   React.createElement("span", { className: "text-slate-500" }, selDef.activityDesc),
                   React.createElement("span", { className: "ml-2 font-bold", style: { color: selDef.color } }, "+" + selDef.xp + " XP")
                 ),
-                // Facts
+                // Facts — always visible
                 React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },
                   selDef.facts.map(function (fact, i) {
                     var discovered = (d.discoveries || []).includes(selDef.id + '_' + i);
-                    return React.createElement("div", { key: i, className: "flex items-center gap-2 text-[10px] py-0.5" },
-                      React.createElement("span", { className: discovered ? "text-green-600" : "text-slate-300" }, discovered ? "\u2713" : "\uD83D\uDD12"),
-                      React.createElement("span", { className: discovered ? "text-slate-600" : "text-slate-300 italic" }, discovered ? fact : "Discover through observation...")
+                    return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[10px] py-0.5" },
+                      React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-400 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
+                      React.createElement("span", { className: discovered ? "text-slate-700 font-semibold" : "text-slate-600" }, fact)
                     );
                   })
+                ),
+                // Anatomy & Organelles (if defined)
+                selDef.anatomy && React.createElement("div", { className: "mt-2 border-t border-slate-100 pt-2" },
+                  React.createElement("p", { className: "text-[10px] font-black text-slate-500 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
+                  React.createElement("div", { className: "grid grid-cols-1 gap-1" },
+                    selDef.anatomy.map(function (a, i) {
+                      return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[10px]" },
+                        React.createElement("span", { className: "flex-shrink-0", style: { color: selDef.color } }, a.icon || "\u25CF"),
+                        React.createElement("span", null,
+                          React.createElement("span", { className: "font-bold text-slate-700" }, a.name + ": "),
+                          React.createElement("span", { className: "text-slate-500" }, a.fn)
+                        )
+                      );
+                    })
+                  )
                 )
               ),
 
@@ -6538,7 +6944,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDCC8 Function Grapher"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE")
               ),
@@ -7236,7 +7642,7 @@
             return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
               renderTutorial('physics', _tutPhysics),
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
               ),
@@ -7451,7 +7857,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u2697\uFE0F Equation Balancer"),
                 streak > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in" }, "\uD83D\uDD25 " + streak + " streak"),
                 isBalanced && React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full ml-auto" }, "\u2696 BALANCED")
@@ -7579,6 +7985,59 @@
                 d.timerActive && d.timerStart && React.createElement("span", { className: "text-xs font-mono font-bold text-amber-600" }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's'),
                 d.feedback && d.feedback.correct && d.timerActive && d.timerStart && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '\u26A1 Solved in ' + ((Date.now() - d.timerStart) / 1000).toFixed(1) + 's!')
               ),
+              // ── Chemistry Concept Quiz ──
+              (() => {
+                var chemQ = d.chemQuiz || null;
+                var chemScore = d.chemScore || 0;
+                var chemQStreak = d.chemQStreak || 0;
+                function makeChemQ() {
+                  var bank = [
+                    { q: 'What type of reaction is: 2H₂ + O₂ → 2H₂O?', a: 'Synthesis', opts: ['Synthesis', 'Decomposition', 'Single Replacement', 'Double Replacement'], explain: 'Two reactants combine to form one product (A + B → AB)' },
+                    { q: 'What type of reaction is: CaCO₃ → CaO + CO₂?', a: 'Decomposition', opts: ['Synthesis', 'Decomposition', 'Combustion', 'Single Replacement'], explain: 'One compound breaks into two or more products (AB → A + B)' },
+                    { q: 'What type of reaction is: CH₄ + 2O₂ → CO₂ + 2H₂O?', a: 'Combustion', opts: ['Synthesis', 'Decomposition', 'Combustion', 'Acid-Base'], explain: 'A hydrocarbon reacts with O₂ to produce CO₂ and H₂O' },
+                    { q: 'What type of reaction is: Zn + CuSO₄ → ZnSO₄ + Cu?', a: 'Single Replacement', opts: ['Synthesis', 'Combustion', 'Single Replacement', 'Double Replacement'], explain: 'One element replaces another in a compound (A + BC → AC + B)' },
+                    { q: 'What type of reaction is: HCl + NaOH → NaCl + H₂O?', a: 'Double Replacement', opts: ['Combustion', 'Single Replacement', 'Double Replacement', 'Decomposition'], explain: 'Two compounds exchange partners (AB + CD → AD + CB)' },
+                    { q: 'In a balanced equation, what is always conserved?', a: 'Mass (atoms)', opts: ['Mass (atoms)', 'Molecules', 'Volume', 'Energy only'], explain: 'Law of Conservation of Mass: atoms are neither created nor destroyed' },
+                    { q: 'To balance Fe + O₂ → Fe₂O₃, what coefficient goes in front of Fe?', a: '4', opts: ['1', '2', '3', '4'], explain: '4Fe + 3O₂ → 2Fe₂O₃ gives 4 Fe and 6 O on each side' },
+                    { q: 'To balance N₂ + H₂ → NH₃, what coefficient goes in front of NH₃?', a: '2', opts: ['1', '2', '3', '4'], explain: 'N₂ + 3H₂ → 2NH₃ gives 2 N and 6 H on each side' },
+                    { q: 'What is the correct balanced form of: Al + O₂ → Al₂O₃?', a: '4Al + 3O₂ → 2Al₂O₃', opts: ['2Al + O₂ → Al₂O₃', '4Al + 3O₂ → 2Al₂O₃', 'Al + O₂ → Al₂O₃', '3Al + 2O₂ → Al₂O₃'], explain: '4 Al, 6 O on each side' },
+                    { q: 'In CH₄ + 2O₂ → CO₂ + 2H₂O, how many total atoms of O are on the product side?', a: '4', opts: ['2', '3', '4', '6'], explain: 'CO₂ has 2 O + 2H₂O has 2 O = 4 O total' }
+                  ];
+                  var pick = bank[Math.floor(Math.random() * bank.length)];
+                  return { text: pick.q, answer: pick.a, opts: pick.opts.sort(function () { return Math.random() - 0.5; }), explain: pick.explain, answered: false };
+                }
+                return React.createElement("div", { className: "mt-3 bg-purple-50 rounded-xl border border-purple-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("button", {
+                      onClick: function () { upd('chemQuiz', makeChemQ()); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (chemQ ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-purple-600 text-white hover:bg-purple-700')
+                    }, chemQ ? '🔄 Next Question' : '🧪 Chemistry Quiz'),
+                    chemScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + chemScore + ' correct'),
+                    chemQStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, '🔥 ' + chemQStreak + ' streak')
+                  ),
+                  chemQ && !chemQ.answered && React.createElement("div", { className: "bg-white rounded-lg p-3 border border-purple-200" },
+                    React.createElement("p", { className: "text-sm font-bold text-purple-800 mb-3" }, chemQ.text),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                      chemQ.opts.map(function (opt, oi) {
+                        return React.createElement("button", {
+                          key: oi, onClick: function () {
+                            var correct = opt === chemQ.answer;
+                            upd('chemQuiz', Object.assign({}, chemQ, { answered: true, chosen: opt }));
+                            upd('chemScore', chemScore + (correct ? 1 : 0));
+                            upd('chemQStreak', correct ? chemQStreak + 1 : 0);
+                            if (correct) { addToast('🧪 Correct! ' + chemQ.explain, 'success'); awardStemXP('chemBalance', 10, 'Chemistry Quiz'); }
+                            else { addToast('❌ ' + chemQ.explain, 'error'); }
+                          }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all"
+                        }, opt);
+                      })
+                    )
+                  ),
+                  chemQ && chemQ.answered && React.createElement("div", { className: "p-3 rounded-lg text-sm font-bold " + (chemQ.chosen === chemQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                    chemQ.chosen === chemQ.answer ? '✅ Correct!' : '❌ Answer: ' + chemQ.answer,
+                    React.createElement("p", { className: "text-xs font-normal mt-1 " + (chemQ.chosen === chemQ.answer ? 'text-emerald-600' : 'text-red-600') }, '📐 ' + chemQ.explain)
+                  )
+                );
+              })(),
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'cb-' + Date.now(), tool: 'chemBalance', label: preset.name + ' ' + coeffs.join(':'), data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           })(),
@@ -7711,7 +8170,7 @@
 
             return React.createElement("div", { className: "max-w-2xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDEC Punnett Square"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-bold rounded-full" }, "GENETICS")
               ),
@@ -7957,7 +8416,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD0C Circuit Builder"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE"),
                 isShort && React.createElement("span", { className: "px-2 py-0.5 bg-red-600 text-white text-[10px] font-bold rounded-full animate-pulse" }, "\u26A0 SHORT CIRCUIT!"),
@@ -8138,6 +8597,60 @@
                   })
                 )
               ),
+              // ── Ohm's Law Quiz ──
+              (() => {
+                var cq = d.ohmQuiz || null;
+                var cqScore = d.ohmScore || 0;
+                var cqStreak = d.ohmStreak || 0;
+                function makeOhmQ() {
+                  var qTypes = [
+                    function () { var V = [3, 5, 6, 9, 12, 24][Math.floor(Math.random() * 6)]; var R = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)]; var I = V / R; return { q: 'A ' + V + 'V battery drives current through a ' + R + 'Ω resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A' }; },
+                    function () { var I2 = [0.1, 0.2, 0.5, 1, 2, 3][Math.floor(Math.random() * 6)]; var R2 = [10, 20, 50, 100, 200][Math.floor(Math.random() * 5)]; var V2 = I2 * R2; return { q: 'A current of ' + I2 + 'A flows through a ' + R2 + 'Ω resistor. What voltage is required?', a: parseFloat(V2.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I2 + '×' + R2 + ' = ' + V2.toFixed(1) + 'V' }; },
+                    function () { var V3 = [6, 9, 12, 24][Math.floor(Math.random() * 4)]; var I3 = [0.1, 0.2, 0.5, 1, 2][Math.floor(Math.random() * 5)]; var R3 = V3 / I3; return { q: 'A ' + V3 + 'V source pushes ' + I3 + 'A of current. What is the resistance?', a: parseFloat(R3.toFixed(1)), unit: 'Ω', formula: 'R = V/I = ' + V3 + '/' + I3 + ' = ' + R3.toFixed(1) + 'Ω' }; },
+                    function () { var V4 = [6, 9, 12][Math.floor(Math.random() * 3)]; var I4 = [0.5, 1, 2, 3][Math.floor(Math.random() * 4)]; var P4 = V4 * I4; return { q: 'A ' + V4 + 'V circuit draws ' + I4 + 'A. What is the power consumed?', a: parseFloat(P4.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I4 + '×' + V4 + ' = ' + P4.toFixed(1) + 'W' }; },
+                    function () { var R5a = [50, 100, 200][Math.floor(Math.random() * 3)]; var R5b = [50, 100, 200][Math.floor(Math.random() * 3)]; var Rtot = R5a + R5b; return { q: 'Two resistors (' + R5a + 'Ω and ' + R5b + 'Ω) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: 'Ω', formula: 'R_total = R₁ + R₂ = ' + R5a + ' + ' + R5b + ' = ' + Rtot + 'Ω' }; },
+                    function () { var R6a = [100, 200, 300][Math.floor(Math.random() * 3)]; var R6b = [100, 200, 300][Math.floor(Math.random() * 3)]; var Rpar = (R6a * R6b) / (R6a + R6b); return { q: 'Two resistors (' + R6a + 'Ω and ' + R6b + 'Ω) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: 'Ω', formula: 'R = (R₁×R₂)/(R₁+R₂) = (' + R6a + '×' + R6b + ')/(' + R6a + '+' + R6b + ') = ' + Rpar.toFixed(1) + 'Ω' }; }
+                  ];
+                  var gen = qTypes[Math.floor(Math.random() * qTypes.length)]();
+                  var wrong1 = parseFloat((gen.a * (1.5 + Math.random())).toFixed(gen.unit === 'A' ? 3 : 1));
+                  var wrong2 = parseFloat((gen.a * (0.2 + Math.random() * 0.5)).toFixed(gen.unit === 'A' ? 3 : 1));
+                  var wrong3 = parseFloat((gen.a + (Math.random() > 0.5 ? 1 : -1) * (gen.a * 0.3 + 5)).toFixed(gen.unit === 'A' ? 3 : 1));
+                  if (wrong2 <= 0) wrong2 = parseFloat((gen.a * 2.5).toFixed(gen.unit === 'A' ? 3 : 1));
+                  var opts = [gen.a, wrong1, wrong2, wrong3].sort(function () { return Math.random() - 0.5; });
+                  return { text: gen.q, answer: gen.a, unit: gen.unit, formula: gen.formula, opts: opts, answered: false };
+                }
+                return React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border border-blue-200 p-3" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("button", {
+                      onClick: function () { var q = makeOhmQ(); upd('ohmQuiz', q); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cq ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700')
+                    }, cq ? '🔄 Next Question' : '⚡ Ohm\'s Law Quiz'),
+                    cqScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + cqScore + ' correct'),
+                    cqStreak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, '🔥 ' + cqStreak + ' streak')
+                  ),
+                  cq && !cq.answered && React.createElement("div", { className: "bg-white rounded-lg p-3 border border-blue-200" },
+                    React.createElement("p", { className: "text-sm font-bold text-blue-800 mb-3" }, cq.text),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                      cq.opts.map(function (opt, oi) {
+                        return React.createElement("button", {
+                          key: oi, onClick: function () {
+                            var correct = Math.abs(opt - cq.answer) < 0.01;
+                            upd('ohmQuiz', Object.assign({}, cq, { answered: true, chosen: opt }));
+                            upd('ohmScore', cqScore + (correct ? 1 : 0));
+                            upd('ohmStreak', correct ? cqStreak + 1 : 0);
+                            if (correct) { addToast('⚡ Correct! ' + cq.formula, 'success'); awardStemXP('circuit', 10, 'Ohm\'s Law Quiz'); }
+                            else { addToast('❌ ' + cq.formula, 'error'); }
+                          }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
+                        }, opt + cq.unit);
+                      })
+                    )
+                  ),
+                  cq && cq.answered && React.createElement("div", { className: "p-3 rounded-lg text-sm font-bold " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                    Math.abs(cq.chosen - cq.answer) < 0.01 ? '✅ Correct!' : '❌ Answer: ' + cq.answer + cq.unit,
+                    React.createElement("p", { className: "text-xs font-normal mt-1 " + (Math.abs(cq.chosen - cq.answer) < 0.01 ? 'text-emerald-600' : 'text-red-600') }, '📐 ' + cq.formula)
+                  )
+                );
+              })(),
               React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ci-' + Date.now(), tool: 'circuit', label: d.components.length + ' parts ' + d.voltage + 'V ' + mode, data: Object.assign({}, d, { mode: mode }), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             )
           })(),
@@ -8167,7 +8680,7 @@
             }
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-4" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "📊 Data Plotter"),
                 React.createElement("label", { className: "ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer" }, React.createElement("input", { type: "checkbox", checked: d.tableMode, onChange: e => upd("tableMode", e.target.checked), className: "accent-teal-600" }), "Table Input"), React.createElement("span", { className: "text-xs text-slate-400 ml-2" }, d.points.length + " pts")
               ),
@@ -8361,7 +8874,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Inequality Grapher"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE")
               ),
@@ -8674,7 +9187,7 @@
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               // Header
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Molecule Lab"),
                 discovered.length > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " discovered")
               ),
@@ -9213,7 +9726,7 @@
 
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0D Solar System Explorer"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full ml-1" }, "3D")
               ),
@@ -10405,12 +10918,12 @@
                       React.createElement("div", { className: "mt-3" },
                         React.createElement("p", { className: "text-xs font-bold text-slate-500 mb-1" }, "\uD83D\uDD0D Compare Planets"),
                         React.createElement("div", { className: "flex gap-2 mb-2" },
-                          React.createElement("select", { value: d.compare1 || '', onChange: function (e) { upd('compare1', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
+                          React.createElement("select", { 'aria-label': 'First planet to compare', value: d.compare1 || '', onChange: function (e) { upd('compare1', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
                             React.createElement("option", { value: "" }, "Select..."),
                             PLANETS.map(function (p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
                           ),
                           React.createElement("span", { className: "text-slate-400 font-bold self-center" }, "vs"),
-                          React.createElement("select", { value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
+                          React.createElement("select", { 'aria-label': 'Second planet to compare', value: d.compare2 || '', onChange: function (e) { upd('compare2', e.target.value); }, className: "flex-1 px-2 py-1 border rounded text-sm" },
                             React.createElement("option", { value: "" }, "Select..."),
                             PLANETS.map(function (p) { return React.createElement("option", { key: p.name, value: p.name }, p.name); })
                           )
@@ -10451,6 +10964,7 @@
             var lifecycleMass = d.lifecycleMass !== undefined ? d.lifecycleMass : 1;
             var showSNAnim = d.showSNAnim || false;
             var galaxyType = d.galaxyType || 'barredSpiral';
+            var simMode = d.simMode || 'galaxy';
 
             // ── Star type data (OBAFGKM Harvard classification) ──
             var STAR_TYPES = [
@@ -10509,7 +11023,12 @@
               { q: 'How wide is the Milky Way?', a: '~100,000 light-years', options: ['~1,000 light-years', '~10,000 light-years', '~100,000 light-years', '~1 million light-years'] },
               { q: 'What causes a supernova?', a: 'A massive star exploding', options: ['Two galaxies colliding', 'A massive star exploding', 'A nebula igniting', 'A black hole evaporating'] },
               { q: 'What is dark matter?', a: 'Invisible matter detected by gravity', options: ['Black holes', 'Invisible matter detected by gravity', 'Empty space', 'Antimatter'] },
-              { q: 'How long does it take light to cross the Milky Way?', a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] }
+              { q: 'How long does it take light to cross the Milky Way?', a: '~100,000 years', options: ['~1,000 years', '~10,000 years', '~100,000 years', '~1 million years'] },
+              { q: 'What will our Sun become at the end of its life?', a: 'White dwarf', options: ['Black hole', 'Neutron star', 'White dwarf', 'Red dwarf'] },
+              { q: 'What stage comes after a Red Giant for a massive star?', a: 'Supernova', options: ['White dwarf', 'Planetary nebula', 'Supernova', 'Protostar'] },
+              { q: 'How long does a star with 1 solar mass live?', a: '~10 billion years', options: ['~1 million years', '~100 million years', '~10 billion years', '~1 trillion years'] },
+              { q: 'What is a protostar?', a: 'A star forming from a collapsing gas cloud', options: ['A dying star', 'A star forming from a collapsing gas cloud', 'A type of neutron star', 'A binary star system'] },
+              { q: 'What determines a star\'s final fate?', a: 'Its mass', options: ['Its color', 'Its mass', 'Its age', 'Its distance from Earth'] }
             ];
 
             // ── Scale data ──
@@ -10641,16 +11160,18 @@
                   var dist = Math.pow(Math.random(), 0.6) * 0.8;
                   var windTight = gType.windTightness || 2.5;
                   var barLen = gType.barLength || 0;
-                  var angle = armAngle + dist * windTight + (Math.random() - 0.5) * 0.4 * (1 - dist * 0.5);
+                  var spread = 0.12 * dist + 0.04;
+                  var angle = armAngle + dist * windTight + (Math.random() - 0.5) * spread;
                   if (barLen > 0 && dist < barLen) {
                     var barAngle = (arm % 2 === 0) ? 0 : Math.PI;
-                    x = Math.cos(barAngle) * dist + (Math.random() - 0.5) * 0.03;
-                    z = Math.sin(barAngle) * dist * 0.15 + (Math.random() - 0.5) * 0.02;
+                    x = Math.cos(barAngle) * dist + (Math.random() - 0.5) * 0.04;
+                    z = Math.sin(barAngle) * dist * 0.15 + (Math.random() - 0.5) * 0.03;
                   } else {
-                    x = Math.cos(angle) * dist + (Math.random() - 0.5) * 0.03;
-                    z = Math.sin(angle) * dist + (Math.random() - 0.5) * 0.03;
+                    var armSpread = 0.02 + dist * 0.05;
+                    x = Math.cos(angle) * dist + (Math.random() - 0.5) * armSpread;
+                    z = Math.sin(angle) * dist + (Math.random() - 0.5) * armSpread;
                   }
-                  y = (Math.random() - 0.5) * 0.04 * (1 - dist);
+                  y = (Math.random() - 0.5) * 0.06 * (1 - dist * 0.7);
                 }
                 starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
                 var pcts = ageDist || [0.003, 0.13, 0.6, 3, 7.6, 12.1, 76.5];
@@ -10676,7 +11197,7 @@
               var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
               camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
               var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
-              renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x050510);
+              renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x020208);
 
               // ── Layer groups ──
               var bgGroup = new THREE.Group(); bgGroup.name = 'bgStars';
@@ -10693,7 +11214,7 @@
               var bgGeo = new THREE.BufferGeometry(), bgCount = 2000, bgPos = new Float32Array(bgCount * 3);
               for (var i = 0; i < bgCount; i++) { bgPos[i * 3] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 1] = (Math.random() - 0.5) * 20; bgPos[i * 3 + 2] = (Math.random() - 0.5) * 20; }
               bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
-              bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.02, transparent: true, opacity: 0.4 })));
+              bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xccccff, size: 0.015, transparent: true, opacity: 0.3, sizeAttenuation: true })));
 
               // Spiral galaxy stars
               var starResult = generateStars(THREE, starCount, gType, galaxyType);
@@ -10704,27 +11225,32 @@
                   'attribute float aPhase;',
                   'varying vec3 vSC;',
                   'varying float vA;',
+                  'varying float vType;',
                   'uniform float uTime;',
                   'uniform float uPR;',
                   'void main() {',
                   '  vSC = color;',
-                  '  float sz = 20.0 - aStarType * 3.0;',
-                  '  float twinkleSpeed = 1.2 + aStarType * 0.5;',
-                  '  vA = 0.5 + 0.5 * sin(uTime * twinkleSpeed + aPhase * 6.283);',
+                  '  vType = aStarType;',
+                  '  float sz = 8.0 - aStarType * 0.8;',
+                  '  float twinkleSpeed = 0.8 + aStarType * 0.3;',
+                  '  vA = 0.6 + 0.4 * sin(uTime * twinkleSpeed + aPhase * 6.283);',
                   '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
-                  '  gl_PointSize = sz * uPR * (200.0 / max(-mv.z, 0.1));',
+                  '  gl_PointSize = min(sz * uPR * (120.0 / max(-mv.z, 1.0)), 24.0);',
                   '  gl_Position = projectionMatrix * mv;',
                   '}'
                 ].join('\n'),
                 fragmentShader: [
                   'varying vec3 vSC;',
                   'varying float vA;',
+                  'varying float vType;',
                   'void main() {',
                   '  float d = length(gl_PointCoord - 0.5) * 2.0;',
                   '  if (d > 1.0) discard;',
-                  '  float glow = exp(-d * d * 3.0);',
+                  '  float glow = exp(-d * d * 4.5);',
                   '  float core = smoothstep(1.0, 0.0, d);',
-                  '  gl_FragColor = vec4(vSC * (0.3 + 0.7 * glow), core * vA * 0.9);',
+                  '  float brightness = mix(0.9, 0.35, vType / 6.0);',
+                  '  vec3 col = vSC * (0.2 + 0.8 * glow) * brightness;',
+                  '  gl_FragColor = vec4(col, core * vA * 0.55);',
                   '}'
                 ].join('\n'),
                 vertexColors: true,
@@ -10751,12 +11277,35 @@
               var bgCv = document.createElement('canvas'); bgCv.width = 128; bgCv.height = 128;
               var bgCtx = bgCv.getContext('2d');
               var bgGrad = bgCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
-              bgGrad.addColorStop(0, 'rgba(255,220,150,0.5)'); bgGrad.addColorStop(0.3, 'rgba(255,180,100,0.2)');
+              bgGrad.addColorStop(0, 'rgba(255,220,150,0.35)'); bgGrad.addColorStop(0.3, 'rgba(255,180,100,0.12)');
               bgGrad.addColorStop(0.6, 'rgba(200,150,80,0.05)'); bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
               bgCtx.fillStyle = bgGrad; bgCtx.fillRect(0, 0, 128, 128);
               var bulgeTex = new THREE.CanvasTexture(bgCv);
               var bulgeGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulgeTex, transparent: true, blending: THREE.AdditiveBlending }));
               bulgeGlow.scale.set(0.35, 0.15, 1); bulgeGroup.add(bulgeGlow);
+
+              // ── Dust lanes (dark absorption bands between arms) ──
+              var dustGroup = new THREE.Group(); dustGroup.name = 'dust';
+              scene.add(dustGroup);
+              (function () {
+                var dustCount = 400;
+                var dustGeo = new THREE.BufferGeometry();
+                var dustPos = new Float32Array(dustCount * 3);
+                for (var di = 0; di < dustCount; di++) {
+                  var dArm = di % (gType.arms || 4);
+                  var dArmAngle = (dArm / (gType.arms || 4)) * Math.PI * 2;
+                  var dDist = Math.pow(Math.random(), 0.5) * 0.7;
+                  var dWind = gType.windTightness || 2.5;
+                  var dOffset = 0.15 + Math.random() * 0.1;
+                  var dAngle = dArmAngle + dDist * dWind + dOffset;
+                  dustPos[di * 3] = Math.cos(dAngle) * dDist + (Math.random() - 0.5) * 0.02;
+                  dustPos[di * 3 + 1] = (Math.random() - 0.5) * 0.01;
+                  dustPos[di * 3 + 2] = Math.sin(dAngle) * dDist + (Math.random() - 0.5) * 0.02;
+                }
+                dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+                var dustMat = new THREE.PointsMaterial({ color: 0x0a0a15, size: 0.015, transparent: true, opacity: 0.35 });
+                dustGroup.add(new THREE.Points(dustGeo, dustMat));
+              })();
 
               // Black hole + enhanced accretion disk
               bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.01, 24, 24), new THREE.MeshBasicMaterial({ color: 0x000000 })));
@@ -10814,7 +11363,7 @@
               });
 
               // Store layer references on canvas for toggle access
-              canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup };
+              canvasEl._layers = { bgStars: bgGroup, arms: armGroup, bulge: bulgeGroup, blackHole: bhGroup, nebulae: nebGroup, grid: gridGroup, labels: labelGroup, dust: dustGroup };
 
               // Function to regenerate stars with new count
               canvasEl._setStarCount = function (count) {
@@ -10831,7 +11380,7 @@
               if (THREE.EffectComposer && THREE.RenderPass && THREE.UnrealBloomPass) {
                 composer = new THREE.EffectComposer(renderer);
                 composer.addPass(new THREE.RenderPass(scene, camera));
-                var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 1.0, 0.4, 0.8);
+                var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 0.6, 0.3, 0.85);
                 composer.addPass(bloomPass);
                 canvasEl._bloomPass = bloomPass;
               }
@@ -10928,7 +11477,8 @@
                 var elapsed = (Date.now() - startT) * 0.001;
                 starShaderMat.uniforms.uTime.value = elapsed;
                 if (armGroup.visible) armGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
-                nebulaSprites.forEach(function (s, i) { s.material.opacity = Math.max(0.1, s.material.opacity + 0.002 * Math.sin(elapsed + i * 1.5)); });
+                if (dustGroup.visible) dustGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
+                nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.25 + 0.15 * Math.sin(elapsed * 0.5 + i * 1.8); });
                 if (bhGroup.visible) {
                   rings.forEach(function (r, ri) { r.rotation.z += 0.005 - ri * 0.001; r.material.opacity = ringColors[ri][3] * (0.8 + 0.2 * Math.sin(elapsed * 1.2 + ri)); });
                   bhGlow.material.opacity = 0.6 + 0.3 * Math.sin(elapsed * 0.8);
@@ -10983,338 +11533,608 @@
               { key: 'nebulae', icon: '\u2728', label: t('stem.galaxy.nebulae') },
               { key: 'bgStars', icon: '\uD83C\uDF0C', label: t('stem.galaxy.background') },
               { key: 'grid', icon: '\uD83D\uDCCF', label: t('stem.galaxy.scale_grid') },
-              { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels') }
+              { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels') },
+              { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: 'Dust Lanes' }
             ];
 
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
               renderTutorial('galaxy', _tutGalaxy),
               // ── Header ──
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
-                React.createElement("div", { className: "flex gap-1 ml-auto" },
-                  ["explore", "quiz"].map(function (m) {
+                React.createElement("div", { className: "flex gap-1 ml-auto bg-slate-100 rounded-lg p-0.5" },
+                  [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }].map(function (m) {
+                    var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
                     return React.createElement("button", {
-                      key: m, onClick: function () {
-                        if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); }
-                        else { upd("quizMode", false); }
-                      }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + ((m === 'quiz' ? d.quizMode : !d.quizMode) ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                    }, m);
+                      key: m.key, onClick: function () {
+                        if (m.key === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); }
+                        else { upd("quizMode", false); upd("simMode", m.key); }
+                      }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white')
+                    }, m.icon + ' ' + m.label);
                   })
                 )
               ),
 
-              // ── Galaxy type selector ──
-              React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-                Object.keys(GALAXY_TYPES).map(function (key) {
-                  var gt = GALAXY_TYPES[key];
-                  return React.createElement("button", {
-                    key: key,
-                    onClick: function () {
-                      upd("galaxyType", key);
-                      var cv = document.querySelector('[data-galaxy-canvas]');
-                      if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
-                    },
-                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200')
-                  }, gt.icon + " " + gt.label);
-                })
-              ),
-
-              // ── Galaxy type info card ──
-              React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-lg border border-indigo-100 text-[11px]" },
-                React.createElement("span", { className: "font-bold text-indigo-700" }, gType.icon + " " + gType.label + ": "),
-                React.createElement("span", { className: "text-slate-600" }, gType.desc),
-                React.createElement("span", { className: "text-indigo-400 ml-1" }, "(e.g. " + gType.example + ")"),
-              ),
-
-              // ── 3D Canvas ──
-              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
-                React.createElement("canvas", {
-                  "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
-                    var cv = e.target; if (!cv || !cv._galaxyOrbit) return;
-                    var orb = cv._galaxyOrbit, upCam = cv._galaxyUpdateCam;
-                    if (e.key === 'ArrowLeft') { e.preventDefault(); orb.theta -= 0.1; upCam(); }
-                    else if (e.key === 'ArrowRight') { e.preventDefault(); orb.theta += 0.1; upCam(); }
-                    else if (e.key === 'ArrowUp') { e.preventDefault(); orb.phi = Math.max(0.1, orb.phi - 0.1); upCam(); }
-                    else if (e.key === 'ArrowDown') { e.preventDefault(); orb.phi = Math.min(Math.PI - 0.1, orb.phi + 0.1); upCam(); }
-                    else if (e.key === '+' || e.key === '=') { e.preventDefault(); orb.r = Math.max(0.2, orb.r * 0.9); upCam(); }
-                    else if (e.key === '-') { e.preventDefault(); orb.r = Math.min(3, orb.r * 1.1); upCam(); }
-                    else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = 1.2; upCam(); }
-                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' }
-                }),
-                // Star type legend
-                React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
-                  React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
-                  STAR_TYPES.map(function (st) { return React.createElement("div", { key: st.id, className: "flex items-center gap-1 leading-tight" }, React.createElement("span", { style: { color: st.color, fontSize: '10px' } }, "\u2B50"), React.createElement("span", null, st.id + " (" + st.temp + "K)")); })
-                ),
-                // Scale info overlay
-                layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
-                  React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
-                  SCALE_INFO.map(function (s) { return React.createElement("div", { key: s.label, className: "flex justify-between gap-3" }, React.createElement("span", { className: "text-white/50" }, s.label), React.createElement("span", { className: "font-bold" }, s.value)); })
-                )
-              ),
-
-              // ── Layer toggles ──
-              React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-                LAYER_TOGGLES.map(function (lt) {
-                  var isOn = layers[lt.key] !== false;
-                  return React.createElement("button", {
-                    key: lt.key,
-                    onClick: function () { toggleLayer(lt.key); },
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
-                  }, lt.icon + " " + lt.label);
-                })
-              ),
-
-              // ── Star density slider ──
-              React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
-                React.createElement("input", {
-                  type: "range", min: 1000, max: 10000, step: 1000, value: starCount,
-                  onChange: function (e) {
-                    var val = parseInt(e.target.value);
-                    upd("starCount", val);
-                    var cv = document.querySelector('[data-galaxy-canvas]');
-                    if (cv && cv._setStarCount) cv._setStarCount(val);
-                  },
-                  className: "flex-1 h-1.5 accent-indigo-500"
-                }),
-                React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
-              ),
-
-              // ── Cosmic Age Time-Lapse ──
-              React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-4" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Time-Lapse"),
-                  React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, cosmicAge.toFixed(1) + " Gyr")
-                ),
-                React.createElement("div", { className: "flex items-center gap-2" },
-                  React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "Big Bang"),
-                  React.createElement("input", {
-                    type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
-                    onChange: function (e) {
-                      var val = parseFloat(e.target.value);
-                      upd("cosmicAge", val);
-                      var cv = document.querySelector('[data-galaxy-canvas]');
-                      if (cv && cv._updateAge) cv._updateAge(val);
-                    },
-                    className: "flex-1 h-1.5 accent-violet-500"
-                  }),
-                  React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "14 Gyr")
-                ),
-                React.createElement("div", { className: "flex gap-1.5 mt-2" },
-                  React.createElement("button", {
-                    onClick: function () {
-                      if (window._galaxyTimeLapse) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
-                      upd("isPlaying", true);
-                      var age = cosmicAge;
-                      window._galaxyTimeLapse = setInterval(function () {
-                        age += 0.1;
-                        if (age > 14) { age = 0.1; }
-                        upd("cosmicAge", parseFloat(age.toFixed(1)));
-                        var cv = document.querySelector('[data-galaxy-canvas]');
-                        if (cv && cv._updateAge) cv._updateAge(age);
-                        if (Math.random() < 0.15 && cv && cv._triggerSupernova) cv._triggerSupernova();
-                      }, 150);
-                    },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
-                  }, d.isPlaying ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
-                  React.createElement("button", {
-                    onClick: function () {
-                      var cv = document.querySelector('[data-galaxy-canvas]');
-                      if (cv && cv._triggerSupernova) cv._triggerSupernova();
-                    },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all"
-                  }, "\uD83D\uDCA5 Supernova!"),
-                  React.createElement("button", {
-                    onClick: function () { upd("showLifecycle", !showLifecycle); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (showLifecycle ? "bg-indigo-600 text-white" : "bg-white text-indigo-600 border border-indigo-200") + " transition-all"
-                  }, "\u2B50 Star Lifecycle")
-                ),
-                // Milestone labels
-                React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
-                  [
-                    { age: 0.4, label: t('stem.galaxy.first_stars') },
-                    { age: 1, label: t('stem.galaxy.galaxies_form') },
-                    { age: 4.6, label: t('stem.galaxy.milky_way') },
-                    { age: 9.2, label: t('stem.galaxy.sun_born') },
-                    { age: 13.8, label: "Now" }
-                  ].map(function (m) {
-                    return React.createElement("span", {
-                      key: m.age,
-                      className: "cursor-pointer hover:text-violet-600" + (Math.abs(cosmicAge - m.age) < 0.3 ? " font-bold text-violet-700" : ""),
+              // ── Galaxy Simulation Mode ──
+              !d.quizMode && simMode === 'galaxy' && React.createElement("div", null,
+                // ── Galaxy type selector ──
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+                  Object.keys(GALAXY_TYPES).map(function (key) {
+                    var gt = GALAXY_TYPES[key];
+                    return React.createElement("button", {
+                      key: key,
                       onClick: function () {
-                        upd("cosmicAge", m.age);
+                        upd("galaxyType", key);
                         var cv = document.querySelector('[data-galaxy-canvas]');
-                        if (cv && cv._updateAge) cv._updateAge(m.age);
-                      }
-                    }, m.label);
+                        if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
+                      },
+                      className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200')
+                    }, gt.icon + " " + gt.label);
                   })
                 ),
-                // ── Epoch narration card ──
-                (function () {
-                  var epoch = getEpochNarration(cosmicAge);
-                  if (!epoch) return null;
-                  return React.createElement("div", { className: "mt-2 flex items-start gap-2 px-3 py-2 bg-violet-100/60 rounded-lg border border-violet-200 animate-in fade-in duration-300" },
-                    React.createElement("span", { className: "text-lg flex-shrink-0" }, epoch.emoji),
-                    React.createElement("div", null,
-                      React.createElement("p", { className: "text-[11px] font-bold text-violet-800" }, epoch.title + " (" + epoch.age + " Gyr)"),
-                      React.createElement("p", { className: "text-[10px] text-violet-600 leading-relaxed" }, epoch.desc)
-                    )
-                  );
-                })()
-              ),
 
-              // ── Stellar Lifecycle Panel ──
-              showLifecycle && React.createElement("div", { className: "mt-3 bg-slate-900 rounded-xl border-2 border-indigo-400 p-4 animate-in fade-in" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "\u2B50 Stellar Lifecycle"),
-                  React.createElement("button", { onClick: function () { upd("showLifecycle", false); }, className: "ml-auto text-xs text-slate-400 hover:text-white" }, "\u2715 Close")
+                // ── Galaxy type info card ──
+                React.createElement("div", { className: "mb-3 px-3 py-2 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-lg border border-indigo-100 text-[11px]" },
+                  React.createElement("span", { className: "font-bold text-indigo-700" }, gType.icon + " " + gType.label + ": "),
+                  React.createElement("span", { className: "text-slate-600" }, gType.desc),
+                  React.createElement("span", { className: "text-indigo-400 ml-1" }, "(e.g. " + gType.example + ")"),
                 ),
-                // Mass slider
-                React.createElement("div", { className: "flex items-center gap-2 mb-3" },
-                  React.createElement("span", { className: "text-[10px] text-slate-400 whitespace-nowrap" }, "\u2696 Mass:"),
-                  React.createElement("input", {
-                    type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass, "aria-label": "Star mass in solar masses",
-                    onChange: function (e) { upd("lifecycleMass", parseFloat(e.target.value)); },
-                    className: "flex-1 h-1.5 accent-amber-400"
+
+                // ── 3D Canvas ──
+                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
+                  React.createElement("canvas", {
+                    "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) return; el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
+                      var cv = e.target; if (!cv || !cv._galaxyOrbit) return;
+                      var orb = cv._galaxyOrbit, upCam = cv._galaxyUpdateCam;
+                      if (e.key === 'ArrowLeft') { e.preventDefault(); orb.theta -= 0.1; upCam(); }
+                      else if (e.key === 'ArrowRight') { e.preventDefault(); orb.theta += 0.1; upCam(); }
+                      else if (e.key === 'ArrowUp') { e.preventDefault(); orb.phi = Math.max(0.1, orb.phi - 0.1); upCam(); }
+                      else if (e.key === 'ArrowDown') { e.preventDefault(); orb.phi = Math.min(Math.PI - 0.1, orb.phi + 0.1); upCam(); }
+                      else if (e.key === '+' || e.key === '=') { e.preventDefault(); orb.r = Math.max(0.2, orb.r * 0.9); upCam(); }
+                      else if (e.key === '-') { e.preventDefault(); orb.r = Math.min(3, orb.r * 1.1); upCam(); }
+                      else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = 1.2; upCam(); }
+                    }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' }
                   }),
-                  React.createElement("span", { className: "text-xs font-bold text-amber-400" }, lifecycleMass + " M\u2609")
-                ),
-                // Mass category
-                React.createElement("p", { className: "text-[10px] text-slate-500 mb-3 italic" },
-                  lifecycleMass < 0.5 ? "Brown dwarf \u2014 too small for hydrogen fusion." :
-                    lifecycleMass < 8 ? "\uD83C\uDF1F Low-mass star (like our Sun). Will become a white dwarf." :
-                      lifecycleMass < 25 ? "\uD83D\uDCA5 Massive star. Will explode as a supernova \u2192 neutron star." :
-                        "\uD83D\uDD73\uFE0F Hypermassive star. Supernova \u2192 black hole formation!"
-                ),
-                // Lifecycle stages
-                React.createElement("div", { className: "space-y-1.5" },
-                  LIFECYCLE.stages.map(function (s, idx) {
-                    return React.createElement("div", { key: s.name, className: "flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 border border-slate-700" },
-                      React.createElement("span", { className: "text-lg" }, s.emoji),
-                      React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
-                        React.createElement("p", { className: "text-[9px] text-slate-400" }, s.desc)
-                      ),
-                      idx < LIFECYCLE.stages.length - 1 && React.createElement("span", { className: "text-slate-600 text-xs" }, "\u2192")
-                    );
-                  }),
-                  // Branch based on mass
-                  React.createElement("div", { className: "flex items-center gap-1 ml-6 mt-1" },
-                    React.createElement("span", { className: "text-slate-600 text-xs" }, lifecycleMass < 8 ? "\u2193 Gentle death" : "\u2193 Violent death")
+                  // Star type legend
+                  React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+                    React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
+                    STAR_TYPES.map(function (st) { return React.createElement("div", { key: st.id, className: "flex items-center gap-1 leading-tight" }, React.createElement("span", { style: { color: st.color, fontSize: '10px' } }, "\u2B50"), React.createElement("span", null, st.id + " (" + st.temp + "K)")); })
                   ),
-                  (lifecycleMass < 8 ? LIFECYCLE.lowMass : LIFECYCLE.highMass.filter(function (s) {
-                    if (s.minMass && lifecycleMass < s.minMass) return false;
-                    if (s.maxMass && lifecycleMass > s.maxMass) return false;
-                    return true;
-                  })).map(function (s) {
-                    return React.createElement("div", { key: s.name, className: "flex items-center gap-2 p-2 rounded-lg border ml-4", style: { borderColor: s.color + '44', background: s.color + '11' } },
-                      React.createElement("span", { className: "text-lg" }, s.emoji),
-                      React.createElement("div", { className: "flex-1" },
-                        React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
-                        React.createElement("p", { className: "text-[9px] text-slate-400" }, s.desc)
+                  // Scale info overlay
+                  layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[9px] text-white/80" },
+                    React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
+                    SCALE_INFO.map(function (s) { return React.createElement("div", { key: s.label, className: "flex justify-between gap-3" }, React.createElement("span", { className: "text-white/50" }, s.label), React.createElement("span", { className: "font-bold" }, s.value)); })
+                  )
+                ),
+
+                // ── Layer toggles ──
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+                  LAYER_TOGGLES.map(function (lt) {
+                    var isOn = layers[lt.key] !== false;
+                    return React.createElement("button", {
+                      key: lt.key,
+                      onClick: function () { toggleLayer(lt.key); },
+                      className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400')
+                    }, lt.icon + " " + lt.label);
+                  })
+                ),
+
+                // ── Star density slider ──
+                React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
+                  React.createElement("input", {
+                    type: "range", min: 1000, max: 10000, step: 1000, value: starCount,
+                    onChange: function (e) {
+                      var val = parseInt(e.target.value);
+                      upd("starCount", val);
+                      var cv = document.querySelector('[data-galaxy-canvas]');
+                      if (cv && cv._setStarCount) cv._setStarCount(val);
+                    },
+                    className: "flex-1 h-1.5 accent-indigo-500"
+                  }),
+                  React.createElement("span", { className: "text-[10px] text-slate-400 w-12 text-right" }, starCount >= 8000 ? "Dense" : starCount >= 4000 ? "Normal" : "Sparse")
+                ),
+
+                // ── Cosmic Age Time-Lapse ──
+                React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-4" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Time-Lapse"),
+                    React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, cosmicAge.toFixed(1) + " Gyr")
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "Big Bang"),
+                    React.createElement("input", {
+                      type: "range", min: 0.1, max: 14, step: 0.1, value: cosmicAge,
+                      onChange: function (e) {
+                        var val = parseFloat(e.target.value);
+                        upd("cosmicAge", val);
+                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        if (cv && cv._updateAge) cv._updateAge(val);
+                      },
+                      className: "flex-1 h-1.5 accent-violet-500"
+                    }),
+                    React.createElement("span", { className: "text-[9px] text-violet-400 whitespace-nowrap" }, "14 Gyr")
+                  ),
+                  React.createElement("div", { className: "flex gap-1.5 mt-2" },
+                    React.createElement("button", {
+                      onClick: function () {
+                        if (window._galaxyTimeLapse) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
+                        upd("isPlaying", true);
+                        var age = cosmicAge;
+                        window._galaxyTimeLapse = setInterval(function () {
+                          age += 0.1;
+                          if (age > 14) { age = 0.1; }
+                          upd("cosmicAge", parseFloat(age.toFixed(1)));
+                          var cv = document.querySelector('[data-galaxy-canvas]');
+                          if (cv && cv._updateAge) cv._updateAge(age);
+                          if (Math.random() < 0.15 && cv && cv._triggerSupernova) cv._triggerSupernova();
+                        }, 150);
+                      },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.isPlaying ? "bg-red-500 text-white" : "bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
+                    }, d.isPlaying ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
+                    React.createElement("button", {
+                      onClick: function () {
+                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        if (cv && cv._triggerSupernova) cv._triggerSupernova();
+                      },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                    }, "\uD83D\uDCA5 Supernova!"),
+                    React.createElement("button", {
+                      onClick: function () { upd("quizMode", false); upd("simMode", "star"); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 border border-indigo-200 transition-all hover:bg-indigo-50"
+                    }, "\u2B50 Star Life \u2192")
+                  ),
+                  // Milestone labels
+                  React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
+                    [
+                      { age: 0.4, label: t('stem.galaxy.first_stars') },
+                      { age: 1, label: t('stem.galaxy.galaxies_form') },
+                      { age: 4.6, label: t('stem.galaxy.milky_way') },
+                      { age: 9.2, label: t('stem.galaxy.sun_born') },
+                      { age: 13.8, label: "Now" }
+                    ].map(function (m) {
+                      return React.createElement("span", {
+                        key: m.age,
+                        className: "cursor-pointer hover:text-violet-600" + (Math.abs(cosmicAge - m.age) < 0.3 ? " font-bold text-violet-700" : ""),
+                        onClick: function () {
+                          upd("cosmicAge", m.age);
+                          var cv = document.querySelector('[data-galaxy-canvas]');
+                          if (cv && cv._updateAge) cv._updateAge(m.age);
+                        }
+                      }, m.label);
+                    })
+                  ),
+                  // ── Epoch narration card ──
+                  (function () {
+                    var epoch = getEpochNarration(cosmicAge);
+                    if (!epoch) return null;
+                    return React.createElement("div", { className: "mt-2 flex items-start gap-2 px-3 py-2 bg-violet-100/60 rounded-lg border border-violet-200 animate-in fade-in duration-300" },
+                      React.createElement("span", { className: "text-lg flex-shrink-0" }, epoch.emoji),
+                      React.createElement("div", null,
+                        React.createElement("p", { className: "text-[11px] font-bold text-violet-800" }, epoch.title + " (" + epoch.age + " Gyr)"),
+                        React.createElement("p", { className: "text-[10px] text-violet-600 leading-relaxed" }, epoch.desc)
                       )
                     );
+                  })()
+                ),
+
+                // ── Warp points ──
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+                  WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+                ),
+
+                // ── Warp info ──
+                d.warpInfo && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-[11px] text-indigo-700" },
+                  React.createElement("span", { className: "font-bold" }, "\uD83D\uDCCD "),
+                  d.warpInfo
+                ),
+
+                // ── Star info card ──
+                selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
+                  React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
+                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
+                    [
+                      { label: t('stem.galaxy.temperature'), val: selStar.temp + ' K' },
+                      { label: '% of Stars', val: selStar.pct + '%' },
+                      { label: t('stem.galaxy.luminosity'), val: selStar.luminosity },
+                      { label: t('stem.galaxy.mass'), val: selStar.mass || '?' },
+                      { label: t('stem.galaxy.lifetime'), val: selStar.lifetime || '?' },
+                      { label: t('stem.galaxy.example'), val: selStar.example }
+                    ].map(function (item) {
+                      return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
+                        React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
+                        React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
+                      );
+                    })
+                  ),
+                  // Why It Matters
+                  selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
+                    React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
+                    React.createElement("p", { className: "text-[10px] text-amber-800 leading-relaxed" }, selStar.whyItMatters)
+                  ),
+                  // Scale comparison
+                  React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
+                    React.createElement("p", { className: "text-[9px] text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({ 'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller' }[selStar.id] || 'similar in size') + ".")
+                  )
+                ),
+
+                // ── Nebula info card ──
+                selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
+                  React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
+                  React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
+                    React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || t('stem.galaxy.nebula')),
+                    selNeb.dist && React.createElement("span", { className: "text-slate-500" }, "\uD83D\uDCCD " + selNeb.dist)
+                  ),
+                  React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
+                ),
+
+                // ── Quiz mode ──
+                d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
+                  React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                    React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
+                    React.createElement("div", { className: "flex items-center gap-2 text-xs" },
+                      React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+                      React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                    )
+                  ),
+                  React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    quizQ.options.map(function (opt) {
+                      return React.createElement("button", {
+                        key: opt, disabled: !!d.quizFeedback,
+                        onClick: function () {
+                          var correct = opt === quizQ.a;
+                          upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
+                          if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                          else { upd("quizStreak", 0); }
+                        }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                      }, opt);
+                    })
+                  ),
+                  d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
+                    d.quizFeedback.msg,
+                    React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % QUIZ_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
+                  )
+                ),
+
+                // ── Snapshot button ──
+                React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
+                  React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+                )
+              ), // end Galaxy Simulation mode wrapper
+
+              // ══════════════════════════════════════════════
+              // ── Star Lifespan Simulation Mode ──
+              // ══════════════════════════════════════════════
+              !d.quizMode && simMode === 'star' && React.createElement("div", { className: "space-y-4 animate-in fade-in duration-300" },
+
+                // ── Animated Star Canvas ──
+                React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#020210]", style: { height: '200px' } },
+                  React.createElement("canvas", {
+                    "data-star-life-canvas": "true",
+                    ref: function (cvEl) {
+                      if (!cvEl || cvEl._starLifeInit) return;
+                      cvEl._starLifeInit = true;
+                      var ctx = cvEl.getContext('2d');
+                      var W = cvEl.offsetWidth, H = cvEl.offsetHeight;
+                      cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      var tick = 0;
+                      function drawStar() {
+                        tick++;
+                        ctx.clearRect(0, 0, W, H);
+                        // Starfield background
+                        ctx.fillStyle = '#020210';
+                        ctx.fillRect(0, 0, W, H);
+                        for (var si = 0; si < 80; si++) {
+                          var sx = ((si * 137 + 29) % W);
+                          var sy = ((si * 211 + 17) % H);
+                          var sb = 0.2 + 0.3 * Math.sin(tick * 0.02 + si);
+                          ctx.globalAlpha = sb;
+                          ctx.fillStyle = '#fff';
+                          ctx.fillRect(sx, sy, 1, 1);
+                        }
+                        ctx.globalAlpha = 1;
+
+                        var mass = lifecycleMass;
+                        var cx = W * 0.5, cy = H * 0.5;
+                        var baseR = Math.max(12, Math.min(60, Math.pow(mass, 0.6) * 15));
+                        var pulse = 1 + 0.03 * Math.sin(tick * 0.04);
+                        var r = baseR * pulse;
+
+                        // Determine star color based on mass
+                        var coreColor, glowColor, coronaColor;
+                        if (mass < 0.5) { coreColor = '#ffaa44'; glowColor = '#ff7722'; coronaColor = '#ff550033'; }
+                        else if (mass < 0.8) { coreColor = '#ffcc6f'; glowColor = '#ff9944'; coronaColor = '#ff884422'; }
+                        else if (mass < 1.04) { coreColor = '#fff8e8'; glowColor = '#ffe4a8'; coronaColor = '#ffdd6622'; }
+                        else if (mass < 1.4) { coreColor = '#fff'; glowColor = '#f0f0ff'; coronaColor = '#dde4ff22'; }
+                        else if (mass < 2.1) { coreColor = '#e8eeff'; glowColor = '#cad7ff'; coronaColor = '#aabbff22'; }
+                        else if (mass < 16) { coreColor = '#d0ddff'; glowColor = '#aabfff'; coronaColor = '#8899ff33'; }
+                        else { coreColor = '#c0ccff'; glowColor = '#9bb0ff'; coronaColor = '#7788ff44'; }
+
+                        // Corona (outer glow)
+                        var corona = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 3.5);
+                        corona.addColorStop(0, coronaColor);
+                        corona.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, r * 3.5, 0, Math.PI * 2);
+                        ctx.fillStyle = corona; ctx.fill();
+
+                        // Main glow
+                        var glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.8);
+                        glow.addColorStop(0, glowColor);
+                        glow.addColorStop(0.4, glowColor + '88');
+                        glow.addColorStop(1, 'transparent');
+                        ctx.beginPath(); ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
+                        ctx.fillStyle = glow; ctx.fill();
+
+                        // Star body
+                        var body = ctx.createRadialGradient(cx - r * 0.15, cy - r * 0.15, r * 0.1, cx, cy, r);
+                        body.addColorStop(0, '#ffffff');
+                        body.addColorStop(0.3, coreColor);
+                        body.addColorStop(1, glowColor);
+                        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.fillStyle = body; ctx.fill();
+
+                        // Surface detail (subtle noise)
+                        for (var sp = 0; sp < 6; sp++) {
+                          var spAngle = (sp / 6) * Math.PI * 2 + tick * 0.005;
+                          var spR = r * 0.6;
+                          var spx = cx + Math.cos(spAngle) * spR;
+                          var spy = cy + Math.sin(spAngle) * spR;
+                          var spotG = ctx.createRadialGradient(spx, spy, 0, spx, spy, r * 0.3);
+                          spotG.addColorStop(0, 'rgba(255,255,255,0.08)');
+                          spotG.addColorStop(1, 'transparent');
+                          ctx.beginPath(); ctx.arc(spx, spy, r * 0.3, 0, Math.PI * 2);
+                          ctx.fillStyle = spotG; ctx.fill();
+                        }
+
+                        // Label
+                        ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(mass + ' Solar Masses', cx, H - 12);
+
+                        // Classification label
+                        var cls = mass < 0.45 ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
+                        ctx.font = '9px Inter, system-ui, sans-serif';
+                        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                        ctx.fillText(cls, cx, H - 2);
+
+                        cvEl._starLifeAnim = requestAnimationFrame(drawStar);
+                      };
+                      drawStar();
+                      var ro = new ResizeObserver(function () {
+                        W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                        cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      });
+                      ro.observe(cvEl);
+                    },
+                    style: { width: '100%', height: '100%' }
                   })
                 ),
-                // Fun facts
-                React.createElement("div", { className: "mt-3 p-2 bg-indigo-900/50 rounded-lg border border-indigo-700" },
-                  React.createElement("p", { className: "text-[9px] text-indigo-300" },
-                    lifecycleMass < 0.5 ? "\uD83D\uDCA1 Brown dwarfs are sometimes called 'failed stars.' They glow faintly from gravitational contraction." :
-                      lifecycleMass < 2 ? "\uD83D\uDCA1 Stars like our Sun live ~10 billion years. Our Sun is about halfway through its life!" :
-                        lifecycleMass < 8 ? "\uD83D\uDCA1 Larger low-mass stars burn hotter and die sooner. A 2 M\u2609 star lives only ~1.5 billion years." :
-                          lifecycleMass < 25 ? "\uD83D\uDCA1 Neutron stars are so dense that a sugar-cube-sized piece weighs about 1 billion tons!" :
-                            "\uD83D\uDCA1 Stellar black holes form from stars >25 M\u2609. The Milky Way alone has ~100 million of them!"
+
+                // ── Mass Selector Hero ──
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl border-2 border-indigo-400/40 p-5 shadow-xl" },
+                  React.createElement("div", { className: "flex items-center gap-3 mb-4" },
+                    React.createElement("div", { className: "w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xl shadow-lg" }, "\u2B50"),
+                    React.createElement("div", null,
+                      React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
+                      React.createElement("p", { className: "text-[10px] text-slate-400" }, "Adjust mass to explore how different stars live and die")
+                    ),
+                    React.createElement("div", { className: "ml-auto px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/40" },
+                      React.createElement("span", { className: "text-sm font-black text-amber-300" }, lifecycleMass + " M\u2609")
+                    )
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                    React.createElement("span", { className: "text-[10px] text-amber-300/70 whitespace-nowrap w-8" }, "0.5"),
+                    React.createElement("input", {
+                      type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass, "aria-label": "Star mass in solar masses",
+                      onChange: function (e) { upd("lifecycleMass", parseFloat(e.target.value)); },
+                      className: "flex-1 h-2 accent-amber-400 cursor-pointer"
+                    }),
+                    React.createElement("span", { className: "text-[10px] text-amber-300/70 whitespace-nowrap w-8 text-right" }, "50")
+                  ),
+                  // Mass category badge
+                  React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                    React.createElement("span", {
+                      className: "px-3 py-1 rounded-full text-[10px] font-bold " +
+                        (lifecycleMass < 0.5 ? "bg-stone-800 text-stone-300 border border-stone-600" :
+                          lifecycleMass < 0.8 ? "bg-red-900/60 text-red-300 border border-red-700/50" :
+                            lifecycleMass < 2 ? "bg-amber-900/60 text-amber-300 border border-amber-600/50" :
+                              lifecycleMass < 8 ? "bg-blue-900/60 text-blue-300 border border-blue-600/50" :
+                                lifecycleMass < 25 ? "bg-violet-900/60 text-violet-300 border border-violet-600/50" :
+                                  "bg-fuchsia-900/60 text-fuchsia-300 border border-fuchsia-600/50")
+                    },
+                      lifecycleMass < 0.5 ? "\uD83E\uDEA8 Brown Dwarf" :
+                        lifecycleMass < 0.8 ? "\uD83D\uDD34 Red Dwarf (M-type)" :
+                          lifecycleMass < 2 ? "\u2600\uFE0F Sun-like (G/K-type)" :
+                            lifecycleMass < 8 ? "\uD83D\uDD35 Hot Star (A/B-type)" :
+                              lifecycleMass < 25 ? "\uD83D\uDCA5 Massive Star" :
+                                "\uD83D\uDD73\uFE0F Hypermassive Star"
+                    ),
+                    React.createElement("span", { className: "text-[9px] text-slate-500 italic" },
+                      lifecycleMass < 0.5 ? "Too small for hydrogen fusion" :
+                        lifecycleMass < 0.8 ? "Lives 50\u2013100+ billion years" :
+                          lifecycleMass < 2 ? "Lives ~10 billion years" :
+                            lifecycleMass < 8 ? "Lives 1\u20134 billion years" :
+                              lifecycleMass < 25 ? "Lives 8\u201330 million years" :
+                                "Lives < 5 million years"
+                    )
                   )
-                )
-              ),
+                ),
 
-              // ── Warp points ──
-              React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-                WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
-              ),
+                // ── Lifecycle Flowchart ──
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-indigo-400/30 p-5 shadow-lg" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+                    React.createElement("h4", { className: "text-sm font-bold text-white" }, "\u2728 Stellar Lifecycle Journey"),
+                    React.createElement("span", { className: "ml-auto text-[9px] text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full border border-indigo-700/50" },
+                      lifecycleMass < 8 ? "\u2193 Gentle path" : "\u2193 Violent path")
+                  ),
+                  // Common stages
+                  React.createElement("div", { className: "space-y-2" },
+                    LIFECYCLE.stages.map(function (s, idx) {
+                      return React.createElement("div", { key: s.name },
+                        React.createElement("div", { className: "flex items-center gap-3 p-3 rounded-xl border transition-all hover:scale-[1.01]", style: { borderColor: s.color + '55', background: s.color + '15' } },
+                          React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
+                          React.createElement("div", { className: "flex-1 min-w-0" },
+                            React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
+                            React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" }, s.desc)
+                          ),
+                          React.createElement("span", { className: "text-[9px] text-slate-600 flex-shrink-0" },
+                            idx === 0 ? "" :
+                              idx === 1 ? "~100K yr" :
+                                idx === 2 ? (lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
+                                  (lifecycleMass < 2 ? "~1 Gyr" : "~100 Myr"))
+                        ),
+                        idx < LIFECYCLE.stages.length - 1 ? React.createElement("div", { className: "flex justify-center py-1" },
+                          React.createElement("div", { className: "w-0.5 h-4 rounded-full", style: { background: 'linear-gradient(to bottom, ' + s.color + '60, ' + LIFECYCLE.stages[idx + 1].color + '60)' } })
+                        ) : null
+                      );
+                    })
+                  ),
 
-              // ── Warp info ──
-              d.warpInfo && React.createElement("div", { className: "mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-[11px] text-indigo-700" },
-                React.createElement("span", { className: "font-bold" }, "\uD83D\uDCCD "),
-                d.warpInfo
-              ),
+                  // Branch indicator
+                  React.createElement("div", { className: "flex justify-center py-2" },
+                    React.createElement("div", { className: "flex items-center gap-2 px-4 py-1.5 rounded-full border", style: { borderColor: lifecycleMass < 8 ? '#818cf855' : '#f59e0b55', background: lifecycleMass < 8 ? '#818cf815' : '#f59e0b15' } },
+                      React.createElement("span", { className: "text-sm" }, lifecycleMass < 8 ? "\u2B07\uFE0F" : "\uD83D\uDCA5"),
+                      React.createElement("span", { className: "text-[10px] font-bold", style: { color: lifecycleMass < 8 ? '#a5b4fc' : '#fbbf24' } },
+                        lifecycleMass < 8 ? "Gentle death — outer layers drift away" : "Violent death — core collapse!")
+                    )
+                  ),
 
-              // ── Star info card ──
-              selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
-                React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
-                React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
-                React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
-                  [
-                    { label: t('stem.galaxy.temperature'), val: selStar.temp + ' K' },
-                    { label: '% of Stars', val: selStar.pct + '%' },
-                    { label: t('stem.galaxy.luminosity'), val: selStar.luminosity },
-                    { label: t('stem.galaxy.mass'), val: selStar.mass || '?' },
-                    { label: t('stem.galaxy.lifetime'), val: selStar.lifetime || '?' },
-                    { label: t('stem.galaxy.example'), val: selStar.example }
-                  ].map(function (item) {
-                    return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
-                      React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
-                      React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
+                  // End-state stages
+                  React.createElement("div", { className: "space-y-2" },
+                    (lifecycleMass < 8 ? LIFECYCLE.lowMass : LIFECYCLE.highMass.filter(function (s) {
+                      if (s.minMass && lifecycleMass < s.minMass) return false;
+                      if (s.maxMass && lifecycleMass > s.maxMass) return false;
+                      return true;
+                    })).map(function (s, idx) {
+                      return React.createElement("div", { key: s.name, className: "flex items-center gap-3 p-3 rounded-xl border ml-6 transition-all hover:scale-[1.01]", style: { borderColor: s.color + '55', background: s.color + '15' } },
+                        React.createElement("div", { className: "w-10 h-10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("p", { className: "text-xs font-bold", style: { color: s.color } }, s.name),
+                          React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" }, s.desc)
+                        )
+                      );
+                    })
+                  )
+                ),
+
+                // ── OBAFGKM Star Classification Reference ──
+                React.createElement("div", { className: "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm" },
+                  React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
+                    React.createElement("span", null, "\uD83C\uDF08"),
+                    "Harvard Spectral Classification (OBAFGKM)"
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-7 gap-1" },
+                    STAR_TYPES.map(function (st) {
+                      var isMatch = (lifecycleMass < 0.45 && st.id === 'M') ||
+                        (lifecycleMass >= 0.45 && lifecycleMass < 0.8 && st.id === 'K') ||
+                        (lifecycleMass >= 0.8 && lifecycleMass < 1.04 && st.id === 'G') ||
+                        (lifecycleMass >= 1.04 && lifecycleMass < 1.4 && st.id === 'F') ||
+                        (lifecycleMass >= 1.4 && lifecycleMass < 2.1 && st.id === 'A') ||
+                        (lifecycleMass >= 2.1 && lifecycleMass < 16 && st.id === 'B') ||
+                        (lifecycleMass >= 16 && st.id === 'O');
+                      return React.createElement("div", {
+                        key: st.id,
+                        className: "text-center p-2 rounded-xl border-2 transition-all cursor-pointer hover:scale-105 " +
+                          (isMatch ? "border-indigo-400 shadow-md shadow-indigo-100 scale-105" : "border-transparent hover:border-slate-200"),
+                        style: isMatch ? { background: st.color + '20' } : {},
+                        onClick: function () { upd("selectedStar", st.id); upd("simMode", "galaxy"); upd("quizMode", false); }
+                      },
+                        React.createElement("div", { className: "text-2xl mb-1", style: { color: st.color } }, "\u2B50"),
+                        React.createElement("p", { className: "text-xs font-black", style: { color: st.color } }, st.id),
+                        React.createElement("p", { className: "text-[8px] text-slate-500 leading-tight" }, st.temp + "K"),
+                        isMatch ? React.createElement("div", { className: "mt-1 w-1.5 h-1.5 rounded-full bg-indigo-500 mx-auto animate-pulse" }) : null
+                      );
+                    })
+                  ),
+                  // Selected type info
+                  (function () {
+                    var matchType = lifecycleMass < 0.45 ? 'M' : lifecycleMass < 0.8 ? 'K' : lifecycleMass < 1.04 ? 'G' : lifecycleMass < 1.4 ? 'F' : lifecycleMass < 2.1 ? 'A' : lifecycleMass < 16 ? 'B' : 'O';
+                    var st = STAR_TYPES.find(function (s) { return s.id === matchType; });
+                    if (!st) return null;
+                    return React.createElement("div", { className: "mt-3 p-3 rounded-xl border", style: { borderColor: st.color + '40', background: st.color + '08' } },
+                      React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+                        React.createElement("span", { className: "text-lg", style: { color: st.color } }, "\u2B50"),
+                        React.createElement("span", { className: "text-xs font-bold", style: { color: st.color } }, st.label + " (" + st.example + ")")
+                      ),
+                      React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed mb-2" }, st.desc),
+                      React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[9px]" },
+                        [{ l: "Luminosity", v: st.luminosity }, { l: "Mass Range", v: st.mass || '?' }, { l: "Lifetime", v: st.lifetime || '?' }].map(function (item) {
+                          return React.createElement("div", { key: item.l, className: "bg-white rounded-lg p-1.5 text-center border border-slate-100" },
+                            React.createElement("div", { className: "text-slate-400 font-bold" }, item.l),
+                            React.createElement("div", { className: "font-bold", style: { color: st.color } }, item.v)
+                          );
+                        })
+                      ),
+                      st.whyItMatters ? React.createElement("div", { className: "mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200" },
+                        React.createElement("p", { className: "text-[9px] text-amber-700" }, "\uD83D\uDCA1 " + st.whyItMatters)
+                      ) : null
                     );
-                  })
+                  })()
                 ),
-                // Why It Matters
-                selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
-                  React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
-                  React.createElement("p", { className: "text-[10px] text-amber-800 leading-relaxed" }, selStar.whyItMatters)
-                ),
-                // Scale comparison
-                React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
-                  React.createElement("p", { className: "text-[9px] text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({ 'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller' }[selStar.id] || 'similar in size') + ".")
-                )
-              ),
 
-              // ── Nebula info card ──
-              selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
-                React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
-                React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
-                  React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || t('stem.galaxy.nebula')),
-                  selNeb.dist && React.createElement("span", { className: "text-slate-500" }, "\uD83D\uDCCD " + selNeb.dist)
-                ),
-                React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
-              ),
-
-              // ── Quiz mode ──
-              d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 animate-in fade-in" },
-                React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                  React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + QUIZ_BANK.length),
-                  React.createElement("div", { className: "flex items-center gap-2 text-xs" },
-                    React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
-                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                // ── Fun Facts ──
+                React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 rounded-2xl border border-indigo-200 p-4" },
+                  React.createElement("h4", { className: "text-sm font-bold text-indigo-700 mb-2 flex items-center gap-2" },
+                    React.createElement("span", null, "\uD83D\uDCA1"), "Did You Know?"
+                  ),
+                  React.createElement("p", { className: "text-[11px] text-indigo-800 leading-relaxed" },
+                    lifecycleMass < 0.5 ? "Brown dwarfs are sometimes called 'failed stars.' They glow faintly from gravitational contraction, but never achieve hydrogen fusion. Jupiter is almost big enough to be one!" :
+                      lifecycleMass < 2 ? "Stars like our Sun live ~10 billion years. Our Sun is about halfway through its life! When it dies, it will expand to engulf Mercury, Venus, and possibly Earth before shedding its outer layers into a beautiful planetary nebula." :
+                        lifecycleMass < 8 ? "Larger low-mass stars burn hotter and die sooner. A 2 M\u2609 star lives only ~1.5 billion years. The relationship between mass and lifetime follows an inverse cube law: double the mass, live 8x shorter!" :
+                          lifecycleMass < 25 ? "Neutron stars are so dense that a sugar-cube-sized piece weighs about 1 billion tons! They can spin up to 716 times per second and have magnetic fields trillions of times stronger than Earth's." :
+                            "Stellar black holes form from stars >25 M\u2609. The Milky Way alone has ~100 million of them! The most massive known stellar black hole, in the binary system LB-1, weighs about 70 solar masses."
                   )
                 ),
-                React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
-                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                  quizQ.options.map(function (opt) {
-                    return React.createElement("button", {
-                      key: opt, disabled: !!d.quizFeedback,
-                      onClick: function () {
-                        var correct = opt === quizQ.a;
-                        upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
-                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
-                        else { upd("quizStreak", 0); }
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
-                    }, opt);
-                  })
+
+                // ── Size Comparison ──
+                React.createElement("div", { className: "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm" },
+                  React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
+                    React.createElement("span", null, "\uD83D\uDD2D"), "Size Comparison"
+                  ),
+                  React.createElement("div", { className: "flex items-end justify-center gap-4 py-4" },
+                    // Sun reference
+                    React.createElement("div", { className: "flex flex-col items-center" },
+                      React.createElement("div", { className: "rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-200", style: { width: '40px', height: '40px' } }),
+                      React.createElement("span", { className: "text-[9px] text-slate-500 mt-1 font-bold" }, "Sun (1 M\u2609)")
+                    ),
+                    // Current star
+                    React.createElement("div", { className: "flex flex-col items-center" },
+                      React.createElement("div", {
+                        className: "rounded-full shadow-lg transition-all duration-300", style: {
+                          width: Math.max(8, Math.min(120, Math.pow(lifecycleMass, 0.8) * 20)) + 'px',
+                          height: Math.max(8, Math.min(120, Math.pow(lifecycleMass, 0.8) * 20)) + 'px',
+                          background: lifecycleMass < 0.45 ? 'linear-gradient(135deg, #ffcc6f, #ff9944)' :
+                            lifecycleMass < 0.8 ? 'linear-gradient(135deg, #ffd2a1, #ffaa66)' :
+                              lifecycleMass < 1.04 ? 'linear-gradient(135deg, #fff4ea, #ffdd99)' :
+                                lifecycleMass < 1.4 ? 'linear-gradient(135deg, #f8f7ff, #ddd)' :
+                                  lifecycleMass < 2.1 ? 'linear-gradient(135deg, #cad7ff, #99aaee)' :
+                                    lifecycleMass < 16 ? 'linear-gradient(135deg, #aabfff, #7799ff)' :
+                                      'linear-gradient(135deg, #9bb0ff, #6677ff)',
+                          boxShadow: '0 0 ' + Math.min(20, lifecycleMass * 2) + 'px ' + (lifecycleMass < 0.8 ? '#ffd2a166' : lifecycleMass < 2.1 ? '#fff4ea66' : '#aabfff66')
+                        }
+                      }),
+                      React.createElement("span", { className: "text-[9px] text-slate-500 mt-1 font-bold" }, lifecycleMass + " M\u2609")
+                    )
+                  ),
+                  React.createElement("p", { className: "text-center text-[10px] text-slate-500 italic mt-2" },
+                    "Main-sequence radius scales roughly as M" + "\u2070\u00B7\u2078" + ". " +
+                    (lifecycleMass < 1 ? "Your star is smaller and cooler than the Sun." :
+                      lifecycleMass < 2 ? "Your star is similar in size to the Sun." :
+                        lifecycleMass < 10 ? "Your star is significantly larger and hotter than the Sun!" :
+                          "Your star is a colossal giant \u2014 millions of times more luminous than the Sun!")
+                  )
                 ),
-                d.quizFeedback && React.createElement("div", { className: "mt-2 p-2 rounded-lg text-center text-sm font-bold " + (d.quizFeedback.correct ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200") },
-                  d.quizFeedback.msg,
-                  React.createElement("button", { onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % QUIZ_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, "Next \u2192")
+
+                // ── Snapshot ──
+                React.createElement("div", { className: "flex justify-end" },
+                  React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
                 )
               ),
-
-              // ── Snapshot button ──
-              React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-                React.createElement("button", { onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
-              )
-            )
+            );
           })(),
 
 
@@ -11792,7 +12612,7 @@
 
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-universe-canvas]'); if (cv && cv._universeCleanup) cv._universeCleanup(); if (cv && cv._ro) cv._ro.disconnect(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-universe-canvas]'); if (cv && cv._universeCleanup) cv._universeCleanup(); if (cv && cv._ro) cv._ro.disconnect(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF20 Universe Time-Lapse"),
                 React.createElement("span", { className: "text-xs text-slate-400" }, "13.8 billion years of cosmic history")
               ),
@@ -12230,8 +13050,12 @@
               canvasEl.addEventListener('click', onRockClick);
 
               const ro = new ResizeObserver(function () {
-                canvasEl.width = canvasEl.offsetWidth * dpr;
-                canvasEl.height = canvasEl.offsetHeight * dpr;
+                var newW = canvasEl.offsetWidth * dpr;
+                var newH = canvasEl.offsetHeight * dpr;
+                if (Math.abs(canvasEl.width - newW) > 1 || Math.abs(canvasEl.height - newH) > 1) {
+                  canvasEl.width = newW;
+                  canvasEl.height = newH;
+                }
               });
               ro.observe(canvasEl);
               canvasEl._rocksRO = ro;
@@ -12383,7 +13207,7 @@
             return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               // Header
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
                 React.createElement("div", { className: "flex gap-1 ml-auto" },
                   ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
@@ -13052,12 +13876,12 @@
                 var activeId = canvasEl.dataset.activeStage || 'evaporation';
                 ctx.textAlign = 'left';
                 var labels = [
-                  { id: 'evaporation', text: '\u2191 Evaporation', x: 8, y: cH * 0.54 / dpr, color: '#fbbf24' },
-                  { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28 / dpr, y: cH * 0.06 / dpr, color: '#94a3b8' },
-                  { id: 'precipitation', text: '\u2193 Precipitation', x: cW * 0.08 / dpr, y: cH * 0.28 / dpr, color: '#60a5fa' },
-                  { id: 'transpiration', text: '\uD83C\uDF3F Transpiration', x: cW * 0.56 / dpr, y: cH * 0.42 / dpr, color: '#4ade80' },
-                  { id: 'collection', text: '\uD83C\uDF0A Collection', x: 8, y: cH * 0.68 / dpr, color: '#38bdf8' },
-                  { id: 'infiltration', text: '\uD83E\uDEB4 Infiltration', x: cW * 0.35 / dpr, y: cH * 0.76 / dpr, color: '#d97706' }
+                  { id: 'evaporation', text: '\u2191 Evaporation', x: 8, y: cH * 0.54, color: '#fbbf24' },
+                  { id: 'condensation', text: '\u2601 Condensation', x: cW * 0.28, y: cH * 0.06, color: '#94a3b8' },
+                  { id: 'precipitation', text: '\u2193 Precipitation', x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
+                  { id: 'collection', text: '\uD83C\uDF0A Collection', x: cW * 0.55, y: cH * 0.72, color: '#0ea5e9' },
+                  { id: 'transpiration', text: '\uD83C\uDF3F Transpiration', x: cW * 0.70, y: cH * 0.42, color: '#22c55e' },
+                  { id: 'infiltration', text: '\uD83E\uDEB4 Infiltration', x: cW * 0.42, y: cH * 0.80, color: '#92400e' }
                 ];
                 labels.forEach(function (lbl) {
                   var isActive = activeId === lbl.id;
@@ -13104,7 +13928,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
               ),
@@ -13591,7 +14415,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rock Cycle"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
               ),
@@ -13744,8 +14568,8 @@
                 preyList.push({
                   x: Math.random() * cW / dpr,
                   y: cH * 0.4 / dpr + Math.random() * cH * 0.55 / dpr,
-                  vx: (Math.random() - 0.5) * 1.2,
-                  vy: (Math.random() - 0.5) * 1.2,
+                  vx: (Math.random() - 0.5) * 0.5,
+                  vy: (Math.random() - 0.5) * 0.5,
                   alive: pi < 30,
                   hop: Math.random() * Math.PI * 2,
                   facing: Math.random() > 0.5 ? 1 : -1
@@ -13757,8 +14581,8 @@
                 predList.push({
                   x: Math.random() * cW / dpr,
                   y: cH * 0.4 / dpr + Math.random() * cH * 0.55 / dpr,
-                  vx: (Math.random() - 0.5) * 0.8,
-                  vy: (Math.random() - 0.5) * 0.8,
+                  vx: (Math.random() - 0.5) * 0.35,
+                  vy: (Math.random() - 0.5) * 0.35,
                   alive: qi < 10,
                   facing: Math.random() > 0.5 ? 1 : -1,
                   hunting: false
@@ -13782,7 +14606,7 @@
                   x: Math.random() * cW / dpr,
                   y: cH * 0.04 / dpr + Math.random() * cH * 0.2 / dpr,
                   w: 30 + Math.random() * 50,
-                  speed: 0.1 + Math.random() * 0.2
+                  speed: 0.04 + Math.random() * 0.08
                 });
               }
               // Catch particles on predation
@@ -13971,16 +14795,16 @@
                 preyList.forEach(function (p) {
                   if (!p.alive) return;
                   aliveCount++;
-                  p.hop += 0.08;
+                  p.hop += 0.04;
                   p.x += p.vx; p.y += p.vy;
                   if (p.x < 5 || p.x > cW / dpr - 5) p.vx *= -1;
                   if (p.y < cH * 0.4 / dpr || p.y > cH / dpr - 5) p.vy *= -1;
                   p.x = Math.max(5, Math.min(cW / dpr - 5, p.x));
                   p.y = Math.max(cH * 0.4 / dpr, Math.min(cH / dpr - 5, p.y));
-                  p.vx += (Math.random() - 0.5) * 0.12;
-                  p.vy += (Math.random() - 0.5) * 0.12;
-                  p.vx = Math.max(-1.8, Math.min(1.8, p.vx));
-                  p.vy = Math.max(-1.8, Math.min(1.8, p.vy));
+                  p.vx += (Math.random() - 0.5) * 0.05;
+                  p.vy += (Math.random() - 0.5) * 0.05;
+                  p.vx = Math.max(-0.8, Math.min(0.8, p.vx));
+                  p.vy = Math.max(-0.8, Math.min(0.8, p.vy));
                   if (p.vx > 0) p.facing = 1; else if (p.vx < -0.2) p.facing = -1;
                   var hopY = Math.abs(Math.sin(p.hop)) * 3;
                   var squash = 1 + Math.abs(Math.sin(p.hop)) * 0.15; // squash-and-stretch
@@ -14080,7 +14904,7 @@
                   if (nearest && nearDist < 100) {
                     var dx = nearest.x - pr.x, dy = nearest.y - pr.y;
                     var len = Math.sqrt(dx * dx + dy * dy) || 1;
-                    var chaseSpeed = isDay ? 0.1 : 0.14; // Faster at night
+                    var chaseSpeed = isDay ? 0.05 : 0.07; // Slower chase
                     pr.vx += (dx / len) * chaseSpeed;
                     pr.vy += (dy / len) * chaseSpeed;
                   }
@@ -14311,7 +15135,7 @@
                 }
 
                 // ── Population dynamics ──
-                if (tick % 80 === 0) {
+                if (tick % 200 === 0) {
                   // Prey reproduction
                   var n = Math.floor(aliveCount * 0.15);
                   for (var nn = 0; nn < n && nn < 5; nn++) {
@@ -14365,7 +15189,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDD8A Ecosystem Simulator"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full" }, "LIVE")
               ),
@@ -14547,7 +15371,7 @@
 
             return React.createElement("div", { className: "max-w-2xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF55 Fraction Lab"),
                 React.createElement("div", { className: "flex gap-1" },
                   React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-orange-600 text-white" }, "\uD83D\uDD0D Compare"),
@@ -14736,7 +15560,7 @@
             return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200" },
               // Header with back + navigation
               React.createElement("div", { className: "flex items-center gap-3 mb-2" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-rose-800" }, "\uD83C\uDF55 Fraction Practice"),
                 React.createElement("div", { className: "flex gap-1 ml-auto" },
                   React.createElement("button", { onClick: () => setStemLabTool('fractionViz'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-all" }, "\uD83D\uDD0D Compare"),
@@ -14918,7 +15742,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "⚗️ Material Decomposer"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, totalAtoms + " ATOMS")
               ),
@@ -15122,7 +15946,7 @@
 
             return React.createElement("div", { className: "max-w-2xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDCCF Unit Converter"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "INTERACTIVE")
               ),
@@ -15138,14 +15962,14 @@
                 React.createElement("div", { className: "flex items-center gap-4 justify-center" },
                   React.createElement("div", { className: "text-center" },
                     React.createElement("input", { type: "number", value: d.value, onChange: function (e) { upd('value', parseFloat(e.target.value) || 0); }, className: "w-32 text-center text-2xl font-bold border-b-2 border-cyan-300 outline-none py-1", step: "0.01" }),
-                    React.createElement("select", { value: d.fromUnit, onChange: function (e) { upd('fromUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1" },
+                    React.createElement("select", { 'aria-label': 'Convert from unit', value: d.fromUnit, onChange: function (e) { upd('fromUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1" },
                       Object.keys(cat.units).map(function (u) { return React.createElement("option", { key: u, value: u }, u); })
                     )
                   ),
                   React.createElement("span", { className: "text-2xl text-cyan-400 font-bold" }, "\u2192"),
                   React.createElement("div", { className: "text-center" },
                     React.createElement("p", { className: "text-2xl font-black text-cyan-700 py-1" }, fmtResult),
-                    React.createElement("select", { value: d.toUnit, onChange: function (e) { upd('toUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1" },
+                    React.createElement("select", { 'aria-label': 'Convert to unit', value: d.toUnit, onChange: function (e) { upd('toUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1" },
                       Object.keys(cat.units).map(function (u) { return React.createElement("option", { key: u, value: u }, u); })
                     )
                   )
@@ -15257,7 +16081,12 @@
             var activeSport = SPORTS.find(function (s) { return s.id === (d.sportType || 'freethrow'); }) || SPORTS[0];
 
             // ── Custom mode outcomes ──
-            var customOutcomes = d.customOutcomes || [{ label: 'A', prob: 0.5, color: '#3b82f6' }, { label: 'B', prob: 0.5, color: '#ef4444' }];
+            var customOutcomes = d.customOutcomes || [{ label: 'Win', prob: 0.05, color: '#22c55e', numerator: 1, denominator: 20, count: 1 }, { label: 'Lose', prob: 0.95, color: '#ef4444', numerator: 19, denominator: 20, count: 19 }];
+            var customSubMode = d.customSubMode || 'fraction';
+            if (d.mode === 'custom') {
+              if (customSubMode === 'fraction') { customOutcomes = customOutcomes.map(function (o) { var den = o.denominator || 20; return Object.assign({}, o, { prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); }); }
+              else if (customSubMode === 'marbleBag') { var _totalM = customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0); if (_totalM > 0) { customOutcomes = customOutcomes.map(function (o) { return Object.assign({}, o, { prob: (o.count || 1) / _totalM }); }); } }
+            }
 
             // ── Run trials ──
             const runTrial = (n) => {
@@ -15397,7 +16226,7 @@
 
             return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB2 Probability Lab"),
                 d.trials > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-bold rounded-full" }, d.trials + " trials")
               ),
@@ -15424,42 +16253,80 @@
                 React.createElement("p", { className: "text-xs text-slate-500 mt-2 italic" }, activeSport.desc + ' \u2014 P(' + activeSport.outcomes[0] + ') = ' + (activeSport.probs[0] * 100).toFixed(0) + '%')
               ),
 
-              // ── Custom mode config ──
+              // ── Custom mode config ── (3 sub-modes: Fraction, Marble Bag, Slider)
               d.mode === 'custom' && React.createElement("div", { className: "mb-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
-                React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, "\u2699\uFE0F Define Your Outcomes"),
-                React.createElement("div", { className: "space-y-2" },
-                  customOutcomes.map(function (o, i) {
-                    return React.createElement("div", { key: i, className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = customOutcomes.slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), onChange: function (e) { var co = customOutcomes.slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-200 text-sm font-bold" }),
-                      React.createElement("div", { className: "flex items-center gap-1" },
-                        React.createElement("input", {
-                          type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), onChange: function (e) {
-                            var newProb = parseInt(e.target.value) / 100;
-                            var co = customOutcomes.slice();
-                            co[i] = Object.assign({}, co[i], { prob: newProb });
-                            var remaining = 1 - newProb;
-                            var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0);
-                            if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); }
-                            upd('customOutcomes', co);
-                          }, className: "w-20 accent-amber-600"
-                        }),
-                        React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
-                      ),
-                      customOutcomes.length > 2 && React.createElement("button", { onClick: function () { var co = customOutcomes.filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
-                    );
-                  })
+                React.createElement("div", { className: "flex gap-1 mb-3 bg-amber-100/50 rounded-lg p-1" },
+                  [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { key: sm, onClick: function () { upd('customSubMode', sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
                 ),
-                customOutcomes.length < 8 && React.createElement("button", {
-                  onClick: function () {
-                    var newOuts = customOutcomes.concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]);
-                    var prob = 1 / newOuts.length;
-                    newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); });
-                    upd('customOutcomes', newOuts); upd('results', []); upd('trials', 0); upd('convergenceHistory', []);
-                  },
-                  className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors"
-                }, "+ Add Outcome"),
-                React.createElement("p", { className: "text-[10px] text-amber-500 mt-1" }, "\uD83D\uDCA1 Total: " + Math.round(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100) + "% (should be 100%)")
+
+                // ── FRACTION SUB-MODE ──
+                customSubMode === 'fraction' && React.createElement("div", null,
+                  React.createElement("p", { className: "text-xs text-amber-600 mb-2 italic" }, "\uD83C\uDFAF Define each event as a fraction \u2014 e.g., \"1 out of 20 times\""),
+                  React.createElement("div", { className: "space-y-2" },
+                    customOutcomes.map(function (o, i) {
+                      return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
+                        React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
+                        React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-200 text-sm font-bold flex-shrink-0" }),
+                        React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-200 text-sm text-center font-mono" }),
+                        React.createElement("span", { className: "text-xs font-bold text-amber-600 flex-shrink-0" }, "out of"),
+                        React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-200 text-sm text-center font-mono" }),
+                        React.createElement("span", { className: "ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold " + (o.prob <= 0.1 ? 'bg-violet-100 text-violet-700' : o.prob <= 0.5 ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700') }, (o.prob * 100).toFixed(1) + '%'),
+                        customOutcomes.length > 2 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      );
+                    })
+                  ),
+                  customOutcomes.length < 8 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, "+ Add Event"),
+                  React.createElement("p", { className: "text-[10px] mt-1.5 " + (Math.abs(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) - 1) < 0.05 ? 'text-emerald-500' : 'text-red-500') }, "\uD83D\uDCA1 Total: " + (customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100).toFixed(1) + "%" + (Math.abs(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) - 1) > 0.05 ? ' \u2014 fractions should add to 100%' : ' \u2713'))
+                ),
+
+                // ── MARBLE BAG SUB-MODE ──
+                customSubMode === 'marbleBag' && React.createElement("div", null,
+                  React.createElement("p", { className: "text-xs text-amber-600 mb-2 italic" }, "\uD83C\uDFB1 Add colored marbles to a bag. Probability = your marble count \u00F7 total marbles."),
+                  React.createElement("div", { className: "space-y-2" },
+                    customOutcomes.map(function (o, i) {
+                      var count = o.count || 1;
+                      return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
+                        React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
+                        React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-200 text-sm font-bold flex-shrink-0" }),
+                        React.createElement("button", { onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
+                        React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
+                        React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
+                        React.createElement("span", { className: "ml-1 text-[10px] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
+                        customOutcomes.length > 2 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "mt-3 bg-white/80 rounded-xl p-3 border border-amber-200" },
+                    React.createElement("div", { className: "flex flex-wrap gap-1 justify-center" },
+                      customOutcomes.reduce(function (acc, o) { for (var m = 0; m < Math.min(o.count || 1, 50); m++) acc.push({ color: o.color, label: o.label }); return acc; }, []).slice(0, 100).map(function (marble, idx) {
+                        return React.createElement("div", { key: idx, style: { width: 14, height: 14, borderRadius: '50%', background: marble.color, border: '1px solid rgba(0,0,0,0.15)', boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4)' }, title: marble.label });
+                      })
+                    ),
+                    customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) > 100 && React.createElement("p", { className: "text-[10px] text-slate-400 text-center mt-1" }, "(showing first 100 of " + customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + " marbles)"),
+                    React.createElement("p", { className: "text-xs text-center font-bold text-amber-700 mt-2" }, "\uD83C\uDFB1 " + customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + " marbles in bag")
+                  ),
+                  customOutcomes.length < 8 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, "+ Add Color")
+                ),
+
+                // ── SLIDER SUB-MODE (original) ──
+                customSubMode === 'slider' && React.createElement("div", null,
+                  React.createElement("p", { className: "text-xs text-amber-600 mb-2 italic" }, "\uD83C\uDFA8 Drag sliders to set exact probability percentages for each outcome."),
+                  React.createElement("div", { className: "space-y-2" },
+                    customOutcomes.map(function (o, i) {
+                      return React.createElement("div", { key: i, className: "flex items-center gap-2" },
+                        React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
+                        React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-200 text-sm font-bold" }),
+                        React.createElement("div", { className: "flex items-center gap-1" },
+                          React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } upd('customOutcomes', co); }, className: "w-20 accent-amber-600" }),
+                          React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
+                        ),
+                        customOutcomes.length > 2 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
+                      );
+                    })
+                  ),
+                  customOutcomes.length < 8 && React.createElement("button", { onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); upd('customOutcomes', newOuts); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, "+ Add Outcome"),
+                  React.createElement("p", { className: "text-[10px] text-amber-500 mt-1" }, "\uD83D\uDCA1 Total: " + Math.round(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100) + "% (should be 100%)")
+                )
               ),
 
               // Visual result display
@@ -16480,7 +17347,7 @@
             return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
               // ── Header ──
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500" }, "\uD83C\uDFB9 Music Synthesizer"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full" }, synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (d.waveType || 'sine').toUpperCase()),
                 d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
@@ -16535,6 +17402,7 @@
                   React.createElement("div", { className: "flex items-center gap-1" },
                     React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Root"),
                     React.createElement("select", {
+                      'aria-label': 'Root note',
                       value: selectedRoot,
                       onChange: function (e) { upd('selectedRoot', e.target.value); },
                       className: "px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 border-0 focus:ring-2 focus:ring-purple-400"
@@ -16557,6 +17425,7 @@
                     className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (scaleLock ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-500')
                   }, (scaleLock ? '\uD83D\uDD12' : '\uD83D\uDD13') + ' Scale Lock'),
                   React.createElement("select", {
+                    'aria-label': 'Musical scale',
                     value: selectedScale,
                     onChange: function (e) { upd('selectedScale', e.target.value); },
                     className: "px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 border-0 focus:ring-2 focus:ring-purple-400"
@@ -16636,6 +17505,7 @@
                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
                     React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Chords"),
                     React.createElement("select", {
+                      'aria-label': 'Chord root note',
                       value: chordRoot,
                       onChange: function (e) { upd('chordRoot', e.target.value); },
                       className: "px-1.5 py-0.5 rounded text-[11px] font-bold bg-slate-100 border-0"
@@ -16801,6 +17671,7 @@
                         React.createElement("span", { className: "text-[10px] font-bold text-slate-600" }, "\uD83C\uDF0A Filter"),
                         React.createElement("span", { className: "text-[9px] text-slate-400 cursor-help", title: EFFECT_TIPS.filter.text }, "\u2753"),
                         React.createElement("select", {
+                          'aria-label': 'Filter type',
                           value: d.filterType || 'lowpass',
                           onChange: function (e) { upd('filterType', e.target.value); },
                           className: "ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold bg-white border"
@@ -16905,6 +17776,7 @@
                     React.createElement("span", { className: "text-xs font-bold text-slate-700 w-8" }, d.bpm || 120)
                   ),
                   React.createElement("select", {
+                    'aria-label': 'Time signature',
                     value: timeSig,
                     onChange: function (e) { upd('timeSig', e.target.value); },
                     className: "px-2 py-1 rounded text-xs font-bold bg-white border"
@@ -17762,6 +18634,7 @@
                         return React.createElement("div", { key: idx, className: "flex-1 text-center" },
                           React.createElement("div", { className: "text-[10px] font-bold text-violet-500 mb-1" }, "Note " + (idx + 1)),
                           React.createElement("select", {
+                            'aria-label': 'Guess note ' + (idx + 1),
                             value: guess || '', disabled: answered,
                             onChange: function (e) {
                               var g = d.dictation.guesses.slice(); g[idx] = e.target.value;
@@ -17819,7 +18692,7 @@
                   { id: 'mandible', name: t('stem.synth_ui.mandible'), x: 0.50, y: 0.10, v: 'a', fn: 'Only moveable skull bone. Enables mastication, speech, and facial expression. Houses lower teeth.', clinical: 'TMJ dysfunction causes jaw pain and clicking. Mandibular fractures are the second most common facial fracture.' },
                   { id: 'clavicle', name: t('stem.synth_ui.clavicle'), x: 0.40, y: 0.155, v: 'a', fn: 'Horizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.', clinical: 'Most frequently fractured bone (fall on outstretched hand). Middle third fractures most common.' },
                   { id: 'sternum', name: t('stem.synth_ui.sternum'), x: 0.50, y: 0.22, v: 'a', fn: 'Flat bone protecting heart and great vessels. Manubrium, body, and xiphoid process. Site for bone marrow biopsy in adults.', clinical: 'Sternal fractures from blunt chest trauma (steering wheel). CPR may cause xiphoid fractures.' },
-                  { id: 'ribs', name: t('stem.synth_ui.ribs_1u201312'), x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
+                  { id: 'ribs', name: t('stem.synth_ui.ribs_1_to_12'), x: 0.58, y: 0.25, v: 'b', fn: '12 pairs: 7 true (1\u20137), 3 false (8\u201310), 2 floating (11\u201312). Protect thoracic organs and assist ventilation.', clinical: 'Flail chest: 3+ adjacent ribs fractured in 2+ places. Rib fractures 9\u201311 may lacerate spleen or liver.' },
                   { id: 'scapula', name: t('stem.synth_ui.scapula'), x: 0.38, y: 0.22, v: 'p', fn: 'Triangular flat bone on posterior thorax. Attachment for 17 muscles. Acromion and coracoid processes are key landmarks.', clinical: 'Winged scapula from long thoracic nerve (C5\u2013C7) palsy \u2014 serratus anterior paralysis.' },
                   { id: 'humerus', name: t('stem.synth_ui.humerus'), x: 0.26, y: 0.27, v: 'a', fn: 'Upper arm bone. Articulates with scapula (shoulder) and radius/ulna (elbow). Greater/lesser tubercles for rotator cuff.', clinical: 'Midshaft fracture \u2192 radial nerve palsy (wrist drop). Surgical neck fracture \u2192 axillary nerve injury.' },
                   { id: 'radius', name: t('stem.synth_ui.radius'), x: 0.21, y: 0.36, v: 'a', fn: 'Lateral forearm bone. Pivots around ulna for pronation/supination. Radial head at elbow, styloid process at wrist.', clinical: 'Colles fracture: distal radius fracture from FOOSH (fall on outstretched hand). "Dinner fork" deformity.' },
@@ -17998,6 +18871,30 @@
             var searchTerm = (d.search || '').toLowerCase();
             var complexity = d.complexity || 3;
 
+            // ── Layer Transparency System ──
+            var LAYER_DEFS = [
+              { id: 'skin', icon: '\uD83E\uDDB4', name: 'Skin', color: '#f5e6d3', accent: '#c4aa94' },
+              { id: 'skeletal', icon: '\uD83E\uDDB4', name: 'Skeletal', color: '#e2e8f0', accent: '#94a3b8', systems: ['skeletal'] },
+              { id: 'muscular', icon: '\uD83D\uDCAA', name: 'Muscular', color: '#fecaca', accent: '#dc2626', systems: ['muscular'] },
+              { id: 'organs', icon: '\uD83E\uDEC1', name: 'Organs', color: '#d1fae5', accent: '#16a34a', systems: ['digestive', 'respiratory', 'endocrine', 'reproductive'] },
+              { id: 'circulatory', icon: '\u2764\uFE0F', name: 'Circulatory', color: '#fee2e2', accent: '#ef4444', systems: ['circulatory'] },
+              { id: 'nervous', icon: '\u26A1', name: 'Nervous', color: '#fef9c3', accent: '#eab308', systems: ['nervous'] },
+              { id: 'lymphatic', icon: '\uD83D\uDFE2', name: 'Lymphatic', color: '#d1fae5', accent: '#22c55e', systems: ['lymphatic', 'integumentary'] }
+            ];
+            var layers = d.visibleLayers || { skin: true };
+            var toggleLayer = function (lid) {
+              var newLayers = Object.assign({}, layers);
+              newLayers[lid] = !newLayers[lid];
+              upd('visibleLayers', newLayers);
+            };
+            // Auto-activate layer matching current system
+            var autoLayerId = null;
+            LAYER_DEFS.forEach(function (ld) {
+              if (ld.systems && ld.systems.indexOf(sysKey) !== -1) autoLayerId = ld.id;
+            });
+            var anyDeepLayer = LAYER_DEFS.some(function (ld) { return ld.id !== 'skin' && (layers[ld.id] || ld.id === autoLayerId); });
+            var skinOpacity = anyDeepLayer ? 0.20 : 1.0;
+
             // Complexity level lookup — structures shown at each tier
             var ELEMENTARY_IDS = ['skull', 'ribs', 'femur', 'humerus', 'vertebral', 'pelvis', 'biceps', 'quads', 'heart', 'brain', 'lungs', 'stomach', 'kidneys', 'spinal_cord', 'deltoid', 'hamstrings', 'gastrocnemius', 'aorta', 'carotid', 'sciatic', 'liver', 'diaphragm', 'spleen', 'thymus', 'epidermis', 'dermis', 'trachea', 'alveoli', 'pituitary', 'uterus', 'testes_repro', 'mammary'];
             var MIDDLE_IDS = ELEMENTARY_IDS.concat(['mandible', 'clavicle', 'sternum', 'scapula', 'radius', 'ulna', 'tibia', 'fibula', 'patella', 'tarsals', 'carpals', 'sacrum', 'pectoralis', 'triceps', 'rectus_ab', 'obliques', 'trapezius', 'lats', 'glutes', 'tibialis', 'soleus', 'sartorius', 'sup_vena', 'inf_vena', 'pulm_art', 'jugular', 'coronary', 'femoral_a', 'brachial', 'portal', 'vagus', 'brachial_plexus', 'median', 'ulnar_n', 'femoral_n', 'cranial_n', 'sympathetic', 'sm_intestine', 'lg_intestine', 'pancreas', 'gallbladder', 'bladder', 'thyroid', 'adrenals', 'cervical_ln', 'axillary_ln', 'inguinal_ln', 'thoracic_duct', 'bone_marrow', 'hyoid', 'atlas_axis', 'metatarsals', 'metacarpals', 'scaphoid_bone', 'rotator_cuff', 'iliopsoas', 'intercostals', 'pelvic_floor', 'diaphragm_m', 'circle_willis', 'saphenous', 'lymph_circ', 'hypodermis', 'hair_follicle', 'sweat_glands', 'sebaceous', 'nails', 'melanocytes', 'nasal_cavity', 'pharynx', 'larynx', 'bronchi', 'pleura', 'resp_muscles', 'pineal', 'parathyroid', 'islets', 'ovaries_endo', 'testes_endo', 'hypothal_endo', 'adrenal_endo', 'epididymis', 'prostate', 'ovaries_repro', 'fallopian', 'placenta']);
@@ -18036,7 +18933,9 @@
                 ctx.clearRect(0, 0, W, H);
 
                 // ── Enhanced Anatomical Figure ──
+                // Apply skin layer opacity
                 ctx.save();
+                ctx.globalAlpha = skinOpacity;
                 ctx.lineJoin = 'round';
                 ctx.lineCap = 'round';
 
@@ -18283,119 +19182,185 @@
                   c.moveTo(W * 0.70, H * 0.935); c.lineTo(W * 0.72, H * 0.955); c.quadraticCurveTo(W * 0.70, H * 0.965, W * 0.62, H * 0.96); c.lineTo(W * 0.61, H * 0.935); c.closePath();
                 });
 
-                // ── System-specific overlay ──
-                ctx.globalAlpha = 0.30;
-                if (sysKey === 'skeletal') {
-                  // Spine line
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.50, H * 0.10);
-                  for (var si = 0; si < 18; si++) {
-                    var sy = H * (0.11 + si * 0.018);
-                    ctx.lineTo(W * (0.50 + Math.sin(si * 0.3) * 0.003), sy);
-                  }
-                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3; ctx.stroke();
-                  // Vertebra marks
-                  for (var vi2 = 0; vi2 < 18; vi2++) {
-                    var vy2 = H * (0.11 + vi2 * 0.018);
-                    ctx.beginPath();
-                    ctx.moveTo(W * 0.48, vy2); ctx.lineTo(W * 0.52, vy2);
-                    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5; ctx.stroke();
-                  }
-                  // Pelvis outline
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.40, H * 0.39); ctx.quadraticCurveTo(W * 0.36, H * 0.42, W * 0.38, H * 0.45);
-                  ctx.quadraticCurveTo(W * 0.44, H * 0.46, W * 0.50, H * 0.44);
-                  ctx.quadraticCurveTo(W * 0.56, H * 0.46, W * 0.62, H * 0.45);
-                  ctx.quadraticCurveTo(W * 0.64, H * 0.42, W * 0.60, H * 0.39);
-                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2; ctx.stroke();
+                // ── Restore skin save & draw system-specific overlays (layer-aware) ──
+                ctx.restore(); // end skin opacity group
+                ctx.globalAlpha = 1.0;
+
+                // Helper: check if a layer should render
+                function layerOn(lid) { return layers[lid] || lid === autoLayerId; }
+
+                // ── SKELETAL LAYER ──
+                if (layerOn('skeletal')) {
+                  ctx.save(); ctx.globalAlpha = 0.45;
+                  // Spine
+                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.10);
+                  for (var si = 0; si < 18; si++) { var sy = H * (0.11 + si * 0.018); ctx.lineTo(W * (0.50 + Math.sin(si * 0.3) * 0.003), sy); }
+                  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3.5; ctx.stroke();
+                  for (var vi2 = 0; vi2 < 18; vi2++) { var vy2 = H * (0.11 + vi2 * 0.018); ctx.beginPath(); ctx.moveTo(W * 0.48, vy2); ctx.lineTo(W * 0.52, vy2); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke(); }
+                  // Skull outline
+                  ctx.beginPath(); ctx.arc(W * 0.50, H * 0.055, W * 0.046, 0, Math.PI * 2);
+                  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+                  // Rib cage
+                  for (var ri2 = 0; ri2 < 6; ri2++) { var ry2 = H * (0.175 + ri2 * 0.025); ctx.beginPath(); ctx.moveTo(W * 0.43, ry2); ctx.quadraticCurveTo(W * 0.38, ry2 + H * 0.01, W * 0.36, ry2 + H * 0.005); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.3; ctx.stroke(); ctx.beginPath(); ctx.moveTo(W * 0.57, ry2); ctx.quadraticCurveTo(W * 0.62, ry2 + H * 0.01, W * 0.64, ry2 + H * 0.005); ctx.stroke(); }
+                  // Pelvis
+                  ctx.beginPath(); ctx.moveTo(W * 0.40, H * 0.39); ctx.quadraticCurveTo(W * 0.36, H * 0.42, W * 0.38, H * 0.45); ctx.quadraticCurveTo(W * 0.44, H * 0.46, W * 0.50, H * 0.44); ctx.quadraticCurveTo(W * 0.56, H * 0.46, W * 0.62, H * 0.45); ctx.quadraticCurveTo(W * 0.64, H * 0.42, W * 0.60, H * 0.39);
+                  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2.5; ctx.stroke();
                   // Clavicles
+                  ctx.beginPath(); ctx.moveTo(W * 0.42, H * 0.138); ctx.quadraticCurveTo(W * 0.36, H * 0.132, W * 0.30, H * 0.145); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.58, H * 0.138); ctx.quadraticCurveTo(W * 0.64, H * 0.132, W * 0.70, H * 0.145); ctx.stroke();
+                  // Femur lines
+                  ctx.beginPath(); ctx.moveTo(W * 0.44, H * 0.46); ctx.lineTo(W * 0.40, H * 0.66); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2.5; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.56, H * 0.46); ctx.lineTo(W * 0.60, H * 0.66); ctx.stroke();
+                  // Tibia/fibula
+                  ctx.beginPath(); ctx.moveTo(W * 0.40, H * 0.68); ctx.lineTo(W * 0.37, H * 0.90); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.41, H * 0.68); ctx.lineTo(W * 0.39, H * 0.90); ctx.strokeStyle = '#b0bec5'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.60, H * 0.68); ctx.lineTo(W * 0.63, H * 0.90); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.59, H * 0.68); ctx.lineTo(W * 0.61, H * 0.90); ctx.strokeStyle = '#b0bec5'; ctx.lineWidth = 1.2; ctx.stroke();
+                  // Humerus
+                  ctx.beginPath(); ctx.moveTo(W * 0.30, H * 0.16); ctx.lineTo(W * 0.22, H * 0.34); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.70, H * 0.16); ctx.lineTo(W * 0.78, H * 0.34); ctx.stroke();
+                  // Radius/ulna
+                  ctx.beginPath(); ctx.moveTo(W * 0.22, H * 0.35); ctx.lineTo(W * 0.17, H * 0.46); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.23, H * 0.35); ctx.lineTo(W * 0.18, H * 0.46); ctx.strokeStyle = '#b0bec5'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.78, H * 0.35); ctx.lineTo(W * 0.83, H * 0.46); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.77, H * 0.35); ctx.lineTo(W * 0.82, H * 0.46); ctx.strokeStyle = '#b0bec5'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.restore();
+                }
+
+                // ── MUSCULAR LAYER ──
+                if (layerOn('muscular')) {
+                  ctx.save(); ctx.globalAlpha = 0.40;
+                  // Pecs
+                  ctx.beginPath(); ctx.moveTo(W * 0.37, H * 0.14); ctx.quadraticCurveTo(W * 0.42, H * 0.20, W * 0.49, H * 0.20); ctx.quadraticCurveTo(W * 0.46, H * 0.17, W * 0.37, H * 0.14);
+                  ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.63, H * 0.14); ctx.quadraticCurveTo(W * 0.58, H * 0.20, W * 0.51, H * 0.20); ctx.quadraticCurveTo(W * 0.54, H * 0.17, W * 0.63, H * 0.14);
+                  ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
+                  // Deltoids
+                  ctx.beginPath(); ctx.ellipse(W * 0.30, H * 0.16, W * 0.04, H * 0.022, -0.3, 0, Math.PI * 2);
+                  ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(W * 0.70, H * 0.16, W * 0.04, H * 0.022, 0.3, 0, Math.PI * 2);
+                  ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Abs
+                  for (var mi = 0; mi < 4; mi++) { var my = H * (0.28 + mi * 0.03); ctx.beginPath(); ctx.moveTo(W * 0.45, my); ctx.lineTo(W * 0.55, my); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1; ctx.stroke(); }
+                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.22); ctx.lineTo(W * 0.50, H * 0.40); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Quads
+                  ctx.beginPath(); ctx.ellipse(W * 0.41, H * 0.54, W * 0.028, H * 0.07, 0.08, 0, Math.PI * 2); ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(W * 0.59, H * 0.54, W * 0.028, H * 0.07, -0.08, 0, Math.PI * 2); ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Biceps
+                  ctx.beginPath(); ctx.ellipse(W * 0.25, H * 0.27, W * 0.016, H * 0.035, 0.5, 0, Math.PI * 2); ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(W * 0.75, H * 0.27, W * 0.016, H * 0.035, -0.5, 0, Math.PI * 2); ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Calves
+                  ctx.beginPath(); ctx.ellipse(W * 0.38, H * 0.77, W * 0.018, H * 0.04, 0.05, 0, Math.PI * 2); ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(W * 0.62, H * 0.77, W * 0.018, H * 0.04, -0.05, 0, Math.PI * 2); ctx.fillStyle = '#fecaca'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.restore();
+                }
+
+                // ── ORGAN LAYER ──
+                if (layerOn('organs')) {
+                  ctx.save(); ctx.globalAlpha = 0.50;
+                  // Lungs
+                  ctx.beginPath(); ctx.ellipse(W * 0.42, H * 0.22, W * 0.055, H * 0.055, 0, 0, Math.PI * 2); ctx.fillStyle = '#bfdbfe'; ctx.fill(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(W * 0.58, H * 0.22, W * 0.055, H * 0.055, 0, 0, Math.PI * 2); ctx.fillStyle = '#bfdbfe'; ctx.fill(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.stroke();
+                  // Heart (small, between lungs)
                   ctx.beginPath();
-                  ctx.moveTo(W * 0.42, H * 0.138); ctx.quadraticCurveTo(W * 0.36, H * 0.132, W * 0.30, H * 0.145);
-                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5; ctx.stroke();
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.58, H * 0.138); ctx.quadraticCurveTo(W * 0.64, H * 0.132, W * 0.70, H * 0.145);
-                  ctx.stroke();
-                } else if (sysKey === 'muscular') {
-                  // Pectoral muscle outlines
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.37, H * 0.14); ctx.quadraticCurveTo(W * 0.42, H * 0.19, W * 0.49, H * 0.19);
-                  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.63, H * 0.14); ctx.quadraticCurveTo(W * 0.58, H * 0.19, W * 0.51, H * 0.19);
-                  ctx.stroke();
-                  // Abs lines (more visible)
-                  for (var mi = 0; mi < 4; mi++) {
-                    var my = H * (0.28 + mi * 0.03);
-                    ctx.beginPath(); ctx.moveTo(W * 0.45, my); ctx.lineTo(W * 0.55, my);
-                    ctx.strokeStyle = '#dc262680'; ctx.lineWidth = 0.8; ctx.stroke();
-                  }
-                  // Quad outlines
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.42, H * 0.44); ctx.quadraticCurveTo(W * 0.40, H * 0.54, W * 0.39, H * 0.64);
-                  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.58, H * 0.44); ctx.quadraticCurveTo(W * 0.60, H * 0.54, W * 0.61, H * 0.64);
-                  ctx.stroke();
-                } else if (sysKey === 'circulatory') {
+                  var hx = W * 0.50, hy = H * 0.24;
+                  ctx.moveTo(hx, hy + 6); ctx.bezierCurveTo(hx - 8, hy - 4, hx - 14, hy, hx - 14, hy + 6); ctx.bezierCurveTo(hx - 14, hy + 12, hx - 4, hy + 18, hx, hy + 22); ctx.bezierCurveTo(hx + 4, hy + 18, hx + 14, hy + 12, hx + 14, hy + 6); ctx.bezierCurveTo(hx + 14, hy, hx + 8, hy - 4, hx, hy + 6);
+                  ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.stroke();
+                  // Liver
+                  ctx.beginPath(); ctx.ellipse(W * 0.56, H * 0.30, W * 0.045, H * 0.028, 0.2, 0, Math.PI * 2); ctx.fillStyle = '#a1887f'; ctx.fill(); ctx.strokeStyle = '#795548'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Stomach
+                  ctx.beginPath(); ctx.ellipse(W * 0.47, H * 0.31, W * 0.032, H * 0.028, -0.3, 0, Math.PI * 2); ctx.fillStyle = '#c8e6c9'; ctx.fill(); ctx.strokeStyle = '#43a047'; ctx.lineWidth = 0.8; ctx.stroke();
+                  // Kidneys
+                  ctx.beginPath(); ctx.ellipse(W * 0.43, H * 0.35, W * 0.015, H * 0.02, 0, 0, Math.PI * 2); ctx.fillStyle = '#ef9a9a'; ctx.fill(); ctx.strokeStyle = '#c62828'; ctx.lineWidth = 0.7; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(W * 0.57, H * 0.35, W * 0.015, H * 0.02, 0, 0, Math.PI * 2); ctx.fillStyle = '#ef9a9a'; ctx.fill(); ctx.strokeStyle = '#c62828'; ctx.lineWidth = 0.7; ctx.stroke();
+                  // Intestines (coil)
+                  ctx.beginPath(); ctx.moveTo(W * 0.44, H * 0.35);
+                  for (var ii = 0; ii < 8; ii++) { ctx.lineTo(W * (0.44 + (ii % 2 === 0 ? 0.06 : 0)), H * (0.36 + ii * 0.01)); }
+                  ctx.strokeStyle = '#66bb6a'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Bladder
+                  ctx.beginPath(); ctx.ellipse(W * 0.50, H * 0.43, W * 0.02, H * 0.015, 0, 0, Math.PI * 2); ctx.fillStyle = '#ffe082'; ctx.fill(); ctx.strokeStyle = '#ffa000'; ctx.lineWidth = 0.7; ctx.stroke();
+                  ctx.restore();
+                }
+
+                // ── CIRCULATORY LAYER ──
+                if (layerOn('circulatory')) {
+                  ctx.save(); ctx.globalAlpha = 0.45;
                   // Pulsing heart
                   var heartPulse = 1.0 + Math.sin(anatTick * 0.08) * 0.08;
-                  ctx.save();
-                  ctx.translate(W * 0.52, H * 0.22);
-                  ctx.scale(heartPulse, heartPulse);
-                  ctx.beginPath();
-                  ctx.moveTo(0, 8);
-                  ctx.bezierCurveTo(-12, -6, -22, -2, -22, 8);
-                  ctx.bezierCurveTo(-22, 18, -5, 26, 0, 35);
-                  ctx.bezierCurveTo(5, 26, 22, 18, 22, 8);
-                  ctx.bezierCurveTo(22, -2, 12, -6, 0, 8);
-                  ctx.fillStyle = '#ef4444';
-                  ctx.globalAlpha = 0.5;
-                  ctx.fill();
-                  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5; ctx.stroke();
+                  ctx.save(); ctx.translate(W * 0.50, H * 0.23); ctx.scale(heartPulse, heartPulse);
+                  ctx.beginPath(); ctx.moveTo(0, 4); ctx.bezierCurveTo(-10, -5, -18, -1, -18, 6); ctx.bezierCurveTo(-18, 14, -4, 20, 0, 28); ctx.bezierCurveTo(4, 20, 18, 14, 18, 6); ctx.bezierCurveTo(18, -1, 10, -5, 0, 4);
+                  ctx.fillStyle = '#ef4444'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5; ctx.stroke();
                   ctx.restore();
-                  ctx.globalAlpha = 0.30;
-                  // Major vessels
-                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.15); ctx.lineTo(W * 0.50, H * 0.42);
-                  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2; ctx.stroke();
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.50, H * 0.44); ctx.lineTo(W * 0.42, H * 0.65); ctx.moveTo(W * 0.50, H * 0.44); ctx.lineTo(W * 0.58, H * 0.65);
-                  ctx.stroke();
-                } else if (sysKey === 'nervous') {
-                  // Central spine/cord
-                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.08); ctx.lineTo(W * 0.50, H * 0.42);
-                  ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.5; ctx.stroke();
-                  // Neural branches
-                  var nervePts = [
-                    [0.50, 0.15, 0.30, 0.30], [0.50, 0.15, 0.70, 0.30],
-                    [0.50, 0.25, 0.35, 0.36], [0.50, 0.25, 0.65, 0.36],
-                    [0.50, 0.42, 0.40, 0.70], [0.50, 0.42, 0.60, 0.70]
-                  ];
-                  nervePts.forEach(function (np) {
-                    ctx.beginPath();
-                    ctx.moveTo(W * np[0], H * np[1]);
-                    ctx.quadraticCurveTo(W * (np[0] + np[2]) * 0.5, H * (np[1] + np[3]) * 0.5, W * np[2], H * np[3]);
-                    ctx.strokeStyle = '#eab30880'; ctx.lineWidth = 1; ctx.stroke();
-                  });
-                  // Brain glow
-                  ctx.beginPath(); ctx.arc(W * 0.50, H * 0.055, 18, 0, Math.PI * 2);
-                  ctx.fillStyle = '#eab30820'; ctx.fill();
-                } else if (sysKey === 'digestive') {
-                  // Esophagus
-                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.13); ctx.lineTo(W * 0.50, H * 0.26);
-                  ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2; ctx.stroke();
-                  // Stomach
-                  ctx.beginPath(); ctx.ellipse(W * 0.47, H * 0.29, W * 0.04, H * 0.035, -0.3, 0, Math.PI * 2);
-                  ctx.fillStyle = '#16a34a40'; ctx.fill(); ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1; ctx.stroke();
-                  // Intestines (coil hint)
-                  ctx.beginPath();
-                  ctx.moveTo(W * 0.44, H * 0.33);
-                  for (var ii = 0; ii < 8; ii++) {
-                    ctx.lineTo(W * (0.44 + (ii % 2 === 0 ? 0.06 : 0)), H * (0.34 + ii * 0.012));
-                  }
-                  ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1; ctx.stroke();
+                  // Aorta line
+                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.20); ctx.quadraticCurveTo(W * 0.52, H * 0.17, W * 0.54, H * 0.15); ctx.quadraticCurveTo(W * 0.53, H * 0.13, W * 0.50, H * 0.10);
+                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
+                  // Descending aorta
+                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.23); ctx.lineTo(W * 0.50, H * 0.44);
+                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.stroke();
+                  // Carotids
+                  ctx.beginPath(); ctx.moveTo(W * 0.48, H * 0.10); ctx.lineTo(W * 0.47, H * 0.06); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.52, H * 0.10); ctx.lineTo(W * 0.53, H * 0.06); ctx.stroke();
+                  // Femoral arteries
+                  ctx.beginPath(); ctx.moveTo(W * 0.47, H * 0.44); ctx.lineTo(W * 0.41, H * 0.68); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.8; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.53, H * 0.44); ctx.lineTo(W * 0.59, H * 0.68); ctx.stroke();
+                  // Tibial arteries
+                  ctx.beginPath(); ctx.moveTo(W * 0.41, H * 0.69); ctx.lineTo(W * 0.38, H * 0.90); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.59, H * 0.69); ctx.lineTo(W * 0.62, H * 0.90); ctx.stroke();
+                  // Brachial/radial
+                  ctx.beginPath(); ctx.moveTo(W * 0.34, H * 0.16); ctx.lineTo(W * 0.22, H * 0.34); ctx.lineTo(W * 0.17, H * 0.46); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.16); ctx.lineTo(W * 0.78, H * 0.34); ctx.lineTo(W * 0.83, H * 0.46); ctx.stroke();
+                  // Veins (blue)
+                  ctx.beginPath(); ctx.moveTo(W * 0.52, H * 0.22); ctx.lineTo(W * 0.52, H * 0.15); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.52, H * 0.28); ctx.lineTo(W * 0.52, H * 0.44); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.49, H * 0.44); ctx.lineTo(W * 0.43, H * 0.68); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W * 0.51, H * 0.44); ctx.lineTo(W * 0.57, H * 0.68); ctx.stroke();
+                  ctx.restore();
                 }
-                ctx.globalAlpha = 1.0;
-                ctx.restore();
+
+                // ── NERVOUS LAYER ──
+                if (layerOn('nervous')) {
+                  ctx.save(); ctx.globalAlpha = 0.45;
+                  // Brain glow
+                  var brGlow = ctx.createRadialGradient(W * 0.50, H * 0.055, 4, W * 0.50, H * 0.055, W * 0.05);
+                  brGlow.addColorStop(0, '#fef08a'); brGlow.addColorStop(1, '#fef08a00');
+                  ctx.beginPath(); ctx.arc(W * 0.50, H * 0.055, W * 0.05, 0, Math.PI * 2); ctx.fillStyle = brGlow; ctx.fill();
+                  ctx.beginPath(); ctx.arc(W * 0.50, H * 0.055, W * 0.042, 0, Math.PI * 2); ctx.strokeStyle = '#eab308'; ctx.lineWidth = 1.5; ctx.stroke();
+                  // Spinal cord
+                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.09); ctx.lineTo(W * 0.50, H * 0.44);
+                  ctx.strokeStyle = '#eab308'; ctx.lineWidth = 3; ctx.stroke();
+                  // Nerve branches
+                  var nervePts = [
+                    [0.50, 0.14, 0.30, 0.30], [0.50, 0.14, 0.70, 0.30],
+                    [0.50, 0.20, 0.28, 0.36], [0.50, 0.20, 0.72, 0.36],
+                    [0.50, 0.30, 0.20, 0.44], [0.50, 0.30, 0.80, 0.44],
+                    [0.50, 0.44, 0.39, 0.72], [0.50, 0.44, 0.61, 0.72],
+                    [0.39, 0.72, 0.37, 0.90], [0.61, 0.72, 0.63, 0.90]
+                  ];
+                  nervePts.forEach(function (np) { ctx.beginPath(); ctx.moveTo(W * np[0], H * np[1]); ctx.quadraticCurveTo(W * (np[0] + np[2]) * 0.5, H * (np[1] + np[3]) * 0.5, W * np[2], H * np[3]); ctx.strokeStyle = '#eab308'; ctx.lineWidth = 1.2; ctx.stroke(); });
+                  // Nerve nodes
+                  [[0.50, 0.14], [0.50, 0.20], [0.50, 0.30], [0.50, 0.38]].forEach(function (n) {
+                    ctx.beginPath(); ctx.arc(W * n[0], H * n[1], 2.5, 0, Math.PI * 2); ctx.fillStyle = '#eab308'; ctx.fill();
+                  });
+                  ctx.restore();
+                }
+
+                // ── LYMPHATIC LAYER ──
+                if (layerOn('lymphatic')) {
+                  ctx.save(); ctx.globalAlpha = 0.40;
+                  // Thoracic duct
+                  ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.14); ctx.quadraticCurveTo(W * 0.48, H * 0.30, W * 0.50, H * 0.44);
+                  ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
+                  // Lymph nodes (green dots)
+                  var lnPts = [[0.46, 0.13], [0.54, 0.13], [0.34, 0.20], [0.66, 0.20], [0.44, 0.30], [0.56, 0.30], [0.44, 0.44], [0.56, 0.44], [0.42, 0.58], [0.58, 0.58]];
+                  lnPts.forEach(function (ln) { ctx.beginPath(); ctx.arc(W * ln[0], H * ln[1], 4, 0, Math.PI * 2); ctx.fillStyle = '#86efac'; ctx.fill(); ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1; ctx.stroke(); });
+                  // Spleen hint
+                  ctx.beginPath(); ctx.ellipse(W * 0.58, H * 0.32, W * 0.02, H * 0.018, 0, 0, Math.PI * 2); ctx.fillStyle = '#86efac80'; ctx.fill(); ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1; ctx.stroke();
+                  // Thymus hint
+                  ctx.beginPath(); ctx.ellipse(W * 0.50, H * 0.18, W * 0.015, H * 0.012, 0, 0, Math.PI * 2); ctx.fillStyle = '#86efac80'; ctx.fill(); ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1; ctx.stroke();
+                  // Connecting vessels
+                  for (var li = 0; li < lnPts.length - 2; li++) { ctx.beginPath(); ctx.moveTo(W * lnPts[li][0], H * lnPts[li][1]); ctx.lineTo(W * lnPts[li + 2][0], H * lnPts[li + 2][1]); ctx.strokeStyle = '#22c55e50'; ctx.lineWidth = 0.8; ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]); }
+                  ctx.restore();
+                }
 
                 // ── Enhanced Structure Markers ──
                 filtered.forEach(function (st) {
@@ -18404,7 +19369,7 @@
                   var r = isSel ? 9 : 5;
                   // Animated pulsing ring for selected
                   if (isSel) {
-                    var pulse = 1.0 + Math.sin(tick * 0.06) * 0.3;
+                    var pulse = 1.0 + Math.sin(anatTick * 0.06) * 0.3;
                     ctx.save();
                     ctx.globalAlpha = 0.3 - pulse * 0.1;
                     ctx.beginPath(); ctx.arc(px, py, r + 6 + pulse * 4, 0, Math.PI * 2);
@@ -18485,7 +19450,7 @@
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               // Header
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("div", null,
                   React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEC0 Human Anatomy Explorer"),
                   React.createElement("p", { className: "text-xs text-slate-400" }, sys.desc)
@@ -18502,6 +19467,28 @@
                     style: sysKey === key ? { background: s.accent } : {}
                   }, s.icon + ' ' + s.name);
                 })
+              ),
+              // Layer toggle bar
+              React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200" },
+                React.createElement("span", { className: "text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1" }, "\uD83E\uDDE0 Layers"),
+                LAYER_DEFS.map(function (ld) {
+                  var isOn = layers[ld.id] || ld.id === autoLayerId;
+                  return React.createElement("button", {
+                    key: ld.id,
+                    onClick: function () { toggleLayer(ld.id); },
+                    title: (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
+                    className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all border " +
+                      (isOn
+                        ? 'text-white shadow-sm border-transparent'
+                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-100'),
+                    style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
+                  }, ld.icon + ' ' + ld.name);
+                }),
+                React.createElement("button", {
+                  onClick: function () { upd('visibleLayers', { skin: true }); },
+                  title: 'Reset all layers to default (skin only)',
+                  className: "ml-auto px-2 py-1 rounded-lg text-[10px] font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+                }, "\u21BA Reset")
               ),
               // Controls: view toggle, search, quiz
               React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
@@ -18525,7 +19512,7 @@
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
                 }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
                 React.createElement("div", { className: "flex rounded-lg border border-slate-200 overflow-hidden" },
-                  [{ v: 1, label: t('stem.synth_ui.ku20135'), tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
+                  [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
                     return React.createElement("button", {
                       key: lv.v, title: lv.tip + ' level',
                       onClick: function () { upd('complexity', lv.v); upd('selectedStructure', null); },
@@ -18755,12 +19742,26 @@
               upd('_brainQuizOptsFor', d.quizIdx);
             }
 
+            // ── Neurotransmitter Simulation System ──
+            var SIM_SCENARIOS = [
+              { id: 'normal', name: 'Normal', icon: '\u2705', color: '#22c55e', desc: 'Baseline neurotransmission: neurotransmitters are released, bind receptors, and are cleared by reuptake and enzymatic degradation.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 1, receptorBoost: null, receptorDim: null, vesicleRate: 1 },
+              { id: 'ssri', name: 'SSRI', icon: '\uD83D\uDC8A', color: '#3b82f6', desc: 'Selective Serotonin Reuptake Inhibitor (e.g., Fluoxetine/Prozac): blocks the serotonin transporter (SERT), increasing 5-HT concentration in the synaptic cleft. Used for depression and anxiety.', reuptakeBlocked: true, enzymeBlocked: false, particleMult: 2.5, receptorBoost: null, receptorDim: null, vesicleRate: 1 },
+              { id: 'snri', name: 'SNRI', icon: '\uD83D\uDC8A', color: '#8b5cf6', desc: 'Serotonin-Norepinephrine Reuptake Inhibitor (e.g., Venlafaxine/Effexor): blocks both SERT and NET, increasing serotonin AND norepinephrine in the cleft. Used for depression, anxiety, and chronic pain.', reuptakeBlocked: true, enzymeBlocked: false, particleMult: 2.8, receptorBoost: null, receptorDim: null, vesicleRate: 1.2 },
+              { id: 'benzo', name: 'Benzodiazepine', icon: '\uD83D\uDC8A', color: '#14b8a6', desc: 'Positive allosteric modulator of GABA-A receptors (e.g., Diazepam/Valium): increases Cl\u207B channel opening frequency, enhancing inhibitory neurotransmission. Used for anxiety, seizures, and insomnia. Risk: dependence.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 1, receptorBoost: 'GABA-A', receptorDim: null, vesicleRate: 0.7 },
+              { id: 'cocaine', name: 'Cocaine', icon: '\u26A0\uFE0F', color: '#ef4444', desc: 'Blocks DAT, NET, and SERT reuptake transporters non-selectively. Massive dopamine accumulation in mesolimbic pathway \u2192 intense euphoria. Highly addictive. Cardiotoxic: causes vasoconstriction, arrhythmias, MI, and stroke.', reuptakeBlocked: true, enzymeBlocked: false, particleMult: 4, receptorBoost: null, receptorDim: null, vesicleRate: 2 },
+              { id: 'opioid', name: 'Opioid', icon: '\u26A0\uFE0F', color: '#f59e0b', desc: 'Mu-receptor agonist (e.g., Morphine, Fentanyl): activates endogenous opioid receptors \u2192 analgesia, euphoria, respiratory depression. Hijacks VTA reward circuit. Tolerance and physical dependence develop rapidly. Overdose: fatal respiratory arrest.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 1.3, receptorBoost: '\u03BC-opioid', receptorDim: null, vesicleRate: 0.6 },
+              { id: 'alcohol', name: 'Alcohol', icon: '\u26A0\uFE0F', color: '#d946ef', desc: 'Dual mechanism: enhances GABA-A receptor activity (sedation) AND blocks NMDA glutamate receptors (reduces excitation). Results in CNS depression, impaired judgment, ataxia. Chronic use: neuroadaptation, tolerance, and life-threatening withdrawal seizures.', reuptakeBlocked: false, enzymeBlocked: false, particleMult: 0.8, receptorBoost: 'GABA-A', receptorDim: 'NMDA', vesicleRate: 0.5 }
+            ];
+            var simScenario = d.simScenario || 'normal';
+            var activeSim = SIM_SCENARIOS.find(function (s) { return s.id === simScenario; }) || SIM_SCENARIOS[0];
+
             // Brain canvas — animated
             var canvasRef = function (canvas) {
               if (!canvas) return;
-              if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
+              if (canvas._brainAnim) return; // Animation already running — don't restart
               var ctx = canvas.getContext('2d');
               var W = canvas.width, H = canvas.height;
+              var fontScale = W / 600; // Scale text proportionally
               if (!canvas._neurons) {
                 canvas._neurons = [];
                 for (var ni = 0; ni < 30; ni++) {
@@ -18768,15 +19769,15 @@
                 }
               }
               var neurons = canvas._neurons;
-              var brainTick = 0;
+              canvas._brainTick = canvas._brainTick || 0;
               function drawBrainFrame() {
-                brainTick++;
+                canvas._brainTick++;
                 ctx.clearRect(0, 0, W, H);
                 ctx.save();
 
                 // ── Enhanced Neurotransmitter Synapse View ──
                 if (currentView.isNT) {
-                  var tNT = brainTick * 0.02;
+                  var tNT = canvas._brainTick * 0.02;
                   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
 
                   // ── Presynaptic Terminal (gradient fill + shadow) ──
@@ -18829,7 +19830,7 @@
                   ctx.restore();
 
                   // Label
-                  ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
                   ctx.fillText('PRESYNAPTIC TERMINAL', W * 0.5, H * 0.10);
 
@@ -18845,7 +19846,7 @@
                     ctx.moveTo(crx, H * 0.10); ctx.quadraticCurveTo(crx + W * 0.005, H * 0.12, crx, H * 0.14);
                     ctx.strokeStyle = '#b4590080'; ctx.lineWidth = 0.6; ctx.stroke();
                   }
-                  ctx.font = '6px Inter, system-ui, sans-serif';
+                  ctx.font = Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#b45900'; ctx.textAlign = 'center';
                   ctx.fillText('Mitochondria', W * 0.78, H * 0.155);
                   ctx.restore();
@@ -18863,13 +19864,14 @@
                   ctx.beginPath(); ctx.arc(W * 0.42, H * 0.39, 4, 0, Math.PI * 2);
                   ctx.fillStyle = '#06b6d4'; ctx.fill();
                   ctx.strokeStyle = '#0891b2'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.font = '6px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#0e7490'; ctx.textAlign = 'center';
-                  ctx.fillText('Ca²⁺', W * 0.42, H * 0.39 + 2);
+                  ctx.fillText('Ca\u00B2\u207A', W * 0.42, H * 0.39 + 2);
 
                   // ── Vesicles with glow + one fusing ──
                   var vesColors = ['#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'];
-                  for (var vi = 0; vi < 8; vi++) {
+                  var vesicleCount = Math.round(8 * activeSim.vesicleRate);
+                  for (var vi = 0; vi < vesicleCount; vi++) {
                     var vx = W * 0.22 + (vi % 4) * W * 0.15, vy = H * 0.20 + Math.floor(vi / 4) * H * 0.064;
                     var isFusing = vi === 5; // One vesicle animates toward membrane
                     var vRadius = 9;
@@ -18880,19 +19882,12 @@
                     }
                     // Vesicle glow
                     ctx.save();
-                    var vesGlow = ctx.createRadialGradient(vx, vyAnim, 2, vx, vyAnim, vRadius + 5);
-                    vesGlow.addColorStop(0, vesColors[vi % 4] + '40');
-                    vesGlow.addColorStop(1, vesColors[vi % 4] + '00');
-                    ctx.beginPath(); ctx.arc(vx, vyAnim, vRadius + 5, 0, Math.PI * 2);
-                    ctx.fillStyle = vesGlow; ctx.fill();
-                    ctx.restore();
-                    // Vesicle body (gradient sphere)
-                    var vesBody = ctx.createRadialGradient(vx - 2, vyAnim - 2, 1, vx, vyAnim, vRadius);
-                    vesBody.addColorStop(0, '#f0e6ff');
-                    vesBody.addColorStop(0.5, vesColors[vi % 4] + '80');
-                    vesBody.addColorStop(1, vesColors[vi % 4]);
+                    var vesGlow = ctx.createRadialGradient(vx - 2, vyAnim - 2, 1, vx, vyAnim, vRadius);
+                    vesGlow.addColorStop(0, '#f0e6ff');
+                    vesGlow.addColorStop(0.5, vesColors[vi % 4] + '80');
+                    vesGlow.addColorStop(1, vesColors[vi % 4]);
                     ctx.beginPath(); ctx.arc(vx, vyAnim, vRadius, 0, Math.PI * 2);
-                    ctx.fillStyle = vesBody; ctx.fill();
+                    ctx.fillStyle = vesGlow; ctx.fill();
                     ctx.strokeStyle = vesColors[vi % 4]; ctx.lineWidth = 1; ctx.stroke();
                     // NT molecules inside (small dots)
                     if (!isFusing || vRadius > 5) {
@@ -18929,27 +19924,28 @@
                   ctx.roundRect(W * 0.5 - cleftLabelW / 2, H * 0.485, cleftLabelW, 14, 4);
                   ctx.fill();
                   ctx.restore();
-                  ctx.font = 'bold 8px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
                   ctx.fillText('SYNAPTIC CLEFT (~20nm)', W * 0.5, H * 0.50);
 
                   // ── Animated NT particles (glowing with trails) ──
-                  for (var pi = 0; pi < 14; pi++) {
-                    var px2 = W * 0.14 + (pi * W * 0.055) + Math.sin(tNT * 1.5 + pi * 0.8) * 10;
+                  var ntParticleCount = Math.round(14 * activeSim.particleMult);
+                  for (var pi = 0; pi < ntParticleCount; pi++) {
+                    var px2 = W * 0.14 + ((pi % 14) * W * 0.055) + Math.sin(tNT * 1.5 + pi * 0.8) * 10;
                     var py2 = H * 0.43 + Math.abs(Math.sin(tNT * 1.0 + pi * 1.3)) * H * 0.14;
                     // Glow
                     ctx.save();
                     var ptGlow = ctx.createRadialGradient(px2, py2, 0.5, px2, py2, 6);
-                    ptGlow.addColorStop(0, 'hsla(' + ((pi * 25 + brainTick) % 360) + ', 80%, 65%, 0.6)');
-                    ptGlow.addColorStop(1, 'hsla(' + ((pi * 25 + brainTick) % 360) + ', 80%, 65%, 0)');
+                    ptGlow.addColorStop(0, 'hsla(' + ((pi * 25 + canvas._brainTick) % 360) + ', 80%, 65%, 0.6)');
+                    ptGlow.addColorStop(1, 'hsla(' + ((pi * 25 + canvas._brainTick) % 360) + ', 80%, 65%, 0)');
                     ctx.beginPath(); ctx.arc(px2, py2, 6, 0, Math.PI * 2);
                     ctx.fillStyle = ptGlow; ctx.fill();
                     ctx.restore();
                     // Particle core
                     ctx.beginPath(); ctx.arc(px2, py2, 2.5, 0, Math.PI * 2);
-                    ctx.fillStyle = 'hsl(' + ((pi * 25 + brainTick) % 360) + ', 80%, 58%)';
+                    ctx.fillStyle = 'hsl(' + ((pi * 25 + canvas._brainTick) % 360) + ', 80%, 58%)';
                     ctx.fill();
-                    ctx.strokeStyle = 'hsl(' + ((pi * 25 + brainTick) % 360) + ', 80%, 45%)';
+                    ctx.strokeStyle = 'hsl(' + ((pi * 25 + canvas._brainTick) % 360) + ', 80%, 45%)';
                     ctx.lineWidth = 0.5; ctx.stroke();
                   }
 
@@ -18994,7 +19990,7 @@
                   }
                   ctx.restore();
 
-                  ctx.font = 'bold 9px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#92400e'; ctx.textAlign = 'center';
                   ctx.fillText('POSTSYNAPTIC DENSITY', W * 0.5, H * 0.70);
 
@@ -19035,7 +20031,31 @@
                       ctx.fillStyle = rd.color + '30'; ctx.fill();
                       ctx.strokeStyle = rd.color; ctx.lineWidth = 0.8; ctx.stroke();
                     }
-                    ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                    // Receptor boost/dim effects from simulation
+                    if (activeSim.receptorBoost && rd.name === activeSim.receptorBoost) {
+                      ctx.save();
+                      var boostGlow = ctx.createRadialGradient(rx, ry + 8, 2, rx, ry + 8, 18);
+                      boostGlow.addColorStop(0, rd.color + '60');
+                      boostGlow.addColorStop(1, rd.color + '00');
+                      ctx.beginPath(); ctx.arc(rx, ry + 8, 18 + Math.sin(tNT * 3) * 4, 0, Math.PI * 2);
+                      ctx.fillStyle = boostGlow; ctx.fill();
+                      ctx.restore();
+                      ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
+                      ctx.fillText('\u2B06 ENHANCED', rx, ry + 34);
+                    }
+                    if (activeSim.receptorDim && rd.name === activeSim.receptorDim) {
+                      ctx.save();
+                      ctx.globalAlpha = 0.3 + Math.sin(tNT * 2) * 0.1;
+                      ctx.beginPath(); ctx.moveTo(rx - 10, ry - 4); ctx.lineTo(rx + 10, ry + 18);
+                      ctx.moveTo(rx + 10, ry - 4); ctx.lineTo(rx - 10, ry + 18);
+                      ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.stroke();
+                      ctx.restore();
+                      ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = '#ef4444'; ctx.textAlign = 'center';
+                      ctx.fillText('\u2B07 BLOCKED', rx, ry + 34);
+                    }
+                    ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
                     ctx.fillStyle = rd.color; ctx.textAlign = 'center';
                     ctx.fillText(rd.name, rx, ry + 26);
                   }
@@ -19045,24 +20065,41 @@
                   ctx.translate(W * 0.88, H * 0.41);
                   // Pump body
                   var pumpGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 14);
-                  pumpGrad.addColorStop(0, '#d1fae5');
-                  pumpGrad.addColorStop(1, '#86efac');
+                  if (activeSim.reuptakeBlocked) {
+                    pumpGrad.addColorStop(0, '#fef2f2');
+                    pumpGrad.addColorStop(1, '#fecaca');
+                  } else {
+                    pumpGrad.addColorStop(0, '#d1fae5');
+                    pumpGrad.addColorStop(1, '#86efac');
+                  }
                   ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2);
                   ctx.fillStyle = pumpGrad; ctx.fill();
-                  ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 1.5; ctx.stroke();
-                  // Spinning arrow
-                  ctx.rotate(tNT * 2);
-                  ctx.beginPath();
-                  ctx.moveTo(0, -8); ctx.lineTo(4, -3); ctx.lineTo(-4, -3);
-                  ctx.fillStyle = '#16a34a'; ctx.fill();
-                  ctx.beginPath();
-                  ctx.moveTo(0, 8); ctx.lineTo(-4, 3); ctx.lineTo(4, 3);
-                  ctx.fill();
+                  ctx.strokeStyle = activeSim.reuptakeBlocked ? '#ef4444' : '#16a34a'; ctx.lineWidth = 1.5; ctx.stroke();
+                  if (activeSim.reuptakeBlocked) {
+                    // Blocked: red X overlay with pulsing glow
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(239,68,68,0.5)';
+                    ctx.shadowBlur = 6 + Math.sin(tNT * 3) * 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-7, -7); ctx.lineTo(7, 7);
+                    ctx.moveTo(7, -7); ctx.lineTo(-7, 7);
+                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
+                    ctx.restore();
+                  } else {
+                    // Spinning arrow (normal operation)
+                    ctx.rotate(tNT * 2);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -8); ctx.lineTo(4, -3); ctx.lineTo(-4, -3);
+                    ctx.fillStyle = '#16a34a'; ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(0, 8); ctx.lineTo(-4, 3); ctx.lineTo(4, 3);
+                    ctx.fill();
+                  }
                   ctx.restore();
-                  ctx.font = 'bold 6px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = '#16a34a'; ctx.textAlign = 'center';
-                  ctx.fillText('Reuptake', W * 0.88, H * 0.41 + 20);
-                  ctx.fillText('Transporter', W * 0.88, H * 0.41 + 27);
+                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillStyle = activeSim.reuptakeBlocked ? '#ef4444' : '#16a34a'; ctx.textAlign = 'center';
+                  ctx.fillText(activeSim.reuptakeBlocked ? 'BLOCKED' : 'Reuptake', W * 0.88, H * 0.41 + 20);
+                  ctx.fillText(activeSim.reuptakeBlocked ? 'Reuptake' : 'Transporter', W * 0.88, H * 0.41 + 29);
 
                   // ── Enzyme (MAO/COMT) with scissor icon ──
                   ctx.save();
@@ -19078,7 +20115,7 @@
                   ctx.moveTo(W * 0.12 + 5, H * 0.50 - 5); ctx.lineTo(W * 0.12 - 5, H * 0.50 + 5);
                   ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.2; ctx.stroke();
                   ctx.restore();
-                  ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
                   ctx.fillStyle = '#dc2626'; ctx.textAlign = 'center';
                   ctx.fillText('MAO/COMT', W * 0.12, H * 0.50 + 18);
                   ctx.fillText('Enzyme', W * 0.12, H * 0.50 + 25);
@@ -19111,7 +20148,7 @@
                     ctx.roundRect(W * 0.5 - pillW / 2, cascadeY[ci] - 5, pillW, 11, 3);
                     ctx.fillStyle = cascadeColors[ci] + '15'; ctx.fill();
                     ctx.strokeStyle = cascadeColors[ci] + '40'; ctx.lineWidth = 0.5; ctx.stroke();
-                    ctx.font = 'bold 6px Inter, system-ui, sans-serif';
+                    ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
                     ctx.fillStyle = cascadeColors[ci]; ctx.textAlign = 'center';
                     ctx.fillText(cascadeLabels[ci], W * 0.5, cascadeY[ci] + 2);
                   }
@@ -19123,7 +20160,7 @@
                   ctx.roundRect(W * 0.5 - 80, H - 18, 160, 14, 4);
                   ctx.fillStyle = '#f8fafc'; ctx.fill();
                   ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5; ctx.stroke();
-                  ctx.font = 'bold 9px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
                   ctx.fillText('NEUROTRANSMITTER SYNAPSE', W * 0.5, H - 8);
                   ctx.restore();
 
@@ -19662,7 +20699,7 @@
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               // Header
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("div", null,
                   React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
                   React.createElement("p", { className: "text-xs text-slate-400" }, currentView.desc)
@@ -19693,121 +20730,152 @@
                 }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
                 React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
               ),
-              // Main: canvas + detail
-              React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
-                React.createElement("div", { className: "flex-shrink-0" },
-                  React.createElement("canvas", {
-                    ref: canvasRef, width: 380, height: 460,
-                    onClick: handleClick,
-                    className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
-                    style: { background: '#faf8ff' }
+              // Main: canvas (full width) + detail below
+              React.createElement("div", { className: "space-y-3" },
+                // ─── Simulation scenario buttons (NT view only) ───
+                currentView.isNT && React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                  SIM_SCENARIOS.map(function (s) {
+                    var isActive = simScenario === s.id;
+                    return React.createElement("button", {
+                      key: s.id,
+                      onClick: function () { upd('simScenario', s.id); },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2 " +
+                        (isActive ? 'text-white shadow-lg' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'),
+                      style: isActive ? { background: s.color, borderColor: s.color } : {}
+                    }, s.icon + ' ' + s.name);
                   })
                 ),
-                React.createElement("div", { className: "flex-1 min-w-0" },
-                  d.quizMode ? (
-                    quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
-                      React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                        React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
-                        React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
+                // ─── Canvas ───
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'center' } },
+                  React.createElement("canvas", {
+                    ref: canvasRef,
+                    width: currentView.isNT ? 600 : 520,
+                    height: currentView.isNT ? 500 : 460,
+                    onClick: handleClick,
+                    className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
+                    style: { background: '#faf8ff', maxWidth: '100%' }
+                  })
+                ),
+                // ─── Simulation description panel (NT view only) ───
+                currentView.isNT && React.createElement("div", {
+                  className: "rounded-xl border-2 p-3",
+                  style: { borderColor: activeSim.color + '44', background: activeSim.color + '0a' }
+                },
+                  React.createElement("div", { className: "flex items-start gap-2" },
+                    React.createElement("span", { className: "text-lg flex-shrink-0" }, activeSim.icon),
+                    React.createElement("div", null,
+                      React.createElement("p", {
+                        className: "text-sm font-black mb-1",
+                        style: { color: activeSim.color }
+                      }, activeSim.name + ' Mode'),
+                      React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, activeSim.desc)
+                    )
+                  )
+                ),
+                // ─── Detail panel (below canvas) ───
+                d.quizMode ? (
+                  quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                      React.createElement("h4", { className: "font-bold text-green-800 text-sm" }, "\uD83E\uDDE0 Brain Quiz"),
+                      React.createElement("span", { className: "text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" }, "\u2B50 " + (d.quizScore || 0))
+                    ),
+                    React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
+                    React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
+                      brainQuizOpts.map(function (opt) {
+                        var fb = d.quizFeedback;
+                        var isCorrect = opt.id === quizQ.id;
+                        var wasChosen = fb && fb.chosen === opt.id;
+                        var showResult = fb !== null && fb !== undefined;
+                        return React.createElement("button", {
+                          key: opt.id, disabled: showResult,
+                          onClick: function () {
+                            var correct = opt.id === quizQ.id;
+                            upd('quizFeedback', { chosen: opt.id, correct: correct });
+                            if (correct) upd('quizScore', (d.quizScore || 0) + 1);
+                          },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
+                            (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
+                              showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
+                                'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
+                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
+                      })
+                    ),
+                    d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                      React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
+                      React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                      quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
+                      quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
+                    ),
+                    d.quizFeedback && React.createElement("button", {
+                      onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
+                      className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                    }, "Next Question \u2192")
+                  ) : null
+                ) : (
+                  sel ? (
+                    React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
+                      React.createElement("div", { className: "flex items-start justify-between" },
+                        React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
+                        React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
                       ),
-                      React.createElement("p", { className: "text-sm text-slate-800 font-bold" }, "What happens when this region is damaged?"),
-                      React.createElement("p", { className: "text-xs text-purple-700 bg-purple-50 rounded-lg p-3 font-bold" }, quizQ.name),
-                      React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
-                        brainQuizOpts.map(function (opt) {
-                          var fb = d.quizFeedback;
-                          var isCorrect = opt.id === quizQ.id;
-                          var wasChosen = fb && fb.chosen === opt.id;
-                          var showResult = fb !== null && fb !== undefined;
-                          return React.createElement("button", {
-                            key: opt.id, disabled: showResult,
-                            onClick: function () {
-                              var correct = opt.id === quizQ.id;
-                              upd('quizFeedback', { chosen: opt.id, correct: correct });
-                              if (correct) upd('quizScore', (d.quizScore || 0) + 1);
-                            },
-                            className: "w-full text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed font-medium transition-all border-2 " +
-                              (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
-                                showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                                  'border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50')
-                          }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + (opt.damage || '').substring(0, 100) + ((opt.damage || '').length > 100 ? '...' : ''));
-                        })
-                      ),
-                      d.quizFeedback && React.createElement("div", { className: "rounded-lg p-3 text-xs leading-relaxed space-y-1.5 " + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                        React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
-                        React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
-                        quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
-                        quizQ.conditions && React.createElement("p", { className: "text-slate-600 italic" }, React.createElement("span", { className: "font-bold text-amber-600" }, "\u26A0 Conditions: "), quizQ.conditions)
-                      ),
-                      d.quizFeedback && React.createElement("button", {
-                        onClick: function () { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
-                        className: "w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
-                      }, "Next Question \u2192")
-                    ) : null
-                  ) : (
-                    sel ? (
-                      React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
-                        React.createElement("div", { className: "flex items-start justify-between" },
-                          React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
-                          React.createElement("button", { onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-400" }))
+                      React.createElement("div", { className: "space-y-2.5" },
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
+                          React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
                         ),
-                        React.createElement("div", { className: "space-y-2.5" },
-                          React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Function"),
-                            React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
-                          ),
-                          sel.brodmann && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
-                            React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
-                          ),
-                          sel.blood && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
-                            React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
-                          ),
-                          sel.category && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
-                            React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
-                          ),
-                          sel.synthesis && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
-                          ),
-                          sel.receptors && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
-                          ),
-                          sel.pathways && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
-                          ),
-                          sel.drugs && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
-                            React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
-                          ),
-                          sel.conditions && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
-                          ),
-                          sel.damage && React.createElement("div", null,
-                            React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
-                            React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
-                          )
+                        sel.brodmann && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Brodmann Areas"),
+                          React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
+                        ),
+                        sel.blood && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "Blood Supply"),
+                          React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
+                        ),
+                        sel.category && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
+                          React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
+                        ),
+                        sel.synthesis && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
+                        ),
+                        sel.receptors && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
+                        ),
+                        sel.pathways && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
+                        ),
+                        sel.drugs && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
+                          React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
+                        ),
+                        sel.conditions && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
+                        ),
+                        sel.damage && React.createElement("div", null,
+                          React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
+                          React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
                         )
                       )
-                    ) : (
-                      React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
-                        filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
-                        filtered.map(function (r) {
-                          return React.createElement("button", {
-                            key: r.id,
-                            onClick: function () { upd('selectedRegion', r.id); },
-                            className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
-                              (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
-                          },
-                            React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
-                            React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
-                          );
-                        })
-                      )
+                    )
+                  ) : (
+                    React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
+                      filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-400 italic py-4 text-center" }, "No regions match your search."),
+                      filtered.map(function (r) {
+                        return React.createElement("button", {
+                          key: r.id,
+                          onClick: function () { upd('selectedRegion', r.id); },
+                          className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
+                            (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
+                        },
+                          React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
+                          React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        );
+                      })
                     )
                   )
                 )
@@ -19889,7 +20957,7 @@
               if (!canvas) return;
               var ctx = canvas.getContext('2d');
               var W = canvas.width, H = canvas.height;
-              var gridSize = d.pixelGrid || 16;
+              var gridSize = typeof d.pixelGrid === 'number' ? d.pixelGrid : 16;
               var cellW = W / gridSize, cellH = H / gridSize;
               var grid = d.pixelData || {};
               var painting = false;
@@ -20001,7 +21069,7 @@
 
             return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+                React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFA8 Art & Design Studio"),
                 React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-full" }, "CREATIVE")
               ),
@@ -20074,7 +21142,7 @@
                       return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
                     }),
                     React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                    React.createElement("select", { value: d.pixelGrid || 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
+                    React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
                       [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
                   )
                 ),
@@ -20784,7 +21852,7 @@
                     var sfx = ((tick * 0.5 + sfi * 53) % cW);
                     var sfy = ((tick * 0.8 + sfi * 97) % (cH * 0.45));
                     ctx.beginPath();
-                    ctx.arc(sfx / dpr, sfy / dpr, 1.5, 0, Math.PI * 2);
+                    ctx.arc(sfx, sfy, 1.5, 0, Math.PI * 2);
                     ctx.fill();
                   }
                 }
@@ -20833,8 +21901,8 @@
                 // ── Draw garden mound(s) ──
                 if (_compare) {
                   // Split view
-                  drawMound(cW * 0.27 / dpr, cH * 0.55 / dpr, 70, 25, 'Three Sisters (Milpa)', _corn, _beans, _squash, _gt, false);
-                  drawMound(cW * 0.73 / dpr, cH * 0.55 / dpr, 70, 25, 'Monoculture Corn', true, false, false, _gt, true);
+                  drawMound(cW * 0.27, cH * 0.55, 70, 25, 'Three Sisters (Milpa)', _corn, _beans, _squash, _gt, false);
+                  drawMound(cW * 0.73, cH * 0.55, 70, 25, 'Monoculture Corn', true, false, false, _gt, true);
 
                   // Divider
                   ctx.strokeStyle = 'rgba(255,255,255,0.3)';
@@ -20850,10 +21918,10 @@
                   ctx.fillStyle = 'rgba(255,255,255,0.7)';
                   ctx.font = 'bold 10px system-ui';
                   ctx.textAlign = 'center';
-                  ctx.fillText('COMPANION PLANTING', cW * 0.27 / dpr, cH * 0.92 / dpr);
-                  ctx.fillText('MONOCULTURE', cW * 0.73 / dpr, cH * 0.92 / dpr);
+                  ctx.fillText('COMPANION PLANTING', cW * 0.27, cH * 0.92);
+                  ctx.fillText('MONOCULTURE', cW * 0.73, cH * 0.92);
                 } else {
-                  drawMound(cW * 0.5 / dpr, cH * 0.58 / dpr, 100, 35, '', _corn, _beans, _squash, _gt, false);
+                  drawMound(cW * 0.5, cH * 0.58, 100, 35, '', _corn, _beans, _squash, _gt, false);
                 }
 
                 // ── Floating particles (pollen, pollinators, N₂ symbols) ──
@@ -20934,14 +22002,14 @@
                     var ryStart = ((tick * 3 + ri * 137) % (cH * 0.4));
                     var ryLen = 6 + rainIntensity * 8;
                     ctx.beginPath();
-                    ctx.moveTo(rx / dpr, ryStart / dpr);
-                    ctx.lineTo((rx - 1) / dpr, (ryStart + ryLen) / dpr);
+                    ctx.moveTo(rx, ryStart);
+                    ctx.lineTo(rx - 1, ryStart + ryLen);
                     ctx.stroke();
                     // Splash at ground level
                     if (ryStart + ryLen > cH * 0.38) {
                       ctx.fillStyle = 'rgba(100,180,255,' + (0.1 + rainIntensity * 0.15) + ')';
                       ctx.beginPath();
-                      ctx.arc(rx / dpr, cH * 0.4 / dpr, 2, 0, Math.PI * 2);
+                      ctx.arc(rx, cH * 0.4, 2, 0, Math.PI * 2);
                       ctx.fill();
                     }
                   }
@@ -20952,8 +22020,8 @@
                   var pestAlpha = Math.min(0.6, (_pestLvl - 40) / 100);
                   ctx.fillStyle = 'rgba(180,50,30,' + pestAlpha + ')';
                   for (var pi2 = 0; pi2 < Math.floor(_pestLvl / 8); pi2++) {
-                    var px = ((tick * 1.5 + pi2 * 67) % cW) / dpr;
-                    var py = ((tick * 0.8 + pi2 * 89) % (cH * 0.35)) / dpr + cH * 0.1 / dpr;
+                    var px = ((tick * 1.5 + pi2 * 67) % cW);
+                    var py = ((tick * 0.8 + pi2 * 89) % (cH * 0.35)) + cH * 0.1;
                     ctx.beginPath();
                     ctx.arc(px, py, 2 + Math.sin(tick * 0.05 + pi2) * 1, 0, Math.PI * 2);
                     ctx.fill();
@@ -20966,8 +22034,8 @@
                   ctx.strokeStyle = 'rgba(60,120,40,' + weedAlpha + ')';
                   ctx.lineWidth = 1.5;
                   for (var wi2 = 0; wi2 < Math.floor(_weedLvl / 10); wi2++) {
-                    var wx = ((wi2 * 83 + 30) % cW) / dpr;
-                    var wy = cH * 0.42 / dpr;
+                    var wx = ((wi2 * 83 + 30) % cW);
+                    var wy = cH * 0.42;
                     var wSway = Math.sin(tick * 0.02 + wi2) * 4;
                     ctx.beginPath();
                     ctx.moveTo(wx, wy);
@@ -21671,10 +22739,10 @@
               ),
 
               // Main layout: sidebar + viewport
-              React.createElement('div', { className: 'flex flex-col md:flex-row gap-3', style: { minHeight: '480px' } },
+              React.createElement('div', { className: 'flex gap-3', style: { minHeight: '480px', flexDirection: 'row' } },
 
                 // === LEFT SIDEBAR ===
-                React.createElement('div', { className: 'w-full md:w-64 flex-shrink-0 flex flex-col gap-3' },
+                React.createElement('div', { style: { width: '260px', maxHeight: '520px', overflowY: 'auto', flexShrink: 0 }, className: 'flex flex-col gap-3' },
 
                   // Shape palette
                   React.createElement('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
@@ -22120,6 +23188,10 @@
             const showWindow = d.showWindow || false;
             const showChallenge = d.showChallenge || false;
             const showMathPad = d.showMathPad != null ? d.showMathPad : false;
+            const showArith = d.showArith || false;
+            const arithExpr = d.arithExpr || '';
+            const arithResult = d.arithResult || '';
+            const showSliders = d.showSliders || false;
             const focusedInput = d.focusedInput || 0;
             const tableX = d.tableX != null ? d.tableX : -5;
             const tableStep = d.tableStep || 1;
@@ -22230,7 +23302,7 @@
                 tExpr = tExpr.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
                 const tCompiled = math.compile(tExpr);
                 for (let tx = tableX; tx <= tableX + 10 * tableStep; tx += tableStep) {
-                  try { const ty = tCompiled.evaluate({ x: tx }); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
+                  try { var _tScope = { x: tx }; if (d.sliderA != null) _tScope.a = d.sliderA; if (d.sliderB != null) _tScope.b = d.sliderB; if (d.sliderC != null) _tScope.c = d.sliderC; const ty = tCompiled.evaluate(_tScope); tableRows.push({ x: tx, y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' }); }
                   catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
                 }
               } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
@@ -22303,13 +23375,150 @@
                     React.createElement('button', { onClick: () => upd('showTable', !showTable), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCA Table'),
                     React.createElement('button', { onClick: () => upd('showWindow', !showWindow), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2699\uFE0F Window'),
                     React.createElement('button', { onClick: () => upd('showChallenge', !showChallenge), style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAF Challenge'),
-                    React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear')
+                    React.createElement('button', { onClick: () => { const nf = funcs.map(f => ({ ...f, expr: '' })); upd('funcs', nf); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDDD1 Clear'),
+                    React.createElement('button', { onClick: function () { upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD0D Trace'),
+                    React.createElement('button', {
+                      onClick: function () {
+                        if (!window.math) return;
+                        var an = !d.showAnalysis;
+                        upd('showAnalysis', an);
+                        if (an) {
+                          var zeros = []; var inters = [];
+                          try {
+                            var f1 = funcs[0]; if (f1 && f1.expr && f1.expr.trim()) {
+                              var e1 = f1.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                              e1 = e1.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                              var c1 = math.compile(e1);
+                              var sA = {}; if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
+                              var step = (win.xmax - win.xmin) / 500;
+                              var prevY = null; var prevX = null;
+                              for (var sx = win.xmin; sx <= win.xmax; sx += step) {
+                                try {
+                                  var sy = c1.evaluate(Object.assign({ x: sx }, sA));
+                                  if (prevY != null && typeof sy === 'number' && isFinite(sy) && typeof prevY === 'number') {
+                                    if (prevY * sy < 0) {
+                                      var lo = prevX, hi = sx;
+                                      for (var bi = 0; bi < 30; bi++) { var mid = (lo + hi) / 2; var mval = c1.evaluate(Object.assign({ x: mid }, sA)); if (c1.evaluate(Object.assign({ x: lo }, sA)) * mval < 0) hi = mid; else lo = mid; }
+                                      var root = (lo + hi) / 2;
+                                      if (zeros.length === 0 || Math.abs(zeros[zeros.length - 1].x - root) > step * 2) zeros.push({ x: root, fi: 0 });
+                                    }
+                                  }
+                                  prevY = sy; prevX = sx;
+                                } catch (e) { prevY = null; }
+                              }
+                              for (var fi2 = 1; fi2 < funcs.length; fi2++) {
+                                var f2 = funcs[fi2]; if (!f2 || !f2.expr || !f2.expr.trim()) continue;
+                                try {
+                                  var e2 = f2.expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                                  e2 = e2.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                                  var c2 = math.compile(e2);
+                                  var pDiff = null; var pXd = null;
+                                  for (var ix = win.xmin; ix <= win.xmax; ix += step) {
+                                    try {
+                                      var iy1 = c1.evaluate(Object.assign({ x: ix }, sA));
+                                      var iy2 = c2.evaluate(Object.assign({ x: ix }, sA));
+                                      var diff = iy1 - iy2;
+                                      if (pDiff != null && typeof diff === 'number' && isFinite(diff) && pDiff * diff < 0) {
+                                        var ilo = pXd, ihi = ix;
+                                        for (var ibi = 0; ibi < 30; ibi++) { var imid = (ilo + ihi) / 2; var d1 = c1.evaluate(Object.assign({ x: imid }, sA)) - c2.evaluate(Object.assign({ x: imid }, sA)); if ((c1.evaluate(Object.assign({ x: ilo }, sA)) - c2.evaluate(Object.assign({ x: ilo }, sA))) * d1 < 0) ihi = imid; else ilo = imid; }
+                                        var iroot = (ilo + ihi) / 2;
+                                        var irootY = c1.evaluate(Object.assign({ x: iroot }, sA));
+                                        inters.push({ x: iroot, y: irootY, f1: 0, f2: fi2 });
+                                      }
+                                      pDiff = diff; pXd = ix;
+                                    } catch (e) { pDiff = null; }
+                                  }
+                                } catch (e) { }
+                              }
+                            }
+                          } catch (e) { }
+                          upd('_zeros', zeros);
+                          upd('_intersections', inters);
+                        }
+                      },
+                      style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }
+                    }, '\u26A1 Analyze'),
+                    React.createElement('button', { onClick: function () { upd('showDeriv', !d.showDeriv); if (!d.showDeriv && d.derivX == null) upd('derivX', 0); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, "\u2202 f\'(x)"),
+                    React.createElement('button', { onClick: function () { upd('showArith', !showArith); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showArith ? '#60a5fa33' : 'rgba(255,255,255,0.05)', color: showArith ? '#60a5fa' : '#94a3b8', border: showArith ? '1px solid #60a5fa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83E\uDDEE Calc'),
+                    React.createElement('button', { onClick: function () { upd('showSliders', !showSliders); if (!showSliders) { if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFA8 Sliders')
                   ),
 
                   React.createElement('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
                     React.createElement('div', { style: { fontSize: '9px', color: '#64748b', marginBottom: '4px', fontWeight: 'bold' } }, 'ZOOM PRESETS'),
                     React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                       ...ZOOM_PRESETS.map(z => React.createElement('button', { key: z.name, onClick: () => upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }), style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '9px', cursor: 'pointer' } }, z.name))
+                    )
+                  ),
+
+                  // ── Arithmetic Calculator ──
+                  showArith && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(96,165,250,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' } }, '\uD83E\uDDEE CALCULATOR'),
+                    React.createElement('div', { style: { display: 'flex', gap: '4px', marginBottom: '4px' } },
+                      React.createElement('input', { type: 'text', value: arithExpr, placeholder: 'e.g. sqrt(144) + 3^2', onChange: function (e) { upd('arithExpr', e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter' && window.math) { try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } } }, style: { flex: 1, padding: '5px 8px', borderRadius: '6px', border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.08)', color: '#e2e8f0', fontFamily: 'monospace', fontSize: '12px', outline: 'none' }, 'aria-label': 'Calculator expression' }),
+                      React.createElement('button', { onClick: function () { if (!window.math) return; try { var res = math.evaluate(arithExpr); upd('arithResult', typeof res === 'number' ? String(Number(res.toPrecision(10))) : String(res)); } catch (er) { upd('arithResult', 'Error'); } }, style: { padding: '5px 10px', borderRadius: '6px', background: '#3b82f6', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '=')
+                    ),
+                    arithResult && React.createElement('div', { style: { padding: '5px 8px', borderRadius: '6px', background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', fontFamily: 'monospace', fontSize: '13px', fontWeight: 'bold', color: '#93c5fd', marginBottom: '4px' } }, '= ' + arithResult),
+                    React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px' } },
+                      ['7', '8', '9', '/', '+', '4', '5', '6', '*', '-', '1', '2', '3', '(', ')', '0', '.', 'pi', 'e', '^'].map(function (b) {
+                        return React.createElement('button', { key: b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.15)', fontSize: '10px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b);
+                      }),
+                      React.createElement('button', { onClick: function () { upd('arithExpr', ''); upd('arithResult', ''); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, 'C'),
+                      React.createElement('button', { onClick: function () { upd('arithExpr', arithExpr.slice(0, -1)); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u232B'),
+                      ['sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt(', 'abs(', '!', '%'].map(function (b) {
+                        return React.createElement('button', { key: 'fn_' + b, onClick: function () { upd('arithExpr', arithExpr + b); }, style: { width: '18%', padding: '4px', borderRadius: '4px', background: 'rgba(167,139,250,0.12)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.2)', fontSize: '9px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, b.replace('(', ''));
+                      })
+                    )
+                  ),
+                  // ── Slider Parameters ──
+                  showSliders && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, '\uD83C\uDFA8 PARAMETER SLIDERS \u2014 Use a, b, c in your equations'),
+                    ['a', 'b', 'c'].map(function (p) {
+                      var key = 'slider' + p.toUpperCase();
+                      var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
+                      return React.createElement('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                        React.createElement('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
+                        React.createElement('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, onChange: function (e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' }, 'aria-label': 'Parameter ' + p }),
+                        React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#e2e8f0', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
+                      );
+                    })
+                  ),
+                  // ── Derivative ──
+                  d.showDeriv && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, '\u2202 DERIVATIVE \u2014 Tangent line to y\u2081'),
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                      React.createElement('span', { style: { fontSize: '10px', color: '#94a3b8' } }, 'x ='),
+                      React.createElement('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, onChange: function (e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' }, 'aria-label': 'Derivative x value' }),
+                      React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold', minWidth: '40px', textAlign: 'right' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'),
+                      (function () {
+                        if (!window.math || !funcs[0] || !funcs[0].expr) return null;
+                        try {
+                          var de = funcs[0].expr.replace(/^y\s*=\s*/i, '').replace(/^f\s*\(x\)\s*=\s*/i, '');
+                          de = de.replace(/(\d)([x])/gi, '$1*$2').replace(/([x])(\d)/gi, '$1*$2');
+                          var dc = math.compile(de); var dx = d.derivX != null ? d.derivX : 0; var dh2 = 0.0001;
+                          var dsc = { x: dx }; if (d.sliderA != null) dsc.a = d.sliderA; if (d.sliderB != null) dsc.b = d.sliderB; if (d.sliderC != null) dsc.c = d.sliderC;
+                          var dscp = Object.assign({}, dsc, { x: dx + dh2 }); var dscm = Object.assign({}, dsc, { x: dx - dh2 });
+                          var slope = (dc.evaluate(dscp) - dc.evaluate(dscm)) / (2 * dh2);
+                          return React.createElement('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fbbf24', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(251,191,36,0.3)' } }, "f'=" + Number(slope.toPrecision(5)));
+                        } catch (e) { return null; }
+                      })()
+                    )
+                  ),
+                  // ── Analysis Results ──
+                  d.showAnalysis && React.createElement('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
+                    React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, '\u26A1 ANALYSIS RESULTS'),
+                    React.createElement('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                      React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
+                        React.createElement('div', { style: { fontSize: '9px', color: '#34d399', fontWeight: 'bold', marginBottom: '2px' } }, 'Zeros (y\u2081 = 0)'),
+                        (d._zeros && d._zeros.length > 0) ? d._zeros.map(function (z, zi) {
+                          return React.createElement('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0', padding: '1px 0' } }, 'x = ' + Number(z.x.toPrecision(5)));
+                        }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'No zeros found')
+                      ),
+                      React.createElement('div', { style: { flex: 1, minWidth: '80px' } },
+                        React.createElement('div', { style: { fontSize: '9px', color: '#f472b6', fontWeight: 'bold', marginBottom: '2px' } }, 'Intersections'),
+                        (d._intersections && d._intersections.length > 0) ? d._intersections.map(function (pt, pi) {
+                          return React.createElement('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4', padding: '1px 0' } }, '(' + Number(pt.x.toPrecision(4)) + ', ' + Number(pt.y.toPrecision(4)) + ')');
+                        }) : React.createElement('div', { style: { fontSize: '10px', color: '#64748b', fontStyle: 'italic' } }, 'Enter 2+ functions')
+                      )
                     )
                   )
                 ),
@@ -22319,8 +23528,16 @@
                 },
                   React.createElement('canvas', {
                     id: 'graph-calc-canvas', width: 600, height: 420,
-                    style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0' },
-                    'aria-label': 'Graphing calculator coordinate plane'
+                    style: { width: '100%', flex: 1, background: '#0f172a', borderRadius: '0', cursor: d.traceMode ? 'crosshair' : 'default' },
+                    'aria-label': 'Graphing calculator coordinate plane',
+                    onMouseMove: function (e) {
+                      if (!d.traceMode) return;
+                      var rect = e.currentTarget.getBoundingClientRect();
+                      var px = (e.clientX - rect.left) / rect.width * 600;
+                      var cv2 = e.currentTarget;
+                      if (cv2._toMathX) upd('traceX', cv2._toMathX(px));
+                    },
+                    onMouseLeave: function () { if (d.traceMode) upd('traceX', null); }
                   }),
 
                   showWindow && React.createElement('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
@@ -23108,7 +24325,17 @@
                 '@keyframes aquaBubble { 0% { bottom: 30px; opacity: 0.6; } 50% { opacity: 0.8; } 100% { bottom: 220px; opacity: 0; } }',
                 '@keyframes aquaWave { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }',
                 '@keyframes oceanPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
-                '.aqua-fish:hover { transform: scale(1.3) !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) !important; }'
+                '.aqua-fish:hover { transform: scale(1.3) !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) !important; }',
+                '@keyframes aquaBodySway { 0%, 100% { transform: scaleY(1) scaleX(1); } 30% { transform: scaleY(0.97) scaleX(1.02); } 70% { transform: scaleY(1.02) scaleX(0.98); } }',
+                '.aqua-fish-svg svg { width: 100%; height: 100%; overflow: visible; }',
+                '.aqua-fish-svg:hover { transform: scale(1.4) !important; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35)) !important; }',
+                '@keyframes aiEventSlideIn { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+                '@keyframes aiEventPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.3); } 50% { box-shadow: 0 0 20px 4px rgba(59,130,246,0.15); } }',
+                '@keyframes aiEventFadeOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }',
+                '@keyframes xpPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }',
+                '.ai-event-card { animation: aiEventSlideIn 0.4s ease-out, aiEventPulse 3s ease-in-out 0.5s infinite; }',
+                '.ai-event-choice:hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }',
+                '.ai-event-choice { transition: all 0.2s ease; }'
               ].join('\n');
               document.head.appendChild(style);
             }
@@ -23394,32 +24621,411 @@
                 },
                 parts: [
                   { name: 'Carapace (Shell)', x: 50, y: 25, desc: 'Fused vertebrae and ribs covered in keratinous scutes. Unlike land turtles, sea turtles cannot retract into their shell — it is streamlined for swimming.' },
-                  { name: 'Front Flippers', x: 8, y: 33, desc: 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.' },
+                  { name: 'Front Flippers', x: 8, y: 35, desc: 'Elongated forelimbs used for powerful underwater flight. Leatherbacks can dive to 1,280 meters. Front flippers generate all thrust.' },
                   { name: 'Rear Flippers', x: 20, y: 80, desc: 'Shorter and rounder than front flippers. Used as rudders for steering. Females use them to dig egg chambers on nesting beaches.' },
-                  { name: 'Salt Glands', x: 7, y: 32, desc: 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
-                  { name: 'Scute Pattern', x: 40, y: 28, desc: 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.' },
-                  { name: 'Magnetic Navigation', x: 50, y: 55, desc: 'Magnetite crystals in the brain create an internal compass. Hatchlings imprint their natal beach\'s unique magnetic signature and return decades later to nest.' }
+                  { name: 'Salt Glands', x: 5, y: 18, desc: 'Orbital glands near the eyes excrete concentrated salt — this is why sea turtles appear to cry. Excreted salt is twice as concentrated as seawater.' },
+                  { name: 'Scute Pattern', x: 35, y: 42, desc: 'Keratinous plates in species-specific arrangements. The pattern helps identify species. Growth rings on scutes record age like tree rings.' },
+                  { name: 'Magnetic Navigation', x: 55, y: 55, desc: 'Magnetite crystals in the brain create an internal compass. Hatchlings imprint their natal beach\'s unique magnetic signature and return decades later to nest.' }
+                ]
+              },
+              betta: {
+                label: 'Betta (Labyrinth Fish)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#7c3aed', c2 = color || '#5b21b6';
+                  return '<svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="bettaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                    '<linearGradient id="bettaFin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.9"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.5"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M100,140 Q110,100 140,88 Q175,75 210,80 Q250,78 275,95 Q295,110 300,140 Q295,170 275,185 Q250,200 210,200 Q175,205 140,192 Q110,180 100,140Z" fill="url(#bettaG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M165,80 Q160,40 175,15 Q200,-5 230,10 Q260,30 270,60 Q275,78 270,85" fill="url(#bettaFin)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<path d="M180,76 Q185,35 200,20" stroke="' + c2 + '" stroke-width="0.6" fill="none" opacity="0.4"/>' +
+                    '<path d="M210,78 Q218,40 235,25" stroke="' + c2 + '" stroke-width="0.6" fill="none" opacity="0.4"/>' +
+                    '<path d="M240,82 Q250,50 260,38" stroke="' + c2 + '" stroke-width="0.6" fill="none" opacity="0.4"/>' +
+                    '<path d="M300,130 Q330,110 360,85 Q385,65 400,60 Q410,62 408,72 Q400,85 380,105 Q360,120 340,130 Q360,140 380,155 Q400,175 408,188 Q410,198 400,200 Q385,195 360,175 Q330,150 300,140" fill="url(#bettaFin)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<path d="M160,195 Q145,220 130,245 Q120,265 118,275 Q120,280 128,272 Q140,255 155,230 Q165,210 170,198" fill="url(#bettaFin)" stroke="' + c2 + '" stroke-width="1.2" opacity="0.85"/>' +
+                    '<path d="M200,200 Q195,230 192,255 Q190,268 195,270 Q200,265 202,250 Q206,230 208,205" fill="url(#bettaFin)" stroke="' + c2 + '" stroke-width="1.2" opacity="0.8"/>' +
+                    '<path d="M110,160 Q90,175 72,192 Q60,202 55,198 Q55,190 65,178 Q80,162 100,148" fill="url(#bettaFin)" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
+                    '<circle cx="120" cy="128" r="12" fill="white" stroke="#334155" stroke-width="2"/>' +
+                    '<circle cx="124" cy="128" r="6.5" fill="#1e293b"/>' +
+                    '<circle cx="126" cy="126" r="2.5" fill="white" opacity="0.8"/>' +
+                    '<path d="M100,136 Q92,134 85,134" stroke="' + c2 + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Flowing Dorsal Fin', x: 48, y: 2, desc: 'Elaborate, sail-like dorsal fin used for display. In male bettas, it can span nearly the entire body length. Breeding selects for longer, more colorful fins.' },
+                  { name: 'Caudal Veil (Tail)', x: 90, y: 42, desc: 'Dramatic fan-shaped tail with delicate membrane. Multiple tail types exist: halfmoon, crowntail, plakat, veiltail. Susceptible to fin rot in poor water.' },
+                  { name: 'Pectoral Fins', x: 18, y: 58, desc: 'Small, rounded fins used for slow sculling movements. Bettas hover and maneuver precisely rather than swimming fast.' },
+                  { name: 'Labyrinth Organ', x: 35, y: 32, desc: 'A folded, lung-like organ above the gills that extracts oxygen from air. This allows bettas to survive in shallow, oxygen-poor water like rice paddies.' },
+                  { name: 'Ventral Fins (Display)', x: 42, y: 85, desc: 'Long, trailing ventral fins used primarily for signaling. Males flare ventral fins alongside their gill covers when challenging rivals.' },
+                  { name: 'Opercular Flare', x: 22, y: 44, desc: 'Gill covers extend outward to display bright-colored gill membranes. This threat display makes the fish appear larger and more intimidating to rivals.' }
+                ]
+              },
+              seahorse: {
+                label: 'Seahorse (Syngnathidae)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#f59e0b', c2 = color || '#d97706';
+                  return '<svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M130,25 Q145,15 160,20 Q175,28 178,45 Q180,60 175,80 Q170,95 165,110 Q162,125 160,140 Q158,155 155,170 Q152,185 150,200 Q148,215 145,230 Q140,250 130,265 Q118,280 105,290 Q90,298 78,300 Q65,298 55,288 Q50,275 55,260 Q65,250 80,248 Q92,250 98,260 Q100,268 95,275" fill="none" stroke="url(#seaG)" stroke-width="18" stroke-linecap="round"/>' +
+                    '<path d="M140,25 Q150,15 162,18 Q172,25 175,40 Q178,55 175,75 Q170,92 166,108 Q162,122 160,138 Q158,152 155,168 Q152,182 150,198 Q148,212 145,228 Q140,248 130,262 Q120,275 108,285" fill="none" stroke="' + c1 + '" stroke-width="8" stroke-linecap="round" opacity="0.3"/>' +
+                    '<ellipse cx="155" cy="45" rx="28" ry="25" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M183,42 Q195,38 210,35 Q218,34 220,38 Q218,42 210,42 Q195,44 185,45" fill="' + c2 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.8"/>' +
+                    '<circle cx="168" cy="38" r="7" fill="white" stroke="#334155" stroke-width="1.5"/>' +
+                    '<circle cx="170" cy="38" r="3.5" fill="#1e293b"/><circle cx="171" cy="37" r="1.5" fill="white" opacity="0.7"/>' +
+                    '<path d="M142,22 Q135,10 140,5 Q148,3 152,8 Q155,15 148,22" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.7"/>' +
+                    '<path d="M160,75 Q168,72 175,80 Q170,88 165,85" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.5"/>' +
+                    '<path d="M155,115 Q162,112 168,118 Q164,125 158,122" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.5"/>' +
+                    '<path d="M150,155 Q157,152 163,158 Q158,165 153,162" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.5"/>' +
+                    '<path d="M145,195 Q152,192 157,198 Q153,205 148,202" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.5"/>' +
+                    '<ellipse cx="150" cy="185" rx="12" ry="25" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.35"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Coronet (Crown)', x: 49, y: 2, desc: 'A bony crest unique to each individual — like a fingerprint. Used for species identification. Grows more elaborate with age.' },
+                  { name: 'Prehensile Tail', x: 30, y: 72, desc: 'Muscular, gripping tail used to anchor to seagrass and coral. Has a square cross-section for superior grip strength — unique among fish.' },
+                  { name: 'Brood Pouch (male)', x: 53, y: 48, desc: 'Males carry eggs in a ventral pouch. The female deposits eggs during an elaborate upright dance. Males nourish embryos for 2-4 weeks before giving birth.' },
+                  { name: 'Dorsal Fin', x: 60, y: 20, desc: 'Tiny, translucent dorsal fin that beats up to 35 times per second. This is the primary means of propulsion — making seahorses the slowest fish in the ocean.' },
+                  { name: 'Tubular Snout', x: 78, y: 10, desc: 'Elongated snout acts as a pipette — seahorses slurp up tiny crustaceans with a rapid head snap. Can strike and ingest prey in under 1 millisecond.' },
+                  { name: 'Bony Armor Plates', x: 42, y: 35, desc: 'Body encased in bony rings instead of scales. Provides excellent protection but limits flexibility. Few predators can digest the bony exterior.' }
+                ]
+              },
+              pufferfish: {
+                label: 'Pufferfish (Tetraodontidae)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#eab308', c2 = color || '#a16207';
+                  return '<svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<radialGradient id="puffG" cx="45%" cy="45%"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></radialGradient>' +
+                    '<radialGradient id="puffBelly" cx="50%" cy="60%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="' + c1 + '"/></radialGradient>' +
+                    '</defs>' +
+                    '<ellipse cx="200" cy="155" rx="130" ry="115" fill="url(#puffG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<ellipse cx="200" cy="175" rx="100" ry="85" fill="url(#puffBelly)" opacity="0.4"/>' +
+                    '<circle cx="132" cy="110" r="22" fill="white" stroke="#334155" stroke-width="2.5"/>' +
+                    '<circle cx="138" cy="110" r="12" fill="#1e293b"/>' +
+                    '<circle cx="142" cy="106" r="4" fill="white" opacity="0.8"/>' +
+                    '<circle cx="268" cy="110" r="22" fill="white" stroke="#334155" stroke-width="2.5"/>' +
+                    '<circle cx="274" cy="110" r="12" fill="#1e293b"/>' +
+                    '<circle cx="278" cy="106" r="4" fill="white" opacity="0.8"/>' +
+                    '<path d="M175,170 Q185,180 200,182 Q215,180 225,170" stroke="#334155" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+                    '<line x1="195" y1="170" x2="195" y2="182" stroke="#334155" stroke-width="2"/>' +
+                    '<line x1="205" y1="170" x2="205" y2="182" stroke="#334155" stroke-width="2"/>' +
+                    '<path d="M330,120 Q355,110 370,100 Q378,98 378,105 Q372,115 355,125 Q340,130 330,135 Q340,140 355,145 Q372,155 378,165 Q378,172 370,170 Q355,160 330,150" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.8"/>' +
+                    '<path d="M200,42 Q205,25 215,18 Q222,16 224,22 Q222,32 215,42" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7"/>' +
+                    '<path d="M200,268 Q205,285 210,292 Q212,296 208,296 Q202,292 200,280" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7"/>' +
+                    '<path d="M118,135 Q100,148 88,158 Q82,162 84,156 Q90,145 105,135 Q112,128 118,128" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.7"/>' +
+                    '<line x1="100" y1="70" x2="115" y2="58" stroke="' + c2 + '" stroke-width="2" stroke-linecap="round" opacity="0.5"/>' +
+                    '<line x1="145" y1="52" x2="150" y2="38" stroke="' + c2 + '" stroke-width="2" stroke-linecap="round" opacity="0.5"/>' +
+                    '<line x1="250" y1="52" x2="248" y2="38" stroke="' + c2 + '" stroke-width="2" stroke-linecap="round" opacity="0.5"/>' +
+                    '<line x1="300" y1="70" x2="312" y2="58" stroke="' + c2 + '" stroke-width="2" stroke-linecap="round" opacity="0.5"/>' +
+                    '<line x1="120" y1="210" x2="108" y2="225" stroke="' + c2 + '" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>' +
+                    '<line x1="280" y1="210" x2="292" y2="225" stroke="' + c2 + '" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Inflation Sac', x: 50, y: 48, desc: 'A highly elastic stomach that can inflate with water (or air) to 3x normal size. This makes the fish nearly impossible for predators to swallow.' },
+                  { name: 'Fused Beak Teeth', x: 50, y: 55, desc: 'Four fused teeth form a strong beak that can crack open shellfish, sea urchins, and crabs. Teeth grow continuously — must eat hard food to keep them trimmed.' },
+                  { name: 'Spines (when inflated)', x: 30, y: 18, desc: 'Short spines embedded in the skin become erect when inflated. Combined with inflation, they create a spiky ball that deters all but the most determined predators.' },
+                  { name: 'Large Eyes', x: 33, y: 34, desc: 'Independently moving eyes provide near 360° vision. Puffers are considered among the most intelligent fish — they recognize their owners and can learn tricks.' },
+                  { name: 'Tetrodotoxin Organs', x: 70, y: 45, desc: 'Liver, ovaries, and skin contain tetrodotoxin — 1,200× more lethal than cyanide. Produced by symbiotic bacteria. There is no antidote.' },
+                  { name: 'Caudal Fin (Rudder)', x: 88, y: 40, desc: 'Small tail fin for slow, precise maneuvering. Dorsal and anal fins do most of the work. Puffers swim awkwardly but compensate with excellent defenses.' }
+                ]
+              },
+              anglerfish_plan: {
+                label: 'Deep-Sea Anglerfish (Lophiiformes)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#1c1917', c2 = color || '#0c0a09';
+                  return '<svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<radialGradient id="anglerG" cx="40%" cy="40%"><stop offset="0%" stop-color="#292524"/><stop offset="100%" stop-color="' + c1 + '"/></radialGradient>' +
+                    '<radialGradient id="lureGlow" cx="50%" cy="50%"><stop offset="0%" stop-color="#86efac"/><stop offset="30%" stop-color="#22c55e" stop-opacity="0.8"/><stop offset="100%" stop-color="#22c55e" stop-opacity="0"/></radialGradient>' +
+                    '</defs>' +
+                    '<rect width="420" height="320" fill="#0a0a0a" rx="8"/>' +
+                    '<path d="M70,180 Q80,110 120,85 Q165,60 220,65 Q280,60 315,100 Q340,130 345,180 Q340,230 315,260 Q280,285 220,285 Q165,290 120,265 Q80,240 70,180Z" fill="url(#anglerG)" stroke="#44403c" stroke-width="2"/>' +
+                    '<path d="M70,180 Q80,220 120,250 Q165,275 220,280 Q280,280 315,258 Q340,230 345,180" fill="#1c1917" opacity="0.5"/>' +
+                    '<path d="M120,82 Q115,65 108,50 Q105,42 100,35 Q98,28 102,22 Q108,18 112,22 Q115,30 115,42 Q116,52 118,62" stroke="#57534e" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+                    '<circle cx="102" cy="18" r="12" fill="url(#lureGlow)"/>' +
+                    '<circle cx="102" cy="18" r="5" fill="#4ade80" opacity="0.9"/>' +
+                    '<circle cx="104" cy="16" r="2" fill="white" opacity="0.8"/>' +
+                    '<circle cx="105" cy="145" r="28" fill="#292524" stroke="#44403c" stroke-width="2"/>' +
+                    '<circle cx="115" cy="142" r="16" fill="#fef9c3" opacity="0.15"/>' +
+                    '<circle cx="112" cy="145" r="12" fill="#1c1917"/>' +
+                    '<circle cx="115" cy="142" r="4" fill="#fef9c3" opacity="0.6"/>' +
+                    '<path d="M70,175 Q55,170 42,172 Q32,176 38,182 Q48,185 60,182" fill="#44403c" stroke="#57534e" stroke-width="1.5" opacity="0.7"/>' +
+                    '<path d="M230,280 Q235,295 240,305 Q242,310 238,310 Q232,305 230,295" fill="#292524" stroke="#44403c" stroke-width="1.2" opacity="0.6"/>' +
+                    '<path d="M260,278 Q265,292 268,300 Q270,305 266,305 Q260,300 258,290" fill="#292524" stroke="#44403c" stroke-width="1.2" opacity="0.6"/>' +
+                    '<path d="M345,160 Q365,145 385,135 Q395,132 395,140 Q388,150 370,162 Q380,168 392,178 Q398,185 395,190 Q388,188 370,175 Q358,168 350,170" fill="#292524" stroke="#44403c" stroke-width="1.5" opacity="0.7"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Bioluminescent Lure (Esca)', x: 24, y: 4, desc: 'A modified dorsal fin spine (illicium) tipped with a glowing bulb. Contains symbiotic bioluminescent bacteria. Attracts prey in the pitch-black deep sea.' },
+                  { name: 'Enormous Mouth', x: 15, y: 55, desc: 'Hinged jaw can open to 120°, allowing the anglerfish to swallow prey up to twice its own body size. Inward-pointing teeth prevent escape.' },
+                  { name: 'Enormous Eye', x: 26, y: 43, desc: 'Large, forward-facing eyes sensitized to detect bioluminescent flashes. In many species, eyes are adapted to see blue-green light wavelengths only.' },
+                  { name: 'Expandable Stomach', x: 50, y: 60, desc: 'Highly distensible stomach can accommodate meals larger than the anglerfish itself. Meals are rare in the deep sea, so storage capacity is critical.' },
+                  { name: 'Parasitic Male (attached)', x: 70, y: 75, desc: 'Males are tiny (<10% of female size). They bite the female and fuse permanently, becoming a parasite that provides sperm on demand.' },
+                  { name: 'Pressure-Adapted Body', x: 45, y: 85, desc: 'Gelatinous flesh with minimal bone. Lack of a swim bladder prevents implosion at extreme depths (1,000-4,000m). Metabolism is extremely slow.' }
+                ]
+              },
+              angelfish: {
+                label: 'Angelfish (Pterophyllum)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#fbbf24', c2 = color || '#b45309';
+                  return '<svg viewBox="0 0 360 400" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="angG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                    '<linearGradient id="angFin" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.9"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.5"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M110,200 Q115,140 145,110 Q175,85 200,80 Q225,85 255,110 Q285,140 290,200 Q285,260 255,290 Q225,315 200,320 Q175,315 145,290 Q115,260 110,200Z" fill="url(#angG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M200,80 Q195,35 185,10 Q180,0 190,5 Q200,15 210,5 Q220,0 215,10 Q205,35 200,80" fill="url(#angFin)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<path d="M200,320 Q195,365 185,390 Q180,400 190,395 Q200,385 210,395 Q220,400 215,390 Q205,365 200,320" fill="url(#angFin)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<path d="M290,195 Q310,185 330,175 Q340,172 340,180 Q335,190 320,198 Q335,206 340,216 Q340,224 330,221 Q310,211 290,205" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
+                    '<path d="M130,170 Q115,158 102,150 Q95,148 95,155 Q100,162 115,172" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.8"/>' +
+                    '<path d="M130,230 Q115,242 102,250 Q95,252 95,245 Q100,238 115,228" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.2" opacity="0.8"/>' +
+                    '<circle cx="145" cy="185" r="14" fill="white" stroke="#334155" stroke-width="2"/>' +
+                    '<circle cx="149" cy="185" r="8" fill="#1e293b"/>' +
+                    '<circle cx="152" cy="183" r="3" fill="white" opacity="0.8"/>' +
+                    '<path d="M150,130 L250,130" stroke="' + c2 + '" fill="none" stroke-width="0.8" opacity="0.3"/>' +
+                    '<path d="M150,160 L260,160" stroke="' + c2 + '" fill="none" stroke-width="0.8" opacity="0.3"/>' +
+                    '<path d="M150,195 L280,195" stroke="' + c2 + '" fill="none" stroke-width="1" stroke-dasharray="6,4" opacity="0.35"/>' +
+                    '<path d="M150,230 L260,230" stroke="' + c2 + '" fill="none" stroke-width="0.8" opacity="0.3"/>' +
+                    '<path d="M150,260 L250,260" stroke="' + c2 + '" fill="none" stroke-width="0.8" opacity="0.3"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Tall Dorsal Fin', x: 55, y: 3, desc: 'Extremely elongated dorsal fin gives the diamond-shaped profile. Used for display and stability in slow-moving water. Vulnerable to fin nipping by tankmates.' },
+                  { name: 'Trailing Anal Fin', x: 55, y: 95, desc: 'Mirror-image of the dorsal fin. Creates the characteristic angel profile. Both fins are supported by bony rays covered in thin membrane.' },
+                  { name: 'Laterally Compressed Body', x: 42, y: 48, desc: 'Disc-shaped body allows navigation through dense vegetation. Angelfish are ambush predators that hide among plant stems in the Amazon basin.' },
+                  { name: 'Caudal Fin (Tail)', x: 92, y: 48, desc: 'Small, fan-shaped tail provides gentle propulsion. Angelfish are slow, deliberate swimmers — built for maneuverability, not speed.' },
+                  { name: 'Vertical Bars', x: 60, y: 35, desc: 'Dark vertical bars provide camouflage among underwater vegetation. Pattern intensity changes with mood — bars fade when stressed or dominant.' },
+                  { name: 'Pectoral Fins', x: 30, y: 42, desc: 'Fan-shaped fins for precise steering. Used to fan eggs during spawning. Both parents guard eggs by wafting fresh, oxygenated water over them.' }
+                ]
+              },
+              tetra: {
+                label: 'Tetra (Characidae)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#38bdf8', c2 = color || '#0284c7';
+                  return '<svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="tetG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="50%" stop-color="' + c2 + '"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M50,100 Q60,65 95,52 Q130,42 170,42 Q220,40 255,50 Q280,58 295,75 Q305,90 305,100 Q305,110 295,125 Q280,142 255,150 Q220,160 170,158 Q130,158 95,148 Q60,135 50,100Z" fill="url(#tetG)" stroke="' + c2 + '" stroke-width="2"/>' +
+                    '<rect x="90" y="72" width="175" height="12" rx="6" fill="' + c1 + '" opacity="0.9" stroke="' + c2 + '" stroke-width="0.8"/>' +
+                    '<rect x="90" y="86" width="175" height="10" rx="5" fill="#dc2626" opacity="0.7" stroke="#b91c1c" stroke-width="0.8"/>' +
+                    '<path d="M305,95 Q320,85 340,72 Q352,64 356,68 L356,76 Q350,82 340,90 Q330,96 325,100 Q330,104 340,110 Q350,118 356,124 L356,132 Q352,136 340,128 Q320,115 305,105" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
+                    '<path d="M190,42 Q193,28 200,18 Q207,12 212,16 Q215,22 213,32 Q210,40 207,45" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.7"/>' +
+                    '<path d="M200,155 Q203,165 205,172 Q207,178 203,178 Q199,175 198,168 Q197,162 198,156" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.6"/>' +
+                    '<path d="M100,128 Q88,138 78,145 Q72,148 74,143 Q80,136 90,128" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.7"/>' +
+                    '<circle cx="70" cy="90" r="12" fill="white" stroke="#334155" stroke-width="1.5"/>' +
+                    '<circle cx="73" cy="90" r="6.5" fill="#1e293b"/>' +
+                    '<circle cx="75" cy="88" r="2.5" fill="white" opacity="0.8"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Iridescent Stripe', x: 40, y: 37, desc: 'The famous neon stripe is made of guanine crystals arranged in layers. Acts like a biological mirror — reflects light to create iridescent blue-green shimmer.' },
+                  { name: 'Red Band', x: 40, y: 44, desc: 'Pigment cells (chromatophores) produce the vivid red belly band. Color intensity signals health and breeding readiness to potential mates.' },
+                  { name: 'Torpedo Body', x: 55, y: 50, desc: 'Streamlined, laterally compressed body optimized for darting through dense vegetation. Small size (3-4cm) allows passage through tight spaces.' },
+                  { name: 'Forked Caudal Fin', x: 90, y: 50, desc: 'Deeply forked tail for rapid bursts of speed. Tetras alternate between hovering in schools and explosive escape dashes when startled.' },
+                  { name: 'Adipose Fin', x: 55, y: 10, desc: 'A small, fleshy fin between dorsal and tail found only in certain fish groups. Its function is debated — may detect water flow turbulence.' },
+                  { name: 'Schooling Behavior', x: 20, y: 45, desc: 'Large eyes positioned for wide-angle vision enable precise school coordination. Each fish maintains exact distance from neighbors using its lateral line.' }
+                ]
+              },
+              guppy_body: {
+                label: 'Livebearer (Poeciliidae)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#f97316', c2 = color || '#c2410c';
+                  return '<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="gupG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                    '<radialGradient id="gupTail" cx="30%" cy="50%"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.6"/></radialGradient>' +
+                    '</defs>' +
+                    '<path d="M60,110 Q70,72 105,58 Q140,48 180,50 Q225,48 260,60 Q285,72 295,95 Q300,110 295,125 Q285,148 260,160 Q225,172 180,170 Q140,172 105,162 Q70,148 60,110Z" fill="url(#gupG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M60,110 Q70,130 105,148 Q140,162 180,165 Q225,168 260,158 Q285,148 295,125" fill="' + c2 + '" opacity="0.2"/>' +
+                    '<path d="M295,100 Q320,80 345,55 Q360,40 365,45 Q368,55 360,70 Q345,90 325,105 Q345,120 360,140 Q368,155 365,165 Q360,170 345,155 Q320,130 295,120" fill="url(#gupTail)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<circle cx="80" cy="98" r="13" fill="white" stroke="#334155" stroke-width="2"/>' +
+                    '<circle cx="84" cy="98" r="7" fill="#1e293b"/>' +
+                    '<circle cx="86" cy="96" r="2.5" fill="white" opacity="0.8"/>' +
+                    '<path d="M185,50 Q188,35 195,25 Q200,20 204,24 Q206,32 204,40 Q200,48 198,52" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.7"/>' +
+                    '<path d="M200,168 Q202,180 205,188 Q206,195 202,195 Q198,190 197,182 Q196,175 197,170" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.6"/>' +
+                    '<path d="M110,145 Q95,158 85,168 Q80,172 82,166 Q88,156 100,145" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.7"/>' +
+                    '<ellipse cx="235" cy="128" rx="25" ry="8" fill="rgba(255,255,255,0.12)" stroke="' + c2 + '" stroke-width="0.5" opacity="0.5"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Fan-Shaped Caudal', x: 90, y: 30, desc: 'Large, colorful tail fin doubles as a display organ. Males fan their tails to attract females. Tail shape varies: round, lyretail, swordtail, delta.' },
+                  { name: 'Gravid Spot (female)', x: 60, y: 58, desc: 'A dark patch near the anal fin in pregnant females. Darkens as embryos develop. Fry develop fully inside the mother — born live and free-swimming.' },
+                  { name: 'Gonopodium (male)', x: 53, y: 78, desc: 'Modified anal fin used for internal fertilization — unique to livebearers. Guppies can store sperm for months, producing multiple broods from a single mating.' },
+                  { name: 'Color Patterns', x: 40, y: 35, desc: 'Male coloration is genetically determined and Y-linked. Females prefer males with rare patterns — driving constant evolution of new color morphs.' },
+                  { name: 'Compact Body', x: 35, y: 50, desc: 'Rounded, robust body optimized for quick starts rather than sustained swimming. Livebearers are surface-feeders that dart for food.' },
+                  { name: 'Upturned Mouth', x: 14, y: 42, desc: 'Slightly upturned jaw adapted for feeding at the water surface. Guppies eat mosquito larvae, making them valuable for biocontrol of malaria.' }
+                ]
+              },
+              flatfish: {
+                label: 'Bottom-Dweller (Loricariidae)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#57534e', c2 = color || '#292524';
+                  return '<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="flatG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M50,110 Q55,80 85,68 Q120,58 170,55 Q230,52 280,58 Q320,65 345,80 Q360,92 365,110 Q360,132 345,145 Q320,158 280,162 Q230,168 170,165 Q120,162 85,152 Q55,140 50,110Z" fill="url(#flatG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M62,75 Q58,68 52,62 Q48,58 52,55 Q58,52 62,58 Q66,65 68,72" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.6"/>' +
+                    '<path d="M80,68 Q78,60 75,52 Q72,46 76,44 Q82,44 82,52 Q82,60 82,66" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.6"/>' +
+                    '<path d="M95,62 Q94,55 93,48 Q92,42 96,40 Q100,42 100,48 Q99,55 98,60" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1" opacity="0.6"/>' +
+                    '<ellipse cx="75" cy="98" rx="10" ry="9" fill="#44403c" stroke="#1c1917" stroke-width="1.5"/>' +
+                    '<circle cx="78" cy="97" r="5" fill="#292524"/><circle cx="79" cy="96" r="2" fill="#a8a29e" opacity="0.5"/>' +
+                    '<ellipse cx="100" cy="98" rx="10" ry="9" fill="#44403c" stroke="#1c1917" stroke-width="1.5"/>' +
+                    '<circle cx="103" cy="97" r="5" fill="#292524"/><circle cx="104" cy="96" r="2" fill="#a8a29e" opacity="0.5"/>' +
+                    '<ellipse cx="50" cy="125" rx="12" ry="6" fill="' + c2 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.8"/>' +
+                    '<path d="M365,105 Q385,95 400,88 Q408,86 408,92 Q402,100 388,108 Q402,115 408,122 Q408,128 400,126 Q385,118 365,112" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.8"/>' +
+                    '<path d="M100,85 Q120,82 160,78 Q200,76 240,78 Q280,82 320,88" fill="none" stroke="' + c2 + '" stroke-width="4" stroke-linecap="round" opacity="0.35"/>' +
+                    '<path d="M105,92 Q130,88 170,85 Q210,83 250,85 Q290,88 310,92" fill="none" stroke="' + c2 + '" stroke-width="3" stroke-linecap="round" opacity="0.25"/>' +
+                    '<path d="M110,100 Q140,96 180,94 Q220,93 260,95 Q300,98 315,102" fill="none" stroke="' + c2 + '" stroke-width="2" stroke-linecap="round" opacity="0.2"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Sucker Mouth', x: 10, y: 58, desc: 'Ventral sucker-like mouth for rasping algae off surfaces. The lips form a vacuum seal. Specialized teeth scrape biofilm — a living algae scrubber.' },
+                  { name: 'Bony Armor Plates', x: 50, y: 30, desc: 'Overlapping bony scutes replace scales. Provides armor-like protection from predators. So tough that some indigenous peoples use dried pleco skin as sandpaper.' },
+                  { name: 'Dorsal Spine Array', x: 15, y: 18, desc: 'Lockable dorsal spines can be erected and locked rigid. Once locked, predators cannot swallow the fish. Spines unlock with a special "trigger" mechanism.' },
+                  { name: 'High-Set Eyes', x: 22, y: 45, desc: 'Eyes positioned on top of the head for upward surveillance while bottom-feeding. Can see approaching predators while attached to rocks.' },
+                  { name: 'Flat Ventral Profile', x: 40, y: 55, desc: 'Body flattened from top to bottom (dorsoventrally) for a low profile against substrates. Reduces drag in current and helps maintain position on rocks.' },
+                  { name: 'Intestinal Breathing', x: 70, y: 52, desc: 'Some species can absorb atmospheric oxygen through a modified intestine. They gulp air at the surface — essential in low-oxygen tropical waters.' }
+                ]
+              },
+              eel: {
+                label: 'Deep-Sea Eel (Saccopharyngiformes)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#292524', c2 = color || '#0c0a09';
+                  return '<svg viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="eelG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.6"/></linearGradient>' +
+                    '</defs>' +
+                    '<rect width="460" height="200" fill="#0a0a0a" rx="8"/>' +
+                    '<path d="M30,85 Q45,55 80,45 Q115,42 140,55 Q155,65 160,80 Q162,90 155,105 Q140,120 125,125 Q115,125 110,118 Q125,115 138,108 Q148,98 150,85 Q148,72 140,62 Q125,50 100,48 Q70,52 50,70 Q38,82 35,95 Q35,108 45,118 Q60,130 85,140 Q120,148 170,150 Q220,148 270,140 Q320,130 370,115 Q400,105 420,100 Q440,100 450,108 L450,112 Q440,115 420,115 Q400,118 370,128 Q320,142 270,152 Q220,162 170,165 Q120,162 85,155 Q55,148 38,135 Q28,125 25,110 Q22,95 30,85Z" fill="url(#eelG)" stroke="#44403c" stroke-width="2"/>' +
+                    '<path d="M30,85 Q50,65 80,52 Q100,48 120,52 Q55,58 38,82 Q32,95 38,110" fill="' + c1 + '" opacity="0.3"/>' +
+                    '<circle cx="55" cy="75" r="8" fill="#292524" stroke="#44403c" stroke-width="1.5"/>' +
+                    '<circle cx="57" cy="74" r="4" fill="#fef9c3" opacity="0.4"/><circle cx="58" cy="73" r="1.5" fill="#fef9c3" opacity="0.7"/>' +
+                    '<path d="M445,108 Q448,105 450,108 Q448,115 445,112" fill="#dc2626" opacity="0.6"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Massive Hinged Jaw', x: 15, y: 30, desc: 'Jaw can unhinge to an angle greater than 180°. The entire head unfolds like a net to engulf prey. Can swallow fish larger than its own body.' },
+                  { name: 'Distensible Stomach', x: 30, y: 50, desc: 'Expandable stomach stretches to accommodate enormous meals. In the food-scarce deep sea, the ability to eat any prey encountered is essential for survival.' },
+                  { name: 'Bioluminescent Tail Tip', x: 97, y: 53, desc: 'The tail tip emits a pinkish-red glow to lure prey. Functions as a fishing line in reverse — prey approaches the light and enters the gaping mouth.' },
+                  { name: 'Tiny Eyes', x: 11, y: 35, desc: 'Extremely small eyes with minimal visual capability. In the lightless deep sea, vision is less important than detecting bioluminescent flashes.' },
+                  { name: 'Whip-Like Body', x: 60, y: 60, desc: 'Extremely elongated and laterally compressed body. The tail is 3-4x longer than the head and body combined. Enables slow, energy-efficient drifting.' },
+                  { name: 'Reduced Skeleton', x: 45, y: 40, desc: 'Minimally ossified bones reduce weight for neutral buoyancy. No swim bladder, no pelvic fins, no scales — everything stripped for deep-sea efficiency.' }
+                ]
+              },
+              ray: {
+                label: 'Manta Ray (Mobulidae)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#1e293b', c2 = color || '#0f172a';
+                  return '<svg viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="rayG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="70%" stop-color="' + c2 + '"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M220,60 Q260,55 310,40 Q360,25 400,15 Q425,10 430,20 Q428,35 410,50 Q380,72 340,90 Q300,105 270,115 Q260,118 250,120 Q240,118 220,115 Q200,118 190,120 Q180,118 170,115 Q140,105 100,90 Q60,72 30,50 Q12,35 10,20 Q15,10 40,15 Q80,25 130,40 Q180,55 220,60Z" fill="url(#rayG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M220,120 Q240,118 270,115 Q300,108 340,92 Q300,118 270,130 Q240,138 220,142 Q200,138 170,130 Q140,118 100,92 Q140,108 170,115 Q200,118 220,120Z" fill="#e2e8f0" opacity="0.3"/>' +
+                    '<path d="M190,60 Q185,48 178,42 Q172,40 170,45 Q174,55 180,62" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<path d="M250,60 Q255,48 262,42 Q268,40 270,45 Q266,55 260,62" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<ellipse cx="200" cy="85" rx="6" ry="5" fill="#1e293b" stroke="#334155" stroke-width="1"/>' +
+                    '<circle cx="201" cy="84" r="2.5" fill="#475569"/><circle cx="202" cy="83" r="1" fill="white" opacity="0.5"/>' +
+                    '<ellipse cx="240" cy="85" rx="6" ry="5" fill="#1e293b" stroke="#334155" stroke-width="1"/>' +
+                    '<circle cx="241" cy="84" r="2.5" fill="#475569"/><circle cx="242" cy="83" r="1" fill="white" opacity="0.5"/>' +
+                    '<path d="M210,100 Q215,108 220,110 Q225,108 230,100" fill="none" stroke="#334155" stroke-width="1.5"/>' +
+                    '<path d="M220,142 Q222,170 225,200 Q226,220 224,240 Q222,255 218,260 Q215,255 215,240 Q215,220 216,200 Q218,170 220,142" fill="' + c2 + '" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Pectoral Wings', x: 8, y: 15, desc: 'Enormously expanded pectoral fins create wing-like surfaces. Mantas swim by "flying" through water with powerful downstrokes. Wingspan can reach 7 meters.' },
+                  { name: 'Cephalic Fins', x: 42, y: 15, desc: 'Unique horn-like fins flanking the mouth that funnel plankton-rich water inward. Can be rolled up when not feeding. Gave rise to the name "devil ray."' },
+                  { name: 'Terminal Mouth', x: 50, y: 38, desc: 'Wide, forward-facing mouth with rows of tiny filter plates. Opens wide during feeding to maximize water intake. Can process thousands of liters per hour.' },
+                  { name: 'Counter-Shading', x: 60, y: 45, desc: 'Dark dorsal surface blends with ocean depths when viewed from above. Light ventral surface matches bright surface when viewed from below. Classic marine camouflage.' },
+                  { name: 'Whip Tail', x: 50, y: 85, desc: 'Long, slender tail without a stinging barb (unlike stingrays). Used as a rudder for precise turns during barrel-roll feeding maneuvers.' },
+                  { name: 'Gill Slits (ventral)', x: 38, y: 42, desc: 'Five pairs of gill slits on the underside filter oxygen. During feeding, water enters the mouth and exits the gills — a ram-ventilation system.' }
+                ]
+              },
+              whale: {
+                label: 'Baleen Whale (Mysticeti)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#3b82f6', c2 = color || '#1d4ed8';
+                  return '<svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="whlG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="70%" stop-color="' + c2 + '"/><stop offset="100%" stop-color="#bfdbfe"/></linearGradient>' +
+                    '</defs>' +
+                    '<path d="M30,110 Q35,75 60,60 Q90,48 130,45 Q180,40 230,42 Q290,40 340,50 Q370,58 390,72 Q405,85 410,100 Q412,110 410,120 Q405,135 390,148 Q370,162 340,170 Q290,180 230,178 Q180,180 130,175 Q90,172 60,160 Q35,145 30,110Z" fill="url(#whlG)" stroke="' + c2 + '" stroke-width="2.5"/>' +
+                    '<path d="M30,110 Q35,130 60,150 Q90,165 130,170 Q180,175 230,175 Q290,178 340,168 Q370,160 390,148 Q405,135 410,120" fill="' + c2 + '" opacity="0.2"/>' +
+                    '<path d="M410,105 Q425,95 438,82 Q445,75 448,80 L448,88 Q445,95 438,105 Q445,115 448,125 L448,133 Q445,138 438,130 Q425,118 410,110" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                    '<path d="M410,95 Q430,80 445,65 L448,62 Q452,65 450,72 Q445,85 430,100 Q445,115 450,130 Q452,137 448,140 L445,137 Q430,122 410,110" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.5" opacity="0.5"/>' +
+                    '<circle cx="52" cy="95" r="8" fill="#1e3a5f" stroke="#334155" stroke-width="1.5"/>' +
+                    '<circle cx="54" cy="94" r="4" fill="#1e293b"/><circle cx="55" cy="93" r="1.5" fill="white" opacity="0.6"/>' +
+                    '<path d="M40,115 Q35,118 30,118" stroke="' + c2 + '" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+                    '<path d="M100,155 L100,165 M115,157 L115,168 M130,158 L130,170 M145,158 L145,170 M160,157 L160,168 M175,155 L175,165" stroke="#bfdbfe" stroke-width="1.5" opacity="0.5"/>' +
+                    '<path d="M60,170 Q55,180 50,185 M65,172 Q62,182 58,188" stroke="' + c2 + '" stroke-width="2" opacity="0.4" stroke-linecap="round"/>' +
+                    '<path d="M250,42 Q260,25 268,15 Q272,10 272,18 Q268,28 262,38" fill="none" stroke="' + c2 + '" stroke-width="1.5" opacity="0.6"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Baleen Plates', x: 25, y: 72, desc: 'Hundreds of keratinous plates hang from the upper jaw like a curtain. Filter up to 4 tons of krill daily. Made of the same protein as human fingernails.' },
+                  { name: 'Ventral Pleats', x: 30, y: 82, desc: 'Accordion-like throat grooves expand to engulf enormous volumes of water. A blue whale\'s mouth can hold 90 tonnes of water in a single gulp.' },
+                  { name: 'Blowhole', x: 57, y: 5, desc: 'Paired nostrils migrated to the top of the skull. Exhaled air can reach 9 meters high. Contains a muscular plug that seals watertight during dives.' },
+                  { name: 'Fluke (Tail)', x: 95, y: 42, desc: 'Horizontal tail flukes move up and down (unlike fish tails). Each fluke has a unique trailing edge pattern — used by researchers to identify individuals.' },
+                  { name: 'Pectoral Flipper', x: 13, y: 78, desc: 'Contains the same bones as a human arm (humerus, radius, ulna, fingers). Internal structure reveals the whale\'s evolution from land-dwelling mammals.' },
+                  { name: 'Blubber Layer', x: 45, y: 55, desc: 'Up to 30cm of insulating fat. Serves as energy storage, thermal insulation, and streamlining. A blue whale\'s blubber can weigh 27 tonnes.' }
+                ]
+              },
+              worm: {
+                label: 'Giant Tube Worm (Riftia)',
+                svg: function (w, h, color) {
+                  var c1 = color || '#dc2626', c2 = color || '#7f1d1d';
+                  return '<svg viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg">' +
+                    '<defs>' +
+                    '<linearGradient id="wrmG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f5f5f4"/><stop offset="100%" stop-color="#a8a29e"/></linearGradient>' +
+                    '<radialGradient id="wrmPlume" cx="50%" cy="30%"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.7"/></radialGradient>' +
+                    '</defs>' +
+                    '<rect width="300" height="380" fill="#1c1917" rx="8"/>' +
+                    '<rect x="125" y="120" width="50" height="250" rx="8" fill="url(#wrmG)" stroke="#78716c" stroke-width="2"/>' +
+                    '<rect x="130" y="120" width="40" height="250" rx="6" fill="none" stroke="#a8a29e" stroke-width="0.8" opacity="0.4"/>' +
+                    '<path d="M150,120 Q110,90 80,55 Q72,42 78,35 Q85,32 92,42 Q105,60 130,85 Q140,95 145,105" fill="url(#wrmPlume)" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
+                    '<path d="M150,120 Q130,82 118,50 Q115,38 120,35 Q126,38 128,50 Q135,78 148,108" fill="url(#wrmPlume)" stroke="' + c2 + '" stroke-width="1.2" opacity="0.75"/>' +
+                    '<path d="M150,120 Q155,85 162,52 Q165,38 170,35 Q175,38 172,52 Q165,82 155,108" fill="url(#wrmPlume)" stroke="' + c2 + '" stroke-width="1.2" opacity="0.75"/>' +
+                    '<path d="M150,120 Q190,90 220,55 Q228,42 222,35 Q215,32 208,42 Q195,60 170,85 Q160,95 155,105" fill="url(#wrmPlume)" stroke="' + c2 + '" stroke-width="1.5" opacity="0.85"/>' +
+                    '<path d="M150,120 Q140,95 125,70 Q118,55 122,50 Q128,52 132,65 Q142,88 150,110" fill="' + c1 + '" opacity="0.4"/>' +
+                    '<path d="M150,120 Q160,95 175,70 Q182,55 178,50 Q172,52 168,65 Q158,88 150,110" fill="' + c1 + '" opacity="0.4"/>' +
+                    '<ellipse cx="135" cy="335" rx="20" ry="8" fill="#78716c" opacity="0.5"/>' +
+                    '<ellipse cx="165" cy="340" rx="18" ry="6" fill="#78716c" opacity="0.4"/>' +
+                    '</svg>';
+                },
+                parts: [
+                  { name: 'Plume (Obturaculae)', x: 50, y: 8, desc: 'Bright red feathery plume absorbs hydrogen sulfide, oxygen, and CO₂ from vent water. The red color comes from hemoglobin — same iron-based molecule as in human blood.' },
+                  { name: 'Chitin Tube', x: 50, y: 55, desc: 'Self-secreted protective tube made of chitin and protein. Can grow over 2 meters tall. The worm can retract completely inside when threatened by predators.' },
+                  { name: 'Trophosome (internal)', x: 50, y: 40, desc: 'A spongy organ packed with billions of chemosynthetic bacteria. These bacteria convert hydrogen sulfide into organic molecules — the worm\'s sole energy source.' },
+                  { name: 'No Mouth or Gut', x: 30, y: 30, desc: 'Adult tube worms have no digestive system at all. They rely entirely on their symbiotic bacteria. Nutrients are delivered through the bloodstream.' },
+                  { name: 'Vestimentiferan Body', x: 35, y: 50, desc: 'Segmented body plan divided into distinct regions. Anchors in the tube using tiny hooks called chaetae. Can grow at rates of 85cm per year — the fastest of any invertebrate.' },
+                  { name: 'Hydrothermal Vent Base', x: 50, y: 92, desc: 'Lives exclusively at hydrothermal vents where superheated water (up to 400°C) meets near-freezing ocean. Thrives in water containing lethal levels of hydrogen sulfide.' }
                 ]
               }
             };
 
             // Map each species to its body plan
             var SPECIES_BODY_MAP = {
-              neon: 'fish', guppy: 'fish', cory: 'fish', angel: 'fish', platy: 'fish', molly: 'fish',
-              cardinal: 'fish', rummy: 'fish', oto: 'fish', betta: 'fish',
+              neon: 'tetra', guppy: 'guppy_body', cory: 'fish', angel: 'angelfish', platy: 'guppy_body', molly: 'guppy_body',
+              cardinal: 'tetra', rummy: 'tetra', oto: 'flatfish', betta: 'betta',
               clown: 'fish', tang: 'fish', goby: 'fish',
-              oscar: 'fish', pike: 'fish', pleco: 'fish',
+              oscar: 'fish', pike: 'fish', pleco: 'flatfish',
               goldfish: 'fish', rockfish: 'fish',
-              archer: 'fish', puffer: 'fish', mudskip: 'fish',
+              archer: 'fish', puffer: 'pufferfish', mudskip: 'fish',
               anemone: 'jellyfish',
               shrimp: 'crustacean', cleaner: 'crustacean', crab: 'crustacean', amphipod: 'crustacean',
               starfish: 'echinoderm', seastar: 'echinoderm', urchin: 'echinoderm', seacucumber: 'echinoderm',
               slider: 'chelonian', turtle: 'chelonian',
               kelp: 'fish',
               clownfish: 'fish', dolphin: 'cetacean', jellyfish: 'jellyfish', squid: 'cephalopod',
-              hatchetfish: 'fish', swordfish: 'fish', anglerfish: 'fish', gulpereel: 'fish',
-              giantsquid: 'cephalopod', tubeworms: 'jellyfish', snailfish: 'fish',
-              mantaray: 'shark', bluewhale: 'cetacean', seahorse: 'fish',
+              hatchetfish: 'fish', swordfish: 'fish', anglerfish: 'anglerfish_plan', gulpereel: 'eel',
+              giantsquid: 'cephalopod', tubeworms: 'worm', snailfish: 'fish',
+              mantaray: 'ray', bluewhale: 'whale', seahorse: 'seahorse',
               octopus: 'cephalopod', nautilus: 'cephalopod', coelacanth: 'fish'
             };
 
@@ -23500,6 +25106,15 @@
               slider: { override: 'Basking behavior critical for thermoregulation and vitamin D synthesis. Can brumate (hibernate) underwater for months.', locomotion: 'Powerful rear leg kicks propel through water. On land, uses all four legs in a characteristic waddle.' }
             };
 
+            // ── Tank SVG mini-renderer — uses close-up body plan SVGs as miniatures in the tank ──
+            var getTankSvg = function (speciesId) {
+              var bodyKey = SPECIES_BODY_MAP[speciesId];
+              var plan = bodyKey && BODY_PLANS[bodyKey];
+              if (!plan || !plan.svg) return null;
+              var color = SPECIES_COLORS[speciesId] || null;
+              return plan.svg(60, 40, color);
+            };
+
             // ── Anatomy viewer state ──
             var viewingAnatomy = d.viewingAnatomy || null;
             var anatomyHighlight = d.anatomyHighlight || null;
@@ -23525,50 +25140,50 @@
 
             var SPECIES_BY_TANK = {
               freshwater: [
-                { id: 'neon', name: 'Neon Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], fact: 'Their iridescent stripe is made of guanine crystals.' },
-                { id: 'guppy', name: 'Guppy', icon: '🐟', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], fact: 'Males display vibrant colors to attract females.' },
-                { id: 'cory', name: 'Corydoras', icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], fact: 'They breathe air by darting to the surface!' },
-                { id: 'angel', name: 'Angelfish', icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], fact: 'Angelfish are cichlids — they guard their eggs fiercely.' },
-                { id: 'platy', name: 'Platy', icon: '🐟', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], fact: 'Platys are livebearers — they give birth to free-swimming fry.' },
-                { id: 'molly', name: 'Molly', icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], fact: 'Mollies can survive in both fresh and saltwater!' }
+                { id: 'neon', name: 'Neon Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [72, 80], pHRange: [6.0, 7.5], compat: ['guppy', 'cory', 'platy'], diet: 'Micro-omnivore — brine shrimp, daphnia, and crushed flake food', habitat: 'Shaded blackwater streams in the Amazon basin among submerged roots and leaf litter', fact: 'Their iridescent stripe is made of guanine crystals.' },
+                { id: 'guppy', name: 'Guppy', icon: '🐟', load: 1, minTank: 5, tempRange: [72, 82], pHRange: [6.8, 7.8], compat: ['neon', 'cory', 'platy', 'molly'], diet: 'Omnivore — algae, mosquito larvae, micro-worms, and flake food', habitat: 'Warm, slow-moving streams and pools in Trinidad, Venezuela, and northeast Brazil', fact: 'Males display vibrant colors to attract females.' },
+                { id: 'cory', name: 'Corydoras', icon: '🐡', load: 2, minTank: 15, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['neon', 'guppy', 'platy', 'angel'], diet: 'Bottom-feeder — sinking pellets, bloodworms, and organic detritus from the substrate', habitat: 'Sandy-bottomed, slow-flowing tributaries of the Amazon and Orinoco basins', fact: 'They breathe air by darting to the surface!' },
+                { id: 'angel', name: 'Angelfish', icon: '🐠', load: 4, minTank: 20, tempRange: [76, 84], pHRange: [6.0, 7.5], compat: ['cory'], diet: 'Predatory omnivore — small fish, insects, worms, and vegetable matter', habitat: 'Deep, quiet, vegetated floodplains and slow tributaries of the central Amazon', fact: 'Angelfish are cichlids — they guard their eggs fiercely.' },
+                { id: 'platy', name: 'Platy', icon: '🐟', load: 1, minTank: 10, tempRange: [70, 80], pHRange: [7.0, 8.2], compat: ['neon', 'guppy', 'cory', 'molly'], diet: 'Omnivore — algae, blanched vegetables, and small invertebrates', habitat: 'Warm, spring-fed streams and drainage ditches in southern Mexico and Guatemala', fact: 'Platys are livebearers — they give birth to free-swimming fry.' },
+                { id: 'molly', name: 'Molly', icon: '🐟', load: 2, minTank: 15, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['guppy', 'platy'], diet: 'Herbivore-leaning omnivore — algae films, spirulina, and occasional insect larvae', habitat: 'Brackish coastal lagoons, mangrove swamps, and freshwater streams from Mexico to Colombia', fact: 'Mollies can survive in both fresh and saltwater!' }
               ],
               planted: [
-                { id: 'cardinal', name: 'Cardinal Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], fact: 'Cardinals have a deeper red stripe than neons.' },
-                { id: 'rummy', name: 'Rummynose Tetra', icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], fact: 'Their red nose fades when stressed — a living water quality indicator!' },
-                { id: 'oto', name: 'Otocinclus', icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
-                { id: 'shrimp', name: 'Cherry Shrimp', icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], fact: 'A colony can double in size every 2-3 months.' },
-                { id: 'betta', name: 'Betta', icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], fact: 'Bettas build bubble nests at the surface for their eggs.' }
+                { id: 'cardinal', name: 'Cardinal Tetra', icon: '🐟', load: 1, minTank: 10, tempRange: [73, 81], pHRange: [5.5, 7.0], compat: ['rummy', 'oto', 'shrimp'], diet: 'Micro-predator — tiny crustaceans, insect larvae, and fine flake food', habitat: 'Tea-stained blackwater streams of the Rio Negro basin under dense rainforest canopy', fact: 'Cardinals have a deeper red stripe than neons.' },
+                { id: 'rummy', name: 'Rummynose Tetra', icon: '🐟', load: 1, minTank: 15, tempRange: [75, 82], pHRange: [5.5, 7.0], compat: ['cardinal', 'oto', 'shrimp'], diet: 'Omnivore — micro-crustaceans, fallen fruit particles, and algae', habitat: 'Soft, acidic tributaries of the Amazon and Rio Meta with sandy substrates', fact: 'Their red nose fades when stressed — a living water quality indicator!' },
+                { id: 'oto', name: 'Otocinclus', icon: '🐡', load: 1, minTank: 10, tempRange: [72, 79], pHRange: [6.0, 7.5], compat: ['cardinal', 'rummy', 'shrimp', 'betta'], diet: 'Herbivore — biofilm, soft green algae, and blanched zucchini', habitat: 'Shallow, sunlit, plant-rich margins of South American rivers with moderate current', fact: 'These tiny catfish are the best algae cleaners in the hobby.' },
+                { id: 'shrimp', name: 'Cherry Shrimp', icon: '🦐', load: 0.5, minTank: 5, tempRange: [68, 78], pHRange: [6.5, 8.0], compat: ['cardinal', 'rummy', 'oto'], diet: 'Detritivore — biofilm, decaying plant matter, algae, and microorganisms', habitat: 'Densely vegetated freshwater streams and ponds in Taiwan', fact: 'A colony can double in size every 2-3 months.' },
+                { id: 'betta', name: 'Betta', icon: '🐠', load: 2, minTank: 5, tempRange: [76, 82], pHRange: [6.5, 7.5], compat: ['oto'], diet: 'Insectivore — mosquito larvae, small insects, daphnia, and brine shrimp', habitat: 'Shallow rice paddies, stagnant ponds, and floodplains of Thailand and Cambodia', fact: 'Bettas build bubble nests at the surface for their eggs.' }
               ],
               reef: [
-                { id: 'clown', name: 'Clownfish', icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], fact: 'All clownfish are born male — the dominant one becomes female!' },
-                { id: 'tang', name: 'Blue Tang', icon: '🐟', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
-                { id: 'goby', name: 'Watchman Goby', icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
-                { id: 'anemone', name: 'Sea Anemone', icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], fact: 'Anemones can live over 100 years in the right conditions.' }
+                { id: 'clown', name: 'Clownfish', icon: '🐠', load: 3, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['tang', 'goby', 'anemone'], diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', habitat: 'Shelters among venomous tentacles of Heteractis anemones on Indo-Pacific reefs', fact: 'All clownfish are born male — the dominant one becomes female!' },
+                { id: 'tang', name: 'Blue Tang', icon: '🐟', load: 5, minTank: 55, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'goby'], diet: 'Herbivore — filamentous algae and seaweed, essential for reef health', habitat: 'Coral-rich outer reef slopes and lagoons throughout the Indo-Pacific', fact: 'Blue tangs can "play dead" when stressed, lying on their side.' },
+                { id: 'goby', name: 'Watchman Goby', icon: '🐡', load: 2, minTank: 20, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['clown', 'tang', 'anemone'], diet: 'Micro-predator — copepods, mysis shrimp, and sand-dwelling invertebrates', habitat: 'Sandy rubble zones adjacent to coral reefs, often sharing a burrow with a pistol shrimp', fact: 'Gobies form symbiotic partnerships with pistol shrimp.' },
+                { id: 'anemone', name: 'Sea Anemone', icon: '🪸', load: 3, minTank: 30, tempRange: [76, 82], pHRange: [8.1, 8.4], compat: ['clown', 'goby'], diet: 'Carnivore — captures small fish and shrimp with nematocyst-armed tentacles; also hosts photosynthetic zooxanthellae', habitat: 'Well-lit, current-swept sections of tropical reefs in the Indo-Pacific', fact: 'Anemones can live over 100 years in the right conditions.' }
               ],
               predator: [
-                { id: 'oscar', name: 'Oscar', icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], fact: 'Oscars recognize their owners and can learn tricks.' },
-                { id: 'pike', name: 'Pike Cichlid', icon: '🐟', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
-                { id: 'pleco', name: 'Plecostomus', icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], fact: 'Some plecos can grow over 2 feet long!' }
+                { id: 'oscar', name: 'Oscar', icon: '🐠', load: 10, minTank: 55, tempRange: [74, 81], pHRange: [6.0, 8.0], compat: ['pleco'], diet: 'Carnivore — crayfish, insects, small fish, and earthworms', habitat: 'Slow-moving, white-water rivers and flooded forests of the Amazon, Orinoco, and Paraná basins', fact: 'Oscars recognize their owners and can learn tricks.' },
+                { id: 'pike', name: 'Pike Cichlid', icon: '🐟', load: 8, minTank: 55, tempRange: [75, 82], pHRange: [6.0, 7.5], compat: ['pleco'], diet: 'Aggressive piscivore — ambushes fish, large insects, and crustaceans', habitat: 'Submerged logs and undercut banks in fast-flowing Amazonian creeks', fact: 'Pike cichlids are ambush predators that strike in milliseconds.' },
+                { id: 'pleco', name: 'Plecostomus', icon: '🐡', load: 6, minTank: 40, tempRange: [72, 82], pHRange: [6.5, 7.5], compat: ['oscar', 'pike'], diet: 'Omnivorous grazer — rasps algae and biofilm off rocks; also eats driftwood and sinking wafers', habitat: 'Rocky rapids and submerged driftwood in tropical South American rivers', fact: 'Some plecos can grow over 2 feet long!' }
               ],
               turtle: [
-                { id: 'slider', name: 'Red-Eared Slider', icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], fact: 'They can hold their breath for over 30 minutes!' },
-                { id: 'goldfish', name: 'Feeder Goldfish', icon: '🐟', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], fact: 'Goldfish can live 20+ years with proper care.' }
+                { id: 'slider', name: 'Red-Eared Slider', icon: '🐢', load: 15, minTank: 40, tempRange: [75, 85], pHRange: [6.5, 8.0], compat: ['goldfish'], diet: 'Omnivore — aquatic plants, snails, insects, and commercial turtle pellets; diet shifts to more vegetation with age', habitat: 'Calm ponds, lakes, and slow streams with muddy bottoms and basking logs in the southern United States', fact: 'They can hold their breath for over 30 minutes!' },
+                { id: 'goldfish', name: 'Feeder Goldfish', icon: '🐟', load: 3, minTank: 20, tempRange: [65, 75], pHRange: [7.0, 8.4], compat: ['slider'], diet: 'Omnivore — algae, aquatic plants, detritus, small invertebrates, and prepared pellets', habitat: 'Cool, slow-moving freshwater ponds and rivers; originally domesticated from wild carp in East Asia', fact: 'Goldfish can live 20+ years with proper care.' }
               ],
               invert: [
-                { id: 'cleaner', name: 'Cleaner Shrimp', icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], fact: 'They set up cleaning stations where fish line up to be groomed!' },
-                { id: 'urchin', name: 'Sea Urchin', icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], fact: 'Urchin spines are actually modified teeth.' },
-                { id: 'crab', name: 'Hermit Crab', icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], fact: 'Hermit crabs form "vacancy chains" — swapping shells in order of size!' },
-                { id: 'starfish', name: 'Sea Star', icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], fact: 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.' }
+                { id: 'cleaner', name: 'Cleaner Shrimp', icon: '🦐', load: 1, minTank: 10, tempRange: [75, 82], pHRange: [8.0, 8.4], compat: ['urchin', 'crab', 'starfish'], diet: 'Ectoparasite feeder — removes parasites, dead skin, and mucus from visiting reef fish', habitat: 'Coral ledges and reef crevices throughout the Indo-Pacific where it establishes cleaning stations', fact: 'They set up cleaning stations where fish line up to be groomed!' },
+                { id: 'urchin', name: 'Sea Urchin', icon: '🦔', load: 2, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'crab', 'starfish'], diet: 'Herbivore — rasps coralline and filamentous algae off rocks using a five-toothed jaw called Aristotle\'s lantern', habitat: 'Rocky subtidal reef zones and kelp forests in temperate and tropical seas', fact: 'Urchin spines are actually modified teeth.' },
+                { id: 'crab', name: 'Hermit Crab', icon: '🦀', load: 2, minTank: 10, tempRange: [72, 80], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'starfish'], diet: 'Scavenger/omnivore — detritus, algae, leftover food scraps, and small worms', habitat: 'Intertidal rock pools and shallow coral rubble zones in tropical seas', fact: 'Hermit crabs form "vacancy chains" — swapping shells in order of size!' },
+                { id: 'starfish', name: 'Sea Star', icon: '⭐', load: 3, minTank: 20, tempRange: [72, 78], pHRange: [8.0, 8.4], compat: ['cleaner', 'urchin', 'crab'], diet: 'Predator — everts its stomach to digest mussels, clams, and oysters externally', habitat: 'Rocky intertidal zones to deep reef slopes in nearly every ocean', fact: 'Sea stars can regenerate lost arms — and sometimes an entire body from one arm.' }
               ],
               coldwater: [
-                { id: 'rockfish', name: 'Rockfish', icon: '🐟', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], fact: 'Some rockfish live over 200 years!' },
-                { id: 'seastar', name: 'Sunflower Star', icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
-                { id: 'kelp', name: 'Giant Kelp', icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], fact: 'Giant kelp can grow up to 2 feet per day!' }
+                { id: 'rockfish', name: 'Rockfish', icon: '🐟', load: 5, minTank: 55, tempRange: [50, 60], pHRange: [7.8, 8.4], compat: ['seastar', 'kelp'], diet: 'Ambush predator — small fish, shrimp, and planktonic crustaceans near rocky structure', habitat: 'Deep rocky reefs and kelp forests along the Pacific coast of North America', fact: 'Some rockfish live over 200 years!' },
+                { id: 'seastar', name: 'Sunflower Star', icon: '⭐', load: 4, minTank: 40, tempRange: [48, 58], pHRange: [7.8, 8.4], compat: ['rockfish', 'kelp'], diet: 'Voracious predator — sea urchins, clams, snails, and other sea stars', habitat: 'Kelp forests and rocky reefs from Alaska to Baja California, critical for controlling urchin populations', fact: 'Sunflower stars have up to 24 arms and can move 1 meter per minute.' },
+                { id: 'kelp', name: 'Giant Kelp', icon: '🌿', load: 1, minTank: 30, tempRange: [50, 65], pHRange: [7.5, 8.5], compat: ['rockfish', 'seastar'], diet: 'Photosynthetic autotroph — converts sunlight, CO₂, and dissolved nutrients into biomass', habitat: 'Cool, nutrient-rich, sunlit coastal waters from 6-30m depth along temperate coastlines', fact: 'Giant kelp can grow up to 2 feet per day!' }
               ],
               brackish: [
-                { id: 'archer', name: 'Archerfish', icon: '🐟', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], fact: 'Archerfish shoot jets of water to knock insects off branches!' },
-                { id: 'puffer', name: 'Figure-8 Puffer', icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
-                { id: 'mudskip', name: 'Mudskipper', icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], fact: 'Mudskippers are fish that can walk on land and breathe air!' }
+                { id: 'archer', name: 'Archerfish', icon: '🐟', load: 3, minTank: 20, tempRange: [72, 82], pHRange: [7.0, 8.5], compat: ['puffer', 'mudskip'], diet: 'Insectivore — shoots down terrestrial insects with precisely aimed jets of water', habitat: 'Mangrove-lined estuaries, brackish creeks, and river mouths across Southeast Asia and northern Australia', fact: 'Archerfish shoot jets of water to knock insects off branches!' },
+                { id: 'puffer', name: 'Figure-8 Puffer', icon: '🐡', load: 4, minTank: 15, tempRange: [72, 79], pHRange: [7.5, 8.5], compat: ['archer'], diet: 'Molluscivore — crunches snails, clams, and crustacean shells to keep its fused beak trimmed', habitat: 'Brackish river deltas and coastal mangroves of Southeast Asia, especially in Thailand and Borneo', fact: 'Puffers need to crunch hard-shelled food to keep their beaks trimmed.' },
+                { id: 'mudskip', name: 'Mudskipper', icon: '🐸', load: 3, minTank: 20, tempRange: [75, 86], pHRange: [7.0, 8.5], compat: ['archer'], diet: 'Opportunistic omnivore — insects, small crabs, algae, and detritus from mudflats', habitat: 'Intertidal mudflats and mangrove forests of the Indo-Pacific, spending much of its time on land', fact: 'Mudskippers are fish that can walk on land and breathe air!' }
               ]
             };
 
@@ -23589,6 +25204,243 @@
             var feedingLog = d.feedingLog || null;
             var chemTooltip = d.chemTooltip || null;
             var fishStress = d.fishStress || {};
+
+            // ── AI Event state ──
+            var aiEvent = d.aiEvent || null;
+            var aiEventHistory = d.aiEventHistory || [];
+            var aiEventLoading = d.aiEventLoading || false;
+            var lastAIEventDay = d.lastAIEventDay || 0;
+
+            // ── Fallback Event Bank (fires when Gemini unavailable) ──
+            var FALLBACK_EVENTS = [
+              // Disease
+              {
+                id: 'ich', title: 'White Spot Disease (Ich)', icon: '\u26A0\uFE0F', desc: 'You notice tiny white spots on your fish\u2019s fins and body. Ichthyophthirius multifiliis is highly contagious and can be fatal if untreated.', category: 'disease',
+                educational: 'Ich is caused by a ciliated protozoan parasite. It burrows under the skin, creating white cysts. The parasite has a 3-stage life cycle \u2014 it\u2019s only vulnerable to treatment during the free-swimming stage.',
+                choices: [
+                  { label: '\uD83C\uDF21\uFE0F Raise temperature to 86\u00B0F', effect: { temp: 86, ammonia: 0.1 }, outcome: 'The higher temperature speeds up the parasite\u2019s life cycle, making treatment more effective. Fish are slightly stressed by the heat but the ich is clearing.', xp: 5 },
+                  { label: '\uD83E\uDDEA Add aquarium salt (1 tsp/gal)', effect: { ammonia: 0.05 }, outcome: 'Salt disrupts the parasite\u2019s osmotic balance. After 3 days, the white spots are fading. Scaleless fish like corydoras may be slightly irritated.', xp: 4 },
+                  { label: '\u274C Do nothing and observe', effect: { ammonia: 0.3 }, outcome: 'The ich spreads rapidly. Two fish are now heavily infected and showing labored breathing. Immediate action is now critical.', xp: 1 }
+                ]
+              },
+              {
+                id: 'finrot', title: 'Fin Rot Detected', icon: '\uD83E\uDE78', desc: 'One of your fish has ragged, discolored fin edges \u2014 a sign of bacterial fin rot. Poor water quality is usually the root cause.', category: 'disease',
+                educational: 'Fin rot is caused by gram-negative bacteria (Aeromonas, Pseudomonas) that thrive in dirty water. Clean water is the #1 treatment \u2014 medications are secondary.',
+                choices: [
+                  { label: '\uD83D\uDCA7 25% water change + clean filter', effect: { ammonia: -0.2, nitrite: -0.1 }, outcome: 'Excellent choice! The water quality improves dramatically. Over the next week, the damaged fins begin regenerating with clear tissue.', xp: 6 },
+                  { label: '\uD83D\uDC8A Dose antibiotics immediately', effect: { ammonia: 0.15 }, outcome: 'The antibiotics help, but also kill beneficial bacteria in your filter. Next time, try clean water first \u2014 it\u2019s usually sufficient.', xp: 3 },
+                  { label: '\u274C Ignore it', effect: { ammonia: 0.4 }, outcome: 'The fin rot progresses to body rot. The fish\u2019s immune system is now compromised. This could have been prevented with a water change.', xp: 0 }
+                ]
+              },
+              // Equipment
+              {
+                id: 'heater_fail', title: 'Heater Malfunction!', icon: '\uD83C\uDF21\uFE0F', desc: 'Your heater thermostat is stuck on high! Water temperature is climbing rapidly toward 88\u00B0F. Your fish are showing signs of thermal stress.', category: 'equipment',
+                educational: 'Heater malfunctions are one of the most dangerous aquarium emergencies. Above 86\u00B0F, dissolved oxygen drops significantly. Many fish can tolerate brief temperature spikes but prolonged exposure causes organ damage.',
+                choices: [
+                  { label: '\u26A1 Unplug heater + add ice bag', effect: { temp: -6 }, outcome: 'Quick thinking! The ice bag slowly cools the water back to safe range. You\u2019ll need to monitor and replace the heater.', xp: 6 },
+                  { label: '\uD83D\uDCA8 Point a fan across water surface', effect: { temp: -3 }, outcome: 'Evaporative cooling helps reduce temperature gradually. The water drops a few degrees but may not be enough. Good emergency measure!', xp: 4 },
+                  { label: '\u274C Unplug heater only', effect: { temp: -1 }, outcome: 'The temperature will slowly drift down, but tropical fish need some heat. Monitor closely and get a replacement heater soon.', xp: 2 }
+                ]
+              },
+              {
+                id: 'filter_clog', title: 'Filter Flow Reduced', icon: '\u2699\uFE0F', desc: 'Your filter output is barely trickling. Debris has built up in the intake and media. Without filtration, ammonia will spike quickly.', category: 'equipment',
+                educational: 'Filters house your nitrogen cycle bacteria (Nitrosomonas + Nitrospira). Never clean filter media in tap water \u2014 the chlorine kills the beneficial bacteria. Always rinse in old tank water!',
+                choices: [
+                  { label: '\uD83D\uDCA7 Rinse media in old tank water', effect: { ammonia: -0.1 }, outcome: 'Perfect technique! The filter flow is restored while preserving the bacterial colony. Your nitrogen cycle stays intact.', xp: 6 },
+                  { label: '\uD83D\uDDD1\uFE0F Replace all filter media', effect: { ammonia: 0.3 }, outcome: 'The filter runs great, but you\u2019ve lost ALL your beneficial bacteria. Expect an ammonia spike in 2-3 days as the cycle restarts.', xp: 2 },
+                  { label: '\u274C Deal with it later', effect: { ammonia: 0.5 }, outcome: 'Without proper filtration, ammonia and waste build up rapidly. Your fish are gasping at the surface for oxygen.', xp: 0 }
+                ]
+              },
+              // Ecology
+              {
+                id: 'algae_bloom', title: 'Green Algae Bloom!', icon: '\uD83C\uDF3F', desc: 'Your tank water has turned pea-soup green overnight. A massive algae bloom has erupted, likely from excess nutrients and light.', category: 'ecology',
+                educational: 'Algae blooms are caused by excess phosphates and nitrates combined with too much light (>10 hours/day). They\u2019re not immediately dangerous but reduce oxygen at night and look unsightly.',
+                choices: [
+                  { label: '\uD83D\uDD26 Blackout for 3 days (cover tank)', effect: { nitrate: -5 }, outcome: 'Without light, the algae dies off. After 3 days of darkness, the water clears. Reduce your light schedule to prevent recurrence.', xp: 5 },
+                  { label: '\uD83E\uDDA0 Add algae-eating fish (Oto)', effect: { nitrate: -2 }, outcome: 'The otocinclus help with surface algae, but green water algae is too small for them. Partial improvement, but a blackout would be more effective.', xp: 3 },
+                  { label: '\uD83D\uDCA7 50% water change', effect: { ammonia: -0.1, nitrate: -10 }, outcome: 'The water change dilutes nutrients and clears some algae, but it may return if the root cause (excess light/nutrients) isn\u2019t addressed.', xp: 4 }
+                ]
+              },
+              {
+                id: 'snail_invasion', title: 'Snail Population Explosion!', icon: '\uD83D\uDC0C', desc: 'Tiny snails are everywhere! They hitchhiked in on a plant and have multiplied rapidly. While not harmful, they\u2019re covering your glass.', category: 'ecology',
+                educational: 'Pest snails (bladder snails, Malaysian trumpet snails) reproduce asexually \u2014 one snail can become hundreds. They\u2019re actually beneficial detritivores but can indicate overfeeding.',
+                choices: [
+                  { label: '\uD83C\uDF7D\uFE0F Reduce feeding (snails eat leftovers)', effect: { ammonia: -0.15 }, outcome: 'Smart approach! With less excess food, the snail population naturally declines over 2-3 weeks. Bonus: your water quality improves too.', xp: 6 },
+                  { label: '\uD83E\uDD9E Add an assassin snail', effect: {}, outcome: 'The assassin snail is a natural predator. Over time, it hunts down the pest snails. A biological control approach \u2014 very elegant!', xp: 5 },
+                  { label: '\uD83D\uDEAB Remove them manually', effect: {}, outcome: 'You pick out dozens, but miss the tiny ones and eggs. They\u2019ll be back. This is a never-ending battle without addressing the root cause.', xp: 2 }
+                ]
+              },
+              {
+                id: 'plant_melt', title: 'Aquatic Plants Melting', icon: '\uD83C\uDF42', desc: 'Several of your live plants are turning brown and dissolving. The leaves are becoming translucent and falling apart.', category: 'ecology',
+                educational: 'New aquatic plants often \"melt\" as they transition from emersed (above-water) to submersed growth. This is normal! Iron and CO2 deficiency can also cause melting in established plants.',
+                choices: [
+                  { label: '\uD83E\uDDEA Add root tabs + liquid fertilizer', effect: { nitrate: 3 }, outcome: 'The iron and micronutrients give the plants what they need. New, submersed-growth leaves begin sprouting within a week.', xp: 5 },
+                  { label: '\u2702\uFE0F Trim dead leaves, leave roots', effect: {}, outcome: 'Good practice! Removing dead material prevents it from decaying and spiking ammonia. Healthy roots will send up new growth.', xp: 4 },
+                  { label: '\uD83D\uDDD1\uFE0F Remove all dying plants', effect: { ammonia: 0.1, nitrate: 5 }, outcome: 'Without plants absorbing nitrate, your water quality may suffer. Plants also provide hiding spots that reduce fish stress.', xp: 1 }
+                ]
+              },
+              // Water
+              {
+                id: 'ph_crash', title: 'Sudden pH Crash!', icon: '\u2697\uFE0F', desc: 'Your pH has dropped from 7.2 to 6.0 overnight! Fish are showing signs of acidosis: clamped fins, rapid gill movement, and lethargy.', category: 'water',
+                educational: 'pH crashes happen when KH (carbonate hardness) is depleted. KH acts as a buffer \u2014 without it, pH becomes unstable. Adding crushed coral or baking soda restores buffering capacity.',
+                choices: [
+                  { label: '\uD83E\uDDF1 Add crushed coral to filter', effect: { pH: 1.0 }, outcome: 'The crushed coral slowly dissolves, raising KH and stabilizing pH around 7.2. This provides long-term buffering. Excellent choice!', xp: 6 },
+                  { label: '\uD83E\uDDEA Add baking soda (1 tsp/5 gal)', effect: { pH: 0.6 }, outcome: 'The pH rises quickly back toward neutral. Be careful \u2014 sudden pH changes can be as stressful as the crash itself. Slow and steady wins.', xp: 4 },
+                  { label: '\uD83D\uDCA7 Large water change (50%)', effect: { pH: 0.4, ammonia: -0.2 }, outcome: 'The fresh water brings pH up somewhat, but without addressing the low KH, the pH will crash again within days.', xp: 3 }
+                ]
+              },
+              {
+                id: 'cloudy_water', title: 'Mysterious Cloudiness', icon: '\uD83C\uDF2B\uFE0F', desc: 'Your crystal-clear water has become milky white. It happened within hours and the fish seem unaffected so far.', category: 'water',
+                educational: 'Milky white cloudiness is a bacterial bloom \u2014 millions of free-floating heterotrophic bacteria. This is common in new tanks or after a major disturbance. It\u2019s usually harmless and self-resolving.',
+                choices: [
+                  { label: '\u23F3 Wait it out (bacterial bloom)', effect: { ammonia: 0.1 }, outcome: 'Correct diagnosis! The bloom runs out of food after 2-3 days and clears on its own. Your tank\u2019s ecosystem is simply rebalancing.', xp: 5 },
+                  { label: '\uD83D\uDCA7 Small daily water changes (10%)', effect: { ammonia: -0.05 }, outcome: 'The gentle water changes remove some bacteria without disrupting the cycle. Combined with patience, the water clears in a few days.', xp: 5 },
+                  { label: '\uD83E\uDDEA Add water clarifier chemical', effect: { ammonia: 0.05 }, outcome: 'The clarifier clumps particles for the filter to catch. It works visually but doesn\u2019t address why the bloom happened. A band-aid solution.', xp: 2 }
+                ]
+              },
+              // Behavioral
+              {
+                id: 'aggression', title: 'Fish Aggression Alert!', icon: '\uD83D\uDCA2', desc: 'One of your larger fish is chasing and nipping at the others. You can see torn fins on the smaller fish. Tank harmony is disrupted.', category: 'behavioral',
+                educational: 'Aggression often stems from territorial behavior, breeding instincts, or overcrowding. Rearranging decorations breaks established territories and can reset the social hierarchy.',
+                choices: [
+                  { label: '\uD83C\uDFE0 Rearrange decorations', effect: {}, outcome: 'Brilliant strategy! Moving the decor disrupts the bully\u2019s claimed territory. All fish have to re-establish boundaries, reducing aggression.', xp: 5 },
+                  { label: '\uD83C\uDF3F Add more hiding spots', effect: {}, outcome: 'More plants and caves give smaller fish escape routes. Line-of-sight breaks are key to peaceful tanks. The nipping decreases significantly.', xp: 5 },
+                  { label: '\uD83D\uDCD0 Check if tank is overcrowded', effect: {}, outcome: 'You review your stocking \u2014 the bioload is high. Sometimes the only solution is to rehome the aggressive individual.', xp: 4 }
+                ]
+              },
+              {
+                id: 'breeding', title: 'Breeding Behavior Spotted!', icon: '\uD83D\uDC95', desc: 'Two fish are performing an elaborate courtship dance! The male is displaying vibrant colors and the female appears to have a rounded belly.', category: 'behavioral',
+                educational: 'Successful breeding requires stable water chemistry, proper temperature, and adequate nutrition. Many livebearers (guppies, mollies, platys) breed readily. Egg-layers need specific conditions.',
+                choices: [
+                  { label: '\uD83C\uDF31 Add breeding box / plants', effect: {}, outcome: 'The dense plants provide cover for fry. Within days, you spot tiny baby fish hiding among the leaves! Your population may grow.', xp: 5 },
+                  { label: '\uD83C\uDF21\uFE0F Optimize conditions for spawning', effect: { temp: 1 }, outcome: 'The slightly warmer water and good nutrition encourage spawning. Nature takes its course \u2014 this is natural population dynamics!', xp: 4 },
+                  { label: '\uD83D\uDC40 Just observe and enjoy', effect: {}, outcome: 'You watch the beautiful natural behavior unfold. Even if fry don\u2019t survive, witnessing courtship displays is one of the joys of fishkeeping.', xp: 3 }
+                ]
+              },
+              {
+                id: 'new_cycle', title: 'Nitrogen Cycle Kick-starting', icon: '\uD83D\uDD04', desc: 'You notice ammonia is rising but nitrite is still zero. Your tank is in the early stages of cycling \u2014 beneficial bacteria haven\u2019t colonized yet.', category: 'water',
+                educational: 'The nitrogen cycle is the single most important concept in fishkeeping. Ammonia \u2192 Nitrite \u2192 Nitrate. It takes 4-6 weeks to fully establish. Patience is the key.',
+                choices: [
+                  { label: '\uD83E\uDDA0 Add bottled bacteria starter', effect: { ammonia: -0.2 }, outcome: 'The commercial bacteria boost jump-starts colonization. You should see nitrite appear within a week as the first bacteria convert ammonia.', xp: 5 },
+                  { label: '\uD83D\uDCA7 Small daily water changes', effect: { ammonia: -0.15 }, outcome: 'Keeping ammonia below 2 ppm protects your fish while the cycle establishes. This is the gold standard for fish-in cycling.', xp: 6 },
+                  { label: '\u274C Add more fish to speed it up', effect: { ammonia: 0.6 }, outcome: 'More fish = more ammonia. But your bacteria can\u2019t keep up yet! This overloads the system and puts all fish at risk. Less is more during cycling.', xp: 0 }
+                ]
+              },
+              {
+                id: 'power_outage', title: 'Power Outage Simulation', icon: '\u26A1', desc: 'The power goes out! Your heater, filter, and lights all stop. Without filtration, oxygen levels will drop. Without the heater, temperature will fall.', category: 'equipment',
+                educational: 'During power outages, oxygen is the #1 concern. Battery-powered air pumps are essential emergency gear. Most tropical fish can survive 4-6 hours without heat but suffocate faster without water movement.',
+                choices: [
+                  { label: '\uD83E\uDEAB Battery air pump + blanket on tank', effect: { temp: -2 }, outcome: 'The air pump maintains oxygen while the blanket insulates heat. Your fish barely notice the outage. You were prepared!', xp: 6 },
+                  { label: '\uD83D\uDCA8 Manually agitate water surface', effect: { temp: -3, ammonia: 0.1 }, outcome: 'Stirring the water with a cup adds oxygen. It\u2019s labor-intensive but effective short-term. Temperature slowly drops.', xp: 4 },
+                  { label: '\u274C Wait for power to return', effect: { temp: -5, ammonia: 0.3 }, outcome: 'After 3 hours, oxygen drops critically. Some fish are gasping at the surface. The temperature is falling steadily. An emergency kit would have prevented this.', xp: 1 }
+                ]
+              },
+              {
+                id: 'test_results', title: 'Unexpected Water Test Results', icon: '\uD83E\uDDEA', desc: 'Your weekly water test shows nitrate at 80+ ppm! Your fish seem fine now, but this level of nitrate suppresses immune function over time.', category: 'water',
+                educational: 'High nitrate is the "silent killer." Fish acclimate gradually and seem fine, but chronic exposure stunts growth, fades color, and weakens immunity. Regular water changes are the #1 prevention.',
+                choices: [
+                  { label: '\uD83D\uDCA7 50% water change + gravel vacuum', effect: { nitrate: -30, ammonia: -0.1 }, outcome: 'A thorough water change and gravel vacuum removes trapped detritus. Nitrate drops to safe levels. Schedule weekly changes to prevent buildup.', xp: 6 },
+                  { label: '\uD83C\uDF3F Add fast-growing live plants', effect: { nitrate: -15 }, outcome: 'Floating plants like duckweed and hornwort are nitrogen-absorbing machines. They\u2019ll help keep nitrate in check between water changes.', xp: 5 },
+                  { label: '\u274C It will come down on its own', effect: { nitrate: 10 }, outcome: 'Nitrate doesn\u2019t decrease on its own \u2014 only water changes, plants, or special media remove it. Your fish\u2019s long-term health is at risk.', xp: 0 }
+                ]
+              }
+            ];
+
+            // ── AI Event Generator (Gemini-powered with fallback) ──
+            var generateAIEvent = function () {
+              if (aiEventLoading || !selectedTank || tankFish.length === 0) return;
+
+              // Try Gemini first, fall back to curated bank
+              if (callGemini) {
+                upd('aiEventLoading', true);
+                var fishNames = tankFish.map(function (fId) {
+                  var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
+                  return sp ? sp.name : fId;
+                }).join(', ');
+                var tankInfo = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
+                var prompt = 'You are an aquarium science educator generating an interactive learning event for a tank simulation. Current tank state:\n' +
+                  '- Tank type: ' + (tankInfo ? tankInfo.name : selectedTank) + '\n' +
+                  '- Fish: ' + fishNames + ' (' + tankFish.length + ' total)\n' +
+                  '- Water: pH ' + (waterChem ? waterChem.pH.toFixed(1) : '?') + ', Temp ' + (waterChem ? waterChem.temp.toFixed(0) : '?') + 'F, NH3 ' + (waterChem ? waterChem.ammonia.toFixed(2) : '?') + ', NO2 ' + (waterChem ? waterChem.nitrite.toFixed(2) : '?') + ', NO3 ' + (waterChem ? waterChem.nitrate.toFixed(0) : '?') + '\n' +
+                  '- Day: ' + simDay + '\n' +
+                  '- Recent events: ' + (aiEventHistory.length > 0 ? aiEventHistory.slice(-3).map(function (e) { return e.title; }).join(', ') : 'none') + '\n\n' +
+                  'Generate ONE realistic aquarium event that requires a student decision. Return ONLY valid JSON:\n' +
+                  '{"title":"short title","icon":"single emoji","desc":"2-3 sentence scenario description","educational":"1-2 sentence science explanation","choices":[{"label":"emoji + action","effect_desc":"brief consequence preview","ammonia_delta":0,"ph_delta":0,"temp_delta":0,"nitrate_delta":0,"xp":5,"outcome":"what happens after choosing this"},{"label":"emoji + alternative action","effect_desc":"brief consequence","ammonia_delta":0,"ph_delta":0,"temp_delta":0,"nitrate_delta":0,"xp":3,"outcome":"result"}]}\n' +
+                  'Rules: 2-3 choices, effects realistic, one choice should be clearly educational/best, include a wrong/risky choice. Make it specific to the current fish and water conditions. Do NOT repeat recent events.';
+
+                callGemini(prompt, true, false, 0.9).then(function (response) {
+                  try {
+                    var parsed = typeof response === 'string' ? JSON.parse(response) : response;
+                    if (parsed && parsed.title && parsed.choices && parsed.choices.length >= 2) {
+                      // Convert AI response to standard event format
+                      var aiEvt = {
+                        id: 'ai_' + Date.now(),
+                        title: parsed.title,
+                        icon: parsed.icon || '\uD83E\uDD16',
+                        desc: parsed.desc,
+                        educational: parsed.educational,
+                        category: 'ai_generated',
+                        choices: parsed.choices.map(function (c) {
+                          return {
+                            label: c.label,
+                            effect: {
+                              ammonia: c.ammonia_delta || 0,
+                              pH: c.ph_delta || 0,
+                              temp: c.temp_delta || 0,
+                              nitrate: c.nitrate_delta || 0
+                            },
+                            outcome: c.outcome,
+                            xp: c.xp || 3
+                          };
+                        })
+                      };
+                      updMulti({ aiEvent: aiEvt, aiEventLoading: false, lastAIEventDay: simDay });
+                      return;
+                    }
+                  } catch (e) { /* fall through to fallback */ }
+                  // Fallback on parse failure
+                  var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
+                  updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
+                }).catch(function () {
+                  var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
+                  updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
+                });
+              } else {
+                // No callGemini available — use fallback
+                var fb = FALLBACK_EVENTS[Math.floor(Math.random() * FALLBACK_EVENTS.length)];
+                updMulti({ aiEvent: Object.assign({}, fb), aiEventLoading: false, lastAIEventDay: simDay });
+              }
+            };
+
+            // ── Resolve AI Event (apply chosen consequence) ──
+            var resolveAIEvent = function (choiceIdx) {
+              if (!aiEvent || !aiEvent.choices || !aiEvent.choices[choiceIdx]) return;
+              var choice = aiEvent.choices[choiceIdx];
+              var updates = {};
+              // Apply effects to water chemistry
+              if (waterChem && choice.effect) {
+                var newChem = Object.assign({}, waterChem);
+                if (choice.effect.ammonia) newChem.ammonia = Math.max(0, newChem.ammonia + choice.effect.ammonia);
+                if (choice.effect.pH) newChem.pH = Math.max(5.5, Math.min(9.0, newChem.pH + choice.effect.pH));
+                if (choice.effect.temp) {
+                  if (Math.abs(choice.effect.temp) > 10) newChem.temp = choice.effect.temp; // Absolute temp set
+                  else newChem.temp = Math.max(40, Math.min(95, newChem.temp + choice.effect.temp));
+                }
+                if (choice.effect.nitrate) newChem.nitrate = Math.max(0, newChem.nitrate + choice.effect.nitrate);
+                if (choice.effect.nitrite) newChem.nitrite = Math.max(0, newChem.nitrite + choice.effect.nitrite);
+                updates.waterChem = newChem;
+              }
+              // Award XP
+              if (choice.xp && typeof awardStemXP === 'function') awardStemXP('aquarium', choice.xp, 'AI Event: ' + aiEvent.title);
+              // Log the resolved event
+              var historyEntry = { title: aiEvent.title, icon: aiEvent.icon, choice: choice.label, outcome: choice.outcome, day: simDay, xp: choice.xp || 0 };
+              updates.aiEventHistory = aiEventHistory.concat([historyEntry]).slice(-20);
+              // Mark event as resolved (show outcome)
+              updates.aiEvent = Object.assign({}, aiEvent, { resolved: true, chosenIdx: choiceIdx, chosenOutcome: choice.outcome, chosenXp: choice.xp || 0 });
+              updMulti(updates);
+              // Auto-dismiss outcome after 8 seconds
+              setTimeout(function () { upd('aiEvent', null); }, 8000);
+            };
 
             // ── Ocean Ecology state ──
             var oceanPop = d.oceanPop || { sardines: 800, tuna: 200, sharks: 50 };
@@ -23719,7 +25571,7 @@
               newHealth[speciesId] = (newHealth[speciesId] || 0) + 1;
               var newHunger = Object.assign({}, hungerLevels);
               if (newHunger[speciesId] === undefined) newHunger[speciesId] = 50;
-              updMulti({ tankFish: newFish, fishHealth: newHealth, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
+              updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
             };
 
             var removeFish = function (idx) {
@@ -23768,7 +25620,31 @@
               var newChem = Object.assign({}, waterChem, {
                 ammonia: waterChem.ammonia + 0.15 * (tankFish.length || 1),
               });
-              updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed' }]) });
+              // Reduce hunger for all fish and track feeding impact
+              var newHunger = Object.assign({}, hungerLevels);
+              var totalDrop = 0;
+              var overfedCount = 0;
+              tankFish.forEach(function (fId) {
+                var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+                if (cur < 15) { overfedCount++; }
+                var drop = Math.min(cur, 35);
+                totalDrop += drop;
+                newHunger[fId] = Math.max(0, cur - drop);
+              });
+              var avgDrop = tankFish.length > 0 ? Math.round(totalDrop / tankFish.length) : 0;
+              var tips = [
+                'Feed small amounts 2-3 times daily. Fish stomachs are roughly the size of their eyes!',
+                'Uneaten food decomposes into ammonia. Remove leftovers after 3 minutes.',
+                'Overfeeding is the #1 cause of poor water quality in aquariums.',
+                'Bottom feeders like corydoras eat leftover food — nature\'s cleanup crew!',
+                'In the wild, fish may go days without food. Don\'t panic if you miss a feeding.'
+              ];
+              updMulti({
+                waterChem: newChem,
+                hungerLevels: newHunger,
+                feedingLog: { fishCount: tankFish.length, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * (tankFish.length || 1), overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
+                eventLog: eventLog.concat([{ tick: simTick, msg: '🍽️ Fish fed — hunger reduced by ' + avgDrop + ' avg' }])
+              });
             };
 
             // ── Simulation tick (water chemistry drift) ──
@@ -23796,22 +25672,26 @@
               };
               var newTick = simTick + 1;
               var newLog = eventLog.slice();
-              // Random events
-              if (newTick % 10 === 0 && Math.random() < 0.3) {
-                var events = ['🌿 Algae bloom detected!', '🌡️ Heater fluctuation!', '💀 Ammonia spike from overfeeding!'];
-                var evt = events[Math.floor(Math.random() * events.length)];
-                if (evt.includes('Ammonia')) newChem.ammonia += 0.5;
-                if (evt.includes('Heater')) newChem.temp += (Math.random() > 0.5 ? 3 : -3);
-                newLog.push({ tick: newTick, msg: evt });
+              // AI-powered random events (every ~5 sim-days, 60% chance)
+              var daysSinceLastEvent = simDay - lastAIEventDay;
+              if (daysSinceLastEvent >= 5 && Math.random() < 0.6 && !aiEvent && !aiEventLoading) {
+                generateAIEvent();
+                newLog.push({ tick: newTick, msg: '🤖 An event is developing in your tank...' });
               }
               // XP for maintaining healthy parameters
               var allOk = getChemStatus('ammonia', newChem.ammonia) === 'ok' &&
                 getChemStatus('nitrite', newChem.nitrite) === 'ok' &&
                 getChemStatus('pH', newChem.pH) === 'ok';
               if (allOk && tankFish.length > 0 && newTick % 5 === 0) {
-                awardXP(2, 'Healthy tank maintenance');
+                awardStemXP('aquarium', 2, 'Healthy tank maintenance');
               }
-              updMulti({ waterChem: newChem, simTick: newTick, eventLog: newLog.slice(-20) });
+              // Increase hunger each simulation tick
+              var newHunger = Object.assign({}, hungerLevels);
+              tankFish.forEach(function (fId) {
+                var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+                newHunger[fId] = Math.min(100, cur + 2);
+              });
+              updMulti({ waterChem: newChem, simTick: newTick, hungerLevels: newHunger, eventLog: newLog.slice(-20) });
             };
 
 
@@ -23898,7 +25778,7 @@
                 if (addToast) addToast('🚨 Fish stock collapse! Populations have crashed below sustainable levels.', 'error');
               }
               if (!collapsed && newYear % 5 === 0) {
-                awardXP(3, 'Sustainable fishing for 5 years');
+                awardStemXP('ocean', 3, 'Sustainable fishing for 5 years');
               }
             };
 
@@ -23921,26 +25801,26 @@
             ];
 
             var MARINE_SPECIES = [
-              { id: 'clownfish', name: 'Clownfish', icon: '🐠', zone: 'sunlight', habitat: 'Coral Reef', diet: 'Omnivore', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
-              { id: 'dolphin', name: 'Bottlenose Dolphin', icon: '🐬', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Dolphins sleep with one eye open — one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
-              { id: 'jellyfish', name: 'Moon Jellyfish', icon: '🪼', zone: 'sunlight', habitat: 'Coastal', diet: 'Carnivore', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood — just a nerve net.', quiz: 'What body system do jellyfish lack?' },
-              { id: 'turtle', name: 'Green Sea Turtle', icon: '🐢', zone: 'sunlight', habitat: 'Coastal & Reef', diet: 'Herbivore', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
-              { id: 'squid', name: 'Firefly Squid', icon: '🦑', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
-              { id: 'hatchetfish', name: 'Hatchetfish', icon: '🐟', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
-              { id: 'swordfish', name: 'Swordfish', icon: '🐟', zone: 'twilight', habitat: 'Open Ocean', diet: 'Carnivore', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
-              { id: 'anglerfish', name: 'Anglerfish', icon: '🐡', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
-              { id: 'gulpereel', name: 'Gulper Eel', icon: '🐍', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
-              { id: 'giantsquid', name: 'Giant Squid', icon: '🦑', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Has the largest eyes in the animal kingdom — up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
-              { id: 'tubeworms', name: 'Giant Tube Worms', icon: '🪱', zone: 'abyssal', habitat: 'Hydrothermal Vents', diet: 'Chemosynthetic', status: 'LC', fact: 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
-              { id: 'seacucumber', name: 'Sea Cucumber', icon: '🥒', zone: 'abyssal', habitat: 'Abyssal Plain', diet: 'Detritivore', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
-              { id: 'amphipod', name: 'Supergiant Amphipod', icon: '🦐', zone: 'hadal', habitat: 'Trenches', diet: 'Scavenger', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
-              { id: 'snailfish', name: 'Mariana Snailfish', icon: '🐟', zone: 'hadal', habitat: 'Trenches', diet: 'Carnivore', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
-              { id: 'mantaray', name: 'Manta Ray', icon: '🐟', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Filter Feeder', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
-              { id: 'bluewhale', name: 'Blue Whale', icon: '🐋', zone: 'sunlight', habitat: 'Open Ocean', diet: 'Filter Feeder', status: 'EN', fact: 'The largest animal ever — their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
-              { id: 'seahorse', name: 'Seahorse', icon: '🐟', zone: 'sunlight', habitat: 'Coastal', diet: 'Carnivore', status: 'VU', fact: 'Males carry and give birth to the babies — unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
-              { id: 'octopus', name: 'Dumbo Octopus', icon: '🐙', zone: 'midnight', habitat: 'Deep Sea', diet: 'Carnivore', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
-              { id: 'nautilus', name: 'Nautilus', icon: '🐚', zone: 'twilight', habitat: 'Deep Reef', diet: 'Scavenger', status: 'VU', fact: 'A living fossil — virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
-              { id: 'coelacanth', name: 'Coelacanth', icon: '🐟', zone: 'twilight', habitat: 'Deep Caves', diet: 'Carnivore', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
+              { id: 'clownfish', name: 'Clownfish', icon: '🐠', zone: 'sunlight', habitat: 'Shelters among venomous tentacles of Heteractis magnifica anemones on Indo-Pacific coral reefs', diet: 'Omnivore — algae, zooplankton, and leftover scraps from its host anemone', status: 'LC', fact: 'Lives in symbiosis with venomous sea anemones.', quiz: 'What protects clownfish from anemone stings?' },
+              { id: 'dolphin', name: 'Bottlenose Dolphin', icon: '🐬', zone: 'sunlight', habitat: 'Temperate and tropical open oceans, coastal bays, and estuaries worldwide', diet: 'Carnivore — fish, squid, and crustaceans hunted cooperatively using echolocation', status: 'LC', fact: 'Dolphins sleep with one eye open — one brain hemisphere at a time.', quiz: 'How do dolphins breathe while sleeping?' },
+              { id: 'jellyfish', name: 'Moon Jellyfish', icon: '🪼', zone: 'sunlight', habitat: 'Surface waters of temperate and tropical coastal seas, often near estuaries and harbors', diet: 'Carnivore — traps plankton, fish eggs, and tiny crustaceans on its mucus-covered bell', status: 'LC', fact: 'Jellyfish have no brain, heart, or blood — just a nerve net.', quiz: 'What body system do jellyfish lack?' },
+              { id: 'turtle', name: 'Green Sea Turtle', icon: '🐢', zone: 'sunlight', habitat: 'Tropical seagrass meadows and coral reefs; nests on sandy beaches across the Atlantic and Pacific', diet: 'Herbivore — seagrass and algae; juveniles also eat jellyfish and sponges', status: 'EN', fact: 'Sea turtles navigate using Earth\'s magnetic field.', quiz: 'How do sea turtles find their nesting beaches?' },
+              { id: 'squid', name: 'Firefly Squid', icon: '🦑', zone: 'twilight', habitat: 'Western Pacific mesopelagic zone (200-600m), migrating to the surface at night off Japan\'s Toyama Bay', diet: 'Carnivore — small fish, crustaceans, and other squids caught during nightly vertical migrations', status: 'LC', fact: 'Firefly squid produce bioluminescent light from photophores.', quiz: 'What is the light-producing ability of deep sea creatures called?' },
+              { id: 'hatchetfish', name: 'Hatchetfish', icon: '🐟', zone: 'twilight', habitat: 'Mesopelagic waters (200-1000m) in tropical and temperate oceans worldwide', diet: 'Carnivore — copepods, ostracods, and other tiny crustaceans caught during diel vertical migration', status: 'LC', fact: 'Uses counter-illumination to hide from predators below.', quiz: 'Why do hatchetfish have light organs on their belly?' },
+              { id: 'swordfish', name: 'Swordfish', icon: '🐟', zone: 'twilight', habitat: 'Epipelagic to mesopelagic zones of tropical and temperate oceans; dives to 550m to hunt', diet: 'Carnivore — slashes through schools of mackerel, squid, and crustaceans with its bill', status: 'LC', fact: 'Swordfish heat their eyes and brain to hunt in cold deep waters.', quiz: 'What unique adaptation helps swordfish hunt in cold water?' },
+              { id: 'anglerfish', name: 'Anglerfish', icon: '🐡', zone: 'midnight', habitat: 'Bathypelagic darkness (1000-4000m) throughout the world\'s deep oceans', diet: 'Carnivore — ambush predator that lures fish and crustaceans with a bioluminescent esca', status: 'LC', fact: 'The glowing lure is a bioluminescent bacteria colony.', quiz: 'What zone does the anglerfish inhabit?' },
+              { id: 'gulpereel', name: 'Gulper Eel', icon: '🐍', zone: 'midnight', habitat: 'Bathypelagic to abyssopelagic zones (1000-3000m) in tropical and temperate deep oceans', diet: 'Carnivore — engulfs fish and shrimp whole using a massively expandable, hinged jaw', status: 'LC', fact: 'Can unhinge its jaw to swallow prey larger than itself.', quiz: 'What adaptation lets the gulper eel eat large prey?' },
+              { id: 'giantsquid', name: 'Giant Squid', icon: '🦑', zone: 'midnight', habitat: 'Bathypelagic waters (300-1000m) of all the world\'s oceans, from sub-Arctic to subtropical', diet: 'Carnivore — captures deep-sea fish and other squids with two long, club-tipped tentacles', status: 'LC', fact: 'Has the largest eyes in the animal kingdom — up to 10 inches across.', quiz: 'How large can a giant squid\'s eyes grow?' },
+              { id: 'tubeworms', name: 'Giant Tube Worms', icon: '🪱', zone: 'abyssal', habitat: 'Clustered around superheated hydrothermal vents on mid-ocean ridges (e.g., East Pacific Rise)', diet: 'Chemosynthetic — internal sulfur-oxidizing bacteria convert H₂S into organic nutrients', status: 'LC', fact: 'They have no mouth or stomach — bacteria inside them convert chemicals to energy.', quiz: 'What process do tube worm symbionts use instead of photosynthesis?' },
+              { id: 'seacucumber', name: 'Sea Cucumber', icon: '🥒', zone: 'abyssal', habitat: 'Soft sediment of the abyssal plain (4000-6000m), comprising 90% of deep-sea megafauna biomass', diet: 'Detritivore — sifts organic particles and bacteria from seafloor sediment through tentacle-like feeding appendages', status: 'LC', fact: 'Can expel their internal organs as a defense and regrow them.', quiz: 'What defense mechanism do sea cucumbers use?' },
+              { id: 'amphipod', name: 'Supergiant Amphipod', icon: '🦐', zone: 'hadal', habitat: 'Hadal trenches below 6000m, notably the Mariana and Kermadec Trenches', diet: 'Scavenger — consumes carrion falls (dead fish and whales) that sink to extreme depths', status: 'LC', fact: 'Found 7 miles deep in the Mariana Trench.', quiz: 'What is the deepest ocean trench on Earth?' },
+              { id: 'snailfish', name: 'Mariana Snailfish', icon: '🐟', zone: 'hadal', habitat: 'Record-holding depth of 8,178m in the Mariana Trench, living in total darkness under crushing pressure', diet: 'Carnivore — feeds on small amphipods and other hadal invertebrates at extreme depth', status: 'LC', fact: 'Deepest-living fish ever recorded at 8,178 meters.', quiz: 'What is the deepest-living fish species discovered?' },
+              { id: 'mantaray', name: 'Manta Ray', icon: '🐟', zone: 'sunlight', habitat: 'Tropical and subtropical surface waters near coral reefs, seamounts, and oceanic islands', diet: 'Filter feeder — strains zooplankton and small fish through gill raker plates while doing barrel rolls', status: 'VU', fact: 'Mantas have the largest brain-to-body ratio of any fish.', quiz: 'What type of feeding do manta rays use?' },
+              { id: 'bluewhale', name: 'Blue Whale', icon: '🐋', zone: 'sunlight', habitat: 'All major oceans, migrating between polar feeding grounds and tropical breeding waters', diet: 'Filter feeder — consumes up to 4 tons of Antarctic krill per day using 300+ baleen plates', status: 'EN', fact: 'The largest animal ever — their heart is the size of a small car.', quiz: 'What is the largest animal that has ever lived?' },
+              { id: 'seahorse', name: 'Seahorse', icon: '🐟', zone: 'sunlight', habitat: 'Sheltered seagrass beds, mangrove roots, and coral rubble in tropical and temperate shallows', diet: 'Carnivore — ambush-feeds on mysid shrimp and copepods by rapidly snapping its tubular snout', status: 'VU', fact: 'Males carry and give birth to the babies — unique in the animal kingdom.', quiz: 'Which seahorse parent carries the eggs?' },
+              { id: 'octopus', name: 'Dumbo Octopus', icon: '🐙', zone: 'midnight', habitat: 'Near the seafloor at extreme depths (3000-7000m) in every ocean, the deepest-living octopus genus', diet: 'Carnivore — swallows worms, copepods, and isopods whole near the deep-ocean floor', status: 'LC', fact: 'Named for their ear-like fins. Three hearts pump blue blood.', quiz: 'How many hearts does an octopus have?' },
+              { id: 'nautilus', name: 'Nautilus', icon: '🐚', zone: 'twilight', habitat: 'Deep fore-reef slopes (200-700m) of the Indo-Pacific, ascending to shallow reefs at night to feed', diet: 'Scavenger — dead fish, crustacean molts, and detritus detected by chemosensory tentacles', status: 'VU', fact: 'A living fossil — virtually unchanged for 500 million years.', quiz: 'How long have nautiluses existed?' },
+              { id: 'coelacanth', name: 'Coelacanth', icon: '🐟', zone: 'twilight', habitat: 'Deep volcanic caves and overhangs (150-700m) off the Comoros Islands and South Africa', diet: 'Carnivore — slow drift-hunter of cuttlefish, squid, snipefish, and small sharks', status: 'CR', fact: 'Thought extinct for 66 million years until rediscovered in 1938!', quiz: 'When was the coelacanth rediscovered?' }
             ];
 
             var generateQuiz = function () {
@@ -23979,7 +25859,7 @@
               React.createElement("div", { className: "flex items-center gap-3 mb-2" },
                 React.createElement("button", {
                   onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
-                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': 'Back to tools'
                 }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
                 React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, "\uD83D\uDC20 Aquaculture & Ocean Lab"),
                 React.createElement("div", { className: "flex items-center gap-2 ml-auto" },
@@ -24142,7 +26022,7 @@
                     // XP button
                     React.createElement("button", {
                       onClick: function () {
-                        awardXP(2, 'Studied anatomy of ' + sp.name);
+                        awardStemXP('aquarium', 2, 'Studied anatomy of ' + sp.name);
                         if (addToast) addToast('\uD83E\uDDAC +2 XP for studying ' + sp.name + ' anatomy!', 'success');
                       },
                       className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
@@ -24377,7 +26257,7 @@
                         }
                       });
                     }),
-                    // Fish with smooth swimming animation
+                    // Fish with smooth swimming animation — uses miniature SVG body plans
                     tankFish.map(function (fId, idx) {
                       var sp = species.find(function (s) { return s.id === fId; });
                       var yPos = 30 + (idx * 29 + idx * 7) % 150;
@@ -24385,21 +26265,31 @@
                       var swimDuration = 3 + (idx % 3) * 1.5;
                       var swimDelay = (idx * 0.9) % 4;
                       var direction = idx % 2 === 0 ? 1 : -1;
+                      var svgHtml = getTankSvg(fId);
+                      var swayDuration = 2.5 + (idx % 4) * 0.7;
+                      var swayDelay = (idx * 0.6) % 3;
                       return React.createElement("div", {
                         key: idx,
+                        className: svgHtml ? 'aqua-fish-svg' : 'aqua-fish',
                         style: {
                           position: 'absolute', top: yPos + 'px', left: xPos + '%',
-                          cursor: 'pointer', fontSize: '28px', zIndex: 6, userSelect: 'none',
+                          cursor: 'pointer', zIndex: 6, userSelect: 'none',
+                          width: svgHtml ? '52px' : 'auto', height: svgHtml ? '38px' : 'auto',
+                          fontSize: svgHtml ? undefined : '28px',
                           transform: direction < 0 ? 'scaleX(-1)' : 'none',
-                          animation: 'aquaSwim ' + swimDuration + 's ease-in-out ' + swimDelay + 's infinite alternate',
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
-                          transition: 'transform 0.3s'
+                          animation: 'aquaSwim ' + swimDuration + 's ease-in-out ' + swimDelay + 's infinite alternate' + (svgHtml ? ', aquaBodySway ' + swayDuration + 's ease-in-out ' + swayDelay + 's infinite' : ''),
+                          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.25))',
+                          transition: 'transform 0.3s, filter 0.3s'
                         },
                         title: sp ? sp.name + ': ' + sp.fact : fId,
                         onClick: function () {
                           openAnatomy(fId);
                         }
-                      }, sp ? sp.icon : '\uD83D\uDC1F',
+                      },
+                        // Render SVG body plan or fallback to emoji
+                        svgHtml
+                          ? React.createElement("div", { dangerouslySetInnerHTML: { __html: svgHtml }, style: { width: '100%', height: '100%', pointerEvents: 'none' } })
+                          : (sp ? sp.icon : '\uD83D\uDC1F'),
                         // Hunger bar under fish
                         (() => {
                           var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
@@ -24577,6 +26467,86 @@
                         });
                       })()
                     )
+                  ),
+
+                  // ── AI Event Decision Modal ──
+                  aiEvent && !aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 border-blue-300/60 shadow-xl shadow-blue-500/10" },
+                    // Header bar with category color
+                    React.createElement("div", { className: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 flex items-center gap-2" },
+                      React.createElement("span", { className: "text-lg" }, aiEvent.icon || '\uD83E\uDD16'),
+                      React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title),
+                      aiEvent.category && React.createElement("span", { className: "text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
+                      React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+                    ),
+                    // Description
+                    React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-blue-50 to-white" },
+                      React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed mb-2" }, aiEvent.desc),
+                      // Educational note
+                      aiEvent.educational && React.createElement("div", { className: "bg-indigo-50 rounded-lg p-2.5 mb-3 border border-indigo-100" },
+                        React.createElement("div", { className: "flex items-start gap-1.5" },
+                          React.createElement("span", { className: "text-xs" }, '\uD83C\uDF93'),
+                          React.createElement("p", { className: "text-[10px] text-indigo-700 leading-relaxed italic" }, aiEvent.educational)
+                        )
+                      ),
+                      // Choice buttons
+                      React.createElement("div", { className: "space-y-2" },
+                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, '\u2696\uFE0F What do you do?'),
+                        (aiEvent.choices || []).map(function (choice, idx) {
+                          return React.createElement("button", {
+                            key: idx,
+                            onClick: function () { resolveAIEvent(idx); },
+                            className: "ai-event-choice w-full text-left px-3 py-2.5 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/50 group"
+                          },
+                            React.createElement("div", { className: "flex items-center justify-between" },
+                              React.createElement("span", { className: "text-xs font-bold text-slate-700 group-hover:text-blue-700" }, choice.label),
+                              choice.xp > 0 && React.createElement("span", { className: "text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700" }, '+' + choice.xp + ' XP')
+                            )
+                          );
+                        })
+                      )
+                    )
+                  ),
+
+                  // ── AI Event Outcome Display ──
+                  aiEvent && aiEvent.resolved && React.createElement("div", { className: "ai-event-card rounded-2xl overflow-hidden border-2 shadow-lg " + (aiEvent.chosenXp >= 5 ? 'border-green-300 shadow-green-500/10' : aiEvent.chosenXp >= 3 ? 'border-blue-300 shadow-blue-500/10' : 'border-amber-300 shadow-amber-500/10') },
+                    React.createElement("div", { className: "px-4 py-2.5 flex items-center gap-2 " + (aiEvent.chosenXp >= 5 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : aiEvent.chosenXp >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500') },
+                      React.createElement("span", { className: "text-lg" }, aiEvent.chosenXp >= 5 ? '\u2705' : aiEvent.chosenXp >= 3 ? '\uD83D\uDCA1' : '\u26A0\uFE0F'),
+                      React.createElement("span", { className: "text-sm font-bold text-white flex-1" }, aiEvent.title + ' — Outcome'),
+                      React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
+                      React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+                    ),
+                    React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-50 to-white" },
+                      React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiEvent.chosenOutcome)
+                    )
+                  ),
+
+                  // ── AI Event Loading Indicator ──
+                  aiEventLoading && React.createElement("div", { className: "ai-event-card rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center" },
+                    React.createElement("div", { className: "flex items-center justify-center gap-2" },
+                      React.createElement("div", { className: "w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full", style: { animation: 'spin 1s linear infinite' } }),
+                      React.createElement("span", { className: "text-xs font-bold text-blue-600" }, '\uD83E\uDD16 AI is analyzing your tank conditions...')
+                    )
+                  ),
+
+                  // ── AI Event History (Learning Journal) ──
+                  aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradient-to-b from-indigo-50 to-slate-50 rounded-xl p-2.5 border border-indigo-200/60 max-h-36 overflow-y-auto" },
+                    React.createElement("h4", { className: "text-[10px] font-bold text-indigo-500 mb-1.5 flex items-center gap-1" },
+                      React.createElement("span", null, '\uD83D\uDCD3'),
+                      'Event Journal (' + aiEventHistory.length + ' events)'
+                    ),
+                    aiEventHistory.slice().reverse().slice(0, 8).map(function (entry, i) {
+                      return React.createElement("div", { key: i, className: "flex items-start gap-1.5 py-1 border-b border-indigo-100/60 last:border-0" },
+                        React.createElement("span", { className: "text-xs flex-shrink-0" }, entry.icon || '\uD83D\uDCCC'),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "flex items-center gap-1" },
+                            React.createElement("span", { className: "text-[10px] font-bold text-slate-600 truncate" }, entry.title),
+                            React.createElement("span", { className: "text-[8px] text-slate-400 flex-shrink-0" }, 'Day ' + entry.day)
+                          ),
+                          React.createElement("p", { className: "text-[9px] text-slate-500 truncate" }, entry.choice + ' → ' + (entry.outcome || '').substring(0, 60) + '...')
+                        ),
+                        entry.xp > 0 ? React.createElement("span", { className: "text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-600 flex-shrink-0" }, '+' + entry.xp) : null
+                      );
+                    })
                   ),
 
                   // Event log
@@ -25216,6 +27186,7 @@
               React.createElement("div", {
                 className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
               },
+                React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
                 React.createElement("span", { className: "text-2xl" }, "🖥️"),
                 React.createElement("div", { className: "flex-1" },
                   React.createElement("h2", { className: "text-white font-bold text-lg" }, "Coding Playground"),
@@ -25235,6 +27206,7 @@
                 ),
                 // Speed
                 React.createElement("select", {
+                  'aria-label': 'Execution speed',
                   value: speed,
                   onChange: function (e) { upd('speed', parseInt(e.target.value)); },
                   className: "px-2 py-1 rounded-lg bg-indigo-900/50 text-indigo-200 text-xs border border-indigo-400/30"
@@ -25355,6 +27327,7 @@
                 codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                   React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
                   React.createElement("textarea", {
+                    'aria-label': 'Code editor',
                     value: textCode,
                     onChange: function (e) { upd('textCode', e.target.value); },
                     placeholder: "forward(50)\nright(90)\nbackward(30)\n\ncircle(40)\ngoto(100, 200)\nhome()\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",

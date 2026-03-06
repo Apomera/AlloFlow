@@ -1,0 +1,27 @@
+﻿python : Traceback (most 
+recent call last):
+At line:1 char:1
++ python /tmp/audit_deep.py 
+2>&1 | Out-File -FilePath 
+C:\Users\cabba\On ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
+    + CategoryInfo           
+   : NotSpecified: (Traceba  
+  ck (most recent call las   
+ t)::String) [], RemoteEx    
+ception
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+  File 
+"C:\tmp\audit_deep.py", line 
+84, in <module>
+    with 
+open('audit_deep.txt', 'w', 
+encoding='utf-8') as f:
+         ~~~~^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] 
+Permission denied: 
+'audit_deep.txt'

@@ -1,0 +1,15 @@
+﻿d4c2764 Deploy: STEM Lab fixes - companion planting mound, geometry sandbox Three.js, water cycle labels, graphing calc defaults
+36dd092 Deploy: sync files
+411be0b Fix: select scalar value warnings in Art Studio
+af353d1 Deploy: aquaculture data enhancements + build script
+0a7d62f Deploy: stentor filter-feeding + organelle labels
+cdc941b Cell Sim: add anatomy/organelle data to all 11 organisms, always-visible facts
+8173aa9 Fix: remove extra closing paren causing SyntaxError at line 20610
+2068199 Brain Atlas: stacked layout, larger canvas, simulation buttons
+b941536 feat: anatomy layered transparency system + grade label fix
+00f3b26 Fix syntax errors in stem_lab_module.js: add missing paren in Galaxy IIFE return, remove extra paren in graphCalc IIFE return
+37250a5 feat: graphing calc - trace, zeros/intersections, arithmetic, derivative, sliders
+9043c0e feat: galaxy visual overhaul - shader fix, dust lanes, bloom tuning, animated star canvas
+2a26dd3 feat: split Galaxy Explorer into Galaxy Simulation + Star Lifespan dual-mode
+7db369c fix: tick->anatTick in drawAnatomyFrame, safer React child rendering in event journal
+ee5d376 fix: awardXP undefined -> awardStemXP in stepOcean, simStep, anatomy

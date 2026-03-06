@@ -843,7 +843,6 @@
           return;
         const activityInstructionMap = {
           counting: "how_many_sounds",
-          isolation: "what_is_the_sound",
           blending: "listen_to_sounds",
           segmentation: "break_the_word",
           rhyming: "which_word_rhymes",
@@ -942,6 +941,7 @@
       const [isolationState, setIsolationState] = React.useState(null);
       const isolationStateRef = React.useRef(null);
       React.useEffect(() => { isolationStateRef.current = isolationState; }, [isolationState]);
+      const audioCancelledRef = React.useRef(false);
       const [ttsSpeed, setTtsSpeed] = React.useState(wordSoundsTtsSpeed || 1.0);
       const modalRef = React.useRef(null);
       const submissionLockRef = React.useRef(false);
@@ -6077,14 +6077,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       React.useEffect(() => {
         if (wordSoundsActivity !== "isolation") return;
         if (!currentWordSoundsWord) return;
-        if (!isolationState) return; // Don't fire recovery on initial load — only recover stale state
-        if (
-          isolationState?.word?.toLowerCase() ===
-          currentWordSoundsWord?.toLowerCase()
-        )
+        // Use the ref (always up-to-date) instead of state (may lag behind render)
+        if (lastWordForIsolation.current?.toLowerCase() === currentWordSoundsWord?.toLowerCase())
           return;
         const timer = setTimeout(() => {
           if (!isMountedRef.current) return;
+          // Re-check ref inside callback — main setup may have already handled this word
+          if (lastWordForIsolation.current?.toLowerCase() === currentWordSoundsWord?.toLowerCase()) return;
           debugLog(
             "🔧 Auto-recovery: isolationState stuck for 3s, forcing re-sync for:",
             currentWordSoundsWord,
@@ -6185,6 +6184,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           excludeWord = null,
           recursionDepth = 0,
         ) => {
+          // === Stop all ongoing audio immediately on activity switch ===
+          audioCancelledRef.current = true;
+          if (currentActiveAudio.current) {
+            currentActiveAudio.current.pause();
+            currentActiveAudio.current.currentTime = 0;
+            currentActiveAudio.current = null;
+          }
+          if (typeof window !== "undefined" && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+          if (audioInstances.current) {
+            audioInstances.current.forEach((audio) => {
+              try { audio.pause(); } catch (e) { }
+            });
+          }
+          setTimeout(() => { audioCancelledRef.current = false; }, 50);
+          // === End audio cleanup ===
           setWordSoundsActivity(activityId);
           setWordSoundsFeedback?.(null);
           setUserAnswer("");
@@ -6535,7 +6551,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const runInstructionSequence = async () => {
           try {
             await new Promise((r) => setTimeout(r, 800));
-            if (cancelled) return;
+            if (cancelled || audioCancelledRef.current) return;
             let instructionAudioSrc = null;
             let instructionText = null;
             const INST_KEY_MAP = {
@@ -6808,13 +6824,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             } else {
               instructionText = ts(`word_sounds.${wordSoundsActivity}_prompt`);
             }
-            if (cancelled) return;
+            if (cancelled || audioCancelledRef.current) return;
             if (instructionAudioSrc) {
               await handleAudio(instructionAudioSrc);
             } else if (instructionText && !isPlayingAudio) {
               await handleAudio(instructionText);
             }
-            if (cancelled) return;
+            if (cancelled || audioCancelledRef.current) return;
             if (
               wordSoundsActivity === "blending" &&
               wordSoundsPhonemes?.phonemes
@@ -6827,8 +6843,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 !effectiveBlendingOptions ||
                 effectiveBlendingOptions.length === 0
               ) {
-                for (let waitAttempt = 0; waitAttempt < 15; waitAttempt++) {
-                  await new Promise((r) => setTimeout(r, 200));
+                for (let waitAttempt = 0; waitAttempt < 10; waitAttempt++) {
+                  await new Promise((r) => setTimeout(r, 100));
                   if (cancelled) return;
                   if (
                     blendingOptionsRef.current &&
@@ -6851,13 +6867,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ).catch(() => { }),
                   ),
                 );
-                await new Promise((r) => setTimeout(r, 350));
+                await new Promise((r) => setTimeout(r, 100));
                 for (let i = 0; i < effectiveBlendingOptions.length; i++) {
                   if (cancelled) break;
                   setHighlightedBlendIndex(i);
                   await handleAudio(effectiveBlendingOptions[i]);
                   if (cancelled) return;
-                  await new Promise((r) => setTimeout(r, 300));
+                  await new Promise((r) => setTimeout(r, 200));
                 }
                 setHighlightedBlendIndex(null);
               }
@@ -7106,9 +7122,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
             if (
               !isCorrect &&
-              alloBotRef &&
-              alloBotRef.current &&
-              alloBotRef.current.playAnimation
+              typeof alloBotRef !== "undefined" &&
+              alloBotRef?.current?.playAnimation
             )
               alloBotRef.current.playAnimation("sympathetic-tilt", 800);
             setWordSoundsScore((prev) => ({
@@ -12602,7 +12617,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               });
               return Object.assign({}, prev, { progressHistory: history });
             });
-            if (appendedCount > 0 && alloBotRef.current) {
+            if (appendedCount > 0 && typeof alloBotRef !== "undefined" && alloBotRef?.current) {
               alloBotRef.current.speak(
                 "Progress snapshots saved for " +
                 appendedCount +
@@ -12616,7 +12631,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             !rosterKey.students ||
             Object.keys(rosterKey.students).length === 0
           ) {
-            if (alloBotRef.current) {
+            if (typeof alloBotRef !== "undefined" && alloBotRef?.current) {
               alloBotRef.current.speak(
                 "Tip: Create a Class Roster to track student progress over time.",
               );
@@ -12624,7 +12639,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           setIsProcessing(false);
           setImportProgress({ current: 0, total: 0 });
-          if (alloBotRef.current) {
+          if (typeof alloBotRef !== "undefined" && alloBotRef?.current) {
             const totalFlags = allNewStudents.reduce(
               (acc, s) => acc + (s.safetyFlags ? s.safetyFlags.length : 0),
               0,

@@ -6,17 +6,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#4f46e5" />
   <meta name="description"
-    content="AlloFlow - Adaptive Levels, Layers, & Outputs. AI-powered UDL differentiation for every classroom." />
+    content="AlloFlow - Adaptive Levels, Layers, &amp; Outputs. AI-powered UDL differentiation for every classroom." />
   <title>AlloFlow | Adaptive UDL Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
+  <script>
+    // Pre-load cleanup: delete ALL Firestore/Firebase IndexedDB databases
+    // to prevent lock contention on page reload.
+    // This runs BEFORE the main deferred bundle, giving the browser time
+    // to release any stale database connections.
+    (function () {
+      try {
+        if (indexedDB && indexedDB.databases) {
+          indexedDB.databases().then(function (dbs) {
+            dbs.forEach(function (dbInfo) {
+              if (dbInfo.name && (
+                dbInfo.name.includes('firestore') ||
+                dbInfo.name.includes('firebase') ||
+                dbInfo.name.includes('FirebaseLocalStorage')
+              )) {
+                console.log('[AlloFlow] Clearing stale DB:', dbInfo.name);
+                indexedDB.deleteDatabase(dbInfo.name);
+              }
+            });
+          }).catch(function () { });
+        }
+      } catch (e) { }
+    })();
+  </script>
+  <script>
+    // Register service worker to cache assets and bypass QUIC protocol issues
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(function (reg) {
+        console.log('[AlloFlow] Service worker registered');
+      }).catch(function (err) {
+        console.warn('[AlloFlow] SW registration failed:', err);
+      });
+    }
+  </script>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run AlloFlow.</noscript>
   <div id="root"></div>
+  <div id="alloflow-loader"
+    style="position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font-family:Inter,sans-serif;z-index:99999;">
+    <div style="font-size:1.5rem;font-weight:700;margin-bottom:1rem;">AlloFlow</div>
+    <div id="loader-status" style="font-size:0.875rem;color:#94a3b8;">Loading...</div>
+    <div id="loader-timer" style="font-size:0.75rem;color:#64748b;margin-top:0.5rem;"></div>
+  </div>
+  <script>
+    (function () {
+      var start = Date.now();
+      var statusEl = document.getElementById('loader-status');
+      var timerEl = document.getElementById('loader-timer');
+      var interval = setInterval(function () {
+        var elapsed = ((Date.now() - start) / 1000).toFixed(1);
+        if (timerEl) timerEl.textContent = elapsed + 's elapsed';
+        var root = document.getElementById('root');
+        if (root && root.children.length > 0) {
+          var loader = document.getElementById('alloflow-loader');
+          if (loader) loader.style.display = 'none';
+          clearInterval(interval);
+        }
+        if (parseFloat(elapsed) > 20 && statusEl && !statusEl.dataset.shown) {
+          statusEl.dataset.shown = '1';
+          statusEl.innerHTML = 'Loading is taking longer than expected...<br><button onclick="try{localStorage.clear()}catch(e){}try{indexedDB.databases().then(function(dbs){dbs.forEach(function(d){indexedDB.deleteDatabase(d.name)})}).catch(function(){})}catch(e){}setTimeout(function(){location.reload()},500)" style="margin-top:1rem;padding:0.5rem 1rem;border-radius:0.375rem;border:none;background:#6366f1;color:white;cursor:pointer;font-size:0.875rem;">Clear All Data & Reload</button>';
+        }
+      }, 500);
+    })();
+  </script>
 </body>
 
 </html>

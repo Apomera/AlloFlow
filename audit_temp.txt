@@ -1,0 +1,73 @@
+﻿LINE   TOOL                   SIZE   FEATURES
+----------------------------------------------------------------------
+L 2195  volume                   816  slider
+L 3011  base10                   380  slider
+L 3391  coordinate               268  svg
+L 3659  protractor               233  svg, slider
+L 3892  multtable                624  svg, quiz
+L 4516  calculus                 218  svg, tutorial
+L 4734  wave                     629  canvas, quiz, tutorial
+L 5363  cell                    1226  canvas, quiz
+L 6589  funcGrapher              220  svg, quiz, slider
+L 6809  physics                  694  canvas, quiz, tutorial
+L 7503  chemBalance              201  svg
+L 7704  punnett                  326  svg
+L 8030  circuit                  233  svg, slider
+L 8263  dataPlot                 146  svg, quiz
+L 8409  inequality               204  svg, quiz
+L 8613  molecule                 370  svg, quiz
+L 8983  solarSystem             1576  canvas, 3D, quiz
+L10559  galaxy                  1181  canvas, 3D, quiz, slider, tutorial
+L11740  universe                 576  canvas, slider
+L12316  rocks                    718  canvas, quiz
+L13034  waterCycle               562  canvas, quiz
+L13596  rockCycle                526  canvas, quiz
+L14122  ecosystem                776  canvas, svg
+L14898  fractionViz              252  svg, quiz
+L15150  fractions                132  svg
+L15282  decomposer               172  quiz
+L15454  unitConvert              208  quiz
+L15662  probability              353  svg
+L16015  musicSynth              2213  canvas, svg, quiz
+L18228  anatomy                  841  canvas, quiz
+L19069  brainAtlas              1169  canvas, quiz
+L20238  artStudio                320  canvas
+L20558  companionPlanting       1339  canvas, quiz, tutorial
+L21897  geoSandbox               635  3D, slider
+L22532  graphCalc                420  AI, slider
+L22952  dataStudio               391  svg
+L23343  algebraCAS               308  AI
+L23651  aquarium                2086  quiz, AI, slider
+L25737  codingPlayground         632  basic
+
+Total: 39 tool render blocks
+
+
+=== POTENTIAL ISSUES ===
+  base10                 no aria-labels
+  coordinate             no aria-labels
+  protractor             no aria-labels
+  multtable              no aria-labels
+  calculus               no aria-labels
+  chemBalance            no aria-labels
+  circuit                no aria-labels
+  dataPlot               no aria-labels
+  inequality             no aria-labels
+  solarSystem            no aria-labels
+  universe               no aria-labels
+  waterCycle             no aria-labels
+  rockCycle              no aria-labels
+  ecosystem              no aria-labels
+  fractionViz            no aria-labels
+  fractions              no aria-labels
+  decomposer             no aria-labels
+  unitConvert            no aria-labels
+  probability            no aria-labels
+  anatomy                no aria-labels
+  brainAtlas             no aria-labels
+  artStudio              no aria-labels
+  geoSandbox             no aria-labels
+  dataStudio             no aria-labels
+  algebraCAS             no aria-labels
+  aquarium               no aria-labels
+  codingPlayground       NO BACK BUTTON, no aria-labels
