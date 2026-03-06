@@ -7,7 +7,7 @@
 // - Static assets (JS/CSS with hashes): Cache-first (immutable, never changes)
 // - Other requests: Network-first with cache fallback
 
-const CACHE_NAME = 'alloflow-v2';
+const CACHE_NAME = 'alloflow-v3';
 
 // Install: cache the main page on first load
 self.addEventListener('install', (event) => {
@@ -40,26 +40,25 @@ self.addEventListener('fetch', (event) => {
         return; // Let cross-origin requests pass through
     }
 
-    // Navigation requests (page loads/reloads): stale-while-revalidate
+    // Navigation requests (page loads/reloads): network-first with cache fallback
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            caches.open(CACHE_NAME).then((cache) => {
-                return cache.match('/index.html').then((cached) => {
-                    const networkFetch = fetch(event.request).then((response) => {
-                        if (response.ok) {
-                            cache.put('/index.html', response.clone());
-                        }
-                        return response;
-                    }).catch(() => {
-                        // Network failed (QUIC hang, offline, etc.)
-                        // Return cached version if available
-                        return cached || new Response('AlloFlow is loading...', {
-                            headers: { 'Content-Type': 'text/html' }
-                        });
+            fetch(event.request).then(function (response) {
+                if (response.ok) {
+                    var responseClone = response.clone();
+                    caches.open(CACHE_NAME).then(function (cache) {
+                        cache.put('/index.html', responseClone);
                     });
-
-                    // Return cached immediately if available, otherwise wait for network
-                    return cached || networkFetch;
+                }
+                return response;
+            }).catch(function () {
+                // Network failed (offline, QUIC hang, etc.) — serve cached version
+                return caches.open(CACHE_NAME).then(function (cache) {
+                    return cache.match('/index.html');
+                }).then(function (cached) {
+                    return cached || new Response('AlloFlow is loading...', {
+                        headers: { 'Content-Type': 'text/html' }
+                    });
                 });
             })
         );
