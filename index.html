@@ -500,7 +500,7 @@
                         #slider-container {
                             width: 100%;
                             max-width: 1200px;
-                            height: 820px;
+                            height: 920px;
                             border-radius: 20px;
                             overflow: hidden;
                             position: relative;
@@ -523,7 +523,7 @@
                             left: 0;
                             width: 100%;
                             height: 100%;
-                            padding: 2.5rem 3.5rem;
+                            padding: 2rem 3rem;
                             opacity: 0;
                             transform: translateX(50px);
                             transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -584,7 +584,7 @@
 
                         .slide h3 {
                             font-family: 'Outfit', sans-serif;
-                            font-size: 2.5rem;
+                            font-size: 2.2rem;
                             font-weight: 800;
                             margin-bottom: 12px;
                             line-height: 1.1;
@@ -596,7 +596,7 @@
                         }
 
                         .slide p {
-                            font-size: 1.05rem;
+                            font-size: 1rem;
                             line-height: 1.6;
                             color: #94a3b8;
                             margin-bottom: 18px;
@@ -606,7 +606,7 @@
                         .info-box {
                             background: rgba(15, 23, 42, 0.5);
                             border: 1px solid rgba(255, 255, 255, 0.08);
-                            padding: 16px 18px;
+                            padding: 14px 16px;
                             border-radius: 12px;
                             margin-bottom: 12px;
                             backdrop-filter: blur(16px);
@@ -631,7 +631,7 @@
                         }
 
                         .info-desc {
-                            font-size: 0.9rem;
+                            font-size: 0.85rem;
                             color: #94a3b8;
                             line-height: 1.5;
                         }
@@ -3649,6 +3649,492 @@
                                 </div>
                             </div>
 
+                            <!-- Slide 20: AI Research Engine -->
+                            <div class="slide">
+                                <div class="slide-content">
+                                    <div class="slide-tag">AI Generation</div>
+                                    <h3
+                                        style="background: linear-gradient(135deg, #84cc16, #a3e635); -webkit-background-clip: text; background-clip: text;">
+                                        AI Research Engine</h3>
+                                    <div class="stat-callout"
+                                        style="background: linear-gradient(135deg, rgba(132,204,22,0.15), rgba(163,230,53,0.08)); border: 1px solid rgba(132,204,22,0.3);">
+                                        <span class="stat-number" style="color:#a3e635;">3-Pass</span>
+                                        <span class="stat-label">research, outline, and citation pipeline</span>
+                                    </div>
+                                    <p>AlloFlow's Source Generator uses a <strong>multi-pass AI pipeline</strong> with
+                                        optional Google Search grounding. Content is researched, outlined,
+                                        written section-by-section, and fact-checked — producing
+                                        <strong>citation-backed lessons</strong> from any topic.
+                                    </p>
+
+                                    <div class="info-box" style="border-left: 4px solid #84cc16;">
+                                        <div class="info-title">🔍 Google Search Grounding</div>
+                                        <div class="info-desc">Toggle "Verify Facts" and Gemini searches the live
+                                            web before writing. Sources are cited inline with numbered
+                                            references — ensuring lesson accuracy for science, history, and
+                                            current events content.</div>
+                                    </div>
+                                    <div class="info-box" style="border-left: 4px solid #a3e635;">
+                                        <div class="info-title">📄 Multi-Pass Writing Pipeline</div>
+                                        <div class="info-desc">Pass 1 researches and gathers sources. Pass 2
+                                            builds a structural outline. Pass 3 writes each section with
+                                            smooth transitions and embedded citations — producing
+                                            publication-quality educational content.</div>
+                                    </div>
+                                    <div class="info-box" style="border-left: 4px solid #65a30d;">
+                                        <div class="info-title">🎯 Teacher-Controlled Parameters</div>
+                                        <div class="info-desc">Teachers set topic, tone (Informative, Narrative,
+                                            Persuasive, Humorous), grade level, standards alignment,
+                                            vocabulary targets, and word count — the AI handles the rest
+                                            with zero prompt engineering required.</div>
+                                    </div>
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                                        <div class="stat-callout"
+                                            style="border-color: rgba(132, 204, 22, 0.3); background: rgba(132, 204, 22, 0.08);">
+                                            <span class="stat-number"
+                                                style="background: linear-gradient(135deg, #84cc16, #a3e635); -webkit-background-clip: text; background-clip: text;">5</span>
+                                            <span class="stat-label">Tone presets</span>
+                                        </div>
+                                        <div class="stat-callout"
+                                            style="border-color: rgba(163, 230, 53, 0.3); background: rgba(163, 230, 53, 0.08);">
+                                            <span class="stat-number"
+                                                style="background: linear-gradient(135deg, #84cc16, #a3e635); -webkit-background-clip: text; background-clip: text;">K–Grad</span>
+                                            <span class="stat-label">Level range</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slide-visual">
+                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                        <defs>
+                                            <radialGradient id="researchGlow" cx="50%" cy="50%" r="50%">
+                                                <stop offset="0%" stop-color="#84cc16" stop-opacity="0.12" />
+                                                <stop offset="100%" stop-color="#84cc16" stop-opacity="0" />
+                                            </radialGradient>
+                                        </defs>
+
+                                        <circle cx="200" cy="150" r="140" fill="url(#researchGlow)">
+                                            <animate attributeName="r" values="130;145;130" dur="4s"
+                                                repeatCount="indefinite" />
+                                        </circle>
+
+                                        <!-- Pass 1: Research -->
+                                        <circle cx="100" cy="70" r="30" fill="#1a2e05" stroke="#84cc16"
+                                            stroke-width="2.5" />
+                                        <circle cx="95" cy="65" r="12" fill="none" stroke="#a3e635" stroke-width="2" />
+                                        <line x1="104" y1="74" x2="115" y2="85" stroke="#a3e635" stroke-width="2.5"
+                                            stroke-linecap="round" />
+                                        <text x="100" y="105" font-size="8" fill="#a3e635" text-anchor="middle"
+                                            font-family="Inter" font-weight="bold">Pass 1</text>
+                                        <text x="100" y="116" font-size="7" fill="#65a30d" text-anchor="middle"
+                                            font-family="Inter">Research</text>
+
+                                        <!-- Arrow 1→2 -->
+                                        <path d="M 130 70 L 168 70" stroke="#65a30d" stroke-width="2"
+                                            stroke-dasharray="5 3">
+                                            <animate attributeName="stroke-dashoffset" values="0;16" dur="2s"
+                                                repeatCount="indefinite" />
+                                        </path>
+
+                                        <!-- Pass 2: Outline -->
+                                        <circle cx="200" cy="70" r="30" fill="#1a2e05" stroke="#84cc16"
+                                            stroke-width="2.5" />
+                                        <text x="200" y="68" font-size="20" text-anchor="middle">🧠</text>
+                                        <text x="200" y="105" font-size="8" fill="#a3e635" text-anchor="middle"
+                                            font-family="Inter" font-weight="bold">Pass 2</text>
+                                        <text x="200" y="116" font-size="7" fill="#65a30d" text-anchor="middle"
+                                            font-family="Inter">Outline</text>
+
+                                        <!-- Arrow 2→3 -->
+                                        <path d="M 230 70 L 268 70" stroke="#65a30d" stroke-width="2"
+                                            stroke-dasharray="5 3">
+                                            <animate attributeName="stroke-dashoffset" values="0;16" dur="2s"
+                                                repeatCount="indefinite" />
+                                        </path>
+
+                                        <!-- Pass 3: Write -->
+                                        <circle cx="300" cy="70" r="30" fill="#1a2e05" stroke="#84cc16"
+                                            stroke-width="2.5" />
+                                        <text x="300" y="68" font-size="20" text-anchor="middle">📝</text>
+                                        <text x="300" y="105" font-size="8" fill="#a3e635" text-anchor="middle"
+                                            font-family="Inter" font-weight="bold">Pass 3</text>
+                                        <text x="300" y="116" font-size="7" fill="#65a30d" text-anchor="middle"
+                                            font-family="Inter">Write</text>
+
+                                        <!-- Generated Document -->
+                                        <rect x="120" y="140" width="160" height="100" rx="8" fill="#0f172a"
+                                            stroke="#84cc16" stroke-width="2" />
+                                        <rect x="120" y="140" width="160" height="20" rx="8" fill="#1a2e05" />
+                                        <text x="200" y="154" font-size="8" fill="#a3e635" text-anchor="middle"
+                                            font-weight="bold">Generated Lesson</text>
+
+                                        <!-- Text lines -->
+                                        <rect x="135" y="170" width="130" height="4" rx="2" fill="#334155"
+                                            opacity="0.6" />
+                                        <rect x="135" y="180" width="105" height="4" rx="2" fill="#334155"
+                                            opacity="0.5" />
+                                        <rect x="135" y="190" width="120" height="4" rx="2" fill="#334155"
+                                            opacity="0.4" />
+                                        <rect x="135" y="200" width="95" height="4" rx="2" fill="#334155"
+                                            opacity="0.3" />
+                                        <rect x="135" y="210" width="115" height="4" rx="2" fill="#334155"
+                                            opacity="0.35" />
+                                        <rect x="135" y="220" width="80" height="4" rx="2" fill="#334155"
+                                            opacity="0.25" />
+
+                                        <!-- Citation badges -->
+                                        <rect x="248" y="168" width="20" height="10" rx="3" fill="#1a2e05"
+                                            stroke="#84cc16" stroke-width="1">
+                                            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s"
+                                                repeatCount="indefinite" />
+                                        </rect>
+                                        <text x="258" y="176" font-size="6" fill="#a3e635"
+                                            text-anchor="middle">[1]</text>
+                                        <rect x="248" y="188" width="20" height="10" rx="3" fill="#1a2e05"
+                                            stroke="#84cc16" stroke-width="1">
+                                            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s"
+                                                repeatCount="indefinite" begin="0.5s" />
+                                        </rect>
+                                        <text x="258" y="196" font-size="6" fill="#a3e635"
+                                            text-anchor="middle">[2]</text>
+                                        <rect x="248" y="208" width="20" height="10" rx="3" fill="#1a2e05"
+                                            stroke="#84cc16" stroke-width="1">
+                                            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s"
+                                                repeatCount="indefinite" begin="1s" />
+                                        </rect>
+                                        <text x="258" y="216" font-size="6" fill="#a3e635"
+                                            text-anchor="middle">[3]</text>
+
+                                        <!-- Fact-check verified badge -->
+                                        <circle cx="320" cy="200" r="22" fill="#1a2e05" stroke="#a3e635"
+                                            stroke-width="2" />
+                                        <text x="320" y="197" font-size="16" text-anchor="middle">✅</text>
+                                        <text x="320" y="215" font-size="6" fill="#84cc16"
+                                            text-anchor="middle">Verified</text>
+
+                                        <!-- Flow arrow from pipeline to document -->
+                                        <path d="M 200 120 L 200 140" stroke="#65a30d" stroke-width="2" />
+
+                                        <!-- Google Search badge -->
+                                        <circle cx="60" cy="200" r="22" fill="#1a2e05" stroke="#84cc16"
+                                            stroke-width="1.5" />
+                                        <text x="60" y="197" font-size="14" text-anchor="middle">🌐</text>
+                                        <text x="60" y="215" font-size="6" fill="#84cc16"
+                                            text-anchor="middle">Google</text>
+                                        <path d="M 82 200 L 120 190" stroke="#65a30d" stroke-width="1.5"
+                                            stroke-dasharray="3 3" opacity="0.5" />
+
+                                        <text x="200" y="268" font-size="9" fill="#64748b" text-anchor="middle"
+                                            font-family="Inter">Topic → Research → Outline → Write → Cite →
+                                            Verified Lesson</text>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Slide 21: Spelling Bee & Word Games -->
+                            <div class="slide">
+                                <div class="slide-content">
+                                    <div class="slide-tag">Literacy</div>
+                                    <h3
+                                        style="background: linear-gradient(135deg, #ca8a04, #fcd34d); -webkit-background-clip: text; background-clip: text;">
+                                        Spelling Bee & Word Games</h3>
+                                    <div class="stat-callout"
+                                        style="background: linear-gradient(135deg, rgba(202,138,4,0.15), rgba(252,211,77,0.08)); border: 1px solid rgba(202,138,4,0.3);">
+                                        <span class="stat-number" style="color:#fcd34d;">4</span>
+                                        <span class="stat-label">phonemic game modes with voice input</span>
+                                    </div>
+                                    <p>The Word Sounds Studio transforms phonics practice into
+                                        <strong>interactive game modes</strong> — Spelling Bee with
+                                        microphone input, Sight & Spell orthography drills, Elkonin
+                                        sound boxes, and Word Sorting — all aligned to
+                                        the Science of Reading.
+                                    </p>
+
+                                    <div class="info-box" style="border-left: 4px solid #ca8a04;">
+                                        <div class="info-title">🎤 Voice-Powered Spelling Bee</div>
+                                        <div class="info-desc">Students hear a word via TTS, then spell it
+                                            aloud using their microphone. Speech-to-text validates
+                                            each letter in real time, with streak tracking,
+                                            difficulty progression, and instant corrective feedback.</div>
+                                    </div>
+                                    <div class="info-box" style="border-left: 4px solid #fcd34d;">
+                                        <div class="info-title">👁️ Sight & Spell Orthography</div>
+                                        <div class="info-desc">Students see a word briefly, it disappears,
+                                            and they must reconstruct it from scrambled letter tiles.
+                                            AI-generated distractors ensure phonetically plausible
+                                            wrong answers — testing true orthographic memory.</div>
+                                    </div>
+                                    <div class="info-box" style="border-left: 4px solid #a16207;">
+                                        <div class="info-title">💡 Adaptive Hint System</div>
+                                        <div class="info-desc">Progressive hints reveal one letter at a time
+                                            without giving away the full answer. The system tracks
+                                            which phoneme patterns students struggle with and
+                                            adjusts future word selection accordingly.</div>
+                                    </div>
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                                        <div class="stat-callout"
+                                            style="border-color: rgba(202, 138, 4, 0.3); background: rgba(202, 138, 4, 0.08);">
+                                            <span class="stat-number"
+                                                style="background: linear-gradient(135deg, #ca8a04, #fcd34d); -webkit-background-clip: text; background-clip: text;">🎙️</span>
+                                            <span class="stat-label">Voice recognition</span>
+                                        </div>
+                                        <div class="stat-callout"
+                                            style="border-color: rgba(252, 211, 77, 0.3); background: rgba(252, 211, 77, 0.08);">
+                                            <span class="stat-number"
+                                                style="background: linear-gradient(135deg, #ca8a04, #fcd34d); -webkit-background-clip: text; background-clip: text;">SoR</span>
+                                            <span class="stat-label">Aligned activities</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slide-visual">
+                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                        <defs>
+                                            <radialGradient id="spellingGlow" cx="50%" cy="50%" r="50%">
+                                                <stop offset="0%" stop-color="#ca8a04" stop-opacity="0.12" />
+                                                <stop offset="100%" stop-color="#ca8a04" stop-opacity="0" />
+                                            </radialGradient>
+                                        </defs>
+
+                                        <circle cx="200" cy="150" r="140" fill="url(#spellingGlow)">
+                                            <animate attributeName="r" values="130;145;130" dur="4s"
+                                                repeatCount="indefinite" />
+                                        </circle>
+
+                                        <!-- Microphone -->
+                                        <rect x="188" y="35" width="24" height="36" rx="12" fill="#451a03"
+                                            stroke="#ca8a04" stroke-width="2.5" />
+                                        <path d="M 178 65 Q 178 87 200 87 Q 222 87 222 65" fill="none" stroke="#fcd34d"
+                                            stroke-width="2" />
+                                        <line x1="200" y1="87" x2="200" y2="98" stroke="#fcd34d" stroke-width="2" />
+                                        <line x1="188" y1="98" x2="212" y2="98" stroke="#fcd34d" stroke-width="2" />
+                                        <!-- Sound pulses -->
+                                        <circle cx="200" cy="53" r="22" fill="none" stroke="#fcd34d" stroke-width="1"
+                                            opacity="0.3">
+                                            <animate attributeName="r" values="20;32;20" dur="2s"
+                                                repeatCount="indefinite" />
+                                            <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s"
+                                                repeatCount="indefinite" />
+                                        </circle>
+
+                                        <!-- Letter tiles -->
+                                        <rect x="70" y="120" width="42" height="48" rx="6" fill="#451a03"
+                                            stroke="#ca8a04" stroke-width="2" />
+                                        <text x="91" y="152" font-size="24" fill="#fcd34d" text-anchor="middle"
+                                            font-weight="bold">C</text>
+
+                                        <rect x="120" y="120" width="42" height="48" rx="6" fill="#451a03"
+                                            stroke="#ca8a04" stroke-width="2" />
+                                        <text x="141" y="152" font-size="24" fill="#fcd34d" text-anchor="middle"
+                                            font-weight="bold">A</text>
+
+                                        <rect x="170" y="120" width="42" height="48" rx="6" fill="#451a03"
+                                            stroke="#ca8a04" stroke-width="2" />
+                                        <text x="191" y="152" font-size="24" fill="#fcd34d" text-anchor="middle"
+                                            font-weight="bold">T</text>
+
+                                        <!-- Empty slots -->
+                                        <rect x="230" y="120" width="42" height="48" rx="6" fill="#0f172a"
+                                            stroke="#a16207" stroke-width="1.5" stroke-dasharray="4 3" />
+                                        <text x="251" y="150" font-size="16" fill="#a16207"
+                                            text-anchor="middle">?</text>
+
+                                        <rect x="280" y="120" width="42" height="48" rx="6" fill="#0f172a"
+                                            stroke="#a16207" stroke-width="1.5" stroke-dasharray="4 3" />
+                                        <text x="301" y="150" font-size="16" fill="#a16207"
+                                            text-anchor="middle">?</text>
+
+                                        <!-- Streak counter -->
+                                        <rect x="335" y="45" width="50" height="35" rx="6" fill="#451a03"
+                                            stroke="#fcd34d" stroke-width="1.5" />
+                                        <text x="360" y="60" font-size="8" fill="#fcd34d" text-anchor="middle">🔥
+                                            Streak</text>
+                                        <text x="360" y="75" font-size="14" fill="#fcd34d" text-anchor="middle"
+                                            font-weight="bold">5</text>
+
+                                        <!-- Bee icon button -->
+                                        <circle cx="200" cy="205" r="24" fill="#451a03" stroke="#ca8a04"
+                                            stroke-width="2.5" />
+                                        <text x="200" y="212" font-size="22" text-anchor="middle">🐝</text>
+
+                                        <!-- Game mode tabs -->
+                                        <rect x="50" y="252" width="75" height="22" rx="4" fill="#451a03"
+                                            stroke="#ca8a04" stroke-width="1.5" />
+                                        <text x="87" y="266" font-size="7" fill="#fcd34d" text-anchor="middle">Spelling
+                                            Bee</text>
+
+                                        <rect x="133" y="252" width="75" height="22" rx="4" fill="#0f172a"
+                                            stroke="#a16207" stroke-width="1" />
+                                        <text x="170" y="266" font-size="7" fill="#a16207" text-anchor="middle">Sight &
+                                            Spell</text>
+
+                                        <rect x="216" y="252" width="75" height="22" rx="4" fill="#0f172a"
+                                            stroke="#a16207" stroke-width="1" />
+                                        <text x="253" y="266" font-size="7" fill="#a16207" text-anchor="middle">Elkonin
+                                            Boxes</text>
+
+                                        <rect x="299" y="252" width="75" height="22" rx="4" fill="#0f172a"
+                                            stroke="#a16207" stroke-width="1" />
+                                        <text x="336" y="266" font-size="7" fill="#a16207" text-anchor="middle">Word
+                                            Sort</text>
+
+                                        <text x="200" y="292" font-size="9" fill="#64748b" text-anchor="middle"
+                                            font-family="Inter">Hear → Spell → Validate → Adapt →
+                                            Master</text>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Slide 22: Graphic Organizers & Decodable Readers -->
+                            <div class="slide">
+                                <div class="slide-content">
+                                    <div class="slide-tag">Visual Learning</div>
+                                    <h3
+                                        style="background: linear-gradient(135deg, #d946ef, #e879f9); -webkit-background-clip: text; background-clip: text;">
+                                        Organizers & Decodable Readers</h3>
+                                    <div class="stat-callout"
+                                        style="background: linear-gradient(135deg, rgba(217,70,239,0.15), rgba(232,121,249,0.08)); border: 1px solid rgba(217,70,239,0.3);">
+                                        <span class="stat-number" style="color:#e879f9;">6+</span>
+                                        <span class="stat-label">organizer types with AI-generated decodable
+                                            readers</span>
+                                    </div>
+                                    <p>Transform any lesson into <strong>visual thinking tools</strong> —
+                                        Venn diagrams, KWL charts, cause/effect maps, timelines, concept
+                                        webs, and T-Charts. Plus, generate <strong>Science of Reading-aligned
+                                            decodable readers</strong> with controlled phonics patterns.</p>
+
+                                    <div class="info-box" style="border-left: 4px solid #d946ef;">
+                                        <div class="info-title">🗺️ AI-Generated Visual Organizers</div>
+                                        <div class="info-desc">Gemini analyzes lesson content and automatically
+                                            populates organizer fields. Students can edit, expand, and
+                                            rearrange — building comprehension through visual
+                                            structure rather than passive reading.</div>
+                                    </div>
+                                    <div class="info-box" style="border-left: 4px solid #e879f9;">
+                                        <div class="info-title">📖 Decodable Reader Generator</div>
+                                        <div class="info-desc">AI creates phonics-controlled stories targeting
+                                            specific letter patterns (CVC, CVCe, blends, digraphs).
+                                            Each story uses only previously taught patterns — true
+                                            Science of Reading alignment for emerging readers.</div>
+                                    </div>
+                                    <div class="info-box" style="border-left: 4px solid #a855f7;">
+                                        <div class="info-title">🎓 UDL Multiple Representations</div>
+                                        <div class="info-desc">The same content appears as text, visual
+                                            organizer, decodable story, and interactive quiz — giving
+                                            every learner a pathway that matches their cognitive
+                                            strengths and developmental stage.</div>
+                                    </div>
+                                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                                        <div class="stat-callout"
+                                            style="border-color: rgba(217, 70, 239, 0.3); background: rgba(217, 70, 239, 0.08);">
+                                            <span class="stat-number"
+                                                style="background: linear-gradient(135deg, #d946ef, #e879f9); -webkit-background-clip: text; background-clip: text;">6+</span>
+                                            <span class="stat-label">Organizer types</span>
+                                        </div>
+                                        <div class="stat-callout"
+                                            style="border-color: rgba(232, 121, 249, 0.3); background: rgba(232, 121, 249, 0.08);">
+                                            <span class="stat-number"
+                                                style="background: linear-gradient(135deg, #d946ef, #e879f9); -webkit-background-clip: text; background-clip: text;">SoR</span>
+                                            <span class="stat-label">Decodable readers</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slide-visual">
+                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                        <defs>
+                                            <radialGradient id="organizerGlow" cx="50%" cy="50%" r="50%">
+                                                <stop offset="0%" stop-color="#d946ef" stop-opacity="0.12" />
+                                                <stop offset="100%" stop-color="#d946ef" stop-opacity="0" />
+                                            </radialGradient>
+                                        </defs>
+
+                                        <circle cx="200" cy="150" r="140" fill="url(#organizerGlow)">
+                                            <animate attributeName="r" values="130;145;130" dur="4s"
+                                                repeatCount="indefinite" />
+                                        </circle>
+
+                                        <!-- Venn Diagram -->
+                                        <circle cx="155" cy="95" r="48" fill="none" stroke="#d946ef" stroke-width="2"
+                                            opacity="0.6" />
+                                        <circle cx="215" cy="95" r="48" fill="none" stroke="#e879f9" stroke-width="2"
+                                            opacity="0.6" />
+                                        <!-- Overlap fill -->
+                                        <ellipse cx="185" cy="95" rx="18" ry="38" fill="#d946ef" opacity="0.15" />
+
+                                        <text x="130" y="88" font-size="7" fill="#e879f9" text-anchor="middle">Topic
+                                            A</text>
+                                        <text x="240" y="88" font-size="7" fill="#e879f9" text-anchor="middle">Topic
+                                            B</text>
+                                        <text x="185" y="98" font-size="7" fill="#f0abfc"
+                                            text-anchor="middle">Both</text>
+                                        <text x="185" y="150" font-size="7" fill="#d946ef" text-anchor="middle"
+                                            font-family="Inter">Venn Diagram</text>
+
+                                        <!-- Decodable Book -->
+                                        <rect x="290" y="50" width="85" height="100" rx="6" fill="#0f172a"
+                                            stroke="#d946ef" stroke-width="2" />
+                                        <!-- Spine -->
+                                        <rect x="290" y="50" width="12" height="100" rx="4" fill="#581c87" />
+                                        <rect x="307" y="62" width="55" height="5" rx="2" fill="#d946ef"
+                                            opacity="0.4" />
+                                        <rect x="307" y="72" width="50" height="4" rx="2" fill="#334155"
+                                            opacity="0.5" />
+                                        <rect x="307" y="80" width="55" height="4" rx="2" fill="#334155"
+                                            opacity="0.4" />
+                                        <rect x="307" y="88" width="40" height="4" rx="2" fill="#334155"
+                                            opacity="0.3" />
+                                        <!-- Phonics pattern badge -->
+                                        <rect x="307" y="108" width="55" height="18" rx="4" fill="#581c87"
+                                            stroke="#e879f9" stroke-width="1" />
+                                        <text x="334" y="120" font-size="7" fill="#f0abfc" text-anchor="middle">CVC
+                                            Pattern</text>
+                                        <text x="332" y="145" font-size="7" fill="#d946ef" text-anchor="middle"
+                                            font-family="Inter">Decodable</text>
+
+                                        <!-- Organizer type icons (bottom row) -->
+                                        <rect x="35" y="185" width="55" height="40" rx="5" fill="#0f172a"
+                                            stroke="#e879f9" stroke-width="1.5" />
+                                        <text x="62" y="205" font-size="12" text-anchor="middle">📊</text>
+                                        <text x="62" y="219" font-size="6" fill="#e879f9"
+                                            text-anchor="middle">KWL</text>
+
+                                        <rect x="100" y="185" width="55" height="40" rx="5" fill="#0f172a"
+                                            stroke="#e879f9" stroke-width="1.5" />
+                                        <text x="127" y="205" font-size="12" text-anchor="middle">⏱️</text>
+                                        <text x="127" y="219" font-size="6" fill="#e879f9"
+                                            text-anchor="middle">Timeline</text>
+
+                                        <rect x="165" y="185" width="55" height="40" rx="5" fill="#0f172a"
+                                            stroke="#e879f9" stroke-width="1.5" />
+                                        <text x="192" y="205" font-size="12" text-anchor="middle">🔗</text>
+                                        <text x="192" y="219" font-size="6" fill="#e879f9"
+                                            text-anchor="middle">Cause/Effect</text>
+
+                                        <rect x="230" y="185" width="55" height="40" rx="5" fill="#0f172a"
+                                            stroke="#e879f9" stroke-width="1.5" />
+                                        <text x="257" y="205" font-size="12" text-anchor="middle">🕸️</text>
+                                        <text x="257" y="219" font-size="6" fill="#e879f9"
+                                            text-anchor="middle">Web</text>
+
+                                        <rect x="295" y="185" width="55" height="40" rx="5" fill="#0f172a"
+                                            stroke="#e879f9" stroke-width="1.5" />
+                                        <text x="322" y="205" font-size="12" text-anchor="middle">📋</text>
+                                        <text x="322" y="219" font-size="6" fill="#e879f9"
+                                            text-anchor="middle">T-Chart</text>
+
+                                        <!-- Animated AI particle -->
+                                        <circle r="3" fill="#e879f9" opacity="0.8">
+                                            <animateMotion dur="4s" repeatCount="indefinite"
+                                                path="M 60 205 Q 180 240, 322 205" />
+                                            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="4s"
+                                                repeatCount="indefinite" />
+                                        </circle>
+
+                                        <text x="200" y="260" font-size="9" fill="#64748b" text-anchor="middle"
+                                            font-family="Inter">Lesson → Visual Organizers + Decodable Readers →
+                                            Deep Comprehension</text>
+                                    </svg>
+                                </div>
+                            </div>
+
                         </div>
 
                         <div id="controls">
@@ -3679,10 +4165,13 @@
                                     <button class="dot" data-slide="16" aria-label="Go to slide 17"></button>
                                     <button class="dot" data-slide="17" aria-label="Go to slide 18"></button>
                                     <button class="dot" data-slide="18" aria-label="Go to slide 19"></button>
+                                    <button class="dot" data-slide="19" aria-label="Go to slide 20"></button>
+                                    <button class="dot" data-slide="20" aria-label="Go to slide 21"></button>
+                                    <button class="dot" data-slide="21" aria-label="Go to slide 22"></button>
                                 </div>
                                 <div class="slide-title-label" id="slide-title">Equity First — Local-First Architecture
                                 </div>
-                                <span class="slide-counter" id="slide-counter">Slide 1 of 19</span>
+                                <span class="slide-counter" id="slide-counter">Slide 1 of 22</span>
                             </div>
 
                             <div style="display:flex;align-items:center;gap:12px;">
@@ -3735,7 +4224,10 @@
                         'Accessibility — Immersive Reader',
                         'Assessment — Exit Tickets & Quiz Engine',
                         'Analytics — Teacher Dashboard',
-                        'Mission — The Open-Source Commitment'
+                        'Mission — The Open-Source Commitment',
+                        'AI Generation — AI Research Engine',
+                        'Literacy — Spelling Bee & Word Games',
+                        'Visual Learning — Organizers & Decodable Readers'
                     ];
                     let cur = 0;
                     let autoplayInterval = null;

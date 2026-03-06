@@ -147,3 +147,96 @@ Select-String -Path stem_lab_module.js -Pattern "@tool galaxy"
 # List all sections
 Select-String -Path AlloFlowANTI.txt -Pattern "@section "
 ```
+
+---
+
+## Canvas Mode & API Key Configuration
+
+### Environment Detection (`_isCanvasEnv`)
+
+The app detects Canvas mode (Google AI Studio) at startup via an IIFE at **~line 897**:
+
+```js
+const _isCanvasEnv = (() => {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  const href = window.location.href;
+  if (href.startsWith('blob:')) return true;
+  return host.includes('googleusercontent') ||
+         host.includes('scf.usercontent') ||
+         host.includes('code-server') ||
+         host.includes('idx.google') ||
+         host.includes('run.app');
+})();
+```
+
+### API Key Injection Flow
+
+| Context | `__firebase_config` defined? | `apiKey` value | Who provides the real key? |
+|---|---|---|---|
+| **Canvas mode** | ✅ Yes (injected by Canvas) | `""` (empty) | Canvas proxy intercepts `key=` in the URL and injects it |
+| **Firebase deploy** | ❌ No | `process.env.REACT_APP_GEMINI_API_KEY` | `.env` file at build time |
+
+The key assignment is at **~line 90**:
+```js
+const apiKey = typeof __firebase_config !== 'undefined'
+  ? ""
+  : (process.env.REACT_APP_GEMINI_API_KEY || '');
+```
+
+### Model Selection
+
+| Slot | Canvas Mode | Firebase Deploy |
+|---|---|---|
+| `default` | `gemini-2.5-flash` | `gemini-3-flash-preview` |
+| `fallback` | `gemini-2.5-flash` | `gemini-2.5-flash` |
+| `flash` | `gemini-2.5-flash` | `gemini-3-flash-preview` |
+| `tts` | `gemini-2.5-flash-preview-tts` | (same) |
+| `image` | `gemini-2.5-flash-image-preview` | (same) |
+| `safety` | `gemini-2.5-flash-lite` | (same) |
+
+### Troubleshooting Canvas Gemini Failures
+
+If `callGemini` or TTS fails in Canvas with `401` or `Failed to fetch`:
+1. **The code is correct** — `apiKey=""` is by design; Canvas's proxy should inject the key.
+2. The issue is Canvas's request interception not working. Possible causes:
+   - Canvas session expired or needs a refresh
+   - Canvas's proxy service has intermittent downtime
+   - The model requested is not available in Canvas's allowed list
+3. **TTS 401 is the same root cause** — if Canvas can't proxy `generateContent`, it also can't proxy `generateContent` for TTS.
+4. The app degrades gracefully: TTS failures are caught and logged; `callGemini` surfaces user-friendly errors.
+
+---
+
+## Service Worker & QUIC Troubleshooting
+
+### Service Worker (PWA)
+
+The Firebase-deployed app uses a service worker for offline caching. During development, frequent deploys can cause stale cache issues because:
+- The service worker's `skipWaiting()` + `clients.claim()` cycle races with rapid asset changes
+- HTTP/2 connection reuse can serve cached responses from the previous deploy
+
+**In production with stable builds**, this is not an issue — end-users get clean cache updates on actual version bumps.
+
+### QUIC Protocol Issue (Development Only)
+
+**Problem**: Chrome's QUIC protocol can cause persistent caching/connection issues during active development, manifesting as stale assets being served even after deploy.
+
+**Fix**: Disable QUIC in Chrome during development:
+
+```
+1. Navigate to: chrome://flags/#enable-quic
+2. Set "Experimental QUIC protocol" to: Disabled
+3. Relaunch Chrome
+```
+
+**Why this is dev-only**: QUIC's aggressive connection coalescing and 0-RTT replay can serve stale responses when assets are changing rapidly between deploys. In production with stable hashed assets, QUIC works correctly. End-users will not encounter this issue.
+
+### Firestore Connection Cleanup
+
+The app terminates Firestore connections on page unload to prevent HTTP/2 connection reuse from blocking subsequent loads:
+```js
+window.addEventListener('pagehide', () => {
+    try { terminateFirestore(db).catch(() => {}); } catch(e) {}
+});
+```
