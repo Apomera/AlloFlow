@@ -16609,7 +16609,7 @@
           var activeSport = SPORTS.find(function (s) { return s.id === (d.sportType || 'freethrow'); }) || SPORTS[0];
 
           // ── Custom mode outcomes ──
-          var customOutcomes = d.customOutcomes || [{ label: 'Win', prob: 0.05, color: '#22c55e', numerator: 1, denominator: 20, count: 1 }, { label: 'Lose', prob: 0.95, color: '#ef4444', numerator: 19, denominator: 20, count: 19 }];
+          var customOutcomes = d.customOutcomes || [{ label: 'Red', prob: 0.5, color: '#ef4444', numerator: 1, denominator: 2, count: 5 }, { label: 'Blue', prob: 0.5, color: '#3b82f6', numerator: 1, denominator: 2, count: 5 }];
           var customSubMode = d.customSubMode || 'fraction';
           if (d.mode === 'custom') {
             if (customSubMode === 'fraction') { customOutcomes = customOutcomes.map(function (o) { var den = o.denominator || 20; return Object.assign({}, o, { prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); }); }
@@ -16752,22 +16752,34 @@
             );
           };
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          // ── Dark mode / high-contrast theme variables ──
+          var _bg = isDark || isContrast ? '#1e1b4b' : '#fff';
+          var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
+          var _card = isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.04)';
+          var _border = isDark || isContrast ? 'rgba(139,92,246,0.25)' : 'rgba(139,92,246,0.15)';
+          var _accent = isDark || isContrast ? '#c4b5fd' : '#7c3aed';
+          var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
+          var _btnBg = isDark || isContrast ? '#7c3aed' : '#8b5cf6';
+          var _btnText = '#fff';
+          var _cardBg = isDark || isContrast ? 'rgba(139,92,246,0.06)' : 'rgba(255,255,255,1)';
+          var _statBg = isDark || isContrast ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.04)';
+
+          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200", style: { color: _text } },
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDFB2 Probability Lab"),
-              d.trials > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-bold rounded-full" }, d.trials + " trials")
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors", style: { color: _muted }, 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18 })),
+              React.createElement("h3", { className: "text-lg font-bold", style: { color: _text } }, "\uD83C\uDFB2 Probability Lab"),
+              d.trials > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.1)', color: _accent } }, d.trials + " trials")
             ),
-            React.createElement("p", { className: "text-xs text-slate-400 italic -mt-1 mb-3" }, "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values."),
+            React.createElement("p", { className: "text-xs italic -mt-1 mb-3", style: { color: _muted } }, "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values."),
             // Mode selector
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['custom', '\u2699\uFE0F Custom']].map(([m, label]) =>
-                React.createElement("button", { key: m, onClick: () => { upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.mode === m ? 'bg-violet-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, label)
+                React.createElement("button", { key: m, onClick: () => { upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
               )
             ),
 
             // ── Sports scenario selector ──
-            d.mode === 'sports' && React.createElement("div", { className: "mb-4 bg-gradient-to-r from-emerald-50 to-sky-50 rounded-xl border border-emerald-200 p-3" },
+            d.mode === 'sports' && React.createElement("div", { className: "mb-4 rounded-xl p-3", style: { background: isDark || isContrast ? 'rgba(34,197,94,0.06)' : 'linear-gradient(to right, #ecfdf5, #f0f9ff)', border: '1px solid ' + (isDark || isContrast ? 'rgba(34,197,94,0.2)' : '#a7f3d0') } },
               React.createElement("p", { className: "text-xs font-bold text-emerald-700 mb-2" }, "\uD83C\uDFC6 Choose a Sport"),
               React.createElement("div", { className: "flex flex-wrap gap-2" },
                 SPORTS.map(function (s) {
@@ -16782,7 +16794,7 @@
             ),
 
             // ── Custom mode config ── (3 sub-modes: Fraction, Marble Bag, Slider)
-            d.mode === 'custom' && React.createElement("div", { className: "mb-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
+            d.mode === 'custom' && React.createElement("div", { className: "mb-4 rounded-xl p-3", style: { background: isDark || isContrast ? 'rgba(245,158,11,0.06)' : 'linear-gradient(to right, #fffbeb, #fff7ed)', border: '1px solid ' + (isDark || isContrast ? 'rgba(245,158,11,0.2)' : '#fcd34d') } },
               React.createElement("div", { className: "flex gap-1 mb-3 bg-amber-100/50 rounded-lg p-1" },
                 [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { key: sm, onClick: function () { upd('customSubMode', sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
               ),
@@ -16858,7 +16870,7 @@
             ),
 
             // Visual result display
-            React.createElement("div", { className: "flex items-center justify-center gap-6 mb-4 py-4 bg-gradient-to-b from-violet-50 to-white rounded-xl border-2 border-violet-200" },
+            React.createElement("div", { className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe') } },
               d.mode === 'coin' && coinSvg(d.lastResult || 'H'),
               d.mode === 'dice' && diceFace(d.lastResult || 1, 80),
               d.mode === 'spinner' && spinnerSvg(d.lastResult, d.animTick),
@@ -16880,8 +16892,8 @@
               React.createElement("button", { onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset")
             ),
             // Frequency bars
-            d.trials > 0 && React.createElement("div", { className: "bg-white rounded-xl border border-violet-200 p-4 mb-3" },
-              React.createElement("p", { className: "text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Observed vs Expected Frequencies"),
+            d.trials > 0 && React.createElement("div", { className: "rounded-xl p-4 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
+              React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, "\uD83D\uDCCA Observed vs Expected Frequencies"),
               React.createElement("div", { className: "space-y-2" },
                 Object.keys(expected).map(k => {
                   const count = counts[k] || 0;
@@ -16905,8 +16917,8 @@
               )
             ),
             // Convergence chart
-            convHist.length > 1 && React.createElement("div", { className: "bg-white rounded-xl border border-violet-200 p-3 mb-3" },
-              React.createElement("p", { className: "text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-2" },
+            convHist.length > 1 && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
+              React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } },
                 "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=16.7%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : d.mode === 'custom' ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
               ),
               React.createElement("svg", { viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
@@ -16932,8 +16944,8 @@
               )
             ),
             // Statistical analysis
-            d.trials >= 10 && React.createElement("div", { className: "bg-violet-50 rounded-xl border border-violet-200 p-3 mb-3" },
-              React.createElement("p", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA Statistical Analysis"),
+            d.trials >= 10 && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
+              React.createElement("p", { className: "text-[10px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, "\uD83D\uDCCA Statistical Analysis"),
               React.createElement("div", { className: "grid grid-cols-4 gap-2 text-center" },
                 React.createElement("div", { className: "p-1.5 bg-white rounded-lg border" },
                   React.createElement("p", { className: "text-[9px] font-bold text-violet-500" }, "Total Trials"),
@@ -16960,10 +16972,21 @@
                   React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiPass ? '\u2705 Fair' : '\u274C Biased')
                 )
               ),
-              React.createElement("p", { className: "mt-2 text-xs text-violet-600 italic" },
+              React.createElement("p", { className: "mt-2 text-xs italic", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } },
                 d.trials < 30 ? '\uD83D\uDCA1 Need more trials! With only ' + d.trials + ' trials, randomness dominates. Try 100+ for reliable patterns.'
                   : d.trials < 100 ? '\uD83D\uDCA1 Getting better! At ' + d.trials + ' trials, patterns are emerging. Watch the convergence chart.'
                     : '\uD83D\uDCA1 Great sample size! At ' + d.trials + ' trials, the Law of Large Numbers is clearly visible. \u03C7\u00B2(' + df + ')=' + chiSq.toFixed(2) + ' vs critical ' + chiCritical.toFixed(2) + ' \u2192 ' + (chiPass ? 'fail to reject H\u2080 (fair)' : 'reject H\u2080 (potentially biased)')
+              )
+            ),
+            // ── Did You Know? — Pedagogical Insights ──
+            d.trials >= 10 && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
+              React.createElement("p", { className: "text-xs font-bold mb-1", style: { color: isDark || isContrast ? '#fbbf24' : '#b45309' } }, "\uD83D\uDCA1 Did You Know?"),
+              React.createElement("p", { className: "text-xs leading-relaxed", style: { color: isDark || isContrast ? '#fde68a' : '#92400e' } },
+                d.trials < 30 ? 'The Law of Large Numbers says observed frequencies get closer to expected probabilities as you run more trials. Try 100+ to see it in action!'
+                  : d.trials < 100 ? 'Jakob Bernoulli proved the Law of Large Numbers in 1713. He showed that with enough coin flips, the proportion of heads will always converge to 50%. You\'re seeing this happen right now!'
+                    : d.trials < 200 ? 'The Gambler\'s Fallacy is the mistaken belief that past results affect future outcomes. Each ' + (d.mode === 'coin' ? 'coin flip' : d.mode === 'dice' ? 'dice roll' : 'trial') + ' is independent \u2014 the coin has no memory! Just because you got 5 heads in a row doesn\'t make tails more likely next.'
+                      : d.trials < 500 ? 'At ' + d.trials + ' trials, you\'re witnessing the Central Limit Theorem in action! The sampling distribution of the mean approaches a normal (bell) curve shape, regardless of the underlying distribution. This is why statisticians love large samples.'
+                        : 'With ' + d.trials + '+ trials, you can calculate confidence intervals! The 95% confidence interval for the true probability is approximately observed% \u00B1 ' + (1.96 * Math.sqrt(0.25 / d.trials) * 100).toFixed(1) + '%. This is how pollsters predict elections and scientists validate hypotheses.'
               )
             ),
             // Last 10 results
@@ -24536,6 +24559,20 @@
           var practiceQ = d.practiceQ || null;
           var practiceAnswer = d.practiceAnswer || '';
           var practiceFeedback = d.practiceFeedback || null;
+          var practiceType = d.practiceType || 'random';
+          var practiceScore = d.practiceScore || 0;
+          var practiceStreak = d.practiceStreak || 0;
+          var showSolution = d.showSolution || false;
+
+          var PROBLEM_TYPES = [
+            { id: 'linear', label: '📏 Linear', desc: 'e.g. 3x + 7 = 22' },
+            { id: 'quadratic', label: '📐 Quadratic', desc: 'e.g. x² + 3x - 10 = 0' },
+            { id: 'multi-step', label: '🔢 Multi-Step', desc: 'e.g. 2(x+3) - 5 = 11' },
+            { id: 'fractions', label: '🍕 Fractions', desc: 'e.g. x/3 + 2 = 5' },
+            { id: 'word-problem', label: '📖 Word Problem', desc: 'Story-based equations' },
+            { id: 'systems', label: '⚖️ Systems', desc: 'e.g. 2x + y = 10' },
+            { id: 'random', label: '🎲 Random', desc: 'Mix of all types' }
+          ];
 
           var MODES = [
             { id: 'solve', label: '🔍 Solve', desc: 'Find the value of a variable' },
@@ -24598,13 +24635,19 @@
             updCAS('isLoading', true);
             updCAS('practiceFeedback', null);
             updCAS('practiceAnswer', '');
+            updCAS('showSolution', false);
             var diffDesc = difficulty === 'elementary' ? 'single-variable linear equation (e.g. 3x + 7 = 22)' :
               difficulty === 'middle' ? 'quadratic or two-step equation (e.g. x² + 3x - 10 = 0)' :
                 'rational, radical, or multi-step polynomial equation';
+            var typeDesc = '';
+            if (practiceType !== 'random') {
+              var typeMap = { 'linear': 'a linear equation', 'quadratic': 'a quadratic equation', 'multi-step': 'a multi-step equation with parentheses/distribution', 'fractions': 'an equation involving fractions', 'word-problem': 'a real-world word problem that translates to an equation', 'systems': 'a system of two equations with two variables' };
+              typeDesc = '\nProblem type: ' + (typeMap[practiceType] || practiceType) + '\n';
+            }
             var prompt = 'Generate ONE algebra practice problem at the ' + difficulty + ' level.\n' +
-              'Type: ' + diffDesc + '\n' +
+              'Difficulty: ' + diffDesc + '\n' + typeDesc +
               'Format your response as EXACTLY:\n' +
-              'PROBLEM: (the equation)\n' +
+              'PROBLEM: (the equation or word problem)\n' +
               'ANSWER: (the correct answer, simplified)\n' +
               'HINT: (a one-sentence hint without giving away the answer)\n\n' +
               'Do not include any other text.';
@@ -24631,17 +24674,28 @@
               'PROBLEM: ' + practiceQ.problem + '\n' +
               'CORRECT ANSWER: ' + practiceQ.answer + '\n' +
               'STUDENT ANSWER: ' + practiceAnswer.trim() + '\n\n' +
-              'Respond in this format:\n' +
+              'Respond in this EXACT format:\n' +
               'CORRECT: yes/no\n' +
-              'FEEDBACK: (1-2 sentences explaining if they are right or what they did wrong, be encouraging)\n' +
-              'If wrong, show the correct step-by-step solution briefly.';
+              'FEEDBACK: (1-2 encouraging sentences)\n' +
+              'SOLUTION:\n' +
+              'STEP 1: (show work) [Rule Name]\n' +
+              'STEP 2: (show work) [Rule Name]\n' +
+              '...\n' +
+              'ANSWER: (final result)\n\n' +
+              'ALWAYS include the full step-by-step SOLUTION with labeled algebraic rules in [brackets], ' +
+              'even if the student is correct. This helps them verify their reasoning. ' +
+              'Rules include: [Distributive Property], [Combining Like Terms], [Addition Property of Equality], ' +
+              '[Division Property of Equality], [Zero Product Property], [Quadratic Formula], [Factoring], etc.';
 
             callGemini(prompt).then(function (res) {
               updCAS('isLoading', false);
               if (res) {
                 var isCorrect = /CORRECT:\s*yes/i.test(res);
                 updCAS('practiceFeedback', { correct: isCorrect, text: res });
+                updCAS('practiceScore', practiceScore + (isCorrect ? 1 : 0));
+                updCAS('practiceStreak', isCorrect ? practiceStreak + 1 : 0);
                 if (isCorrect) awardStemXP('algebraCAS', 10, 'Practice problem correct');
+                updCAS('showSolution', !isCorrect);
               }
             }).catch(function () { updCAS('isLoading', false); });
           };
@@ -24679,20 +24733,43 @@
 
             // ── Practice Mode ──
             practiceMode ? React.createElement("div", { className: "space-y-4" },
+              // Score + Streak display
+              (practiceScore > 0 || practiceStreak > 0) && React.createElement("div", { className: "flex items-center gap-3" },
+                practiceScore > 0 && React.createElement("span", { className: "text-xs font-bold", style: { color: 'rgba(34,197,94,0.9)' } }, '⭐ ' + practiceScore + ' correct'),
+                practiceStreak > 1 && React.createElement("span", { className: "text-xs font-bold", style: { color: '#f97316' } }, '🔥 ' + practiceStreak + ' streak')
+              ),
               // Difficulty Selector
-              React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                DIFFICULTIES.map(function (df) {
-                  return React.createElement("button", {
-                    key: df.id,
-                    onClick: function () { updCAS('difficulty', df.id); updCAS('practiceQ', null); updCAS('practiceFeedback', null); },
-                    className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
-                    style: { background: difficulty === df.id ? _btnBg : _card, color: difficulty === df.id ? _btnText : _text, border: '1px solid ' + _border }
-                  }, df.label);
-                })
+              React.createElement("div", null,
+                React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider mb-1.5", style: { color: _muted } }, "📊 Difficulty"),
+                React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                  DIFFICULTIES.map(function (df) {
+                    return React.createElement("button", {
+                      key: df.id,
+                      onClick: function () { updCAS('difficulty', df.id); updCAS('practiceQ', null); updCAS('practiceFeedback', null); },
+                      className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
+                      style: { background: difficulty === df.id ? _btnBg : _card, color: difficulty === df.id ? _btnText : _text, border: '1px solid ' + _border }
+                    }, df.label);
+                  })
+                )
+              ),
+              // Problem Type Selector
+              React.createElement("div", null,
+                React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider mb-1.5", style: { color: _muted } }, "📝 Problem Type"),
+                React.createElement("div", { className: "flex gap-1.5 flex-wrap" },
+                  PROBLEM_TYPES.map(function (pt) {
+                    return React.createElement("button", {
+                      key: pt.id,
+                      onClick: function () { updCAS('practiceType', pt.id); updCAS('practiceQ', null); updCAS('practiceFeedback', null); },
+                      className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                      style: { background: practiceType === pt.id ? _btnBg : _card, color: practiceType === pt.id ? _btnText : _text, border: '1px solid ' + (practiceType === pt.id ? _accent : _border) },
+                      title: pt.desc
+                    }, pt.label);
+                  })
+                )
               ),
               // Generate / Current Problem
               !practiceQ ? React.createElement("div", { className: "text-center py-8 rounded-2xl", style: { background: _card, border: '1px solid ' + _border } },
-                React.createElement("p", { className: "text-sm mb-4", style: { color: _muted } }, "Generate a practice problem at the " + difficulty + " level"),
+                React.createElement("p", { className: "text-sm mb-2", style: { color: _muted } }, "Generate a " + (practiceType === 'random' ? '' : practiceType + ' ') + "problem at the " + difficulty + " level"),
                 React.createElement("button", {
                   onClick: handlePracticeGenerate,
                   disabled: isLoading,
@@ -24707,7 +24784,7 @@
                   React.createElement("p", { className: "text-xs text-center mt-2", style: { color: _muted } }, "💡 Hint: " + practiceQ.hint)
                 ),
                 // Answer input
-                React.createElement("div", { className: "flex gap-2" },
+                !practiceFeedback && React.createElement("div", { className: "flex gap-2" },
                   React.createElement("input", {
                     type: "text",
                     value: practiceAnswer,
@@ -24724,17 +24801,44 @@
                     style: { background: _btnBg, color: _btnText, opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1 }
                   }, isLoading ? '⏳' : '✅ Check')
                 ),
-                // Feedback
+                // Feedback header
                 practiceFeedback && React.createElement("div", {
                   className: "p-4 rounded-2xl",
                   style: { background: practiceFeedback.correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (practiceFeedback.correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)') }
                 },
                   React.createElement("div", { className: "text-sm font-bold mb-2" }, practiceFeedback.correct ? '🎉 Correct!' : '❌ Not quite...'),
-                  React.createElement("div", { className: "text-xs whitespace-pre-wrap leading-relaxed" }, practiceFeedback.text.replace(/^CORRECT:.*\n?/im, '').replace(/^FEEDBACK:\s*/im, '').trim())
+                  React.createElement("div", { className: "text-xs leading-relaxed mb-2" },
+                    (function () { var fb = practiceFeedback.text.match(/FEEDBACK:\s*(.+)/i); return fb ? fb[1].trim() : ''; })()
+                  ),
+                  // Step-by-step solution toggle + display
+                  React.createElement("button", {
+                    onClick: function () { updCAS('showSolution', !showSolution); },
+                    className: "text-xs font-bold px-3 py-1.5 rounded-lg transition-all mb-2",
+                    style: { background: showSolution ? 'rgba(99,102,241,0.15)' : _card, color: showSolution ? (isDark || isContrast ? '#a5b4fc' : '#6366f1') : _muted, border: '1px solid ' + _border }
+                  }, (showSolution ? '▼' : '▶') + ' Step-by-Step Solution'),
+                  showSolution && React.createElement("div", { className: "mt-2 p-3 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.5)' : 'rgba(248,250,252,1)', border: '1px solid ' + _border } },
+                    (function () {
+                      var solMatch = practiceFeedback.text.match(/SOLUTION:[\s\S]*/i);
+                      var solText = solMatch ? solMatch[0] : '';
+                      if (!solText) return React.createElement("span", { style: { color: _muted } }, "No detailed solution available.");
+                      return solText.split('\n').map(function (line, i) {
+                        var isStep = /^STEP\s+\d+/i.test(line.trim());
+                        var isAnswer = /^ANSWER:/i.test(line.trim());
+                        var ruleMatch = line.match(/\[([^\]]+)\]/);
+                        if (isAnswer) return React.createElement("div", { key: i, className: "mt-3 p-2.5 rounded-xl text-sm font-bold", style: { background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' } }, '✅ ' + line.trim());
+                        if (isStep) return React.createElement("div", { key: i, className: "py-1.5 flex items-start gap-2" },
+                          React.createElement("span", { className: "flex-1" }, ruleMatch ? line.replace(ruleMatch[0], '').trim() : line.trim()),
+                          ruleMatch && React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap flex-shrink-0", style: { background: 'rgba(99,102,241,0.15)', color: isDark || isContrast ? '#a5b4fc' : '#6366f1', border: '1px solid rgba(99,102,241,0.2)' } }, ruleMatch[1])
+                        );
+                        if (/^SOLUTION:/i.test(line.trim())) return null;
+                        return line.trim() ? React.createElement("div", { key: i, className: "py-0.5" }, line) : null;
+                      });
+                    })()
+                  )
                 ),
                 // Next problem button
                 React.createElement("button", {
-                  onClick: function () { updCAS('practiceQ', null); updCAS('practiceFeedback', null); updCAS('practiceAnswer', ''); handlePracticeGenerate(); },
+                  onClick: function () { updCAS('practiceQ', null); updCAS('practiceFeedback', null); updCAS('practiceAnswer', ''); updCAS('showSolution', false); handlePracticeGenerate(); },
                   className: "w-full py-2 rounded-xl text-xs font-bold transition-all",
                   style: { background: _card, border: '1px solid ' + _border, color: _text }
                 }, "🔄 New Problem")
