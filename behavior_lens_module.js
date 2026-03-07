@@ -100,8 +100,8 @@
                             type: 'button',
                             onClick: () => setValue(item),
                             className: `text-xs px-3 py-1.5 rounded-full border transition-all ${value === item
-                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md scale-105'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-md scale-105'
+                                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
                                 }`
                         }, item)
                     )
@@ -208,8 +208,8 @@
                         onClick: handleSave,
                         disabled: !antecedent || !behavior || !consequence,
                         className: `px-5 py-2 text-sm font-bold rounded-lg transition-all ${antecedent && behavior && consequence
-                                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
-                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             }`
                     }, t('common.save') || 'Save Entry')
                 )
@@ -309,8 +309,8 @@
                         key: beh,
                         onClick: () => setFilterBehavior(beh),
                         className: `text-[11px] px-2.5 py-1 rounded-full border transition-all ${filterBehavior === beh
-                                ? 'bg-indigo-600 text-white border-indigo-600'
-                                : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'
                             }`
                     }, beh === 'all' ? (t('behavior_lens.all') || 'All') : beh)
                 )
@@ -515,8 +515,8 @@
                         onClick: () => { if (!isRunning) setMethod(m); },
                         disabled: isRunning,
                         className: `text-xs font-bold px-4 py-2 rounded-full transition-all ${method === m
-                                ? 'bg-indigo-600 text-white shadow-lg'
-                                : 'bg-white/10 text-slate-300 hover:bg-white/20 disabled:opacity-50'
+                            ? 'bg-indigo-600 text-white shadow-lg'
+                            : 'bg-white/10 text-slate-300 hover:bg-white/20 disabled:opacity-50'
                             }`
                     },
                         m === 'frequency' ? '🔢 ' : m === 'duration' ? '⏱️ ' : m === 'interval' ? '📍 ' : '⏳ ',
@@ -539,8 +539,8 @@
                 h('button', {
                     onClick: toggleTimer,
                     className: `w-24 h-24 rounded-full text-2xl font-black shadow-2xl transition-all transform hover:scale-105 active:scale-95 ${isRunning
-                            ? 'bg-red-600 hover:bg-red-700 ring-4 ring-red-600/30'
-                            : 'bg-green-600 hover:bg-green-700 ring-4 ring-green-600/30'
+                        ? 'bg-red-600 hover:bg-red-700 ring-4 ring-red-600/30'
+                        : 'bg-green-600 hover:bg-green-700 ring-4 ring-green-600/30'
                         }`
                 }, isRunning ? '⏸' : '▶'),
                 // Method-specific controls
@@ -656,6 +656,41 @@
         const [aiAnalysis, setAiAnalysis] = useState(null);
         const [analyzing, setAnalyzing] = useState(false);
         const [showLiveObs, setShowLiveObs] = useState(false);
+
+        // Two-dropdown codename system (adjective + animal)
+        const adjectives = useMemo(() => t('codenames.adjectives') || [], [t]);
+        const animals = useMemo(() => t('codenames.animals') || [], [t]);
+        const [selectedAdj, setSelectedAdj] = useState('');
+        const [selectedAnimal, setSelectedAnimal] = useState('');
+
+        const randomizeName = useCallback(() => {
+            if (adjectives.length > 0 && animals.length > 0) {
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const animal = animals[Math.floor(Math.random() * animals.length)];
+                setSelectedAdj(adj);
+                setSelectedAnimal(animal);
+                setSelectedStudent(`${adj} ${animal}`);
+            }
+        }, [adjectives, animals]);
+
+        // Initialize dropdowns from studentNickname or randomize
+        useEffect(() => {
+            if (selectedStudent && adjectives.length > 0 && animals.length > 0) {
+                const parts = selectedStudent.trim().split(' ');
+                if (parts.length >= 2) {
+                    const potentialAdj = parts[0];
+                    const potentialAnimal = parts.slice(1).join(' ');
+                    if (adjectives.includes(potentialAdj) && animals.includes(potentialAnimal)) {
+                        setSelectedAdj(potentialAdj);
+                        setSelectedAnimal(potentialAnimal);
+                        return;
+                    }
+                }
+            }
+            if (!selectedAdj && !selectedAnimal && adjectives.length > 0 && animals.length > 0) {
+                randomizeName();
+            }
+        }, [adjectives, animals]);
 
         // Load data from localStorage on mount
         useEffect(() => {
@@ -792,28 +827,59 @@ Analyze this data and return ONLY valid JSON:
                     h('label', { className: 'block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide' },
                         '👤 ', t('behavior_lens.hub.select_student') || 'Select Student'
                     ),
-                    h('div', { className: 'flex gap-3 items-center' },
-                        studentOptions.length > 0
-                            ? h('select', {
+                    studentOptions.length > 0
+                        // When dashboard data exists, show a single dropdown of known students
+                        ? h('div', { className: 'flex gap-3 items-center' },
+                            h('select', {
                                 value: selectedStudent,
                                 onChange: (e) => setSelectedStudent(e.target.value),
                                 className: 'flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 font-medium'
                             },
                                 h('option', { value: '' }, t('behavior_lens.hub.choose_student') || '— Choose a student —'),
                                 studentOptions.map(name => h('option', { key: name, value: name }, name))
+                            ),
+                            selectedStudent && h('div', { className: 'flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200' },
+                                h('div', { className: 'w-2 h-2 rounded-full bg-indigo-500' }),
+                                h('span', { className: 'text-xs font-bold text-indigo-700' }, selectedStudent)
                             )
-                            : h('input', {
-                                type: 'text',
-                                value: selectedStudent,
-                                onChange: (e) => setSelectedStudent(e.target.value),
-                                placeholder: t('behavior_lens.hub.enter_codename') || 'Enter student codename...',
-                                className: 'flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400'
-                            }),
-                        selectedStudent && h('div', { className: 'flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200' },
-                            h('div', { className: 'w-2 h-2 rounded-full bg-indigo-500' }),
-                            h('span', { className: 'text-xs font-bold text-indigo-700' }, selectedStudent)
                         )
-                    )
+                        // When no dashboard data, show the two-dropdown codename picker (adjective + animal)
+                        : h('div', { className: 'bg-indigo-50 p-4 rounded-xl border border-indigo-100' },
+                            h('div', { className: 'flex gap-2 mb-3' },
+                                h('select', {
+                                    value: selectedAdj,
+                                    onChange: (e) => {
+                                        setSelectedAdj(e.target.value);
+                                        if (e.target.value && selectedAnimal) setSelectedStudent(`${e.target.value} ${selectedAnimal}`);
+                                    },
+                                    className: 'w-1/2 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer bg-white'
+                                },
+                                    h('option', { value: '' }, t('behavior_lens.hub.pick_adjective') || '— Adjective —'),
+                                    adjectives.map((adj, i) => h('option', { key: i, value: adj }, adj))
+                                ),
+                                h('select', {
+                                    value: selectedAnimal,
+                                    onChange: (e) => {
+                                        setSelectedAnimal(e.target.value);
+                                        if (selectedAdj && e.target.value) setSelectedStudent(`${selectedAdj} ${e.target.value}`);
+                                    },
+                                    className: 'w-1/2 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer bg-white'
+                                },
+                                    h('option', { value: '' }, t('behavior_lens.hub.pick_animal') || '— Animal —'),
+                                    animals.map((anim, i) => h('option', { key: i, value: anim }, anim))
+                                )
+                            ),
+                            h('div', { className: 'flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100' },
+                                h('div', { className: 'text-xl font-black text-indigo-600 tracking-tight truncate mr-2' },
+                                    selectedAdj && selectedAnimal ? `${selectedAdj} ${selectedAnimal}` : (t('behavior_lens.hub.no_codename') || 'Pick a codename...')
+                                ),
+                                h('button', {
+                                    onClick: randomizeName,
+                                    className: 'p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0',
+                                    title: t('behavior_lens.hub.randomize') || 'Randomize'
+                                }, '🎲')
+                            )
+                        )
                 ),
                 // Tool cards grid
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
