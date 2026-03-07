@@ -929,9 +929,10 @@
             // If we hit a block, place adjacent to it along the face normal
             var center = new THREE.Vector3();
             hit.object.getWorldPosition(center);
-            var nx = Math.round(center.x + n.x);
-            var ny = Math.round(center.y + n.y);
-            var nz = Math.round(center.z + n.z);
+            // Use floor for x/z (mesh centers are at b.x+0.5) and round with offset for y
+            var nx = Math.floor(center.x + n.x);
+            var ny = Math.round(center.y - 0.5 + n.y);
+            var nz = Math.floor(center.z + n.z);
             if (nx < 0 || nx >= 20 || ny < 0 || ny >= 10 || nz < 0 || nz >= 20) return null;
             return { x: nx, y: ny, z: nz };
           };
@@ -1316,7 +1317,7 @@
             ctx.beginPath(); ctx.moveTo(x, yTop); ctx.lineTo(x, yTop + RULER_H); ctx.stroke();
             // Label
             ctx.fillStyle = textColor; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(String(n), x, yTop + RULER_H - 4);
+            ctx.fillText(String(n), x, yTop + RULER_H + 10);
             // Minor ticks
             if (n < 10) {
               var minorCount = n === 1 ? 10 : 5;
@@ -2066,7 +2067,7 @@
               },
               {
                 id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
-                desc: 'Minecraft-style 3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
+                desc: '3D building with blocks, columns, arches, and ramps. Snap to grid, measure, and export STL.',
                 color: 'amber', ready: true
               },
               {
@@ -2960,9 +2961,9 @@
               className: "text-xl font-bold text-emerald-800"
             }, isSlider ? `${cubeDims.l} × ${cubeDims.w} × ${cubeDims.h} = ` : '', /*#__PURE__*/React.createElement("span", {
               className: "text-2xl text-emerald-600"
-            }, volume)), /*#__PURE__*/React.createElement("div", {
+            }, (!isSlider && cubeBuilderChallenge && cubeBuilderChallenge.type === 'volume') ? '?' : volume)), /*#__PURE__*/React.createElement("div", {
               className: "text-xs text-slate-400"
-            }, volume, " unit cube", volume !== 1 ? 's' : '')), /*#__PURE__*/React.createElement("div", {
+            }, (!isSlider && cubeBuilderChallenge && cubeBuilderChallenge.type === 'volume') ? 'solve the challenge!' : (volume + ' unit cube' + (volume !== 1 ? 's' : '')))), /*#__PURE__*/React.createElement("div", {
               className: "bg-white rounded-xl p-3 border border-teal-100 text-center"
             }, /*#__PURE__*/React.createElement("div", {
               className: "text-xs font-bold text-teal-600 uppercase mb-1"
@@ -2970,11 +2971,11 @@
               className: "text-xl font-bold text-teal-800"
             }, "SA = ", /*#__PURE__*/React.createElement("span", {
               className: "text-2xl text-teal-600"
-            }, surfaceArea)), isSlider && /*#__PURE__*/React.createElement("div", {
+            }, (!isSlider && cubeBuilderChallenge && cubeBuilderChallenge.type === 'volume') ? '?' : surfaceArea)), isSlider && /*#__PURE__*/React.createElement("div", {
               className: "text-xs text-slate-400"
             }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")"), !isSlider && /*#__PURE__*/React.createElement("div", {
               className: "text-xs text-slate-400"
-            }, surfaceArea, " exposed face", surfaceArea !== 1 ? 's' : ''))), /*#__PURE__*/React.createElement("div", {
+            }, (!isSlider && cubeBuilderChallenge && cubeBuilderChallenge.type === 'volume') ? 'solve the challenge!' : (surfaceArea + ' exposed face' + (surfaceArea !== 1 ? 's' : ''))))), /*#__PURE__*/React.createElement("div", {
               className: "flex gap-2 flex-wrap"
             }, isSlider ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
               onClick: () => {
@@ -3140,14 +3141,22 @@
               className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
             }, /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold text-indigo-800 mb-2"
-            }, cubeBuilderChallenge.type === 'prism' ? `🏗️ Build a ${cubeBuilderChallenge.target.l}×${cubeBuilderChallenge.target.w}×${cubeBuilderChallenge.target.h} rectangular prism` : cubeBuilderChallenge.shape === 'L-Block' ? '📐 What is the volume of this L-shaped block?' : `🎲 Build any shape with volume = ${cubeBuilderChallenge.answer} cubes`), /*#__PURE__*/React.createElement("div", {
+            }, cubeBuilderChallenge.type === 'prism' ? `🏗️ Build a ${cubeBuilderChallenge.target.l}×${cubeBuilderChallenge.target.w}×${cubeBuilderChallenge.target.h} rectangular prism` : cubeBuilderChallenge.shape === 'L-Block' ? '📐 What is the volume of this L-shaped block?' : '🎲 Build a shape, then enter its volume below'), /*#__PURE__*/React.createElement("div", {
               className: "flex gap-2 items-center"
             }, /*#__PURE__*/React.createElement("div", {
               className: "flex-1 text-xs text-indigo-700"
-            }, /*#__PURE__*/React.createElement("p", null, "Your cubes: ", /*#__PURE__*/React.createElement("span", {
+            }, /*#__PURE__*/React.createElement("p", null, cubeBuilderChallenge.type === 'volume' ? 'Count the cubes and enter volume below' : 'Your cubes: ', cubeBuilderChallenge.type === 'volume' ? null : /*#__PURE__*/React.createElement("span", {
               className: "font-bold text-indigo-900"
-            }, cubePositions.size), cubeBuilderChallenge.type === 'prism' && ` / ${cubeBuilderChallenge.target.l * cubeBuilderChallenge.target.w * cubeBuilderChallenge.target.h} target`, cubeBuilderChallenge.shape === 'any' && ` / ${cubeBuilderChallenge.answer} target`)), /*#__PURE__*/React.createElement("button", {
-              onClick: checkBuildChallenge,
+            }, cubePositions.size), cubeBuilderChallenge.type === 'prism' && ` / ${cubeBuilderChallenge.target.l * cubeBuilderChallenge.target.w * cubeBuilderChallenge.target.h} target`)), cubeBuilderChallenge.type === 'volume' && /*#__PURE__*/React.createElement("input", {
+              type: "number",
+              value: (labToolData && labToolData._builderVolAnswer) || '',
+              onChange: e => setLabToolData(prev => Object.assign({}, prev, { _builderVolAnswer: e.target.value })),
+              onKeyDown: e => { if (e.key === 'Enter' && (labToolData && labToolData._builderVolAnswer)) { const ans = parseInt(labToolData._builderVolAnswer); const ok = cubeBuilderChallenge.shape === 'L-Block' ? ans === cubeBuilderChallenge.answer : (ans === cubePositions.size && cubePositions.size > 0); announceToSR(ok ? 'Correct!' : 'Incorrect, try again'); setCubeBuilderFeedback(ok ? { correct: true, msg: '✅ Correct! Volume = ' + (cubeBuilderChallenge.shape === 'L-Block' ? cubeBuilderChallenge.answer : cubePositions.size) + ' cubic units' } : { correct: false, msg: '❌ Not quite — try counting the cubes again.' }); setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 })); } },
+              placeholder: "Volume?",
+              className: "w-24 px-3 py-2 border border-indigo-300 rounded-lg text-sm font-mono",
+              'aria-label': 'Enter volume'
+            }), /*#__PURE__*/React.createElement("button", {
+              onClick: () => { if (cubeBuilderChallenge.type === 'volume') { const ans = parseInt((labToolData && labToolData._builderVolAnswer) || '0'); const ok = cubeBuilderChallenge.shape === 'L-Block' ? ans === cubeBuilderChallenge.answer : (ans === cubePositions.size && cubePositions.size > 0); announceToSR(ok ? 'Correct!' : 'Incorrect, try again'); setCubeBuilderFeedback(ok ? { correct: true, msg: '✅ Correct! Volume = ' + (cubeBuilderChallenge.shape === 'L-Block' ? cubeBuilderChallenge.answer : cubePositions.size) + ' cubic units' } : { correct: false, msg: '❌ Not quite — try counting the cubes again.' }); setExploreScore(prev => ({ correct: prev.correct + (ok ? 1 : 0), total: prev.total + 1 })); } else { checkBuildChallenge(); } },
               className: "px-4 py-2 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600 transition-all shadow-md"
             }, "\u2714 Check")), cubeBuilderFeedback && /*#__PURE__*/React.createElement("p", {
               className: "text-sm font-bold mt-2 " + (cubeBuilderFeedback.correct ? "text-green-600" : "text-red-600")
@@ -3524,9 +3533,19 @@
                 className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
               }, "\u21BA Reset")
               ),
-                // Educational callout
-                /*#__PURE__*/React.createElement("div", { className: "bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800" },
-                  /*#__PURE__*/React.createElement("strong", null, "\uD83D\uDE80 Did you know? "), "Slide rules were used by NASA engineers to calculate trajectories for the Apollo moon missions! The trick: logarithmic scales turn multiplication into addition. Slide the C-scale to line up numbers, and read the product on the D-scale. Try multiplying 2 \u00D7 3: set the C-scale's 1 over D's 2, then read D under C's 3."
+                // Educational tutorial
+                /*#__PURE__*/React.createElement("div", { className: "bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-xs text-yellow-800 space-y-2" },
+                  /*#__PURE__*/React.createElement("p", { className: "font-bold text-sm text-amber-800" }, "\uD83D\uDCCF How to Use the Slide Rule"),
+                  /*#__PURE__*/React.createElement("div", { className: "space-y-1.5" },
+                    /*#__PURE__*/React.createElement("p", null, "1\uFE0F\u20E3 The slide rule multiplies numbers using ", /*#__PURE__*/React.createElement("strong", null, "logarithmic scales"), " — it turns multiplication into addition by sliding scales."),
+                    /*#__PURE__*/React.createElement("p", null, "2\uFE0F\u20E3 ", /*#__PURE__*/React.createElement("strong", null, "Drag the top (C) scale"), " left or right to slide it relative to the bottom (D) scale."),
+                    /*#__PURE__*/React.createElement("p", null, "3\uFE0F\u20E3 ", /*#__PURE__*/React.createElement("strong", null, "Click the bottom (D) scale"), " to move the red cursor to any position."),
+                    /*#__PURE__*/React.createElement("p", null, "4\uFE0F\u20E3 Read the result where the ", /*#__PURE__*/React.createElement("strong", null, "cursor crosses both scales"), ". The readout panel below shows exact values.")
+              ),
+                  /*#__PURE__*/React.createElement("div", { className: "bg-amber-100 rounded-lg p-2 mt-2 text-amber-900" },
+                    /*#__PURE__*/React.createElement("strong", null, "\uD83D\uDD22 Try it: "), "Multiply 2 \u00D7 3 — slide C so its '1' lines up with D's '2', then move the cursor to C's '3'. D should read \u2248 6!"
+              ),
+                  /*#__PURE__*/React.createElement("p", { className: "text-[10px] text-amber-600 italic mt-1" }, "\uD83D\uDE80 Fun fact: NASA engineers used slide rules to calculate Apollo moon mission trajectories!")
               ));
             }
 
@@ -3611,14 +3630,32 @@
                   total: prev.total + 1
                 }));
               } else if (gridChallenge.type === 'slope') {
-                const answer = (slopeAnswer || '').trim();
                 const cs = gridChallenge.slopeData;
-                const isCorrect = answer === cs.display || answer === '' + cs.value || (cs.run !== 0 && Math.abs(parseFloat(answer) - cs.value) < 0.01);
+                const riseAns = parseInt((gridFeedback && gridFeedback.riseAnswer) || '');
+                const runAns = parseInt((gridFeedback && gridFeedback.runAnswer) || '');
+                const slopeAns = ((gridFeedback && gridFeedback.slopeAnswer) || '').trim();
+                const riseOk = riseAns === cs.rise;
+                const runOk = runAns === cs.run;
+                const slopeOk = slopeAns === cs.display || slopeAns === '' + cs.value || (cs.run !== 0 && Math.abs(parseFloat(slopeAns) - cs.value) < 0.01);
+                const hinted = gridFeedback && gridFeedback.hinted;
+                const allCorrect = riseOk && runOk && slopeOk;
+                let msg;
+                if (allCorrect && !hinted) {
+                  msg = '\u2705 Perfect! rise=' + cs.rise + ', run=' + cs.run + ', slope = ' + cs.display;
+                } else if (allCorrect && hinted) {
+                  msg = '\u2705 Correct (hint used). slope = ' + cs.display;
+                } else {
+                  const parts = [];
+                  if (!riseOk) parts.push('rise should be ' + cs.rise);
+                  if (!runOk) parts.push('run should be ' + cs.run);
+                  if (!slopeOk) parts.push('slope should be ' + cs.display);
+                  msg = '\u274C ' + parts.join(', ');
+                }
                 setGridFeedback(prev => Object.assign({}, prev, {
-                  correct: isCorrect,
-                  msg: isCorrect ? '\u2705 Correct! Slope = ' + cs.display : '\u274C The slope is ' + cs.display + ' (rise=' + cs.rise + ', run=' + cs.run + ')'
+                  correct: allCorrect,
+                  msg: msg
                 }));
-                setExploreScore(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
+                setExploreScore(prev => ({ correct: prev.correct + (allCorrect ? 1 : 0), total: prev.total + 1 }));
               }
             };
             return /*#__PURE__*/React.createElement("div", {
@@ -3758,15 +3795,26 @@
               }, "\u21BA Clear")),
               // ── Slope challenge UI ──
               slopeChallenge && /*#__PURE__*/React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" },
-                React.createElement("p", { className: "text-sm font-bold text-amber-800 mb-2" }, "\uD83D\uDCCF Slope: (", gridChallenge.p1.x, ",", gridChallenge.p1.y, ") to (", gridChallenge.p2.x, ",", gridChallenge.p2.y, ")"),
-                React.createElement("div", { className: "flex items-center gap-3 mb-2 text-xs text-amber-600" },
-                  React.createElement("span", null, "rise = \u0394y = ", gridChallenge.slopeData.rise),
-                  React.createElement("span", null, "run = \u0394x = ", gridChallenge.slopeData.run)
+                React.createElement("p", { className: "text-sm font-bold text-amber-800 mb-2" }, "\uD83D\uDCCF Find the slope: (", gridChallenge.p1.x, ",", gridChallenge.p1.y, ") \u2192 (", gridChallenge.p2.x, ",", gridChallenge.p2.y, ")"),
+                React.createElement("p", { className: "text-[10px] text-amber-600 mb-2 italic" }, "Show your work: fill in rise (\u0394y), run (\u0394x), then slope (m = rise/run)"),
+                React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
+                  React.createElement("div", { className: "flex flex-col gap-1" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-red-600 uppercase" }, "Rise (\u0394y)"),
+                    React.createElement("input", { type: "number", placeholder: "?", value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { riseAnswer: e.target.value })), disabled: gridFeedback && gridFeedback.hinted, className: "px-2 py-1.5 border-2 border-red-200 rounded-lg text-sm font-bold text-center focus:border-red-400 focus:outline-none" + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-400' : '') })
+                  ),
+                  React.createElement("div", { className: "flex flex-col gap-1" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-blue-600 uppercase" }, "Run (\u0394x)"),
+                    React.createElement("input", { type: "number", placeholder: "?", value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { runAnswer: e.target.value })), disabled: gridFeedback && gridFeedback.hinted, className: "px-2 py-1.5 border-2 border-blue-200 rounded-lg text-sm font-bold text-center focus:border-blue-400 focus:outline-none" + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-400' : '') })
+                  ),
+                  React.createElement("div", { className: "flex flex-col gap-1" },
+                    React.createElement("label", { className: "text-[10px] font-bold text-amber-700 uppercase" }, "Slope (m)"),
+                    React.createElement("input", { type: "text", placeholder: "e.g. 2/3", value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { slopeAnswer: e.target.value })), onKeyDown: e => { if (e.key === 'Enter') checkGrid(); }, className: "px-2 py-1.5 border-2 border-amber-300 rounded-lg text-sm font-bold text-center focus:border-amber-500 focus:outline-none" })
+                  )
                 ),
                 React.createElement("div", { className: "flex gap-2 items-center" },
-                  React.createElement("span", { className: "text-xs font-bold text-amber-700" }, "m ="),
-                  React.createElement("input", { type: "text", placeholder: "e.g. 2/3", value: slopeAnswer || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { slopeAnswer: e.target.value })), onKeyDown: e => { if (e.key === 'Enter') checkGrid(); }, className: "flex-1 px-3 py-1.5 border-2 border-amber-300 rounded-lg text-sm font-bold focus:border-amber-500 focus:outline-none" }),
-                  React.createElement("button", { onClick: checkGrid, className: "px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600" }, "\u2714 Check")
+                  !(gridFeedback && gridFeedback.hinted) && React.createElement("button", { onClick: () => { setGridFeedback(prev => Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) })); }, className: "px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300" }, "\uD83D\uDCA1 Hint (\u00BD credit)"),
+                  (gridFeedback && gridFeedback.hinted) && React.createElement("span", { className: "text-[10px] text-amber-500 italic" }, "\uD83D\uDCA1 Hint used \u2014 rise & run filled in"),
+                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600" }, "\u2714 Check")
                 ),
                 gridFeedback && gridFeedback.msg && React.createElement("p", { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
               ),
@@ -3895,7 +3943,7 @@
               className: "bg-white rounded-xl border-2 border-purple-200 p-4 flex justify-center"
             }, /*#__PURE__*/React.createElement("svg", {
               width: 400,
-              height: 220,
+              height: 420,
               className: "select-none"
             }, /*#__PURE__*/React.createElement("circle", {
               cx: cx,
@@ -3980,7 +4028,7 @@
               className: "text-xs font-bold text-purple-600 uppercase mb-1"
             }, "Angle"), /*#__PURE__*/React.createElement("div", {
               className: "text-2xl font-bold text-purple-800"
-            }, angleValue, "\xB0")), /*#__PURE__*/React.createElement("div", {
+            }, (angleChallenge && angleChallenge.type === 'create' && !angleFeedback) ? "\u2753" : (angleValue + "\xB0"))), /*#__PURE__*/React.createElement("div", {
               className: "bg-white rounded-xl p-3 border border-purple-100 text-center"
             }, /*#__PURE__*/React.createElement("div", {
               className: "text-xs font-bold text-purple-600 uppercase mb-1"
@@ -4030,7 +4078,7 @@
               className: "text-xs text-purple-600"
             }, "Your angle: ", /*#__PURE__*/React.createElement("span", {
               className: "font-bold text-purple-900"
-            }, angleValue, "\xB0")), /*#__PURE__*/React.createElement("button", {
+            }, angleFeedback ? (angleValue + "\xB0") : "\u2753")), /*#__PURE__*/React.createElement("button", {
               onClick: checkAngle,
               className: "ml-auto px-4 py-1.5 bg-purple-500 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all"
             }, "\u2714 Check")), angleFeedback && /*#__PURE__*/React.createElement("p", {
@@ -4038,6 +4086,26 @@
             }, angleFeedback.msg)));
           })(), stemLabTab === 'explore' && stemLabTool === 'multtable' && (() => {
             const maxNum = 12;
+            // Speed Run timer state (stored in labToolData to avoid stale closures)
+            var _mt = labToolData._multTimer || { active: false, endTime: 0, score: 0, total: 0, timeLeft: 120 };
+            var _mtUpd = function (obj) { setLabToolData(function (prev) { return Object.assign({}, prev, { _multTimer: Object.assign({}, prev._multTimer || _mt, obj) }); }); };
+            // Timer tick effect — runs via ref-based interval
+            if (_mt.active && !labToolData._multTimerInterval) {
+              var _ivl = setInterval(function () {
+                setLabToolData(function (prev) {
+                  var t = prev._multTimer || _mt;
+                  if (!t.active) { clearInterval(_ivl); return Object.assign({}, prev, { _multTimerInterval: null }); }
+                  var left = Math.max(0, Math.round((t.endTime - Date.now()) / 1000));
+                  if (left <= 0) {
+                    clearInterval(_ivl);
+                    addToast('⏱️ Time\'s up! You got ' + t.score + '/' + t.total + ' correct!', 'info');
+                    return Object.assign({}, prev, { _multTimer: Object.assign({}, t, { active: false, timeLeft: 0 }), _multTimerInterval: null });
+                  }
+                  return Object.assign({}, prev, { _multTimer: Object.assign({}, t, { timeLeft: left }) });
+                });
+              }, 500);
+              labToolData._multTimerInterval = _ivl;
+            }
             const checkMult = () => {
               if (!multTableChallenge) return;
               const correct = multTableChallenge.a * multTableChallenge.b;
@@ -4054,13 +4122,27 @@
                 correct: prev.correct + (ok ? 1 : 0),
                 total: prev.total + 1
               }));
+              // Update Speed Run score if active
+              if (_mt.active) {
+                _mtUpd({ score: _mt.score + (ok ? 1 : 0), total: _mt.total + 1 });
+              }
+              // Auto-advance: generate next problem after 1.2s on correct answer
+              if (ok) {
+                setTimeout(function () {
+                  var na = 2 + Math.floor(Math.random() * 11);
+                  var nb = 2 + Math.floor(Math.random() * 11);
+                  setMultTableChallenge({ a: na, b: nb });
+                  setMultTableAnswer('');
+                  setMultTableFeedback(null);
+                }, 1200);
+              }
             };
             return /*#__PURE__*/React.createElement("div", {
               className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
             }, /*#__PURE__*/React.createElement("div", {
               className: "flex items-center gap-3 mb-2"
             }, /*#__PURE__*/React.createElement("button", {
-              onClick: () => setStemLabTool(null),
+              onClick: () => { setStemLabTool(null); if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); } },
               className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
               'aria-label': 'Back to tools'
             }, /*#__PURE__*/React.createElement(ArrowLeft, {
@@ -4078,101 +4160,141 @@
               className: 'text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' + (multTableHidden ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'text-slate-500 bg-slate-100 border-slate-200 hover:bg-slate-200')
             }, multTableHidden ? '🙈 Hidden' : '👁 Visible'), /*#__PURE__*/React.createElement("div", {
               className: "text-xs font-bold text-emerald-600"
-            }, exploreScore.correct, "/", exploreScore.total))), /*#__PURE__*/React.createElement("div", {
-              className: "bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto"
-            }, /*#__PURE__*/React.createElement("table", {
-              className: "border-collapse w-full text-center"
-            }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
-              className: "w-8 h-8 text-[10px] font-bold text-pink-400"
-            }, "\xD7"), Array.from({
-              length: maxNum
-            }).map((_, c) => /*#__PURE__*/React.createElement("th", {
-              key: c,
-              className: 'w-8 h-8 text-xs font-bold ' + (multTableHover && multTableHover.c === c + 1 ? 'text-pink-700 bg-pink-100' : 'text-pink-500')
-            }, c + 1)))), /*#__PURE__*/React.createElement("tbody", null, Array.from({
-              length: maxNum
-            }).map((_, r) => /*#__PURE__*/React.createElement("tr", {
-              key: r
-            }, /*#__PURE__*/React.createElement("td", {
-              className: 'w-8 h-8 text-xs font-bold ' + (multTableHover && multTableHover.r === r + 1 ? 'text-pink-700 bg-pink-100' : 'text-pink-500')
-            }, r + 1), Array.from({
-              length: maxNum
-            }).map((_, c) => {
-              const val = (r + 1) * (c + 1);
-              const isHovered = multTableHover && (multTableHover.r === r + 1 || multTableHover.c === c + 1);
-              const isExact = multTableHover && multTableHover.r === r + 1 && multTableHover.c === c + 1;
-              const isPerfectSquare = r === c;
-              return /*#__PURE__*/React.createElement("td", {
+            }, exploreScore.correct, "/", exploreScore.total))),
+              // Speed Run timer banner
+              _mt.active && React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-3 border-2 border-amber-300 flex items-center gap-3 animate-pulse" },
+                React.createElement("span", { className: "text-2xl" }, "⏱️"),
+                React.createElement("div", { className: "flex-1" },
+                  React.createElement("div", { className: "flex items-center justify-between" },
+                    React.createElement("span", { className: "text-sm font-bold text-amber-800" }, "Speed Run — " + Math.floor(_mt.timeLeft / 60) + ":" + String(_mt.timeLeft % 60).padStart(2, '0')),
+                    React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "✅ " + _mt.score + "/" + _mt.total)
+                  ),
+                  React.createElement("div", { className: "w-full h-2 bg-amber-200 rounded-full mt-1 overflow-hidden" },
+                    React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: { width: Math.round((_mt.timeLeft / 120) * 100) + '%', background: _mt.timeLeft > 30 ? 'linear-gradient(90deg, #f59e0b, #fb923c)' : 'linear-gradient(90deg, #ef4444, #f87171)' } })
+                  )
+                ),
+                React.createElement("button", { onClick: function () { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); addToast('⏱️ Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info'); }, className: "px-3 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all" }, "Stop")
+              ),
+              // Speed Run results banner (when just ended)
+              !_mt.active && _mt.total > 0 && _mt.timeLeft === 0 && React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-300 text-center" },
+                React.createElement("p", { className: "text-lg font-bold text-emerald-800" }, "🏆 Speed Run Complete!"),
+                React.createElement("p", { className: "text-2xl font-bold text-emerald-600 mt-1" }, _mt.score + " / " + _mt.total),
+                React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, _mt.total > 0 ? Math.round((_mt.score / _mt.total) * 100) + "% accuracy" : ""),
+                React.createElement("button", { onClick: function () { _mtUpd({ score: 0, total: 0, timeLeft: 120 }); }, className: "mt-2 px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all" }, "🔄 Try Again")
+              ),
+            /*#__PURE__*/React.createElement("div", {
+                className: "bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto"
+              }, /*#__PURE__*/React.createElement("table", {
+                className: "border-collapse w-full text-center"
+              }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+                className: "w-8 h-8 text-[10px] font-bold text-pink-400"
+              }, "\u00D7"), Array.from({
+                length: maxNum
+              }).map((_, c) => /*#__PURE__*/React.createElement("th", {
                 key: c,
-                onMouseEnter: () => setMultTableHover({
-                  r: r + 1,
-                  c: c + 1
-                }),
-                onMouseLeave: () => setMultTableHover(null),
+                className: 'w-8 h-8 text-xs font-bold ' + (multTableHover && multTableHover.c === c + 1 ? 'text-pink-700 bg-pink-100' : 'text-pink-500')
+              }, c + 1)))), /*#__PURE__*/React.createElement("tbody", null, Array.from({
+                length: maxNum
+              }).map((_, r) => /*#__PURE__*/React.createElement("tr", {
+                key: r
+              }, /*#__PURE__*/React.createElement("td", {
+                className: 'w-8 h-8 text-xs font-bold ' + (multTableHover && multTableHover.r === r + 1 ? 'text-pink-700 bg-pink-100' : 'text-pink-500')
+              }, r + 1), Array.from({
+                length: maxNum
+              }).map((_, c) => {
+                const val = (r + 1) * (c + 1);
+                const isHovered = multTableHover && (multTableHover.r === r + 1 || multTableHover.c === c + 1);
+                const isExact = multTableHover && multTableHover.r === r + 1 && multTableHover.c === c + 1;
+                const isPerfectSquare = r === c;
+                return /*#__PURE__*/React.createElement("td", {
+                  key: c,
+                  onMouseEnter: () => setMultTableHover({
+                    r: r + 1,
+                    c: c + 1
+                  }),
+                  onMouseLeave: () => setMultTableHover(null),
+                  onClick: () => {
+                    setMultTableChallenge({
+                      a: r + 1,
+                      b: c + 1
+                    });
+                    setMultTableAnswer('');
+                    setMultTableFeedback(null);
+                  },
+                  className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' + (isExact ? 'bg-pink-500 text-white font-bold scale-110 shadow-lg rounded' : isHovered ? 'bg-pink-50 text-pink-800 font-semibold' : isPerfectSquare ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50')
+                }, multTableHidden && !isExact && !multTableRevealed.has(r + '-' + c) ? '?' : val);
+              })))))), /*#__PURE__*/React.createElement("div", {
+                className: "flex gap-2 flex-wrap"
+              }, /*#__PURE__*/React.createElement("button", {
                 onClick: () => {
+                  const a = 2 + Math.floor(Math.random() * 11);
+                  const b = 2 + Math.floor(Math.random() * 11);
                   setMultTableChallenge({
-                    a: r + 1,
-                    b: c + 1
+                    a,
+                    b
                   });
                   setMultTableAnswer('');
                   setMultTableFeedback(null);
                 },
-                className: 'w-8 h-8 text-[11px] font-mono cursor-pointer transition-all border border-slate-100 ' + (isExact ? 'bg-pink-500 text-white font-bold scale-110 shadow-lg rounded' : isHovered ? 'bg-pink-50 text-pink-800 font-semibold' : isPerfectSquare ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50')
-              }, multTableHidden && !isExact && !multTableRevealed.has(r + '-' + c) ? '?' : val);
-            })))))), /*#__PURE__*/React.createElement("div", {
-              className: "flex gap-2 flex-wrap"
-            }, /*#__PURE__*/React.createElement("button", {
-              onClick: () => {
-                const a = 2 + Math.floor(Math.random() * 11);
-                const b = 2 + Math.floor(Math.random() * 11);
-                setMultTableChallenge({
-                  a,
-                  b
-                });
-                setMultTableAnswer('');
-                setMultTableFeedback(null);
-              },
-              className: "flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md"
-            }, "\uD83C\uDFAF Quick Quiz"), /*#__PURE__*/React.createElement("button", {
-              onClick: () => {
-                setMultTableChallenge(null);
-                setMultTableAnswer('');
-                setMultTableFeedback(null);
-                setMultTableHover(null);
-                setMultTableRevealed(new Set());
-              },
-              className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
-            }, "\u21BA Reset")), multTableChallenge && /*#__PURE__*/React.createElement("div", {
-              className: "bg-pink-50 rounded-lg p-3 border border-pink-200"
-            }, /*#__PURE__*/React.createElement("p", {
-              className: "text-lg font-bold text-pink-800 mb-2 text-center"
-            }, multTableChallenge.a, " \xD7 ", multTableChallenge.b, " = ?"), /*#__PURE__*/React.createElement("div", {
-              className: "flex gap-2 items-center justify-center"
-            }, /*#__PURE__*/React.createElement("input", {
-              type: "number",
-              value: multTableAnswer,
-              onChange: e => setMultTableAnswer(e.target.value),
-              onKeyDown: e => {
-                if (e.key === 'Enter') checkMult();
-              },
-              className: "w-20 px-3 py-2 text-center text-lg font-bold border-2 border-pink-300 rounded-lg focus:border-pink-500 outline-none",
-              placeholder: "?",
-              autoFocus: true
-            }), /*#__PURE__*/React.createElement("button", {
-              onClick: checkMult,
-              disabled: !multTableAnswer,
-              className: "px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40"
-            }, "\u2714 Check")), multTableFeedback && /*#__PURE__*/React.createElement("p", {
-              className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-600' : 'text-red-600')
-            }, multTableFeedback.msg)), /*#__PURE__*/React.createElement("div", {
-              className: "text-[10px] text-slate-400 text-center"
-            }, /*#__PURE__*/React.createElement("span", {
-              className: "inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1"
-            }), " Perfect squares", /*#__PURE__*/React.createElement("span", {
-              className: "ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1"
-            }), " Hover cross", /*#__PURE__*/React.createElement("span", {
-              className: "ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1"
-            }), " Selected"));
+                className: "flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md"
+              }, "\uD83C\uDFAF Quick Quiz"),
+                // Speed Run button
+                React.createElement("button", {
+                  onClick: function () {
+                    var na = 2 + Math.floor(Math.random() * 11);
+                    var nb = 2 + Math.floor(Math.random() * 11);
+                    setMultTableChallenge({ a: na, b: nb });
+                    setMultTableAnswer('');
+                    setMultTableFeedback(null);
+                    _mtUpd({ active: true, endTime: Date.now() + 120000, score: 0, total: 0, timeLeft: 120 });
+                    // Force a new interval by removing the old one
+                    if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval);
+                    labToolData._multTimerInterval = null;
+                    addToast('⏱️ Speed Run started! 2 minutes on the clock!', 'success');
+                  },
+                  className: "flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
+                }, "⏱️ Speed Run (2min)"),
+            /*#__PURE__*/React.createElement("button", {
+                  onClick: () => {
+                    setMultTableChallenge(null);
+                    setMultTableAnswer('');
+                    setMultTableFeedback(null);
+                    setMultTableHover(null);
+                    setMultTableRevealed(new Set());
+                    if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
+                  },
+                  className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all"
+                }, "\u21BA Reset")), multTableChallenge && /*#__PURE__*/React.createElement("div", {
+                  className: "bg-pink-50 rounded-lg p-3 border border-pink-200"
+                }, /*#__PURE__*/React.createElement("p", {
+                  className: "text-lg font-bold text-pink-800 mb-2 text-center"
+                }, multTableChallenge.a, " \u00D7 ", multTableChallenge.b, " = ?"), /*#__PURE__*/React.createElement("div", {
+                  className: "flex gap-2 items-center justify-center"
+                }, /*#__PURE__*/React.createElement("input", {
+                  type: "number",
+                  value: multTableAnswer,
+                  onChange: e => setMultTableAnswer(e.target.value),
+                  onKeyDown: e => {
+                    if (e.key === 'Enter') checkMult();
+                  },
+                  className: "w-20 px-3 py-2 text-center text-lg font-bold border-2 border-pink-300 rounded-lg focus:border-pink-500 outline-none",
+                  placeholder: "?",
+                  autoFocus: true
+                }), /*#__PURE__*/React.createElement("button", {
+                  onClick: checkMult,
+                  disabled: !multTableAnswer,
+                  className: "px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40"
+                }, "\u2714 Check")), multTableFeedback && /*#__PURE__*/React.createElement("p", {
+                  className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-600' : 'text-red-600')
+                }, multTableFeedback.msg)), /*#__PURE__*/React.createElement("div", {
+                  className: "text-[10px] text-slate-400 text-center"
+                }, /*#__PURE__*/React.createElement("span", {
+                  className: "inline-block w-3 h-3 bg-indigo-50 border border-indigo-200 rounded mr-1"
+                }), " Perfect squares", /*#__PURE__*/React.createElement("span", {
+                  className: "ml-3 inline-block w-3 h-3 bg-pink-50 border border-pink-200 rounded mr-1"
+                }), " Hover cross", /*#__PURE__*/React.createElement("span", {
+                  className: "ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1"
+                }), " Selected"));
           })(), stemLabTab === 'explore' && stemLabTool === 'numberline' && /*#__PURE__*/React.createElement("div", {
             className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
           }, /*#__PURE__*/React.createElement("div", {
@@ -4251,7 +4373,15 @@
               fontWeight: 'bold',
               fontFamily: 'monospace'
             }, val));
-          }), numberLineMarkers.map((marker, i) => {
+          }), nlChallenge && (nlChallenge.type === 'identify' || nlChallenge.type === 'estimate') && nlChallenge._arrowValue != null && (() => {
+            const arrowRange = numberLineRange.max - numberLineRange.min;
+            const arrowX = 40 + (nlChallenge._arrowValue - numberLineRange.min) / arrowRange * 620;
+            return React.createElement('g', { key: 'challenge-arrow' },
+              React.createElement('line', { x1: arrowX, y1: 8, x2: arrowX, y2: 38, stroke: '#ef4444', strokeWidth: 2.5 }),
+              React.createElement('polygon', { points: (arrowX - 6) + ',38 ' + (arrowX + 6) + ',38 ' + arrowX + ',48', fill: '#ef4444' }),
+              React.createElement('text', { x: arrowX, y: 7, textAnchor: 'middle', fill: '#ef4444', fontSize: '11', fontWeight: 'bold' }, '▼')
+            );
+          })(), numberLineMarkers.map((marker, i) => {
             const range = numberLineRange.max - numberLineRange.min;
             const x = 40 + (marker.value - numberLineRange.min) / range * 620;
             return React.createElement('g', {
@@ -4376,18 +4506,31 @@
               const min = numberLineRange.min;
               const max = numberLineRange.max;
               const range = max - min;
-              const types = ['locate', 'distance', 'midpoint'];
+              // Difficulty-filtered challenge types
+              let types;
+              if (exploreDifficulty === 'easy') types = ['identify', 'between'];
+              else if (exploreDifficulty === 'medium') types = ['identify', 'between', 'skip_count', 'distance'];
+              else types = ['identify', 'between', 'skip_count', 'distance', 'estimate', 'midpoint'];
               const type = types[Math.floor(Math.random() * types.length)];
               let ch;
-              if (type === 'locate') {
-                const target = min + Math.floor(Math.random() * range);
-                ch = {
-                  type,
-                  question: t('explore.nl_locate', {
-                    target
-                  }),
-                  answer: target
-                };
+              if (type === 'identify') {
+                // Pick a random tick position on the number line
+                const tickCount = Math.min(range, 20);
+                const tickIdx = 1 + Math.floor(Math.random() * (tickCount - 1));
+                const target = min + Math.round(tickIdx * range / tickCount);
+                ch = { type, question: t('explore.nl_identify'), answer: target, _arrowValue: target };
+              } else if (type === 'between') {
+                const gap = Math.max(3, Math.floor(range / 4));
+                const a = min + Math.floor(Math.random() * (range - gap));
+                const b = a + gap;
+                ch = { type, question: t('explore.nl_between', { a, b }), answer: null, _betweenMin: a, _betweenMax: b };
+              } else if (type === 'skip_count') {
+                const steps = [2, 3, 5, 10].filter(s => s < range);
+                const step = steps[Math.floor(Math.random() * steps.length)] || 2;
+                const start = min + Math.floor(Math.random() * Math.floor(range / 3));
+                const n = 2 + Math.floor(Math.random() * 4);
+                const answer = start + step * n;
+                ch = { type, question: t('explore.nl_skip_count', { step, start, n: n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th') }), answer };
               } else if (type === 'distance') {
                 const a = min + Math.floor(Math.random() * range);
                 const b = min + Math.floor(Math.random() * range);
@@ -4399,6 +4542,14 @@
                   }),
                   answer: Math.abs(a - b)
                 };
+              } else if (type === 'estimate') {
+                // Pick a value between two labeled ticks (not on a tick)
+                const tickCount = Math.min(range, 20);
+                const tickIdx = Math.floor(Math.random() * (tickCount - 1));
+                const lo = min + Math.round(tickIdx * range / tickCount);
+                const hi = min + Math.round((tickIdx + 1) * range / tickCount);
+                const target = lo + 1 + Math.floor(Math.random() * Math.max(1, hi - lo - 1));
+                ch = { type, question: t('explore.nl_estimate', { a: lo, b: hi }), answer: target, _arrowValue: target };
               } else {
                 const a = min + Math.floor(Math.random() * (range - 2));
                 const b = a + 2 + Math.floor(Math.random() * Math.min(8, range - 2));
@@ -4430,14 +4581,26 @@
             onKeyDown: e => {
               if (e.key === 'Enter' && nlAnswer) {
                 const ans = parseFloat(nlAnswer);
-                const ok = ans === nlChallenge.answer;
+                let ok;
+                if (nlChallenge.type === 'between') {
+                  ok = Number.isInteger(ans) && ans > nlChallenge._betweenMin && ans < nlChallenge._betweenMax;
+                } else if (nlChallenge.type === 'estimate') {
+                  ok = Math.abs(ans - nlChallenge.answer) <= 1;
+                } else {
+                  ok = ans === nlChallenge.answer;
+                }
                 announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
+                const wrongMsg = nlChallenge.type === 'between'
+                  ? '❌ Need a whole number between ' + nlChallenge._betweenMin + ' and ' + nlChallenge._betweenMax
+                  : nlChallenge.type === 'estimate'
+                    ? '❌ The value was ' + nlChallenge.answer + ' (within ±1 accepted)'
+                    : '❌ Answer: ' + nlChallenge.answer;
                 setNlFeedback(ok ? {
                   correct: true,
                   msg: t('explore.correct')
                 } : {
                   correct: false,
-                  msg: '❌ Answer: ' + nlChallenge.answer
+                  msg: wrongMsg
                 });
                 setExploreScore(prev => ({
                   correct: prev.correct + (ok ? 1 : 0),
@@ -4450,14 +4613,26 @@
           }), /*#__PURE__*/React.createElement("button", {
             onClick: () => {
               const ans = parseFloat(nlAnswer);
-              const ok = ans === nlChallenge.answer;
+              let ok;
+              if (nlChallenge.type === 'between') {
+                ok = Number.isInteger(ans) && ans > nlChallenge._betweenMin && ans < nlChallenge._betweenMax;
+              } else if (nlChallenge.type === 'estimate') {
+                ok = Math.abs(ans - nlChallenge.answer) <= 1;
+              } else {
+                ok = ans === nlChallenge.answer;
+              }
               announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
+              const wrongMsg = nlChallenge.type === 'between'
+                ? '❌ Need a whole number between ' + nlChallenge._betweenMin + ' and ' + nlChallenge._betweenMax
+                : nlChallenge.type === 'estimate'
+                  ? '❌ The value was ' + nlChallenge.answer + ' (within ±1 accepted)'
+                  : '❌ Answer: ' + nlChallenge.answer;
               setNlFeedback(ok ? {
                 correct: true,
                 msg: t('explore.correct')
               } : {
                 correct: false,
-                msg: '❌ Answer: ' + nlChallenge.answer
+                msg: wrongMsg
               });
               setExploreScore(prev => ({
                 correct: prev.correct + (ok ? 1 : 0),
@@ -7153,26 +7328,24 @@
             ),
             // SVG Graph
             React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border-2 border-indigo-200 shadow-sm", style: { maxHeight: "340px" } },
-              // Grid lines
+              // Grid lines (rendered first, behind curves)
               (function () {
-                var gridEls = [];
+                var gridLines = [];
                 var xStep = (xR.xMax - xR.xMin) <= 10 ? 1 : (xR.xMax - xR.xMin) <= 30 ? 5 : 10;
                 for (var gx = Math.ceil(xR.xMin / xStep) * xStep; gx <= xR.xMax; gx += xStep) {
                   var sx = toSX(gx);
                   if (sx > pad && sx < W - pad) {
-                    gridEls.push(React.createElement("line", { key: 'gx' + gx, x1: sx, y1: pad, x2: sx, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 0.5 }));
-                    gridEls.push(React.createElement("text", { key: 'tx' + gx, x: sx, y: H - pad + 14, textAnchor: "middle", fill: "#94a3b8", style: { fontSize: '8px' } }, gx));
+                    gridLines.push(React.createElement("line", { key: 'gx' + gx, x1: sx, y1: pad, x2: sx, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 0.5 }));
                   }
                 }
                 var yStep = (yR.yMax - yR.yMin) <= 10 ? 1 : (yR.yMax - yR.yMin) <= 30 ? 5 : 10;
                 for (var gy = Math.ceil(yR.yMin / yStep) * yStep; gy <= yR.yMax; gy += yStep) {
                   var sy = toSY(gy);
                   if (sy > pad && sy < H - pad) {
-                    gridEls.push(React.createElement("line", { key: 'gy' + gy, x1: pad, y1: sy, x2: W - pad, y2: sy, stroke: "#e2e8f0", strokeWidth: 0.5 }));
-                    gridEls.push(React.createElement("text", { key: 'ty' + gy, x: pad - 5, y: sy + 3, textAnchor: "end", fill: "#94a3b8", style: { fontSize: '8px' } }, gy));
+                    gridLines.push(React.createElement("line", { key: 'gy' + gy, x1: pad, y1: sy, x2: W - pad, y2: sy, stroke: "#e2e8f0", strokeWidth: 0.5 }));
                   }
                 }
-                return gridEls;
+                return gridLines;
               })(),
               // Axes
               React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: "#64748b", strokeWidth: 1.5 }),
@@ -7201,6 +7374,25 @@
                 React.createElement("circle", { cx: toSX(0), cy: toSY(yIntercept), r: 4, fill: "#22c55e", stroke: "white", strokeWidth: 1.5 }),
                 React.createElement("text", { x: toSX(0) + 8, y: toSY(yIntercept) + 4, fill: "#22c55e", style: { fontSize: '8px', fontWeight: 'bold' } }, "(0, " + yIntercept.toFixed(1) + ")")
               ),
+              // Grid text labels (rendered AFTER curves so they appear on top)
+              (function () {
+                var gridLabels = [];
+                var xStep = (xR.xMax - xR.xMin) <= 10 ? 1 : (xR.xMax - xR.xMin) <= 30 ? 5 : 10;
+                for (var gx = Math.ceil(xR.xMin / xStep) * xStep; gx <= xR.xMax; gx += xStep) {
+                  var sx = toSX(gx);
+                  if (sx > pad && sx < W - pad) {
+                    gridLabels.push(React.createElement("text", { key: 'tx' + gx, x: sx, y: H - pad + 14, textAnchor: "middle", fill: "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gx));
+                  }
+                }
+                var yStep = (yR.yMax - yR.yMin) <= 10 ? 1 : (yR.yMax - yR.yMin) <= 30 ? 5 : 10;
+                for (var gy = Math.ceil(yR.yMin / yStep) * yStep; gy <= yR.yMax; gy += yStep) {
+                  var sy = toSY(gy);
+                  if (sy > pad && sy < H - pad) {
+                    gridLabels.push(React.createElement("text", { key: 'ty' + gy, x: pad - 5, y: sy + 3, textAnchor: "end", fill: "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gy));
+                  }
+                }
+                return gridLabels;
+              })(),
               // Equation label
               React.createElement("text", { x: W / 2, y: H - 5, textAnchor: "middle", fill: "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr)
             ),
@@ -7250,40 +7442,150 @@
               React.createElement("span", null, "\uD83D\uDD34 Roots"),
               React.createElement("span", null, "\uD83D\uDFE2 y-intercept")
             ),
-            // ── Quiz: Name That Graph ──
+            // ── Challenges: Name That Graph, Find the Root, What's the y-intercept? ──
             (() => {
               var fgQuiz = d.fgQuiz || null;
               var fgScore = d.fgScore || 0;
               var fgStreak = d.fgStreak || 0;
+              var challengeMode = d.fgChallengeMode || 'name'; // 'name' | 'root' | 'yint'
+
+              // ── Name That Graph generator ──
               function makeFgQuiz() {
                 var types = ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute'];
                 var labels = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)' };
-                var t = types[Math.floor(Math.random() * types.length)];
-                var opts = [labels[t]];
+                var tp = types[Math.floor(Math.random() * types.length)];
+                var opts = [labels[tp]];
                 while (opts.length < 4) { var r = labels[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
-                return { type: t, answer: labels[t], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+                return { mode: 'name', type: tp, answer: labels[tp], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
               }
+
+              // ── Find the Root generator ──
+              function makeRootQuiz() {
+                // Pick linear or quadratic with guaranteed nice roots
+                var pick = Math.random();
+                var qa, qb, qc, qtype, rootAnswer;
+                if (pick < 0.5) {
+                  // Linear: a*x + b = 0 → root = -b/a
+                  qa = [1, 2, -1, -2, 3][Math.floor(Math.random() * 5)];
+                  qb = [-6, -4, -2, 0, 2, 4, 6][Math.floor(Math.random() * 7)];
+                  qc = 0; qtype = 'linear';
+                  rootAnswer = Math.round((-qb / qa) * 100) / 100;
+                } else {
+                  // Quadratic: a*(x - r1)*(x - r2), pick small integer roots
+                  var r1 = Math.floor(Math.random() * 7) - 3;
+                  var r2 = r1 + Math.floor(Math.random() * 4) + 1;
+                  qa = 1; qb = -(r1 + r2); qc = r1 * r2; qtype = 'quadratic';
+                  rootAnswer = r1; // accept either root
+                }
+                // Build 4 numeric options including the correct answer
+                var opts = [rootAnswer];
+                while (opts.length < 4) {
+                  var wrong = rootAnswer + (Math.floor(Math.random() * 7) - 3);
+                  if (wrong !== rootAnswer && opts.indexOf(wrong) < 0) opts.push(wrong);
+                }
+                return { mode: 'root', type: qtype, a: qa, b: qb, c: qc, answer: rootAnswer, opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+              }
+
+              // ── What's the y-intercept? generator ──
+              function makeYIntQuiz() {
+                var pick = Math.random();
+                var qa, qb, qc, qtype, yIntAnswer;
+                if (pick < 0.4) {
+                  qa = [1, 2, -1, -2, 3][Math.floor(Math.random() * 5)];
+                  qb = Math.floor(Math.random() * 11) - 5; qc = 0; qtype = 'linear';
+                  yIntAnswer = qb; // f(0) = a*0 + b
+                } else if (pick < 0.8) {
+                  qa = [1, -1, 2][Math.floor(Math.random() * 3)];
+                  qb = Math.floor(Math.random() * 7) - 3;
+                  qc = Math.floor(Math.random() * 9) - 4; qtype = 'quadratic';
+                  yIntAnswer = qc; // f(0) = a*0 + b*0 + c
+                } else {
+                  qa = [1, -1, 2][Math.floor(Math.random() * 3)];
+                  qb = Math.floor(Math.random() * 7) - 3;
+                  qc = Math.floor(Math.random() * 9) - 4; qtype = 'cubic';
+                  yIntAnswer = qc; // f(0) = c for cubic a*x³ + b*x + c
+                }
+                var opts = [yIntAnswer];
+                while (opts.length < 4) {
+                  var wrong = yIntAnswer + (Math.floor(Math.random() * 7) - 3);
+                  if (wrong !== yIntAnswer && opts.indexOf(wrong) < 0) opts.push(wrong);
+                }
+                return { mode: 'yint', type: qtype, a: qa, b: qb, c: qc, answer: yIntAnswer, opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+              }
+
+              // Start a challenge based on the current mode
+              function startChallenge() {
+                var q;
+                if (challengeMode === 'root') { q = makeRootQuiz(); }
+                else if (challengeMode === 'yint') { q = makeYIntQuiz(); }
+                else { q = makeFgQuiz(); }
+                upd('fgQuiz', q);
+                if (q.a !== undefined) upd('a', q.a);
+                if (q.b !== undefined) upd('b', q.b);
+                if (q.c !== undefined) upd('c', q.c);
+                if (q.type) upd('type', q.type);
+              }
+
+              // Challenge mode buttons
+              var CHALLENGE_MODES = [
+                { id: 'name', label: '🎯 Name That Graph', color: 'violet' },
+                { id: 'root', label: '📍 Find the Root', color: 'red' },
+                { id: 'yint', label: '🟢 Y-Intercept?', color: 'emerald' }
+              ];
+
+              // Prompt text per mode
+              var promptText = challengeMode === 'root' ? 'What is one root (x-intercept) of this function?'
+                : challengeMode === 'yint' ? 'What is the y-intercept of this function?'
+                  : 'What type of function is graphed above?';
+
               return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("button", { onClick: function () { var q = makeFgQuiz(); upd('fgQuiz', q); upd('type', q.type); upd('a', q.type === 'trig' ? 2 : (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1)); upd('b', Math.floor(Math.random() * 5) - 2); upd('c', Math.floor(Math.random() * 3) - 1); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (fgQuiz ? 'bg-violet-100 text-violet-700' : 'bg-violet-600 text-white') + " hover:opacity-90 transition-all" }, fgQuiz ? '🔄 New Challenge' : '🎯 Name That Graph'),
-                  fgScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + fgScore + ' | 🔥 ' + fgStreak)
+                // Mode selector row
+                React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mb-2" },
+                  CHALLENGE_MODES.map(function (cm) {
+                    var isActive = challengeMode === cm.id;
+                    return React.createElement("button", {
+                      key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-' + cm.color + '-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                    }, cm.label);
+                  }),
+                  fgScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-auto" }, '⭐ ' + fgScore + ' | 🔥 ' + fgStreak)
                 ),
+                // Start / New Challenge button
+                React.createElement("button", {
+                  onClick: startChallenge,
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold mb-2 " + (fgQuiz ? 'bg-slate-100 text-slate-600' : 'bg-violet-600 text-white') + " hover:opacity-90 transition-all"
+                }, fgQuiz ? '🔄 New Challenge' : '🚀 Start Challenge'),
+
+                // Quiz card
                 fgQuiz && !fgQuiz.answered && React.createElement("div", { className: "bg-violet-50 rounded-xl p-3 border border-violet-200" },
-                  React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, 'What type of function is graphed above?'),
+                  React.createElement("p", { className: "text-sm font-bold text-violet-800 mb-2" }, promptText),
                   React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                     fgQuiz.opts.map(function (opt) {
                       return React.createElement("button", {
-                        key: opt, onClick: function () {
-                          var correct = opt === fgQuiz.answer;
+                        key: String(opt), onClick: function () {
+                          var correct = (challengeMode === 'name') ? opt === fgQuiz.answer : opt === fgQuiz.answer;
                           upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt }));
-                          upd('fgScore', fgScore + (correct ? 1 : 0)); upd('fgStreak', correct ? fgStreak + 1 : 0);
-                          if (correct) addToast(t('stem.func_grapher.correct_it') + "'s a " + fgQuiz.type + ' function', 'success'); else addToast(t('stem.func_grapher.that') + "'s a " + fgQuiz.type + ' function', 'error');
+                          upd('fgScore', fgScore + (correct ? 1 : 0));
+                          upd('fgStreak', correct ? fgStreak + 1 : 0);
+                          if (correct) {
+                            addToast('✅ Correct!', 'success');
+                            // Auto-advance after 1.5s
+                            setTimeout(function () { startChallenge(); }, 1500);
+                          } else {
+                            var hint = challengeMode === 'root' ? 'The root is x = ' + fgQuiz.answer
+                              : challengeMode === 'yint' ? 'The y-intercept is ' + fgQuiz.answer
+                                : "It's a " + fgQuiz.type + ' function';
+                            addToast('❌ ' + hint, 'error');
+                          }
                         }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
-                      }, opt);
+                      }, challengeMode === 'name' ? opt : 'x = ' + opt);
                     })
                   )
                 ),
-                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, fgQuiz.chosen === fgQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + fgQuiz.answer)
+                // Result card
+                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                  fgQuiz.chosen === fgQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + (challengeMode === 'name' ? fgQuiz.answer : fgQuiz.answer)
+                )
               );
             })(),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
@@ -9059,14 +9361,36 @@
             { label: '0 < x < 10', expr: '0 < x < 10' },
           ];
 
-          // Quiz
+          // Quiz — expanded question bank with diverse types
           var QUIZ_QS = [
-            { q: 'Shade: all x greater than 2', a: 'x > 2' },
-            { q: 'Shade: all x less than or equal to -1', a: 'x <= -1' },
-            { q: 'Shade: x between -3 and 4 (inclusive)', a: '-3 <= x <= 4' },
-            { q: 'Shade: x strictly between 0 and 6', a: '0 < x < 6' },
-            { q: 'Shade: all x at least 5', a: 'x >= 5' },
+            // Simple inequalities
+            { q: 'Shade: all x greater than 2', a: 'x > 2', opts: ['x > 2', 'x < 2', 'x >= 2', 'x <= 2'] },
+            { q: 'Shade: all x less than or equal to -1', a: 'x <= -1', opts: ['x < -1', 'x <= -1', 'x > -1', 'x >= -1'] },
+            { q: 'Shade: all x at least 5', a: 'x >= 5', opts: ['x > 5', 'x >= 5', 'x < 5', 'x <= 5'] },
+            { q: 'Shade: all x less than 0', a: 'x < 0', opts: ['x < 0', 'x <= 0', 'x > 0', 'x >= 0'] },
+            { q: 'Shade: all x no more than 3', a: 'x <= 3', opts: ['x < 3', 'x <= 3', 'x > 3', 'x >= 3'] },
+            // Compound inequalities
+            { q: 'Shade: x between -3 and 4 (inclusive)', a: '-3 <= x <= 4', opts: ['-3 <= x <= 4', '-3 < x < 4', '-3 < x <= 4', '-3 <= x < 4'] },
+            { q: 'Shade: x strictly between 0 and 6', a: '0 < x < 6', opts: ['0 < x < 6', '0 <= x <= 6', '0 < x <= 6', '0 <= x < 6'] },
+            { q: 'Shade: x from -5 to 2, including both endpoints', a: '-5 <= x <= 2', opts: ['-5 <= x <= 2', '-5 < x < 2', '-5 <= x < 2', '-5 < x <= 2'] },
+            { q: 'Shade: x between 1 and 8, including 1 but not 8', a: '1 <= x < 8', opts: ['1 <= x < 8', '1 < x <= 8', '1 < x < 8', '1 <= x <= 8'] },
+            // Word problems
+            { q: 'A roller coaster requires riders to be at least 48 inches tall. Write the inequality for height h.', a: 'x >= 48', opts: ['x >= 48', 'x > 48', 'x <= 48', 'x < 48'], range: { min: 40, max: 56 } },
+            { q: 'The speed limit is under 65 mph. Write the inequality for speed x.', a: 'x < 65', opts: ['x < 65', 'x <= 65', 'x > 65', 'x >= 65'], range: { min: 55, max: 75 } },
+            { q: 'A pH between 6 and 8 (inclusive) is safe for swimming. Write the inequality.', a: '6 <= x <= 8', opts: ['6 <= x <= 8', '6 < x < 8', '6 <= x < 8', '6 < x <= 8'], range: { min: 0, max: 14 } },
+            { q: 'Water is liquid strictly between 0°C and 100°C. Write the inequality.', a: '0 < x < 100', opts: ['0 < x < 100', '0 <= x <= 100', '0 < x <= 100', '0 <= x < 100'], range: { min: -10, max: 110 } },
+            { q: 'A student needs more than 70 points to pass. Write the inequality for score x.', a: 'x > 70', opts: ['x > 70', 'x >= 70', 'x < 70', 'x <= 70'], range: { min: 60, max: 80 } },
+            { q: 'Temperature must stay at most -2°C for ice. Write the inequality.', a: 'x <= -2', opts: ['x <= -2', 'x < -2', 'x >= -2', 'x > -2'] },
           ];
+
+          // Start / advance quiz helper
+          var iqStartQuiz = function () {
+            var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+            var shuffled = q.opts.slice().sort(function () { return Math.random() - 0.5; });
+            upd('quiz', { q: q.q, a: q.a, opts: shuffled, answered: false, score: (d.quiz && d.quiz.score) || 0, streak: (d.quiz && d.quiz.streak) || 0 });
+            if (q.range) upd('range', q.range);
+            else upd('range', { min: -10, max: 10 });
+          };
 
           return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
@@ -9162,39 +9486,47 @@
                 React.createElement("p", { className: "text-sm font-bold text-violet-800 font-mono" }, setBuilderStr)
               )
             ),
-            // Quiz Mode
+            // Quiz Mode — enhanced with multiple-choice, auto-advance, streak tracking
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
-              React.createElement("div", { className: "flex items-center gap-2" },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("button", {
-                  onClick: function () {
-                    var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-                    upd('quiz', { q: q.q, a: q.a, answered: false, score: (d.quiz && d.quiz.score) || 0 });
-                  }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-fuchsia-600 text-white') + " transition-all"
-                }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
-                d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct")
+                  onClick: iqStartQuiz,
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-fuchsia-600 text-white') + " transition-all"
+                }, d.quiz ? "\uD83D\uDD04 Next Challenge" : "\uD83E\uDDE0 Challenge Mode"),
+                d.quiz && d.quiz.score > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, "\u2B50 " + d.quiz.score + " correct"),
+                d.quiz && d.quiz.streak > 1 && React.createElement("span", { className: "text-xs font-bold text-orange-600" }, "\uD83D\uDD25 " + d.quiz.streak + " streak")
               ),
-              d.quiz && React.createElement("div", { className: "mt-2 bg-fuchsia-50 rounded-lg p-3 border border-fuchsia-200" },
-                React.createElement("p", { className: "text-sm font-bold text-fuchsia-800 mb-2" }, d.quiz.q),
-                !d.quiz.answered
-                  ? React.createElement("div", { className: "flex gap-2" },
-                    React.createElement("input", {
-                      type: "text", placeholder: t('stem.inequality.type_your_answer'), className: "flex-1 px-3 py-2 border border-fuchsia-200 rounded-lg font-mono text-sm", onKeyDown: function (e) {
-                        if (e.key === 'Enter') {
-                          var userAns = e.target.value.trim();
-                          // Normalize
-                          var norm = function (s) { return s.replace(/\s+/g, '').replace(/≤/g, '<=').replace(/≥/g, '>='); };
-                          var correct = norm(userAns) === norm(d.quiz.a);
-                          upd('quiz', Object.assign({}, d.quiz, { answered: true, userAns: userAns, correct: correct, score: d.quiz.score + (correct ? 1 : 0) }));
-                          upd('expr', d.quiz.a); // Show the answer on the graph
-                          addToast(correct ? '\u2705 Correct!' : '\u274C Answer: ' + d.quiz.a, correct ? 'success' : 'error');
+              d.quiz && !d.quiz.answered && React.createElement("div", { className: "bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200" },
+                React.createElement("p", { className: "text-sm font-bold text-fuchsia-800 mb-3" }, d.quiz.q),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                  (d.quiz.opts || []).map(function (opt) {
+                    var dispOpt = opt.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264');
+                    return React.createElement("button", {
+                      key: opt,
+                      onClick: function () {
+                        var norm = function (s) { return s.replace(/\s+/g, '').replace(/\u2264/g, '<=').replace(/\u2265/g, '>='); };
+                        var correct = norm(opt) === norm(d.quiz.a);
+                        var newScore = d.quiz.score + (correct ? 1 : 0);
+                        var newStreak = correct ? (d.quiz.streak || 0) + 1 : 0;
+                        upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, correct: correct, score: newScore, streak: newStreak }));
+                        upd('expr', d.quiz.a); // Show correct answer on graph
+                        if (correct) {
+                          addToast('\u2705 Correct!', 'success');
+                          if (typeof awardStemXP === 'function') awardStemXP('inequality', 10, 'Inequality Challenge');
+                          // Auto-advance after 1.5s
+                          setTimeout(function () { iqStartQuiz(); }, 1500);
+                        } else {
+                          addToast('\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'), 'error');
                         }
-                      }
-                    }),
-                    React.createElement("span", { className: "text-[10px] text-slate-400 self-center" }, "Press Enter")
-                  )
-                  : React.createElement("p", { className: "text-sm font-bold " + (d.quiz.correct ? 'text-emerald-600' : 'text-red-600') },
-                    d.quiz.correct ? '\u2705 Correct!' : '\u274C Answer was: ' + d.quiz.a
-                  )
+                      },
+                      className: "px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-200 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all"
+                    }, dispOpt);
+                  })
+                )
+              ),
+              d.quiz && d.quiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (d.quiz.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                d.quiz.correct ? '\u2705 Correct!' : '\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
+                d.quiz.streak > 2 && d.quiz.correct && React.createElement("span", { className: "ml-2 text-xs text-amber-600" }, "\uD83D\uDD25 " + d.quiz.streak + " in a row!")
               )
             ),
             React.createElement("button", { onClick: () => { setToolSnapshots(prev => [...prev, { id: 'iq-' + Date.now(), tool: 'inequality', label: d.expr, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
@@ -15571,7 +15903,7 @@
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF55 Fraction Lab"),
               React.createElement("div", { className: "flex gap-1" },
                 React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-orange-600 text-white" }, "\uD83D\uDD0D Compare"),
-                React.createElement("button", { onClick: () => setStemLabTool('fractions'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all" }, "\uD83C\uDFC6 Challenge")
+                React.createElement("button", { onClick: () => setStemLabTool('fractions'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all" }, "\uD83C\uDF55 Pie Mode")
               )
             ),
             // Tab bar
@@ -15640,8 +15972,8 @@
                 Math.abs(val1 - val2) > 0.001 && React.createElement("line", { x1: 20 + Math.min(val1, val2) * (360 / nlMax), y1: 38, x2: 20 + Math.max(val1, val2) * (360 / nlMax), y2: 38, stroke: "#a855f7", strokeWidth: 1.5, strokeDasharray: "3 2" })
               )
             ),
-            // Comparison result
-            React.createElement("div", { className: "p-3 rounded-xl text-center font-bold text-lg mb-3 " + (Math.abs(val1 - val2) < 0.001 ? 'bg-green-50 text-green-700 border border-green-200' : val1 > val2 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border border-red-200') },
+            // Comparison result — hidden when quiz is active and unanswered
+            !(d.fqQuiz && !d.fqQuiz.answered) && React.createElement("div", { className: "p-3 rounded-xl text-center font-bold text-lg mb-3 " + (Math.abs(val1 - val2) < 0.001 ? 'bg-green-50 text-green-700 border border-green-200' : val1 > val2 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border border-red-200') },
               Math.abs(val1 - val2) < 0.001 ? d.num1 + "/" + d.den1 + " = " + d.num2 + "/" + d.den2 + " \u2705 Equal!" : val1 > val2 ? d.num1 + "/" + d.den1 + " > " + d.num2 + "/" + d.den2 + "  (by " + Math.abs(val1 - val2).toFixed(3) + ")" : d.num1 + "/" + d.den1 + " < " + d.num2 + "/" + d.den2 + "  (by " + Math.abs(val1 - val2).toFixed(3) + ")"
             ),
             // Operations tab
@@ -15760,7 +16092,7 @@
               React.createElement("h3", { className: "text-lg font-bold text-rose-800" }, "\uD83C\uDF55 Fraction Practice"),
               React.createElement("div", { className: "flex gap-1 ml-auto" },
                 React.createElement("button", { onClick: () => setStemLabTool('fractionViz'), className: "px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-all" }, "\uD83D\uDD0D Compare"),
-                React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white" }, "\uD83C\uDFC6 Practice")
+                React.createElement("button", { className: "px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white" }, "\uD83C\uDF55 Pie Mode")
               )
             ),
             // Denominator control
@@ -24676,6 +25008,51 @@
                 { name: 'Radial Canals', x: 65, y: 25, desc: 'Channels radiating from the central cavity to the bell margin, distributing nutrients. Their radial symmetry predates bilateral body plans by 200M+ years.' }
               ]
             },
+            sea_anemone: {
+              label: 'Cnidarian (Polyp Form — Sea Anemone)',
+              svg: function (w, h, color) {
+                var c1 = color || '#ec4899', c2 = color || '#be185d';
+                return '<svg viewBox="0 0 340 360" xmlns="http://www.w3.org/2000/svg">' +
+                  '<defs>' +
+                  '<radialGradient id="anemG" cx="50%" cy="60%"><stop offset="0%" stop-color="' + c1 + '" stop-opacity="0.6"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.85"/></radialGradient>' +
+                  '<radialGradient id="anemDisc" cx="50%" cy="50%"><stop offset="0%" stop-color="#fbbf24" stop-opacity="0.7"/><stop offset="60%" stop-color="' + c1 + '" stop-opacity="0.5"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.8"/></radialGradient>' +
+                  '</defs>' +
+                  // Pedal disc (base attached to substrate)
+                  '<ellipse cx="170" cy="340" rx="75" ry="14" fill="' + c2 + '" stroke="#881337" stroke-width="2" opacity="0.9"/>' +
+                  // Column (cylindrical body)
+                  '<path d="M95,340 Q90,280 95,200 Q100,160 130,140 Q150,130 170,128 Q190,130 210,140 Q240,160 245,200 Q250,280 245,340Z" fill="url(#anemG)" stroke="' + c2 + '" stroke-width="1.8"/>' +
+                  // Column texture lines
+                  '<path d="M120,300 Q118,260 125,220" stroke="' + c2 + '" stroke-width="0.8" fill="none" opacity="0.3"/>' +
+                  '<path d="M220,300 Q222,260 215,220" stroke="' + c2 + '" stroke-width="0.8" fill="none" opacity="0.3"/>' +
+                  '<path d="M170,335 Q170,280 170,200" stroke="' + c2 + '" stroke-width="0.6" fill="none" opacity="0.2"/>' +
+                  // Oral disc (top)
+                  '<ellipse cx="170" cy="128" rx="60" ry="22" fill="url(#anemDisc)" stroke="' + c2 + '" stroke-width="1.5"/>' +
+                  // Mouth (center of oral disc)
+                  '<ellipse cx="170" cy="128" rx="10" ry="6" fill="' + c2 + '" opacity="0.7"/>' +
+                  // Tentacles (radiating outward from oral disc)
+                  '<path d="M170,106 Q165,70 155,35 Q153,28 158,25 Q163,28 162,38 Q165,65 170,95" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.7"/>' +
+                  '<path d="M145,112 Q125,80 108,50 Q105,42 110,40 Q115,42 118,55 Q130,80 148,108" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.65"/>' +
+                  '<path d="M195,112 Q215,80 232,50 Q235,42 230,40 Q225,42 222,55 Q210,80 192,108" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.65"/>' +
+                  '<path d="M125,120 Q95,100 68,85 Q62,82 64,77 Q70,78 75,84 Q95,96 128,115" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.6"/>' +
+                  '<path d="M215,120 Q245,100 272,85 Q278,82 276,77 Q270,78 265,84 Q245,96 212,115" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.6"/>' +
+                  '<path d="M130,130 Q100,130 72,128 Q65,128 64,123 Q68,120 75,122 Q100,124 132,126" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.55"/>' +
+                  '<path d="M210,130 Q240,130 268,128 Q275,128 276,123 Q272,120 265,122 Q240,124 208,126" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="0.8" opacity="0.55"/>' +
+                  // Zooxanthellae dots on column (symbiotic algae)
+                  '<circle cx="140" cy="210" r="3" fill="#4ade80" opacity="0.5"/>' +
+                  '<circle cx="200" cy="230" r="2.5" fill="#4ade80" opacity="0.45"/>' +
+                  '<circle cx="155" cy="260" r="2" fill="#4ade80" opacity="0.4"/>' +
+                  '<circle cx="185" cy="190" r="2.5" fill="#4ade80" opacity="0.45"/>' +
+                  '</svg>';
+              },
+              parts: [
+                { name: 'Tentacles', x: 50, y: 8, desc: 'Ring of flexible tentacles armed with cnidocytes (stinging cells). Used to capture prey — small fish and shrimp are paralyzed by nematocyst venom and guided to the mouth.' },
+                { name: 'Oral Disc', x: 50, y: 33, desc: 'Flat upper surface surrounding the central mouth. The mouth is the only opening — it serves as both entrance for food and exit for waste, identical to the jellyfish body plan.' },
+                { name: 'Column', x: 28, y: 55, desc: 'Muscular cylindrical body wall made of two tissue layers (ectoderm and endoderm) separated by mesoglea. Can contract to retract tentacles when threatened.' },
+                { name: 'Pedal Disc', x: 50, y: 95, desc: 'Adhesive base that anchors the anemone to rocks, shells, or coral. Despite appearing fixed, anemones can slowly glide across surfaces at ~1 cm/hour.' },
+                { name: 'Cnidocytes', x: 75, y: 18, desc: 'Specialized stinging cells concentrated on tentacles. Each cnidocyte fires a barbed nematocyst in under 700 nanoseconds — one of the fastest mechanical processes in nature.' },
+                { name: 'Zooxanthellae', x: 30, y: 70, desc: 'Symbiotic photosynthetic algae living inside the tissue. They provide up to 90% of the anemone\'s energy via photosynthesis, in exchange for shelter and nutrients.' }
+              ]
+            },
             crustacean: {
               label: 'Crustacean (Arthropoda)',
               svg: function (w, h, color) {
@@ -25435,7 +25812,7 @@
             oscar: 'cichlid', pike: 'cichlid', pleco: 'corydoras',
             goldfish: 'goldfish_body', rockfish: 'cichlid',
             archer: 'fish', puffer: 'pufferfish', mudskip: 'fish',
-            anemone: 'echinoderm',
+            anemone: 'sea_anemone',
             shrimp: 'crustacean', cleaner: 'crustacean', crab: 'crustacean', amphipod: 'crustacean',
             starfish: 'echinoderm', seastar: 'echinoderm', urchin: 'echinoderm', seacucumber: 'echinoderm',
             slider: 'chelonian', turtle: 'chelonian',
