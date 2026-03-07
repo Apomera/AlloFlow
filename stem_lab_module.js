@@ -1282,6 +1282,47 @@
       }, [stemLabTab, stemLabTool, labToolData]);
       // ── Coding Playground: Canvas ref (MUST be at top level) ──
       var _codingCanvasRef = React.useRef(null);
+      // ── Coding Playground: Canvas drawing is handled by enhanced useEffect below ──
+      // ── Coding Playground: Keyboard shortcuts ──
+      React.useEffect(function () {
+        if (stemLabTab !== 'explore' || stemLabTool !== 'codingPlayground') return;
+        function handleKey(e) {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            var cpd = (labToolData && labToolData._codingPlayground) || {};
+            var us = cpd.undoStack || [];
+            if (us.length === 0) return;
+            var prev = us[us.length - 1];
+            var newUndo = us.slice(0, -1);
+            var newRedo = (cpd.redoStack || []).concat([JSON.parse(JSON.stringify(cpd.blocks || []))]);
+            setLabToolData(function (p) {
+              var cp = Object.assign({}, (p && p._codingPlayground) || {});
+              cp.blocks = prev; cp.undoStack = newUndo; cp.redoStack = newRedo;
+              if (cp.codeMode === 'text') {
+                // rebuild text from blocks
+                cp.textCode = ''; // will be recalculated on next render
+              }
+              return Object.assign({}, p, { _codingPlayground: cp });
+            });
+          }
+          if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+            e.preventDefault();
+            var cpd2 = (labToolData && labToolData._codingPlayground) || {};
+            var rs = cpd2.redoStack || [];
+            if (rs.length === 0) return;
+            var next = rs[rs.length - 1];
+            var newRedo2 = rs.slice(0, -1);
+            var newUndo2 = (cpd2.undoStack || []).concat([JSON.parse(JSON.stringify(cpd2.blocks || []))]);
+            setLabToolData(function (p) {
+              var cp = Object.assign({}, (p && p._codingPlayground) || {});
+              cp.blocks = next; cp.undoStack = newUndo2; cp.redoStack = newRedo2;
+              return Object.assign({}, p, { _codingPlayground: cp });
+            });
+          }
+        }
+        window.addEventListener('keydown', handleKey);
+        return function () { window.removeEventListener('keydown', handleKey); };
+      }, [stemLabTab, stemLabTool, labToolData]);
       // ── Slide Rule: Canvas ref (MUST be at top level) ──
       var _slideRuleCanvasRef = React.useRef(null);
       // ── Slide Rule: Canvas rendering ──
@@ -1502,6 +1543,13 @@
         { text: 'Use the Table view to see exact (x, y) values for your function. Great for checking homework answers!', top: '45%', left: '50%' },
         { text: 'Zoom and pan the graph with mouse wheel and drag. Use Window settings to set exact axis ranges.', top: '65%', left: '50%' },
         { text: 'The Coach panel explains every feature in plain English. Press the challenge button to practice with AI-generated problems!', top: '80%', left: '50%' }
+      ];
+      var _tutCoding = [
+        { text: 'Welcome to the Coding Playground! Add blocks from the Toolbox on the left to build your program.', top: '30%', left: '50%' },
+        { text: 'Each block is a command: move the turtle, turn, change colors, or use loops. Set values with the number inputs.', top: '45%', left: '50%' },
+        { text: 'Click ▶ Run to watch your program execute step-by-step. The turtle draws on the canvas as it moves!', top: '55%', left: '50%' },
+        { text: 'Try Variables (set $myVar) and If/Else blocks for advanced programs. Use Undo/Redo to experiment fearlessly!', top: '65%', left: '50%' },
+        { text: 'Pick a Starter Template to load a prebuilt program, or tackle Challenges to earn XP. Switch to Code mode for JavaScript-like syntax!', top: '80%', left: '50%' }
       ];
 
       // STEM Lab modal JSX
@@ -5864,6 +5912,7 @@
             var playerKeys = {};
             var selectedOrg = null;
             var playAsOrg = null;
+            var hoveredOrg = null;
 
             // Populate organisms
             function spawnWorld() {
@@ -5908,12 +5957,22 @@
               if (glow) { ctx.shadowColor = def.color; ctx.shadowBlur = 12 * dpr; }
 
               if (def.id === 'amoeba') {
-                // Blobby shape with perlin-like wobble
+                // Blobby shape with smooth quadratic curves (organic pseudopods)
+                var amoebaPts = [];
+                var amoebaN = 32; // enough points for smooth shape
+                for (var ai = 0; ai < amoebaN; ai++) {
+                  var a = (ai / amoebaN) * Math.PI * 2;
+                  var wobble = sz * (1 + 0.2 * Math.sin(a * 3 + o.phase + world.tick * 0.025) + 0.1 * Math.sin(a * 5 + world.tick * 0.04) + 0.05 * Math.sin(a * 7 + world.tick * 0.015));
+                  amoebaPts.push({ x: Math.cos(a) * wobble, y: Math.sin(a) * wobble });
+                }
+                // Draw smooth closed curve through midpoints
                 ctx.beginPath();
-                for (var a = 0; a < Math.PI * 2; a += 0.15) {
-                  var wobble = sz * (1 + 0.2 * Math.sin(a * 3 + o.phase + world.tick * 0.03) + 0.1 * Math.sin(a * 5 + world.tick * 0.05));
-                  var px = Math.cos(a) * wobble, py = Math.sin(a) * wobble;
-                  a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                var am0 = amoebaPts[0], amLast = amoebaPts[amoebaN - 1];
+                ctx.moveTo((amLast.x + am0.x) / 2, (amLast.y + am0.y) / 2);
+                for (var ai2 = 0; ai2 < amoebaN; ai2++) {
+                  var amCur = amoebaPts[ai2];
+                  var amNext = amoebaPts[(ai2 + 1) % amoebaN];
+                  ctx.quadraticCurveTo(amCur.x, amCur.y, (amCur.x + amNext.x) / 2, (amCur.y + amNext.y) / 2);
                 }
                 ctx.closePath();
                 // Gradient body fill
@@ -6352,6 +6411,23 @@
               ctx.restore();
             }
 
+            // ── Helper: convert any CSS color to rgba string ──
+            function hexToRgba(hex, alpha) {
+              if (hex.charAt(0) === '#') {
+                var r = parseInt(hex.slice(1, 3), 16);
+                var g = parseInt(hex.slice(3, 5), 16);
+                var b = parseInt(hex.slice(5, 7), 16);
+                return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+              }
+              return hex; // already rgb/rgba
+            }
+
+            // ── Smoothed label positions (persist across frames) ──
+            var _labelPositions = {};
+
+            // ── Organelle label hit regions for click-to-explain ──
+            var _labelHitRegions = [];
+
             // ── Organelle labels (floating pills with leader lines) ──
             function drawOrganelleLabels(o) {
               var def = o.def;
@@ -6359,7 +6435,7 @@
               var p = toScreen(o.x, o.y);
               var sz = o.size * cam.zoom * dpr;
               // Only show labels when zoomed in enough and organism is on-screen
-              if (sz < 8) return;
+              if (sz < 4) return;
               if (p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) return;
               ctx.save();
               var fontSize = Math.max(7, Math.min(10, sz * 0.28)) * dpr;
@@ -6367,6 +6443,9 @@
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
               var tNow = world.tick || 0;
+              var lineColor = hexToRgba(def.color, 0.7);
+              var glowColor = hexToRgba(def.color, 0.25);
+              var dotGlowColor = hexToRgba(def.color, 0.18);
               def.anatomy.forEach(function (a, i) {
                 if (typeof a.lx === 'undefined') return;
                 // Organelle point in world-relative rotated coords
@@ -6379,40 +6458,61 @@
                 // Screen position of organelle
                 var sx = p.x + rx;
                 var sy = p.y + ry;
-                // Label offset — push labels outward from center to avoid overlap
+                // Target label position — pushed outward from center
                 var labelDist = sz * 1.5 + fontSize * 2;
                 var spreadAngle = -Math.PI * 0.7 + (i / (def.anatomy.length - 0.01)) * Math.PI * 1.4;
-                var lx = sx + Math.cos(spreadAngle) * labelDist;
-                var ly = sy + Math.sin(spreadAngle) * labelDist;
-                // Clamp labels to screen
+                var targetLx = sx + Math.cos(spreadAngle) * labelDist;
+                var targetLy = sy + Math.sin(spreadAngle) * labelDist;
+                // Clamp targets to screen
                 var textW = ctx.measureText(a.name).width + fontSize * 1.5;
-                lx = Math.max(fontSize, Math.min(W - textW - fontSize, lx));
-                ly = Math.max(fontSize * 2, Math.min(H - fontSize * 2, ly));
-                // Animated leader line — flowing dashes toward the organelle
+                targetLx = Math.max(fontSize, Math.min(W - textW - fontSize, targetLx));
+                targetLy = Math.max(fontSize * 2, Math.min(H - fontSize * 2, targetLy));
+                // Smooth lerp: labels follow slowly instead of snapping
+                var lerpKey = o.def.id + '_' + i;
+                if (!_labelPositions[lerpKey]) _labelPositions[lerpKey] = { x: targetLx, y: targetLy };
+                _labelPositions[lerpKey].x += (targetLx - _labelPositions[lerpKey].x) * 0.08;
+                _labelPositions[lerpKey].y += (targetLy - _labelPositions[lerpKey].y) * 0.08;
+                var lx = _labelPositions[lerpKey].x;
+                var ly = _labelPositions[lerpKey].y;
+
+                // ── Leader line (visible, animated) ──
+                // Glow line (thicker, subtle)
                 ctx.beginPath();
                 ctx.moveTo(sx, sy);
                 ctx.lineTo(lx, ly);
-                ctx.strokeStyle = def.color.replace(')', ',0.5)').replace('rgb(', 'rgba(').replace('rgba(a(', 'rgba(');
-                if (ctx.strokeStyle.indexOf('rgba') === -1) ctx.strokeStyle = 'rgba(200,200,255,0.5)';
-                ctx.lineWidth = 1.0 * dpr;
-                var dashLen = 3 * dpr;
-                ctx.setLineDash([dashLen, dashLen]);
-                ctx.lineDashOffset = -(tNow * 0.5); // flowing animation
+                ctx.strokeStyle = glowColor;
+                ctx.lineWidth = 3.0 * dpr;
+                ctx.stroke();
+                // Main leader line — solid with flowing dash overlay
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(lx, ly);
+                ctx.strokeStyle = lineColor;
+                ctx.lineWidth = 1.5 * dpr;
+                var dashLen = 5 * dpr;
+                ctx.setLineDash([dashLen, dashLen * 0.6]);
+                ctx.lineDashOffset = -(tNow * 0.8); // flowing animation
                 ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.lineDashOffset = 0;
+
                 // Pulsing glow dot at organelle point
                 var pulse = 0.6 + Math.sin(tNow * 0.06 + i * 1.2) * 0.4;
                 var dotR = (2.5 + pulse * 1.5) * dpr;
                 ctx.beginPath();
-                ctx.arc(sx, sy, dotR * 1.5, 0, Math.PI * 2);
-                ctx.fillStyle = def.color.replace(')', ',0.15)').replace('rgb(', 'rgba(').replace('rgba(a(', 'rgba(');
-                if (ctx.fillStyle.indexOf('rgba') === -1) ctx.fillStyle = 'rgba(200,200,255,0.15)';
+                ctx.arc(sx, sy, dotR * 1.8, 0, Math.PI * 2);
+                ctx.fillStyle = dotGlowColor;
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(sx, sy, dotR, 0, Math.PI * 2);
                 ctx.fillStyle = def.color;
                 ctx.fill();
+                // Small white center highlight
+                ctx.beginPath();
+                ctx.arc(sx - dotR * 0.2, sy - dotR * 0.2, dotR * 0.35, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                ctx.fill();
+
                 // Pill background
                 var pillW = textW + 4 * dpr;
                 var pillH = fontSize * 1.7;
@@ -6430,14 +6530,17 @@
                 ctx.lineTo(pillX, pillY + r);
                 ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
                 ctx.closePath();
-                ctx.fillStyle = 'rgba(15,23,42,0.82)';
+                ctx.fillStyle = 'rgba(15,23,42,0.85)';
                 ctx.fill();
                 ctx.strokeStyle = def.color;
-                ctx.lineWidth = 1.0 * dpr;
+                ctx.lineWidth = 1.2 * dpr;
                 ctx.stroke();
                 // Label text
                 ctx.fillStyle = '#ffffff';
                 ctx.fillText(a.name, pillX + fontSize * 0.7, ly);
+
+                // Store hit region for click-to-explain
+                _labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: a, def: def, org: o });
               });
               ctx.restore();
             }
@@ -6538,29 +6641,43 @@
                   o.angle = o.phase + Math.sin(world.tick * 0.018 + o.phase) * 0.45
                     + Math.sin(world.tick * 0.007 + o.phase * 2) * 0.15;
                 } else if (def.id === 'spirillum') {
-                  // Corkscrew movement — spiraling path
-                  o.vx += (Math.random() - 0.5) * 0.08;
-                  o.vy += (Math.random() - 0.5) * 0.08;
-                  o.angle += 0.05; // spin
+                  // Corkscrew movement — smooth spiraling path using sine-based steering
+                  var spSteer = Math.sin(world.tick * 0.04 + o.phase) * 0.04;
+                  var spPerp = Math.cos(world.tick * 0.025 + o.phase * 1.3) * 0.02;
+                  o.vx += Math.cos(o.angle) * 0.02 + spSteer;
+                  o.vy += Math.sin(o.angle) * 0.02 + spPerp;
+                  o.angle += 0.03 + Math.sin(world.tick * 0.015 + o.phase) * 0.02; // smooth spin
                 } else if (def.id === 'diatom') {
                   // Gentle drift — simulate water currents
                   o.vx += Math.sin(world.tick * 0.005 + o.phase) * 0.005;
                   o.vy += Math.cos(world.tick * 0.007 + o.phase) * 0.005;
                 } else if (def.id === 'tardigrade') {
-                  // Slow purposeful walk
-                  o.vx += (Math.random() - 0.5) * 0.03;
-                  o.vy += (Math.random() - 0.5) * 0.03;
+                  // Slow purposeful walk — smooth sine-based wandering
+                  o.vx += Math.sin(world.tick * 0.012 + o.phase) * 0.012;
+                  o.vy += Math.cos(world.tick * 0.009 + o.phase * 1.7) * 0.012;
+                  // Occasional gentle direction change
+                  if (world.tick % 180 === 0) o.phase += 0.8;
                 } else {
-                  // Random walk with gentle turns
-                  o.vx += (Math.random() - 0.5) * 0.05;
-                  o.vy += (Math.random() - 0.5) * 0.05;
+                  // Random walk — smoothed with velocity damping instead of raw noise
+                  o.vx += Math.sin(world.tick * 0.02 + o.phase) * 0.02 + (Math.random() - 0.5) * 0.01;
+                  o.vy += Math.cos(world.tick * 0.015 + o.phase * 1.5) * 0.02 + (Math.random() - 0.5) * 0.01;
                 }
+                // Velocity damping — reduces jitter across all organisms
+                o.vx *= 0.97; o.vy *= 0.97;
                 // Speed limit
                 var spd2 = Math.hypot(o.vx, o.vy);
                 if (spd2 > def.speed) { o.vx = (o.vx / spd2) * def.speed; o.vy = (o.vy / spd2) * def.speed; }
                 // Only update angle from velocity for organisms that actually move fast enough
                 // (avoids chaotic spinning from tiny random-walk jitter on slow organisms)
-                if (spd2 > 0.05 && def.id !== 'stentor' && def.id !== 'diatom') o.angle = Math.atan2(o.vy, o.vx);
+                if (spd2 > 0.08 && def.id !== 'stentor' && def.id !== 'diatom') {
+                  // Smooth angle transition instead of snapping
+                  var targetAngle = Math.atan2(o.vy, o.vx);
+                  var angleDiff = targetAngle - o.angle;
+                  // Normalize to [-PI, PI]
+                  while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                  while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                  o.angle += angleDiff * 0.15;
+                }
               }
               o.x += o.vx; o.y += o.vy;
               // Bounce off walls
@@ -6774,9 +6891,77 @@
               // Organisms
               world.organisms.forEach(function (o) { drawOrganism(o); });
               // Organelle labels for selected organism
+              _labelHitRegions = []; // reset each frame
               world.organisms.forEach(function (o) {
                 if (o === selectedOrg || o === playAsOrg) drawOrganelleLabels(o);
               });
+
+              // ── Click-to-explain tooltip ──
+              if (world._tooltip) {
+                var tt = world._tooltip;
+                // Fade in
+                tt.alpha = Math.min(1, (tt.alpha || 0) + 0.08);
+                ctx.save();
+                ctx.globalAlpha = tt.alpha;
+                var ttFontSize = 8 * dpr;
+                ctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
+                var ttTitle = tt.anatomy.icon + ' ' + tt.anatomy.name;
+                ctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
+                // Word-wrap the description
+                var ttMaxW = 220 * dpr;
+                var ttWords = tt.anatomy.fn.split(' ');
+                var ttLines = []; var ttCurLine = '';
+                ttWords.forEach(function (w) {
+                  var test = ttCurLine ? ttCurLine + ' ' + w : w;
+                  if (ctx.measureText(test).width > ttMaxW - 16 * dpr) {
+                    if (ttCurLine) ttLines.push(ttCurLine);
+                    ttCurLine = w;
+                  } else { ttCurLine = test; }
+                });
+                if (ttCurLine) ttLines.push(ttCurLine);
+                var ttPadX = 10 * dpr, ttPadY = 8 * dpr;
+                ctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
+                var titleW = ctx.measureText(ttTitle).width;
+                ctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
+                var bodyW = 0;
+                ttLines.forEach(function (l) { bodyW = Math.max(bodyW, ctx.measureText(l).width); });
+                var ttW = Math.max(titleW, bodyW) + ttPadX * 2;
+                var ttH = ttPadY * 2 + ttFontSize * 1.5 + ttLines.length * ttFontSize * 1.4 + 4 * dpr;
+                var ttX = Math.max(4 * dpr, Math.min(W - ttW - 4 * dpr, tt.x));
+                var ttY = Math.max(4 * dpr, Math.min(H - ttH - 4 * dpr, tt.y - ttH - 8 * dpr));
+                // Shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12 * dpr; ctx.shadowOffsetY = 4 * dpr;
+                // Background
+                ctx.fillStyle = 'rgba(15,23,42,0.93)';
+                ctx.beginPath();
+                var ttR = 6 * dpr;
+                ctx.moveTo(ttX + ttR, ttY); ctx.lineTo(ttX + ttW - ttR, ttY);
+                ctx.arcTo(ttX + ttW, ttY, ttX + ttW, ttY + ttR, ttR);
+                ctx.lineTo(ttX + ttW, ttY + ttH - ttR);
+                ctx.arcTo(ttX + ttW, ttY + ttH, ttX + ttW - ttR, ttY + ttH, ttR);
+                ctx.lineTo(ttX + ttR, ttY + ttH);
+                ctx.arcTo(ttX, ttY + ttH, ttX, ttY + ttH - ttR, ttR);
+                ctx.lineTo(ttX, ttY + ttR);
+                ctx.arcTo(ttX, ttY, ttX + ttR, ttY, ttR);
+                ctx.closePath(); ctx.fill();
+                ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+                // Accent bar
+                ctx.fillStyle = tt.def.color;
+                ctx.fillRect(ttX, ttY, 3 * dpr, ttH);
+                // Title
+                ctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = tt.def.color; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                ctx.fillText(ttTitle, ttX + ttPadX, ttY + ttPadY);
+                // Body
+                ctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
+                ctx.fillStyle = 'rgba(226,232,240,0.95)';
+                ttLines.forEach(function (line, li) {
+                  ctx.fillText(line, ttX + ttPadX, ttY + ttPadY + ttFontSize * 1.5 + 2 * dpr + li * ttFontSize * 1.4);
+                });
+                // Auto-dismiss after 5 seconds
+                if (world.tick - tt.startTick > 300) world._tooltip = null;
+                ctx.restore();
+              }
 
               // ── Enhanced Microscope Vignette Overlay ──
               // Circular vignette
@@ -6810,6 +6995,74 @@
                 ctx.strokeStyle = '#334155'; ctx.lineWidth = 1 * dpr; ctx.stroke();
               }
               ctx.restore();
+
+              // ── Onboarding hint: "Click an organism to explore" ──
+              if (!selectedOrg && !playAsOrg && world.tick < 600) {
+                ctx.save();
+                var hintAlpha = world.tick < 480 ? 0.85 : Math.max(0, 0.85 - (world.tick - 480) / 120 * 0.85);
+                ctx.globalAlpha = hintAlpha;
+                var hintFontSize = 10 * dpr;
+                ctx.font = 'bold ' + hintFontSize + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                var hintText = '\uD83D\uDC46 Click any organism to explore its anatomy';
+                var hintW = ctx.measureText(hintText).width + 24 * dpr;
+                var hintH = hintFontSize * 2.2;
+                var hintX = W / 2 - hintW / 2;
+                var hintY = 14 * dpr;
+                // Pill background
+                ctx.fillStyle = 'rgba(15,23,42,0.75)';
+                ctx.beginPath();
+                var hr = hintH / 2;
+                ctx.moveTo(hintX + hr, hintY); ctx.lineTo(hintX + hintW - hr, hintY);
+                ctx.arcTo(hintX + hintW, hintY, hintX + hintW, hintY + hr, hr);
+                ctx.lineTo(hintX + hintW, hintY + hintH - hr);
+                ctx.arcTo(hintX + hintW, hintY + hintH, hintX + hintW - hr, hintY + hintH, hr);
+                ctx.lineTo(hintX + hr, hintY + hintH);
+                ctx.arcTo(hintX, hintY + hintH, hintX, hintY + hintH - hr, hr);
+                ctx.lineTo(hintX, hintY + hr);
+                ctx.arcTo(hintX, hintY, hintX + hr, hintY, hr);
+                ctx.closePath(); ctx.fill();
+                // Border glow
+                ctx.strokeStyle = 'rgba(74,222,128,0.5)'; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                // Text
+                ctx.fillStyle = '#a7f3d0';
+                ctx.fillText(hintText, W / 2, hintY + hintH / 2);
+                ctx.restore();
+              }
+
+              // ── Hover tooltip: "Click to explore" near hovered organism ──
+              if (hoveredOrg && !selectedOrg && !playAsOrg) {
+                ctx.save();
+                var hp = toScreen(hoveredOrg.x, hoveredOrg.y);
+                var hoverSz = hoveredOrg.size * cam.zoom * dpr;
+                var htFontSize = 7 * dpr;
+                ctx.font = 'bold ' + htFontSize + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                var htText = hoveredOrg.def.icon + ' Click to explore';
+                var htW = ctx.measureText(htText).width + 10 * dpr;
+                var htH = htFontSize * 1.8;
+                var htX = hp.x - htW / 2;
+                var htY = hp.y - hoverSz - htH - 6 * dpr;
+                // Clamp to screen
+                htX = Math.max(2 * dpr, Math.min(W - htW - 2 * dpr, htX));
+                htY = Math.max(2 * dpr, htY);
+                ctx.fillStyle = 'rgba(15,23,42,0.8)';
+                ctx.beginPath();
+                var htr = htH / 2;
+                ctx.moveTo(htX + htr, htY); ctx.lineTo(htX + htW - htr, htY);
+                ctx.arcTo(htX + htW, htY, htX + htW, htY + htr, htr);
+                ctx.lineTo(htX + htW, htY + htH - htr);
+                ctx.arcTo(htX + htW, htY + htH, htX + htW - htr, htY + htH, htr);
+                ctx.lineTo(htX + htr, htY + htH);
+                ctx.arcTo(htX, htY + htH, htX, htY + htH - htr, htr);
+                ctx.lineTo(htX, htY + htr);
+                ctx.arcTo(htX, htY, htX + htr, htY, htr);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = hoveredOrg.def.color; ctx.lineWidth = 1 * dpr; ctx.stroke();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(htText, hp.x, htY + (htH - htFontSize) / 2);
+                ctx.restore();
+              }
 
               // ── Magnification label (glassmorphic) ──
               var mag = Math.round(40 * cam.zoom);
@@ -6908,25 +7161,54 @@
               camStartX = cam.x; camStartY = cam.y;
             });
             canvasEl.addEventListener('mousemove', function (e) {
-              if (!dragging) return;
-              var dx = (e.clientX - dragStartX) / cam.zoom;
-              var dy = (e.clientY - dragStartY) / cam.zoom;
-              cam.x = camStartX - dx; cam.y = camStartY - dy;
+              if (dragging) {
+                var dx = (e.clientX - dragStartX) / cam.zoom;
+                var dy = (e.clientY - dragStartY) / cam.zoom;
+                cam.x = camStartX - dx; cam.y = camStartY - dy;
+              }
+              // Detect organism hover for cursor feedback
+              if (!playAsOrg) {
+                var rect = canvasEl.getBoundingClientRect();
+                var hx = (e.clientX - rect.left) * dpr;
+                var hy = (e.clientY - rect.top) * dpr;
+                var foundHover = null;
+                world.organisms.forEach(function (o) {
+                  var sp = toScreen(o.x, o.y);
+                  var dd = Math.hypot(sp.x - hx, sp.y - hy);
+                  if (dd < o.size * cam.zoom * dpr * 1.5) foundHover = o;
+                });
+                hoveredOrg = foundHover;
+                canvasEl.style.cursor = dragging ? 'grabbing' : (foundHover ? 'pointer' : 'grab');
+              }
             });
             canvasEl.addEventListener('mouseup', function (e) {
               if (Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
-                // Click - select organism
                 var rect = canvasEl.getBoundingClientRect();
                 var mx = (e.clientX - rect.left) * dpr;
                 var my = (e.clientY - rect.top) * dpr;
-                var clicked = null, bestDist = Infinity;
-                world.organisms.forEach(function (o) {
-                  var p = toScreen(o.x, o.y);
-                  var dd = Math.hypot(p.x - mx, p.y - my);
-                  if (dd < o.size * cam.zoom * dpr * 1.5 && dd < bestDist) { bestDist = dd; clicked = o; }
-                });
-                selectedOrg = clicked;
-                if (canvasEl._onSelect) canvasEl._onSelect(clicked ? clicked.def.id : null);
+                // Check if click hit an organelle label first (click-to-explain)
+                var hitLabel = null;
+                for (var hi = _labelHitRegions.length - 1; hi >= 0; hi--) {
+                  var hr = _labelHitRegions[hi];
+                  if (mx >= hr.x && mx <= hr.x + hr.w && my >= hr.y && my <= hr.y + hr.h) {
+                    hitLabel = hr; break;
+                  }
+                }
+                if (hitLabel) {
+                  // Show tooltip for this organelle
+                  world._tooltip = { anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick };
+                } else {
+                  // Click - select organism
+                  world._tooltip = null;
+                  var clicked = null, bestDist = Infinity;
+                  world.organisms.forEach(function (o) {
+                    var p = toScreen(o.x, o.y);
+                    var dd = Math.hypot(p.x - mx, p.y - my);
+                    if (dd < o.size * cam.zoom * dpr * 1.5 && dd < bestDist) { bestDist = dd; clicked = o; }
+                  });
+                  selectedOrg = clicked;
+                  if (canvasEl._onSelect) canvasEl._onSelect(clicked ? clicked.def.id : null);
+                }
               }
               dragging = false;
             });
@@ -28217,6 +28499,10 @@
           var showTurtle = d.showTurtle !== false;
           var cumulativeMode = d.cumulativeMode || false;
           var runHistory = d.history || [];
+          var undoStack = d.undoStack || [];
+          var redoStack = d.redoStack || [];
+          var showTemplates = d.showTemplates || false;
+          var tutorialDismissed = d.tutorialDismissed || false;
 
           // ── Block definitions ──
           var BLOCK_TYPES = [
@@ -28231,7 +28517,10 @@
             { type: 'circle', label: '⭕ Draw Circle', param: 'radius', defaultVal: 30, unit: 'px', color: '#06b6d4' },
             { type: 'goto', label: '📍 Go To', param: 'x', defaultVal: 250, unit: null, color: '#a855f7' },
             { type: 'home', label: '🏠 Go Home', param: null, defaultVal: null, unit: null, color: '#78716c' },
-            { type: 'repeat', label: '🔄 Repeat', param: 'times', defaultVal: 4, unit: '×', color: '#8b5cf6' }
+            { type: 'repeat', label: '🔄 Repeat', param: 'times', defaultVal: 4, unit: '×', color: '#8b5cf6' },
+            { type: 'setVar', label: '📦 Set Variable', param: 'varName', defaultVal: 'size', unit: null, color: '#0ea5e9' },
+            { type: 'changeVar', label: '📦± Change Var', param: 'varName', defaultVal: 'size', unit: null, color: '#0284c7' },
+            { type: 'ifelse', label: '🔀 If / Else', param: 'condition', defaultVal: 'x > 250', unit: null, color: '#d946ef' }
           ];
 
           // ── Challenges ──
@@ -28246,6 +28535,20 @@
             { id: 'hexagon', title: '8. Hexagon Hero', desc: 'Draw a perfect regular hexagon.', concept: 'Math + Patterns', hint: 'Repeat 6×: Move Forward 60, Turn Right 60°', check: function (lines) { var ex = getEndpoints(lines); return ex.closed && ex.segments >= 6 && Math.abs(ex.turns - 360) < 15; } },
             { id: 'freestyle', title: '9. Freestyle!', desc: 'Create any drawing with 20+ line segments.', concept: 'Creativity', hint: 'Combine everything you\'ve learned!', check: function (lines) { return lines.length >= 20; } },
             { id: 'house', title: '10. Build a House', desc: 'Draw a house: a square base with a triangle roof on top.', concept: 'Decomposition', hint: 'Draw a square, then use Pen Up to move, then draw a triangle for the roof. Think about angles: square = 90°, triangle = 120°.', check: function (lines) { return lines.length >= 7 && getEndpoints(lines.slice(0, 4)).segments >= 4; } }
+          ];
+
+          // ── Starter Templates ──
+          var TEMPLATES = [
+            { name: 'Five-Point Star', icon: '⭐', desc: 'A classic 5-pointed star', blocks: [{ type: 'color', color: '#f59e0b' }, { type: 'repeat', times: 5, children: [{ type: 'forward', distance: 100 }, { type: 'right', degrees: 144 }] }] },
+            { name: 'Square Spiral', icon: '🌀', desc: 'A growing square spiral', blocks: [{ type: 'forward', distance: 20 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 40 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 60 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 80 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 100 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 120 }, { type: 'right', degrees: 90 }] },
+            { name: 'Flower', icon: '🌸', desc: 'A 6-petal flower pattern', blocks: [{ type: 'color', color: '#ec4899' }, { type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }, { type: 'right', degrees: 60 }, { type: 'forward', distance: 60 }, { type: 'right', degrees: 120 }] }] },
+            { name: 'Hexagon', icon: '⬡', desc: 'A perfect regular hexagon', blocks: [{ type: 'color', color: '#06b6d4' }, { type: 'width', width: 3 }, { type: 'repeat', times: 6, children: [{ type: 'forward', distance: 60 }, { type: 'right', degrees: 60 }] }] },
+            { name: 'Triangle', icon: '🔺', desc: 'An equilateral triangle', blocks: [{ type: 'color', color: '#22c55e' }, { type: 'width', width: 3 }, { type: 'repeat', times: 3, children: [{ type: 'forward', distance: 120 }, { type: 'right', degrees: 120 }] }] },
+            { name: 'Staircase', icon: '🪜', desc: 'A step-by-step staircase', blocks: [{ type: 'color', color: '#8b5cf6' }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 30 }, { type: 'right', degrees: 90 }, { type: 'forward', distance: 30 }, { type: 'left', degrees: 90 }] }] },
+            { name: 'Zigzag', icon: '⚡', desc: 'A sharp zigzag pattern', blocks: [{ type: 'color', color: '#ef4444' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 40 }, { type: 'right', degrees: 120 }, { type: 'forward', distance: 40 }, { type: 'left', degrees: 120 }] }] },
+            { name: 'Circle Art', icon: '🎯', desc: 'Concentric circles', blocks: [{ type: 'color', color: '#6366f1' }, { type: 'circle', radius: 20 }, { type: 'penup' }, { type: 'forward', distance: 25 }, { type: 'pendown' }, { type: 'color', color: '#ec4899' }, { type: 'circle', radius: 25 }, { type: 'penup' }, { type: 'forward', distance: 30 }, { type: 'pendown' }, { type: 'color', color: '#f59e0b' }, { type: 'circle', radius: 30 }] },
+            { name: 'Octagon', icon: '🛑', desc: 'A regular octagon', blocks: [{ type: 'color', color: '#dc2626' }, { type: 'width', width: 3 }, { type: 'repeat', times: 8, children: [{ type: 'forward', distance: 50 }, { type: 'right', degrees: 45 }] }] },
+            { name: 'Windmill', icon: '🎡', desc: 'A spinning windmill', blocks: [{ type: 'color', color: '#7c3aed' }, { type: 'repeat', times: 12, children: [{ type: 'forward', distance: 80 }, { type: 'backward', distance: 80 }, { type: 'right', degrees: 30 }] }] }
           ];
 
           // ── Helper: analyze drawn lines for challenge checking ──
@@ -28283,12 +28586,24 @@
               else if (b.type === 'circle') lines.push(indent + 'circle(' + (b.radius || 30) + ')');
               else if (b.type === 'goto') lines.push(indent + 'goto(' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')');
               else if (b.type === 'home') lines.push(indent + 'home()');
+              else if (b.type === 'setVar') lines.push(indent + 'setVar("' + (b.varName || 'size') + '", ' + (b.varValue != null ? b.varValue : 50) + ')');
+              else if (b.type === 'changeVar') lines.push(indent + 'changeVar("' + (b.varName || 'size') + '", ' + (b.varDelta != null ? b.varDelta : 10) + ')');
               else if (b.type === 'repeat') {
                 lines.push(indent + 'repeat(' + (b.times || 4) + ', function() {');
                 if (b.children && b.children.length > 0) {
                   lines.push(blocksToText(b.children, indent + '  '));
                 }
                 lines.push(indent + '})');
+              } else if (b.type === 'ifelse') {
+                lines.push(indent + 'if (' + (b.condition || 'x > 250') + ') {');
+                if (b.children && b.children.length > 0) {
+                  lines.push(blocksToText(b.children, indent + '  '));
+                }
+                lines.push(indent + '} else {');
+                if (b.elseChildren && b.elseChildren.length > 0) {
+                  lines.push(blocksToText(b.elseChildren, indent + '  '));
+                }
+                lines.push(indent + '}');
               }
             }
             return lines.join('\n');
@@ -28303,19 +28618,32 @@
               var blks = [];
               while (i < lineArr.length) {
                 var line = lineArr[i];
-                if (line.match(/^}\)?;?$/)) { i++; return blks; }
+                if (line.match(/^}\)?;?$/) || line.match(/^\} else \{$/)) { i++; return blks; }
                 var m;
-                if ((m = line.match(/^forward\((\d+)\)/))) { blks.push({ type: 'forward', distance: parseInt(m[1]) }); }
-                else if ((m = line.match(/^backward\((\d+)\)/))) { blks.push({ type: 'backward', distance: parseInt(m[1]) }); }
-                else if ((m = line.match(/^right\((\d+)\)/))) { blks.push({ type: 'right', degrees: parseInt(m[1]) }); }
-                else if ((m = line.match(/^left\((\d+)\)/))) { blks.push({ type: 'left', degrees: parseInt(m[1]) }); }
+                if ((m = line.match(/^forward\(([\$\w]+)\)/))) { blks.push({ type: 'forward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+                else if ((m = line.match(/^backward\(([\$\w]+)\)/))) { blks.push({ type: 'backward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+                else if ((m = line.match(/^right\(([\$\w]+)\)/))) { blks.push({ type: 'right', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+                else if ((m = line.match(/^left\(([\$\w]+)\)/))) { blks.push({ type: 'left', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
                 else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
                 else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
                 else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
-                else if ((m = line.match(/^setWidth\((\d+)\)/))) { blks.push({ type: 'width', width: parseInt(m[1]) }); }
-                else if ((m = line.match(/^circle\((\d+)\)/))) { blks.push({ type: 'circle', radius: parseInt(m[1]) }); }
+                else if ((m = line.match(/^setWidth\(([\$\w]+)\)/))) { blks.push({ type: 'width', width: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+                else if ((m = line.match(/^circle\(([\$\w]+)\)/))) { blks.push({ type: 'circle', radius: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
                 else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
                 else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
+                else if ((m = line.match(/^setVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseFloat(m[2]) }); }
+                else if ((m = line.match(/^changeVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseFloat(m[2]) }); }
+                else if ((m = line.match(/^if\s*\((.+)\)\s*\{/))) {
+                  i++;
+                  var ifChildren = parse();
+                  // After parse returns, current line should be '} else {' or '}'
+                  var elseChildren = [];
+                  if (i < lineArr.length && lineArr[i - 1] && lineArr[i - 1].match(/\} else \{/)) {
+                    elseChildren = parse();
+                  }
+                  blks.push({ type: 'ifelse', condition: m[1].trim(), children: ifChildren, elseChildren: elseChildren });
+                  continue;
+                }
                 else if ((m = line.match(/^repeat\((\d+)/))) {
                   i++;
                   var children = parse();
@@ -28329,20 +28657,66 @@
             return parse();
           }
 
+          // ── Resolve variable values ──
+          function resolveVal(val, vars) {
+            if (typeof val === 'string' && val.charAt(0) === '$') {
+              var vName = val.substring(1);
+              return vars[vName] != null ? vars[vName] : 0;
+            }
+            return typeof val === 'number' ? val : (parseFloat(val) || 0);
+          }
+
+          // ── Evaluate condition against turtle state + vars ──
+          function evalCondition(cond, turtle, vars) {
+            if (!cond) return false;
+            var m;
+            // Pattern: lhs op rhs
+            if ((m = cond.match(/^(\$?[\w.]+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/))) {
+              var lhsRaw = m[1].trim(), op = m[2], rhsRaw = m[3].trim();
+              var lhs, rhs;
+              // Resolve lhs
+              if (lhsRaw === 'x') lhs = turtle.x;
+              else if (lhsRaw === 'y') lhs = turtle.y;
+              else if (lhsRaw === 'angle') lhs = turtle.angle;
+              else if (lhsRaw === 'penDown') lhs = turtle.penDown;
+              else if (lhsRaw.charAt(0) === '$') lhs = vars[lhsRaw.substring(1)] || 0;
+              else lhs = parseFloat(lhsRaw) || 0;
+              // Resolve rhs
+              if (rhsRaw === 'true') rhs = true;
+              else if (rhsRaw === 'false') rhs = false;
+              else if (rhsRaw.charAt(0) === '$') rhs = vars[rhsRaw.substring(1)] || 0;
+              else rhs = parseFloat(rhsRaw);
+              if (isNaN(rhs) && typeof rhs !== 'boolean') rhs = 0;
+              if (op === '>') return lhs > rhs;
+              if (op === '<') return lhs < rhs;
+              if (op === '>=') return lhs >= rhs;
+              if (op === '<=') return lhs <= rhs;
+              if (op === '==') return lhs == rhs;
+              if (op === '!=') return lhs != rhs;
+            }
+            return false;
+          }
+
           // ── Execute blocks (async with animation) ──
           function executeBlocks(blks, turtle, lines, cb, spd, stepCb) {
             var t = Object.assign({}, turtle);
             var allLines = lines.slice();
+            var vars = {};
+
             function flattenBlocks(bArr) {
               var flat = [];
               for (var j = 0; j < bArr.length; j++) {
-                if (bArr[j].type === 'repeat') {
-                  var times = bArr[j].times || 4;
+                var blk = bArr[j];
+                if (blk.type === 'repeat') {
+                  var times = blk.times || 4;
                   for (var r = 0; r < times; r++) {
-                    flat = flat.concat(flattenBlocks(bArr[j].children || []));
+                    flat = flat.concat(flattenBlocks(blk.children || []));
                   }
+                } else if (blk.type === 'ifelse') {
+                  // defer evaluation — push a marker
+                  flat.push(blk);
                 } else {
-                  flat.push(bArr[j]);
+                  flat.push(blk);
                 }
               }
               return flat;
@@ -28357,8 +28731,22 @@
               }
               var b = flat[idx];
               if (stepCb) stepCb(idx);
-              if (b.type === 'forward') {
-                var dist = b.distance || 50;
+
+              if (b.type === 'setVar') {
+                vars[b.varName || 'size'] = b.varValue != null ? b.varValue : 50;
+              } else if (b.type === 'changeVar') {
+                var vn = b.varName || 'size';
+                vars[vn] = (vars[vn] || 0) + (b.varDelta != null ? b.varDelta : 10);
+              } else if (b.type === 'ifelse') {
+                var condResult = evalCondition(b.condition || 'x > 250', t, vars);
+                var branch = condResult ? (b.children || []) : (b.elseChildren || []);
+                var branchFlat = flattenBlocks(branch);
+                // Insert branch blocks right after the current position
+                var before = flat.slice(0, idx + 1);
+                var after = flat.slice(idx + 1);
+                flat = before.concat(branchFlat).concat(after);
+              } else if (b.type === 'forward') {
+                var dist = resolveVal(b.distance != null ? b.distance : 50, vars);
                 var rad = t.angle * Math.PI / 180;
                 var nx = t.x + Math.cos(rad) * dist;
                 var ny = t.y + Math.sin(rad) * dist;
@@ -28367,7 +28755,7 @@
                 }
                 t.x = nx; t.y = ny;
               } else if (b.type === 'backward') {
-                var dist2 = b.distance || 50;
+                var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars);
                 var rad2 = t.angle * Math.PI / 180;
                 var nx2 = t.x - Math.cos(rad2) * dist2;
                 var ny2 = t.y - Math.sin(rad2) * dist2;
@@ -28376,9 +28764,9 @@
                 }
                 t.x = nx2; t.y = ny2;
               } else if (b.type === 'right') {
-                t.angle = (t.angle + (b.degrees || 90)) % 360;
+                t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars)) % 360;
               } else if (b.type === 'left') {
-                t.angle = (t.angle - (b.degrees || 90) + 360) % 360;
+                t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars) + 360) % 360;
               } else if (b.type === 'penup') {
                 t.penDown = false;
               } else if (b.type === 'pendown') {
@@ -28386,9 +28774,9 @@
               } else if (b.type === 'color') {
                 t.color = b.color || '#6366f1';
               } else if (b.type === 'width') {
-                t.width = b.width || 2;
+                t.width = resolveVal(b.width != null ? b.width : 2, vars);
               } else if (b.type === 'circle') {
-                var cRadius = b.radius || 30;
+                var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars);
                 if (t.penDown) {
                   var segs = 36;
                   for (var si = 0; si < segs; si++) {
@@ -28469,17 +28857,71 @@
             updMulti({ blocks: [], turtle: { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 }, lines: [], running: false, stepIdx: -1, textCode: '', challengeIdx: -1, history: [], cumulativeMode: false, showTurtle: true });
           }
 
+          // ── Undo/Redo helpers ──
+          function pushUndo() {
+            var newUndo = undoStack.concat([JSON.parse(JSON.stringify(blocks))]);
+            if (newUndo.length > 50) newUndo = newUndo.slice(-50);
+            updMulti({ undoStack: newUndo, redoStack: [] });
+          }
+          function handleUndo() {
+            if (undoStack.length === 0) return;
+            var prev = undoStack[undoStack.length - 1];
+            var newUndo = undoStack.slice(0, -1);
+            var newRedo = redoStack.concat([JSON.parse(JSON.stringify(blocks))]);
+            updMulti({ blocks: prev, undoStack: newUndo, redoStack: newRedo });
+            if (codeMode === 'text') upd('textCode', blocksToText(prev));
+          }
+          function handleRedo() {
+            if (redoStack.length === 0) return;
+            var next = redoStack[redoStack.length - 1];
+            var newRedo = redoStack.slice(0, -1);
+            var newUndo = undoStack.concat([JSON.parse(JSON.stringify(blocks))]);
+            updMulti({ blocks: next, undoStack: newUndo, redoStack: newRedo });
+            if (codeMode === 'text') upd('textCode', blocksToText(next));
+          }
+
+          // ── Export PNG ──
+          function handleExportPNG() {
+            if (!canvasRef || !canvasRef.current) return;
+            var dataURL = canvasRef.current.toDataURL('image/png');
+            var link = document.createElement('a');
+            link.download = 'coding_playground_' + Date.now() + '.png';
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            if (addToast) addToast('📥 PNG exported!', 'success');
+          }
+
+          // ── Load template ──
+          function loadTemplate(tmpl) {
+            if (blocks.length > 0 && !confirm('Replace current program with template?')) return;
+            pushUndo();
+            var tBlocks = JSON.parse(JSON.stringify(tmpl.blocks));
+            updMulti({ blocks: tBlocks, showTemplates: false });
+            if (codeMode === 'text') upd('textCode', blocksToText(tBlocks));
+            if (addToast) addToast('📂 Loaded: ' + tmpl.name, 'info');
+          }
+
+          // ── Drag and drop state ──
+          var dragIdxRef = { current: null };
+
           function addBlock(type) {
+            pushUndo();
             var def = BLOCK_TYPES.find(function (bt) { return bt.type === type; });
             var newBlock = { type: type };
             if (def && def.param) newBlock[def.param] = def.defaultVal;
             if (type === 'repeat') newBlock.children = [];
+            if (type === 'ifelse') { newBlock.children = []; newBlock.elseChildren = []; newBlock.condition = 'x > 250'; }
+            if (type === 'setVar') { newBlock.varName = 'size'; newBlock.varValue = 50; }
+            if (type === 'changeVar') { newBlock.varName = 'size'; newBlock.varDelta = 10; }
             var updated = blocks.concat([newBlock]);
             upd('blocks', updated);
             if (codeMode === 'text') upd('textCode', blocksToText(updated));
           }
 
           function removeBlock(idx) {
+            pushUndo();
             var updated = blocks.filter(function (_, i) { return i !== idx; });
             upd('blocks', updated);
             if (codeMode === 'text') upd('textCode', blocksToText(updated));
@@ -28494,14 +28936,22 @@
             if (codeMode === 'text') upd('textCode', blocksToText(updated));
           }
 
-          function addChildBlock(repeatIdx, type) {
+          function addChildBlock(parentIdx, type, isElse) {
+            pushUndo();
             var def = BLOCK_TYPES.find(function (bt) { return bt.type === type; });
             var newBlock = { type: type };
             if (def && def.param) newBlock[def.param] = def.defaultVal;
+            if (type === 'repeat') newBlock.children = [];
+            if (type === 'setVar') { newBlock.varName = 'size'; newBlock.varValue = 50; }
+            if (type === 'changeVar') { newBlock.varName = 'size'; newBlock.varDelta = 10; }
             var updated = blocks.map(function (b, i) {
-              if (i === repeatIdx && b.type === 'repeat') {
+              if (i === parentIdx && (b.type === 'repeat' || b.type === 'ifelse')) {
                 var nb = Object.assign({}, b);
-                nb.children = (nb.children || []).concat([newBlock]);
+                if (isElse && b.type === 'ifelse') {
+                  nb.elseChildren = (nb.elseChildren || []).concat([newBlock]);
+                } else {
+                  nb.children = (nb.children || []).concat([newBlock]);
+                }
                 return nb;
               }
               return b;
@@ -28510,11 +28960,16 @@
             if (codeMode === 'text') upd('textCode', blocksToText(updated));
           }
 
-          function removeChildBlock(repeatIdx, childIdx) {
+          function removeChildBlock(parentIdx, childIdx, isElse) {
+            pushUndo();
             var updated = blocks.map(function (b, i) {
-              if (i === repeatIdx && b.type === 'repeat') {
+              if (i === parentIdx && (b.type === 'repeat' || b.type === 'ifelse')) {
                 var nb = Object.assign({}, b);
-                nb.children = (nb.children || []).filter(function (_, ci) { return ci !== childIdx; });
+                if (isElse && b.type === 'ifelse') {
+                  nb.elseChildren = (nb.elseChildren || []).filter(function (_, ci) { return ci !== childIdx; });
+                } else {
+                  nb.children = (nb.children || []).filter(function (_, ci) { return ci !== childIdx; });
+                }
                 return nb;
               }
               return b;
@@ -28534,6 +28989,7 @@
           }
 
           function moveBlock(idx, dir) {
+            pushUndo();
             var newIdx = idx + dir;
             if (newIdx < 0 || newIdx >= blocks.length) return;
             var updated = blocks.slice();
@@ -28543,16 +28999,145 @@
             upd('blocks', updated);
           }
 
+          function handleDragStart(e, idx) {
+            dragIdxRef.current = idx;
+            e.dataTransfer.effectAllowed = 'move';
+            e.currentTarget.style.opacity = '0.4';
+          }
+          function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.style.borderTop = '3px solid #818cf8';
+          }
+          function handleDragLeave(e) {
+            e.currentTarget.style.borderTop = '';
+          }
+          function handleDrop(e, dropIdx) {
+            e.preventDefault();
+            e.currentTarget.style.borderTop = '';
+            var fromIdx = dragIdxRef.current;
+            if (fromIdx == null || fromIdx === dropIdx) return;
+            pushUndo();
+            var updated = blocks.slice();
+            var moved = updated.splice(fromIdx, 1)[0];
+            var targetIdx = fromIdx < dropIdx ? dropIdx - 1 : dropIdx;
+            updated.splice(targetIdx, 0, moved);
+            upd('blocks', updated);
+            if (codeMode === 'text') upd('textCode', blocksToText(updated));
+          }
+          function handleDragEnd(e) {
+            e.currentTarget.style.opacity = '1';
+            dragIdxRef.current = null;
+          }
+
+          // ── Tutorial steps ──
+          var TUTORIAL_STEPS = [
+            { target: '.coding-toolbox', title: 'Welcome!', text: 'Add coding blocks from this Toolbox to build your program.' },
+            { target: '.coding-program', title: 'Your Program', text: 'Each block is a command. Set values with the number inputs. Drag blocks to reorder!' },
+            { target: '.coding-run-btn', title: 'Run It!', text: 'Click Run to watch your program execute step by step on the canvas.' },
+            { target: '.coding-challenges', title: 'Challenges', text: 'Try Challenges to learn CS concepts like loops and earn XP! 🏆' },
+            { target: '.coding-mode-toggle', title: 'Code Mode', text: 'Switch to Code mode for JavaScript-like syntax. Everything stays in sync!' }
+          ];
+
           // NOTE: Coding Playground canvas hooks (useRef + useEffect) have been hoisted
           // to top level of StemLabModal to satisfy React Rules of Hooks.
           // The ref is available as _codingCanvasRef.
           var canvasRef = _codingCanvasRef;
 
           // ── Render ──
+          // Helper: render a single child block within repeat/ifelse
+          function renderChildBlock(child, ci, parentIdx, isElse) {
+            var cdef = BLOCK_TYPES.find(function (bt) { return bt.type === child.type; });
+            return React.createElement("div", {
+              key: (isElse ? 'e' : 'i') + ci,
+              className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
+              style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
+            },
+              React.createElement("span", { className: "flex-1 truncate" },
+                cdef ? cdef.label : child.type,
+                cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
+              ),
+              React.createElement("button", { onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
+            );
+          }
+
+          // Helper: render quick-add buttons for children
+          function renderQuickAdd(parentIdx, isElse) {
+            return React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
+              ['forward', 'backward', 'right', 'left', 'circle', 'color'].map(function (ct) {
+                return React.createElement("button", {
+                  key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
+                  className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
+                }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : '+🎨');
+              })
+            );
+          }
+
           return React.createElement("div", {
-            className: "grid gap-4",
+            className: "grid gap-4 relative",
             style: { gridTemplateColumns: '220px 1fr', gridTemplateRows: 'auto auto' }
           },
+            // ── Templates gallery overlay ──
+            showTemplates && React.createElement("div", {
+              className: "col-span-2 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-2xl z-10",
+              style: { position: 'relative' }
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
+                React.createElement("button", {
+                  onClick: function () { upd('showTemplates', false); },
+                  className: "text-slate-400 hover:text-white text-lg px-2"
+                }, "×")
+              ),
+              React.createElement("div", {
+                className: "grid gap-2",
+                style: { gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }
+              },
+                TEMPLATES.map(function (tmpl, ti) {
+                  return React.createElement("button", {
+                    key: ti,
+                    onClick: function () { loadTemplate(tmpl); },
+                    className: "flex flex-col items-center gap-1 p-3 rounded-lg bg-slate-700/80 hover:bg-slate-600 border border-slate-600 hover:border-amber-500/50 transition-all text-left group"
+                  },
+                    React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
+                    React.createElement("span", { className: "text-xs font-bold text-white text-center" }, tmpl.name),
+                    React.createElement("span", { className: "text-[10px] text-slate-400 text-center leading-tight" }, tmpl.desc),
+                    React.createElement("span", { className: "text-[9px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
+                  );
+                })
+              )
+            ),
+
+            // ── Tutorial overlay ──
+            !tutorialDismissed && blocks.length === 0 && !running && React.createElement("div", {
+              className: "col-span-2 bg-gradient-to-r from-indigo-900/90 to-purple-900/90 backdrop-blur-sm rounded-xl p-4 border border-indigo-400/40 shadow-2xl z-10"
+            },
+              React.createElement("div", { className: "flex items-start gap-3" },
+                React.createElement("span", { className: "text-3xl" }, "🎓"),
+                React.createElement("div", { className: "flex-1" },
+                  React.createElement("h3", { className: "text-sm font-bold text-white mb-2" }, "Welcome to the Coding Playground!"),
+                  React.createElement("div", { className: "grid gap-2", style: { gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' } },
+                    TUTORIAL_STEPS.map(function (step, si) {
+                      return React.createElement("div", {
+                        key: si,
+                        className: "flex items-start gap-2 p-2 rounded-lg bg-white/5 border border-white/10"
+                      },
+                        React.createElement("span", { className: "text-lg font-bold text-indigo-300 mt-0.5" }, (si + 1) + '.'),
+                        React.createElement("div", null,
+                          React.createElement("span", { className: "text-xs font-bold text-indigo-200" }, step.title),
+                          React.createElement("p", { className: "text-[10px] text-indigo-300/70 leading-snug mt-0.5" }, step.text)
+                        )
+                      );
+                    })
+                  )
+                ),
+                React.createElement("button", {
+                  onClick: function () { upd('tutorialDismissed', true); },
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-400 transition-all shrink-0"
+                }, "Got it! ✕")
+              )
+            ),
+
             // ── Header bar ──
             React.createElement("div", {
               className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
@@ -28566,10 +29151,10 @@
                     'Build programs with blocks or code. The turtle draws your creation!'
                 )
               ),
-              // Mode toggle — Minecraft Education style
+              // Mode toggle
               React.createElement("button", {
                 onClick: toggleMode,
-                className: "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
+                className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
                   (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-500/90 text-white hover:bg-amber-500')
               },
                 React.createElement("span", null, codeMode === 'blocks' ? '🧩' : '📝'),
@@ -28585,11 +29170,41 @@
                 React.createElement("option", { value: 50 }, "⚡ Fast"),
                 React.createElement("option", { value: 200 }, "🐢 Normal"),
                 React.createElement("option", { value: 500 }, "🐌 Slow")
-              )
+              ),
+              // Undo / Redo
+              React.createElement("button", {
+                onClick: handleUndo, disabled: undoStack.length === 0,
+                title: 'Undo (Ctrl+Z)',
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                  (undoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
+              }, "↩"),
+              React.createElement("button", {
+                onClick: handleRedo, disabled: redoStack.length === 0,
+                title: 'Redo (Ctrl+Y)',
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                  (redoStack.length > 0 ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-white/5 text-white/30 cursor-not-allowed')
+              }, "↪"),
+              // Export PNG
+              React.createElement("button", {
+                onClick: handleExportPNG,
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white hover:bg-white/25 transition-all"
+              }, "📥 PNG"),
+              // Templates
+              React.createElement("button", {
+                onClick: function () { upd('showTemplates', !showTemplates); },
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                  (showTemplates ? 'bg-amber-500 text-white' : 'bg-white/15 text-white hover:bg-white/25')
+              }, "📂 Templates"),
+              // Tutorial help button
+              tutorialDismissed && React.createElement("button", {
+                onClick: function () { upd('tutorialDismissed', false); },
+                title: 'Show tutorial',
+                className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+              }, "❓")
             ),
 
             // ── Left panel: Toolbox + Program ──
-            React.createElement("div", { className: "flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
+            React.createElement("div", { className: "coding-toolbox flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
               // Toolbox
               React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, "🧰 Toolbox"),
@@ -28607,31 +29222,49 @@
               ),
 
               // Program (blocks mode)
-              codeMode === 'blocks' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
+              codeMode === 'blocks' && React.createElement("div", { className: "coding-program bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
                   "📋 Program (" + blocks.length + " blocks)"
                 ),
                 blocks.length === 0 && React.createElement("p", { className: "text-slate-400 text-xs italic text-center py-4" },
-                  'Click blocks above to add them to your program'
+                  'Click blocks above or load a template to start'
                 ),
                 React.createElement("div", { className: "flex flex-col gap-1" },
                   blocks.map(function (b, idx) {
                     var def = BLOCK_TYPES.find(function (bt) { return bt.type === b.type; });
                     var isActive = running && stepIdx === idx;
-                    return React.createElement("div", { key: idx },
+                    return React.createElement("div", {
+                      key: idx,
+                      draggable: !running,
+                      onDragStart: function (e) { handleDragStart(e, idx); },
+                      onDragOver: handleDragOver,
+                      onDragLeave: handleDragLeave,
+                      onDrop: function (e) { handleDrop(e, idx); },
+                      onDragEnd: handleDragEnd,
+                      style: { cursor: running ? 'default' : 'grab' }
+                    },
                       React.createElement("div", {
                         className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
                           (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
                         style: { backgroundColor: def ? def.color : '#64748b' }
                       },
+                        // Drag handle
+                        React.createElement("span", {
+                          className: "text-white/40 text-[10px] cursor-grab mr-0.5 select-none",
+                          title: "Drag to reorder"
+                        }, "⠿"),
                         React.createElement("span", { className: "flex-1 truncate" },
                           def ? def.label : b.type,
-                          def && def.param && b.type !== 'repeat' && b.type !== 'color' && b.type !== 'goto' ? ' ' + (b[def.param] || def.defaultVal) + (def.unit || '') : '',
+                          // Show param summary for basic blocks only
+                          def && def.param && b.type !== 'repeat' && b.type !== 'color' && b.type !== 'goto' && b.type !== 'setVar' && b.type !== 'changeVar' && b.type !== 'ifelse' ? ' ' + (b[def.param] || def.defaultVal) + (def.unit || '') : '',
                           b.type === 'goto' ? ' (' + (b.x != null ? b.x : 250) + ', ' + (b.y != null ? b.y : 250) + ')' : '',
-                          b.type === 'repeat' ? ' ' + (b.times || 4) + '×' : ''
+                          b.type === 'repeat' ? ' ' + (b.times || 4) + '×' : '',
+                          b.type === 'setVar' ? ' ' + (b.varName || 'size') + ' = ' + (b.varValue != null ? b.varValue : 50) : '',
+                          b.type === 'changeVar' ? ' ' + (b.varName || 'size') + ' += ' + (b.varDelta != null ? b.varDelta : 10) : '',
+                          b.type === 'ifelse' ? ' (' + (b.condition || 'x > 250') + ')' : ''
                         ),
-                        // Param editor (single param)
-                        def && def.param && b.type !== 'color' && b.type !== 'goto' && React.createElement("input", {
+                        // Param editor (single-param basic blocks only)
+                        def && def.param && b.type !== 'color' && b.type !== 'goto' && b.type !== 'setVar' && b.type !== 'changeVar' && b.type !== 'ifelse' && React.createElement("input", {
                           type: "number", value: b[def.param] || def.defaultVal,
                           onChange: function (e) { updateBlockParam(idx, def.param, parseInt(e.target.value) || def.defaultVal); },
                           className: "w-12 px-1 py-0.5 rounded text-xs bg-white/20 text-white text-center",
@@ -28654,39 +29287,76 @@
                             style: { appearance: 'textfield' }
                           })
                         ),
+                        // Color picker
                         b.type === 'color' && React.createElement("input", {
                           type: "color", value: b.color || '#6366f1',
                           onChange: function (e) { updateBlockParam(idx, 'color', e.target.value); },
                           className: "w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                         }),
+                        // ── setVar inline editor ──
+                        b.type === 'setVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
+                          React.createElement("input", {
+                            type: "text", value: b.varName || 'size',
+                            onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
+                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            placeholder: "name"
+                          }),
+                          React.createElement("span", { className: "text-[10px] text-white/60" }, "="),
+                          React.createElement("input", {
+                            type: "number", value: b.varValue != null ? b.varValue : 50,
+                            onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
+                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            style: { appearance: 'textfield' }
+                          })
+                        ),
+                        // ── changeVar inline editor ──
+                        b.type === 'changeVar' && React.createElement("span", { className: "flex items-center gap-0.5" },
+                          React.createElement("input", {
+                            type: "text", value: b.varName || 'size',
+                            onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
+                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            placeholder: "name"
+                          }),
+                          React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
+                          React.createElement("input", {
+                            type: "number", value: b.varDelta != null ? b.varDelta : 10,
+                            onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
+                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            style: { appearance: 'textfield' }
+                          })
+                        ),
+                        // ── ifelse condition editor ──
+                        b.type === 'ifelse' && React.createElement("input", {
+                          type: "text", value: b.condition || 'x > 250',
+                          onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
+                          className: "w-24 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center font-mono",
+                          placeholder: "x > 250"
+                        }),
+                        // Move / Remove buttons
                         React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
                         React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
                         React.createElement("button", { onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
-                      // Repeat children
+                      // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
-                        (b.children || []).map(function (child, ci) {
-                          var cdef = BLOCK_TYPES.find(function (bt) { return bt.type === child.type; });
-                          return React.createElement("div", {
-                            key: ci,
-                            className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
-                            style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
-                          },
-                            React.createElement("span", { className: "flex-1 truncate" },
-                              cdef ? cdef.label : child.type,
-                              cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
-                            ),
-                            React.createElement("button", { onClick: function () { removeChildBlock(idx, ci); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
-                          );
-                        }),
-                        // Quick-add buttons for repeat children
-                        React.createElement("div", { className: "flex flex-wrap gap-1 mt-1" },
-                          ['forward', 'backward', 'right', 'left', 'circle', 'color'].map(function (ct) {
-                            return React.createElement("button", {
-                              key: ct, onClick: function () { addChildBlock(idx, ct); },
-                              className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
-                            }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : '+🎨');
-                          })
+                        (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
+                        renderQuickAdd(idx, false)
+                      ),
+                      // ── If/Else children ──
+                      b.type === 'ifelse' && React.createElement("div", { className: "ml-3 mt-1 flex flex-col gap-1" },
+                        // IF branch
+                        React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
+                          React.createElement("span", { className: "text-[9px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
+                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
+                          renderQuickAdd(idx, false)
+                        ),
+                        // ELSE branch
+                        React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
+                          React.createElement("span", { className: "text-[9px] font-bold text-slate-400 uppercase tracking-wider" }, "✖ Else"),
+                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
+                          renderQuickAdd(idx, true)
                         )
                       )
                     );
@@ -28701,12 +29371,12 @@
                   'aria-label': 'Code editor',
                   value: textCode,
                   onChange: function (e) { upd('textCode', e.target.value); },
-                  placeholder: "forward(50)\nright(90)\nbackward(30)\n\ncircle(40)\ngoto(100, 200)\nhome()\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
+                  placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})\n\nsetVar('size', 50)\nchangeVar('size', 10)\n\nif(x > 250, function() {\n  left(45)\n}, function() {\n  right(45)\n})",
                   className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
                   spellCheck: false
                 }),
                 React.createElement("p", { className: "text-slate-500 text-[10px] mt-1" },
-                  "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(radius), goto(x, y), home(), repeat(n, function() { ... })"
+                  "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
                 )
               )
             ),
@@ -28727,7 +29397,7 @@
                 React.createElement("button", {
                   onClick: handleRun,
                   disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
-                  className: "flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
+                  className: "coding-run-btn flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-green-500/30')
                 }, "▶ Run"),
                 React.createElement("button", {
@@ -28745,26 +29415,23 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                // Show/Hide turtle toggle
                 React.createElement("button", {
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                // Cumulative mode toggle
                 React.createElement("button", {
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, cumulativeMode ? '📚 Cumulative Mode' : '🔄 Fresh Start Mode'),
-                // Run counter in cumulative mode
                 cumulativeMode && runHistory.length > 0 && React.createElement("span", {
                   className: "flex items-center gap-1 text-[11px] text-amber-300/80 font-medium bg-amber-900/30 px-2 py-1 rounded-full"
                 }, '📊 ' + runHistory.length + ' run' + (runHistory.length !== 1 ? 's' : '') + ' • ' + drawnLines.length + ' lines drawn')
               ),
 
               // ── Challenges panel ──
-              React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
+              React.createElement("div", { className: "coding-challenges bg-slate-800 rounded-xl p-3 border border-slate-700" },
                 React.createElement("h3", { className: "text-xs font-bold text-amber-300 uppercase tracking-wider mb-2" },
                   "🏆 Challenges (" + completed.length + "/" + CHALLENGES.length + ")"
                 ),
@@ -28799,7 +29466,7 @@
                 React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, "🔬 CS Concepts"),
                 React.createElement("p", { className: "text-[11px] text-indigo-200/70 leading-relaxed" },
                   challengeIdx >= 0 ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :
-                    'Computational thinking is the foundation of all computer science. Sequencing puts steps in order. Loops repeat steps efficiently. Together they let you create anything!'
+                    'Computational thinking is the foundation of all computer science. Sequencing puts steps in order. Loops repeat steps efficiently. Variables store data. Conditionals make decisions. Together they let you create anything!'
                 )
               ),
 
