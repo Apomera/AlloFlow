@@ -24539,7 +24539,18 @@
               '@keyframes aquaPulse { 0%, 100% { transform: scale(1) translateY(0); } 35% { transform: scale(0.90, 1.08) translateY(-10px); } 65% { transform: scale(1.06, 0.94) translateY(5px); } }',
               '@keyframes aquaSeaweed { 0%, 100% { transform: rotate(-5deg) scaleY(1); } 50% { transform: rotate(5deg) scaleY(1.05); } }',
               '.aqua-sick-overlay { position: absolute; top: -4px; right: -4px; font-size: 10px; z-index: 8; animation: xpPop 0.4s ease-out; pointer-events: none; }',
-              '@keyframes stemCardIn { 0% { opacity: 0; transform: translateY(12px) scale(0.97); } 100% { opacity: 1; transform: translateY(0) scale(1); } }'
+              '@keyframes stemCardIn { 0% { opacity: 0; transform: translateY(12px) scale(0.97); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+              '@keyframes aquaCaustic { 0% { background-position: 0% 0%; opacity: 0.12; } 50% { background-position: 100% 100%; opacity: 0.18; } 100% { background-position: 0% 0%; opacity: 0.12; } }',
+              '@keyframes aquaShimmerWave { 0% { transform: translateX(0) scaleY(1); opacity: 0.25; } 33% { transform: translateX(-15%) scaleY(1.1); opacity: 0.35; } 66% { transform: translateX(10%) scaleY(0.95); opacity: 0.3; } 100% { transform: translateX(0) scaleY(1); opacity: 0.25; } }',
+              '@keyframes aquaParticle { 0% { bottom: 30px; opacity: 0; transform: translateX(0); } 15% { opacity: 0.5; } 50% { transform: translateX(8px); opacity: 0.6; } 85% { opacity: 0.3; transform: translateX(-5px); } 100% { bottom: 210px; opacity: 0; transform: translateX(2px); } }',
+              '@keyframes aquaCoralSway { 0%, 100% { transform: rotate(-3deg) scaleX(1); } 30% { transform: rotate(2deg) scaleX(1.04); } 70% { transform: rotate(-4deg) scaleX(0.97); } }',
+              '@keyframes aquaPlantGrow { 0%, 100% { transform: scaleY(1) rotate(0deg); } 50% { transform: scaleY(1.06) rotate(1deg); } }',
+              '@keyframes aquaGlassGlint { 0% { opacity: 0; top: -20%; } 30% { opacity: 0.35; } 100% { opacity: 0; top: 120%; } }',
+              '@keyframes aquaCriticalPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 12px 3px rgba(239,68,68,0.2); } }',
+              '.aqua-gradient-bar { background-size: 200% 100%; animation: aquaBarShimmer 2s ease-in-out infinite; }',
+              '@keyframes aquaBarShimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }',
+              '@keyframes aquaDepthFog { 0%, 100% { opacity: 0.18; } 50% { opacity: 0.28; } }',
+              '@keyframes aquaSpecular { 0%, 100% { opacity: 0.12; transform: scale(1); } 50% { opacity: 0.22; transform: scale(1.1); } }'
             ].join('\n');
             document.head.appendChild(style);
           }
@@ -25130,12 +25141,11 @@
             eel: {
               label: 'Deep-Sea Eel (Saccopharyngiformes)',
               svg: function (w, h, color) {
-                var c1 = color || '#57534e', c2 = color || '#3f3f46';
+                var c1 = color || '#78716c', c2 = color || '#57534e';
                 return '<svg viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg">' +
                   '<defs>' +
                   '<linearGradient id="eelG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '" stop-opacity="0.6"/></linearGradient>' +
                   '</defs>' +
-                  '<rect width="460" height="200" fill="#0a0a0a" rx="8"/>' +
                   '<path d="M30,85 Q45,55 80,45 Q115,42 140,55 Q155,65 160,80 Q162,90 155,105 Q140,120 125,125 Q115,125 110,118 Q125,115 138,108 Q148,98 150,85 Q148,72 140,62 Q125,50 100,48 Q70,52 50,70 Q38,82 35,95 Q35,108 45,118 Q60,130 85,140 Q120,148 170,150 Q220,148 270,140 Q320,130 370,115 Q400,105 420,100 Q440,100 450,108 L450,112 Q440,115 420,115 Q400,118 370,128 Q320,142 270,152 Q220,162 170,165 Q120,162 85,155 Q55,148 38,135 Q28,125 25,110 Q22,95 30,85Z" fill="url(#eelG)" stroke="#44403c" stroke-width="2"/>' +
                   '<path d="M30,85 Q50,65 80,52 Q100,48 120,52 Q55,58 38,82 Q32,95 38,110" fill="' + c1 + '" opacity="0.3"/>' +
                   '<circle cx="55" cy="75" r="8" fill="#292524" stroke="#44403c" stroke-width="1.5"/>' +
@@ -25419,17 +25429,16 @@
 
           // Map each species to its body plan
           var SPECIES_BODY_MAP = {
-            neon: 'tetra', guppy: 'guppy_body', cory: 'corydoras', angel: 'angelfish', platy: 'guppy_body', molly: 'guppy_body',
-            cardinal: 'tetra', rummy: 'tetra', oto: 'flatfish', betta: 'betta',
-            clown: 'clownfish_body', tang: 'cichlid', goby: 'clownfish_body',
-            oscar: 'cichlid', pike: 'swordfish_body', pleco: 'flatfish',
+            neon: 'tetra', guppy: 'guppy_body', cory: 'corydoras', angel: 'angelfish', platy: 'fish', molly: 'fish',
+            cardinal: 'tetra', rummy: 'tetra', oto: 'corydoras', betta: 'betta',
+            clown: 'clownfish_body', tang: 'fish', goby: 'fish',
+            oscar: 'cichlid', pike: 'cichlid', pleco: 'corydoras',
             goldfish: 'goldfish_body', rockfish: 'cichlid',
-            archer: 'swordfish_body', puffer: 'pufferfish', mudskip: 'fish',
-            anemone: 'jellyfish',
+            archer: 'fish', puffer: 'pufferfish', mudskip: 'fish',
+            anemone: 'echinoderm',
             shrimp: 'crustacean', cleaner: 'crustacean', crab: 'crustacean', amphipod: 'crustacean',
             starfish: 'echinoderm', seastar: 'echinoderm', urchin: 'echinoderm', seacucumber: 'echinoderm',
             slider: 'chelonian', turtle: 'chelonian',
-            kelp: 'fish',
             clownfish: 'clownfish_body', dolphin: 'cetacean', jellyfish: 'jellyfish', squid: 'cephalopod',
             hatchetfish: 'fish', swordfish: 'swordfish_body', anglerfish: 'anglerfish_plan', gulpereel: 'eel',
             giantsquid: 'cephalopod', tubeworms: 'worm', snailfish: 'fish',
@@ -25445,7 +25454,7 @@
             cory: '#a78bfa',     // pale lavender
             angel: '#fbbf24',    // gold/silver
             platy: '#fb923c',    // orange-red
-            molly: '#1e293b',    // dark/black
+            molly: '#334155',    // dark slate (visible at small sizes)
             // ── Planted ──
             cardinal: '#dc2626', // deep red stripe
             rummy: '#ef4444',    // red nose accent
@@ -26880,61 +26889,154 @@
                   className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
                   style: { height: '240px', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
                 },
-                  // Water surface shimmer
+                  // Water surface shimmer (dual-layer)
                   React.createElement("div", {
-                    style: { position: 'absolute', top: 0, left: 0, right: 0, height: '30px', background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 40%, transparent 100%)', zIndex: 5 }
+                    style: { position: 'absolute', top: 0, left: 0, right: 0, height: '30px', background: 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.12) 40%, transparent 100%)', zIndex: 5 }
                   }),
-                  // Light rays
-                  [0, 1, 2].map(function (i) {
+                  // Animated shimmer wave overlay
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: 0, left: '-10%', width: '120%', height: '18px', background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 20%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.18) 80%, transparent 100%)', zIndex: 6, animation: 'aquaShimmerWave 6s ease-in-out infinite', pointerEvents: 'none' }
+                  }),
+                  // Secondary surface ripple band (slower, deeper)
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: '14px', left: '-5%', width: '110%', height: '10px', background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 70%, transparent 100%)', zIndex: 5, animation: 'aquaShimmerWave 10s ease-in-out 1.5s infinite reverse', pointerEvents: 'none' }
+                  }),
+                  // Specular highlight (overhead light source)
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: '6px', left: '12%', width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 50%, transparent 75%)', zIndex: 6, animation: 'aquaSpecular 5s ease-in-out infinite', pointerEvents: 'none' }
+                  }),
+                  // Depth fog (bottom haze)
+                  React.createElement("div", {
+                    style: { position: 'absolute', bottom: '24px', left: 0, right: 0, height: '40px', background: 'linear-gradient(0deg, rgba(15,23,42,0.12) 0%, rgba(15,23,42,0.04) 60%, transparent 100%)', zIndex: 2, pointerEvents: 'none', animation: 'aquaDepthFog 8s ease-in-out infinite' }
+                  }),
+                  // Light rays (5 with varied widths/angles)
+                  [0, 1, 2, 3, 4].map(function (i) {
+                    var widths = [30, 50, 35, 45, 28];
+                    var lefts = [10, 25, 45, 65, 82];
+                    var skews = [-12, -18, -10, -20, -14];
+                    var opacities = [0.08, 0.12, 0.1, 0.14, 0.07];
+                    var pulseDelays = [0, 1.5, 0.8, 2.2, 3];
                     return React.createElement("div", {
                       key: 'ray-' + i,
                       style: {
-                        position: 'absolute', top: 0, left: (20 + i * 30) + '%',
-                        width: '40px', height: '100%',
-                        background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 70%)',
-                        transform: 'skewX(-15deg)', zIndex: 1
+                        position: 'absolute', top: 0, left: lefts[i] + '%',
+                        width: widths[i] + 'px', height: '100%',
+                        background: 'linear-gradient(180deg, rgba(255,255,255,' + opacities[i] + ') 0%, rgba(255,255,255,' + (opacities[i] * 0.3) + ') 50%, transparent 80%)',
+                        transform: 'skewX(' + skews[i] + 'deg)', zIndex: 1,
+                        animation: 'aquaShimmerWave ' + (7 + i * 1.5) + 's ease-in-out ' + pulseDelays[i] + 's infinite',
+                        pointerEvents: 'none'
                       }
                     });
                   }),
-                  // Decorative plants
-                  (selectedTank === 'planted' || selectedTank === 'freshwater' || selectedTank === 'brackish') && [0, 1, 2, 3].map(function (i) {
-                    var heights = [50, 35, 60, 40];
+                  // Caustic light pattern on substrate
+                  React.createElement("div", {
+                    style: { position: 'absolute', bottom: '20px', left: 0, right: 0, height: '50px', background: 'repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, transparent 0% 50%) 0 0 / 30px 30px', animation: 'aquaCaustic 8s ease-in-out infinite', zIndex: 2, pointerEvents: 'none', opacity: 0.5, mixBlendMode: 'overlay' }
+                  }),
+                  // Decorative plants (6 with varied heights, widths, and leaf fronds)
+                  (selectedTank === 'planted' || selectedTank === 'freshwater' || selectedTank === 'brackish') && [0, 1, 2, 3, 4, 5].map(function (i) {
+                    var heights = [55, 38, 65, 42, 72, 30];
+                    var widths = [8, 6, 10, 7, 9, 5];
+                    var lefts = [5, 18, 32, 50, 68, 88];
+                    var greens = ['#22c55e', '#16a34a', '#15803d', '#22c55e', '#16a34a', '#4ade80'];
                     return React.createElement("div", {
                       key: 'plant-' + i,
-                      style: {
-                        position: 'absolute', bottom: '24px', left: (8 + i * 25) + '%',
-                        width: '8px', height: heights[i] + 'px', borderRadius: '4px 4px 0 0',
-                        background: 'linear-gradient(180deg, #22c55e 0%, #15803d 100%)',
-                        opacity: 0.7, zIndex: 2, transformOrigin: 'bottom center',
-                        animation: 'aquaSeaweed ' + (3 + i * 0.6) + 's ease-in-out ' + (i * 0.8) + 's infinite'
-                      }
-                    });
+                      style: { position: 'absolute', bottom: '24px', left: lefts[i] + '%', zIndex: 2 }
+                    },
+                      // Main stem
+                      React.createElement("div", {
+                        style: {
+                          width: widths[i] + 'px', height: heights[i] + 'px', borderRadius: '4px 4px 0 0',
+                          background: 'linear-gradient(180deg, ' + greens[i] + ' 0%, #15803d 100%)',
+                          opacity: 0.75, transformOrigin: 'bottom center',
+                          animation: 'aquaSeaweed ' + (3 + i * 0.5) + 's ease-in-out ' + (i * 0.7) + 's infinite'
+                        }
+                      }),
+                      // Side frond (left)
+                      i % 2 === 0 && React.createElement("div", {
+                        style: {
+                          position: 'absolute', bottom: (heights[i] * 0.4) + 'px', left: '-6px',
+                          width: '10px', height: (heights[i] * 0.35) + 'px', borderRadius: '6px 2px 2px 6px',
+                          background: greens[i], opacity: 0.5, transformOrigin: 'bottom right',
+                          transform: 'rotate(25deg)',
+                          animation: 'aquaPlantGrow ' + (4 + i * 0.3) + 's ease-in-out ' + (i * 0.5) + 's infinite'
+                        }
+                      }),
+                      // Side frond (right)
+                      i % 3 !== 2 && React.createElement("div", {
+                        style: {
+                          position: 'absolute', bottom: (heights[i] * 0.6) + 'px', right: '-5px',
+                          width: '8px', height: (heights[i] * 0.28) + 'px', borderRadius: '2px 5px 5px 2px',
+                          background: greens[i], opacity: 0.45, transformOrigin: 'bottom left',
+                          transform: 'rotate(-20deg)',
+                          animation: 'aquaPlantGrow ' + (3.5 + i * 0.4) + 's ease-in-out ' + (i * 0.6 + 0.3) + 's infinite'
+                        }
+                      }),
+                      // Leaf tip cluster
+                      React.createElement("div", {
+                        style: {
+                          position: 'absolute', top: '-4px', left: '50%', transform: 'translateX(-50%)',
+                          width: (widths[i] + 6) + 'px', height: '6px', borderRadius: '50%',
+                          background: 'radial-gradient(circle, ' + greens[i] + ' 40%, transparent 100%)',
+                          opacity: 0.6,
+                          animation: 'aquaPlantGrow ' + (5 + i * 0.3) + 's ease-in-out ' + (i * 0.4) + 's infinite'
+                        }
+                      })
+                    );
                   }),
-                  // Coral for reef tanks
-                  (selectedTank === 'reef' || selectedTank === 'invert') && [0, 1, 2].map(function (i) {
-                    var colors = ['#f472b6', '#fb923c', '#a78bfa'];
+                  // Coral for reef tanks (5 with organic sway + polyps)
+                  (selectedTank === 'reef' || selectedTank === 'invert') && [0, 1, 2, 3, 4].map(function (i) {
+                    var colors = ['#f472b6', '#fb923c', '#a78bfa', '#34d399', '#fbbf24'];
+                    var widths = [18, 22, 16, 24, 14];
+                    var heights = [28, 35, 22, 40, 18];
+                    var lefts = [8, 22, 42, 60, 82];
+                    var radii = ['10px 6px 0 0', '6px 10px 0 0', '8px 8px 0 0', '4px 12px 0 0', '12px 4px 0 0'];
                     return React.createElement("div", {
                       key: 'coral-' + i,
-                      style: {
-                        position: 'absolute', bottom: '24px', left: (15 + i * 30) + '%',
-                        width: '20px', height: (25 + i * 8) + 'px', borderRadius: '8px 8px 0 0',
-                        background: colors[i], opacity: 0.6, zIndex: 2,
-                        animation: 'pulse 5s ease-in-out ' + (i * 1.2) + 's infinite'
-                      }
-                    });
+                      style: { position: 'absolute', bottom: '24px', left: lefts[i] + '%', zIndex: 2 }
+                    },
+                      // Main coral body
+                      React.createElement("div", {
+                        style: {
+                          width: widths[i] + 'px', height: heights[i] + 'px', borderRadius: radii[i],
+                          background: 'linear-gradient(180deg, ' + colors[i] + ' 0%, ' + colors[i] + '99 100%)',
+                          opacity: 0.65, transformOrigin: 'bottom center',
+                          animation: 'aquaCoralSway ' + (5 + i * 0.8) + 's ease-in-out ' + (i * 1) + 's infinite'
+                        }
+                      }),
+                      // Polyp dots
+                      [0, 1, 2].map(function (j) {
+                        return React.createElement("div", {
+                          key: 'polyp-' + j,
+                          style: {
+                            position: 'absolute',
+                            top: (4 + j * (heights[i] / 4)) + 'px',
+                            left: (2 + (j % 2) * (widths[i] - 6)) + 'px',
+                            width: '3px', height: '3px', borderRadius: '50%',
+                            background: 'rgba(255,255,255,0.5)',
+                            animation: 'aquaCoralSway ' + (3 + j * 0.5) + 's ease-in-out ' + (i * 0.5 + j * 0.3) + 's infinite'
+                          }
+                        });
+                      })
+                    );
                   }),
-                  // Rocky substrate
+                  // Rocky substrate (dual-layer with sand ripple)
                   React.createElement("div", {
-                    style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '28px', borderRadius: '0 0 12px 12px', zIndex: 3, background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(0deg, #92400e 0%, #b45309 40%, transparent 100%)' : 'linear-gradient(0deg, #92400e 0%, #d97706 40%, transparent 100%)' }
+                    style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '32px', borderRadius: '0 0 12px 12px', zIndex: 3, background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(0deg, #78350f 0%, #92400e 30%, #b45309 60%, transparent 100%)' : 'linear-gradient(0deg, #78350f 0%, #92400e 30%, #d97706 60%, transparent 100%)' }
                   }),
-                  // Pebbles on substrate
-                  [0, 1, 2, 3, 4, 5, 6].map(function (i) {
+                  // Sand ripple texture overlay
+                  React.createElement("div", {
+                    style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '18px', borderRadius: '0 0 12px 12px', zIndex: 3, background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 12px, rgba(255,255,255,0.04) 12px, rgba(255,255,255,0.04) 14px)', pointerEvents: 'none' }
+                  }),
+                  // Pebbles on substrate (10 with varied sizes and muted colors)
+                  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) {
+                    var pebbleColors = ['rgba(120,100,80,0.5)', 'rgba(160,140,110,0.4)', 'rgba(100,90,70,0.45)', 'rgba(140,125,100,0.35)', 'rgba(110,95,75,0.5)', 'rgba(150,135,115,0.4)', 'rgba(130,110,90,0.45)', 'rgba(95,85,70,0.5)', 'rgba(145,130,105,0.35)', 'rgba(115,100,80,0.4)'];
+                    var pebbleSizes = [[6, 4], [4, 3], [8, 5], [5, 4], [7, 5], [4, 3], [6, 4], [9, 5], [5, 3], [7, 4]];
                     return React.createElement("div", {
                       key: 'pebble-' + i,
                       style: {
-                        position: 'absolute', bottom: (3 + (i % 3) * 4) + 'px', left: (5 + i * 13) + '%',
-                        width: (5 + (i % 3) * 3) + 'px', height: (4 + (i % 2) * 2) + 'px',
-                        borderRadius: '50%', background: i % 2 === 0 ? 'rgba(120,100,80,0.5)' : 'rgba(160,140,110,0.4)',
+                        position: 'absolute', bottom: (2 + (i % 4) * 3) + 'px', left: (3 + i * 9.5) + '%',
+                        width: pebbleSizes[i][0] + 'px', height: pebbleSizes[i][1] + 'px',
+                        borderRadius: '50%', background: pebbleColors[i],
                         zIndex: 4
                       }
                     });
@@ -27023,6 +27125,23 @@
                       }
                     });
                   }),
+                  // Floating particles (plankton/detritus)
+                  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(function (i) {
+                    var sizes = [1.5, 2, 1, 2.5, 1.5, 3, 1, 2, 1.5, 2, 1, 2.5];
+                    var lefts = [5, 12, 22, 30, 40, 52, 60, 70, 78, 85, 92, 48];
+                    var drifts = [6, 8, 5, 9, 7, 10, 6, 8, 5, 7, 9, 11];
+                    var delays = [0, 1.2, 0.5, 2.8, 1.8, 0.3, 3.5, 2.1, 4, 0.8, 1.5, 3.2];
+                    return React.createElement("div", {
+                      key: 'particle-' + i,
+                      style: {
+                        position: 'absolute', left: lefts[i] + '%',
+                        width: sizes[i] + 'px', height: sizes[i] + 'px',
+                        background: i % 3 === 0 ? 'rgba(255,255,255,0.45)' : i % 3 === 1 ? 'rgba(34,211,238,0.3)' : 'rgba(255,255,255,0.3)',
+                        borderRadius: '50%', zIndex: 5, pointerEvents: 'none',
+                        animation: 'aquaParticle ' + drifts[i] + 's linear ' + delays[i] + 's infinite'
+                      }
+                    });
+                  }),
                   // Day/night + lights-off overlay
                   (!lightsOn || simHour >= 20 || simHour < 6) && React.createElement("div", {
                     style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: !lightsOn ? 'linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(30,41,59,0.45) 50%, rgba(15,23,42,0.55) 100%)' : 'linear-gradient(180deg, rgba(15,23,42,0.3) 0%, rgba(30,41,59,0.25) 50%, rgba(15,23,42,0.35) 100%)', zIndex: 7, pointerEvents: 'none', borderRadius: '16px', transition: 'opacity 0.5s' }
@@ -27031,6 +27150,18 @@
                   algaeLevel > 15 && React.createElement("div", {
                     style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(34,197,94,' + Math.min(0.25, algaeLevel / 400) + ')', zIndex: 7, pointerEvents: 'none', borderRadius: '16px', transition: 'background 1s' }
                   }),
+                  // Glass edge reflection (left)
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: 0, left: 0, width: '6px', height: '100%', background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)', zIndex: 8, pointerEvents: 'none', borderRadius: '16px 0 0 16px' }
+                  }),
+                  // Glass edge reflection (right, animated glint)
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: 0, right: 0, width: '5px', height: '100%', background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.06) 100%)', zIndex: 8, pointerEvents: 'none', borderRadius: '0 16px 16px 0', overflow: 'hidden' }
+                  },
+                    React.createElement("div", {
+                      style: { position: 'absolute', top: '-20%', left: 0, width: '100%', height: '30%', background: 'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%)', animation: 'aquaGlassGlint 6s ease-in-out 2s infinite', pointerEvents: 'none' }
+                    })
+                  ),
                   // Tank label overlay
                   React.createElement("div", {
                     style: { position: 'absolute', top: '8px', right: '10px', zIndex: 10, padding: '2px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)' }
@@ -27314,44 +27445,74 @@
                 })
               ),
 
-              // Population Display
+              // Population Display (enhanced with gradient bars, critical pulse, animated emoji)
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 OCEAN_SPECIES.map(function (sp) {
                   var pop = oceanPop[sp.id];
                   var pct = Math.min(100, Math.round(pop / sp.K * 100));
                   var critical = pop < sp.K * 0.1;
+                  var gradientColors = { sardines: 'linear-gradient(90deg, #38bdf8, #0284c7)', tuna: 'linear-gradient(90deg, #3b82f6, #4338ca)', sharks: 'linear-gradient(90deg, #6366f1, #7c3aed)' };
+                  var critGradient = 'linear-gradient(90deg, #ef4444, #dc2626)';
                   return React.createElement("div", {
                     key: sp.id,
-                    className: "rounded-2xl p-3 border-2 text-center transition-all duration-300 shadow-sm " + (critical ? "border-red-300 bg-gradient-to-br from-red-50 to-red-100 shadow-red-500/10" : "border-slate-200/60 bg-gradient-to-br from-white to-slate-50 hover:shadow-md")
+                    className: "rounded-2xl p-3 border-2 text-center transition-all duration-300 shadow-sm " + (critical ? "border-red-300 bg-gradient-to-br from-red-50 to-red-100 shadow-red-500/10" : "border-slate-200/60 bg-gradient-to-br from-white to-slate-50 hover:shadow-md"),
+                    style: critical ? { animation: 'aquaCriticalPulse 2s ease-in-out infinite' } : {}
                   },
-                    React.createElement("div", { className: "text-2xl mb-1" }, sp.icon),
+                    // Animated species emoji
+                    React.createElement("div", { className: "text-2xl mb-1", style: { display: 'inline-block', animation: 'oceanPulse 3s ease-in-out infinite' } }, sp.icon),
                     React.createElement("div", { className: "text-xs font-bold " + (critical ? "text-red-700" : "text-slate-700") }, sp.name),
                     React.createElement("div", { className: "text-lg font-bold " + (critical ? "text-red-600" : "text-blue-600") }, pop.toLocaleString()),
-                    React.createElement("div", { className: "h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden" },
-                      React.createElement("div", { style: { width: pct + '%' }, className: "h-full rounded-full transition-all " + (critical ? "bg-red-500" : pct > 50 ? "bg-green-500" : "bg-amber-400") })
+                    // Gradient progress bar
+                    React.createElement("div", { className: "h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden shadow-inner" },
+                      React.createElement("div", { style: { width: pct + '%', background: critical ? critGradient : (gradientColors[sp.id] || 'linear-gradient(90deg, #22c55e, #16a34a)'), backgroundSize: '200% 100%', transition: 'width 0.5s ease' }, className: "h-full rounded-full aqua-gradient-bar" })
                     ),
-                    React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5" }, pct + "% of carrying capacity")
+                    // Percentage badge
+                    React.createElement("div", { className: "mt-1 inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold " + (critical ? "bg-red-100 text-red-600" : pct > 50 ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600") }, pct + "% K")
                   );
                 })
               ),
 
-              // Population history chart (simple bar visualization)
+              // Population history chart (enhanced with gradients, rounded bars, K reference line)
               oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
                 React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[10px] text-slate-400 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
-                React.createElement("div", { className: "flex items-end gap-px h-24" },
-                  oceanHistory.slice(-20).map(function (h, i) {
-                    var maxPop = 1000;
-                    return React.createElement("div", { key: i, className: "flex-1 flex flex-col gap-px" },
-                      React.createElement("div", { style: { height: Math.max(1, h.sardines / maxPop * 80) + 'px' }, className: "bg-sky-400 rounded-t-sm", title: 'Sardines: ' + h.sardines }),
-                      React.createElement("div", { style: { height: Math.max(1, h.tuna / maxPop * 80) + 'px' }, className: "bg-blue-500", title: 'Tuna: ' + h.tuna }),
-                      React.createElement("div", { style: { height: Math.max(1, h.sharks / maxPop * 80) + 'px' }, className: "bg-indigo-600 rounded-b-sm", title: 'Sharks: ' + h.sharks })
-                    );
-                  })
+                React.createElement("div", { className: "relative", style: { height: '96px' } },
+                  // Carrying capacity reference line (100% K)
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: '0px', left: 0, right: 0, height: '1px', borderTop: '1.5px dashed rgba(239,68,68,0.35)', zIndex: 2, pointerEvents: 'none' }
+                  }),
+                  React.createElement("span", {
+                    style: { position: 'absolute', top: '-8px', right: 0, fontSize: '8px', fontWeight: 'bold', color: 'rgba(239,68,68,0.5)', zIndex: 2 }
+                  }, "K"),
+                  // 50% reference line
+                  React.createElement("div", {
+                    style: { position: 'absolute', top: '40px', left: 0, right: 0, height: '1px', borderTop: '1px dashed rgba(148,163,184,0.25)', zIndex: 2, pointerEvents: 'none' }
+                  }),
+                  // Bars container
+                  React.createElement("div", { className: "flex items-end gap-px h-full" },
+                    oceanHistory.slice(-20).map(function (h, i) {
+                      var maxPop = 1000;
+                      return React.createElement("div", { key: i, className: "flex-1 flex flex-col gap-px justify-end h-full" },
+                        React.createElement("div", { style: { height: Math.max(1, h.sardines / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #38bdf8, #0ea5e9)', borderRadius: '3px 3px 0 0' }, title: 'Yr ' + (i + 1) + ' — Sardines: ' + h.sardines }),
+                        React.createElement("div", { style: { height: Math.max(1, h.tuna / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #3b82f6, #2563eb)', borderRadius: '1px' }, title: 'Yr ' + (i + 1) + ' — Tuna: ' + h.tuna }),
+                        React.createElement("div", { style: { height: Math.max(1, h.sharks / maxPop * 80) + 'px', background: 'linear-gradient(180deg, #6366f1, #4f46e5)', borderRadius: '0 0 3px 3px' }, title: 'Yr ' + (i + 1) + ' — Sharks: ' + h.sharks })
+                      );
+                    })
+                  ),
+                  // Year markers (every 5th)
+                  React.createElement("div", { className: "flex justify-between", style: { position: 'absolute', bottom: '-12px', left: 0, right: 0 } },
+                    oceanHistory.slice(-20).map(function (h, i, arr) {
+                      var yearNum = oceanYear - (arr.length - 1 - i);
+                      return (i === 0 || i === arr.length - 1 || yearNum % 5 === 0)
+                        ? React.createElement("span", { key: i, style: { fontSize: '7px', color: '#94a3b8', fontWeight: 'bold', flex: 1, textAlign: 'center' } }, 'Y' + yearNum)
+                        : React.createElement("span", { key: i, style: { flex: 1 } });
+                    })
+                  )
                 ),
-                React.createElement("div", { className: "flex gap-3 mt-1 text-[10px]" },
-                  React.createElement("span", { className: "text-sky-500 font-bold" }, "\u25CF Sardines"),
-                  React.createElement("span", { className: "text-blue-600 font-bold" }, "\u25CF Tuna"),
-                  React.createElement("span", { className: "text-indigo-700 font-bold" }, "\u25CF Sharks")
+                React.createElement("div", { className: "flex gap-3 mt-4 text-[10px]" },
+                  React.createElement("span", { className: "font-bold", style: { color: '#0ea5e9' } }, "\u25CF Sardines"),
+                  React.createElement("span", { className: "font-bold", style: { color: '#2563eb' } }, "\u25CF Tuna"),
+                  React.createElement("span", { className: "font-bold", style: { color: '#4f46e5' } }, "\u25CF Sharks"),
+                  React.createElement("span", { className: "ml-auto font-bold", style: { color: 'rgba(239,68,68,0.5)', fontSize: '8px' } }, "- - K = Carrying Capacity")
                 )
               ),
 
