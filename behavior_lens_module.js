@@ -22,12 +22,12 @@
             'Peer interaction', 'Left alone', 'Change in routine', 'Sensory input', 'Other'
         ],
         behavior: [
-            'Physical aggression', 'Verbal disruption', 'Elopement', 'Non-compliance',
-            'Self-injury', 'Property destruction', 'Withdrawal', 'Tantrum', 'Other'
+            'Physical contact toward others', 'Vocal/verbal outburst', 'Elopement', 'Difficulty following directions',
+            'Self-directed physical behavior', 'Damage to materials/property', 'Withdrawal', 'Emotional escalation', 'Other'
         ],
         consequence: [
-            'Verbal redirect', 'Given break', 'Removed from area', 'Peer attention',
-            'Adult attention', 'Task removed', 'Ignored', 'Reinforcement given', 'Other'
+            'Verbal redirect', 'Given break', 'Relocated to calm space', 'Peer attention',
+            'Adult attention', 'Task removed', 'Planned ignoring (extinction)', 'Reinforcement given', 'Other'
         ]
     };
 
@@ -39,6 +39,8 @@
     };
 
     const OBSERVATION_METHODS = ['frequency', 'duration', 'interval', 'latency'];
+
+    const RESTORATIVE_PREAMBLE = `IMPORTANT — Language Guidelines: Use person-first, strengths-based language throughout your response. Frame challenges as unmet needs or lagging skills, not deficits. Say "the student demonstrates difficulty with..." rather than "the student refuses to..." or "is non-compliant." Avoid punitive framing; focus on teaching replacement skills and building supportive environments.`;
 
     // ─── Utility helpers ────────────────────────────────────────────────
     const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -167,7 +169,7 @@
                         h('div', { className: 'flex justify-between text-[10px] text-slate-400 mt-0.5' },
                             h('span', null, t('behavior_lens.abc.mild') || 'Mild'),
                             h('span', null, t('behavior_lens.abc.moderate') || 'Moderate'),
-                            h('span', null, t('behavior_lens.abc.severe') || 'Severe')
+                            h('span', null, t('behavior_lens.abc.high_intensity') || 'High intensity')
                         )
                     ),
                     // Duration
@@ -799,7 +801,7 @@
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#f87171' } }),
-                        h('span', { className: 'text-[9px] text-slate-400' }, 'Severe')
+                        h('span', { className: 'text-[9px] text-slate-400' }, 'High intensity')
                     )
                 )
             ),
@@ -838,7 +840,7 @@
                                 borderRadius: '2px 2px 0 0',
                                 minHeight: count > 0 ? '3px' : '1px'
                             },
-                            title: `${hr}:00 — ${count} incidents`
+                            title: `${hr}:00 — ${count} observations`
                         });
                     })
                 ),
@@ -1594,7 +1596,7 @@
     };
 
     // ─── HotspotMatrix ──────────────────────────────────────────────────
-    // Maps behavior incidents to daily routines
+    // Maps behavioral observations to daily routines
     const HotspotMatrix = ({ abcEntries, studentName, callGemini, t, addToast }) => {
         const defaultRoutines = [
             'Morning Arrival', 'Circle Time', 'Reading/ELA', 'Math',
@@ -1626,9 +1628,10 @@
             setAnalyzing(true);
             try {
                 const matrixStr = Object.entries(matrix)
-                    .map(([routine, count]) => `${routine}: ${count} incidents`)
+                    .map(([routine, count]) => `${routine}: ${count} observations`)
                     .join('\n');
                 const prompt = `You are a BCBA analyzing a behavior hotspot matrix for a student.
+${RESTORATIVE_PREAMBLE}
 
 ROUTINE HOTSPOT DATA:
 ${matrixStr}
@@ -1912,6 +1915,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
             setLoading(true);
             try {
                 const prompt = `You are a school psychologist reviewing educational documents for a student (codename: "${studentName || 'Student'}").
+${RESTORATIVE_PREAMBLE}
 
 PASTED DOCUMENT TEXT:
 ${text.substring(0, 4000)}
@@ -2010,6 +2014,7 @@ Analyze this document and return ONLY valid JSON:
                 ).join('\n');
                 const existing = aiAnalysis ? `\nExisting AI analysis: Function=${aiAnalysis.hypothesizedFunction}, Confidence=${aiAnalysis.confidence}%` : '';
                 const prompt = `You are a BCBA creating a functional behavior hypothesis diagram.
+${RESTORATIVE_PREAMBLE}
 
 ABC DATA (${abcEntries.length} entries):
 ${dataStr}${existing}
@@ -2106,6 +2111,7 @@ Create a hypothesis diagram and return ONLY valid JSON:
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const prompt = `You are a BCBA writing SMART behavioral goals for a student.
+${RESTORATIVE_PREAMBLE}
 
 Hypothesized function: ${funcStr}
 ABC entries: ${abcEntries.length}
@@ -2228,7 +2234,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
         const [studentExpectations, setStudentExpectations] = useState('');
         const [rewards, setRewards] = useState('');
         const [teacherSupports, setTeacherSupports] = useState('');
-        const [consequences, setConsequences] = useState('');
+        const [supportPlan, setSupportPlan] = useState('');
         const [duration, setDuration] = useState('2 weeks');
         const [drafting, setDrafting] = useState(false);
         const [drafted, setDrafted] = useState(false);
@@ -2239,6 +2245,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const prompt = `You are a BCBA drafting a behavior contract for a student (codename: "${studentName || 'Student'}").
+${RESTORATIVE_PREAMBLE}
 
 Hypothesized function: ${funcStr}
 ${aiAnalysis?.summary ? 'Analysis: ' + aiAnalysis.summary : ''}
@@ -2250,7 +2257,7 @@ Generate a behavior contract and return ONLY valid JSON:
   "studentExpectations": "what the student agrees to do (2-3 bullet points joined with semicolons)",
   "rewards": "positive reinforcement for meeting expectations",
   "teacherSupports": "what the teacher will provide (2-3 bullet points joined with semicolons)",
-  "consequences": "what happens if expectations are not met",
+  "supportPlan": "additional supports and strategies if the student needs more help",
   "duration": "recommended contract duration"
 }`;
                 const result = await callGemini(prompt, true);
@@ -2262,7 +2269,7 @@ Generate a behavior contract and return ONLY valid JSON:
                 setStudentExpectations(parsed.studentExpectations || '');
                 setRewards(parsed.rewards || '');
                 setTeacherSupports(parsed.teacherSupports || '');
-                setConsequences(parsed.consequences || '');
+                setSupportPlan(parsed.supportPlan || parsed.consequences || '');
                 setDuration(parsed.duration || '2 weeks');
                 setDrafted(true);
                 if (addToast) addToast('Contract drafted ✨', 'success');
@@ -2309,8 +2316,8 @@ Generate a behavior contract and return ONLY valid JSON:
                         h('textarea', { value: rewards, onChange: (e) => setRewards(e.target.value), rows: 2, className: 'w-full bg-white/70 rounded-lg px-3 py-2 text-sm border border-amber-100 resize-none outline-none' })
                     ),
                     h('div', { className: 'bg-red-50 rounded-xl p-4 border border-red-200' },
-                        h('h4', { className: 'text-xs font-black text-red-700 uppercase mb-2' }, '⚠️ If Not Met'),
-                        h('textarea', { value: consequences, onChange: (e) => setConsequences(e.target.value), rows: 2, className: 'w-full bg-white/70 rounded-lg px-3 py-2 text-sm border border-red-100 resize-none outline-none' })
+                        h('h4', { className: 'text-xs font-black text-blue-700 uppercase mb-2' }, '🔄 Additional Support Plan'),
+                        h('textarea', { value: supportPlan, onChange: (e) => setSupportPlan(e.target.value), rows: 2, className: 'w-full bg-white/70 rounded-lg px-3 py-2 text-sm border border-blue-100 resize-none outline-none' })
                     )
                 ),
                 // Signature lines
@@ -2333,15 +2340,15 @@ Generate a behavior contract and return ONLY valid JSON:
         );
     };
 
-    // ─── ActingOutCycle ─────────────────────────────────────────────────
-    // Colvin & Sugai 7-phase acting-out cycle visualizer
-    const ActingOutCycle = ({ abcEntries, aiAnalysis, studentName, callGemini, t, addToast }) => {
+    // ─── EscalationCycle ────────────────────────────────────────────────
+    // Colvin & Sugai 7-phase escalation cycle visualizer
+    const EscalationCycle = ({ abcEntries, aiAnalysis, studentName, callGemini, t, addToast }) => {
         const phases = [
             { name: 'Calm', icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
             { name: 'Triggers', icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
             { name: 'Agitation', icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, non-compliance begins', response: 'Offer choices, use proximity, check in privately' },
-            { name: 'Acceleration', icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Escalating defiance, arguing, disruptive', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
-            { name: 'Peak', icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Most severe behavior, loss of control', response: 'Focus on safety, use crisis protocols, document' },
+            { name: 'Acceleration', icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
+            { name: 'Peak', icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
             { name: 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
             { name: 'Recovery', icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
         ];
@@ -2356,7 +2363,8 @@ Generate a behavior contract and return ONLY valid JSON:
                 const dataStr = abcEntries.slice(0, 10).map((e, i) =>
                     `#${i + 1}: A="${e.antecedent}", B="${e.behavior}", C="${e.consequence}", Intensity=${e.intensity}/5`
                 ).join('\n');
-                const prompt = `You are a BCBA personalizing a Colvin & Sugai acting-out cycle for a student.
+                const prompt = `You are a BCBA personalizing a Colvin & Sugai escalation cycle for a student.
+${RESTORATIVE_PREAMBLE}
 
 ABC DATA:
 ${dataStr}
@@ -2394,7 +2402,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             }, personalizing ? '⏳ Personalizing...' : ('🧠 ' + (t('behavior_lens.cycle.personalize') || 'Personalize for This Student'))),
             // Cycle visualization
             h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4 text-center' }, '🔄 ' + (t('behavior_lens.cycle.title') || 'Acting-Out Cycle (Colvin & Sugai)')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4 text-center' }, '🔄 ' + (t('behavior_lens.cycle.title') || 'Escalation Cycle (Colvin & Sugai)')),
                 h('div', { className: 'space-y-2' },
                     phases.map((phase, idx) => {
                         const p = personalized[phase.name] || {};
@@ -2466,6 +2474,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const topRated = rankedItems.slice(0, 5).map(([item, rating]) => `${item} (${rating}/5)`).join(', ');
                 const prompt = `You are a BCBA selecting reinforcers for a student.
+${RESTORATIVE_PREAMBLE}
 
 Hypothesized function: ${funcStr}
 ${topRated ? 'Top-rated reinforcers: ' + topRated : 'No ratings yet.'}
@@ -2731,6 +2740,7 @@ Recommend reinforcers and return ONLY valid JSON:
             try {
                 const lowItems = items.filter(it => (ratings[it.id] || 0) <= 2).map(it => it.label).join(', ');
                 const prompt = `You are a behavior specialist reviewing a classroom environment audit.
+${RESTORATIVE_PREAMBLE}
 
 Total score: ${total}/${maxScore} (${pct}%)
 Low-scoring areas: ${lowItems || 'None'}
@@ -2844,6 +2854,7 @@ Provide improvement recommendations and return ONLY valid JSON:
                 const aiSummary = aiAnalysis ? `Function: ${aiAnalysis.hypothesizedFunction}, Confidence: ${aiAnalysis.confidence}%, Summary: ${aiAnalysis.summary || ''}` : 'No AI analysis yet';
 
                 const prompt = `You are a BCBA performing data triangulation for a student.
+${RESTORATIVE_PREAMBLE}
 
 SOURCE 1 — ABC DATA (${abcEntries.length} entries):
 ${abcSummary || 'No entries'}
@@ -2953,6 +2964,7 @@ Analyze data convergence and return ONLY valid JSON:
             setLoading(true);
             try {
                 const prompt = `You are a school psychologist analyzing the impact of a student's behavior on instructional time.
+${RESTORATIVE_PREAMBLE}
 
 Behavior frequency: ${freq} per day
 Average episode duration: ${dur} minutes
@@ -2961,7 +2973,7 @@ Estimated annual cost: $${annualCost.toFixed(2)}
 
 Provide a brief impact interpretation and return ONLY valid JSON:
 {
-  "severity": "minimal/moderate/significant/severe",
+  "severity": "minimal/moderate/significant/high",
   "interpretation": "2-3 sentence interpretation of impact",
   "comparison": "Compare to typical classroom norms",
   "urgency": "Recommended timeline for intervention"
@@ -3035,7 +3047,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                 className: 'w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
             }, loading ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.impact.interpret') || 'AI Interpret Impact'))),
             aiInsight && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
-                aiInsight.severity && h('span', { className: `px-2 py-0.5 rounded-full text-xs font-bold ${aiInsight.severity === 'severe' ? 'bg-red-100 text-red-700' : aiInsight.severity === 'significant' ? 'bg-orange-100 text-orange-700' : aiInsight.severity === 'moderate' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}` }, aiInsight.severity),
+                aiInsight.severity && h('span', { className: `px-2 py-0.5 rounded-full text-xs font-bold ${aiInsight.severity === 'high' || aiInsight.severity === 'severe' ? 'bg-red-100 text-red-700' : aiInsight.severity === 'significant' ? 'bg-orange-100 text-orange-700' : aiInsight.severity === 'moderate' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}` }, aiInsight.severity),
                 aiInsight.interpretation && h('p', { className: 'text-sm text-slate-700 mt-2' }, aiInsight.interpretation),
                 aiInsight.comparison && h('p', { className: 'text-xs text-slate-500 mt-1 italic' }, '📏 ' + aiInsight.comparison),
                 aiInsight.urgency && h('p', { className: 'text-xs text-amber-600 font-bold mt-2' }, '⏰ ' + aiInsight.urgency)
@@ -3065,6 +3077,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const prompt = `You are a crisis intervention specialist creating a safety plan for a student.
+${RESTORATIVE_PREAMBLE}
 
 Hypothesized function: ${funcStr}
 ${aiAnalysis?.summary ? 'Analysis: ' + aiAnalysis.summary : ''}
@@ -3173,6 +3186,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const prompt = `You are a behavior specialist creating a student-facing traffic light behavior visual.
+${RESTORATIVE_PREAMBLE}
 
 Hypothesized function: ${funcStr}
 ${aiAnalysis?.summary ? 'Analysis: ' + aiAnalysis.summary : ''}
@@ -3181,7 +3195,7 @@ Create student-friendly language and return ONLY valid JSON:
 {
   "green": { "title": "positive zone title", "items": "expected behaviors separated by semicolons (4 items)" },
   "yellow": { "title": "caution zone title", "items": "warning signs separated by semicolons (4 items)" },
-  "red": { "title": "stop zone title", "items": "crisis-level behaviors separated by semicolons (4 items)" }
+  "red": { "title": "stop zone title", "items": "moments when I feel overwhelmed and need support, separated by semicolons (4 items)" }
 }`;
                 const result = await callGemini(prompt, true);
                 const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -3211,7 +3225,7 @@ Create student-friendly language and return ONLY valid JSON:
             }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.traffic.generate') || 'AI Generate Expectations'))),
             // Traffic light poster
             h('div', { id: 'traffic-light-printable', className: 'bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-lg print:shadow-none' },
-                h('h2', { className: 'text-center text-lg font-black text-slate-800 mb-1' }, '🚦 My Behavior Plan'),
+                h('h2', { className: 'text-center text-lg font-black text-slate-800 mb-1' }, '🚦 My Self-Regulation Plan'),
                 studentName && h('p', { className: 'text-center text-xs text-slate-500 mb-4' }, `For: ${studentName}`),
                 h('div', { className: 'space-y-3' },
                     zoneConfig.map(z => {
@@ -3425,6 +3439,7 @@ Create student-friendly language and return ONLY valid JSON:
                     `B: ${e.behavior}, A: ${e.antecedent}, C: ${e.consequence}`
                 ).join('\n');
                 const prompt = `You are a special education teacher writing a home note to a parent/guardian.
+${RESTORATIVE_PREAMBLE}
 
 Student codename: ${studentName || 'Student'}
 Tone: ${tone}
@@ -3505,6 +3520,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
             try {
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const prompt = `You are a BCBA creating a teacher fidelity checklist for BIP implementation.
+${RESTORATIVE_PREAMBLE}
 
 Student hypothesized function: ${funcStr}
 ${aiAnalysis?.summary ? 'Analysis: ' + aiAnalysis.summary : ''}
@@ -3596,6 +3612,7 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
             try {
                 const lowItems = questions.filter(q => (ratings[q.id] || 0) <= 2).map(q => q.label).join(', ');
                 const prompt = `You are a behavior consultant reviewing a BIP feasibility assessment.
+${RESTORATIVE_PREAMBLE}
 
 Total: ${total}/${maxScore} (${pct}%)
 Low areas: ${lowItems || 'None'}
@@ -3692,6 +3709,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
             setGenerating(true);
             try {
                 const prompt = `You are a BCBA creating a Goal Attainment Scale (GAS) rubric.
+${RESTORATIVE_PREAMBLE}
 
 Goal: ${goalText}
 ${aiAnalysis?.hypothesizedFunction ? 'Function: ' + aiAnalysis.hypothesizedFunction : ''}
@@ -4101,6 +4119,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 const funcStr = aiAnalysis?.hypothesizedFunction || 'unknown';
                 const recentABC = abcEntries.slice(-5).map(e => `B: ${e.behavior}`).join('; ');
                 const prompt = `You are a BCBA creating a pocket-sized BIP reference card.
+${RESTORATIVE_PREAMBLE}
 
 Student function: ${funcStr}
 ${aiAnalysis?.summary ? 'Summary: ' + aiAnalysis.summary : ''}
@@ -4163,6 +4182,321 @@ Create a concise pocket BIP. Return ONLY valid JSON:
                 )
             ),
             h('button', { onClick: () => window.print(), className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden' }, '🖨️ Print Pocket BIP')
+        );
+    };
+
+    // ─── CounselingSimulation ───────────────────────────────────────────
+    // AI-powered counseling role-play simulation for professional development
+    const CounselingSimulation = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
+        const SCENARIOS = [
+            { id: 'escape', label: 'Escape-Maintained', icon: '🏃', desc: 'Student avoids difficult tasks or overwhelming situations', persona: 'You are a student who becomes avoidant and shuts down when work feels too hard. You might put your head down, leave your seat, or say "I can\'t do this." You generally respond well to breaks and scaffolded support.' },
+            { id: 'attention', label: 'Attention-Seeking', icon: '👀', desc: 'Student seeks connection through disruptive or attention-getting behavior', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
+            { id: 'tangible', label: 'Tangible-Motivated', icon: '🎁', desc: 'Student has difficulty when preferred items or activities are unavailable', persona: 'You are a student who becomes frustrated when you can\'t have a preferred item or activity. You might negotiate, refuse to work, or become upset. You respond well to first/then agreements and visual schedules.' },
+            { id: 'sensory', label: 'Sensory-Related', icon: '🌀', desc: 'Student is overwhelmed or under-stimulated by sensory input', persona: 'You are a student who is very sensitive to sensory input — noise, lights, textures. You might cover your ears, rock, or leave the area. You respond well to sensory breaks and modified environments.' },
+            { id: 'custom', label: 'Custom Scenario', icon: '✏️', desc: 'Define your own student persona and behavioral context', persona: '' },
+        ];
+
+        const [scenario, setScenario] = useState(null);
+        const [customPersona, setCustomPersona] = useState('');
+        const [additionalInstructions, setAdditionalInstructions] = useState('');
+        const [enableImages, setEnableImages] = useState(false);
+        const [messages, setMessages] = useState([]);
+        const [input, setInput] = useState('');
+        const [sending, setSending] = useState(false);
+        const [sessionStarted, setSessionStarted] = useState(false);
+        const [showFeedback, setShowFeedback] = useState(false);
+        const [selfRating, setSelfRating] = useState(3);
+        const [strategyNotes, setStrategyNotes] = useState('');
+        const [sessionCount, setSessionCount] = useState(0);
+        const messagesEndRef = useRef(null);
+
+        useEffect(() => {
+            if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }, [messages]);
+
+        const getPersona = () => {
+            const base = scenario?.id === 'custom' ? customPersona : (scenario?.persona || '');
+            const funcContext = aiAnalysis?.hypothesizedFunction
+                ? `\nContext: The student's behavior has been analyzed and the hypothesized function is "${aiAnalysis.hypothesizedFunction}".`
+                : '';
+            const additional = additionalInstructions ? `\nAdditional context: ${additionalInstructions}` : '';
+            return base + funcContext + additional;
+        };
+
+        const handleStart = () => {
+            if (!scenario) return;
+            const persona = getPersona();
+            if (!persona.trim()) {
+                if (addToast) addToast('Please define a student persona', 'error');
+                return;
+            }
+            setMessages([{
+                role: 'system',
+                content: `Session started with scenario: ${scenario.label}. You are now speaking with "${studentName || 'the student'}." Begin by greeting the student and building rapport.`
+            }]);
+            setSessionStarted(true);
+            setSessionCount(prev => prev + 1);
+            if (addToast) addToast('Simulation started — you are now the counselor 🎭', 'success');
+        };
+
+        const handleSend = async () => {
+            if (!input.trim() || !callGemini || sending) return;
+            const userMsg = { role: 'counselor', content: input.trim() };
+            setMessages(prev => [...prev, userMsg]);
+            setInput('');
+            setSending(true);
+
+            try {
+                const persona = getPersona();
+                const history = messages.filter(m => m.role !== 'system')
+                    .map(m => `${m.role === 'counselor' ? 'Counselor' : 'Student'}: ${m.content}`)
+                    .join('\n');
+
+                const prompt = `You are role-playing as a student in a counseling simulation for educator professional development.
+${RESTORATIVE_PREAMBLE}
+
+YOUR PERSONA:
+${persona}
+
+Student name/codename: "${studentName || 'Student'}"
+
+CONVERSATION SO FAR:
+${history}
+Counselor: ${userMsg.content}
+
+INSTRUCTIONS:
+- Respond AS THE STUDENT in 1-3 sentences
+- Stay in character based on your persona
+- React realistically to the counselor's approach
+- If the counselor uses effective strategies (validation, active listening, choice-giving), gradually show improvement
+- If the counselor uses ineffective approaches (demands, threats), show realistic resistance
+- Never break character or give meta-commentary
+- Use age-appropriate language for a school-age student
+
+Respond only with the student's words:`;
+
+                const result = await callGemini(prompt, false);
+                const studentMsg = { role: 'student', content: result.trim() };
+                setMessages(prev => [...prev, studentMsg]);
+
+            } catch (err) {
+                warnLog('Counseling simulation failed:', err);
+                if (addToast) addToast('Response failed — try again', 'error');
+            } finally {
+                setSending(false);
+            }
+        };
+
+        const handleEndSession = () => {
+            setShowFeedback(true);
+        };
+
+        const handleReset = () => {
+            setMessages([]);
+            setSessionStarted(false);
+            setShowFeedback(false);
+            setSelfRating(3);
+            setStrategyNotes('');
+            setScenario(null);
+        };
+
+        // ─── Setup Panel ────────────────────────────────────────────
+        if (!sessionStarted) {
+            return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                // Scenario selector
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🎭 ' + (t('behavior_lens.counseling.choose_scenario') || 'Choose a Scenario')),
+                    h('div', { className: 'space-y-2' },
+                        SCENARIOS.map(s =>
+                            h('button', {
+                                key: s.id,
+                                onClick: () => setScenario(s),
+                                className: `w-full text-left rounded-xl p-4 border-2 transition-all hover:shadow-md ${scenario?.id === s.id ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-transparent bg-slate-50 hover:bg-slate-100'}`,
+                            },
+                                h('div', { className: 'flex items-center gap-3' },
+                                    h('span', { className: 'text-2xl' }, s.icon),
+                                    h('div', null,
+                                        h('div', { className: 'font-bold text-sm text-slate-800' }, s.label),
+                                        h('div', { className: 'text-xs text-slate-500 mt-0.5' }, s.desc)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                // Custom persona (if custom scenario selected)
+                scenario?.id === 'custom' && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, '✏️ Define Student Persona'),
+                    h('textarea', {
+                        value: customPersona,
+                        onChange: (e) => setCustomPersona(e.target.value),
+                        placeholder: 'Describe the student persona... e.g., "You are a 3rd grader who becomes anxious during math and tends to cry and shut down..."',
+                        rows: 4,
+                        className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none'
+                    })
+                ),
+                // Additional instructions
+                scenario && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm' },
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, '📝 Additional Instructions (Optional)'),
+                    h('textarea', {
+                        value: additionalInstructions,
+                        onChange: (e) => setAdditionalInstructions(e.target.value),
+                        placeholder: 'Add context, constraints, or specific challenges... e.g., "The student also has a speech delay" or "This is a middle school student"',
+                        rows: 2,
+                        className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none'
+                    })
+                ),
+                // Image toggle
+                scenario && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm' },
+                    h('label', { className: 'flex items-center gap-3 cursor-pointer' },
+                        h('input', {
+                            type: 'checkbox',
+                            checked: enableImages,
+                            onChange: (e) => setEnableImages(e.target.checked),
+                            className: 'w-4 h-4 accent-teal-600'
+                        }),
+                        h('div', null,
+                            h('div', { className: 'text-sm font-bold text-slate-700' }, '🖼️ ' + (t('behavior_lens.counseling.enable_images') || 'Enable Image Generation')),
+                            h('div', { className: 'text-[10px] text-slate-400' }, 'AI will generate visual scenes during the conversation (requires Imagen)')
+                        )
+                    )
+                ),
+                // AI context badge
+                aiAnalysis && scenario && h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-3 flex items-center gap-2' },
+                    h('span', { className: 'text-lg' }, '🧠'),
+                    h('div', null,
+                        h('div', { className: 'text-xs font-bold text-teal-700' }, 'AI Context Available'),
+                        h('div', { className: 'text-[10px] text-teal-600' }, `Hypothesized function: ${aiAnalysis.hypothesizedFunction} (${aiAnalysis.confidence}% confidence)`)
+                    )
+                ),
+                // Start button
+                scenario && h('button', {
+                    onClick: handleStart,
+                    disabled: scenario.id === 'custom' && !customPersona.trim(),
+                    className: 'w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base'
+                }, '🎬 ' + (t('behavior_lens.counseling.start') || 'Begin Counseling Session')),
+                // Session count
+                sessionCount > 0 && h('div', { className: 'text-center text-xs text-slate-400' }, `${sessionCount} session${sessionCount > 1 ? 's' : ''} completed this visit`)
+            );
+        }
+
+        // ─── Feedback Panel ─────────────────────────────────────────
+        if (showFeedback) {
+            return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-6 shadow-sm text-center' },
+                    h('h3', { className: 'text-lg font-black text-slate-800 mb-1' }, '📋 Session Reflection'),
+                    h('p', { className: 'text-xs text-slate-500 mb-6' }, `Scenario: ${scenario?.label} | ${messages.filter(m => m.role === 'counselor').length} counselor exchanges`)
+                ),
+                h('div', { className: 'bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4' },
+                    h('div', null,
+                        h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
+                        h('input', { type: 'range', min: 1, max: 5, value: selfRating, onChange: (e) => setSelfRating(parseInt(e.target.value)), className: 'w-full accent-teal-600' }),
+                        h('div', { className: 'flex justify-between text-[10px] text-slate-400 mt-0.5' },
+                            h('span', null, 'Needs practice'),
+                            h('span', null, 'Getting there'),
+                            h('span', null, 'Feeling confident')
+                        )
+                    ),
+                    h('div', null,
+                        h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '📝 What strategies did I use? What would I try differently?'),
+                        h('textarea', {
+                            value: strategyNotes,
+                            onChange: (e) => setStrategyNotes(e.target.value),
+                            rows: 4,
+                            placeholder: 'Reflect on your approach...\n• What worked well?\n• What would you do differently?\n• What strategies do you want to practice next?',
+                            className: 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none'
+                        })
+                    )
+                ),
+                // Conversation review
+                h('details', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+                    h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, '💬 Review Conversation'),
+                    h('div', { className: 'mt-3 space-y-2 max-h-64 overflow-y-auto' },
+                        messages.filter(m => m.role !== 'system').map((m, i) =>
+                            h('div', { key: i, className: `text-xs p-2 rounded-lg ${m.role === 'counselor' ? 'bg-teal-50 text-teal-800 ml-8' : 'bg-white text-slate-700 mr-8 border border-slate-200'}` },
+                                h('span', { className: 'font-bold' }, m.role === 'counselor' ? '🧑‍⚕️ You: ' : '🧒 Student: '),
+                                m.content
+                            )
+                        )
+                    )
+                ),
+                h('div', { className: 'flex gap-3' },
+                    h('button', {
+                        onClick: handleReset,
+                        className: 'flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
+                    }, '🔄 New Session'),
+                    h('button', {
+                        onClick: () => { if (addToast) addToast('Reflection saved ✨', 'success'); handleReset(); },
+                        className: 'flex-1 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
+                    }, '✅ Save & Close')
+                )
+            );
+        }
+
+        // ─── Chat Interface ─────────────────────────────────────────
+        return h('div', { className: 'max-w-3xl mx-auto flex flex-col', style: { height: 'calc(100vh - 200px)', minHeight: '400px' } },
+            // Header
+            h('div', { className: 'bg-gradient-to-r from-teal-500 to-cyan-500 rounded-t-xl p-4 text-white flex items-center justify-between flex-shrink-0' },
+                h('div', null,
+                    h('h3', { className: 'font-black text-sm' }, '🎭 Counseling Simulation'),
+                    h('p', { className: 'text-[10px] opacity-80' }, `${scenario?.label} • ${studentName || 'Student'} • ${messages.filter(m => m.role === 'counselor').length} exchanges`)
+                ),
+                h('button', {
+                    onClick: handleEndSession,
+                    className: 'px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all'
+                }, '⏹ End Session')
+            ),
+            // Messages
+            h('div', { className: 'flex-1 overflow-y-auto bg-white border-x border-slate-200 p-4 space-y-3' },
+                messages.map((m, i) =>
+                    m.role === 'system'
+                        ? h('div', { key: i, className: 'text-center text-[10px] text-slate-400 italic py-2' }, m.content)
+                        : h('div', { key: i, className: `flex ${m.role === 'counselor' ? 'justify-end' : 'justify-start'}` },
+                            h('div', {
+                                className: `max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${m.role === 'counselor'
+                                    ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-tr-sm'
+                                    : 'bg-slate-100 text-slate-800 border border-slate-200 rounded-tl-sm'
+                                    }`
+                            },
+                                h('div', { className: 'text-[10px] font-bold mb-1 opacity-70' }, m.role === 'counselor' ? '🧑‍⚕️ You (Counselor)' : `🧒 ${studentName || 'Student'}`),
+                                h('div', { className: 'text-sm leading-relaxed' }, m.content)
+                            )
+                        )
+                ),
+                sending && h('div', { className: 'flex justify-start' },
+                    h('div', { className: 'bg-slate-100 border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm' },
+                        h('div', { className: 'text-[10px] font-bold mb-1 text-slate-400' }, `🧒 ${studentName || 'Student'}`),
+                        h('div', { className: 'text-sm text-slate-400 animate-pulse' }, '● ● ●')
+                    )
+                ),
+                h('div', { ref: messagesEndRef })
+            ),
+            // Input bar
+            h('div', { className: 'bg-white border border-slate-200 rounded-b-xl p-3 flex-shrink-0' },
+                h('div', { className: 'flex gap-2' },
+                    h('input', {
+                        type: 'text',
+                        value: input,
+                        onChange: (e) => setInput(e.target.value),
+                        onKeyDown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } },
+                        placeholder: 'Respond as the counselor...',
+                        disabled: sending,
+                        className: 'flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none disabled:opacity-50'
+                    }),
+                    h('button', {
+                        onClick: handleSend,
+                        disabled: !input.trim() || sending,
+                        className: 'px-5 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold text-sm shadow hover:shadow-lg disabled:opacity-40 transition-all'
+                    }, sending ? '⏳' : '📨')
+                ),
+                h('div', { className: 'flex items-center justify-between mt-2' },
+                    h('div', { className: 'text-[10px] text-slate-400' }, '💡 Tip: Try validation, active listening, and offering choices'),
+                    h('button', {
+                        onClick: handleEndSession,
+                        className: 'text-[10px] text-red-400 hover:text-red-600 font-bold transition-all'
+                    }, 'End Session →')
+                )
+            )
         );
     };
 
@@ -4279,6 +4613,7 @@ Create a concise pocket BIP. Return ONLY valid JSON:
                 ).join('\n');
 
                 const prompt = `You are a Board Certified Behavior Analyst (BCBA) reviewing ABC behavioral observation data for a student.
+${RESTORATIVE_PREAMBLE}
 
 ABC DATA (${abcEntries.length} entries):
 ${dataStr}
@@ -4382,7 +4717,7 @@ Analyze this data and return ONLY valid JSON:
                     id: 'hotspot',
                     icon: '🗓️',
                     title: t('behavior_lens.hub.hotspot_title') || 'Routine Hotspot Matrix',
-                    desc: t('behavior_lens.hub.hotspot_desc') || 'Map behavior incidents to daily routine periods with AI analysis',
+                    desc: t('behavior_lens.hub.hotspot_desc') || 'Map behavioral patterns to daily routine periods with AI analysis',
                     color: 'orange',
                 },
                 {
@@ -4424,8 +4759,8 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'cycle',
                     icon: '🔄',
-                    title: t('behavior_lens.hub.cycle_title') || 'Acting-Out Cycle',
-                    desc: t('behavior_lens.hub.cycle_desc') || 'Colvin & Sugai 7-phase model with personalized strategies',
+                    title: t('behavior_lens.hub.cycle_title') || 'Escalation Cycle',
+                    desc: t('behavior_lens.hub.cycle_desc') || 'Colvin & Sugai 7-phase emotional regulation model with personalized strategies',
                     color: 'red',
                 },
                 {
@@ -4525,6 +4860,13 @@ Analyze this data and return ONLY valid JSON:
                     title: t('behavior_lens.hub.abaguide_title') || 'ABA Quick Guide',
                     desc: t('behavior_lens.hub.abaguide_desc') || 'Searchable glossary, reinforcement schedules, decision tree & common mistakes',
                     color: 'indigo',
+                },
+                {
+                    id: 'counseling',
+                    icon: '🎭',
+                    title: t('behavior_lens.hub.counseling_title') || 'Counseling Simulation',
+                    desc: t('behavior_lens.hub.counseling_desc') || 'AI role-play with student personas for counseling practice',
+                    color: 'teal',
                 },
                 {
                     id: 'homelog',
@@ -4795,7 +5137,7 @@ Analyze this data and return ONLY valid JSON:
                                                             activePanel === 'hypothesis' ? (t('behavior_lens.hypothesis.title') || 'Hypothesis Diagram') :
                                                                 activePanel === 'goals' ? (t('behavior_lens.goals.title') || 'SMART Goal Builder') :
                                                                     activePanel === 'contract' ? (t('behavior_lens.contract.title') || 'Behavior Contract') :
-                                                                        activePanel === 'cycle' ? (t('behavior_lens.cycle.title') || 'Acting-Out Cycle') :
+                                                                        activePanel === 'cycle' ? (t('behavior_lens.cycle.title') || 'Escalation Cycle') :
                                                                             activePanel === 'reinforcer' ? (t('behavior_lens.reinforcer.title') || 'Reinforcer Assessment') :
                                                                                 activePanel === 'audit' ? (t('behavior_lens.audit.title') || 'Environment Audit') :
                                                                                     activePanel === 'triangulation' ? (t('behavior_lens.triangulation.title') || 'Data Triangulation') :
@@ -4809,7 +5151,8 @@ Analyze this data and return ONLY valid JSON:
                                                                                                                     activePanel === 'gas' ? (t('behavior_lens.gas.title') || 'GAS Rubric') :
                                                                                                                         activePanel === 'pocket' ? (t('behavior_lens.pocket.title') || 'Pocket BIP') :
                                                                                                                             activePanel === 'abaguide' ? (t('behavior_lens.abaguide.title') || 'ABA Quick Guide') :
-                                                                                                                                activePanel === 'homelog' ? (t('behavior_lens.homelog.title') || 'Home Behavior Log') : ''
+                                                                                                                                activePanel === 'counseling' ? (t('behavior_lens.counseling.title') || 'Counseling Simulation') :
+                                                                                                                                    activePanel === 'homelog' ? (t('behavior_lens.homelog.title') || 'Home Behavior Log') : ''
                             )
                         )
                     ),
@@ -4897,7 +5240,7 @@ Analyze this data and return ONLY valid JSON:
                     t,
                     addToast
                 }),
-                activePanel === 'cycle' && h(ActingOutCycle, {
+                activePanel === 'cycle' && h(EscalationCycle, {
                     abcEntries,
                     aiAnalysis,
                     studentName: selectedStudent,
@@ -4995,6 +5338,14 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'abaguide' && h(ABAQuickGuide, { t }),
                 activePanel === 'homelog' && h(HomeBehaviorLog, {
                     studentName: selectedStudent,
+                    t,
+                    addToast
+                }),
+                activePanel === 'counseling' && h(CounselingSimulation, {
+                    studentName: selectedStudent,
+                    abcEntries,
+                    aiAnalysis,
+                    callGemini,
                     t,
                     addToast
                 })
