@@ -6417,5 +6417,31 @@
     "pocket": { "title": "Pocket BIP" },
     "analysis": { "title": "AI Pattern Analysis" }
   },
-  "_version": "2026-02-27T1772223388"
+  "educator_hub": {
+    "title": "Educator Tools",
+      "subtitle": "Professional tools for educators and clinicians",
+        "behavior_lens_title": "BehaviorLens",
+          "behavior_lens_desc": "FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools",
+            "report_writer_title": "Report Writer",
+              "report_writer_desc": "AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms"
+  },
+  "report_writer": {
+    "loading": "Loading Report Writer...",
+      "loading_hint": "Module loading from CDN. If this persists, check your connection."
+  },
+  "launch_pad": {
+    "subtitle": "Choose your learning pathway",
+      "full_title": "Full Platform",
+        "full_desc": "Complete access to all AlloFlow features — lessons, STEM Lab, and tools",
+          "guided_desc": "Step-by-step guidance through lesson creation and student activities",
+            "stem_title": "STEM Lab",
+              "stem_desc": "40+ interactive science, math, and engineering simulations",
+                "educator_tools_title": "Educator Tools",
+                  "educator_tools_desc": "BehaviorLens, Report Writer, and professional clinical tools — password protected",
+                    "badge_recommended": "Recommended",
+                      "badge_educator": "🔒 Educator",
+                        "badge_educator_open": "🛠️ Educator",
+                          "switch_hint": "You can switch modes anytime from the menu"
+  },
+  "_version": "2026-03-09T1773292800"
 }
