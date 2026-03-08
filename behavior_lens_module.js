@@ -12674,6 +12674,8 @@ Keep under 250 words. Use clear sections.`);
     };
 
 
+
+
     // ─── NaturalLanguageABC ─────────────────────────────────────
 
     const NaturalLanguageABC = ({ abcEntries, setAbcEntries, callGemini, t, addToast, studentName }) => {
@@ -15691,7 +15693,7 @@ Analyze this data and return ONLY valid JSON:
                 activePanel === 'maintenance' && h(MaintenanceTracker, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'cumrecord' && h(CumulativeRecord, { sessionHistory, t, addToast }),
                 activePanel === 'condprob' && h(ConditionalProbability, { abcEntries, t, addToast }),
-                activePanel === 'treatintegrity' && h(TreatmentIntegrityTracker, { t, addToast })
+                activePanel === 'treatintegrity' && h(TreatmentIntegrityTracker, { t, addToast }),
             ),
             // Fullscreen live observation overlay
             showLiveObs && h(LiveObsOverlay, {
