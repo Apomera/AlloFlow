@@ -5851,13 +5851,13 @@
         "pred_death": "Pred Death"
     },
     "fractions": {
-      "correct": "? Correct! ",
+      "correct": "✅ Correct! ",
         "fraction_a": "Fraction A",
           "fraction_b": "Fraction B"
     },
     "decomposer": {
-      "correct": "? Correct!",
-        "the_answer_is": "? The answer is ",
+      "correct": "✅ Correct!",
+        "the_answer_is": "❌ The answer is ",
           "sugar_sucrose": "Sugar (Sucrose)",
             "a_pungent_compound_essential_for": "A pungent compound essential for fertilizers and amino acids.",
               "found_in_chalk_limestone_marble": "Found in chalk, limestone, marble, seashells, and eggshells.",
@@ -6273,12 +6273,13 @@
                                                             "generated": "Generated"
   },
   "splash": {
-    "tagline": "Adaptive Levels, Layers, & Outputs",
-      "udl_tagline": "Informed by Universal Design for Learning",
-        "initializing": "Initializing...",
-          "loading_resources": "Loading resources...",
-            "preparing_workspace": "Preparing your workspace...",
-              "almost_ready": "Almost ready..."
+    "tagline": "Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education",
+      "rights": "AGPLv3 Licensed • Copyright © 2026 Aaron Pomeranz, PsyD",
+        "udl_tagline": "Informed by Universal Design for Learning",
+          "initializing": "Initializing...",
+            "loading_resources": "Loading resources...",
+              "preparing_workspace": "Preparing your workspace...",
+                "almost_ready": "Almost ready..."
   },
   "behavior_lens": {
     "title": "BehaviorLens",
