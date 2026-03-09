@@ -420,7 +420,7 @@
     const safeGetItem = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
     const safeSetItem = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { warnLog('localStorage write failed:', e); } };
 
-    const ReportWriterPanel = ({ studentName, abcEntries, observationSessions, aiAnalysis, studentProfile, longitudinalData, callGemini, t, addToast }) => {
+    const ReportWriterPanel = ({ studentName, abcEntries, observationSessions, aiAnalysis, studentProfile, longitudinalData, dashboardData, callGemini, t, addToast }) => {
         const STEPS = [
             { num: 1, label: 'Assessment Scores', icon: '📊' },
             { num: 2, label: 'Background & History', icon: '📋' },
@@ -479,6 +479,257 @@
         const [regenSection, setRegenSection] = useState(null);
         const [regenInstructions, setRegenInstructions] = useState('');
         const [showRegenInput, setShowRegenInput] = useState(null);
+        // Phase 3a: Missing state declarations
+        const [manualStudentName, setManualStudentName] = useState('');
+        const [isDemoLoaded, setIsDemoLoaded] = useState(false);
+        const [clinicalObs, setClinicalObs] = useState({
+            testSession: { text: '', source: 'Test Session Observations' },
+            behavioral: { text: '', source: 'Classroom/Behavioral Observations' },
+            parentInterview: { text: '', source: 'Parent Interview' },
+            teacherInterview: { text: '', source: 'Teacher Interview' },
+            studentInterview: { text: '', source: 'Student Interview' },
+            otherSources: { text: '', source: 'Other Collateral Sources' }
+        });
+        const [activeObsTab, setActiveObsTab] = useState('testSession');
+        const [selectedStudentId, setSelectedStudentId] = useState('');
+        // Phase 3a: Translation & Grade-Level Adaptation
+        const [translating, setTranslating] = useState(false);
+        const [translatedReport, setTranslatedReport] = useState('');
+        const [translationLang, setTranslationLang] = useState('Spanish');
+        const [adaptingSection, setAdaptingSection] = useState(null);
+        const [generatingDemo, setGeneratingDemo] = useState(false);
+
+
+        // ── Demo Data Generator ──
+        const DEMO_CASES = {
+            'adhd_combined': {
+                label: 'Case A: ADHD-Combined (8yo, 3rd grade)',
+                studentAge: '8', studentGrade: '3rd',
+                reportTitle: 'Psychoeducational Evaluation Report',
+                scores: [
+                    { assessment: 'WISC-V', subtest: 'Full Scale IQ', score: 102, scoreType: 'standard' },
+                    { assessment: 'WISC-V', subtest: 'Verbal Comprehension', score: 108, scoreType: 'standard' },
+                    { assessment: 'WISC-V', subtest: 'Working Memory', score: 82, scoreType: 'standard' },
+                    { assessment: 'WISC-V', subtest: 'Processing Speed', score: 78, scoreType: 'standard' },
+                    { assessment: 'Conners-4', subtest: 'Inattention/Executive Dysfunction', score: 72, scoreType: 'T-score' },
+                    { assessment: 'Conners-4', subtest: 'Hyperactivity', score: 68, scoreType: 'T-score' },
+                    { assessment: 'BASC-3 (Teacher)', subtest: 'Attention Problems', score: 71, scoreType: 'T-score' },
+                    { assessment: 'BASC-3 (Teacher)', subtest: 'Hyperactivity', score: 66, scoreType: 'T-score' },
+                ],
+                bgSections: {
+                    referralReason: 'Referred by classroom teacher due to persistent difficulties with sustained attention, task completion, and impulse control interfering with academic progress.',
+                    developmental: 'Born full-term, no complications. Met motor milestones on time. Speech development slightly delayed (first words at 18 months, sentences by age 3). No history of regression.',
+                    medical: 'Diagnosed with mild asthma, managed with inhaler. Vision and hearing screening within normal limits (2025). No current medications. Family history of ADHD (father diagnosed as adult).',
+                    educational: 'Attended district schools since kindergarten. Currently in general education 3rd grade classroom. Tier 2 reading intervention in 1st grade (discontinued after progress). No prior IEP or 504 plan. Current grades: B- average with declining homework completion.',
+                    social: 'Lives with both parents and younger sibling (age 5). Parents report generally positive peer relationships but notes student sometimes "overwhelms" peers with energy. Gets along well with adults.',
+                    behavioral: 'Teacher reports frequent off-task behavior, difficulty remaining seated, calling out answers, and losing materials. Behavior more pronounced during independent seatwork and transitions. Responds well to structured activities and 1:1 attention.',
+                    observations: ''
+                },
+                clinicalObs: {
+                    testSession: { text: 'Student was cooperative and engaged during testing. Required frequent redirection to maintain focus on tasks. Fidgeted in seat and frequently shifted positions. Rushed through timed tasks. Showed frustration during sustained attention tasks but recovered quickly with encouragement. Rapport was easily established.', source: 'Test Session Observations' },
+                    behavioral: { text: 'During 30-minute classroom observation, student was off-task approximately 40% of the interval observations. Left seat 3 times without permission. Called out answers 5 times during whole-group instruction. Engaged appropriately during hands-on science activity. Peer interactions appeared age-appropriate during recess.', source: 'Classroom Observation' },
+                    parentInterview: { text: 'Parents report that student has always been "high energy" since toddlerhood. Homework takes 2-3 hours nightly due to frequent breaks and distractibility. Student often forgets to bring homework home or loses completed assignments. At home, student has difficulty following multi-step directions and frequently interrupts conversations. Enjoys Legos, video games, and playing outside. No concerns about mood or anxiety.', source: 'Parent Interview' },
+                    teacherInterview: { text: 'Teacher reports student is bright and capable but consistently underperforms due to attention difficulties. Struggles most during independent reading and math worksheet time. Performs well in small group instruction and collaborative activities. Organizational skills are a significant concern — desk is disorganized, loses pencils/materials daily. Teacher has tried preferential seating, fidget tools, and visual timers with limited success.', source: 'Teacher Interview' },
+                    studentInterview: { text: '', source: 'Student Interview' },
+                    otherSources: { text: '', source: 'Other Collateral Sources' }
+                }
+            },
+            'sld_reading': {
+                label: 'Case B: SLD-Reading (10yo, 5th grade)',
+                studentAge: '10', studentGrade: '5th',
+                reportTitle: 'Psychoeducational Evaluation Report',
+                scores: [
+                    { assessment: 'WISC-V', subtest: 'Full Scale IQ', score: 96, scoreType: 'standard' },
+                    { assessment: 'WISC-V', subtest: 'Verbal Comprehension', score: 94, scoreType: 'standard' },
+                    { assessment: 'WISC-V', subtest: 'Working Memory', score: 98, scoreType: 'standard' },
+                    { assessment: 'WISC-V', subtest: 'Processing Speed', score: 91, scoreType: 'standard' },
+                    { assessment: 'WIAT-4', subtest: 'Reading Composite', score: 76, scoreType: 'standard' },
+                    { assessment: 'WIAT-4', subtest: 'Math Composite', score: 95, scoreType: 'standard' },
+                    { assessment: 'BASC-3 (Teacher)', subtest: 'Attention Problems', score: 54, scoreType: 'T-score' },
+                    { assessment: 'BASC-3 (Teacher)', subtest: 'Anxiety', score: 62, scoreType: 'T-score' },
+                ],
+                bgSections: {
+                    referralReason: 'Referred by parents and teacher due to significant reading difficulties despite years of reading intervention. Student is falling further behind grade-level expectations.',
+                    developmental: 'Pregnancy and birth unremarkable. Met all motor milestones on time. Speech development was normal. No family history of learning disabilities reported initially; upon further questioning, mother reports her brother had reading difficulties in school.',
+                    medical: 'No significant medical history. Vision corrected with glasses (near-sightedness, diagnosed age 8). Hearing within normal limits. No medications.',
+                    educational: 'Attended district schools K-5. Received Tier 2 reading intervention since 2nd grade, moved to Tier 3 in 4th grade with minimal progress. Currently reading at approximately 2nd grade level per curriculum-based measures. Math performance is grade-appropriate. No IEP; 504 plan for extended time was implemented in 4th grade.',
+                    social: 'Lives with mother and stepfather. Two older step-siblings (ages 14, 16). Student is described as well-liked by peers but avoids reading aloud in class. Has begun expressing frustration about school ("I\'m stupid at reading"). Enjoys drawing, building models, and soccer.',
+                    behavioral: 'No significant behavioral concerns. Teacher notes student occasionally avoids reading tasks or rushes through them. No attention concerns outside of reading-related activities.',
+                    observations: ''
+                },
+                clinicalObs: {
+                    testSession: { text: 'Student was cooperative but appeared anxious during reading-related tasks. Repeatedly asked "is this one timed?" before subtests. Used finger-tracking during reading passages. Made multiple self-corrections during oral reading. Demonstrated strong problem-solving skills on non-verbal tasks and showed visible relief during math subtests.', source: 'Test Session Observations' },
+                    behavioral: { text: '', source: 'Classroom/Behavioral Observations' },
+                    parentInterview: { text: 'Mother reports student has always struggled with reading since learning letter sounds in kindergarten. Student avoids reading at home but enjoys being read to. Homework involving reading takes significantly longer than math homework. Parents hired a private tutor for 6 months in 3rd grade with some progress in phonics but fluency remains very low. Student has recently begun saying they "hate school" and gets stomachaches before school on days with reading tests.', source: 'Parent Interview' },
+                    teacherInterview: { text: 'Teacher reports student is engaged and motivated in subjects that do not require extensive reading (math, science labs, art). Reading fluency is significantly below peers — approximately 65 words per minute vs. grade-level expectation of 130+ wpm. Comprehension is stronger when text is read aloud to student. Spelling is inconsistent with phonological errors. Written expression is limited in quantity but ideas are age-appropriate when dictated.', source: 'Teacher Interview' },
+                    studentInterview: { text: '', source: 'Student Interview' },
+                    otherSources: { text: 'Tutoring records indicate 6 months of Orton-Gillingham-based intervention with measurable progress in phonics accuracy (60% to 82%) but limited transfer to connected text fluency.', source: 'Private Tutor Records' }
+                }
+            }
+        };
+
+        const loadDemoCase = (caseKey) => {
+            const demo = DEMO_CASES[caseKey];
+            if (!demo) return;
+            setReportTitle(demo.reportTitle);
+            setStudentAge(demo.studentAge);
+            setStudentGrade(demo.studentGrade);
+            setManualStudentName('[DEMO STUDENT]');
+            setBgSections(demo.bgSections);
+            setClinicalObs(demo.clinicalObs);
+            // Build score entries
+            const demoScores = demo.scores.map(s => {
+                const preset = ASSESSMENT_PRESETS[s.assessment] || {};
+                const classification = classifyScore(s.score, s.scoreType);
+                const percentile = s.scoreType === 'standard' ? Math.round(((1 + (function (z) { const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911; const sign = z < 0 ? -1 : 1; z = Math.abs(z) / Math.sqrt(2); const tt = 1 / (1 + p * z); return sign * (1 - (((((a5 * tt + a4) * tt) + a3) * tt + a2) * tt + a1) * tt * Math.exp(-z * z)); })((s.score - (preset.mean || 100)) / (preset.sd || 15))) / 2) * 100) : null;
+                return { id: uid(), assessment: s.assessment, subtest: s.subtest, score: s.score, scoreType: s.scoreType, classification: classification.label, classColor: classification.color, percentile, addedAt: new Date().toISOString() };
+            });
+            setScoreEntries(demoScores);
+            setFactChunks([]);
+            setReportSections({});
+            setAccuracyResults([]);
+            setIsDemoLoaded(true);
+            if (addToast) addToast(`Demo case "${demo.label}" loaded — [DEMO DATA, NOT A REAL STUDENT]`, 'success');
+        };
+
+        // ── AI-Powered Demo Data Generator ──
+        const generateAIDemoCase = async () => {
+            if (!callGemini) { if (addToast) addToast('AI not available', 'error'); return; }
+            setGeneratingDemo(true);
+            try {
+                const prompt = `You are a clinical data generator for a school psychology training tool. Generate a FICTIONAL but realistic demo case for a psychoeducational evaluation.
+
+IMPORTANT: This is 100% fictional training data. Generate realistic but fake assessment data.
+
+Randomly choose ONE primary profile from: ADHD-Inattentive, ADHD-Combined, SLD-Reading, SLD-Math, SLD-Written, ASD Level 1, Anxiety Disorder, Emotional Disturbance, Intellectual Disability (Mild), Speech-Language Impairment, or a comorbid profile.
+
+Randomize the student age between 5-17 and grade appropriately.
+
+Return ONLY valid JSON with this exact structure:
+{
+  "label": "Case: [Diagnosis] ([age]yo, [grade] grade)",
+  "studentAge": "[number]",
+  "studentGrade": "[ordinal like 3rd]",
+  "reportTitle": "Psychoeducational Evaluation Report",
+  "scores": [
+    { "assessment": "[from: WISC-V, WIAT-4, BASC-3 (Teacher), BASC-3 (Parent), Conners-4, Vineland-3, BRIEF-2, CELF-5, BOT-2, SRS-2]", "subtest": "[valid subtest name]", "score": [realistic number], "scoreType": "[standard or T-score]" }
+  ],
+  "bgSections": {
+    "referralReason": "[2-3 sentences]",
+    "developmental": "[2-3 sentences]",
+    "medical": "[2-3 sentences]",
+    "educational": "[3-4 sentences]",
+    "social": "[2-3 sentences]",
+    "behavioral": "[2-3 sentences]",
+    "observations": ""
+  },
+  "clinicalObs": {
+    "testSession": { "text": "[3-4 sentences about testing behavior]", "source": "Test Session Observations" },
+    "behavioral": { "text": "[3-4 sentences about classroom behavior]", "source": "Classroom Observation" },
+    "parentInterview": { "text": "[3-4 sentences from parent perspective]", "source": "Parent Interview" },
+    "teacherInterview": { "text": "[3-4 sentences from teacher perspective]", "source": "Teacher Interview" },
+    "studentInterview": { "text": "", "source": "Student Interview" },
+    "otherSources": { "text": "", "source": "Other Collateral Sources" }
+  }
+}
+
+Include 6-10 assessment scores using REAL subtest names from the assessment batteries listed. Make scores clinically consistent with the chosen profile. Use person-first language in all narrative sections.`;
+
+                const result = await callGemini(prompt, true);
+                const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                let parsed;
+                try { parsed = JSON.parse(cleaned); }
+                catch { const m = result.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Could not parse AI response'); }
+
+                // Load the generated case using the same pattern as loadDemoCase
+                setReportTitle(parsed.reportTitle || 'Psychoeducational Evaluation Report');
+                setStudentAge(parsed.studentAge || '');
+                setStudentGrade(parsed.studentGrade || '');
+                setManualStudentName('[AI DEMO STUDENT]');
+                if (parsed.bgSections) setBgSections(parsed.bgSections);
+                if (parsed.clinicalObs) setClinicalObs(parsed.clinicalObs);
+                // Build score entries
+                const demoScores = (parsed.scores || []).map(s => {
+                    const preset = ASSESSMENT_PRESETS[s.assessment] || {};
+                    const classification = classifyScore(s.score, s.scoreType);
+                    const percentile = s.scoreType === 'standard' ? Math.round(((1 + (function (z) { const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911; const sign = z < 0 ? -1 : 1; z = Math.abs(z) / Math.sqrt(2); const tt = 1 / (1 + p * z); return sign * (1 - (((((a5 * tt + a4) * tt) + a3) * tt + a2) * tt + a1) * tt * Math.exp(-z * z)); })((s.score - (preset.mean || 100)) / (preset.sd || 15))) / 2) * 100) : null;
+                    return { id: uid(), assessment: s.assessment, subtest: s.subtest, score: s.score, scoreType: s.scoreType, classification: classification.label, classColor: classification.color, percentile, addedAt: new Date().toISOString() };
+                });
+                setScoreEntries(demoScores);
+                setFactChunks([]);
+                setReportSections({});
+                setAccuracyResults([]);
+                setIsDemoLoaded(true);
+                if (addToast) addToast(`AI demo case "${parsed.label}" generated — [FICTIONAL DATA, NOT A REAL STUDENT]`, 'success');
+            } catch (err) {
+                warnLog('AI demo generation error:', err);
+                if (addToast) addToast('AI demo generation failed — try again or use a preset case', 'error');
+            } finally { setGeneratingDemo(false); }
+        };
+
+        // ── Grade-Level Adaptation ──
+        const adaptSectionGradeLevel = async (section, text, targetLevel) => {
+            if (!callGemini || !text) return;
+            setAdaptingSection(section);
+            try {
+                const prompt = `You are a clinical report editor. Adapt the following report section for a ${targetLevel} reading audience while preserving ALL factual content and clinical accuracy.
+${RESTORATIVE_PREAMBLE}
+
+Rules:
+1. Keep ALL scores, classifications, and factual claims EXACTLY as written
+2. Adjust vocabulary complexity and sentence structure for the target audience
+3. For "Parent-Friendly": use plain language, avoid jargon, explain technical terms
+4. For "Professional": maintain clinical terminology and formal style
+5. For "Student-Friendly (Elem)": use simple words, short sentences, encouraging tone
+6. For "Student-Friendly (Secondary)": age-appropriate language, respectful tone
+7. Do NOT add or remove any factual information
+8. Reference the student as "[Student]"
+
+Target Level: ${targetLevel}
+
+Original Section:
+${text}
+
+Return ONLY the adapted text, no commentary.`;
+                const result = await callGemini(prompt, true);
+                setReportSections(prev => ({ ...prev, [section]: result.trim() }));
+                setAccuracyResults([]);
+                if (addToast) addToast(`"${section}" adapted for ${targetLevel} reading level`, 'success');
+            } catch (err) {
+                warnLog('Grade-level adaptation error:', err);
+                if (addToast) addToast('Adaptation failed', 'error');
+            } finally { setAdaptingSection(null); }
+        };
+
+        // ── Report Translation ──
+        const translateReport = async () => {
+            if (!callGemini || Object.keys(reportSections).length === 0) return;
+            setTranslating(true);
+            try {
+                const header = `${reportTitle}\nStudent: ${studentName || '[Student]'}\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}\nDate: ${new Date().toLocaleDateString()}\n${'─'.repeat(50)}\n\n`;
+                const body = Object.entries(reportSections).map(([k, v]) => `${k.toUpperCase()}\n\n${v.replace(/\[Student\]/g, studentName || '[Student]')}`).join('\n\n' + '─'.repeat(50) + '\n\n');
+                const fullReport = header + body;
+                const prompt = `Translate the following psychoeducational report into ${translationLang}. Maintain all clinical terminology accuracy — use the accepted ${translationLang} clinical equivalents for assessment names and diagnostic terms. Keep all scores, numbers, and assessment names (WISC-V, BASC-3, etc.) in their original form. Preserve all formatting including headers and section breaks.\n\n${fullReport}`;
+                const result = await callGemini(prompt, true);
+                setTranslatedReport(result.trim());
+                if (addToast) addToast(`Report translated to ${translationLang} ✅`, 'success');
+            } catch (err) {
+                warnLog('Translation error:', err);
+                if (addToast) addToast('Translation failed', 'error');
+            } finally { setTranslating(false); }
+        };
+        const copyTranslatedReport = () => {
+            navigator.clipboard.writeText(translatedReport).then(() => { if (addToast) addToast('Translated report copied ✅', 'success'); });
+        };
+
+        const OBS_TAB_META = [
+            { key: 'testSession', label: 'Test Session', icon: '\u{1F52C}', placeholder: 'Describe the student behavior, affect, engagement, and effort during the testing session...' },
+            { key: 'behavioral', label: 'Classroom/Behavioral', icon: '\u{1F441}\uFE0F', placeholder: 'Describe in-vivo classroom or behavioral observations, including ABC data...' },
+            { key: 'parentInterview', label: 'Parent Interview', icon: '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}', placeholder: 'Summarize parent/caregiver interview notes or paste transcript...' },
+            { key: 'teacherInterview', label: 'Teacher Interview', icon: '\u{1F469}\u200D\u{1F3EB}', placeholder: 'Summarize teacher interview notes or paste transcript...' },
+            { key: 'studentInterview', label: 'Student Interview', icon: '\u{1F9D2}', placeholder: 'Optional: student self-report or interview notes...' },
+            { key: 'otherSources', label: 'Other Sources', icon: '\u{1F4CE}', placeholder: 'Any additional collateral sources (e.g., tutor notes, medical records summaries)...' }
+        ];
 
         // ── Auto-load draft from localStorage on mount ──
         useEffect(() => {
@@ -667,6 +918,8 @@
                 // Build background fact chunks via AI
                 let bgChunks = [];
                 const bgText = Object.entries(bgSections).filter(([, v]) => v.trim()).map(([k, v]) => `${k}: ${v}`).join('\n\n');
+                const obsText = Object.entries(clinicalObs).filter(([, v]) => v.text?.trim()).map(([, v]) => `[Source: ${v.source}]\n${v.text}`).join('\n\n');
+                const allBgText = (bgText + '\n\n' + obsText).trim();
                 if (bgText.trim() && callGemini) {
                     const scrubbed = scrubPII(bgText);
                     const prompt = `You are a clinical data extractor. Extract atomic facts from this background information. Each fact should be a single, verifiable statement.
@@ -1075,8 +1328,152 @@ Return ONLY valid JSON:
                 )
             ),
             // Step content
-            // ═══ STEP 1: Assessment Score Entry ═══
+            // ═══ STEP 1: Student Selection ═══
             currentStep === 1 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-4' },
+                h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '👤 Student Selection'),
+                h('p', { className: 'text-[10px] text-slate-500' }, 'Select or enter a student code name. All identifiers are privacy-safe code names — never real names.'),
+                isDemoLoaded && h('div', { className: 'px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-700 font-medium' }, '⚠️ DEMO DATA LOADED — This is fictional test data, not a real student.'),
+                // Student dropdown from dashboard data
+                (dashboardData && dashboardData.length > 0) ? h('div', { className: 'space-y-2' },
+                    h('label', { className: 'text-[10px] font-medium text-slate-600 block' }, 'Select from Class Roster:'),
+                    h('select', {
+                        className: 'w-full text-xs border rounded-lg px-3 py-2 bg-white',
+                        value: selectedStudentId,
+                        onChange: e => {
+                            const id = e.target.value;
+                            setSelectedStudentId(id);
+                            if (id) {
+                                const student = dashboardData.find(s => (s.id || s.name || s.student) === id);
+                                if (student) {
+                                    setManualStudentName(student.name || student.student || id);
+                                    if (student.age) setStudentAge(String(student.age));
+                                    if (student.grade) setStudentGrade(String(student.grade));
+                                }
+                            }
+                        }
+                    },
+                        h('option', { value: '' }, '— Choose a student —'),
+                        dashboardData.map((s, i) => h('option', { key: i, value: s.id || s.name || s.student }, s.name || s.student || 'Student ' + (i + 1)))
+                    ),
+                    h('div', { className: 'text-[9px] text-slate-400' }, 'Or enter manually below')
+                ) : null,
+                // Manual entry
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Student Code Name'),
+                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'e.g., Student A', value: manualStudentName, onChange: e => setManualStudentName(e.target.value) })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Age'),
+                        h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'Years', value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 })
+                    ),
+                    h('div', null,
+                        h('label', { className: 'text-[10px] font-medium text-slate-600 block mb-1' }, 'Grade'),
+                        h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: 'e.g., 3rd', value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
+                    )
+                ),
+                // Demo data
+                h('details', { className: 'mt-3 bg-amber-50 rounded-lg border border-amber-200' },
+                    h('summary', { className: 'text-xs font-medium text-amber-700 px-3 py-2 cursor-pointer hover:bg-amber-100 rounded-t-lg' }, '🧪 Load Demo Case (for testing)'),
+                    h('div', { className: 'px-3 pb-3 space-y-2' },
+                        h('p', { className: 'text-[9px] text-amber-600' }, 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.'),
+                        Object.entries(DEMO_CASES).map(([key, demo]) =>
+                            h('button', {
+                                key,
+                                className: 'w-full text-left px-3 py-2 bg-white rounded-lg border border-amber-200 hover:bg-amber-50 text-[10px] transition-colors',
+                                onClick: () => loadDemoCase(key)
+                            }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
+                        ),
+                        h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
+                            h('button', {
+                                className: `w-full text-left px-3 py-2 rounded-lg border text-[10px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-300 cursor-wait' : 'bg-violet-50 border-violet-200 hover:bg-violet-100'}`,
+                                onClick: generateAIDemoCase,
+                                disabled: generatingDemo
+                            },
+                                generatingDemo ? h('span', { className: 'inline-block animate-spin w-3 h-3 border border-violet-400 border-t-violet-700 rounded-full' }) : h('span', null, '🤖'),
+                                h('span', { className: 'font-medium text-violet-800' }, generatingDemo ? 'Generating random case...' : '🎲 Generate Random AI Case'),
+                                !generatingDemo && h('span', { className: 'text-[8px] text-violet-500 ml-auto' }, 'Unique each time')
+                            )
+                        )
+                    )
+                ),
+                h('div', { className: 'flex justify-end pt-2' },
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors', onClick: () => setCurrentStep(2) }, 'Next: Background →')
+                )
+            ),
+
+            // ═══ STEP 3: Clinical Observations ═══
+            currentStep === 3 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+                h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F50D} Clinical Observations'),
+                h('p', { className: 'text-[10px] text-slate-500' }, 'Enter clinical observations, interview notes, and collateral information. Each source is tracked for fact attribution.'),
+                // BehaviorLens import
+                (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', {
+                    className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-medium rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors',
+                    onClick: () => {
+                        let obsText = clinicalObs.behavioral.text || '';
+                        if (abcEntries && abcEntries.length > 0) {
+                            obsText += '\n\n--- Imported from BehaviorLens ABC Data ---\n';
+                            abcEntries.slice(0, 10).forEach((e, i) => {
+                                obsText += '\n' + (i + 1) + '. Antecedent: ' + (e.antecedent || 'N/A') + ' | Behavior: ' + (e.behavior || 'N/A') + ' | Consequence: ' + (e.consequence || 'N/A') + ' | Function: ' + (e.function || 'unknown');
+                            });
+                        }
+                        if (observationSessions && observationSessions.length > 0) {
+                            obsText += '\n\n--- Imported from BehaviorLens Observation Sessions ---\n';
+                            observationSessions.slice(0, 5).forEach((s, i) => {
+                                obsText += '\nSession ' + (i + 1) + ': ' + (s.date || '') + ' | Type: ' + (s.type || 'general') + ' | Duration: ' + (s.duration || 'N/A') + ' | Notes: ' + (s.notes || '').substring(0, 200);
+                            });
+                        }
+                        setClinicalObs(prev => ({ ...prev, behavioral: { ...prev.behavioral, text: obsText } }));
+                        if (addToast) addToast('BehaviorLens data imported to Behavioral observations', 'success');
+                    }
+                }, '\u{1F4E5} Import from BehaviorLens (' + (abcEntries?.length || 0) + ' ABC + ' + (observationSessions?.length || 0) + ' observations)'),
+                // Sub-section tabs
+                h('div', { className: 'flex flex-wrap gap-1 border-b border-slate-200 pb-2' },
+                    OBS_TAB_META.map(tab =>
+                        h('button', {
+                            key: tab.key,
+                            className: 'px-2.5 py-1.5 rounded-t-lg text-[10px] font-medium transition-all ' + (activeObsTab === tab.key ? 'bg-violet-600 text-white' : (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100')),
+                            onClick: () => setActiveObsTab(tab.key)
+                        }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? ' \u2713' : ''))
+                    )
+                ),
+                // Active tab content
+                h('div', { className: 'space-y-2' },
+                    h('label', { className: 'text-[10px] font-medium text-slate-600 block' },
+                        clinicalObs[activeObsTab]?.source || activeObsTab
+                    ),
+                    h('textarea', {
+                        className: 'w-full text-xs border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 h-40',
+                        placeholder: OBS_TAB_META.find(t => t.key === activeObsTab)?.placeholder || 'Enter observations...',
+                        value: clinicalObs[activeObsTab]?.text || '',
+                        onChange: e => setClinicalObs(prev => ({
+                            ...prev,
+                            [activeObsTab]: { ...prev[activeObsTab], text: e.target.value }
+                        }))
+                    }),
+                    h('div', { className: 'flex items-center gap-2 text-[9px] text-slate-400' },
+                        h('span', null, '\u{1F4CE} Source attribution: '),
+                        h('span', { className: 'font-medium text-slate-600' }, clinicalObs[activeObsTab]?.source || 'Unknown'),
+                        h('span', null, ' \u2014 will be tracked through fact extraction')
+                    )
+                ),
+                // Summary of filled sections
+                h('div', { className: 'bg-slate-50 rounded-lg p-2 flex flex-wrap gap-2' },
+                    OBS_TAB_META.map(tab =>
+                        h('span', {
+                            key: tab.key,
+                            className: 'text-[9px] px-2 py-0.5 rounded-full ' + (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-400')
+                        }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? ' (' + clinicalObs[tab.key].text.length + ' chars)' : ' \u2014'))
+                    )
+                ),
+                h('div', { className: 'flex justify-between pt-2' },
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(2) }, '\u2190 Background'),
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(4) }, 'Next: Assessment Scores \u2192')
+                )
+            ),
+
+            // ═══ STEP 4: Assessment Score Entry ═══
+            currentStep === 4 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-4' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📊 Assessment Score Entry'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Select an assessment and enter scores. Classifications are auto-calculated.'),
                 // Assessment picker
@@ -1141,9 +1538,9 @@ Return ONLY valid JSON:
                         )
                     )
                 ),
-                // Next step button
-                h('div', { className: 'flex justify-end pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors', onClick: () => setCurrentStep(2) }, 'Next: Background →')
+                h('div', { className: 'flex justify-between pt-2' },
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(3) }, '← Observations'),
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors', onClick: () => { setCurrentStep(5); if (factChunks.length === 0) extractFactChunks(); } }, 'Next: Fact Review →')
                 )
             ),
             // ═══ STEP 2: Background & History ═══
@@ -1207,12 +1604,12 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(1) }, '← Scores'),
-                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => { setCurrentStep(3); if (factChunks.length === 0) extractFactChunks(); } }, 'Next: Review Facts →')
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(1) }, '← Student'),
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(3) }, 'Next: Clinical Observations →')
                 )
             ),
-            // ═══ STEP 3: Fact Chunk Review ═══
-            currentStep === 3 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            // ═══ STEP 5: Fact Chunk Review ═══
+            currentStep === 5 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '🔒 Fact Chunk Review'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Verify each fact. Verified chunks become immutable and serve as ground truth for the report.'),
                 // Stats bar
@@ -1257,16 +1654,16 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(2) }, '← Background'),
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(4) }, '← Scores'),
                     h('button', {
                         className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${verifiedCount > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`,
-                        disabled: verifiedCount === 0, onClick: () => setCurrentStep(4)
+                        disabled: verifiedCount === 0, onClick: () => setCurrentStep(6)
                     }, `Next: Hypotheses (${verifiedCount} facts) →`)
                 )
             ),
 
-            // ═══ STEP 4: Diagnostic Hypotheses ═══
-            currentStep === 4 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            // ═══ STEP 6: Diagnostic Hypotheses ═══
+            currentStep === 6 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F52C} Diagnostic Hypotheses'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Enter diagnostic hypotheses to evaluate. The AI will organize your verified evidence for and against each hypothesis.'),
                 // Hypothesis presets
@@ -1342,13 +1739,13 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(3) }, '\u2190 Fact Chunks'),
-                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(5) }, 'Next: Blueprint \u2192')
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(5) }, '\u2190 Fact Chunks'),
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(7) }, 'Next: Blueprint \u2192')
                 )
             ),
 
-            // ═══ STEP 5: Report Blueprint ═══
-            currentStep === 5 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            // ═══ STEP 7: Report Blueprint ═══
+            currentStep === 7 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F4D0} Report Blueprint'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Customize your report structure, section order, and add notes to guide each section\'s generation.'),
                 // Report type selector
@@ -1416,12 +1813,12 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(4) }, '\u2190 Hypotheses'),
-                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(6) }, 'Next: Generate \u2192')
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(6) }, '\u2190 Hypotheses'),
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(8) }, 'Next: Generate \u2192')
                 )
             ),
-            // ═══ STEP 6: Generate Report ═══
-            currentStep === 6 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            // ═══ STEP 8: Generate Report ═══
+            currentStep === 8 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '✍️ Generate Report'),
                 h('div', { className: 'flex items-center gap-3 mb-2' },
                     h('div', { className: 'flex-1' },
@@ -1452,12 +1849,25 @@ Return ONLY valid JSON:
                                         className: 'text-[9px] px-2 py-0.5 rounded bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors',
                                         onClick: () => { setEditingSection(section); setEditSectionText(text); }
                                     }, '\u270F\uFE0F Edit'),
+                                    // Grade-level adaptation dropdown
+                                    h('select', {
+                                        className: `text-[9px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-300' : 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100'}`,
+                                        disabled: adaptingSection === section,
+                                        value: '',
+                                        onChange: e => { if (e.target.value) adaptSectionGradeLevel(section, text, e.target.value); }
+                                    },
+                                        h('option', { value: '' }, adaptingSection === section ? '⏳ Adapting...' : '📖 Adapt Level'),
+                                        h('option', { value: 'Parent-Friendly' }, '👨‍👩‍👧 Parent-Friendly'),
+                                        h('option', { value: 'Professional' }, '🩺 Professional'),
+                                        h('option', { value: 'Student-Friendly (Elementary)' }, '🧒 Student (Elem)'),
+                                        h('option', { value: 'Student-Friendly (Secondary)' }, '🧑 Student (Secondary)')
+                                    ),
                                     // Regenerate button
                                     h('button', {
                                         className: `text-[9px] px-2 py-0.5 rounded transition-colors ${regenSection === section ? 'bg-amber-200 text-amber-700 cursor-wait' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`,
                                         disabled: regenSection === section,
                                         onClick: () => showRegenInput === section ? setShowRegenInput(null) : setShowRegenInput(section)
-                                    }, regenSection === section ? '\u23F3 Regenerating...' : '\uD83D\uDD04 Regen')
+                                    }, regenSection === section ? '⏳ Regenerating...' : '\uD83D\uDD04 Regen')
                                 )
                             ),
                             // Regeneration input panel
@@ -1513,7 +1923,7 @@ Return ONLY valid JSON:
                                         key: chunkId,
                                         className: `text-[7px] px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-offset-1 ${chipColor}`,
                                         title: chunk ? `${chunk.source} - ${chunk.field}: ${chunk.value}` : chunkId,
-                                        onClick: () => setCurrentStep(3)
+                                        onClick: () => setCurrentStep(5)
                                     }, chipLabel);
                                 })
                             )
@@ -1521,15 +1931,15 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(5) }, '← Blueprint'),
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(7) }, '← Blueprint'),
                     h('button', {
                         className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${Object.keys(reportSections).length > 0 ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`,
-                        disabled: Object.keys(reportSections).length === 0, onClick: () => { setCurrentStep(7); if (accuracyResults.length === 0) runAccuracyCheck(); }
+                        disabled: Object.keys(reportSections).length === 0, onClick: () => { setCurrentStep(9); if (accuracyResults.length === 0) runAccuracyCheck(); }
                     }, 'Next: Accuracy Check →')
                 )
             ),
-            // ═══ STEP 7: Accuracy Dashboard ═══
-            currentStep === 7 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            // ═══ STEP 9: Accuracy Dashboard ═══
+            currentStep === 9 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '🎯 Accuracy Dashboard'),
                 h('p', { className: 'text-[10px] text-slate-500' }, 'Dual-pass verification: two independent AI auditors cross-reference each claim against immutable fact chunks.'),
                 checking ? h('div', { className: 'text-center py-8' },
@@ -1580,12 +1990,12 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(6) }, '← Report'),
-                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(8) }, 'Next: Export →')
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(8) }, '← Report'),
+                    h('button', { className: 'px-4 py-2 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700', onClick: () => setCurrentStep(10) }, 'Next: Export →')
                 )
             ),
-            // ═══ STEP 8: Export ═══
-            currentStep === 8 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            // ═══ STEP 10: Export ═══
+            currentStep === 10 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📥 Export & Save'),
                 // Accuracy summary
                 accuracyResults.length > 0 && h('div', { className: `rounded-lg p-3 border ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}` },
@@ -1612,6 +2022,32 @@ Return ONLY valid JSON:
                     h('button', { className: 'flex flex-col items-center gap-1 px-3 py-3 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors', onClick: () => document.getElementById('rw-import-area')?.focus() },
                         h('span', { className: 'text-lg' }, '📂'),
                         h('span', { className: 'text-[10px] font-medium text-emerald-700' }, 'Load JSON')
+                    )
+                ),
+                // ── Report Translation ──
+                Object.keys(reportSections).length > 0 && h('details', { className: 'mt-3 bg-sky-50 rounded-lg border border-sky-200' },
+                    h('summary', { className: 'text-xs font-medium text-sky-700 px-3 py-2 cursor-pointer hover:bg-sky-100 rounded-t-lg' }, '🌏 Translate Report'),
+                    h('div', { className: 'px-3 pb-3 space-y-2' },
+                        h('p', { className: 'text-[9px] text-sky-600' }, 'Translate the full report for multilingual families. Clinical terms use accepted equivalents.'),
+                        h('div', { className: 'flex items-center gap-2' },
+                            h('select', { className: 'text-xs border rounded-lg px-2 py-1.5 bg-white flex-1', value: translationLang, onChange: e => setTranslationLang(e.target.value) },
+                                ['Spanish', 'French', 'Portuguese', 'Chinese (Simplified)', 'Chinese (Traditional)', 'Arabic', 'Vietnamese', 'Korean', 'Haitian Creole', 'Somali', 'Russian', 'German', 'Japanese', 'Tagalog', 'Hindi', 'Urdu'].map(lang => h('option', { key: lang, value: lang }, lang))
+                            ),
+                            h('button', {
+                                className: `px-4 py-1.5 text-xs font-medium rounded-lg transition-colors ${translating ? 'bg-sky-300 text-sky-600 cursor-wait' : 'bg-sky-600 text-white hover:bg-sky-700'}`,
+                                disabled: translating,
+                                onClick: translateReport
+                            }, translating ? '⏳ Translating...' : '🌏 Translate')
+                        ),
+                        translatedReport && h('div', { className: 'mt-2 space-y-2' },
+                            h('div', { className: 'flex items-center justify-between' },
+                                h('p', { className: 'text-[10px] font-medium text-sky-700' }, `Translated Report (${translationLang})`),
+                                h('button', { className: 'text-[9px] px-2 py-0.5 bg-sky-600 text-white rounded hover:bg-sky-700', onClick: copyTranslatedReport }, '📋 Copy')
+                            ),
+                            h('div', { className: 'bg-white rounded-lg border border-sky-200 p-3 max-h-[300px] overflow-y-auto' },
+                                h('pre', { className: 'text-[10px] text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, translatedReport)
+                            )
+                        )
                     )
                 ),
                 // Import area
@@ -1663,7 +2099,7 @@ Return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'flex justify-start pt-2' },
-                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(7) }, '← Accuracy')
+                    h('button', { className: 'px-4 py-2 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200', onClick: () => setCurrentStep(9) }, '← Accuracy')
                 )
             )
         );
@@ -1678,7 +2114,8 @@ Return ONLY valid JSON:
         t,
         studentNickname,
         behaviorLensData,
-        longitudinalData
+        longitudinalData,
+        dashboardData
     }) => {
         // Extract BehaviorLens data if provided (for cross-module data bridging)
         const blAbcEntries = behaviorLensData?.abcEntries || [];
@@ -1704,6 +2141,7 @@ Return ONLY valid JSON:
                     aiAnalysis: blAiAnalysis,
                     studentProfile: blStudentProfile,
                     longitudinalData: longitudinalData || null,
+                    dashboardData: dashboardData || [],
                     callGemini,
                     t,
                     addToast

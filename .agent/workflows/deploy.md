@@ -7,7 +7,7 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 ## Steps
 
 > **⚠️ IMPORTANT — Hash-based CDN deployment:**
-> The app loads `stem_lab_module.js` and `word_sounds_module.js` via jsDelivr CDN using **pinned commit hashes** (e.g. `@c1a9644`).
+> The app loads `stem_lab_module.js`, `word_sounds_module.js`, and `behavior_lens_module.js` via jsDelivr CDN using **pinned commit hashes** (e.g. `@c1a9644`).
 > The `build.js` script **automatically** handles hash detection and URL replacement.
 
 > **⚠️ SERVICE WORKER — Do NOT change navigation strategy:**
@@ -18,7 +18,7 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 
 1. Push the module files to GitHub:
 ```
-git add ui_strings.js stem_lab_module.js word_sounds_module.js AlloFlowANTI.txt; git commit -m "Deploy: sync files"; git push origin main
+git add ui_strings.js stem_lab_module.js word_sounds_module.js behavior_lens_module.js report_writer_module.js AlloFlowANTI.txt; git commit -m "Deploy: sync files"; git push origin main
 ```
 Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 
@@ -71,4 +71,4 @@ To run locally with hot-reload of module files:
 node build.js --mode=dev
 cd prismflow-deploy && npm start
 ```
-This replaces CDN URLs with `./stem_lab_module.js` and `./word_sounds_module.js` so the dev server loads local copies.
+This replaces CDN URLs with `./stem_lab_module.js`, `./word_sounds_module.js`, and `./behavior_lens_module.js` so the dev server loads local copies.
