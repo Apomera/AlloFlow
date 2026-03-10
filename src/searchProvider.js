@@ -1,66 +1,115 @@
 /**
  * AlloFlow Web Search Provider
  * 
- * Provides web search results for non-Gemini AI backends (Ollama, LocalAI, etc.)
- * using DuckDuckGo Instant Answers API (free, no API key required).
+ * Provides web search for non-Gemini AI backends (Ollama, LocalAI, etc.)
+ * 
+ * Search chain:
+ *   1. SearXNG (self-hosted, full SERP, ~85% Google parity) — default at localhost:8888
+ *   2. DuckDuckGo Instant Answers (free, no key) — fallback if SearXNG unavailable
+ *   3. Offline graceful degradation — returns empty results
  * 
  * Returns Gemini-compatible groundingMetadata so existing citation rendering works unchanged.
  */
 
 const WebSearchProvider = {
 
+    // Configuration
+    searxngUrl: 'http://localhost:8888',
+    _searxngAvailable: null, // cached availability check
+    _lastCheckTime: 0,
+
     /**
      * Search the web and return results with Gemini-compatible grounding metadata.
-     * @param {string} query - The search query
-     * @param {number} [maxResults=5] - Maximum number of results to return
-     * @returns {Promise<{results: Array, contextPrompt: string, groundingMetadata: Object|null}>}
      */
     async search(query, maxResults = 5) {
         if (!query || query.trim().length < 3) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
 
+        // Offline check
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            console.log('[WebSearch] Device is offline — skipping web search');
+            return { results: [], contextPrompt: '', groundingMetadata: null, offline: true };
+        }
+
         try {
-            // Extract a focused search query from the prompt (first ~200 chars or key phrases)
             const searchQuery = this._extractSearchQuery(query);
             console.log(`[WebSearch] Searching for: "${searchQuery}"`);
 
-            const results = await this._fetchDuckDuckGo(searchQuery, maxResults);
+            // Try SearXNG first, then DuckDuckGo fallback
+            let results = [];
+            let source = 'none';
+
+            if (await this._isSearXNGAvailable()) {
+                try {
+                    results = await this._fetchSearXNG(searchQuery, maxResults);
+                    source = 'SearXNG';
+                } catch (err) {
+                    console.warn('[WebSearch] SearXNG failed, trying DuckDuckGo fallback:', err.message);
+                }
+            }
 
             if (results.length === 0) {
-                console.log('[WebSearch] No results found');
+                try {
+                    results = await this._fetchDuckDuckGo(searchQuery, maxResults);
+                    source = 'DuckDuckGo';
+                } catch (err) {
+                    console.warn('[WebSearch] DuckDuckGo also failed:', err.message);
+                }
+            }
+
+            if (results.length === 0) {
+                console.log('[WebSearch] No results from any source');
                 return { results: [], contextPrompt: '', groundingMetadata: null };
             }
 
-            console.log(`[WebSearch] Found ${results.length} results`);
+            console.log(`[WebSearch] Found ${results.length} results via ${source}`);
 
-            // Build context prompt for injection into LLM
             const contextPrompt = this._buildContextPrompt(results);
-
-            // Build Gemini-compatible grounding metadata
             const groundingMetadata = this._buildGroundingMetadata(results);
 
-            return { results, contextPrompt, groundingMetadata };
+            return { results, contextPrompt, groundingMetadata, source };
 
         } catch (err) {
-            console.warn('[WebSearch] Search failed (falling back to no-grounding):', err.message);
+            console.warn('[WebSearch] Search failed:', err.message);
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
     },
 
     /**
+     * Check if SearXNG is available (cached for 60 seconds).
+     */
+    async _isSearXNGAvailable() {
+        const now = Date.now();
+        if (this._searxngAvailable !== null && (now - this._lastCheckTime) < 60000) {
+            return this._searxngAvailable;
+        }
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 2000);
+            const resp = await fetch(`${this.searxngUrl}/search?q=test&format=json`, {
+                signal: controller.signal,
+            });
+            clearTimeout(timeout);
+            this._searxngAvailable = resp.ok;
+        } catch {
+            this._searxngAvailable = false;
+        }
+        this._lastCheckTime = now;
+        console.log(`[WebSearch] SearXNG available: ${this._searxngAvailable}`);
+        return this._searxngAvailable;
+    },
+
+    /**
      * Extract a focused search query from a long prompt.
-     * Prompts can be very long (1000+ chars) but search queries should be short.
      */
     _extractSearchQuery(prompt) {
-        // If prompt is short enough, use it directly
         if (prompt.length <= 100) return prompt;
 
-        // Try to find the actual topic/question in the prompt
-        // Look for common patterns like "about X", "topic: X", or just use first sentence
         const patterns = [
-            /(?:about|regarding|topic[:\s]+|subject[:\s]+|research[:\s]+)\s*["""]?([^""".\n]{10,80})/i,
-            /(?:write|generate|create|explain|describe)\s+(?:a\s+)?(?:lesson|text|content|article|report)?\s*(?:about|on|for)\s+["""]?([^""".\n]{10,80})/i,
+            /(?:about|regarding|topic[:\s]+|subject[:\s]+|research[:\s]+)\s*[""]?([^"".\n]{10,80})/i,
+            /(?:write|generate|create|explain|describe)\s+(?:a\s+)?(?:lesson|text|content|article|report)?\s*(?:about|on|for)\s+[""]?([^"".\n]{10,80})/i,
         ];
 
         for (const pattern of patterns) {
@@ -68,17 +117,55 @@ const WebSearchProvider = {
             if (match && match[1]) return match[1].trim();
         }
 
-        // Fallback: first meaningful sentence
         const firstSentence = prompt.split(/[.!?\n]/).filter(s => s.trim().length > 10)[0] || '';
         return firstSentence.trim().slice(0, 100);
     },
 
+    // ─── SearXNG (Primary) ──────────────────────────────────────────────
+
+    /**
+     * Fetch search results from SearXNG (self-hosted metasearch engine).
+     * Returns full SERP results — titles, URLs, snippets, engines used.
+     */
+    async _fetchSearXNG(query, maxResults) {
+        const url = `${this.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
+
+        const response = await fetch(url, {
+            headers: { 'Accept': 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error(`SearXNG returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        const results = [];
+
+        if (data.results && Array.isArray(data.results)) {
+            for (const r of data.results) {
+                if (results.length >= maxResults) break;
+                if (r.url && (r.title || r.content)) {
+                    results.push({
+                        title: r.title || query,
+                        url: r.url,
+                        snippet: r.content || r.title || '',
+                        source: r.engine || 'SearXNG',
+                        engines: r.engines || [],
+                    });
+                }
+            }
+        }
+
+        return results;
+    },
+
+    // ─── DuckDuckGo (Fallback) ──────────────────────────────────────────
+
     /**
      * Fetch search results from DuckDuckGo Instant Answers API.
-     * This API is free and requires no key.
+     * Free, no API key required. Returns topic summaries.
      */
     async _fetchDuckDuckGo(query, maxResults) {
-        // DuckDuckGo Instant Answers API endpoint
         const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
 
         const response = await fetch(url, {
@@ -92,7 +179,6 @@ const WebSearchProvider = {
         const data = await response.json();
         const results = [];
 
-        // Abstract (main answer)
         if (data.Abstract && data.AbstractURL) {
             results.push({
                 title: data.Heading || query,
@@ -102,7 +188,6 @@ const WebSearchProvider = {
             });
         }
 
-        // Related topics (more results)
         if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
             for (const topic of data.RelatedTopics) {
                 if (results.length >= maxResults) break;
@@ -114,7 +199,6 @@ const WebSearchProvider = {
                         source: 'DuckDuckGo',
                     });
                 }
-                // Handle nested topic groups
                 if (topic.Topics && Array.isArray(topic.Topics)) {
                     for (const sub of topic.Topics) {
                         if (results.length >= maxResults) break;
@@ -131,7 +215,6 @@ const WebSearchProvider = {
             }
         }
 
-        // Results (direct answers)
         if (data.Results && Array.isArray(data.Results)) {
             for (const r of data.Results) {
                 if (results.length >= maxResults) break;
@@ -146,7 +229,6 @@ const WebSearchProvider = {
             }
         }
 
-        // Answer (computation/fact)
         if (data.Answer && results.length === 0) {
             results.push({
                 title: query,
@@ -159,8 +241,10 @@ const WebSearchProvider = {
         return results;
     },
 
+    // ─── Grounding Metadata Builder ─────────────────────────────────────
+
     /**
-     * Build a context prompt to inject search results into the LLM prompt.
+     * Build context prompt to inject search results into the LLM prompt.
      */
     _buildContextPrompt(results) {
         if (!results.length) return '';
@@ -174,12 +258,10 @@ const WebSearchProvider = {
 
     /**
      * Build Gemini-compatible groundingMetadata from search results.
-     * This ensures existing citation rendering code (processGrounding, etc.) works unchanged.
      */
     _buildGroundingMetadata(results) {
         if (!results.length) return null;
 
-        // Build groundingChunks (Gemini format)
         const groundingChunks = results.map(r => ({
             web: {
                 uri: r.url,
@@ -187,14 +269,11 @@ const WebSearchProvider = {
             },
         }));
 
-        // Build groundingSupports (maps text segments to chunk indices)
-        // Since we can't predict exactly where the LLM will use each source,
-        // we create a simple mapping: each source supports the full response
         const groundingSupports = results.map((r, i) => ({
             groundingChunkIndices: [i],
             segment: {
                 startIndex: 0,
-                endIndex: 0, // Will be filled by the caller if needed
+                endIndex: 0,
                 text: r.snippet.slice(0, 100),
             },
         }));
@@ -203,21 +282,35 @@ const WebSearchProvider = {
             groundingChunks,
             groundingSupports,
             searchEntryPoint: {
-                renderedContent: `<a href="https://duckduckgo.com/?q=${encodeURIComponent(results[0]?.title || '')}" target="_blank">Search on DuckDuckGo</a>`,
+                renderedContent: `<a href="${this.searxngUrl || 'https://duckduckgo.com'}/?q=${encodeURIComponent(results[0]?.title || '')}" target="_blank">Search results</a>`,
             },
         };
     },
 
     /**
-     * Test if the DuckDuckGo API is reachable.
+     * Check if web search is available (for UI — gray out if offline).
+     */
+    isAvailable() {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
+        return true;
+    },
+
+    /**
+     * Test connectivity to search backends.
      */
     async testConnection() {
+        const searxng = await this._isSearXNGAvailable();
+        let ddg = false;
         try {
-            const { results } = await this.search('test', 1);
-            return results.length > 0;
-        } catch {
-            return false;
-        }
+            const { results } = await this._fetchDuckDuckGo('test', 1);
+            ddg = results.length > 0;
+        } catch { /* ignore */ }
+
+        return {
+            online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+            searxng,
+            duckduckgo: ddg,
+        };
     },
 };
 
