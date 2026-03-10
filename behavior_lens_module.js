@@ -14925,9 +14925,9 @@ Analyze this data and return ONLY valid JSON:
                             className: `relative text-left p-5 rounded-xl border-2 transition-all ${cc.border} ${cc.hover} bg-white shadow-sm hover:shadow-md ${tool.disabled || !selectedStudent ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`
                         },
                             // Favorite star
-                            h('button', {
+                            h('span', {
                                 onClick: (e) => { e.stopPropagation(); toggleFav(tool.id); },
-                                className: `absolute top-2 right-2 text-lg transition-all hover:scale-125 ${isFav ? 'text-yellow-400' : 'text-slate-200 hover:text-yellow-300'}`,
+                                role: 'button', className: `absolute top-2 right-2 text-lg transition-all hover:scale-125 ${isFav ? 'text-yellow-400' : 'text-slate-200 hover:text-yellow-300'}`,
                                 title: isFav ? 'Remove from favorites' : 'Add to favorites'
                             }, isFav ? '★' : '☆'),
                             h('div', { className: `w-12 h-12 rounded-xl ${cc.icon} flex items-center justify-center text-2xl mb-3` }, tool.icon),
