@@ -10258,7 +10258,7 @@ Keep it encouraging and professional. Under 300 words.`;
 
     // ─── AlloBotChat ────────────────────────────────────────────────────
     // Conversational AI chat panel for behavioral analysis questions
-    const AlloBotChat = ({ callGemini, studentName, studentProfile, sessionNotes, abcEntries, aiAnalysis, buildStudentContext, t, addToast }) => {
+    const AlloBotChat = ({ callGemini, studentName, studentProfile, sessionNotes, abcEntries, aiAnalysis, buildStudentContext, t, addToast, alloBotRef }) => {
         const [messages, setMessages] = useState([]);
         const [input, setInput] = useState('');
         const [isSending, setIsSending] = useState(false);
@@ -10295,6 +10295,10 @@ Respond helpfully and concisely as AlloBot:`;
                 const result = await callGemini(prompt, true);
                 const botMsg = { role: 'bot', content: result || 'I was unable to generate a response. Please try again.', ts: new Date().toISOString() };
                 setMessages(prev => [...prev, botMsg]);
+                // Have the embodied bot speak the response aloud (truncated)
+                if (alloBotRef?.current?.speak) {
+                    try { alloBotRef.current.speak((result || '').slice(0, 200)); } catch (_) {}
+                }
             } catch (err) {
                 warnLog('AlloBotChat error:', err);
                 setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, I encountered an error. Please try again.', ts: new Date().toISOString() }]);
@@ -14355,7 +14359,8 @@ Keep under 250 words. Use clear sections.`);
         t,
         studentNickname,
         dashboardData,
-        isTeacherMode
+        isTeacherMode,
+        alloBotRef
     }) => {
         const [activePanel, setActivePanel] = useState('hub');
         const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
@@ -14390,6 +14395,87 @@ Keep under 250 words. Use clear sections.`);
             interests: '', strengths: '', triggers: '',
             goals: '', accommodations: '', notes: ''
         });
+
+        // ─── useBotCoach — context-aware Allobot tips ─────────────────────
+        const botCoachFired = useRef({});
+        const botSpeak = useCallback((msg, mood) => {
+            if (!alloBotRef?.current) return;
+            try {
+                if (alloBotRef.current.speak) alloBotRef.current.speak(msg);
+                if (mood === 'happy' && alloBotRef.current.triggerReaction) alloBotRef.current.triggerReaction('celebrate');
+            } catch (_) { /* bot might not be mounted */ }
+        }, [alloBotRef]);
+
+        const fireBotTip = useCallback((key, msg, mood) => {
+            if (botCoachFired.current[key]) return;
+            botCoachFired.current[key] = true;
+            // Small delay so UI settles before bot speaks
+            setTimeout(() => botSpeak(msg, mood || 'idle'), 600);
+        }, [botSpeak]);
+
+        // 1) First ABC entry recorded
+        useEffect(() => {
+            if (abcEntries.length === 1) {
+                fireBotTip('firstABC', 'Nice! Your first ABC entry is logged. After 3 entries, try AI Analysis.', 'happy');
+            }
+        }, [abcEntries.length, fireBotTip]);
+
+        // 2) 3+ entries, analysis not yet run
+        useEffect(() => {
+            if (abcEntries.length >= 3 && !aiAnalysis) {
+                fireBotTip('suggestAnalysis', 'You have enough data for me to analyze. Try the Analysis tool!', 'teaching');
+            }
+        }, [abcEntries.length, aiAnalysis, fireBotTip]);
+
+        // 3) 5+ entries, hypothesis not visited
+        useEffect(() => {
+            if (abcEntries.length >= 5 && !visitedPanels.has('hypothesis')) {
+                fireBotTip('suggestHypothesis', 'Ready for a hypothesis diagram? Your data can reveal patterns.', 'thinking');
+            }
+        }, [abcEntries.length, visitedPanels, fireBotTip]);
+
+        // 4) Tool opened — brief first-time tip
+        const prevPanelRef = useRef('hub');
+        useEffect(() => {
+            if (activePanel !== 'hub' && activePanel !== prevPanelRef.current) {
+                const tipKey = `toolTip_${activePanel}`;
+                const tips = {
+                    abc: 'ABC Data lets you capture A-B-C observations so patterns emerge.',
+                    liveobs: 'Live Observation uses frequency, duration, or interval recording.',
+                    graphs: 'Graphs help visualize behavior trends over time.',
+                    hypothesis: 'The Hypothesis tool maps antecedent–behavior–consequence pathways.',
+                    alloBotChat: 'Ask me anything about behavior strategies, FBA, or BIP!',
+                    effectsize: 'Effect Size measures how meaningful an intervention change is.',
+                    ioa: 'IOA checks whether two observers agree on the data.',
+                    bipbuilder: 'BIP Builder walks you through creating a Behavior Intervention Plan.',
+                };
+                if (tips[activePanel]) {
+                    fireBotTip(tipKey, tips[activePanel], 'idle');
+                }
+            }
+            prevPanelRef.current = activePanel;
+        }, [activePanel, fireBotTip]);
+
+        // 5) Role changed to BCBA
+        useEffect(() => {
+            if (userRole === 'bcba') {
+                fireBotTip('bcbaMode', 'BCBA mode activated — all clinical tools unlocked.', 'happy');
+            }
+        }, [userRole, fireBotTip]);
+
+        // 6) Practice scenario loaded
+        useEffect(() => {
+            if (isPracticeMode && practiceScenarioName) {
+                fireBotTip('practiceLoaded', 'Practice mode! This data is simulated — great for learning.', 'teaching');
+            }
+        }, [isPracticeMode, practiceScenarioName, fireBotTip]);
+
+        // 7) Student selected
+        useEffect(() => {
+            if (selectedStudent && selectedStudent !== studentNickname) {
+                fireBotTip(`student_${selectedStudent}`, `Now tracking ${selectedStudent}. All data will be saved under this name.`, 'idle');
+            }
+        }, [selectedStudent, studentNickname, fireBotTip]);
 
         // Practice sandbox data loader
         const handleLoadScenario = (scenarioData) => {
@@ -16285,6 +16371,7 @@ Analyze this data and return ONLY valid JSON:
                     buildStudentContext,
                     t,
                     addToast,
+                    alloBotRef,
                 }),
                 activePanel === 'sessionnotes' && h(SessionNotes, {
                     notes: sessionNotes,
